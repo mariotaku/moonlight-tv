@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "nuklear.h": "c",
+        "string": "cpp",
+        "string_view": "cpp",
+        "nuklear_wayland_egl.h": "c"
+    }
+}

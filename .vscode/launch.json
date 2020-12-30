@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug over SSH",
+            "type": "gdb",
+            "request": "launch",
+            "target": "moonlight",
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText",
+            "pathSubstitutions": {
+                "${workspaceFolder}": "/media/developer/apps/usr/palm/applications/com.limelight.webos",
+                "/opt/webos-sdk-x86_64/1.0.g/sysroots/armv7a-neon-webos-linux-gnueabi/usr/src/debug/glibc": "/usr/src/debug/lib32-glibc"
+            },
+            "ssh": {
+                "host": "192.168.4.104",
+                "port": 9922,
+                "forwardX11": false,
+                "cwd": "/media/developer/apps/usr/palm/applications/com.limelight.webos",
+                "keyfile": "/home/mariotaku/.ssh/hometv_webos_unlocked",
+                "user": "prisoner"
+            }
+        }
+    ]
+}
