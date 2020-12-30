@@ -444,9 +444,8 @@ static void test_window(struct nk_context *ctx)
 }
 
 static void
-MainLoop(void *loopArg)
+nk_main_loop(struct nk_context *ctx)
 {
-    struct nk_context *ctx = (struct nk_context *)loopArg;
     struct nk_wl_egl *win = &wl_egl;
     test_window(ctx);
 
@@ -522,7 +521,7 @@ int main(int argc, char *argv[])
     {
         started = timestamp();
 
-        MainLoop((void *)ctx);
+        nk_main_loop(ctx);
 
         // Timing
         dt = timestamp() - started;
