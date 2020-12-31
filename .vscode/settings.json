@@ -3,6 +3,7 @@
         "nuklear.h": "c",
         "string": "cpp",
         "string_view": "cpp",
-        "nuklear_wayland_egl.h": "c"
+        "nuklear_wayland_egl.h": "c",
+        "egl.h": "c"
     }
 }

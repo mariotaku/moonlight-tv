@@ -22,6 +22,10 @@
 #include "nuklear.h"
 #include "nuklear_wayland_egl.h"
 #include <wayland-webos-shell-client-protocol.h>
+#include "main.h"
+#include "gst_sample.h"
+#include "debughelper.h"
+#include <NDL_directmedia.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
@@ -32,8 +36,6 @@
 #define WINDOW_HEIGHT 1080
 
 #define UNUSED(a) (void)a
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) < (b) ? (b) : (a))
 #define LEN(a) (sizeof(a) / sizeof(a)[0])
 
 /* ===============================================================
@@ -45,9 +47,9 @@
  * done with this library. To try out an example uncomment the include
  * and the corresponding function. */
 /*#include "../style.c"*/
-/*#include "../calculator.c"*/
-/*#include "../overview.c"*/
-/*#include "../node_editor.c"*/
+#include "demo/calculator.c"
+#include "demo/overview.c"
+#include "demo/node_editor.c"
 
 /* ===============================================================
  *
@@ -67,7 +69,7 @@ EGLConfig g_pstEglConfig = NULL;
 EGLSurface g_pstEglSurface = NULL;
 EGLContext g_pstEglContext = NULL;
 
-static const char APPID[] = "org.webosbrew.sample.ndl-directmedia";
+static const char APPID[] = "com.limelight.webos";
 
 static int exit_requested_;
 
@@ -450,18 +452,18 @@ nk_main_loop(struct nk_context *ctx)
     test_window(ctx);
 
     /* -------------- EXAMPLES ---------------- */
-    /*calculator(ctx);*/
-    /*overview(ctx);*/
-    /*node_editor(ctx);*/
+    calculator(ctx);
+    overview(ctx);
+    node_editor(ctx);
     /* ----------------------------------------- */
 
     /* Draw */
     {
-        float bg[4];
-        nk_color_fv(bg, nk_rgb(28, 48, 62));
+        
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glViewport(0, 0, win->width, win->height);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(bg[0], bg[1], bg[2], bg[3]);
         /* IMPORTANT: `nk_wl_egl_render` modifies some global OpenGL state
      * with blending, scissor, face culling, depth test and viewport and
      * defaults everything back into a default state.
@@ -479,9 +481,18 @@ nk_main_loop(struct nk_context *ctx)
 
 int main(int argc, char *argv[])
 {
+    REDIR_STDOUT("moonlight");
+
+    gst_init(&argc, &argv);
+    
+    if (NDL_DirectMediaInit(APPID, NULL))
+    {
+        g_error(NDL_DirectMediaGetError(), NULL);
+        return -1;
+    }
+
     long dt;
     long started;
-    int running = 1;
 
     /* GUI */
     struct nk_context *ctx;
@@ -517,7 +528,9 @@ int main(int argc, char *argv[])
     /*set_style(ctx, THEME_BLUE);*/
     /*set_style(ctx, THEME_DARK);*/
 
-    while (running)
+    gst_sample_initialize();
+
+    while (!exit_requested())
     {
         started = timestamp();
 
@@ -528,7 +541,20 @@ int main(int argc, char *argv[])
         if (dt < DTIME)
             sleep_for(DTIME - dt);
     }
+    
+    gst_sample_finalize();
+
     nk_wl_egl_shutdown();
     finalize();
     return 0;
+}
+
+void request_exit()
+{
+    exit_requested_ = 1;
+}
+
+int exit_requested()
+{
+    return exit_requested_;
 }

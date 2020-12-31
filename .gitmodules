@@ -4,3 +4,15 @@
 [submodule "third_party/Nuklear"]
 	path = third_party/Nuklear
 	url = https://github.com/Immediate-Mode-UI/Nuklear.git
+[submodule "system/libndl"]
+	path = system/libndl
+	url = https://github.com/webosbrew/libndl.git
+[submodule "third_party/opus"]
+	path = third_party/opus
+	url = https://gitlab.xiph.org/xiph/opus.git
+[submodule "core/moonlight-common-c"]
+	path = core/moonlight-common-c/moonlight-common-c
+	url = https://github.com/moonlight-stream/moonlight-common-c.git
+[submodule "core/moonlight-embedded"]
+	path = core/moonlight-embedded
+	url = https://github.com/irtimmer/moonlight-embedded.git
