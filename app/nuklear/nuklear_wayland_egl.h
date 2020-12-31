@@ -70,7 +70,14 @@ static struct nk_wl_egl {
     struct wl_display *display;
     struct wl_compositor *compositor;
     struct wl_egl_window *win;
-    struct wl_seat* seat;
+    struct wl_seat *seat;
+    struct wl_surface *surface;
+
+    /*egl vars*/
+    EGLDisplay egl_display;
+    EGLConfig egl_config;
+    EGLSurface egl_surface;
+    EGLContext egl_context;
 
     /*nuklear vars*/
     struct nk_wl_egl_device ogl;

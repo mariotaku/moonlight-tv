@@ -49,17 +49,8 @@
  *
  * ===============================================================*/
 
-struct wl_surface *g_pstSurface = NULL;
 struct wl_shell *g_pstShell = NULL;
-struct wl_shell_surface *g_pstShellSurface = NULL;
 struct wl_webos_shell *g_pstWebOSShell = NULL;
-struct wl_webos_shell_surface *g_pstWebosShellSurface = NULL;
-struct wl_egl_window *g_pstEglWindow = NULL;
-
-EGLDisplay g_pstEglDisplay = NULL;
-EGLConfig g_pstEglConfig = NULL;
-EGLSurface g_pstEglSurface = NULL;
-EGLContext g_pstEglContext = NULL;
 
 static const char APPID[] = "com.limelight.webos";
 
@@ -261,33 +252,32 @@ static void getWaylandServer()
         exit(1);
     }
 
-    g_pstSurface = wl_compositor_create_surface((&wl_egl)->compositor);
-    if (g_pstSurface == NULL)
+    (&wl_egl)->surface = wl_compositor_create_surface((&wl_egl)->compositor);
+    if ((&wl_egl)->surface == NULL)
     {
         fprintf(stderr, "ERROR, cannot create surface \n");
         exit(1);
     }
 
-    g_pstShellSurface = wl_shell_get_shell_surface(g_pstShell, g_pstSurface);
-    if (g_pstShellSurface == NULL)
+    struct wl_shell_surface *shell_surface = wl_shell_get_shell_surface(g_pstShell, (&wl_egl)->surface);
+    if (shell_surface == NULL)
     {
         fprintf(stderr, "Can't create shell surface\n");
         exit(1);
     }
-    wl_shell_surface_set_toplevel(g_pstShellSurface);
+    wl_shell_surface_set_toplevel(shell_surface);
 
-    // Please see wayland-webos-shell-client-protocol.h file for webOS specific wayland protocol
-    g_pstWebosShellSurface = wl_webos_shell_get_shell_surface(g_pstWebOSShell, g_pstSurface);
-    if (g_pstWebosShellSurface == NULL)
+    struct wl_webos_shell_surface *webos_shell_surface = wl_webos_shell_get_shell_surface(g_pstWebOSShell, (&wl_egl)->surface);
+    if (webos_shell_surface == NULL)
     {
         fprintf(stderr, "Can't create webos shell surface\n");
         exit(1);
     }
-    wl_webos_shell_surface_add_listener(g_pstWebosShellSurface, &s_pstWebosShellListener, win->display);
-    wl_webos_shell_surface_set_property(g_pstWebosShellSurface, "appId", (getenv("APPID") ? getenv("APPID") : APPID));
+    wl_webos_shell_surface_add_listener(webos_shell_surface, &s_pstWebosShellListener, win->display);
+    wl_webos_shell_surface_set_property(webos_shell_surface, "appId", (getenv("APPID") ? getenv("APPID") : APPID));
     // for secondary display, set the last parameter as 1
-    wl_webos_shell_surface_set_property(g_pstWebosShellSurface, "displayAffinity", (getenv("DISPLAY_ID") ? getenv("DISPLAY_ID") : "0"));
-    wl_webos_shell_surface_set_property(g_pstWebosShellSurface, "_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
+    wl_webos_shell_surface_set_property(webos_shell_surface, "displayAffinity", (getenv("DISPLAY_ID") ? getenv("DISPLAY_ID") : "0"));
+    wl_webos_shell_surface_set_property(webos_shell_surface, "_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
 }
 
 static void createWindow()
@@ -297,22 +287,22 @@ static void createWindow()
     win->height = WINDOW_HEIGHT;
 
     // webOS only supports full screen size
-    g_pstEglWindow = wl_egl_window_create(g_pstSurface, win->width, win->height);
+    win->win = wl_egl_window_create(win->surface, win->width, win->height);
 
-    if (g_pstEglWindow == EGL_NO_SURFACE)
+    if (win->win == EGL_NO_SURFACE)
     {
         fprintf(stderr, "ERROR, cannot create wayland egl window\n");
         exit(1);
     }
 
-    g_pstEglSurface = eglCreateWindowSurface(g_pstEglDisplay, g_pstEglConfig, g_pstEglWindow, NULL);
+    win->egl_surface = eglCreateWindowSurface(win->egl_display, win->egl_config, win->win, NULL);
 
-    if (!eglMakeCurrent(g_pstEglDisplay, g_pstEglSurface, g_pstEglSurface, g_pstEglContext))
+    if (!eglMakeCurrent(win->egl_display, win->egl_surface, win->egl_surface, win->egl_context))
     {
         fprintf(stderr, "ERROR, cannot make current\n");
     }
 
-    eglSwapInterval(g_pstEglDisplay, 1);
+    eglSwapInterval(win->egl_display, 1);
 }
 
 static void initEgl()
@@ -339,32 +329,32 @@ static void initEgl()
         EGL_CONTEXT_CLIENT_VERSION, 2,
         EGL_NONE};
 
-    g_pstEglDisplay = eglGetDisplay((EGLNativeDisplayType)win->display);
-    if (g_pstEglDisplay == EGL_NO_DISPLAY)
+    win->egl_display = eglGetDisplay((EGLNativeDisplayType)win->display);
+    if (win->egl_display == EGL_NO_DISPLAY)
     {
         fprintf(stderr, "ERROR, cannot create create egl g_pstDisplay\n");
         exit(1);
     }
 
-    if (eglInitialize(g_pstEglDisplay, &major, &minor) != EGL_TRUE)
+    if (eglInitialize(win->egl_display, &major, &minor) != EGL_TRUE)
     {
         fprintf(stderr, "ERROR, cannot initialize egl g_pstDisplay\n");
         exit(1);
     }
-    eglGetConfigs(g_pstEglDisplay, NULL, 0, &count);
+    eglGetConfigs(win->egl_display, NULL, 0, &count);
     configs = (EGLConfig *)calloc(count, sizeof(EGLConfig));
-    eglChooseConfig(g_pstEglDisplay, configAttributes, configs, count, &n);
+    eglChooseConfig(win->egl_display, configAttributes, configs, count, &n);
     // simply choose the first config
-    g_pstEglConfig = configs[0];
-    g_pstEglContext = eglCreateContext(g_pstEglDisplay, g_pstEglConfig, EGL_NO_CONTEXT, contextAttributes);
+    win->egl_config = configs[0];
+    win->egl_context = eglCreateContext(win->egl_display, win->egl_config, EGL_NO_CONTEXT, contextAttributes);
 }
 
 static void finalize()
 {
     struct nk_wl_egl *win = &wl_egl;
-    eglDestroyContext(g_pstEglDisplay, g_pstEglContext);
-    eglDestroySurface(g_pstEglDisplay, g_pstEglSurface);
-    eglTerminate(g_pstEglDisplay);
+    eglDestroyContext(win->egl_display, win->egl_context);
+    eglDestroySurface(win->egl_display, win->egl_surface);
+    eglTerminate(win->egl_display);
     wl_display_disconnect(win->display);
 }
 
@@ -374,28 +364,22 @@ nk_main_loop(gpointer user_data)
     struct nk_context *ctx = user_data;
     struct nk_wl_egl *win = &wl_egl;
 
-    application_root(ctx);
-
-    /* Draw */
-    {
-
-        application_background();
-
-        glViewport(0, 0, win->width, win->height);
-        /* IMPORTANT: `nk_wl_egl_render` modifies some global OpenGL state
-     * with blending, scissor, face culling, depth test and viewport and
-     * defaults everything back into a default state.
-     * Make sure to either a.) save and restore or b.) reset your own state after
-     * rendering the UI. */
-        nk_wl_egl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-        eglSwapBuffers(g_pstEglDisplay, g_pstEglSurface);
-    }
-
     //handle wayland stuff (send display to FB & get inputs)
     nk_input_begin(ctx);
     wl_display_dispatch(win->display);
     nk_input_end(ctx);
 
+    application_root(ctx);
+
+    application_background();
+
+    /* IMPORTANT: `nk_wl_egl_render` modifies some global OpenGL state
+     * with blending, scissor, face culling, depth test and viewport and
+     * defaults everything back into a default state.
+     * Make sure to either a.) save and restore or b.) reset your own state after
+     * rendering the UI. */
+    nk_wl_egl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+    eglSwapBuffers(win->egl_display, win->egl_surface);
     return TRUE;
 }
 
@@ -410,7 +394,7 @@ static struct nk_context *gui_init_nk()
     /* OpenGL setup */
     glViewport(0, 0, win->width, win->height);
 
-    ctx = nk_wl_egl_init(g_pstEglWindow);
+    ctx = nk_wl_egl_init(win->win);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {

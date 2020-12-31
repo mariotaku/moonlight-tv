@@ -5,4 +5,6 @@
 #include "nuklear.h"
 #endif
 
+#include "backend/computer.h"
+
 void computers_window(struct nk_context *ctx);
