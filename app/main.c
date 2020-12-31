@@ -10,30 +10,21 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#define NK_IMPLEMENTATION
-#define NK_WL_EGL_GLES2_IMPLEMENTATION
-#define NK_BUTTON_TRIGGER_ON_RELEASE
+#include <glib.h>
+#include <wayland-webos-shell-client-protocol.h>
+#include <NDL_directmedia.h>
 
+#define NK_IMPLEMENTATION
+#include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/nuklear_wayland_egl.h"
-#include <wayland-webos-shell-client-protocol.h>
+
 #include "main.h"
 #include "gst_sample.h"
 #include "debughelper.h"
-#include <glib.h>
-#include <NDL_directmedia.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
-
-#define DTIME 66
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
@@ -50,9 +41,7 @@
  * done with this library. To try out an example uncomment the include
  * and the corresponding function. */
 /*#include "../style.c"*/
-#include "demo/calculator.c"
-#include "demo/overview.c"
-#include "demo/node_editor.c"
+#include "ui/application_root.h"
 
 /* ===============================================================
  *
@@ -379,93 +368,18 @@ static void finalize()
     wl_display_disconnect(win->display);
 }
 
-static long timestamp(void)
-{
-    struct timeval tv;
-    if (gettimeofday(&tv, NULL) < 0)
-        return 0;
-    return (long)((long)tv.tv_sec * 1000 + (long)tv.tv_usec / 1000);
-}
-
-static void sleep_for(long t)
-{
-    struct timespec req;
-    const time_t sec = (int)(t / 1000);
-    const long ms = t - (sec * 1000);
-    req.tv_sec = sec;
-    req.tv_nsec = ms * 1000000L;
-    while (-1 == nanosleep(&req, &req))
-        ;
-}
-
-static void test_window(struct nk_context *ctx)
-{
-    /* GUI */
-    if (nk_begin(ctx, "Demo", nk_rect(50, 50, 200, 200),
-                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-                     NK_WINDOW_CLOSABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
-    {
-        nk_menubar_begin(ctx);
-        nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
-        nk_layout_row_push(ctx, 45);
-        if (nk_menu_begin_label(ctx, "FILE", NK_TEXT_LEFT, nk_vec2(120, 200)))
-        {
-            nk_layout_row_dynamic(ctx, 30, 1);
-            nk_menu_item_label(ctx, "OPEN", NK_TEXT_LEFT);
-            nk_menu_item_label(ctx, "CLOSE", NK_TEXT_LEFT);
-            nk_menu_end(ctx);
-        }
-        nk_layout_row_push(ctx, 45);
-        if (nk_menu_begin_label(ctx, "EDIT", NK_TEXT_LEFT, nk_vec2(120, 200)))
-        {
-            nk_layout_row_dynamic(ctx, 30, 1);
-            nk_menu_item_label(ctx, "COPY", NK_TEXT_LEFT);
-            nk_menu_item_label(ctx, "CUT", NK_TEXT_LEFT);
-            nk_menu_item_label(ctx, "PASTE", NK_TEXT_LEFT);
-            nk_menu_end(ctx);
-        }
-        nk_layout_row_end(ctx);
-        nk_menubar_end(ctx);
-
-        enum
-        {
-            EASY,
-            HARD
-        };
-        static int op = EASY;
-        static int property = 20;
-        nk_layout_row_static(ctx, 30, 80, 1);
-        if (nk_button_label(ctx, "button"))
-            fprintf(stdout, "button pressed\n");
-        nk_layout_row_dynamic(ctx, 30, 2);
-        if (nk_option_label(ctx, "easy", op == EASY))
-            op = EASY;
-        if (nk_option_label(ctx, "hard", op == HARD))
-            op = HARD;
-        nk_layout_row_dynamic(ctx, 25, 1);
-        nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
-    }
-    nk_end(ctx);
-}
-
 static gboolean
 nk_main_loop(gpointer user_data)
 {
     struct nk_context *ctx = user_data;
     struct nk_wl_egl *win = &wl_egl;
-    test_window(ctx);
 
-    /* -------------- EXAMPLES ---------------- */
-    calculator(ctx);
-    overview(ctx);
-    node_editor(ctx);
-    /* ----------------------------------------- */
+    application_root(ctx);
 
     /* Draw */
     {
 
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        application_background();
 
         glViewport(0, 0, win->width, win->height);
         /* IMPORTANT: `nk_wl_egl_render` modifies some global OpenGL state
@@ -534,7 +448,8 @@ gboolean g_uisrc_check(GSource *source)
 
 gboolean g_uisrc_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
 {
-    if (callback(user_data)) {
+    if (callback(user_data))
+    {
         return G_SOURCE_CONTINUE;
     }
     return G_SOURCE_REMOVE;
@@ -542,8 +457,6 @@ gboolean g_uisrc_dispatch(GSource *source, GSourceFunc callback, gpointer user_d
 
 void g_uisrc_finalize(GSource *source)
 {
-    gst_sample_finalize();
-
     finalize();
 }
 
@@ -558,20 +471,14 @@ int main(int argc, char *argv[])
         g_error(NDL_DirectMediaGetError(), NULL);
         return -1;
     }
-    
+
     /* GUI */
-    
+
     struct nk_context *nk_ctx = NULL;
     nk_ctx = gui_init_nk();
 
-    gst_sample_initialize();
-
-    long dt;
-    long started;
-
     GMainContext *gctx;
     GMainLoop *loop;
-
 
     GSourceFuncs uisrc_funcs = {g_uisrc_prepare, g_uisrc_check, g_uisrc_dispatch, g_uisrc_finalize};
     GSource *uisrc;
@@ -582,7 +489,7 @@ int main(int argc, char *argv[])
     g_source_attach(uisrc, gctx);
 
     loop = g_main_loop_new(gctx, FALSE);
-    
+
     g_source_set_callback(uisrc, nk_main_loop, nk_ctx, NULL);
 
     g_main_loop_run(loop);

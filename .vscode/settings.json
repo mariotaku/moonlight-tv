@@ -4,6 +4,8 @@
         "string": "cpp",
         "string_view": "cpp",
         "nuklear_wayland_egl.h": "c",
-        "egl.h": "c"
+        "egl.h": "c",
+        "application_root.h": "c",
+        "ndl_directmedia.h": "c"
     }
 }
