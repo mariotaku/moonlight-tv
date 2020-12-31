@@ -19,18 +19,21 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #define NK_WL_EGL_GLES2_IMPLEMENTATION
+#define NK_BUTTON_TRIGGER_ON_RELEASE
+
 #include "nuklear.h"
-#include "nuklear_wayland_egl.h"
+#include "nuklear/nuklear_wayland_egl.h"
 #include <wayland-webos-shell-client-protocol.h>
 #include "main.h"
 #include "gst_sample.h"
 #include "debughelper.h"
+#include <glib.h>
 #include <NDL_directmedia.h>
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
-#define DTIME 16
+#define DTIME 66
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
@@ -445,9 +448,10 @@ static void test_window(struct nk_context *ctx)
     nk_end(ctx);
 }
 
-static void
-nk_main_loop(struct nk_context *ctx)
+static gboolean
+nk_main_loop(gpointer user_data)
 {
+    struct nk_context *ctx = user_data;
     struct nk_wl_egl *win = &wl_egl;
     test_window(ctx);
 
@@ -459,7 +463,7 @@ nk_main_loop(struct nk_context *ctx)
 
     /* Draw */
     {
-        
+
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -477,27 +481,14 @@ nk_main_loop(struct nk_context *ctx)
     nk_input_begin(ctx);
     wl_display_dispatch(win->display);
     nk_input_end(ctx);
+
+    return TRUE;
 }
 
-int main(int argc, char *argv[])
+static struct nk_context *gui_init_nk()
 {
-    REDIR_STDOUT("moonlight");
-
-    gst_init(&argc, &argv);
-    
-    if (NDL_DirectMediaInit(APPID, NULL))
-    {
-        g_error(NDL_DirectMediaGetError(), NULL);
-        return -1;
-    }
-
-    long dt;
-    long started;
-
-    /* GUI */
     struct nk_context *ctx;
     struct nk_wl_egl *win = &wl_egl;
-
     getWaylandServer();
     initEgl();
     createWindow();
@@ -527,25 +518,79 @@ int main(int argc, char *argv[])
     /*set_style(ctx, THEME_RED);*/
     /*set_style(ctx, THEME_BLUE);*/
     /*set_style(ctx, THEME_DARK);*/
+    return ctx;
+}
+
+gboolean g_uisrc_prepare(GSource *source, gint *timeout_)
+{
+    *timeout_ = -1;
+    return TRUE;
+}
+
+gboolean g_uisrc_check(GSource *source)
+{
+    return TRUE;
+}
+
+gboolean g_uisrc_dispatch(GSource *source, GSourceFunc callback, gpointer user_data)
+{
+    if (callback(user_data)) {
+        return G_SOURCE_CONTINUE;
+    }
+    return G_SOURCE_REMOVE;
+}
+
+void g_uisrc_finalize(GSource *source)
+{
+    gst_sample_finalize();
+
+    finalize();
+}
+
+int main(int argc, char *argv[])
+{
+    REDIR_STDOUT("moonlight");
+
+    gst_init(&argc, &argv);
+
+    if (NDL_DirectMediaInit(APPID, NULL))
+    {
+        g_error(NDL_DirectMediaGetError(), NULL);
+        return -1;
+    }
+    
+    /* GUI */
+    
+    struct nk_context *nk_ctx = NULL;
+    nk_ctx = gui_init_nk();
 
     gst_sample_initialize();
 
-    while (!exit_requested())
-    {
-        started = timestamp();
+    long dt;
+    long started;
 
-        nk_main_loop(ctx);
+    GMainContext *gctx;
+    GMainLoop *loop;
 
-        // Timing
-        dt = timestamp() - started;
-        if (dt < DTIME)
-            sleep_for(DTIME - dt);
-    }
+
+    GSourceFuncs uisrc_funcs = {g_uisrc_prepare, g_uisrc_check, g_uisrc_dispatch, g_uisrc_finalize};
+    GSource *uisrc;
+    uisrc = g_source_new(&uisrc_funcs, sizeof(GSource));
+
+    gctx = g_main_context_new();
+
+    g_source_attach(uisrc, gctx);
+
+    loop = g_main_loop_new(gctx, FALSE);
     
-    gst_sample_finalize();
+    g_source_set_callback(uisrc, nk_main_loop, nk_ctx, NULL);
+
+    g_main_loop_run(loop);
 
     nk_wl_egl_shutdown();
-    finalize();
+
+    g_main_loop_unref(loop);
+
     return 0;
 }
 

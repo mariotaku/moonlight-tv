@@ -20,8 +20,8 @@ add_subdirectory(core/moonlight-common-c)
 add_subdirectory(third_party/opus)
 
 set(SOURCES_BASE
-    src/main.c
-    src/gst_sample.c
+    app/main.c
+    app/gst_sample.c
 )
 
 add_executable(moonlight ${SOURCES_BASE})
