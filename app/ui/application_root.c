@@ -3,6 +3,11 @@
 #include "application_root.h"
 #include "computers_window.h"
 
+void application_root_init(struct nk_context *ctx)
+{
+    computers_window_init(ctx);
+}
+
 void application_root(struct nk_context *ctx)
 {
     computers_window(ctx);

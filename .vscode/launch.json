@@ -23,6 +23,21 @@
                 "keyfile": "/home/mariotaku/.ssh/hometv_webos_unlocked",
                 "user": "prisoner"
             }
+        },
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach to gdbserver",
+            "executable": "${workspaceRoot}/build/moonlight",
+            "target": "192.168.4.104:9527",
+            "remote": true,
+            "cwd": "${workspaceRoot}",
+            "gdbpath": "gdb-multiarch",
+            "debugger_args": [
+                "-ex",
+                "set architecture armv7"
+            ],
+            "valuesFormatting": "parseText",
         }
     ]
 }

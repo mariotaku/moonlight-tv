@@ -28,8 +28,8 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 540
 
 struct wl_shell *g_pstShell = NULL;
 struct wl_webos_shell *g_pstWebOSShell = NULL;
@@ -472,6 +472,8 @@ int main(int argc, char *argv[])
     g_source_set_callback(uisrc, ml_main_loop, nk_ctx, NULL);
 
     computer_manager_init();
+
+    application_root_init(nk_ctx);
 
     g_main_loop_run(loop);
 

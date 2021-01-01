@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <glib.h>
 
-void error_show(char *fmt, ...)
+void error_show(const char *fmt, ...)
 {
     va_list args;
 
@@ -13,7 +13,7 @@ void error_show(char *fmt, ...)
     va_end(args);
 }
 
-void fatal_show(char *fmt, ...)
+void fatal_show(const char *fmt, ...)
 {
     va_list args;
 

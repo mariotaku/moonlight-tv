@@ -1,3 +1,3 @@
 #pragma once
 
-void error_show(char *msg, ...);
+void error_show(const char *msg, ...);

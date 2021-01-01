@@ -5,6 +5,8 @@
 #include "nuklear.h"
 #endif
 
+void application_root_init(struct nk_context *ctx);
+
 void application_root(struct nk_context *ctx);
 
 void application_background();

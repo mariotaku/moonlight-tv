@@ -9,6 +9,8 @@
 #include <netdb.h>
 #include <ifaddrs.h>
 
+#include "libgamestream/errors.h"
+
 static char addrbuffer[64];
 static char entrybuffer[256];
 static char namebuffer[256];
@@ -122,10 +124,37 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         mdns_record_parse_a(data, size, record_offset, record_length, &addr);
         mdns_string_t addrstr =
             ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
-        NVCOMPUTER *computer = malloc(sizeof(NVCOMPUTER));
-        snprintf(computer->name, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
+        PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
+        char *srvaddr = calloc(addrstr.length + 1, sizeof(char));
+        snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
 
-        _computer_manager_add(computer);
+        CONFIGURATION config;
+        config_parse(0, NULL, &config);
+        int ret = gs_init(server, srvaddr, config.key_dir, config.debug_level, config.unsupported);
+        if (ret == GS_OK)
+        {
+            _computer_manager_add(server);
+        }
+        else if (ret == GS_OUT_OF_MEMORY)
+        {
+            fprintf(stderr, "Not enough memory\n");
+        }
+        else if (ret == GS_ERROR)
+        {
+            fprintf(stderr, "Gamestream error: %s\n", gs_error);
+        }
+        else if (ret == GS_INVALID)
+        {
+            fprintf(stderr, "Invalid data received from server: %s\n", gs_error);
+        }
+        else if (ret == GS_UNSUPPORTED_VERSION)
+        {
+            fprintf(stderr, "Unsupported version: %s\n", gs_error);
+        }
+        else if (ret != GS_OK)
+        {
+            fprintf(stderr, "Can't connect to server %s\n", config.address);
+        }
         // fprintf(stderr, "%.*s : %s %.*s A %.*s\n", MDNS_STRING_FORMAT(fromaddrstr), entrytype,
         //         MDNS_STRING_FORMAT(entrystr), MDNS_STRING_FORMAT(addrstr));
     }

@@ -20,6 +20,10 @@
         "functional": "c",
         "tuple": "c",
         "type_traits": "c",
-        "utility": "c"
+        "utility": "c",
+        "computer_manager.h": "c",
+        "client.h": "c",
+        "memory.h": "c",
+        "memory": "c"
     }
 }
