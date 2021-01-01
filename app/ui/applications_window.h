@@ -9,6 +9,6 @@
 
 #include "backend/computer_manager.h"
 
-void computers_window_init(struct nk_context *ctx);
+void applications_window_init(struct nk_context *ctx);
 
-bool computers_window(struct nk_context *ctx);
+bool applications_window(struct nk_context *ctx);

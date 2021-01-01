@@ -26,8 +26,9 @@ add_subdirectory(third_party/opus)
 set(SOURCES_BASE
     app/main.c
     app/gst_sample.c
-    app/ui/application_root.c
+    app/ui/gui_root.c
     app/ui/computers_window.c
+    app/ui/applications_window.c
     app/backend/computer_discovery.c
     app/backend/computer_manager.c
     app/backend/error_manager.c

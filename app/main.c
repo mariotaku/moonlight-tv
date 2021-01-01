@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
@@ -23,7 +24,7 @@
 #include "debughelper.h"
 
 #include "backend/computer_manager.h"
-#include "ui/application_root.h"
+#include "ui/gui_root.h"
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
@@ -33,6 +34,8 @@
 
 struct wl_shell *g_pstShell = NULL;
 struct wl_webos_shell *g_pstWebOSShell = NULL;
+
+GMainLoop *loop = NULL;
 
 static const char APPID[] = "com.limelight.webos";
 
@@ -83,7 +86,7 @@ static void nk_wayland_pointer_axis(void *data, struct wl_pointer *pointer, uint
 {
     struct nk_wl_egl *win = (struct nk_wl_egl *)data;
     fprintf(stderr, "pointer axis: %d, value: %d \n", axis, wl_fixed_to_int(value));
-    
+
     if (axis == 0)
     {
         if (wl_fixed_to_int(value) > 0)
@@ -355,7 +358,7 @@ static void finalize()
 }
 
 static gboolean
-ml_main_loop(gpointer user_data)
+ml_ui_loop_action(gpointer user_data)
 {
     struct nk_context *ctx = user_data;
     struct nk_wl_egl *win = &wl_egl;
@@ -365,9 +368,9 @@ ml_main_loop(gpointer user_data)
     wl_display_dispatch(win->display);
     nk_input_end(ctx);
 
-    application_root(ctx);
+    bool ret = gui_root(ctx);
 
-    application_background();
+    gui_background();
 
     /* IMPORTANT: `nk_wl_egl_render` modifies some global OpenGL state
      * with blending, scissor, face culling, depth test and viewport and
@@ -376,7 +379,15 @@ ml_main_loop(gpointer user_data)
      * rendering the UI. */
     nk_wl_egl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
     eglSwapBuffers(win->egl_display, win->egl_surface);
-    return TRUE;
+    return ret ? G_SOURCE_CONTINUE : G_SOURCE_REMOVE;
+}
+
+static void ml_looper_quit(gpointer data)
+{
+    if (loop != NULL)
+    {
+        g_main_loop_quit(loop);
+    }
 }
 
 static struct nk_context *gui_init_nk()
@@ -457,7 +468,6 @@ int main(int argc, char *argv[])
     struct nk_context *nk_ctx = gui_init_nk();
 
     GMainContext *gctx;
-    GMainLoop *loop;
 
     GSourceFuncs uisrc_funcs = {g_uisrc_prepare, g_uisrc_check, g_uisrc_dispatch, g_uisrc_finalize};
     GSource *uisrc;
@@ -469,11 +479,11 @@ int main(int argc, char *argv[])
 
     loop = g_main_loop_new(gctx, FALSE);
 
-    g_source_set_callback(uisrc, ml_main_loop, nk_ctx, NULL);
+    g_source_set_callback(uisrc, ml_ui_loop_action, nk_ctx, ml_looper_quit);
 
     computer_manager_init();
 
-    application_root_init(nk_ctx);
+    gui_root_init(nk_ctx);
 
     g_main_loop_run(loop);
 

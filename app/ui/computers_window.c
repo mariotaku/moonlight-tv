@@ -5,6 +5,7 @@
 #include <glib.h>
 
 #include "computers_window.h"
+#include "applications_window.h"
 #include "libgamestream/errors.h"
 
 static int selected_computer_idx;
@@ -38,11 +39,10 @@ void computers_window_init(struct nk_context *ctx)
     cm_list_button_style.text_alignment = NK_TEXT_ALIGN_LEFT;
 }
 
-void computers_window(struct nk_context *ctx)
+bool computers_window(struct nk_context *ctx)
 {
     /* GUI */
-    nk_flags computers_window_flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE |
-                                      NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE;
+    nk_flags computers_window_flags = NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE;
     if (selected_computer_idx != -1 || pairing_computer_state.state != PS_NONE)
     {
         computers_window_flags |= NK_WINDOW_NO_INPUT;
@@ -105,8 +105,19 @@ void computers_window(struct nk_context *ctx)
     }
     nk_end(ctx);
 
+    // Why Nuklear why, the button looks like "close" but it actually "hide"
+    if (nk_window_is_hidden(ctx, "Computers"))
+    {
+        nk_window_close(ctx, "Computers");
+        return false;
+    }
+
     if (selected_computer_idx != -1)
     {
+        if (!applications_window(ctx))
+        {
+            selected_computer_idx = -1;
+        }
     }
     else if (pairing_computer_state.state == PS_RUNNING)
     {
@@ -116,6 +127,7 @@ void computers_window(struct nk_context *ctx)
     {
         pairing_error_dialog(ctx);
     }
+    return true;
 }
 
 void cw_open_computer(int index, SERVER_DATA *item)
@@ -143,7 +155,7 @@ void cw_open_pair(int index, SERVER_DATA *item)
 {
     selected_computer_idx = -1;
     pairing_computer_state.state = PS_RUNNING;
-    computer_manager_pair(item, &pairing_computer_state.pin, cw_pairing_callback);
+    computer_manager_pair(item, &pairing_computer_state.pin[0], cw_pairing_callback);
 }
 
 void pairing_window(struct nk_context *ctx)
