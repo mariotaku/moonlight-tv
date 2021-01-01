@@ -16,3 +16,6 @@
 [submodule "core/moonlight-embedded"]
 	path = core/moonlight-embedded
 	url = https://github.com/irtimmer/moonlight-embedded.git
+[submodule "third_party/mdns"]
+	path = third_party/mdns
+	url = https://github.com/mjansson/mdns.git

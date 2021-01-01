@@ -8,9 +8,9 @@
 #include <assert.h>
 #include <limits.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include <glib.h>
+#include <gst/gst.h>
 #include <wayland-webos-shell-client-protocol.h>
 #include <NDL_directmedia.h>
 
@@ -20,34 +20,16 @@
 #include "nuklear/nuklear_wayland_egl.h"
 
 #include "main.h"
-#include "gst_sample.h"
 #include "debughelper.h"
+
+#include "backend/computer_manager.h"
+#include "ui/application_root.h"
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
-
-#define UNUSED(a) (void)a
-#define LEN(a) (sizeof(a) / sizeof(a)[0])
-
-/* ===============================================================
- *
- *                          EXAMPLE
- *
- * ===============================================================*/
-/* This are some code examples to provide a small overview of what can be
- * done with this library. To try out an example uncomment the include
- * and the corresponding function. */
-/*#include "../style.c"*/
-#include "ui/application_root.h"
-
-/* ===============================================================
- *
- *                          DEMO
- *
- * ===============================================================*/
 
 struct wl_shell *g_pstShell = NULL;
 struct wl_webos_shell *g_pstWebOSShell = NULL;
@@ -99,6 +81,20 @@ static void nk_wayland_pointer_button(void *data, struct wl_pointer *pointer, ui
 
 static void nk_wayland_pointer_axis(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis, wl_fixed_t value)
 {
+    struct nk_wl_egl *win = (struct nk_wl_egl *)data;
+    fprintf(stderr, "pointer axis: %d, value: %d \n", axis, wl_fixed_to_int(value));
+    
+    if (axis == 0)
+    {
+        if (wl_fixed_to_int(value) > 0)
+        {
+            nk_input_scroll(&(win->ctx), nk_vec2(0, 1.0f));
+        }
+        else
+        {
+            nk_input_scroll(&(win->ctx), nk_vec2(0, -1.0f));
+        }
+    }
 }
 
 static struct wl_pointer_listener nk_wayland_pointer_listener =
@@ -359,7 +355,7 @@ static void finalize()
 }
 
 static gboolean
-nk_main_loop(gpointer user_data)
+ml_main_loop(gpointer user_data)
 {
     struct nk_context *ctx = user_data;
     struct nk_wl_egl *win = &wl_egl;
@@ -458,8 +454,7 @@ int main(int argc, char *argv[])
 
     /* GUI */
 
-    struct nk_context *nk_ctx = NULL;
-    nk_ctx = gui_init_nk();
+    struct nk_context *nk_ctx = gui_init_nk();
 
     GMainContext *gctx;
     GMainLoop *loop;
@@ -474,9 +469,13 @@ int main(int argc, char *argv[])
 
     loop = g_main_loop_new(gctx, FALSE);
 
-    g_source_set_callback(uisrc, nk_main_loop, nk_ctx, NULL);
+    g_source_set_callback(uisrc, ml_main_loop, nk_ctx, NULL);
+
+    computer_manager_init();
 
     g_main_loop_run(loop);
+
+    computer_manager_destroy();
 
     nk_wl_egl_shutdown();
 

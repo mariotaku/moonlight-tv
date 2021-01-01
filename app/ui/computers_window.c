@@ -1,13 +1,14 @@
 #include <stdio.h>
 
+#include <glib.h>
+
 #include "computers_window.h"
 
 void computers_window(struct nk_context *ctx)
 {
     /* GUI */
-    if (nk_begin(ctx, "Demo", nk_rect(50, 50, 200, 200),
-                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-                     NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+    if (nk_begin(ctx, "Computers", nk_rect(50, 50, 300, 325),
+                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
     {
         nk_menubar_begin(ctx);
         nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
@@ -31,25 +32,22 @@ void computers_window(struct nk_context *ctx)
         nk_layout_row_end(ctx);
         nk_menubar_end(ctx);
 
-        enum
+        struct nk_list_view list_view;
+        GList *computer_list = computer_manager_list();
+        guint computer_len = g_list_length(computer_list);
+        nk_layout_row_dynamic(ctx, 300, 1);
+        if (nk_list_view_begin(ctx, &list_view, "computers_list", NK_WINDOW_BORDER, 25, computer_len))
         {
-            EASY,
-            HARD
-        };
-        static int op = EASY;
-        static int property = 20;
-        nk_layout_row_static(ctx, 30, 80, 1);
-        if (nk_button_label(ctx, "button"))
-        {
-            fprintf(stdout, "button pressed\n");
+            nk_layout_row_dynamic(ctx, 25, 1);
+            GList *cur = g_list_nth(computer_list, list_view.begin);
+            for (int i = 0; i < list_view.count; ++i)
+            {
+                NVCOMPUTER *item = (NVCOMPUTER *)cur->data;
+                nk_label(ctx, item->name, NK_TEXT_ALIGN_LEFT);
+                cur = g_list_next(cur);
+            }
+            nk_list_view_end(&list_view);
         }
-        nk_layout_row_dynamic(ctx, 30, 2);
-        if (nk_option_label(ctx, "easy", op == EASY))
-            op = EASY;
-        if (nk_option_label(ctx, "hard", op == HARD))
-            op = HARD;
-        nk_layout_row_dynamic(ctx, 25, 1);
-        nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
     }
     nk_end(ctx);
 }

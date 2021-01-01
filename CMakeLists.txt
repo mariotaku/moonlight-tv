@@ -12,8 +12,8 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(Wayland REQUIRED IMPORTED_TARGET wayland-webos-client wayland-egl)
 pkg_check_modules(OpenGL REQUIRED IMPORTED_TARGET egl glesv2)
+pkg_check_modules(GLib REQUIRED IMPORTED_TARGET glib-2.0 gthread-2.0)
 pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
-pkg_check_modules(Avahi REQUIRED IMPORTED_TARGET avahi-client)
 
 add_subdirectory(system/libndl)
 add_subdirectory(core/moonlight-common-c)
@@ -24,6 +24,12 @@ set(SOURCES_BASE
     app/gst_sample.c
     app/ui/application_root.c
     app/ui/computers_window.c
+    app/backend/computer_discovery.c
+    app/backend/computer_manager.c
+    app/backend/error_manager.c
+    third_party/mdns-scan/dns.c
+    third_party/mdns-scan/query.c
+    third_party/mdns-scan/util.c
 )
 
 add_executable(moonlight ${SOURCES_BASE})
@@ -36,11 +42,13 @@ set_target_properties(moonlight PROPERTIES
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- PkgConfig::Wayland PkgConfig::OpenGL PkgConfig::GStreamer PkgConfig::Avahi
+ PkgConfig::Wayland PkgConfig::OpenGL PkgConfig::GLib PkgConfig::GStreamer
  m pthread
  moonlight-common-c opus
  NDL_directmedia

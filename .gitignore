@@ -10,7 +10,6 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
-build/
 
 # Prerequisites
 *.d
@@ -74,3 +73,8 @@ dkms.conf
 
 # Local History for Visual Studio Code
 .history/
+
+# Project specific
+build/
+# Let third party libraries handle by themselves
+!/third_party/**
