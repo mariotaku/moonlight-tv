@@ -27,9 +27,6 @@ set(SOURCES_BASE
     app/backend/computer_discovery.c
     app/backend/computer_manager.c
     app/backend/error_manager.c
-    third_party/mdns-scan/dns.c
-    third_party/mdns-scan/query.c
-    third_party/mdns-scan/util.c
 )
 
 add_executable(moonlight ${SOURCES_BASE})
