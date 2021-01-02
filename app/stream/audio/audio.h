@@ -28,11 +28,3 @@
 #ifdef OS_WEBOS
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl;
 #endif
-
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char* audio_device)
-{
-#ifdef OS_WEBOS
-#else
-#error "No supported callbacks for this platform"
-#endif
-}

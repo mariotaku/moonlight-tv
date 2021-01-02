@@ -6,25 +6,50 @@
 
 #include <Limelight.h>
 
+#include <SDL.h>
+
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
 #include "stream/audio/audio.h"
 #include "stream/video/video.h"
 
+#include "backend/computer_manager.h"
+
 static bool session_running;
 
-static void stream(PSERVER_DATA server, PCONFIGURATION config, enum platform system, int appId)
-{
+static int streaming_thread(void *data);
 
-    if (appId < 0)
-    {
-        fprintf(stderr, "Can't find app %s\n", config->app);
-        exit(-1);
-    }
+typedef struct
+{
+    SERVER_DATA *server;
+    CONFIGURATION *config;
+    int appId;
+} STREAMING_REQUEST;
+
+void streaming_begin(const char *addr, int app_id)
+{
+    CONFIGURATION *config = malloc(sizeof(CONFIGURATION));
+    config_parse(0, NULL, config);
+
+    PSERVER_DATA server = computer_manager_server_of(addr);
+
+    STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
+    req->server = server;
+    req->config = config;
+    req->appId = app_id;
+    SDL_CreateThread(streaming_thread, "streaming", req);
+}
+
+int streaming_thread(void *data)
+{
+    STREAMING_REQUEST *req = data;
+    PSERVER_DATA server = req->server;
+    PCONFIGURATION config = req->config;
+    int appId = req->appId;
 
     int gamepads = 0;
-    gamepads += sdl_gamepads;
+    // gamepads += sdl_gamepads;
     int gamepad_mask = 0;
     for (int i = 0; i < gamepads && i < 4; i++)
         gamepad_mask = (gamepad_mask << 1) + 1;
@@ -42,7 +67,7 @@ static void stream(PSERVER_DATA server, PCONFIGURATION config, enum platform sys
             fprintf(stderr, "Gamestream error: %s\n", gs_error);
         else
             fprintf(stderr, "Errorcode starting app: %d\n", ret);
-        exit(-1);
+        return -1;
     }
 
     int drFlags = 0;
@@ -52,11 +77,7 @@ static void stream(PSERVER_DATA server, PCONFIGURATION config, enum platform sys
         printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
     }
 
-    if (IS_EMBEDDED(system))
-        loop_init();
-
-    platform_start(system);
-    LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks, platform_get_video(system), platform_get_audio(system, config->audio_device), NULL, drFlags, config->audio_device, 0);
+    LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks, platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
     session_running = true;
 
     while (session_running)
@@ -73,5 +94,23 @@ static void stream(PSERVER_DATA server, PCONFIGURATION config, enum platform sys
         gs_quit_app(server);
     }
 
-    platform_stop(system);
+    return 0;
+}
+
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
+{
+#ifdef OS_WEBOS
+    return &audio_callbacks_ndl;
+#else
+#error "No supported callbacks for this platform"
+#endif
+}
+
+PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
+{
+#ifdef OS_WEBOS
+    return &decoder_callbacks_ndl;
+#else
+#error "No supported callbacks for this platform"
+#endif
 }

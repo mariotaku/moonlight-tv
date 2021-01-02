@@ -24,7 +24,7 @@ pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 pkg_check_modules(Expat REQUIRED IMPORTED_TARGET expat)
 
 if (TARGET_WEBOS)
-pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
+    pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
     pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
@@ -48,6 +48,7 @@ set(SOURCES
     app/backend/error_manager.c
     app/backend/streaming_session.c
     core/moonlight-embedded/src/config.c
+    core/moonlight-embedded/src/connection.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
     core/moonlight-embedded/libgamestream/mkcert.c
@@ -57,6 +58,8 @@ set(SOURCES
 if (TARGET_WEBOS)
     list(APPEND SOURCES
         app/gst/demo_ndl.c
+        app/stream/audio/ndl.c
+        app/stream/video/ndl.c
     )
 elseif (TARGET_LINUX)
     list(APPEND SOURCES

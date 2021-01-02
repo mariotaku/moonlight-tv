@@ -1,5 +1,6 @@
 #include "applications_window.h"
 #include "backend/application_manager.h"
+#include "backend/streaming_session.h"
 
 void applications_window_init(struct nk_context *ctx)
 {
@@ -27,6 +28,7 @@ bool applications_window(struct nk_context *ctx, const char *selected_address)
                 {
                     if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT))
                     {
+                        streaming_begin(selected_address, cur->id);
                     }
                     nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "%d. %s", list_view.begin + i + 1, cur->name);
                 }

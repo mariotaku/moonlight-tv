@@ -18,70 +18,59 @@
  */
 
 #include "video.h"
-#include "ffmpeg.h"
-
-#include "../sdl.h"
-
-#include <SDL.h>
-#include <SDL_thread.h>
 
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define DECODER_BUFFER_SIZE 92*1024
+#include <NDL_directmedia.h>
 
-static char* ffmpeg_buffer;
+#define DECODER_BUFFER_SIZE 92 * 1024
 
-static int sdl_setup(int videoFormat, int width, int height, int redrawRate, void* context, int drFlags) {
-  int avc_flags = SLICE_THREADING;
+static char *ndl_buffer;
 
-  if (ffmpeg_init(videoFormat, width, height, avc_flags, SDL_BUFFER_FRAMES, sysconf(_SC_NPROCESSORS_ONLN)) < 0) {
+static int ndl_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
+{
+  NDL_DIRECTVIDEO_DATA_INFO info = {width, height};
+  if (NDL_DirectVideoOpen(&info) < 0)
+  {
     fprintf(stderr, "Couldn't initialize video decoding\n");
     return -1;
   }
-
-  ffmpeg_buffer = malloc(DECODER_BUFFER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE);
-  if (ffmpeg_buffer == NULL) {
+  ndl_buffer = malloc(DECODER_BUFFER_SIZE);
+  if (ndl_buffer == NULL)
+  {
     fprintf(stderr, "Not enough memory\n");
-    ffmpeg_destroy();
+    NDL_DirectVideoClose();
     return -1;
   }
 
   return 0;
 }
 
-static void sdl_cleanup() {
-  ffmpeg_destroy();
+static void ndl_cleanup()
+{
+  NDL_DirectVideoClose();
 }
 
-static int sdl_submit_decode_unit(PDECODE_UNIT decodeUnit) {
-  if (decodeUnit->fullLength < DECODER_BUFFER_SIZE) {
+static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
+{
+  if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
+  {
     PLENTRY entry = decodeUnit->bufferList;
     int length = 0;
-    while (entry != NULL) {
-      memcpy(ffmpeg_buffer+length, entry->data, entry->length);
+    while (entry != NULL)
+    {
+      memcpy(ndl_buffer + length, entry->data, entry->length);
       length += entry->length;
       entry = entry->next;
     }
-    ffmpeg_decode(ffmpeg_buffer, length);
-
-    if (SDL_LockMutex(mutex) == 0) {
-      AVFrame* frame = ffmpeg_get_frame(false);
-      if (frame != NULL) {
-        sdlNextFrame++;
-
-        SDL_Event event;
-        event.type = SDL_USEREVENT;
-        event.user.code = SDL_CODE_FRAME;
-        event.user.data1 = &frame->data;
-        event.user.data2 = &frame->linesize;
-        SDL_PushEvent(&event);
-      }
-
-      SDL_UnlockMutex(mutex);
-    } else
-      fprintf(stderr, "Couldn't lock mutex\n");
-  } else {
+    NDL_DirectVideoPlay(ndl_buffer, length);
+  }
+  else
+  {
     fprintf(stderr, "Video decode buffer too small");
     exit(1);
   }
@@ -89,9 +78,9 @@ static int sdl_submit_decode_unit(PDECODE_UNIT decodeUnit) {
   return DR_OK;
 }
 
-DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl = {
-  .setup = sdl_setup,
-  .cleanup = sdl_cleanup,
-  .submitDecodeUnit = sdl_submit_decode_unit,
-  .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_REFERENCE_FRAME_INVALIDATION_AVC | CAPABILITY_REFERENCE_FRAME_INVALIDATION_HEVC | CAPABILITY_DIRECT_SUBMIT,
+DECODER_RENDERER_CALLBACKS decoder_callbacks_ndl = {
+    .setup = ndl_setup,
+    .cleanup = ndl_cleanup,
+    .submitDecodeUnit = ndl_submit_decode_unit,
+    .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_REFERENCE_FRAME_INVALIDATION_AVC | CAPABILITY_DIRECT_SUBMIT,
 };

@@ -4,7 +4,6 @@
 #include <glib.h>
 
 #include "libgamestream/client.h"
-#include "libgamestream/../src/config.h"
 
 /**
  * @brief Initialize computer manager context
@@ -31,6 +30,8 @@ bool computer_manager_polling_start();
 void computer_manager_polling_stop();
 
 GList *computer_manager_list();
+
+SERVER_DATA *computer_manager_server_of(const char* address);
 
 SERVER_DATA *computer_manager_server_at(int index);
 

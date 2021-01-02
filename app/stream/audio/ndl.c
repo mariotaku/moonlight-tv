@@ -19,64 +19,65 @@
 
 #include "audio.h"
 
-#include <SDL.h>
-#include <SDL_audio.h>
+#include <NDL_directmedia.h>
 
 #include <stdio.h>
 #include <opus_multistream.h>
 
-static OpusMSDecoder* decoder;
+static OpusMSDecoder *decoder;
 static short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];
-static SDL_AudioDeviceID dev;
 static int channelCount;
 
-static int sdl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void* context, int arFlags) {
+static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
+{
   int rc;
   decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams, opusConfig->coupledStreams, opusConfig->mapping, &rc);
 
   channelCount = opusConfig->channelCount;
 
-  SDL_InitSubSystem(SDL_INIT_AUDIO);
+  NDL_DIRECTAUDIO_DATA_INFO info = {
+      .numChannel = opusConfig->channelCount,
+      .bitPerSample = 16,
+      .nodelay = 1,
+      .upperThreshold = 48,
+      .lowerThreshold = 16,
+      .channel = NDL_DIRECTAUDIO_CH_MAIN,
+      .srcType = NDL_DIRECTAUDIO_SRC_TYPE_PCM,
+      .samplingFreq = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(opusConfig->sampleRate)};
 
-  SDL_AudioSpec want, have;
-  SDL_zero(want);
-  want.freq = opusConfig->sampleRate;
-  want.format = AUDIO_S16LSB;
-  want.channels = opusConfig->channelCount;
-  want.samples = 4096;
-
-  dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-  if (dev == 0) {
-    printf("Failed to open audio: %s\n", SDL_GetError());
+  if (NDL_DirectAudioOpen(&info) < 0)
+  {
+    printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
     return -1;
-  } else {
-    if (have.format != want.format)  // we let this one thing change.
-      printf("We didn't get requested audio format.\n");
-    SDL_PauseAudioDevice(dev, 0);  // start audio playing.
   }
 
   return 0;
 }
 
-static void sdl_renderer_cleanup() {
+static void ndl_renderer_cleanup()
+{
   if (decoder != NULL)
     opus_multistream_decoder_destroy(decoder);
 
-  SDL_CloseAudioDevice(dev);
+  NDL_DirectAudioClose();
 }
 
-static void sdl_renderer_decode_and_play_sample(char* data, int length) {
+static void ndl_renderer_decode_and_play_sample(char *data, int length)
+{
   int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
-  if (decodeLen > 0) {
-    SDL_QueueAudio(dev, pcmBuffer, decodeLen * channelCount * sizeof(short));
-  } else {
+  if (decodeLen > 0)
+  {
+    NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short));
+  }
+  else
+  {
     printf("Opus error from decode: %d\n", decodeLen);
   }
 }
 
-AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
-  .init = sdl_renderer_init,
-  .cleanup = sdl_renderer_cleanup,
-  .decodeAndPlaySample = sdl_renderer_decode_and_play_sample,
-  .capabilities = CAPABILITY_DIRECT_SUBMIT,
+AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl = {
+    .init = ndl_renderer_init,
+    .cleanup = ndl_renderer_cleanup,
+    .decodeAndPlaySample = ndl_renderer_decode_and_play_sample,
+    .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };

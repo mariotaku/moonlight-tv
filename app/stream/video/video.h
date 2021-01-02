@@ -36,12 +36,3 @@
 #ifdef OS_WEBOS
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_ndl;
 #endif
-
-PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
-{
-#ifdef OS_WEBOS
-    return decoder_callbacks_ndl;
-#else
-#error "No supported callbacks for this platform"
-#endif
-}

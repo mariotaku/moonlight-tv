@@ -1,6 +1,7 @@
 #include "computer_manager.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <glib.h>
 
 #include "libgamestream/errors.h"
@@ -58,6 +59,16 @@ void computer_manager_polling_stop()
 GList *computer_manager_list()
 {
     return (&computer_manager)->computer_list;
+}
+
+SERVER_DATA *computer_manager_server_of(const char* address)
+{
+    GList *item = g_list_find_custom((&computer_manager)->computer_list, address, g_str_equal);
+    if (item == NULL)
+    {
+        return NULL;
+    }
+    return item->data;
 }
 
 SERVER_DATA *computer_manager_server_at(int index)
