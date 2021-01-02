@@ -26,6 +26,7 @@
         "memory.h": "c",
         "memory": "c",
         "applications_window.h": "c",
-        "computers_window.h": "c"
+        "computers_window.h": "c",
+        "*.tcc": "c"
     }
 }

@@ -4,9 +4,11 @@
 
 #include <glib.h>
 
+#include "libgamestream/errors.h"
+
+#include "backend/application_manager.h"
 #include "computers_window.h"
 #include "applications_window.h"
-#include "libgamestream/errors.h"
 
 static int selected_computer_idx;
 
@@ -134,6 +136,7 @@ void cw_open_computer(int index, SERVER_DATA *item)
 {
     selected_computer_idx = index;
     pairing_computer_state.state = PS_NONE;
+    application_manager_load(item);
 }
 
 static void cw_pairing_callback(int result, const char *error)

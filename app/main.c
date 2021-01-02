@@ -23,6 +23,7 @@
 #include "main.h"
 #include "debughelper.h"
 
+#include "backend/application_manager.h"
 #include "backend/computer_manager.h"
 #include "ui/gui_root.h"
 
@@ -35,7 +36,7 @@
 struct wl_shell *g_pstShell = NULL;
 struct wl_webos_shell *g_pstWebOSShell = NULL;
 
-GMainLoop *loop = NULL;
+GMainLoop *_main_loop = NULL;
 
 static const char APPID[] = "com.limelight.webos";
 
@@ -384,9 +385,9 @@ ml_ui_loop_action(gpointer user_data)
 
 static void ml_looper_quit(gpointer data)
 {
-    if (loop != NULL)
+    if (_main_loop != NULL)
     {
-        g_main_loop_quit(loop);
+        g_main_loop_quit(_main_loop);
     }
 }
 
@@ -477,21 +478,23 @@ int main(int argc, char *argv[])
 
     g_source_attach(uisrc, gctx);
 
-    loop = g_main_loop_new(gctx, FALSE);
+    _main_loop = g_main_loop_new(gctx, FALSE);
 
     g_source_set_callback(uisrc, ml_ui_loop_action, nk_ctx, ml_looper_quit);
 
     computer_manager_init();
+    application_manager_init();
 
     gui_root_init(nk_ctx);
 
-    g_main_loop_run(loop);
+    g_main_loop_run(_main_loop);
 
+    application_manager_destroy();
     computer_manager_destroy();
 
     nk_wl_egl_shutdown();
 
-    g_main_loop_unref(loop);
+    g_main_loop_unref(_main_loop);
 
     return 0;
 }
@@ -504,4 +507,9 @@ void request_exit()
 int exit_requested()
 {
     return exit_requested_;
+}
+
+GMainLoop *main_loop()
+{
+    return _main_loop;
 }

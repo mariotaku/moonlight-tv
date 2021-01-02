@@ -29,8 +29,9 @@ set(SOURCES_BASE
     app/ui/gui_root.c
     app/ui/computers_window.c
     app/ui/applications_window.c
-    app/backend/computer_discovery.c
     app/backend/computer_manager.c
+    app/backend/computer_discovery.c
+    app/backend/application_manager.c
     app/backend/error_manager.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/libgamestream/client.c
