@@ -31,7 +31,8 @@ void computer_manager_init()
 void computer_manager_destroy()
 {
     computer_manager_polling_stop();
-    g_list_free_full((&computer_manager)->computer_list, NULL);
+    
+    g_list_free((&computer_manager)->computer_list);
 }
 
 bool computer_manager_polling_start()
@@ -69,7 +70,7 @@ bool computer_manager_pair(SERVER_DATA *p, char *pin, pairing_callback cb)
     int pin_int = pin_random(0, 9999);
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     snprintf(pin, 5, "%04u", pin_int);
-    snprintf(req->pin, 5, "%04u", pin_int);
+    req->pin = strdup(pin);
     req->server = p;
     req->callback = cb;
     g_thread_new("cm_pairing", _computer_manager_pairing_action, req);

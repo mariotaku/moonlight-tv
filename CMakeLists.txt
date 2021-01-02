@@ -3,15 +3,18 @@ cmake_minimum_required (VERSION 3.0)
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/utils/cmake)
 
-
-include(WebOSPackage)
+if (ENV{CROSS_COMPILE} MATCHES "^arm-webos-")
+    set(TARGET_WEBOS TRUE)
+    include(WebOSPackage)
+else() 
+    set(TARGET_LINUX TRUE)
+endif()
 
 project(moonlight LANGUAGES C)
 
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
-pkg_check_modules(OpenGL REQUIRED IMPORTED_TARGET egl glesv2)
 pkg_check_modules(GLib REQUIRED IMPORTED_TARGET glib-2.0 gthread-2.0)
 pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
 pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
@@ -19,13 +22,19 @@ pkg_check_modules(cURL REQUIRED IMPORTED_TARGET libcurl)
 pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 pkg_check_modules(Expat REQUIRED IMPORTED_TARGET expat)
 
-add_subdirectory(system/libndl)
-add_subdirectory(core/moonlight-common-c)
-add_subdirectory(third_party/opus)
+if (TARGET_WEBOS)
+    pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
+    add_subdirectory(third_party/opus)
+    add_subdirectory(system/libndl)
+elseif (TARGET_LINUX)
+    find_package(OpenGL REQUIRED)
+    pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
+endif()
 
-set(SOURCES_BASE
+add_subdirectory(core/moonlight-common-c)
+
+set(SOURCES
     app/main.c
-    app/gst_demo.c
     app/ui/gui_root.c
     app/ui/computers_window.c
     app/ui/applications_window.c
@@ -40,7 +49,13 @@ set(SOURCES_BASE
     core/moonlight-embedded/libgamestream/xml.c
 )
 
-add_executable(moonlight ${SOURCES_BASE})
+if (TARGET_WEBOS)
+    list(APPEND SOURCES
+        app/gst_demo.c
+    )
+endif()
+
+add_executable(moonlight ${SOURCES})
 
 set_target_properties(moonlight PROPERTIES
     C_STANDARD 11
@@ -56,20 +71,29 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdn
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- PkgConfig::SDL2 PkgConfig::OpenGL PkgConfig::GLib PkgConfig::GStreamer 
+ PkgConfig::SDL2 PkgConfig::GLib PkgConfig::GStreamer 
  PkgConfig::OpenSSL PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
  m pthread
- moonlight-common-c opus
- NDL_directmedia
+ moonlight-common-c
 )
 
-set_target_properties(moonlight PROPERTIES
-    WEBOS_APPINFO_ID com.limelight.webos
-    WEBOS_APPINFO_VERSION 0.0.1
-    WEBOS_APPINFO_VENDOR "Mariotaku Lee"
-    WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-    WEBOS_APPINFO_TITLE "Moonlight"
-    WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
-)
+if (TARGET_WEBOS)
+    target_compile_definitions(moonlight PUBLIC OS_WEBOS)
+    target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus NDL_directmedia)
+else()
+    target_link_libraries(moonlight PRIVATE PkgConfig::Opus OpenGL)
+endif()
 
-target_webos_package(moonlight)
+
+if (TARGET_WEBOS)
+    set_target_properties(moonlight PROPERTIES
+        WEBOS_APPINFO_ID com.limelight.webos
+        WEBOS_APPINFO_VERSION 0.0.1
+        WEBOS_APPINFO_VENDOR "Mariotaku Lee"
+        WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
+        WEBOS_APPINFO_TITLE "Moonlight"
+        WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
+    )
+
+    target_webos_package(moonlight)
+endif()

@@ -5,38 +5,45 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug over SSH",
-            "type": "gdb",
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
             "request": "launch",
-            "target": "moonlight",
-            "cwd": "${workspaceRoot}",
-            "valuesFormatting": "parseText",
-            "pathSubstitutions": {
-                "${workspaceFolder}": "/media/developer/apps/usr/palm/applications/com.limelight.webos",
-                "/opt/webos-sdk-x86_64/1.0.g/sysroots/armv7a-neon-webos-linux-gnueabi/usr/src/debug/glibc": "/usr/src/debug/lib32-glibc"
+            "program": "${workspaceFolder}/build/moonlight",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "LIBGL_ALWAYS_INDIRECT",
+                    "value": "1"
+                },
+                {
+                    "name": "SDL_VIDEO_X11_VISUALID",
+                    "value": ""
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "sourceFileMap":{
+                "/build/glibc-vjB4T1/": "/usr/src/glibc"
             },
-            "ssh": {
-                "host": "192.168.4.104",
-                "port": 9922,
-                "forwardX11": false,
-                "cwd": "/media/developer/apps/usr/palm/applications/com.limelight.webos",
-                "keyfile": "/home/mariotaku/.ssh/hometv_webos_unlocked",
-                "user": "prisoner"
-            }
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         },
         {
             "type": "gdb",
             "request": "attach",
-            "name": "Attach to gdbserver",
+            "name": "(gdb) Attach [Device hometv]",
             "executable": "${workspaceRoot}/build/moonlight",
             "target": "192.168.4.104:9527",
             "remote": true,
             "cwd": "${workspaceRoot}",
-            "gdbpath": "gdb-multiarch",
-            "debugger_args": [
-                "-ex",
-                "set architecture armv7"
-            ],
+            "gdbpath": "/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/bin/arm-webos-linux-gnueabi/arm-webos-linux-gnueabi-gdb",
             "valuesFormatting": "parseText",
         }
     ]
