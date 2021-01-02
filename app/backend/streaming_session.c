@@ -1,3 +1,4 @@
+#include "streaming_session.h"
 
 #include "src/connection.h"
 #include "src/config.h"
@@ -16,9 +17,11 @@
 
 #include "backend/computer_manager.h"
 
-static bool session_running;
+SDL_bool session_running = SDL_FALSE;
 
-static int streaming_thread(void *data);
+SDL_Thread *streaming_thread;
+SDL_mutex *lock;
+SDL_cond *cond;
 
 typedef struct
 {
@@ -26,6 +29,24 @@ typedef struct
     CONFIGURATION *config;
     int appId;
 } STREAMING_REQUEST;
+
+static int streaming_thread_action(void *data);
+
+void streaming_init()
+{
+    streaming_thread = NULL;
+    lock = SDL_CreateMutex();
+    cond = SDL_CreateCond();
+}
+
+void streaming_destroy()
+{
+    streaming_interrupt();
+    streaming_wait_for_stop();
+
+    SDL_DestroyCond(cond);
+    SDL_DestroyMutex(lock);
+}
 
 void streaming_begin(const char *addr, int app_id)
 {
@@ -38,10 +59,34 @@ void streaming_begin(const char *addr, int app_id)
     req->server = server;
     req->config = config;
     req->appId = app_id;
-    SDL_CreateThread(streaming_thread, "streaming", req);
+    streaming_thread = SDL_CreateThread(streaming_thread_action, "streaming", req);
 }
 
-int streaming_thread(void *data)
+void streaming_interrupt()
+{
+    SDL_LockMutex(lock);
+    session_running = SDL_FALSE;
+    SDL_CondSignal(cond);
+    SDL_UnlockMutex(lock);
+}
+
+void streaming_wait_for_stop()
+{
+    fprintf(stderr, "streaming_wait_for_stop");
+    if (streaming_thread == NULL)
+    {
+        return;
+    }
+    SDL_WaitThread(streaming_thread, NULL);
+    streaming_thread = NULL;
+}
+
+bool streaming_running()
+{
+    return session_running == SDL_TRUE;
+}
+
+int streaming_thread_action(void *data)
 {
     STREAMING_REQUEST *req = data;
     PSERVER_DATA server = req->server;
@@ -80,20 +125,25 @@ int streaming_thread(void *data)
     LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks, platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
     session_running = true;
 
+    SDL_LockMutex(lock);
     while (session_running)
     {
         // Wait until interrupted
+        SDL_CondWait(cond, lock);
     }
+    SDL_UnlockMutex(lock);
 
     LiStopConnection();
 
-    if (config->quitappafter)
-    {
-        if (config->debug_level > 0)
-            printf("Sending app quit request ...\n");
-        gs_quit_app(server);
-    }
+    gs_quit_app(server);
 
+    // if (config->quitappafter)
+    // {
+    //     if (config->debug_level > 0)
+    //         printf("Sending app quit request ...\n");
+    //     gs_quit_app(server);
+    // }
+    streaming_thread = NULL;
     return 0;
 }
 
