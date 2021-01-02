@@ -25,7 +25,6 @@
 #error "No valid render backend specified"
 #endif
 
-
 #include <gst/gst.h>
 #ifdef OS_WEBOS
 #include <NDL_directmedia.h>
@@ -34,7 +33,7 @@
 #include "main.h"
 #include "debughelper.h"
 #include "gst_demo.h"
-#include "backend/computer_manager.h"
+#include "backend/backend_root.h"
 #include "ui/gui_root.h"
 
 #define WINDOW_WIDTH 960
@@ -60,8 +59,16 @@ MainLoop(void *loopArg)
     nk_input_begin(ctx);
     while (SDL_PollEvent(&evt))
     {
-        if (evt.type == SDL_QUIT)
-            running = nk_false;
+        switch (evt.type)
+        {
+        case SDL_USEREVENT:
+            backend_dispatch_event(evt);
+            gui_dispatch_event(evt);
+            break;
+        case SDL_QUIT:
+            request_exit();
+            break;
+        }
         nk_sdl_handle_event(&evt);
     }
     nk_input_end(ctx);
@@ -105,14 +112,13 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    computer_manager_init();
+    backend_init();
 
     /* GUI */
     struct nk_context *ctx;
     SDL_GLContext glContext;
     nk_sdl_gl_setup();
-    win = SDL_CreateWindow("Demo",
-                           SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     glContext = SDL_GL_CreateContext(win);
 
@@ -148,8 +154,8 @@ int main(int argc, char *argv[])
 
     nk_sdl_shutdown();
 
-    computer_manager_destroy();
-    
+    backend_destroy();
+
 #ifdef OS_WEBOS
     NDL_DirectMediaQuit();
 #endif

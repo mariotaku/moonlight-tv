@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glib.h>
+#include <SDL.h>
 
 #include "libgamestream/client.h"
 
@@ -22,3 +22,11 @@ void application_manager_destroy();
  * @param server 
  */
 void application_manager_load(SERVER_DATA *server);
+
+bool application_manager_dispatch_event(SDL_Event ev);
+
+PAPP_LIST application_manager_list_of(const char *address);
+
+int applist_len(PAPP_LIST p);
+
+PAPP_LIST applist_nth(PAPP_LIST p, int n);

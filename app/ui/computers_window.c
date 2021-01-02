@@ -44,7 +44,7 @@ void computers_window_init(struct nk_context *ctx)
 bool computers_window(struct nk_context *ctx)
 {
     /* GUI */
-    nk_flags computers_window_flags = NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE;
+    nk_flags computers_window_flags = NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
     if (selected_computer_idx != -1 || pairing_computer_state.state != PS_NONE)
     {
         computers_window_flags |= NK_WINDOW_NO_INPUT;
@@ -53,6 +53,8 @@ bool computers_window(struct nk_context *ctx)
     if (nk_begin(ctx, "Computers", nk_rect(50, 50, 300, 300), computers_window_flags))
     {
         content_height_remaining = (int)nk_window_get_content_region_size(ctx).y;
+        content_height_remaining -= ctx->style.window.padding.y * 2;
+        content_height_remaining -= (int)ctx->style.window.border;
         nk_menubar_begin(ctx);
         content_height_remaining -= 25;
         nk_layout_row_begin(ctx, NK_STATIC, 25, 2);
@@ -85,7 +87,7 @@ bool computers_window(struct nk_context *ctx)
             nk_layout_row_dynamic(ctx, 25, 1);
             GList *cur = g_list_nth(computer_list, list_view.begin);
 
-            for (int i = 0; i < list_view.count; ++i)
+            for (int i = 0; i < list_view.count; ++i, cur = cur->next)
             {
                 SERVER_DATA *item = (SERVER_DATA *)cur->data;
                 if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT))
@@ -100,7 +102,6 @@ bool computers_window(struct nk_context *ctx)
                     }
                 }
                 nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "%s%s", item->paired ? "" : "[+] ", item->serverInfo.address);
-                cur = g_list_next(cur);
             }
             nk_list_view_end(&list_view);
         }
@@ -116,7 +117,8 @@ bool computers_window(struct nk_context *ctx)
 
     if (selected_computer_idx != -1)
     {
-        if (!applications_window(ctx))
+        SERVER_DATA *selected_server = computer_manager_server_at(selected_computer_idx);
+        if (!applications_window(ctx, selected_server->serverInfo.address))
         {
             selected_computer_idx = -1;
         }

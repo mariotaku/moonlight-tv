@@ -60,6 +60,11 @@ GList *computer_manager_list()
     return (&computer_manager)->computer_list;
 }
 
+SERVER_DATA *computer_manager_server_at(int index)
+{
+    return g_list_nth_data((&computer_manager)->computer_list, index);
+}
+
 static int pin_random(int min, int max)
 {
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);

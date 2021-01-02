@@ -20,3 +20,8 @@ void gui_background()
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
+
+bool gui_dispatch_event(SDL_Event ev)
+{
+    return false;
+}

@@ -32,6 +32,8 @@ void computer_manager_polling_stop();
 
 GList *computer_manager_list();
 
+SERVER_DATA *computer_manager_server_at(int index);
+
 typedef void (*pairing_callback)(int result, const char *error);
 
 /**

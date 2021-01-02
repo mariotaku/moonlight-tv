@@ -3,7 +3,9 @@ cmake_minimum_required (VERSION 3.0)
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/utils/cmake)
 
-if (ENV{CROSS_COMPILE} MATCHES "^arm-webos-")
+get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
+
+if (CC_BASENAME MATCHES "^arm-webos-")
     set(TARGET_WEBOS TRUE)
     include(WebOSPackage)
 else() 
@@ -38,6 +40,7 @@ set(SOURCES
     app/ui/gui_root.c
     app/ui/computers_window.c
     app/ui/applications_window.c
+    app/backend/backend_root.c
     app/backend/computer_manager.c
     app/backend/computer_discovery.c
     app/backend/application_manager.c

@@ -11,4 +11,4 @@
 
 void applications_window_init(struct nk_context *ctx);
 
-bool applications_window(struct nk_context *ctx);
+bool applications_window(struct nk_context *ctx, const char *selected_address);
