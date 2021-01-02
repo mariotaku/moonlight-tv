@@ -27,6 +27,9 @@
         "memory": "c",
         "applications_window.h": "c",
         "computers_window.h": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "nuklear_sdl_gles2.h": "c",
+        "gst.h": "c",
+        "config.h": "c"
     }
 }

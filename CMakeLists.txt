@@ -10,7 +10,7 @@ project(moonlight LANGUAGES C)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(Wayland REQUIRED IMPORTED_TARGET wayland-webos-client wayland-egl)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 pkg_check_modules(OpenGL REQUIRED IMPORTED_TARGET egl glesv2)
 pkg_check_modules(GLib REQUIRED IMPORTED_TARGET glib-2.0 gthread-2.0)
 pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
@@ -25,7 +25,7 @@ add_subdirectory(third_party/opus)
 
 set(SOURCES_BASE
     app/main.c
-    app/gst_sample.c
+    app/gst_demo.c
     app/ui/gui_root.c
     app/ui/computers_window.c
     app/ui/applications_window.c
@@ -56,7 +56,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdn
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- PkgConfig::Wayland PkgConfig::OpenGL PkgConfig::GLib PkgConfig::GStreamer 
+ PkgConfig::SDL2 PkgConfig::OpenGL PkgConfig::GLib PkgConfig::GStreamer 
  PkgConfig::OpenSSL PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
  m pthread
  moonlight-common-c opus

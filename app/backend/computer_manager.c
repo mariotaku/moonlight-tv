@@ -34,14 +34,14 @@ void computer_manager_destroy()
     g_list_free_full((&computer_manager)->computer_list, NULL);
 }
 
-void computer_manager_polling_start()
+bool computer_manager_polling_start()
 {
     if (computer_manager_polling_thread)
     {
-        g_warning("computer_manager_polling_start() called when polling already started");
-        return;
+        return false;
     }
     computer_manager_polling_thread = g_thread_new("cm_polling", _computer_manager_polling_action, NULL);
+    return true;
 }
 
 void computer_manager_polling_stop()

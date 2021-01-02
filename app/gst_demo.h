@@ -3,8 +3,8 @@
 #include <gst/gst.h>
 #include <gst/app/app.h>
 
-int gst_sample_initialize();
-int gst_sample_finalize();
+int gst_demo_initialize();
+int gst_demo_finalize();
 
 static void audioEos(GstAppSink *appsink, void *userData);
 static GstFlowReturn audioNewPreroll(GstAppSink *appsink, void *userData);

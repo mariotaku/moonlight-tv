@@ -22,7 +22,7 @@ void computer_manager_destroy();
  * @brief Starts discovery, and computer status update in background
  * 
  */
-void computer_manager_polling_start();
+bool computer_manager_polling_start();
 
 /**
  * @brief Stops polling

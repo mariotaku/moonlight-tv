@@ -1,4 +1,4 @@
-#include "gst_sample.h"
+#include "gst_demo.h"
 #include "main.h"
 
 #include <memory.h>
@@ -12,7 +12,7 @@ static GstBus *bus;
 
 static void cb_message(GstBus *bus, GstMessage *message, gpointer user_data);
 
-int gst_sample_initialize()
+int gst_demo_initialize()
 {
     GstStateChangeReturn ret;
 
@@ -60,7 +60,7 @@ int gst_sample_initialize()
     return 0;
 }
 
-int gst_sample_finalize()
+int gst_demo_finalize()
 {
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
