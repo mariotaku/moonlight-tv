@@ -1,4 +1,4 @@
-#include "gst_demo.h"
+#include "demo.h"
 #include "main.h"
 
 #include <memory.h>
@@ -6,11 +6,19 @@
 #include <stdio.h>
 
 #include <NDL_directmedia.h>
+#include <SDL.h>
 
 static GstElement *pipeline;
 static GstBus *bus;
 
 static void cb_message(GstBus *bus, GstMessage *message, gpointer user_data);
+
+static void audioEos(GstAppSink *appsink, void *userData);
+static GstFlowReturn audioNewPreroll(GstAppSink *appsink, void *userData);
+static GstFlowReturn audioNewSample(GstAppSink *appsink, void *userData);
+static void videoEos(GstAppSink *appsink, void *userData);
+static GstFlowReturn videoNewPreroll(GstAppSink *appsink, void *userData);
+static GstFlowReturn videoNewSample(GstAppSink *appsink, void *userData);
 
 int gst_demo_initialize()
 {
@@ -65,6 +73,16 @@ int gst_demo_finalize()
     gst_element_set_state(pipeline, GST_STATE_NULL);
     gst_object_unref(pipeline);
     return 0;
+}
+
+bool gst_demo_dispatch_event(SDL_Event ev)
+{
+    return false;
+}
+
+bool gst_demo_render_background()
+{
+    return false;
 }
 
 void audioEos(GstAppSink *appsink, gpointer user_data)

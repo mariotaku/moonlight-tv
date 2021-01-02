@@ -30,6 +30,8 @@
         "*.tcc": "c",
         "nuklear_sdl_gles2.h": "c",
         "gst.h": "c",
-        "config.h": "c"
-    }
+        "config.h": "c",
+        "backend_root.h": "c"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

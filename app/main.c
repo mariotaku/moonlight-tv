@@ -32,7 +32,7 @@
 
 #include "main.h"
 #include "debughelper.h"
-#include "gst_demo.h"
+#include "gst/demo.h"
 #include "backend/backend_root.h"
 #include "ui/gui_root.h"
 
@@ -64,6 +64,7 @@ MainLoop(void *loopArg)
         case SDL_USEREVENT:
             backend_dispatch_event(evt);
             gui_dispatch_event(evt);
+            // gst_demo_dispatch_event(evt);
             break;
         case SDL_QUIT:
             request_exit();
@@ -78,11 +79,13 @@ MainLoop(void *loopArg)
     /* Draw */
     {
         gui_background();
-        /* IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
-     * with blending, scissor, face culling, depth test and viewport and
-     * defaults everything back into a default state.
-     * Make sure to either a.) save and restore or b.) reset your own state after
-     * rendering the UI. */
+        /* 
+         * IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
+         * with blending, scissor, face culling, depth test and viewport and
+         * defaults everything back into a default state.
+         * Make sure to either a.) save and restore or b.) reset your own state after
+         * rendering the UI.
+         */
 #ifdef NK_SDL_GLES2_IMPLEMENTATION
         nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 #elif defined(NK_SDL_GL2_IMPLEMENTATION)
@@ -149,12 +152,16 @@ int main(int argc, char *argv[])
     /*set_style(ctx, THEME_DARK);*/
     gui_root_init(ctx);
 
+    // gst_demo_initialize();
+
     while (running)
         MainLoop((void *)ctx);
 
     nk_sdl_shutdown();
 
     backend_destroy();
+
+    // gst_demo_finalize();
 
 #ifdef OS_WEBOS
     NDL_DirectMediaQuit();

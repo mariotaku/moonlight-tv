@@ -18,17 +18,18 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 pkg_check_modules(GLib REQUIRED IMPORTED_TARGET glib-2.0 gthread-2.0)
-pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
 pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
 pkg_check_modules(cURL REQUIRED IMPORTED_TARGET libcurl)
 pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 pkg_check_modules(Expat REQUIRED IMPORTED_TARGET expat)
 
 if (TARGET_WEBOS)
+pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
     pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
 elseif (TARGET_LINUX)
+    pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0 gstreamer-gl-1.0)
     find_package(OpenGL REQUIRED)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
@@ -45,6 +46,7 @@ set(SOURCES
     app/backend/computer_discovery.c
     app/backend/application_manager.c
     app/backend/error_manager.c
+    app/backend/streaming_session.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
@@ -54,8 +56,12 @@ set(SOURCES
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
-        app/gst_demo.c
+        app/gst/demo_ndl.c
     )
+elseif (TARGET_LINUX)
+    list(APPEND SOURCES
+        app/gst/demo.c
+)
 endif()
 
 add_executable(moonlight ${SOURCES})
