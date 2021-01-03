@@ -32,6 +32,7 @@
 #include "main.h"
 #include "debughelper.h"
 #include "backend/backend_root.h"
+#include "backend/streaming_session.h"
 #include "ui/gui_root.h"
 
 #define WINDOW_WIDTH 960
@@ -67,6 +68,7 @@ MainLoop(void *loopArg)
             request_exit();
             break;
         }
+        streaming_dispatch_event(evt);
         nk_sdl_handle_event(&evt);
     }
     nk_input_end(ctx);

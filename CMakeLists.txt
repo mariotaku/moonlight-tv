@@ -48,6 +48,7 @@ set(SOURCES
     app/ui/streaming_overlay.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/src/connection.c
+    core/moonlight-embedded/src/input/sdl.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
     core/moonlight-embedded/libgamestream/mkcert.c
@@ -70,10 +71,12 @@ set_target_properties(moonlight PROPERTIES
     C_STANDARD_REQUIRED TRUE
 )
 
+target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded/src)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
@@ -93,6 +96,12 @@ endif()
 
 
 if (TARGET_WEBOS)
+
+    add_custom_target(webos-generate-gamecontrollerdb
+        COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    )
+
     set_target_properties(moonlight PROPERTIES
         WEBOS_APPINFO_ID com.limelight.webos
         WEBOS_APPINFO_VERSION 0.0.1
@@ -100,7 +109,10 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
+        WEBOS_PACKAGE_ASSETS "assets"
     )
 
     target_webos_package(moonlight)
+
+    add_dependencies(webos-package-moonlight webos-generate-gamecontrollerdb)
 endif()

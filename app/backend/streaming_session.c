@@ -1,9 +1,9 @@
 #include "streaming_session.h"
 
-#include "src/connection.h"
-#include "src/config.h"
-#include "src/platform.h"
-#include "src/input/sdl.h"
+#include "connection.h"
+#include "config.h"
+#include "platform.h"
+#include "input/sdl.h"
 
 #include <Limelight.h>
 
@@ -31,7 +31,7 @@ typedef struct
     int appId;
 } STREAMING_REQUEST;
 
-static int streaming_thread_action(void *data);
+static int _streaming_thread_action(void *data);
 
 void streaming_init()
 {
@@ -39,6 +39,9 @@ void streaming_init()
     session_status = STREAMING_NONE;
     lock = SDL_CreateMutex();
     cond = SDL_CreateCond();
+
+    sdlinput_init("assets/gamecontrollerdb.txt");
+    rumble_handler = sdlinput_rumble;
 }
 
 void streaming_destroy()
@@ -59,7 +62,7 @@ void streaming_begin(PSERVER_DATA server, int app_id)
     req->server = server;
     req->config = config;
     req->appId = app_id;
-    streaming_thread = SDL_CreateThread(streaming_thread_action, "streaming", req);
+    streaming_thread = SDL_CreateThread(_streaming_thread_action, "streaming", req);
 }
 
 void streaming_interrupt()
@@ -72,7 +75,6 @@ void streaming_interrupt()
 
 void streaming_wait_for_stop()
 {
-    fprintf(stderr, "streaming_wait_for_stop");
     if (streaming_thread == NULL)
     {
         return;
@@ -86,7 +88,29 @@ bool streaming_running()
     return session_running == SDL_TRUE;
 }
 
-int streaming_thread_action(void *data)
+bool streaming_dispatch_event(SDL_Event ev)
+{
+
+    // Don't mess with Magic Remote yet
+    switch (ev.type)
+    {
+    case SDL_MOUSEMOTION:
+    case SDL_MOUSEWHEEL:
+    case SDL_MOUSEBUTTONUP:
+    case SDL_MOUSEBUTTONDOWN:
+        return false;
+    default:
+        fprintf(stderr, "streaming_dispatch_event, ev.type=%d\n", ev.type);
+        if (session_status != STREAMING_STREAMING)
+        {
+            return false;
+        }
+        sdlinput_handle_event(&ev);
+    }
+    return false;
+}
+
+int _streaming_thread_action(void *data)
 {
     session_status = STREAMING_CONNECTING;
     STREAMING_REQUEST *req = data;
@@ -94,8 +118,7 @@ int streaming_thread_action(void *data)
     PCONFIGURATION config = req->config;
     int appId = req->appId;
 
-    int gamepads = 0;
-    // gamepads += sdl_gamepads;
+    int gamepads = sdl_gamepads;
     int gamepad_mask = 0;
     for (int i = 0; i < gamepads && i < 4; i++)
         gamepad_mask = (gamepad_mask << 1) + 1;
@@ -135,6 +158,7 @@ int streaming_thread_action(void *data)
     }
     SDL_UnlockMutex(lock);
 
+    rumble_handler = NULL;
     session_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
@@ -162,8 +186,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 #ifdef OS_WEBOS
     return &audio_callbacks_ndl;
 #else
-// #error "No supported callbacks for this platform"
-return NULL;
+#error "No supported callbacks for this platform"
 #endif
 }
 
@@ -172,7 +195,6 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #ifdef OS_WEBOS
     return &decoder_callbacks_ndl;
 #else
-// #error "No supported callbacks for this platform"
-return NULL;
+#error "No supported callbacks for this platform"
 #endif
 }

@@ -10,7 +10,7 @@
 #include <ifaddrs.h>
 
 #include "libgamestream/errors.h"
-#include "libgamestream/../src/config.h"
+#include "config.h"
 
 static char addrbuffer[64];
 static char entrybuffer[256];

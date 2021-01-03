@@ -35,7 +35,8 @@
         "application_manager.h": "c",
         "errors.h": "c",
         "streaming_overlay.h": "c",
-        "streaming_session.h": "c"
+        "streaming_session.h": "c",
+        "sdl.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

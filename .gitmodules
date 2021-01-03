@@ -19,3 +19,6 @@
 [submodule "third_party/mdns"]
 	path = third_party/mdns
 	url = https://github.com/mjansson/mdns.git
+[submodule "third_party/SDL_GameControllerDB"]
+	path = third_party/SDL_GameControllerDB
+	url = https://github.com/gabomdq/SDL_GameControllerDB.git

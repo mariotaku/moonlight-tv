@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <SDL.h>
 
 #include "computer_manager.h"
 
@@ -21,5 +22,7 @@ void streaming_interrupt();
 void streaming_wait_for_stop();
 
 bool streaming_running();
+
+bool streaming_dispatch_event(SDL_Event ev);
 
 STREAMING_STATUS streaming_status();
