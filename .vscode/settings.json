@@ -32,7 +32,8 @@
         "gst.h": "c",
         "config.h": "c",
         "backend_root.h": "c",
-        "application_manager.h": "c"
+        "application_manager.h": "c",
+        "errors.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

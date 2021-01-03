@@ -2,13 +2,14 @@
 #include <stdbool.h>
 #include <memory.h>
 
-#include <glib.h>
-
 #include "libgamestream/errors.h"
 
 #include "backend/application_manager.h"
 #include "computers_window.h"
 #include "applications_window.h"
+
+#define LINKEDLIST_TYPE PSERVER_LIST
+#include "util/linked_list.h"
 
 static int selected_computer_idx;
 
@@ -30,7 +31,7 @@ static struct nk_style_button cm_list_button_style;
 
 static void pairing_window(struct nk_context *ctx);
 static void pairing_error_dialog(struct nk_context *ctx);
-static void cw_open_computer(int index, SERVER_DATA *item);
+static void cw_open_computer(int index, PSERVER_LIST node);
 static void cw_open_pair(int index, SERVER_DATA *item);
 
 void computers_window_init(struct nk_context *ctx)
@@ -79,22 +80,22 @@ bool computers_window(struct nk_context *ctx)
         nk_menubar_end(ctx);
 
         struct nk_list_view list_view;
-        GList *computer_list = computer_manager_list();
-        guint computer_len = g_list_length(computer_list);
+        PSERVER_LIST computer_list = computer_manager_list();
+        int computer_len = linkedlist_len(computer_list);
         nk_layout_row_dynamic(ctx, content_height_remaining, 1);
         if (nk_list_view_begin(ctx, &list_view, "computers_list", NK_WINDOW_BORDER, 25, computer_len))
         {
             nk_layout_row_dynamic(ctx, 25, 1);
-            GList *cur = g_list_nth(computer_list, list_view.begin);
+            PSERVER_LIST cur = linkedlist_nth(computer_list, list_view.begin);
 
             for (int i = 0; i < list_view.count; ++i, cur = cur->next)
             {
-                SERVER_DATA *item = (SERVER_DATA *)cur->data;
+                SERVER_DATA *item = (SERVER_DATA *)cur->server;
                 if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT))
                 {
                     if (item->paired)
                     {
-                        cw_open_computer(i, item);
+                        cw_open_computer(i, cur);
                     }
                     else
                     {
@@ -117,8 +118,8 @@ bool computers_window(struct nk_context *ctx)
 
     if (selected_computer_idx != -1)
     {
-        SERVER_DATA *selected_server = computer_manager_server_at(selected_computer_idx);
-        if (!applications_window(ctx, selected_server->serverInfo.address))
+        PSERVER_LIST node = computer_manager_server_at(selected_computer_idx);
+        if (!applications_window(ctx, node))
         {
             selected_computer_idx = -1;
         }
@@ -134,11 +135,11 @@ bool computers_window(struct nk_context *ctx)
     return true;
 }
 
-void cw_open_computer(int index, SERVER_DATA *item)
+void cw_open_computer(int index, PSERVER_LIST node)
 {
     selected_computer_idx = index;
     pairing_computer_state.state = PS_NONE;
-    application_manager_load(item);
+    application_manager_load(node);
 }
 
 static void cw_pairing_callback(int result, const char *error)

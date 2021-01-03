@@ -1,9 +1,15 @@
 #pragma once
 
 #include <stdbool.h>
-#include <glib.h>
 
 #include "libgamestream/client.h"
+
+typedef struct SERVER_LIST_T
+{
+    PSERVER_DATA server;
+    PAPP_LIST apps;
+    struct SERVER_LIST_T *next;
+} SERVER_LIST, *PSERVER_LIST;
 
 /**
  * @brief Initialize computer manager context
@@ -29,11 +35,11 @@ bool computer_manager_polling_start();
  */
 void computer_manager_polling_stop();
 
-GList *computer_manager_list();
+PSERVER_LIST computer_manager_list();
 
-SERVER_DATA *computer_manager_server_of(const char* address);
+PSERVER_LIST computer_manager_server_of(const char *address);
 
-SERVER_DATA *computer_manager_server_at(int index);
+PSERVER_LIST computer_manager_server_at(int index);
 
 typedef void (*pairing_callback)(int result, const char *error);
 
@@ -49,4 +55,4 @@ bool computer_manager_pair(SERVER_DATA *p, char *pin, pairing_callback cb);
 
 void _computer_manager_add(SERVER_DATA *item);
 
-gpointer _computer_manager_polling_action(gpointer data);
+int _computer_manager_polling_action(void *data);

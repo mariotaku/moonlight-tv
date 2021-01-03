@@ -302,7 +302,7 @@ open_client_sockets(int *sockets, int max_sockets, int port)
     return num_sockets;
 }
 
-gpointer _computer_manager_polling_action(const gpointer data)
+int _computer_manager_polling_action(void *data)
 {
     const char *service = "_nvstream._tcp.local";
     int sockets[32];
@@ -311,7 +311,7 @@ gpointer _computer_manager_polling_action(const gpointer data)
     if (num_sockets <= 0)
     {
         fprintf(stderr, "Failed to open any client sockets\n");
-        return NULL;
+        return 0;
     }
     fprintf(stderr, "Opened %d socket%s for mDNS query\n", num_sockets, num_sockets ? "s" : "");
 
@@ -370,5 +370,5 @@ gpointer _computer_manager_polling_action(const gpointer data)
         mdns_socket_close(sockets[isock]);
     fprintf(stderr, "Closed socket%s\n", num_sockets ? "s" : "");
 
-    return NULL;
+    return 0;
 }

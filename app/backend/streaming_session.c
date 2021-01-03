@@ -50,12 +50,10 @@ void streaming_destroy()
     SDL_DestroyMutex(lock);
 }
 
-void streaming_begin(const char *addr, int app_id)
+void streaming_begin(PSERVER_DATA server, int app_id)
 {
     CONFIGURATION *config = malloc(sizeof(CONFIGURATION));
     config_parse(0, NULL, config);
-
-    PSERVER_DATA server = computer_manager_server_of(addr);
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = server;
@@ -164,7 +162,8 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 #ifdef OS_WEBOS
     return &audio_callbacks_ndl;
 #else
-#error "No supported callbacks for this platform"
+// #error "No supported callbacks for this platform"
+return NULL;
 #endif
 }
 
@@ -173,6 +172,7 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #ifdef OS_WEBOS
     return &decoder_callbacks_ndl;
 #else
-#error "No supported callbacks for this platform"
+// #error "No supported callbacks for this platform"
+return NULL;
 #endif
 }

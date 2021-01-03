@@ -25,14 +25,12 @@
 #error "No valid render backend specified"
 #endif
 
-#include <gst/gst.h>
 #ifdef OS_WEBOS
 #include <NDL_directmedia.h>
 #endif
 
 #include "main.h"
 #include "debughelper.h"
-#include "gst/demo.h"
 #include "backend/backend_root.h"
 #include "ui/gui_root.h"
 
@@ -64,7 +62,6 @@ MainLoop(void *loopArg)
         case SDL_USEREVENT:
             backend_dispatch_event(evt);
             gui_dispatch_event(evt);
-            // gst_demo_dispatch_event(evt);
             break;
         case SDL_QUIT:
             request_exit();
@@ -104,8 +101,6 @@ int main(int argc, char *argv[])
 #ifdef OS_WEBOS
     REDIR_STDOUT("moonlight");
 #endif
-
-    gst_init(&argc, &argv);
 
 #ifdef OS_WEBOS
     if (NDL_DirectMediaInit(WEBOS_APPID, NULL))

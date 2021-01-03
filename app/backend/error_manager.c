@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <glib.h>
 
 void error_show(const char *fmt, ...)
 {

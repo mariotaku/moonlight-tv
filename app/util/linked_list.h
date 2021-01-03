@@ -1,0 +1,64 @@
+#ifndef LINKEDLIST_TYPE
+#error "Please define LINKEDLIST_TYPE before include"
+#endif
+
+static LINKEDLIST_TYPE _linkedlist_new(size_t size)
+{
+    LINKEDLIST_TYPE node = malloc(size);
+    node->next = NULL;
+    return node;
+}
+
+#define linkedlist_new(TYPE) _linkedlist_new(sizeof(TYPE))
+
+static int linkedlist_len(LINKEDLIST_TYPE p)
+{
+    int length = 0;
+    LINKEDLIST_TYPE cur = p;
+    while (cur != NULL)
+    {
+        length++;
+        cur = cur->next;
+    }
+    return length;
+}
+
+static LINKEDLIST_TYPE linkedlist_nth(LINKEDLIST_TYPE p, int n)
+{
+    LINKEDLIST_TYPE ret = NULL;
+    int i = 0;
+    for (ret = p; ret != NULL && i < n; ret = ret->next, i++)
+        ;
+    return ret;
+}
+
+typedef int (*LINKEDLIST_FIND_FN)(LINKEDLIST_TYPE p, const void *fv);
+
+static LINKEDLIST_TYPE linkedlist_find_by(LINKEDLIST_TYPE p, const void *v, LINKEDLIST_FIND_FN fn)
+{
+    LINKEDLIST_TYPE ret = NULL;
+    int i = 0;
+    for (ret = p; ret != NULL && fn(ret, v) != 0; ret = ret->next, i++)
+        ;
+    return ret;
+}
+
+static LINKEDLIST_TYPE linkedlist_append(LINKEDLIST_TYPE p, LINKEDLIST_TYPE node)
+{
+    LINKEDLIST_TYPE cur = p;
+    while (cur->next != NULL)
+        ;
+    cur->next = node;
+    return p;
+}
+
+static void linkedlist_free(LINKEDLIST_TYPE p)
+{
+    LINKEDLIST_TYPE cur = p;
+    while (cur != NULL)
+    {
+        LINKEDLIST_TYPE f = cur;
+        cur = cur->next;
+        free(f);
+    }
+}

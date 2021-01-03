@@ -2,33 +2,36 @@
 #include "backend/application_manager.h"
 #include "backend/streaming_session.h"
 
+#define LINKEDLIST_TYPE PAPP_LIST
+#include "util/linked_list.h"
+
 void applications_window_init(struct nk_context *ctx)
 {
 }
 
-bool applications_window(struct nk_context *ctx, const char *selected_address)
+bool applications_window(struct nk_context *ctx, PSERVER_LIST node)
 {
-    PAPP_LIST apps = application_manager_list_of(selected_address);
     int content_height_remaining;
     if (nk_begin(ctx, "Applications", nk_rect(100, 100, 300, 300), NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE))
     {
+        PAPP_LIST apps = node->apps;
         if (apps != NULL)
         {
             content_height_remaining = (int)nk_window_get_content_region_size(ctx).y;
             content_height_remaining -= ctx->style.window.padding.y * 2;
             struct nk_list_view list_view;
             nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-            int app_len = applist_len(apps);
+            int app_len = linkedlist_len(apps);
             if (nk_list_view_begin(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, 25, app_len))
             {
                 nk_layout_row_dynamic(ctx, 25, 1);
-                PAPP_LIST cur = applist_nth(apps, list_view.begin);
+                PAPP_LIST cur = linkedlist_nth(apps, list_view.begin);
 
                 for (int i = 0; i < list_view.count; ++i, cur = cur->next)
                 {
                     if (nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT))
                     {
-                        streaming_begin(selected_address, cur->id);
+                        streaming_begin(node->server, cur->id);
                     }
                     nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "%d. %s", list_view.begin + i + 1, cur->name);
                 }

@@ -2,6 +2,8 @@
 
 #include <stdbool.h>
 
+#include "computer_manager.h"
+
 enum STREAMING_STATUS
 {
     STREAMING_NONE, STREAMING_CONNECTING, STREAMING_STREAMING, STREAMING_DISCONNECTING
@@ -12,7 +14,7 @@ void streaming_init();
 
 void streaming_destroy();
 
-void streaming_begin(const char *addr, int app_id);
+void streaming_begin(PSERVER_DATA server, int app_id);
 
 void streaming_interrupt();
 
