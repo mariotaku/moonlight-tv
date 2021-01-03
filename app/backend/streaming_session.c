@@ -18,6 +18,7 @@
 #include "backend/computer_manager.h"
 
 SDL_bool session_running = SDL_FALSE;
+STREAMING_STATUS session_status = STREAMING_NONE;
 
 SDL_Thread *streaming_thread;
 SDL_mutex *lock;
@@ -35,6 +36,7 @@ static int streaming_thread_action(void *data);
 void streaming_init()
 {
     streaming_thread = NULL;
+    session_status = STREAMING_NONE;
     lock = SDL_CreateMutex();
     cond = SDL_CreateCond();
 }
@@ -88,6 +90,7 @@ bool streaming_running()
 
 int streaming_thread_action(void *data)
 {
+    session_status = STREAMING_CONNECTING;
     STREAMING_REQUEST *req = data;
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
@@ -124,6 +127,7 @@ int streaming_thread_action(void *data)
 
     LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks, platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
     session_running = true;
+    session_status = STREAMING_STREAMING;
 
     SDL_LockMutex(lock);
     while (session_running)
@@ -133,6 +137,7 @@ int streaming_thread_action(void *data)
     }
     SDL_UnlockMutex(lock);
 
+    session_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
     gs_quit_app(server);
@@ -144,7 +149,14 @@ int streaming_thread_action(void *data)
     //     gs_quit_app(server);
     // }
     streaming_thread = NULL;
+
+    session_status = STREAMING_NONE;
     return 0;
+}
+
+STREAMING_STATUS streaming_status()
+{
+    return session_status;
 }
 
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
