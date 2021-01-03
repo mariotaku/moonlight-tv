@@ -33,7 +33,9 @@
         "config.h": "c",
         "backend_root.h": "c",
         "application_manager.h": "c",
-        "errors.h": "c"
+        "errors.h": "c",
+        "streaming_overlay.h": "c",
+        "streaming_session.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

@@ -17,13 +17,14 @@ void gui_root_init(struct nk_context *ctx)
 
 bool gui_root(struct nk_context *ctx)
 {
-    if (streaming_running())
+    STREAMING_STATUS stat = streaming_status();
+    if (stat == STREAMING_NONE)
     {
-        return streaming_overlay(ctx);
+        return computers_window(ctx);
     }
     else
     {
-        return computers_window(ctx);
+        return streaming_overlay(ctx, stat);
     }
 }
 
