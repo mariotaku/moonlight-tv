@@ -82,5 +82,5 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks_ndl = {
     .setup = ndl_setup,
     .cleanup = ndl_cleanup,
     .submitDecodeUnit = ndl_submit_decode_unit,
-    .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_REFERENCE_FRAME_INVALIDATION_AVC | CAPABILITY_DIRECT_SUBMIT,
+    .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
 };
