@@ -21,6 +21,8 @@ void streaming_interrupt();
 
 void streaming_wait_for_stop();
 
+void streaming_display_size(short width, short height);
+
 bool streaming_running();
 
 bool streaming_dispatch_event(SDL_Event ev);

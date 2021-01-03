@@ -139,7 +139,10 @@ void cw_open_computer(int index, PSERVER_LIST node)
 {
     selected_computer_idx = index;
     pairing_computer_state.state = PS_NONE;
-    application_manager_load(node);
+    if (node->apps == NULL)
+    {
+        application_manager_load(node);
+    }
 }
 
 static void cw_pairing_callback(int result, const char *error)

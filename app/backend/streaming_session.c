@@ -3,6 +3,7 @@
 #include "connection.h"
 #include "config.h"
 #include "platform.h"
+#include "sdl.h"
 #include "input/sdl.h"
 
 #include <Limelight.h>
@@ -24,6 +25,10 @@ SDL_Thread *streaming_thread;
 SDL_mutex *lock;
 SDL_cond *cond;
 
+SDL_Cursor *_blank_cursor;
+
+short streaming_display_width, streaming_display_height;
+
 typedef struct
 {
     SERVER_DATA *server;
@@ -39,6 +44,8 @@ void streaming_init()
     session_status = STREAMING_NONE;
     lock = SDL_CreateMutex();
     cond = SDL_CreateCond();
+    int32_t cursorData[2] = {0, 0};
+    _blank_cursor = SDL_CreateCursor((Uint8 *)cursorData, (Uint8 *)cursorData, 8, 8, 4, 4);
 
     sdlinput_init("assets/gamecontrollerdb.txt");
     rumble_handler = sdlinput_rumble;
@@ -92,34 +99,32 @@ bool streaming_dispatch_event(SDL_Event ev)
 {
     if (session_status != STREAMING_STREAMING)
     {
-        switch (ev.type)
-        {
-        case SDL_CONTROLLERBUTTONUP:
-            fprintf(stderr, "SDL_CONTROLLERBUTTONUP %s\n", SDL_GameControllerGetStringForButton(ev.cbutton.button));
-            break;
-        case SDL_KEYUP:
-            fprintf(stderr, "SDL_KEYUP %x\n", ev.key.keysym.sym);
-            break;
-        case SDL_MOUSEBUTTONUP:
-            fprintf(stderr, "SDL_MOUSEBUTTONUP %d,%d\n", ev.motion.x, ev.motion.y);
-            break;
-        default:
-            break;
-        }
         return false;
     }
     // Don't mess with Magic Remote yet
-    switch (ev.type)
+    if (ev.type == SDL_MOUSEMOTION)
     {
-    case SDL_MOUSEMOTION:
-    case SDL_MOUSEWHEEL:
-    case SDL_MOUSEBUTTONUP:
-    case SDL_MOUSEBUTTONDOWN:
+        LiSendMousePositionEvent(ev.motion.x, ev.motion.y, streaming_display_width, streaming_display_height);
         return false;
+    }
+    switch (sdlinput_handle_event(&ev))
+    {
+    case SDL_MOUSE_GRAB:
+        SDL_SetCursor(_blank_cursor);
+        break;
+    case SDL_MOUSE_UNGRAB:
+        SDL_SetCursor(NULL);
+        break;
     default:
-        sdlinput_handle_event(&ev);
+        break;
     }
     return false;
+}
+
+void streaming_display_size(short width, short height)
+{
+    streaming_display_width = width;
+    streaming_display_height = height;
 }
 
 int _streaming_thread_action(void *data)

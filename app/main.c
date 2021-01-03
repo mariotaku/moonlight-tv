@@ -33,16 +33,11 @@
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "backend/streaming_session.h"
+#include "ui/config.h"
 #include "ui/gui_root.h"
-
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 540
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
-
-#define UNUSED(a) (void)a
-#define LEN(a) (sizeof(a) / sizeof(a)[0])
 
 /* Platform */
 SDL_Window *win;
@@ -125,6 +120,7 @@ int main(int argc, char *argv[])
     SDL_SetHint("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+    streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
     glContext = SDL_GL_CreateContext(win);
 
     /* OpenGL setup */
