@@ -3,11 +3,11 @@
 Moonlight SDL is a GUI front end for [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
 It was originally designed for LG webOS TVs, but may support running in standard Linux in the future.
 
-# Installing
+## Installing
 
 Unfortunatly, LG webOS has many restrictions like time limited developer mode. Please follow instructions [here](http://webostv.developer.lge.com/develop/app-test/)
 
-# Building for webOS
+## Building for webOS
 
 Follow instructions [here](https://github.com/webosbrew/meta-lg-webos-ndk#cmake)
 
