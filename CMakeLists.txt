@@ -114,5 +114,5 @@ if (TARGET_WEBOS)
 
     target_webos_package(moonlight)
 
-    add_dependencies(webos-package-moonlight webos-generate-gamecontrollerdb)
+    # add_dependencies(webos-package-moonlight webos-generate-gamecontrollerdb)
 endif()

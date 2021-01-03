@@ -90,7 +90,21 @@ bool streaming_running()
 
 bool streaming_dispatch_event(SDL_Event ev)
 {
-
+    if (session_status != STREAMING_STREAMING)
+    {
+        switch (ev.type)
+        {
+        case SDL_CONTROLLERBUTTONUP:
+            fprintf(stderr, "SDL_CONTROLLERBUTTONUP %s\n", SDL_GameControllerGetStringForButton(ev.cbutton.button));
+            break;
+        case SDL_MOUSEBUTTONUP:
+            fprintf(stderr, "SDL_MOUSEBUTTONUP %d,%d\n", ev.motion.x, ev.motion.y);
+            break;
+        default:
+            break;
+        }
+        return false;
+    }
     // Don't mess with Magic Remote yet
     switch (ev.type)
     {
@@ -100,11 +114,6 @@ bool streaming_dispatch_event(SDL_Event ev)
     case SDL_MOUSEBUTTONDOWN:
         return false;
     default:
-        fprintf(stderr, "streaming_dispatch_event, ev.type=%d\n", ev.type);
-        if (session_status != STREAMING_STREAMING)
-        {
-            return false;
-        }
         sdlinput_handle_event(&ev);
     }
     return false;
