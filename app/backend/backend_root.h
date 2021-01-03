@@ -8,4 +8,4 @@ void backend_init();
 
 void backend_destroy();
 
-bool backend_dispatch_event(SDL_Event ev);
+bool backend_dispatch_userevent(SDL_Event ev);

@@ -60,9 +60,13 @@ MainLoop(void *loopArg)
     {
         switch (evt.type)
         {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            gui_dispatch_inputevent(ctx, evt);
+            break;
         case SDL_USEREVENT:
-            backend_dispatch_event(evt);
-            gui_dispatch_event(evt);
+            backend_dispatch_userevent(evt);
+            gui_dispatch_userevent(ctx, evt);
             break;
         case SDL_QUIT:
             request_exit();
@@ -118,6 +122,7 @@ int main(int argc, char *argv[])
     struct nk_context *ctx;
     SDL_GLContext glContext;
     nk_sdl_gl_setup();
+    SDL_SetHint("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     glContext = SDL_GL_CreateContext(win);

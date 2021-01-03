@@ -97,6 +97,9 @@ bool streaming_dispatch_event(SDL_Event ev)
         case SDL_CONTROLLERBUTTONUP:
             fprintf(stderr, "SDL_CONTROLLERBUTTONUP %s\n", SDL_GameControllerGetStringForButton(ev.cbutton.button));
             break;
+        case SDL_KEYUP:
+            fprintf(stderr, "SDL_KEYUP %x\n", ev.key.keysym.sym);
+            break;
         case SDL_MOUSEBUTTONUP:
             fprintf(stderr, "SDL_MOUSEBUTTONUP %d,%d\n", ev.motion.x, ev.motion.y);
             break;

@@ -23,7 +23,7 @@ void application_manager_load(PSERVER_LIST node)
     SDL_CreateThread(_application_manager_applist_action, "am_applist", node);
 }
 
-bool application_manager_dispatch_event(SDL_Event ev)
+bool application_manager_dispatch_userevent(SDL_Event ev)
 {
     if (ev.user.code == SDL_USER_AM_APPLIST_ARRIVED)
     {

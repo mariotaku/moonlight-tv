@@ -24,6 +24,6 @@ void application_manager_destroy();
  */
 void application_manager_load(PSERVER_LIST node);
 
-bool application_manager_dispatch_event(SDL_Event ev);
+bool application_manager_dispatch_userevent(SDL_Event ev);
 
 PAPP_LIST application_manager_list_of(const char *address);

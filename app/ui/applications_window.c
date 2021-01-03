@@ -2,6 +2,8 @@
 #include "backend/application_manager.h"
 #include "backend/streaming_session.h"
 
+#include "sdl/webos_keys.h"
+
 #define LINKEDLIST_TYPE PAPP_LIST
 #include "util/linked_list.h"
 
@@ -48,4 +50,28 @@ bool applications_window(struct nk_context *ctx, PSERVER_LIST node)
         return false;
     }
     return true;
+}
+
+bool applications_window_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
+{
+    return false;
+}
+
+bool applications_window_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
+{
+    switch (ev.type)
+    {
+    case SDL_KEYUP:
+        if (ev.key.keysym.sym == SDLK_WEBOS_BACK)
+        {
+            fprintf(stderr, "Back pressed\n");
+            if (nk_window_is_active(ctx, "Applications"))
+            {
+                nk_window_close(ctx, "Applications");
+                return true;
+            }
+        }
+        break;
+    }
+    return false;
 }

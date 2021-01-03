@@ -18,7 +18,7 @@ void backend_destroy()
     computer_manager_destroy();
 }
 
-bool backend_dispatch_event(SDL_Event ev)
+bool backend_dispatch_userevent(SDL_Event ev)
 {
-    return application_manager_dispatch_event(ev);
+    return application_manager_dispatch_userevent(ev);
 }

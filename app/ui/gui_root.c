@@ -34,7 +34,12 @@ void gui_background()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-bool gui_dispatch_event(SDL_Event ev)
+bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
 {
-    return false;
+    return applications_window_dispatch_userevent(ctx, ev);
+}
+
+bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
+{
+    return applications_window_dispatch_inputevent(ctx, ev);
 }
