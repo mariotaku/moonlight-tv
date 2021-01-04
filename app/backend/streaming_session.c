@@ -63,7 +63,19 @@ void streaming_destroy()
 void streaming_begin(PSERVER_DATA server, int app_id)
 {
     CONFIGURATION *config = malloc(sizeof(CONFIGURATION));
-    config_parse(0, NULL, config);
+    char *homedir = getenv("HOME");
+    static const char *configname = ".moonlight.conf";
+    // HOME + / + configname
+    char *argv[2] = {"moonlight", NULL};
+    argv[1] = calloc(strlen(homedir) + strlen(configname), sizeof(char));
+    sprintf(argv[1], "%s/%s", homedir, configname);
+    fprintf(stderr, argv[1]);
+    config_parse(2, argv, config);
+
+    if (1)
+    {
+        return;
+    }
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = server;
