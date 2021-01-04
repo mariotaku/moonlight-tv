@@ -12,16 +12,6 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "LIBGL_ALWAYS_INDIRECT",
-                    "value": "1"
-                },
-                {
-                    "name": "SDL_VIDEO_X11_VISUALID",
-                    "value": ""
-                }
-            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "sourceFileMap":{

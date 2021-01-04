@@ -21,7 +21,7 @@ typedef struct CM_PIN_REQUEST_T
 } cm_pin_request;
 
 static int _computer_manager_pairing_action(void *data);
-static PSERVER_LIST computer_list;
+PSERVER_LIST computer_list;
 
 void computer_manager_init()
 {
@@ -53,11 +53,6 @@ void computer_manager_polling_stop()
         return;
     }
     computer_manager_polling_thread = NULL;
-}
-
-PSERVER_LIST computer_manager_list()
-{
-    return computer_list;
 }
 
 static int server_list_namecmp(PSERVER_LIST item, const void *address)
@@ -92,19 +87,15 @@ bool computer_manager_pair(SERVER_DATA *p, char *pin, pairing_callback cb)
     return true;
 }
 
-void _computer_manager_add(SERVER_DATA *p)
+void _computer_manager_add(char *name, PSERVER_DATA p, int err)
 {
-    PSERVER_LIST node = linkedlist_new(PSERVER_LIST);
+    PSERVER_LIST node = linkedlist_new(SERVER_LIST);
+    node->name = name;
     node->server = p;
+    node->err = err;
+    node->errmsg = err != GS_OK ? gs_error : NULL;
     node->apps = NULL;
-    if (computer_list == NULL)
-    {
-        computer_list = node;
-    }
-    else
-    {
-        computer_list = linkedlist_append(computer_list, node);
-    }
+    computer_list = linkedlist_append(computer_list, node);
 }
 
 int _computer_manager_pairing_action(void *data)

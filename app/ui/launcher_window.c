@@ -28,10 +28,12 @@ static struct
 
 static struct nk_style_button cm_list_button_style;
 
-static void pairing_window(struct nk_context *ctx);
-static void pairing_error_dialog(struct nk_context *ctx);
-static void cw_open_computer(PSERVER_LIST node);
+static void _select_computer(PSERVER_LIST node, bool load_apps);
 static void cw_open_pair(int index, SERVER_DATA *item);
+
+static void _pairing_popup(struct nk_context *ctx);
+static void _pairing_error_popup(struct nk_context *ctx);
+static void _server_error_popup(struct nk_context *ctx);
 
 static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
 
@@ -46,13 +48,9 @@ void launcher_window_init(struct nk_context *ctx)
 bool launcher_window(struct nk_context *ctx)
 {
     /* GUI */
-    nk_flags launcher_window_flags = NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
-    if (pairing_computer_state.state != PS_NONE)
-    {
-        launcher_window_flags |= NK_WINDOW_NO_INPUT;
-    }
     int content_height_remaining;
-    if (nk_begin(ctx, "Moonlight", nk_rect(50, 50, 300, 300), launcher_window_flags))
+    if (nk_begin(ctx, "Moonlight", nk_rect(50, 50, 300, 300),
+                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE))
     {
         bool event_emitted = false;
         content_height_remaining = (int)nk_window_get_content_region_size(ctx).y;
@@ -63,7 +61,7 @@ bool launcher_window(struct nk_context *ctx)
         content_height_remaining -= nk_widget_bounds(ctx).h;
 
         nk_layout_row_push(ctx, 100);
-        PSERVER_LIST computer_list = computer_manager_list();
+        int computer_len = linkedlist_len(computer_list);
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
 
         nk_layout_row_end(ctx);
@@ -71,15 +69,32 @@ bool launcher_window(struct nk_context *ctx)
         nk_menubar_end(ctx);
 
         struct nk_list_view list_view;
-        int computer_len = linkedlist_len(computer_list);
         nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-        if (selected_server_node != NULL)
+        PSERVER_LIST selected = selected_server_node;
+
+        if (selected != NULL)
         {
-            event_emitted |= cw_application_list(ctx, selected_server_node, event_emitted);
+            if (selected->server != NULL)
+            {
+                event_emitted |= cw_application_list(ctx, selected, event_emitted);
+            }
+            else
+            {
+                _server_error_popup(ctx);
+            }
         }
         else
         {
             nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
+
+            if (pairing_computer_state.state == PS_RUNNING)
+            {
+                _pairing_popup(ctx);
+            }
+            else if (pairing_computer_state.state == PS_FAIL)
+            {
+                _pairing_error_popup(ctx);
+            }
         }
     }
     nk_end(ctx);
@@ -89,18 +104,6 @@ bool launcher_window(struct nk_context *ctx)
     {
         nk_window_close(ctx, "Moonlight");
         return false;
-    }
-
-    if (selected_server_node != NULL)
-    {
-    }
-    else if (pairing_computer_state.state == PS_RUNNING)
-    {
-        pairing_window(ctx);
-    }
-    else if (pairing_computer_state.state == PS_FAIL)
-    {
-        pairing_error_dialog(ctx);
     }
     return true;
 }
@@ -114,20 +117,24 @@ bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_
         int i = 0;
         while (cur != NULL)
         {
-            SERVER_DATA *server = (SERVER_DATA *)cur->server;
-            if (nk_combo_item_label(ctx, server->serverInfo.address, NK_TEXT_LEFT))
+            if (nk_combo_item_label(ctx, cur->name, NK_TEXT_LEFT))
             {
                 if (!event_emitted)
                 {
-                    event_emitted = true;
-                    if (server->paired)
+                    SERVER_DATA *server = (SERVER_DATA *)cur->server;
+                    if (server == NULL)
                     {
-                        cw_open_computer(cur);
+                        _select_computer(cur, false);
+                    }
+                    else if (server->paired)
+                    {
+                        _select_computer(cur, cur->apps == NULL);
                     }
                     else
                     {
                         cw_open_pair(i, server);
                     }
+                    event_emitted = true;
                 }
             }
             cur = cur->next;
@@ -139,11 +146,11 @@ bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_
     return event_emitted;
 }
 
-void cw_open_computer(PSERVER_LIST node)
+void _select_computer(PSERVER_LIST node, bool load_apps)
 {
     selected_server_node = node;
     pairing_computer_state.state = PS_NONE;
-    if (node->apps == NULL)
+    if (load_apps)
     {
         application_manager_load(node);
     }
@@ -171,28 +178,28 @@ void cw_open_pair(int index, SERVER_DATA *item)
     computer_manager_pair(item, &pairing_computer_state.pin[0], cw_pairing_callback);
 }
 
-void pairing_window(struct nk_context *ctx)
+void _pairing_popup(struct nk_context *ctx)
 {
-    if (nk_begin(ctx, "Pairing", nk_rect(350, 150, 300, 100),
-                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
+    static struct nk_rect s = {34, 40, 220, 110};
+    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing",
+                       NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        nk_layout_row_dynamic(ctx, 50, 1);
+        nk_layout_row_dynamic(ctx, 64, 1);
 
         nk_labelf_wrap(ctx, "Please enter %s on your GameStream PC. This dialog will close when pairing is completed.",
                        pairing_computer_state.pin);
+        nk_popup_end(ctx);
     }
-    nk_end(ctx);
 }
 
-void pairing_error_dialog(struct nk_context *ctx)
+void _pairing_error_popup(struct nk_context *ctx)
 {
-    struct nk_vec2 win_region_size;
-    int content_height_remaining;
-    if (nk_begin(ctx, "Pairing Failed", nk_rect(350, 150, 300, 100),
-                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
+    static struct nk_rect s = {34, 40, 220, 110};
+    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing Failed",
+                       NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        win_region_size = nk_window_get_content_region_size(ctx);
-        content_height_remaining = (int)win_region_size.y;
+        struct nk_vec2 win_region_size = nk_window_get_content_region_size(ctx);
+        int content_height_remaining = (int)win_region_size.y;
         content_height_remaining -= 8 * 2;
         /* remove bottom button height */
         content_height_remaining -= 30;
@@ -211,8 +218,33 @@ void pairing_error_dialog(struct nk_context *ctx)
         if (nk_button_label(ctx, "OK"))
         {
             pairing_computer_state.state = PS_NONE;
+            nk_popup_close(ctx);
         }
         nk_layout_space_end(ctx);
+        nk_popup_end(ctx);
     }
-    nk_end(ctx);
+}
+
+void _server_error_popup(struct nk_context *ctx)
+{
+    static struct nk_rect s = {34, 40, 220, 110};
+    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
+                       NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+    {
+        struct nk_vec2 win_region_size = nk_window_get_content_region_size(ctx);
+        int content_height_remaining = (int)win_region_size.y;
+                content_height_remaining -= 8 * 2;
+        /* remove bottom button height */
+        content_height_remaining -= 30;
+        nk_layout_row_dynamic(ctx, 40, 1);
+        nk_label_wrap(ctx, selected_server_node->errmsg);
+        nk_layout_space_begin(ctx, NK_STATIC, 30, 1);
+        nk_layout_space_push(ctx, nk_recti(win_region_size.x - 80, 0, 80, 30));
+        if (nk_button_label(ctx, "OK"))
+        {
+            selected_server_node = NULL;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
+    }
 }

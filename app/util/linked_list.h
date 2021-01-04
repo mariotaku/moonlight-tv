@@ -45,6 +45,11 @@ static LINKEDLIST_TYPE linkedlist_find_by(LINKEDLIST_TYPE p, const void *v, LINK
 
 static LINKEDLIST_TYPE linkedlist_append(LINKEDLIST_TYPE p, LINKEDLIST_TYPE node)
 {
+    if (p == NULL)
+    {
+        p = node;
+        return p;
+    }
     LINKEDLIST_TYPE cur = p;
     while (cur->next != NULL)
         ;
@@ -52,13 +57,13 @@ static LINKEDLIST_TYPE linkedlist_append(LINKEDLIST_TYPE p, LINKEDLIST_TYPE node
     return p;
 }
 
-static void linkedlist_free(LINKEDLIST_TYPE p)
+static void linkedlist_free(LINKEDLIST_TYPE head)
 {
-    LINKEDLIST_TYPE cur = p;
-    while (cur != NULL)
+    LINKEDLIST_TYPE tmp;
+    while (head != NULL)
     {
-        LINKEDLIST_TYPE f = cur;
-        cur = cur->next;
-        free(f);
+        tmp = head;
+        head = head->next;
+        free(tmp);
     }
 }

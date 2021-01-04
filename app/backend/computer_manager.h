@@ -6,10 +6,15 @@
 
 typedef struct SERVER_LIST_T
 {
+    char *name;
     PSERVER_DATA server;
+    int err;
+    const char *errmsg;
     PAPP_LIST apps;
     struct SERVER_LIST_T *next;
 } SERVER_LIST, *PSERVER_LIST;
+
+extern PSERVER_LIST computer_list;
 
 /**
  * @brief Initialize computer manager context
@@ -35,8 +40,6 @@ bool computer_manager_polling_start();
  */
 void computer_manager_polling_stop();
 
-PSERVER_LIST computer_manager_list();
-
 PSERVER_LIST computer_manager_server_of(const char *address);
 
 PSERVER_LIST computer_manager_server_at(int index);
@@ -51,8 +54,8 @@ typedef void (*pairing_callback)(int result, const char *error);
  * @param pin 
  * @param cb Callback for pairing completion
  */
-bool computer_manager_pair(SERVER_DATA *p, char *pin, pairing_callback cb);
+bool computer_manager_pair(PSERVER_DATA p, char *pin, pairing_callback cb);
 
-void _computer_manager_add(SERVER_DATA *item);
+void _computer_manager_add(char *name, PSERVER_DATA p, int err);
 
 int _computer_manager_polling_action(void *data);

@@ -89,6 +89,19 @@ ip_address_to_string(char *buffer, size_t capacity, const struct sockaddr *addr,
     return ipv4_address_to_string(buffer, capacity, (const struct sockaddr_in *)addr, addrlen);
 }
 
+static char *parse_server_name(mdns_string_t entrystr)
+{
+    const static char suffix[] = {'.', 'l', 'o', 'c', 'a', 'l', '.'};
+    int nlen = entrystr.length;
+    if (entrystr.length > 7 && strncmp(&(entrystr.str[entrystr.length - 7]), suffix, 7) == 0)
+    {
+        nlen -= 7;
+    }
+    char *srvname = calloc(nlen + 1, sizeof(char));
+    snprintf(srvname, nlen + 1, "%.*s", nlen, entrystr.str);
+    return srvname;
+}
+
 static int
 query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
                uint16_t query_id, uint16_t rtype, uint16_t rclass, uint32_t ttl, const void *data,
@@ -103,97 +116,25 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
     const char *entrytype = (entry == MDNS_ENTRYTYPE_ANSWER) ? "answer" : ((entry == MDNS_ENTRYTYPE_AUTHORITY) ? "authority" : "additional");
     mdns_string_t entrystr =
         mdns_string_extract(data, size, &name_offset, entrybuffer, sizeof(entrybuffer));
-    if (rtype == MDNS_RECORDTYPE_PTR)
-    {
-        mdns_string_t namestr = mdns_record_parse_ptr(data, size, record_offset, record_length,
-                                                      namebuffer, sizeof(namebuffer));
-        fprintf(stderr, "%.*s : %s %.*s PTR %.*s rclass 0x%x ttl %u length %d\n",
-                MDNS_STRING_FORMAT(fromaddrstr), entrytype, MDNS_STRING_FORMAT(entrystr),
-                MDNS_STRING_FORMAT(namestr), rclass, ttl, (int)record_length);
-    }
-    else if (rtype == MDNS_RECORDTYPE_SRV)
-    {
-        mdns_record_srv_t srv = mdns_record_parse_srv(data, size, record_offset, record_length,
-                                                      namebuffer, sizeof(namebuffer));
-        fprintf(stderr, "%.*s : %s %.*s SRV %.*s priority %d weight %d port %d\n",
-                MDNS_STRING_FORMAT(fromaddrstr), entrytype, MDNS_STRING_FORMAT(entrystr),
-                MDNS_STRING_FORMAT(srv.name), srv.priority, srv.weight, srv.port);
-    }
-    else if (rtype == MDNS_RECORDTYPE_A)
+    if (rtype == MDNS_RECORDTYPE_A)
     {
         struct sockaddr_in addr;
         mdns_record_parse_a(data, size, record_offset, record_length, &addr);
         mdns_string_t addrstr =
             ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
         PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
-        char *srvaddr = calloc(addrstr.length + 1, sizeof(char));
+        char *srvaddr = calloc(addrstr.length + 1, sizeof(char)), *srvname = parse_server_name(entrystr);
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
-
         CONFIGURATION config;
         config_parse(0, NULL, &config);
         int ret = gs_init(server, srvaddr, config.key_dir, config.debug_level, config.unsupported);
         if (ret == GS_OK)
         {
-            _computer_manager_add(server);
+            _computer_manager_add(srvname, server, ret);
+        } else {
+            _computer_manager_add(srvname, NULL, ret);
+            free(server);
         }
-        else if (ret == GS_OUT_OF_MEMORY)
-        {
-            fprintf(stderr, "Not enough memory\n");
-        }
-        else if (ret == GS_ERROR)
-        {
-            fprintf(stderr, "Gamestream error: %s\n", gs_error);
-        }
-        else if (ret == GS_INVALID)
-        {
-            fprintf(stderr, "Invalid data received from server: %s\n", gs_error);
-        }
-        else if (ret == GS_UNSUPPORTED_VERSION)
-        {
-            fprintf(stderr, "Unsupported version: %s\n", gs_error);
-        }
-        else if (ret != GS_OK)
-        {
-            fprintf(stderr, "Can't connect to server %s\n", config.address);
-        }
-        // fprintf(stderr, "%.*s : %s %.*s A %.*s\n", MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-        //         MDNS_STRING_FORMAT(entrystr), MDNS_STRING_FORMAT(addrstr));
-    }
-    // Wait for response from original author: https://github.com/mjansson/mdns/issues/36
-    // else if (rtype == MDNS_RECORDTYPE_AAAA)
-    // {
-    //     struct sockaddr_in6 addr;
-    //     mdns_record_parse_aaaa(data, size, record_offset, record_length, &addr);
-    //     mdns_string_t addrstr =
-    //         ipv6_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
-    //     fprintf(stderr, "%.*s : %s %.*s AAAA %.*s\n", MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-    //            MDNS_STRING_FORMAT(entrystr), MDNS_STRING_FORMAT(addrstr));
-    // }
-    else if (rtype == MDNS_RECORDTYPE_TXT)
-    {
-        size_t parsed = mdns_record_parse_txt(data, size, record_offset, record_length, txtbuffer,
-                                              sizeof(txtbuffer) / sizeof(mdns_record_txt_t));
-        for (size_t itxt = 0; itxt < parsed; ++itxt)
-        {
-            if (txtbuffer[itxt].value.length)
-            {
-                fprintf(stderr, "%.*s : %s %.*s TXT %.*s = %.*s\n", MDNS_STRING_FORMAT(fromaddrstr),
-                        entrytype, MDNS_STRING_FORMAT(entrystr),
-                        MDNS_STRING_FORMAT(txtbuffer[itxt].key),
-                        MDNS_STRING_FORMAT(txtbuffer[itxt].value));
-            }
-            else
-            {
-                fprintf(stderr, "%.*s : %s %.*s TXT %.*s\n", MDNS_STRING_FORMAT(fromaddrstr), entrytype,
-                        MDNS_STRING_FORMAT(entrystr), MDNS_STRING_FORMAT(txtbuffer[itxt].key));
-            }
-        }
-    }
-    else
-    {
-        fprintf(stderr, "%.*s : %s %.*s type %u rclass 0x%x ttl %u length %d\n",
-                MDNS_STRING_FORMAT(fromaddrstr), entrytype, MDNS_STRING_FORMAT(entrystr), rtype,
-                rclass, ttl, (int)record_length);
     }
     return 0;
 }
