@@ -43,8 +43,8 @@ set(SOURCES
     app/backend/error_manager.c
     app/backend/streaming_session.c
     app/ui/gui_root.c
-    app/ui/computers_window.c
-    app/ui/applications_window.c
+    app/ui/launcher_window.c
+    app/ui/applications_list.c
     app/ui/streaming_overlay.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/src/connection.c
@@ -91,6 +91,7 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS)
     target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus NDL_directmedia)
 else()
+target_compile_definitions(moonlight PUBLIC OS_LINUX)
     target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::GStreamer OpenGL)
 endif()
 

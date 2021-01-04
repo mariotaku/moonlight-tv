@@ -4,14 +4,12 @@
 
 #include "backend/streaming_session.h"
 
-#include "computers_window.h"
-#include "applications_window.h"
+#include "launcher_window.h"
 #include "streaming_overlay.h"
 
 void gui_root_init(struct nk_context *ctx)
 {
-    computers_window_init(ctx);
-    applications_window_init(ctx);
+    launcher_window_init(ctx);
     streaming_overlay_init(ctx);
 }
 
@@ -20,7 +18,7 @@ bool gui_root(struct nk_context *ctx)
     STREAMING_STATUS stat = streaming_status();
     if (stat == STREAMING_NONE)
     {
-        return computers_window(ctx);
+        return launcher_window(ctx);
     }
     else
     {
@@ -36,10 +34,10 @@ void gui_background()
 
 bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
 {
-    return applications_window_dispatch_userevent(ctx, ev);
+    return false;
 }
 
 bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
 {
-    return applications_window_dispatch_inputevent(ctx, ev);
+    return false;
 }
