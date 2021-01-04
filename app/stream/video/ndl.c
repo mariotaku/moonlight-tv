@@ -27,7 +27,8 @@
 
 #include <NDL_directmedia.h>
 
-#define DECODER_BUFFER_SIZE 92 * 1024
+// 2MB decode size should be fairly enough for everything
+#define DECODER_BUFFER_SIZE 2048 * 1024
 
 static char *ndl_buffer;
 
@@ -71,8 +72,8 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
   }
   else
   {
-    fprintf(stderr, "Video decode buffer too small");
-    exit(1);
+    fprintf(stderr, "Video decode buffer too small, skip this frame");
+    return DR_NEED_IDR;
   }
 
   return DR_OK;

@@ -72,11 +72,6 @@ void streaming_begin(PSERVER_DATA server, int app_id)
     fprintf(stderr, argv[1]);
     config_parse(2, argv, config);
 
-    if (1)
-    {
-        return;
-    }
-
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = server;
     req->config = config;
