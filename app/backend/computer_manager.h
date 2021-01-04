@@ -44,7 +44,7 @@ PSERVER_LIST computer_manager_server_of(const char *address);
 
 PSERVER_LIST computer_manager_server_at(int index);
 
-typedef void (*pairing_callback)(int result, const char *error);
+typedef void (*pairing_callback)(PSERVER_LIST node, int result, const char *error);
 
 /**
  * @brief Generates a PIN code, and start pairing process.
@@ -54,7 +54,7 @@ typedef void (*pairing_callback)(int result, const char *error);
  * @param pin 
  * @param cb Callback for pairing completion
  */
-bool computer_manager_pair(PSERVER_DATA p, char *pin, pairing_callback cb);
+bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb);
 
 void _computer_manager_add(char *name, PSERVER_DATA p, int err);
 

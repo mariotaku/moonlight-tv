@@ -5,6 +5,7 @@
 #include "libgamestream/errors.h"
 
 #include "backend/application_manager.h"
+#include "gui_root.h"
 #include "launcher_window.h"
 
 #define LINKEDLIST_TYPE PSERVER_LIST
@@ -29,9 +30,9 @@ static struct
 static struct nk_style_button cm_list_button_style;
 
 static void _select_computer(PSERVER_LIST node, bool load_apps);
-static void cw_open_pair(int index, SERVER_DATA *item);
+static void _open_pair(int index, PSERVER_LIST node);
 
-static void _pairing_popup(struct nk_context *ctx);
+static void _pairing_window(struct nk_context *ctx);
 static void _pairing_error_popup(struct nk_context *ctx);
 static void _server_error_popup(struct nk_context *ctx);
 
@@ -49,8 +50,13 @@ bool launcher_window(struct nk_context *ctx)
 {
     /* GUI */
     int content_height_remaining;
+    int window_flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
+    if (pairing_computer_state.state == PS_RUNNING)
+    {
+        window_flags |= NK_WINDOW_NO_INPUT;
+    }
     if (nk_begin(ctx, "Moonlight", nk_rect(50, 50, 300, 300),
-                 NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE))
+                 window_flags))
     {
         bool event_emitted = false;
         content_height_remaining = (int)nk_window_get_content_region_size(ctx).y;
@@ -87,17 +93,18 @@ bool launcher_window(struct nk_context *ctx)
         {
             nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
 
-            if (pairing_computer_state.state == PS_RUNNING)
-            {
-                _pairing_popup(ctx);
-            }
-            else if (pairing_computer_state.state == PS_FAIL)
+            if (pairing_computer_state.state == PS_FAIL)
             {
                 _pairing_error_popup(ctx);
             }
         }
     }
     nk_end(ctx);
+
+    if (pairing_computer_state.state == PS_RUNNING)
+    {
+        _pairing_window(ctx);
+    }
 
     // Why Nuklear why, the button looks like "close" but it actually "hide"
     if (nk_window_is_hidden(ctx, "Moonlight"))
@@ -132,7 +139,7 @@ bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_
                     }
                     else
                     {
-                        cw_open_pair(i, server);
+                        _open_pair(i, cur);
                     }
                     event_emitted = true;
                 }
@@ -156,12 +163,13 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
     }
 }
 
-static void cw_pairing_callback(int result, const char *error)
+static void cw_pairing_callback(PSERVER_LIST node, int result, const char *error)
 {
     if (result == GS_OK)
     {
         // Close pairing window
         pairing_computer_state.state = PS_NONE;
+        _select_computer(node, node->apps == NULL);
     }
     else
     {
@@ -171,25 +179,26 @@ static void cw_pairing_callback(int result, const char *error)
     }
 }
 
-void cw_open_pair(int index, SERVER_DATA *item)
+void _open_pair(int index, PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_RUNNING;
-    computer_manager_pair(item, &pairing_computer_state.pin[0], cw_pairing_callback);
+    computer_manager_pair(node, &pairing_computer_state.pin[0], cw_pairing_callback);
 }
 
-void _pairing_popup(struct nk_context *ctx)
+void _pairing_window(struct nk_context *ctx)
 {
-    static struct nk_rect s = {34, 40, 220, 110};
-    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing",
-                       NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+    static const struct nk_vec2 size = {330, 110};
+    struct nk_vec2 pos = {(gui_display_width - size.x) / 2, (gui_display_height - size.y) / 2};
+    struct nk_rect s = nk_recta(pos, size);
+    if (nk_begin(ctx, "Pairing", s, NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_SCROLLBAR))
     {
         nk_layout_row_dynamic(ctx, 64, 1);
 
         nk_labelf_wrap(ctx, "Please enter %s on your GameStream PC. This dialog will close when pairing is completed.",
                        pairing_computer_state.pin);
-        nk_popup_end(ctx);
     }
+    nk_end(ctx);
 }
 
 void _pairing_error_popup(struct nk_context *ctx)
@@ -233,7 +242,7 @@ void _server_error_popup(struct nk_context *ctx)
     {
         struct nk_vec2 win_region_size = nk_window_get_content_region_size(ctx);
         int content_height_remaining = (int)win_region_size.y;
-                content_height_remaining -= 8 * 2;
+        content_height_remaining -= 8 * 2;
         /* remove bottom button height */
         content_height_remaining -= 30;
         nk_layout_row_dynamic(ctx, 40, 1);

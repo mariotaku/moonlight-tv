@@ -7,6 +7,8 @@
 #include "launcher_window.h"
 #include "streaming_overlay.h"
 
+short gui_display_width, gui_display_height;
+
 void gui_root_init(struct nk_context *ctx)
 {
     launcher_window_init(ctx);
@@ -40,4 +42,10 @@ bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
 bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
 {
     return false;
+}
+
+void gui_display_size(short width, short height)
+{
+    gui_display_width = width;
+    gui_display_height = height;
 }

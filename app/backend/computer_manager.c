@@ -15,7 +15,7 @@ static SDL_Thread *computer_manager_polling_thread = NULL;
 
 typedef struct CM_PIN_REQUEST_T
 {
-    PSERVER_DATA server;
+    PSERVER_LIST node;
     char *pin;
     pairing_callback callback;
 } cm_pin_request;
@@ -75,13 +75,13 @@ static int pin_random(int min, int max)
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
-bool computer_manager_pair(SERVER_DATA *p, char *pin, pairing_callback cb)
+bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb)
 {
     int pin_int = pin_random(0, 9999);
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     snprintf(pin, 5, "%04u", pin_int);
     req->pin = strdup(pin);
-    req->server = p;
+    req->node = node;
     req->callback = cb;
     SDL_CreateThread(_computer_manager_pairing_action, "cm_pairing", req);
     return true;
@@ -101,9 +101,10 @@ void _computer_manager_add(char *name, PSERVER_DATA p, int err)
 int _computer_manager_pairing_action(void *data)
 {
     cm_pin_request *req = (cm_pin_request *)data;
-    PSERVER_DATA server = req->server;
-    int result = gs_pair(req->server, (char *)req->pin);
-    req->callback(result, gs_error);
+    PSERVER_LIST node = req->node;
+    PSERVER_DATA server = node->server;
+    int result = gs_pair(server, (char *)req->pin);
+    req->callback(node, result, gs_error);
     free(data);
     return 0;
 }
