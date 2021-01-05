@@ -10,7 +10,7 @@
 
 static char *_path_join(const char *parent, const char *basename)
 {
-    char *joined = calloc(strlen(parent) + strlen(basename), sizeof(char));
+    char *joined = calloc(strlen(parent) + 1 + strlen(basename) + 1, sizeof(char));
     sprintf(joined, "%s/%s", parent, basename);
     return joined;
 }
@@ -36,7 +36,7 @@ PCONFIGURATION settings_load()
     char *argv[2] = {"moonlight", _path_join(confdir, CONF_NAME_STREAMING)};
     config_parse(2, argv, config);
     free(argv[1]);
-
+    free(confdir);
     config->unsupported = true;
 
     return config;
