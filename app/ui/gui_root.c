@@ -9,9 +9,12 @@
 
 short gui_display_width, gui_display_height;
 
+bool gui_settings_opened;
+
 void gui_root_init(struct nk_context *ctx)
 {
     launcher_window_init(ctx);
+    settings_window_init(ctx);
     streaming_overlay_init(ctx);
 }
 
@@ -20,7 +23,18 @@ bool gui_root(struct nk_context *ctx)
     STREAMING_STATUS stat = streaming_status;
     if (stat == STREAMING_NONE)
     {
-        return launcher_window(ctx);
+        if (launcher_window(ctx))
+        {
+            if (gui_settings_opened)
+            {
+                settings_window(ctx);
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     else
     {

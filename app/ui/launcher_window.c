@@ -63,13 +63,22 @@ bool launcher_window(struct nk_context *ctx)
         content_height_remaining -= ctx->style.window.padding.y * 2;
         content_height_remaining -= (int)ctx->style.window.border;
         nk_menubar_begin(ctx);
-        nk_layout_row_begin(ctx, NK_STATIC, 25, 1);
+
+        nk_layout_row_begin(ctx, NK_DYNAMIC, 25, 3);
         content_height_remaining -= nk_widget_bounds(ctx).h;
 
         nk_layout_row_push(ctx, 150);
         int computer_len = linkedlist_len(computer_list);
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
 
+        nk_layout_row_push(ctx, 1);
+        nk_spacing(ctx, 1);
+
+        nk_layout_row_push(ctx, 80);
+        if (nk_button_label(ctx, "Settings"))
+        {
+            gui_settings_opened = true;
+        }
         nk_layout_row_end(ctx);
 
         nk_menubar_end(ctx);

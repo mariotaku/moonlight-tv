@@ -37,7 +37,8 @@
         "streaming_overlay.h": "c",
         "streaming_session.h": "c",
         "sdl.h": "c",
-        "cerrno": "c"
+        "cerrno": "c",
+        "settings_window.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

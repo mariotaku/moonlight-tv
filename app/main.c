@@ -13,6 +13,7 @@
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
+#include "demo/overview.c"
 
 #include <SDL2/SDL.h>
 #ifdef NK_SDL_GLES2_IMPLEMENTATION
@@ -74,6 +75,7 @@ MainLoop(void *loopArg)
     nk_input_end(ctx);
 
     bool cont = gui_root(ctx);
+    overview(ctx);
 
     /* Draw */
     {
