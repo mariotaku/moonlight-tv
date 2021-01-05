@@ -51,7 +51,6 @@ set(SOURCES
     app/ui/streaming_overlay.c
     app/ui/settings_window.c
     core/moonlight-embedded/src/config.c
-    core/moonlight-embedded/src/input/sdl.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
     core/moonlight-embedded/libgamestream/mkcert.c

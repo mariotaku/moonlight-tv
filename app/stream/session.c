@@ -5,7 +5,8 @@
 #include "platform.h"
 #include "sdl.h"
 #include "sdl/user_event.h"
-#include "input/sdl.h"
+// Include source directly in order to use static functions
+#include "input/sdl.c"
 
 #include <Limelight.h>
 
@@ -37,6 +38,8 @@ typedef struct
 } STREAMING_REQUEST;
 
 static int _streaming_thread_action(STREAMING_REQUEST *req);
+
+static void release_gamecontroller_buttons(SDL_Event ev);
 
 void streaming_init()
 {
@@ -118,6 +121,12 @@ bool streaming_dispatch_event(SDL_Event ev)
         break;
     case SDL_QUIT_APPLICATION:
     {
+        if (ev.type == SDL_CONTROLLERBUTTONDOWN || ev.type == SDL_CONTROLLERBUTTONUP)
+        {
+            // Put gamepad to neutral state
+            release_gamecontroller_buttons(ev);
+        }
+
         SDL_Event quitapp;
         quitapp.type = SDL_USEREVENT;
         quitapp.user.code = SDL_USER_ST_QUITAPP_CONFIRM;
@@ -193,4 +202,19 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
 
     free(req);
     return 0;
+}
+
+void release_gamecontroller_buttons(SDL_Event ev)
+{
+    PGAMEPAD_STATE gamepad;
+    gamepad = get_gamepad(ev.cbutton.which);
+    gamepad->buttons = 0;
+    gamepad->leftTrigger = 0;
+    gamepad->rightTrigger = 0;
+    gamepad->leftStickX = 0;
+    gamepad->leftStickY = 0;
+    gamepad->rightStickX = 0;
+    gamepad->rightStickY = 0;
+    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
+                               gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
 }

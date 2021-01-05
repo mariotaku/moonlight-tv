@@ -38,7 +38,11 @@
         "streaming_session.h": "c",
         "sdl.h": "c",
         "cerrno": "c",
-        "settings_window.h": "c"
+        "settings_window.h": "c",
+        "limelight.h": "c",
+        "sdl_ex.h": "c",
+        "user_event.h": "c",
+        "platform.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
