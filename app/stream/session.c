@@ -1,7 +1,7 @@
 #include "session.h"
+#include "settings.h"
 
 #include "connection.h"
-#include "config.h"
 #include "platform.h"
 #include "sdl.h"
 #include "input/sdl.h"
@@ -16,7 +16,7 @@
 #include "backend/computer_manager.h"
 
 STREAMING_STATUS streaming_status = STREAMING_NONE;
-int streaming_error = GS_OK;
+int streaming_errno = GS_OK;
 
 SDL_bool session_running = SDL_FALSE;
 SDL_Thread *streaming_thread;
@@ -34,7 +34,7 @@ typedef struct
     int appId;
 } STREAMING_REQUEST;
 
-static int _streaming_thread_action(void *data);
+static int _streaming_thread_action(STREAMING_REQUEST *req);
 
 void streaming_init()
 {
@@ -60,21 +60,13 @@ void streaming_destroy()
 
 void streaming_begin(PSERVER_DATA server, int app_id)
 {
-    CONFIGURATION *config = malloc(sizeof(CONFIGURATION));
-    char *homedir = getenv("HOME");
-    static const char *configname = ".moonlight.conf";
-    // HOME + / + configname
-    char *argv[2] = {"moonlight", NULL};
-    argv[1] = calloc(strlen(homedir) + strlen(configname), sizeof(char));
-    sprintf(argv[1], "%s/%s", homedir, configname);
-    fprintf(stderr, argv[1]);
-    config_parse(2, argv, config);
+    PCONFIGURATION config = settings_load();
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = server;
     req->config = config;
     req->appId = app_id;
-    streaming_thread = SDL_CreateThread(_streaming_thread_action, "streaming", req);
+    streaming_thread = SDL_CreateThread((SDL_ThreadFunction)_streaming_thread_action, "streaming", req);
 }
 
 void streaming_interrupt()
@@ -132,11 +124,10 @@ void streaming_display_size(short width, short height)
     streaming_display_height = height;
 }
 
-int _streaming_thread_action(void *data)
+int _streaming_thread_action(STREAMING_REQUEST *req)
 {
     streaming_status = STREAMING_CONNECTING;
-    streaming_error = GS_OK;
-    STREAMING_REQUEST *req = data;
+    streaming_errno = GS_OK;
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
     int appId = req->appId;
@@ -150,7 +141,8 @@ int _streaming_thread_action(void *data)
     if (ret < 0)
     {
         streaming_status = STREAMING_ERROR;
-        streaming_error = ret;
+        streaming_errno = ret;
+        free(req);
         return -1;
     }
 
@@ -177,16 +169,16 @@ int _streaming_thread_action(void *data)
     streaming_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
-    gs_quit_app(server);
+    if (config->quitappafter)
+    {
+        if (config->debug_level > 0)
+            printf("Sending app quit request ...\n");
+        gs_quit_app(server);
+    }
 
-    // if (config->quitappafter)
-    // {
-    //     if (config->debug_level > 0)
-    //         printf("Sending app quit request ...\n");
-    //     gs_quit_app(server);
-    // }
     streaming_thread = NULL;
-
     streaming_status = STREAMING_NONE;
+
+    free(req);
     return 0;
 }

@@ -44,6 +44,7 @@ set(SOURCES
     app/stream/platform.c
     app/stream/session.c
     app/stream/connection.c
+    app/stream/settings.c
     app/ui/gui_root.c
     app/ui/launcher_window.c
     app/ui/applications_list.c

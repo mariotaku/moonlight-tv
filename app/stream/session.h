@@ -12,7 +12,7 @@ enum STREAMING_STATUS
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
 extern STREAMING_STATUS streaming_status;
-extern int streaming_error;
+extern int streaming_errno;
 
 void streaming_init();
 
