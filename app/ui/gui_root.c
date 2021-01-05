@@ -55,13 +55,20 @@ void gui_background()
 bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
 {
     bool handled = false;
-    handled |= streaming_dispatch_userevent(ctx, ev);
+    handled |= streaming_overlay_dispatch_userevent(ctx, ev);
     return false;
 }
 
 bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
 {
     return false;
+}
+
+bool gui_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev)
+{
+    bool ret = false;
+    ret |= streaming_overlay_block_stream_inputevent(ctx, ev);
+    return ret;
 }
 
 void gui_display_size(short width, short height)

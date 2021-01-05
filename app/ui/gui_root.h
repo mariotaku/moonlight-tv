@@ -22,4 +22,6 @@ bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev);
 
 bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev);
 
+bool gui_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev);
+
 void gui_display_size(short width, short height);

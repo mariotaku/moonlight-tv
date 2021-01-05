@@ -60,7 +60,7 @@ bool launcher_window(struct nk_context *ctx)
                  window_flags))
     {
         bool event_emitted = false;
-        struct nk_vec2 content_size = nk_window_get_content_size(ctx);
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         content_height_remaining = (int)content_size.y;
 
         content_width_remaining = (int)content_size.x;
@@ -218,7 +218,7 @@ void _pairing_error_popup(struct nk_context *ctx)
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing Failed",
                        NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        struct nk_vec2 content_size = nk_window_get_content_size(ctx);
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
         content_height_remaining -= 30;
@@ -250,7 +250,7 @@ void _server_error_popup(struct nk_context *ctx)
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
                        NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        struct nk_vec2 content_size = nk_window_get_content_size(ctx);
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
         content_height_remaining -= 30;

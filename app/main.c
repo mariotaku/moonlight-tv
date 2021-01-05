@@ -55,21 +55,26 @@ MainLoop(void *loopArg)
     nk_input_begin(ctx);
     while (SDL_PollEvent(&evt))
     {
-        switch (evt.type)
+        bool block_steam_inputevent = false;
+        if (evt.type >= SDL_KEYDOWN && evt.type < SDL_CLIPBOARDUPDATE)
         {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
+            // Those are input events
             gui_dispatch_inputevent(ctx, evt);
-            break;
-        case SDL_USEREVENT:
+            block_steam_inputevent |= gui_block_stream_inputevent(ctx, evt);
+        }
+        else if (evt.type == SDL_USEREVENT)
+        {
             backend_dispatch_userevent(evt);
             gui_dispatch_userevent(ctx, evt);
-            break;
-        case SDL_QUIT:
-            request_exit();
-            break;
         }
-        streaming_dispatch_event(evt);
+        else if (evt.type == SDL_QUIT)
+        {
+            request_exit();
+        }
+        if (!block_steam_inputevent)
+        {
+            streaming_dispatch_event(evt);
+        }
         nk_sdl_handle_event(&evt);
     }
     nk_input_end(ctx);
