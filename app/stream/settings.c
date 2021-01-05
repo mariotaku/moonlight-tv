@@ -39,5 +39,8 @@ PCONFIGURATION settings_load()
     char *argv[2] = {"moonlight", _path_join(confdir, conf_name_streaming)};
     config_parse(2, argv, config);
     free(argv[1]);
+
+    config->unsupported = true;
+
     return config;
 }

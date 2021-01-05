@@ -10,7 +10,7 @@
 #include <ifaddrs.h>
 
 #include "libgamestream/errors.h"
-#include "config.h"
+#include "stream/settings.h"
 
 static char addrbuffer[64];
 static char entrybuffer[256];
@@ -125,9 +125,8 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
         char *srvaddr = calloc(addrstr.length + 1, sizeof(char)), *srvname = parse_server_name(entrystr);
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
-        CONFIGURATION config;
-        config_parse(0, NULL, &config);
-        int ret = gs_init(server, srvaddr, config.key_dir, config.debug_level, config.unsupported);
+        PCONFIGURATION config = settings_load();
+        int ret = gs_init(server, srvaddr, config->key_dir, config->debug_level, config->unsupported);
         if (ret == GS_OK)
         {
             _computer_manager_add(srvname, server, ret);

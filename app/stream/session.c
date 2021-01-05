@@ -27,6 +27,8 @@ SDL_Cursor *_blank_cursor;
 
 short streaming_display_width, streaming_display_height;
 
+bool streaming_quitapp_requested;
+
 typedef struct
 {
     SERVER_DATA *server;
@@ -40,6 +42,7 @@ void streaming_init()
 {
     streaming_thread = NULL;
     streaming_status = STREAMING_NONE;
+    streaming_quitapp_requested = false;
     lock = SDL_CreateMutex();
     cond = SDL_CreateCond();
     int32_t cursorData[2] = {0, 0};
@@ -112,6 +115,10 @@ bool streaming_dispatch_event(SDL_Event ev)
     case SDL_MOUSE_UNGRAB:
         SDL_SetCursor(NULL);
         break;
+    case SDL_QUIT_APPLICATION:
+        streaming_quitapp_requested = true;
+        streaming_interrupt();
+        break;
     default:
         break;
     }
@@ -169,7 +176,7 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
     streaming_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
-    if (config->quitappafter)
+    if (config->quitappafter || streaming_quitapp_requested)
     {
         if (config->debug_level > 0)
             printf("Sending app quit request ...\n");
