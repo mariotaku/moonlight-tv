@@ -10,7 +10,7 @@
 #endif
 
 extern short gui_display_width, gui_display_height;
-extern bool gui_settings_opened;
+extern bool gui_settings_showing;
 
 void gui_root_init(struct nk_context *ctx);
 

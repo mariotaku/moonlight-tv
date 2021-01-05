@@ -5,11 +5,12 @@
 #include "stream/session.h"
 
 #include "launcher_window.h"
+#include "settings_window.h"
 #include "streaming_overlay.h"
 
 short gui_display_width, gui_display_height;
 
-bool gui_settings_opened;
+bool gui_settings_showing;
 
 void gui_root_init(struct nk_context *ctx)
 {
@@ -25,9 +26,12 @@ bool gui_root(struct nk_context *ctx)
     {
         if (launcher_window(ctx))
         {
-            if (gui_settings_opened)
+            if (gui_settings_showing)
             {
-                settings_window(ctx);
+                if (!settings_window(ctx))
+                {
+                    gui_settings_showing = false;
+                }
             }
             return true;
         }
@@ -50,6 +54,8 @@ void gui_background()
 
 bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
 {
+    bool handled = false;
+    handled |= streaming_dispatch_userevent(ctx, ev);
     return false;
 }
 

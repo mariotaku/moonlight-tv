@@ -1,4 +1,3 @@
-
 #ifndef NK_NUKLEAR_H_
 #include "nuklear.h"
 #endif
@@ -39,6 +38,6 @@ nk_list_item_text(struct nk_context *ctx, const char *text, int len,
 
     in = (state == NK_WIDGET_ROM || win->layout->flags & NK_WINDOW_ROM) ? 0 : &ctx->input;
     return nk_do_button_text(&ctx->last_widget_state, &win->buffer, bounds,
-        text, len, alignment, NK_BUTTON_DEFAULT, &style->contextual_button, in, style->font);
+                             text, len, alignment, NK_BUTTON_DEFAULT, &style->contextual_button, in, style->font);
 }
 #endif

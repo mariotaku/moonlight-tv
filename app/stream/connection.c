@@ -31,7 +31,7 @@ ConnListenerRumble rumble_handler = NULL;
 static void connection_terminated() {
   if (main_thread_id != 0)
     pthread_kill(main_thread_id, SIGTERM);
-  streaming_interrupt();
+  streaming_interrupt(false);
 }
 
 static void connection_log_message(const char* format, ...) {

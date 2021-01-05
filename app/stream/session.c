@@ -4,12 +4,12 @@
 #include "connection.h"
 #include "platform.h"
 #include "sdl.h"
+#include "sdl/user_event.h"
 #include "input/sdl.h"
 
 #include <Limelight.h>
 
 #include <SDL.h>
-
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
@@ -54,7 +54,7 @@ void streaming_init()
 
 void streaming_destroy()
 {
-    streaming_interrupt();
+    streaming_interrupt(streaming_quitapp_requested);
     streaming_wait_for_stop();
 
     SDL_DestroyCond(cond);
@@ -72,9 +72,10 @@ void streaming_begin(PSERVER_DATA server, int app_id)
     streaming_thread = SDL_CreateThread((SDL_ThreadFunction)_streaming_thread_action, "streaming", req);
 }
 
-void streaming_interrupt()
+void streaming_interrupt(bool quitapp)
 {
     SDL_LockMutex(lock);
+    streaming_quitapp_requested = quitapp;
     session_running = SDL_FALSE;
     SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
@@ -116,9 +117,13 @@ bool streaming_dispatch_event(SDL_Event ev)
         SDL_SetCursor(NULL);
         break;
     case SDL_QUIT_APPLICATION:
-        streaming_quitapp_requested = true;
-        streaming_interrupt();
+    {
+        SDL_Event quitapp;
+        quitapp.type = SDL_USEREVENT;
+        quitapp.user.code = SDL_USER_ST_QUITAPP_CONFIRM;
+        SDL_PushEvent(&quitapp);
         break;
+    }
     default:
         break;
     }

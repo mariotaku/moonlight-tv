@@ -20,7 +20,7 @@ void streaming_destroy();
 
 void streaming_begin(PSERVER_DATA server, int app_id);
 
-void streaming_interrupt();
+void streaming_interrupt(bool quitapp);
 
 void streaming_wait_for_stop();
 

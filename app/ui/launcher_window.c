@@ -1,3 +1,5 @@
+#include "launcher_window.h"
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <memory.h>
@@ -6,7 +8,6 @@
 
 #include "backend/application_manager.h"
 #include "gui_root.h"
-#include "launcher_window.h"
 
 #define LINKEDLIST_TYPE PSERVER_LIST
 #include "util/linked_list.h"
@@ -49,9 +50,9 @@ void launcher_window_init(struct nk_context *ctx)
 bool launcher_window(struct nk_context *ctx)
 {
     /* GUI */
-    int content_height_remaining;
+    int content_width_remaining, content_height_remaining;
     int window_flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
-    if (pairing_computer_state.state == PS_RUNNING)
+    if (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
     {
         window_flags |= NK_WINDOW_NO_INPUT;
     }
@@ -59,28 +60,28 @@ bool launcher_window(struct nk_context *ctx)
                  window_flags))
     {
         bool event_emitted = false;
-        content_height_remaining = (int)nk_window_get_content_region_size(ctx).y;
-        content_height_remaining -= ctx->style.window.padding.y * 2;
-        content_height_remaining -= (int)ctx->style.window.border;
-        nk_menubar_begin(ctx);
+        struct nk_vec2 content_size = nk_window_get_content_size(ctx);
+        content_height_remaining = (int)content_size.y;
 
-        nk_layout_row_begin(ctx, NK_DYNAMIC, 25, 3);
+        content_width_remaining = (int)content_size.x;
+        nk_menubar_begin(ctx);
+        nk_layout_row_template_begin(ctx, 25);
+        nk_layout_row_template_push_static(ctx, 150);
+        nk_layout_row_template_push_variable(ctx, 10);
+        nk_layout_row_template_push_static(ctx, 80);
+        nk_layout_row_template_end(ctx);
+
         content_height_remaining -= nk_widget_bounds(ctx).h;
 
-        nk_layout_row_push(ctx, 150);
         int computer_len = linkedlist_len(computer_list);
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
 
-        nk_layout_row_push(ctx, 1);
         nk_spacing(ctx, 1);
 
-        nk_layout_row_push(ctx, 80);
         if (nk_button_label(ctx, "Settings"))
         {
-            gui_settings_opened = true;
+            gui_settings_showing = true;
         }
-        nk_layout_row_end(ctx);
-
         nk_menubar_end(ctx);
 
         struct nk_list_view list_view;
@@ -217,9 +218,8 @@ void _pairing_error_popup(struct nk_context *ctx)
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing Failed",
                        NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        struct nk_vec2 win_region_size = nk_window_get_content_region_size(ctx);
-        int content_height_remaining = (int)win_region_size.y;
-        content_height_remaining -= 8 * 2;
+        struct nk_vec2 content_size = nk_window_get_content_size(ctx);
+        int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
         content_height_remaining -= 30;
         nk_layout_row_dynamic(ctx, content_height_remaining, 1);
@@ -233,7 +233,7 @@ void _pairing_error_popup(struct nk_context *ctx)
             nk_label_wrap(ctx, "Pairing error.");
         }
         nk_layout_space_begin(ctx, NK_STATIC, 30, 1);
-        nk_layout_space_push(ctx, nk_recti(win_region_size.x - 80, 0, 80, 30));
+        nk_layout_space_push(ctx, nk_recti(content_size.x - 80, 0, 80, 30));
         if (nk_button_label(ctx, "OK"))
         {
             pairing_computer_state.state = PS_NONE;
@@ -250,15 +250,14 @@ void _server_error_popup(struct nk_context *ctx)
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
                        NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        struct nk_vec2 win_region_size = nk_window_get_content_region_size(ctx);
-        int content_height_remaining = (int)win_region_size.y;
-        content_height_remaining -= 8 * 2;
+        struct nk_vec2 content_size = nk_window_get_content_size(ctx);
+        int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
         content_height_remaining -= 30;
         nk_layout_row_dynamic(ctx, 40, 1);
         nk_label_wrap(ctx, selected_server_node->errmsg);
         nk_layout_space_begin(ctx, NK_STATIC, 30, 1);
-        nk_layout_space_push(ctx, nk_recti(win_region_size.x - 80, 0, 80, 30));
+        nk_layout_space_push(ctx, nk_recti(content_size.x - 80, 0, 80, 30));
         if (nk_button_label(ctx, "OK"))
         {
             selected_server_node = NULL;
