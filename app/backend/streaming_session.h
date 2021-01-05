@@ -11,6 +11,8 @@ enum STREAMING_STATUS
 };
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
+extern STREAMING_STATUS streaming_status;
+
 void streaming_init();
 
 void streaming_destroy();
@@ -26,5 +28,3 @@ void streaming_display_size(short width, short height);
 bool streaming_running();
 
 bool streaming_dispatch_event(SDL_Event ev);
-
-STREAMING_STATUS streaming_status();

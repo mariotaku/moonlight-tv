@@ -66,7 +66,7 @@ bool launcher_window(struct nk_context *ctx)
         nk_layout_row_begin(ctx, NK_STATIC, 25, 1);
         content_height_remaining -= nk_widget_bounds(ctx).h;
 
-        nk_layout_row_push(ctx, 100);
+        nk_layout_row_push(ctx, 150);
         int computer_len = linkedlist_len(computer_list);
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
 
@@ -117,7 +117,8 @@ bool launcher_window(struct nk_context *ctx)
 
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
 {
-    if (nk_combo_begin_label(ctx, "Computer", nk_vec2(200, 200)))
+    char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
+    if (nk_combo_begin_label(ctx, selected, nk_vec2(150, 200)))
     {
         nk_layout_row_dynamic(ctx, 25, 1);
         PSERVER_LIST cur = list;

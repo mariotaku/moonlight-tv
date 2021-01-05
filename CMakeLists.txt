@@ -46,6 +46,7 @@ set(SOURCES
     app/ui/launcher_window.c
     app/ui/applications_list.c
     app/ui/streaming_overlay.c
+    app/stream/platform.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/src/connection.c
     core/moonlight-embedded/src/input/sdl.c

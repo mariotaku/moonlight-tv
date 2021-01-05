@@ -13,13 +13,10 @@
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
-#include "stream/audio/audio.h"
-#include "stream/video/video.h"
-
 #include "backend/computer_manager.h"
 
 SDL_bool session_running = SDL_FALSE;
-STREAMING_STATUS session_status = STREAMING_NONE;
+STREAMING_STATUS streaming_status = STREAMING_NONE;
 
 SDL_Thread *streaming_thread;
 SDL_mutex *lock;
@@ -41,7 +38,7 @@ static int _streaming_thread_action(void *data);
 void streaming_init()
 {
     streaming_thread = NULL;
-    session_status = STREAMING_NONE;
+    streaming_status = STREAMING_NONE;
     lock = SDL_CreateMutex();
     cond = SDL_CreateCond();
     int32_t cursorData[2] = {0, 0};
@@ -104,7 +101,7 @@ bool streaming_running()
 
 bool streaming_dispatch_event(SDL_Event ev)
 {
-    if (session_status != STREAMING_STREAMING)
+    if (streaming_status != STREAMING_STREAMING)
     {
         return false;
     }
@@ -136,7 +133,7 @@ void streaming_display_size(short width, short height)
 
 int _streaming_thread_action(void *data)
 {
-    session_status = STREAMING_CONNECTING;
+    streaming_status = STREAMING_CONNECTING;
     STREAMING_REQUEST *req = data;
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
@@ -172,7 +169,7 @@ int _streaming_thread_action(void *data)
 
     LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks, platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
     session_running = true;
-    session_status = STREAMING_STREAMING;
+    streaming_status = STREAMING_STREAMING;
 
     SDL_LockMutex(lock);
     while (session_running)
@@ -183,7 +180,7 @@ int _streaming_thread_action(void *data)
     SDL_UnlockMutex(lock);
 
     rumble_handler = NULL;
-    session_status = STREAMING_DISCONNECTING;
+    streaming_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
     gs_quit_app(server);
@@ -196,31 +193,6 @@ int _streaming_thread_action(void *data)
     // }
     streaming_thread = NULL;
 
-    session_status = STREAMING_NONE;
+    streaming_status = STREAMING_NONE;
     return 0;
-}
-
-STREAMING_STATUS streaming_status()
-{
-    return session_status;
-}
-
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
-{
-#ifdef OS_WEBOS
-    return &audio_callbacks_ndl;
-#else
-#warning "No supported callbacks for this platform"
-    return NULL;
-#endif
-}
-
-PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
-{
-#ifdef OS_WEBOS
-    return &decoder_callbacks_ndl;
-#else
-#warning "No supported callbacks for this platform"
-    return NULL;
-#endif
 }

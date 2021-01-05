@@ -17,7 +17,7 @@ void gui_root_init(struct nk_context *ctx)
 
 bool gui_root(struct nk_context *ctx)
 {
-    STREAMING_STATUS stat = streaming_status();
+    STREAMING_STATUS stat = streaming_status;
     if (stat == STREAMING_NONE)
     {
         return launcher_window(ctx);
