@@ -41,14 +41,14 @@ set(SOURCES
     app/backend/computer_discovery.c
     app/backend/application_manager.c
     app/backend/error_manager.c
-    app/backend/streaming_session.c
+    app/stream/platform.c
+    app/stream/session.c
+    app/stream/connection.c
     app/ui/gui_root.c
     app/ui/launcher_window.c
     app/ui/applications_list.c
     app/ui/streaming_overlay.c
-    app/stream/platform.c
     core/moonlight-embedded/src/config.c
-    core/moonlight-embedded/src/connection.c
     core/moonlight-embedded/src/input/sdl.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c

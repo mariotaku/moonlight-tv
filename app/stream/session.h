@@ -3,15 +3,16 @@
 #include <stdbool.h>
 #include <SDL.h>
 
-#include "computer_manager.h"
+#include "backend/computer_manager.h"
 
 enum STREAMING_STATUS
 {
-    STREAMING_NONE, STREAMING_CONNECTING, STREAMING_STREAMING, STREAMING_DISCONNECTING
+    STREAMING_NONE, STREAMING_CONNECTING, STREAMING_STREAMING, STREAMING_DISCONNECTING, STREAMING_ERROR
 };
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
 extern STREAMING_STATUS streaming_status;
+extern int streaming_error;
 
 void streaming_init();
 

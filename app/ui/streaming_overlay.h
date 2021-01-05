@@ -8,7 +8,7 @@
 #endif
 
 #include "backend/computer_manager.h"
-#include "backend/streaming_session.h"
+#include "stream/session.h"
 
 void streaming_overlay_init(struct nk_context *ctx);
 

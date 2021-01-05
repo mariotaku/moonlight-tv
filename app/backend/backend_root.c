@@ -2,7 +2,7 @@
 
 #include "computer_manager.h"
 #include "application_manager.h"
-#include "streaming_session.h"
+#include "stream/session.h"
 
 void backend_init()
 {

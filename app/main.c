@@ -33,7 +33,7 @@
 #include "main.h"
 #include "debughelper.h"
 #include "backend/backend_root.h"
-#include "backend/streaming_session.h"
+#include "stream/session.h"
 #include "ui/config.h"
 #include "ui/gui_root.h"
 

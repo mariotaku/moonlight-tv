@@ -1,4 +1,4 @@
-#include "streaming_session.h"
+#include "session.h"
 
 #include "connection.h"
 #include "config.h"
@@ -15,9 +15,10 @@
 
 #include "backend/computer_manager.h"
 
-SDL_bool session_running = SDL_FALSE;
 STREAMING_STATUS streaming_status = STREAMING_NONE;
+int streaming_error = GS_OK;
 
+SDL_bool session_running = SDL_FALSE;
 SDL_Thread *streaming_thread;
 SDL_mutex *lock;
 SDL_cond *cond;
@@ -134,6 +135,7 @@ void streaming_display_size(short width, short height)
 int _streaming_thread_action(void *data)
 {
     streaming_status = STREAMING_CONNECTING;
+    streaming_error = GS_OK;
     STREAMING_REQUEST *req = data;
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
@@ -147,16 +149,8 @@ int _streaming_thread_action(void *data)
     int ret = gs_start_app(server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0)
     {
-        if (ret == GS_NOT_SUPPORTED_4K)
-            fprintf(stderr, "Server doesn't support 4K\n");
-        else if (ret == GS_NOT_SUPPORTED_MODE)
-            fprintf(stderr, "Server doesn't support %dx%d (%d fps) or try --unsupported option\n", config->stream.width, config->stream.height, config->stream.fps);
-        else if (ret == GS_NOT_SUPPORTED_SOPS_RESOLUTION)
-            fprintf(stderr, "SOPS isn't supported for the resolution %dx%d, use supported resolution or add --nosops option\n", config->stream.width, config->stream.height);
-        else if (ret == GS_ERROR)
-            fprintf(stderr, "Gamestream error: %s\n", gs_error);
-        else
-            fprintf(stderr, "Errorcode starting app: %d\n", ret);
+        streaming_status = STREAMING_ERROR;
+        streaming_error = ret;
         return -1;
     }
 

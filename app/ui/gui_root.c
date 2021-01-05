@@ -2,7 +2,7 @@
 
 #include <GLES2/gl2.h>
 
-#include "backend/streaming_session.h"
+#include "stream/session.h"
 
 #include "launcher_window.h"
 #include "streaming_overlay.h"

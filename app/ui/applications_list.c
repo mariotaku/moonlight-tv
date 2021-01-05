@@ -1,6 +1,6 @@
 #include "launcher_window.h"
 #include "backend/application_manager.h"
-#include "backend/streaming_session.h"
+#include "stream/session.h"
 
 #include "sdl/webos_keys.h"
 
