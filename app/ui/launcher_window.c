@@ -217,7 +217,7 @@ void _pairing_error_popup(struct nk_context *ctx)
 {
     static struct nk_rect s = {34, 40, 220, 110};
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing Failed",
-                       NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+                       NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
@@ -249,7 +249,7 @@ void _server_error_popup(struct nk_context *ctx)
 {
     static struct nk_rect s = {34, 40, 220, 110};
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
-                       NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+                      NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
