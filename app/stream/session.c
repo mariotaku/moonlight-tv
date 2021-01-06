@@ -26,8 +26,8 @@ SDL_cond *cond;
 SDL_Cursor *_blank_cursor;
 
 short streaming_display_width, streaming_display_height;
-
 bool streaming_quitapp_requested;
+bool streaming_no_control;
 
 typedef struct
 {
@@ -97,6 +97,63 @@ bool streaming_running()
     return session_running == SDL_TRUE;
 }
 
+static bool nocontrol_handle_event(SDL_Event ev)
+{
+    switch (ev.type)
+    {
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+    {
+        int modifier = 0;
+        switch (ev.key.keysym.sym)
+        {
+        case SDLK_RSHIFT:
+        case SDLK_LSHIFT:
+            modifier = MODIFIER_SHIFT;
+            break;
+        case SDLK_RALT:
+        case SDLK_LALT:
+            modifier = MODIFIER_ALT;
+            break;
+        case SDLK_RCTRL:
+        case SDLK_LCTRL:
+            modifier = MODIFIER_CTRL;
+            break;
+        }
+
+        if (modifier != 0)
+        {
+            if (ev.type == SDL_KEYDOWN)
+            {
+                keyboard_modifiers |= modifier;
+            }
+            else
+            {
+                keyboard_modifiers &= ~modifier;
+            }
+        }
+
+        // Quit the stream if all the required quit keys are down
+        if ((keyboard_modifiers & ACTION_MODIFIERS) == ACTION_MODIFIERS && ev.key.keysym.sym == QUIT_KEY && ev.type == SDL_KEYUP)
+        {
+            return SDL_QUIT_APPLICATION;
+        }
+        else if ((keyboard_modifiers & ACTION_MODIFIERS) == ACTION_MODIFIERS && ev.key.keysym.sym == FULLSCREEN_KEY && ev.type == SDL_KEYUP)
+        {
+            return SDL_TOGGLE_FULLSCREEN;
+        }
+        else if ((keyboard_modifiers & ACTION_MODIFIERS) == ACTION_MODIFIERS)
+        {
+            return SDL_MOUSE_UNGRAB;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return SDL_NOTHING;
+}
+
 bool streaming_dispatch_event(SDL_Event ev)
 {
     if (streaming_status != STREAMING_STREAMING)
@@ -104,12 +161,12 @@ bool streaming_dispatch_event(SDL_Event ev)
         return false;
     }
     // Don't mess with Magic Remote yet
-    if (ev.type == SDL_MOUSEMOTION)
+    if (!streaming_no_control && ev.type == SDL_MOUSEMOTION)
     {
         LiSendMousePositionEvent(ev.motion.x, ev.motion.y, streaming_display_width, streaming_display_height);
         return false;
     }
-    switch (sdlinput_handle_event(&ev))
+    switch (streaming_no_control ? nocontrol_handle_event(ev) : sdlinput_handle_event(&ev))
     {
     case SDL_MOUSE_GRAB:
         SDL_SetCursor(_blank_cursor);
@@ -149,6 +206,7 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
     streaming_errno = GS_OK;
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
+    streaming_no_control = config->viewonly;
     int appId = req->appId;
 
     int gamepads = sdl_gamepads;
