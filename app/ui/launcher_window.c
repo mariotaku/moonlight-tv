@@ -57,7 +57,7 @@ bool launcher_window(struct nk_context *ctx)
     {
         window_flags |= NK_WINDOW_NO_INPUT;
     }
-    if (nk_begin(ctx, "Moonlight", nk_rect(50, 50, 300, 300),
+    if (nk_begin(ctx, "Moonlight", nk_rect(60, 50, gui_display_width - 120, gui_display_height - 100),
                  window_flags))
     {
         bool event_emitted = false;

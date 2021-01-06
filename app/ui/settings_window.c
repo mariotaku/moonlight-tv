@@ -81,7 +81,7 @@ bool settings_window_close()
 
 bool settings_window(struct nk_context *ctx)
 {
-    if (nk_begin(ctx, WINDOW_TITLE, nk_rect(250, 50, gui_display_width - 500, gui_display_height - 100),
+    if (nk_begin(ctx, WINDOW_TITLE, nk_rect(250, 60, gui_display_width - 500, gui_display_height - 120),
                  NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
