@@ -161,6 +161,8 @@ bool streaming_dispatch_event(SDL_Event ev)
         return false;
     }
     // Don't mess with Magic Remote yet
+    // TODO https://github.com/mariotaku/moonlight-sdl/issues/1
+    // TODO https://github.com/mariotaku/moonlight-sdl/issues/2
     if (!streaming_no_control && ev.type == SDL_MOUSEMOTION)
     {
         LiSendMousePositionEvent(ev.motion.x, ev.motion.y, streaming_display_width, streaming_display_height);
@@ -264,7 +266,7 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
             printf("Sending app quit request ...\n");
         gs_quit_app(server);
     }
-
+    // TODO https://github.com/mariotaku/moonlight-sdl/issues/3
     streaming_status = STREAMING_NONE;
 
 thread_cleanup:
