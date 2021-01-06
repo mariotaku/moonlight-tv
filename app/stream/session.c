@@ -3,10 +3,9 @@
 
 #include "connection.h"
 #include "platform.h"
-#include "sdl.h"
-#include "sdl/user_event.h"
 // Include source directly in order to use static functions
 #include "input/sdl.c"
+#include "sdl/user_event.h"
 
 #include <Limelight.h>
 

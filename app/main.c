@@ -125,12 +125,8 @@ int main(int argc, char *argv[])
     SDL_GLContext glContext;
     nk_sdl_gl_setup();
     SDL_SetHint("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
-    int window_flags = 0;
-#if OS_LINUX
-    window_flags |= SDL_WINDOW_RESIZABLE;
-#endif
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                           WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | window_flags);
+                           WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_FULLSCREEN);
     streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
     gui_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
     glContext = SDL_GL_CreateContext(win);
