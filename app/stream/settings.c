@@ -29,13 +29,13 @@ static char *settings_config_dir()
     return confdir;
 }
 
-static void settings_initialize(PCONFIGURATION config);
+static void settings_initialize(char *confdir, PCONFIGURATION config);
 
 PCONFIGURATION settings_load()
 {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
-    settings_initialize(config);
     char *confdir = settings_config_dir(), *conffile = _path_join(confdir, CONF_NAME_STREAMING);
+    settings_initialize(confdir, config);
     config_file_parse(conffile, config);
     free(conffile);
     free(confdir);
@@ -50,7 +50,7 @@ void settings_save(PCONFIGURATION config)
     free(confdir);
 }
 
-void settings_initialize(PCONFIGURATION config)
+void settings_initialize(char *confdir, PCONFIGURATION config)
 {
     memset(config, 0, sizeof(CONFIGURATION));
     LiInitializeStreamConfiguration(&config->stream);
@@ -82,5 +82,5 @@ void settings_initialize(PCONFIGURATION config)
 
     config->inputsCount = 0;
     config->mapping = NULL;
-    config->key_dir[0] = 0;
+    sprintf(config->key_dir, "%s/%s", confdir, "key");
 }
