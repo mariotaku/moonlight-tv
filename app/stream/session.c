@@ -51,7 +51,6 @@ void streaming_init()
     _blank_cursor = SDL_CreateCursor((Uint8 *)cursorData, (Uint8 *)cursorData, 8, 8, 4, 4);
 
     sdlinput_init("assets/gamecontrollerdb.txt");
-    rumble_handler = sdlinput_rumble;
 }
 
 void streaming_destroy()
@@ -157,6 +156,10 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
     for (int i = 0; i < gamepads && i < 4; i++)
         gamepad_mask = (gamepad_mask << 1) + 1;
 
+    if (config->debug_level > 0)
+    {
+        printf("Launch app %d...\n", appId);
+    }
     int ret = gs_start_app(server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0)
     {
@@ -173,9 +176,17 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
         printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
     }
 
-    LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks, platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
+    int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
+                                        platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
+    if (startResult != 0)
+    {
+        streaming_status = STREAMING_ERROR;
+        streaming_errno = GS_WRONG_STATE;
+        goto thread_cleanup;
+    }
     session_running = true;
     streaming_status = STREAMING_STREAMING;
+    rumble_handler = sdlinput_rumble;
 
     SDL_LockMutex(lock);
     while (session_running)
@@ -196,8 +207,10 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
         gs_quit_app(server);
     }
 
-    streaming_thread = NULL;
     streaming_status = STREAMING_NONE;
+
+thread_cleanup:
+    streaming_thread = NULL;
 
     free(req);
     return 0;

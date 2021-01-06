@@ -68,7 +68,10 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
       length += entry->length;
       entry = entry->next;
     }
-    NDL_DirectVideoPlay(ndl_buffer, length);
+    if (NDL_DirectVideoPlay(ndl_buffer, length) == -1)
+    {
+        fprintf(stderr, "NDL_DirectVideoPlay returned -1\n");
+    }
   }
   else
   {

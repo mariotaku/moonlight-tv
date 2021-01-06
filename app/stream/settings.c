@@ -64,7 +64,7 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
     config->stream.supportsHevc = false;
 
-    config->debug_level = 0;
+    config->debug_level = 2;
     config->platform = "auto";
     config->app = "Steam";
     config->action = NULL;
