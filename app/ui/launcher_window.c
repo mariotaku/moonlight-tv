@@ -8,6 +8,7 @@
 
 #include "backend/application_manager.h"
 #include "gui_root.h"
+#include "settings_window.h"
 
 #define LINKEDLIST_TYPE PSERVER_LIST
 #include "util/linked_list.h"
