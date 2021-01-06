@@ -52,7 +52,7 @@ bool launcher_window(struct nk_context *ctx)
 {
     /* GUI */
     int content_width_remaining, content_height_remaining;
-    int window_flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
+    int window_flags = NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
     if (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
     {
         window_flags |= NK_WINDOW_NO_INPUT;
@@ -249,7 +249,7 @@ void _server_error_popup(struct nk_context *ctx)
 {
     static struct nk_rect s = {34, 40, 220, 110};
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
-                      NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+                       NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
