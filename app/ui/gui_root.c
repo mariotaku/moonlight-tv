@@ -30,7 +30,7 @@ bool gui_root(struct nk_context *ctx)
             {
                 if (!settings_window(ctx))
                 {
-                    gui_settings_showing = false;
+                    settings_window_close();
                 }
             }
             return true;

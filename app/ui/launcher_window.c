@@ -80,7 +80,7 @@ bool launcher_window(struct nk_context *ctx)
 
         if (nk_button_label(ctx, "Settings"))
         {
-            gui_settings_showing = true;
+            settings_window_open();
         }
         nk_menubar_end(ctx);
 

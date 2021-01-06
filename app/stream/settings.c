@@ -29,15 +29,58 @@ static char *settings_config_dir()
     return confdir;
 }
 
+static void settings_initialize(PCONFIGURATION config);
+
 PCONFIGURATION settings_load()
 {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
-    char *confdir = settings_config_dir();
-    char *argv[2] = {"moonlight", _path_join(confdir, CONF_NAME_STREAMING)};
-    config_parse(2, argv, config);
-    free(argv[1]);
+    settings_initialize(config);
+    char *confdir = settings_config_dir(), *conffile = _path_join(confdir, CONF_NAME_STREAMING);
+    config_file_parse(conffile, config);
+    free(conffile);
     free(confdir);
-    config->unsupported = true;
-
     return config;
+}
+
+void settings_save(PCONFIGURATION config)
+{
+    char *confdir = settings_config_dir(), *conffile = _path_join(confdir, CONF_NAME_STREAMING);
+    config_save(conffile, config);
+    free(conffile);
+    free(confdir);
+}
+
+void settings_initialize(PCONFIGURATION config)
+{
+    memset(config, 0, sizeof(CONFIGURATION));
+    LiInitializeStreamConfiguration(&config->stream);
+
+    config->stream.width = 1280;
+    config->stream.height = 720;
+    config->stream.fps = 60;
+    config->stream.bitrate = -1;
+    config->stream.packetSize = 1024;
+    config->stream.streamingRemotely = 0;
+    config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
+    config->stream.supportsHevc = false;
+
+    config->debug_level = 0;
+    config->platform = "auto";
+    config->app = "Steam";
+    config->action = NULL;
+    config->address = NULL;
+    config->config_file = NULL;
+    config->audio_device = NULL;
+    config->sops = true;
+    config->localaudio = false;
+    config->fullscreen = true;
+    config->unsupported = false;
+    config->quitappafter = false;
+    config->viewonly = false;
+    config->rotate = 0;
+    config->codec = CODEC_UNSPECIFIED;
+
+    config->inputsCount = 0;
+    config->mapping = NULL;
+    config->key_dir[0] = 0;
 }
