@@ -74,7 +74,8 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->sops = true;
     config->localaudio = false;
     config->fullscreen = true;
-    config->unsupported = false;
+    // TODO make this automatic
+    config->unsupported = true;
     config->quitappafter = false;
     config->viewonly = false;
     config->rotate = 0;
