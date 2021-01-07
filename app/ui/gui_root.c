@@ -63,7 +63,7 @@ bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
 {
     if (ev.type == SDL_KEYUP)
     {
-        printf("SDL_KEYUP scancode: %X, sym: %X\n", ev.key.keysym.scancode, ev.key.keysym.sym);
+        printf("SDL_KEYUP scancode: %s, sym: %s\n", SDL_GetScancodeName(ev.key.keysym.scancode), SDL_GetKeyName(ev.key.keysym.sym));
     }
     return false;
 }

@@ -161,6 +161,14 @@ bool streaming_dispatch_event(SDL_Event ev)
     {
         return false;
     }
+    // TODO Keyboard event on webOS is incorrect
+    // https://github.com/mariotaku/moonlight-sdl/issues/4
+#if OS_WEBOS
+    if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+    {
+        return false;
+    }
+#endif
     // Don't mess with Magic Remote yet
     // TODO https://github.com/mariotaku/moonlight-sdl/issues/1
     // TODO https://github.com/mariotaku/moonlight-sdl/issues/2

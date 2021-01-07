@@ -29,6 +29,7 @@
 
 #ifdef OS_WEBOS
 #include <NDL_directmedia.h>
+#include "sdl/webos_keys.h"
 #endif
 
 #include "main.h"
@@ -58,9 +59,6 @@ MainLoop(void *loopArg)
         bool block_steam_inputevent = false;
         if (evt.type >= SDL_KEYDOWN && evt.type < SDL_CLIPBOARDUPDATE)
         {
-#if OS_WEBOS
-            webos_keys_remap(&evt);
-#endif
             // Those are input events
             gui_dispatch_inputevent(ctx, evt);
             block_steam_inputevent |= gui_block_stream_inputevent(ctx, evt);
@@ -128,6 +126,7 @@ int main(int argc, char *argv[])
     SDL_GLContext glContext;
     nk_sdl_gl_setup();
     SDL_SetHint("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
+    SDL_SetHint("SDL_WEBOS_CURSOR_SLEEP_TIME", "5000");
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
