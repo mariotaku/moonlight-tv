@@ -39,6 +39,7 @@ typedef struct
 static int _streaming_thread_action(STREAMING_REQUEST *req);
 
 static void release_gamecontroller_buttons(SDL_Event ev);
+static void release_keyboard_keys(SDL_Event ev);
 
 void streaming_init()
 {
@@ -178,7 +179,11 @@ bool streaming_dispatch_event(SDL_Event ev)
         break;
     case SDL_QUIT_APPLICATION:
     {
-        if (ev.type == SDL_CONTROLLERBUTTONDOWN || ev.type == SDL_CONTROLLERBUTTONUP)
+        if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+        {
+            release_keyboard_keys(ev);
+        }
+        else if (ev.type == SDL_CONTROLLERBUTTONDOWN || ev.type == SDL_CONTROLLERBUTTONUP)
         {
             // Put gamepad to neutral state
             release_gamecontroller_buttons(ev);
@@ -264,7 +269,11 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
     {
         if (config->debug_level > 0)
             printf("Sending app quit request ...\n");
-        gs_quit_app(server);
+        int quitret = gs_quit_app(server);
+        if (quitret == GS_OK)
+        {
+            server->currentGame = 0;
+        }
     }
     // TODO https://github.com/mariotaku/moonlight-sdl/issues/3
     streaming_status = STREAMING_NONE;
@@ -289,4 +298,9 @@ void release_gamecontroller_buttons(SDL_Event ev)
     gamepad->rightStickY = 0;
     LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
                                gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
+}
+
+void release_keyboard_keys(SDL_Event ev)
+{
+    keyboard_modifiers = 0;
 }
