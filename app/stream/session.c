@@ -23,8 +23,6 @@ SDL_Thread *streaming_thread;
 SDL_mutex *lock;
 SDL_cond *cond;
 
-SDL_Cursor *_blank_cursor;
-
 short streaming_display_width, streaming_display_height;
 bool streaming_quitapp_requested;
 bool streaming_no_control;
@@ -48,8 +46,6 @@ void streaming_init()
     streaming_quitapp_requested = false;
     lock = SDL_CreateMutex();
     cond = SDL_CreateCond();
-    int32_t cursorData[2] = {0, 0};
-    _blank_cursor = SDL_CreateCursor((Uint8 *)cursorData, (Uint8 *)cursorData, 8, 8, 4, 4);
 
     sdlinput_init("assets/gamecontrollerdb.txt");
 }
@@ -174,16 +170,21 @@ bool streaming_dispatch_event(SDL_Event ev)
     // TODO https://github.com/mariotaku/moonlight-sdl/issues/2
     if (!streaming_no_control && ev.type == SDL_MOUSEMOTION)
     {
-        LiSendMousePositionEvent(ev.motion.x, ev.motion.y, streaming_display_width, streaming_display_height);
+        if (ev.motion.state == SDL_PRESSED)
+        {
+            LiSendMouseMoveEvent(ev.motion.xrel, ev.motion.yrel);
+        }
+        else
+        {
+            LiSendMousePositionEvent(ev.motion.x, ev.motion.y, streaming_display_width, streaming_display_height);
+        }
         return false;
     }
     switch (streaming_no_control ? nocontrol_handle_event(ev) : sdlinput_handle_event(&ev))
     {
     case SDL_MOUSE_GRAB:
-        SDL_SetCursor(_blank_cursor);
         break;
     case SDL_MOUSE_UNGRAB:
-        SDL_SetCursor(NULL);
         break;
     case SDL_QUIT_APPLICATION:
     {
