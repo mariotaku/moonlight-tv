@@ -58,6 +58,9 @@ MainLoop(void *loopArg)
         bool block_steam_inputevent = false;
         if (evt.type >= SDL_KEYDOWN && evt.type < SDL_CLIPBOARDUPDATE)
         {
+#if OS_WEBOS
+            webos_keys_remap(&evt);
+#endif
             // Those are input events
             gui_dispatch_inputevent(ctx, evt);
             block_steam_inputevent |= gui_block_stream_inputevent(ctx, evt);

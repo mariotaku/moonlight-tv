@@ -179,14 +179,17 @@ bool streaming_dispatch_event(SDL_Event ev)
         break;
     case SDL_QUIT_APPLICATION:
     {
-        if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+        switch (ev.type)
         {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
             release_keyboard_keys(ev);
-        }
-        else if (ev.type == SDL_CONTROLLERBUTTONDOWN || ev.type == SDL_CONTROLLERBUTTONUP)
-        {
+            break;
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
             // Put gamepad to neutral state
             release_gamecontroller_buttons(ev);
+            break;
         }
 
         SDL_Event quitapp;

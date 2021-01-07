@@ -61,6 +61,7 @@ if (TARGET_WEBOS)
     list(APPEND SOURCES
         app/stream/audio/ndl.c
         app/stream/video/ndl.c
+        app/sdl/webos_keys.c
     )
 elseif (TARGET_LINUX)
     
