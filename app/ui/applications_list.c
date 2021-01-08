@@ -2,8 +2,6 @@
 #include "backend/application_manager.h"
 #include "stream/session.h"
 
-#include "sdl/webos_keys.h"
-
 #define LINKEDLIST_TYPE PAPP_LIST
 #include "util/linked_list.h"
 
@@ -23,7 +21,6 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
                 if (!event_emitted)
                 {
                     event_emitted |= true;
-                    SDL_Log("App %s clicked\n", cur->name);
                     streaming_begin(node->server, cur->id);
                 }
             }

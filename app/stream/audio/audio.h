@@ -26,8 +26,14 @@
 #define FRAME_BUFFER 12
 
 #ifdef OS_WEBOS
+#ifdef USE_NDL
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl;
 #endif
+#ifdef USE_LGNCAPI
+extern AUDIO_RENDERER_CALLBACKS audio_callbacks_lgnc;
+#endif
+#endif
+
 #ifdef HAVE_SDL
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 #endif

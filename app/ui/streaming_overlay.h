@@ -15,6 +15,6 @@ void streaming_overlay_init(struct nk_context *ctx);
 
 bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat);
 
-bool streaming_overlay_dispatch_userevent(struct nk_context *ctx, SDL_Event ev);
+bool streaming_overlay_dispatch_userevent(int which);
 
-bool streaming_overlay_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev);
+bool streaming_overlay_block_stream_inputevent();

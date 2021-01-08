@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SDL.h>
 #include "libgamestream/client.h"
 
 #include "computer_manager.h"
@@ -24,6 +23,6 @@ void application_manager_destroy();
  */
 void application_manager_load(PSERVER_LIST node);
 
-bool application_manager_dispatch_userevent(SDL_Event ev);
+bool application_manager_dispatch_userevent(int which, void *data1, void *data2);
 
 PAPP_LIST application_manager_list_of(const char *address);

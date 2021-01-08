@@ -12,6 +12,8 @@ else()
     set(TARGET_LINUX TRUE)
 endif()
 
+option(WEBOS_LEGACY "Use Legacy API" OFF)
+
 project(moonlight LANGUAGES C)
 
 find_package(PkgConfig REQUIRED)
@@ -25,7 +27,11 @@ pkg_check_modules(Expat REQUIRED IMPORTED_TARGET expat)
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
     add_subdirectory(third_party/opus)
-    add_subdirectory(system/libndl)
+    if (NOT WEBOS_LEGACY)
+        add_subdirectory(system/libndl)
+    else()
+        add_subdirectory(system/lgncapi)
+    endif()
 elseif (TARGET_LINUX)
     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=58 libavutil>=56)
     find_package(OpenGL REQUIRED)
@@ -59,10 +65,21 @@ set(SOURCES
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
-        app/stream/audio/ndl.c
-        app/stream/video/ndl.c
         app/sdl/webos_keys.c
     )
+    if (NOT WEBOS_LEGACY)
+        list(APPEND SOURCES
+            app/stream/audio/ndl.c
+            app/stream/video/ndl.c
+            app/stream/input/sdl.c
+            app/util/bus_sdl.c
+        )
+    else()
+        list(APPEND SOURCES
+            app/stream/audio/lgnc.c
+            app/stream/video/lgnc.c
+        )
+    endif()
 elseif (TARGET_LINUX)
     list(APPEND SOURCES
         core/moonlight-embedded/src/sdl.c
@@ -79,7 +96,6 @@ set_target_properties(moonlight PROPERTIES
     C_STANDARD_REQUIRED TRUE
 )
 
-target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
@@ -97,10 +113,19 @@ target_link_libraries(moonlight PRIVATE
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS)
-    target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus NDL_directmedia)
+    target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus)
+    if (NOT WEBOS_LEGACY)
+        target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+        target_compile_definitions(moonlight PUBLIC USE_NDL)
+        target_link_libraries(moonlight PRIVATE NDL_directmedia)
+    else()
+        target_compile_definitions(moonlight PUBLIC WEBOS_LEGACY USE_LGNCAPI)
+        target_link_libraries(moonlight PRIVATE lgncopenapi)
+    endif()
 else()
-target_compile_definitions(moonlight PUBLIC OS_LINUX)
-    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL)
+    target_compile_definitions(moonlight PUBLIC OS_LINUX)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::GStreamer OpenGL)
 endif()
 
 

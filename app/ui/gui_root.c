@@ -52,26 +52,17 @@ void gui_background()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
+bool gui_dispatch_userevent(int which)
 {
     bool handled = false;
-    handled |= streaming_overlay_dispatch_userevent(ctx, ev);
+    handled |= streaming_overlay_dispatch_userevent(which);
     return false;
 }
 
-bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
-{
-    if (ev.type == SDL_KEYUP)
-    {
-        printf("SDL_KEYUP scancode: %s, sym: %s\n", SDL_GetScancodeName(ev.key.keysym.scancode), SDL_GetKeyName(ev.key.keysym.sym));
-    }
-    return false;
-}
-
-bool gui_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev)
+bool gui_block_stream_inputevent()
 {
     bool ret = false;
-    ret |= streaming_overlay_block_stream_inputevent(ctx, ev);
+    ret |= streaming_overlay_block_stream_inputevent();
     return ret;
 }
 
@@ -80,3 +71,14 @@ void gui_display_size(short width, short height)
     gui_display_width = width;
     gui_display_height = height;
 }
+
+#ifdef HAVE_SDL
+bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
+{
+    if (ev.type == SDL_KEYUP)
+    {
+        printf("SDL_KEYUP scancode: %s, sym: %s\n", SDL_GetScancodeName(ev.key.keysym.scancode), SDL_GetKeyName(ev.key.keysym.sym));
+    }
+    return false;
+}
+#endif

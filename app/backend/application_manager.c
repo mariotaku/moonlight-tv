@@ -1,8 +1,9 @@
 #include <SDL.h>
 
-#include "sdl/user_event.h"
+#include "util/user_event.h"
 #include "application_manager.h"
 #include "computer_manager.h"
+#include "util/bus.h"
 
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
@@ -23,11 +24,11 @@ void application_manager_load(PSERVER_LIST node)
     SDL_CreateThread(_application_manager_applist_action, "am_applist", node);
 }
 
-bool application_manager_dispatch_userevent(SDL_Event ev)
+bool application_manager_dispatch_userevent(int which, void *data1, void *data2)
 {
-    if (ev.user.code == SDL_USER_AM_APPLIST_ARRIVED)
+    if (which)
     {
-        _application_manager_applist_result((PSERVER_LIST)ev.user.data1, (PAPP_LIST)ev.user.data2);
+        _application_manager_applist_result((PSERVER_LIST)data1, (PAPP_LIST)data2);
         return true;
     }
     return false;
@@ -59,11 +60,6 @@ int _application_manager_applist_action(void *data)
         return 0;
     }
 
-    SDL_Event ev;
-    ev.type = SDL_USEREVENT;
-    ev.user.code = SDL_USER_AM_APPLIST_ARRIVED;
-    ev.user.data1 = data;
-    ev.user.data2 = list;
-    SDL_PushEvent(&ev);
+    bus_pushevent(USER_AM_APPLIST_ARRIVED, data, list);
     return 0;
 }

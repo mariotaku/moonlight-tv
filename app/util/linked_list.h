@@ -1,6 +1,10 @@
+#pragma once
 #ifndef LINKEDLIST_TYPE
 #error "Please define LINKEDLIST_TYPE before include"
 #endif
+
+#include <stdlib.h>
+#include <string.h>
 
 static LINKEDLIST_TYPE _linkedlist_new(size_t size)
 {

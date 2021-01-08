@@ -15,12 +15,13 @@
 #include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
+
 #ifdef NK_SDL_GLES2_IMPLEMENTATION
 #include "demo/sdl_opengles2/nuklear_sdl_gles2.h"
 #include "nuklear/sdl_gles2_init.h"
 #elif defined(NK_SDL_GL2_IMPLEMENTATION)
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 #include "demo/sdl_opengl2/nuklear_sdl_gl2.h"
 #include "nuklear/sdl_gl2_init.h"
 #else
@@ -28,7 +29,11 @@
 #endif
 
 #ifdef OS_WEBOS
+#if defined(USE_NDL)
 #include <NDL_directmedia.h>
+#elif defined(USE_LGNCAPI)
+#include <lgnc_system.h>
+#endif
 #include "sdl/webos_keys.h"
 #endif
 
@@ -36,6 +41,7 @@
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
+#include "stream/input/absinput.h"
 #include "ui/config.h"
 #include "ui/gui_root.h"
 
@@ -61,12 +67,12 @@ MainLoop(void *loopArg)
         {
             // Those are input events
             gui_dispatch_inputevent(ctx, evt);
-            block_steam_inputevent |= gui_block_stream_inputevent(ctx, evt);
+            block_steam_inputevent |= gui_block_stream_inputevent();
         }
         else if (evt.type == SDL_USEREVENT)
         {
-            backend_dispatch_userevent(evt);
-            gui_dispatch_userevent(ctx, evt);
+            backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
+            gui_dispatch_userevent(evt.user.code);
         }
         else if (evt.type == SDL_QUIT)
         {
@@ -74,7 +80,7 @@ MainLoop(void *loopArg)
         }
         if (!block_steam_inputevent)
         {
-            streaming_dispatch_event(evt);
+            absinput_dispatch_event(evt);
         }
         nk_sdl_handle_event(&evt);
     }
@@ -112,11 +118,23 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef OS_WEBOS
+#ifdef USE_NDL
     if (NDL_DirectMediaInit(WEBOS_APPID, NULL))
     {
         SDL_Log("Unable to initialize NDL\n", NDL_DirectMediaGetError());
         return -1;
     }
+#elif defined(USE_LGNCAPI)
+    LGNC_SYSTEM_CALLBACKS_T callbacks = {
+        .pfnJoystickEventCallback = NULL,
+        .pfnMsgHandler = NULL,
+        .pfnKeyEventCallback = NULL,
+        .pfnMouseEventCallback = NULL};
+    if (LGNC_SYSTEM_Initialize(argc, argv, NULL) != 0)
+    {
+        return -1;
+    }
+#endif
 #endif
 
     backend_init();
@@ -172,7 +190,12 @@ int main(int argc, char *argv[])
     // gst_demo_finalize();
 
 #ifdef OS_WEBOS
+#ifdef USE_NDL
     NDL_DirectMediaQuit();
+#endif
+#ifdef USE_LGNCAPI
+    LGNC_SYSTEM_Finalize();
+#endif
 #endif
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(win);

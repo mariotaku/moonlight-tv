@@ -1,0 +1,25 @@
+buildType:
+  default: debug
+  choices:
+    debug:
+      short: Debug
+      long: Emit debug information
+      buildType: Debug
+    release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+
+webosImpl:
+  default: standard
+  choices:
+    standard:
+      short: Standard
+      long: SDL2 + NDL for webOS 4.x
+      settings:
+        WEBOS_LEGACY: false
+    legacy:
+      short: webOS Legacy
+      long: LGNCAPI for older webOS
+      settings:
+        WEBOS_LEGACY: true
