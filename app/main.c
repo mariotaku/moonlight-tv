@@ -115,9 +115,6 @@ int main(int argc, char *argv[])
 {
 #ifdef OS_WEBOS
     REDIR_STDOUT("moonlight");
-#endif
-
-#ifdef OS_WEBOS
 #ifdef USE_NDL
     if (NDL_DirectMediaInit(WEBOS_APPID, NULL))
     {

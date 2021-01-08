@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef OS_WEBOS
+#ifdef OS_WEBOS
 #ifndef WEBOS_LEGACY
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080

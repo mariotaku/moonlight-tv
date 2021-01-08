@@ -18,9 +18,9 @@ STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 
 bool session_running = false;
-pthread_t *streaming_thread;
-pthread_mutex_t *lock;
-pthread_cond_t *cond;
+pthread_t streaming_thread;
+pthread_mutex_t lock;
+pthread_cond_t cond;
 
 short streaming_display_width, streaming_display_height;
 bool streaming_quitapp_requested;
@@ -36,11 +36,10 @@ static void _streaming_thread_action(STREAMING_REQUEST *req);
 
 void streaming_init()
 {
-    streaming_thread = NULL;
     streaming_status = STREAMING_NONE;
     streaming_quitapp_requested = false;
-    pthread_mutex_init(lock, NULL);
-    pthread_cond_init(cond, NULL);
+    pthread_mutex_init(&lock, NULL);
+    pthread_cond_init(&cond, NULL);
 
     absinput_init();
 }
@@ -50,8 +49,8 @@ void streaming_destroy()
     streaming_interrupt(streaming_quitapp_requested);
     streaming_wait_for_stop();
 
-    pthread_cond_destroy(cond);
-    pthread_mutex_destroy(lock);
+    pthread_cond_destroy(&cond);
+    pthread_mutex_destroy(&lock);
 }
 
 void streaming_begin(PSERVER_DATA server, int app_id)
@@ -62,26 +61,21 @@ void streaming_begin(PSERVER_DATA server, int app_id)
     req->server = server;
     req->config = config;
     req->appId = app_id;
-    pthread_create(streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
+    pthread_create(&streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
 }
 
 void streaming_interrupt(bool quitapp)
 {
-    pthread_mutex_lock(lock);
+    pthread_mutex_lock(&lock);
     streaming_quitapp_requested = quitapp;
     session_running = false;
-    pthread_cond_signal(cond);
-    pthread_mutex_unlock(lock);
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&lock);
 }
 
 void streaming_wait_for_stop()
 {
-    if (streaming_thread == NULL)
-    {
-        return;
-    }
-    pthread_join(*streaming_thread, NULL);
-    streaming_thread = NULL;
+    pthread_join(streaming_thread, NULL);
 }
 
 bool streaming_running()
@@ -140,13 +134,13 @@ void _streaming_thread_action(STREAMING_REQUEST *req)
     streaming_status = STREAMING_STREAMING;
     rumble_handler = absinput_getrumble();
 
-    pthread_mutex_lock(lock);
+    pthread_mutex_lock(&lock);
     while (session_running)
     {
         // Wait until interrupted
-        pthread_cond_wait(cond, lock);
+        pthread_cond_wait(&cond, &lock);
     }
-    pthread_mutex_unlock(lock);
+    pthread_mutex_unlock(&lock);
 
     rumble_handler = NULL;
     streaming_status = STREAMING_DISCONNECTING;
@@ -166,8 +160,6 @@ void _streaming_thread_action(STREAMING_REQUEST *req)
     streaming_status = STREAMING_NONE;
 
 thread_cleanup:
-    streaming_thread = NULL;
-
     free(req);
     pthread_exit(req);
 }

@@ -82,6 +82,8 @@ if (TARGET_WEBOS)
     endif()
 elseif (TARGET_LINUX)
     list(APPEND SOURCES
+        app/stream/input/sdl.c
+        app/util/bus_sdl.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/audio/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c
@@ -125,7 +127,7 @@ if (TARGET_WEBOS)
 else()
     target_compile_definitions(moonlight PUBLIC OS_LINUX)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::GStreamer OpenGL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL)
 endif()
 
 
