@@ -70,7 +70,7 @@ MainLoop(void *loopArg)
         }
         else if (evt.type == SDL_USEREVENT)
         {
-            backend_dispatch_userevent(evt);
+            backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
             gui_dispatch_userevent(evt.user.code);
         }
         else if (evt.type == SDL_QUIT)

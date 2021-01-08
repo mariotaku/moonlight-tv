@@ -72,6 +72,7 @@ if (TARGET_WEBOS)
             app/stream/audio/ndl.c
             app/stream/video/ndl.c
             app/stream/input/sdl.c
+            app/util/bus_sdl.c
         )
     else()
         list(APPEND SOURCES
