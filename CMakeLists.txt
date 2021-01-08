@@ -71,6 +71,7 @@ if (TARGET_WEBOS)
         list(APPEND SOURCES
             app/stream/audio/ndl.c
             app/stream/video/ndl.c
+            app/stream/input/sdl.c
         )
     else()
         list(APPEND SOURCES
@@ -89,7 +90,6 @@ set_target_properties(moonlight PROPERTIES
     C_STANDARD_REQUIRED TRUE
 )
 
-target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
@@ -109,6 +109,7 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS)
     target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus)
     if (NOT WEBOS_LEGACY)
+        target_compile_definitions(moonlight PUBLIC HAVE_SDL)
         target_compile_definitions(moonlight PUBLIC USE_NDL)
         target_link_libraries(moonlight PRIVATE NDL_directmedia)
     else()
@@ -116,7 +117,8 @@ if (TARGET_WEBOS)
         target_link_libraries(moonlight PRIVATE lgncopenapi)
     endif()
 else()
-target_compile_definitions(moonlight PUBLIC OS_LINUX)
+    target_compile_definitions(moonlight PUBLIC OS_LINUX)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::GStreamer OpenGL)
 endif()
 

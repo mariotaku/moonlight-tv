@@ -2,7 +2,9 @@
 
 #include <stdbool.h>
 
+#ifdef HAVE_SDL
 #include <SDL.h>
+#endif
 
 #ifndef NK_NUKLEAR_H_
 #include "nuklear/config.h"
@@ -20,8 +22,10 @@ void gui_background();
 
 bool gui_dispatch_userevent(int which);
 
-bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev);
-
 bool gui_block_stream_inputevent();
 
 void gui_display_size(short width, short height);
+
+#ifdef HAVE_SDL
+bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev);
+#endif

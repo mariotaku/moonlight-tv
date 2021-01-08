@@ -59,15 +59,6 @@ bool gui_dispatch_userevent(int which)
     return false;
 }
 
-bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
-{
-    if (ev.type == SDL_KEYUP)
-    {
-        printf("SDL_KEYUP scancode: %s, sym: %s\n", SDL_GetScancodeName(ev.key.keysym.scancode), SDL_GetKeyName(ev.key.keysym.sym));
-    }
-    return false;
-}
-
 bool gui_block_stream_inputevent()
 {
     bool ret = false;
@@ -80,3 +71,14 @@ void gui_display_size(short width, short height)
     gui_display_width = width;
     gui_display_height = height;
 }
+
+#ifdef HAVE_SDL
+bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
+{
+    if (ev.type == SDL_KEYUP)
+    {
+        printf("SDL_KEYUP scancode: %s, sym: %s\n", SDL_GetScancodeName(ev.key.keysym.scancode), SDL_GetKeyName(ev.key.keysym.sym));
+    }
+    return false;
+}
+#endif

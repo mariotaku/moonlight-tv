@@ -26,7 +26,7 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #ifdef USE_NDL
     return &decoder_callbacks_ndl;
 #elif defined(USE_LGNCAPI)
-    return &audio_callbacks_lgnc;
+    return &decoder_callbacks_lgnc;
 #endif
 #else
 #warning "No supported callbacks for this platform"
