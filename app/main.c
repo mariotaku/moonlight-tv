@@ -79,7 +79,7 @@ MainLoop(void *loopArg)
         }
         if (!block_steam_inputevent)
         {
-            streaming_dispatch_event(evt);
+            absinput_dispatch_event(evt);
         }
         nk_sdl_handle_event(&evt);
     }

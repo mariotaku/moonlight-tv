@@ -82,7 +82,7 @@ static bool nocontrol_handle_event(SDL_Event ev)
     return SDL_NOTHING;
 }
 
-bool streaming_dispatch_event(SDL_Event ev)
+bool absinput_dispatch_event(SDL_Event ev)
 {
     if (streaming_status != STREAMING_STREAMING)
     {

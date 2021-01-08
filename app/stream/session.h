@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdbool.h>
-#include <SDL.h>
 
 #include "backend/computer_manager.h"
 
@@ -28,5 +27,3 @@ void streaming_wait_for_stop();
 void streaming_display_size(short width, short height);
 
 bool streaming_running();
-
-bool streaming_dispatch_event(SDL_Event ev);

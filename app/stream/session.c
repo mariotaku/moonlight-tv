@@ -16,7 +16,7 @@
 STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 
-SDL_bool session_running = SDL_FALSE;
+bool session_running = false;
 SDL_Thread *streaming_thread;
 SDL_mutex *lock;
 SDL_cond *cond;
@@ -68,7 +68,7 @@ void streaming_interrupt(bool quitapp)
 {
     SDL_LockMutex(lock);
     streaming_quitapp_requested = quitapp;
-    session_running = SDL_FALSE;
+    session_running = false;
     SDL_CondSignal(cond);
     SDL_UnlockMutex(lock);
 }
@@ -85,7 +85,7 @@ void streaming_wait_for_stop()
 
 bool streaming_running()
 {
-    return session_running == SDL_TRUE;
+    return session_running;
 }
 
 void streaming_display_size(short width, short height)
