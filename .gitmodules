@@ -22,3 +22,6 @@
 [submodule "third_party/SDL_GameControllerDB"]
 	path = third_party/SDL_GameControllerDB
 	url = https://github.com/mariotaku/SDL_GameControllerDB.git
+[submodule "system/lgncapi"]
+	path = system/lgncapi
+	url = https://github.com/webosbrew/lgncapi.git
