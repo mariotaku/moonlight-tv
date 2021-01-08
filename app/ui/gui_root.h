@@ -18,10 +18,10 @@ bool gui_root(struct nk_context *ctx);
 
 void gui_background();
 
-bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev);
+bool gui_dispatch_userevent(int which);
 
 bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev);
 
-bool gui_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev);
+bool gui_block_stream_inputevent();
 
 void gui_display_size(short width, short height);

@@ -42,7 +42,8 @@
         "limelight.h": "c",
         "sdl_ex.h": "c",
         "user_event.h": "c",
-        "platform.h": "c"
+        "platform.h": "c",
+        "webos_keys.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

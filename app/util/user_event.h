@@ -1,0 +1,5 @@
+#pragma once
+
+#define USER_AM_APPLIST_ARRIVED 201
+#define USER_ST_QUITAPP_CONFIRM 531
+#define USER_DEMO_RENDER 901

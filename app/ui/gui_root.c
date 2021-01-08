@@ -52,10 +52,10 @@ void gui_background()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-bool gui_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
+bool gui_dispatch_userevent(int which)
 {
     bool handled = false;
-    handled |= streaming_overlay_dispatch_userevent(ctx, ev);
+    handled |= streaming_overlay_dispatch_userevent(which);
     return false;
 }
 
@@ -68,10 +68,10 @@ bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
     return false;
 }
 
-bool gui_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev)
+bool gui_block_stream_inputevent()
 {
     bool ret = false;
-    ret |= streaming_overlay_block_stream_inputevent(ctx, ev);
+    ret |= streaming_overlay_block_stream_inputevent();
     return ret;
 }
 

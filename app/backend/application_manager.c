@@ -1,6 +1,6 @@
 #include <SDL.h>
 
-#include "sdl/user_event.h"
+#include "util/user_event.h"
 #include "application_manager.h"
 #include "computer_manager.h"
 
@@ -25,7 +25,7 @@ void application_manager_load(PSERVER_LIST node)
 
 bool application_manager_dispatch_userevent(SDL_Event ev)
 {
-    if (ev.user.code == SDL_USER_AM_APPLIST_ARRIVED)
+    if (ev.user.code == USER_AM_APPLIST_ARRIVED)
     {
         _application_manager_applist_result((PSERVER_LIST)ev.user.data1, (PAPP_LIST)ev.user.data2);
         return true;
@@ -61,7 +61,7 @@ int _application_manager_applist_action(void *data)
 
     SDL_Event ev;
     ev.type = SDL_USEREVENT;
-    ev.user.code = SDL_USER_AM_APPLIST_ARRIVED;
+    ev.user.code = USER_AM_APPLIST_ARRIVED;
     ev.user.data1 = data;
     ev.user.data2 = list;
     SDL_PushEvent(&ev);

@@ -2,7 +2,7 @@
 #include "messages.h"
 
 #include "stream/session.h"
-#include "sdl/user_event.h"
+#include "util/user_event.h"
 
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
 static void _streaming_error_window(struct nk_context *ctx);
@@ -38,11 +38,11 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
     return true;
 }
 
-bool streaming_overlay_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
+bool streaming_overlay_dispatch_userevent(int which)
 {
-    switch (ev.user.code)
+    switch (which)
     {
-    case SDL_USER_ST_QUITAPP_CONFIRM:
+    case USER_ST_QUITAPP_CONFIRM:
         quit_confirm_showing = true;
         break;
     default:
@@ -50,7 +50,7 @@ bool streaming_overlay_dispatch_userevent(struct nk_context *ctx, SDL_Event ev)
     }
 }
 
-bool streaming_overlay_block_stream_inputevent(struct nk_context *ctx, SDL_Event ev)
+bool streaming_overlay_block_stream_inputevent()
 {
     return quit_confirm_showing;
 }

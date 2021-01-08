@@ -66,12 +66,12 @@ MainLoop(void *loopArg)
         {
             // Those are input events
             gui_dispatch_inputevent(ctx, evt);
-            block_steam_inputevent |= gui_block_stream_inputevent(ctx, evt);
+            block_steam_inputevent |= gui_block_stream_inputevent();
         }
         else if (evt.type == SDL_USEREVENT)
         {
             backend_dispatch_userevent(evt);
-            gui_dispatch_userevent(ctx, evt);
+            gui_dispatch_userevent(evt.user.code);
         }
         else if (evt.type == SDL_QUIT)
         {

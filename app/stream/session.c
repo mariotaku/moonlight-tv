@@ -5,7 +5,7 @@
 #include "platform.h"
 // Include source directly in order to use static functions
 #include "input/sdl.c"
-#include "sdl/user_event.h"
+#include "util/user_event.h"
 
 #include <Limelight.h>
 
@@ -203,7 +203,7 @@ bool streaming_dispatch_event(SDL_Event ev)
 
         SDL_Event quitapp;
         quitapp.type = SDL_USEREVENT;
-        quitapp.user.code = SDL_USER_ST_QUITAPP_CONFIRM;
+        quitapp.user.code = USER_ST_QUITAPP_CONFIRM;
         SDL_PushEvent(&quitapp);
         break;
     }
