@@ -36,3 +36,7 @@
 #ifdef OS_WEBOS
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_ndl;
 #endif
+#ifdef HAVE_SDL
+extern DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl;
+#endif
+

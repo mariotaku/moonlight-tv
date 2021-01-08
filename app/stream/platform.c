@@ -11,8 +11,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 #ifdef OS_WEBOS
     return &audio_callbacks_ndl;
 #else
-#warning "No supported callbacks for this platform"
-    return NULL;
+    return &audio_callbacks_sdl;
 #endif
 }
 
@@ -21,7 +20,6 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #ifdef OS_WEBOS
     return &decoder_callbacks_ndl;
 #else
-#warning "No supported callbacks for this platform"
-    return NULL;
+    return &decoder_callbacks_sdl;
 #endif
 }

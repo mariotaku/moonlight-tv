@@ -28,3 +28,6 @@
 #ifdef OS_WEBOS
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl;
 #endif
+#ifdef HAVE_SDL
+extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
+#endif

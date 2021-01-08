@@ -27,7 +27,7 @@ if (TARGET_WEBOS)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
 elseif (TARGET_LINUX)
-    pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0 gstreamer-gl-1.0)
+    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=58 libavutil>=56)
     find_package(OpenGL REQUIRED)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
@@ -64,7 +64,12 @@ if (TARGET_WEBOS)
         app/sdl/webos_keys.c
     )
 elseif (TARGET_LINUX)
-    
+    list(APPEND SOURCES
+        core/moonlight-embedded/src/sdl.c
+        core/moonlight-embedded/src/audio/sdl.c
+        core/moonlight-embedded/src/video/ffmpeg.c
+        core/moonlight-embedded/src/video/sdl.c
+    )
 endif()
 
 add_executable(moonlight ${SOURCES})
@@ -95,7 +100,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus NDL_directmedia)
 else()
 target_compile_definitions(moonlight PUBLIC OS_LINUX)
-    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::GStreamer OpenGL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL)
 endif()
 
 

@@ -36,7 +36,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   channelCount = opusConfig->channelCount;
 
   NDL_DIRECTAUDIO_DATA_INFO info = {
-      .numChannel = opusConfig->channelCount,
+      .numChannel = channelCount,
       .bitPerSample = 16,
       .nodelay = 1,
       .upperThreshold = 48,

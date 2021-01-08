@@ -145,6 +145,10 @@ bool settings_window(struct nk_context *ctx)
             nk_checkbox_label(ctx, "Quit app on host PC after ending stream", &quitappafter);
             app_settings->quitappafter = quitappafter == nk_true;
 
+            nk_bool viewonly = app_settings->viewonly ? nk_true : nk_false;
+            nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
+            app_settings->viewonly = viewonly == nk_true;
+
             nk_group_end(ctx);
         }
     }
