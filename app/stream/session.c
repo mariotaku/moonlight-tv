@@ -7,6 +7,7 @@
 #include "input/absinput.h"
 
 #include <Limelight.h>
+#include <pthread.h>
 
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
@@ -17,9 +18,9 @@ STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 
 bool session_running = false;
-SDL_Thread *streaming_thread;
-SDL_mutex *lock;
-SDL_cond *cond;
+pthread_t *streaming_thread;
+pthread_mutex_t *lock;
+pthread_cond_t *cond;
 
 short streaming_display_width, streaming_display_height;
 bool streaming_quitapp_requested;
@@ -31,15 +32,15 @@ typedef struct
     int appId;
 } STREAMING_REQUEST;
 
-static int _streaming_thread_action(STREAMING_REQUEST *req);
+static void _streaming_thread_action(STREAMING_REQUEST *req);
 
 void streaming_init()
 {
     streaming_thread = NULL;
     streaming_status = STREAMING_NONE;
     streaming_quitapp_requested = false;
-    lock = SDL_CreateMutex();
-    cond = SDL_CreateCond();
+    pthread_mutex_init(lock, NULL);
+    pthread_cond_init(cond, NULL);
 
     absinput_init();
 }
@@ -49,8 +50,8 @@ void streaming_destroy()
     streaming_interrupt(streaming_quitapp_requested);
     streaming_wait_for_stop();
 
-    SDL_DestroyCond(cond);
-    SDL_DestroyMutex(lock);
+    pthread_cond_destroy(cond);
+    pthread_mutex_destroy(lock);
 }
 
 void streaming_begin(PSERVER_DATA server, int app_id)
@@ -61,16 +62,16 @@ void streaming_begin(PSERVER_DATA server, int app_id)
     req->server = server;
     req->config = config;
     req->appId = app_id;
-    streaming_thread = SDL_CreateThread((SDL_ThreadFunction)_streaming_thread_action, "streaming", req);
+    pthread_create(streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
 }
 
 void streaming_interrupt(bool quitapp)
 {
-    SDL_LockMutex(lock);
+    pthread_mutex_lock(lock);
     streaming_quitapp_requested = quitapp;
     session_running = false;
-    SDL_CondSignal(cond);
-    SDL_UnlockMutex(lock);
+    pthread_cond_signal(cond);
+    pthread_mutex_unlock(lock);
 }
 
 void streaming_wait_for_stop()
@@ -79,7 +80,7 @@ void streaming_wait_for_stop()
     {
         return;
     }
-    SDL_WaitThread(streaming_thread, NULL);
+    pthread_join(*streaming_thread, NULL);
     streaming_thread = NULL;
 }
 
@@ -94,7 +95,7 @@ void streaming_display_size(short width, short height)
     streaming_display_height = height;
 }
 
-int _streaming_thread_action(STREAMING_REQUEST *req)
+void _streaming_thread_action(STREAMING_REQUEST *req)
 {
     streaming_status = STREAMING_CONNECTING;
     streaming_errno = GS_OK;
@@ -117,8 +118,7 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
     {
         streaming_status = STREAMING_ERROR;
         streaming_errno = ret;
-        free(req);
-        return -1;
+        goto thread_cleanup;
     }
 
     int drFlags = 0;
@@ -140,13 +140,13 @@ int _streaming_thread_action(STREAMING_REQUEST *req)
     streaming_status = STREAMING_STREAMING;
     rumble_handler = absinput_getrumble();
 
-    SDL_LockMutex(lock);
+    pthread_mutex_lock(lock);
     while (session_running)
     {
         // Wait until interrupted
-        SDL_CondWait(cond, lock);
+        pthread_cond_wait(cond, lock);
     }
-    SDL_UnlockMutex(lock);
+    pthread_mutex_unlock(lock);
 
     rumble_handler = NULL;
     streaming_status = STREAMING_DISCONNECTING;
@@ -169,5 +169,5 @@ thread_cleanup:
     streaming_thread = NULL;
 
     free(req);
-    return 0;
+    pthread_exit(req);
 }

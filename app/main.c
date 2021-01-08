@@ -41,6 +41,7 @@
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
+#include "stream/input/absinput.h"
 #include "ui/config.h"
 #include "ui/gui_root.h"
 

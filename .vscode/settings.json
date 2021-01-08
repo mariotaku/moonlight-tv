@@ -45,7 +45,8 @@
         "platform.h": "c",
         "webos_keys.h": "c",
         "absinput.h": "c",
-        "connection.h": "c"
+        "connection.h": "c",
+        "settings.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
