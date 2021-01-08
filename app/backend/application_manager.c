@@ -26,7 +26,7 @@ void application_manager_load(PSERVER_LIST node)
 
 bool application_manager_dispatch_userevent(int which, void *data1, void *data2)
 {
-    if (which)
+    if (which == USER_AM_APPLIST_ARRIVED)
     {
         _application_manager_applist_result((PSERVER_LIST)data1, (PAPP_LIST)data2);
         return true;
