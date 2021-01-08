@@ -5,9 +5,10 @@
 #include "mdns.h"
 
 #include <errno.h>
-
 #include <netdb.h>
 #include <ifaddrs.h>
+
+#include <pthread.h>
 
 #include "libgamestream/errors.h"
 #include "stream/settings.h"
@@ -130,7 +131,9 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         if (ret == GS_OK)
         {
             _computer_manager_add(srvname, server, ret);
-        } else {
+        }
+        else
+        {
             _computer_manager_add(srvname, NULL, ret);
             free(server);
         }
@@ -242,7 +245,7 @@ open_client_sockets(int *sockets, int max_sockets, int port)
     return num_sockets;
 }
 
-int _computer_manager_polling_action(void *data)
+void *_computer_manager_polling_action(void *data)
 {
     const char *service = "_nvstream._tcp.local";
     int sockets[32];
@@ -251,7 +254,8 @@ int _computer_manager_polling_action(void *data)
     if (num_sockets <= 0)
     {
         fprintf(stderr, "Failed to open any client sockets\n");
-        return 0;
+        pthread_exit(NULL);
+        return NULL;
     }
     fprintf(stderr, "Opened %d socket%s for mDNS query\n", num_sockets, num_sockets ? "s" : "");
 
@@ -310,5 +314,6 @@ int _computer_manager_polling_action(void *data)
         mdns_socket_close(sockets[isock]);
     fprintf(stderr, "Closed socket%s\n", num_sockets ? "s" : "");
 
-    return 0;
+    pthread_exit(NULL);
+    return NULL;
 }

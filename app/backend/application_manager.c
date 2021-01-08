@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <pthread.h>
 
 #include "util/user_event.h"
 #include "application_manager.h"
@@ -8,7 +8,9 @@
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
-static int _application_manager_applist_action(void *data);
+static pthread_t _application_manager_load_thread;
+
+static void *_application_manager_applist_action(void *data);
 static bool _application_manager_applist_result(PSERVER_LIST node, PAPP_LIST list);
 
 void application_manager_init()
@@ -21,7 +23,7 @@ void application_manager_destroy()
 
 void application_manager_load(PSERVER_LIST node)
 {
-    SDL_CreateThread(_application_manager_applist_action, "am_applist", node);
+    pthread_create(&_application_manager_load_thread, NULL, _application_manager_applist_action, node);
 }
 
 bool application_manager_dispatch_userevent(int which, void *data1, void *data2)
@@ -50,16 +52,18 @@ bool _application_manager_applist_result(PSERVER_LIST node, PAPP_LIST list)
     return true;
 }
 
-int _application_manager_applist_action(void *data)
+void *_application_manager_applist_action(void *data)
 {
     PSERVER_LIST node = (PSERVER_LIST)data;
     PAPP_LIST list = NULL;
     if (gs_applist(node->server, &list) != GS_OK)
     {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Can't get app list\n");
-        return 0;
+        fprintf(stderr, "Can't get app list\n");
+        pthread_exit(NULL);
+        return NULL;
     }
 
     bus_pushevent(USER_AM_APPLIST_ARRIVED, data, list);
-    return 0;
+    pthread_exit(NULL);
+    return NULL;
 }

@@ -32,7 +32,7 @@ typedef struct
     int appId;
 } STREAMING_REQUEST;
 
-static void _streaming_thread_action(STREAMING_REQUEST *req);
+static void *_streaming_thread_action(STREAMING_REQUEST *req);
 
 void streaming_init()
 {
@@ -89,7 +89,7 @@ void streaming_display_size(short width, short height)
     streaming_display_height = height;
 }
 
-void _streaming_thread_action(STREAMING_REQUEST *req)
+void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
     streaming_status = STREAMING_CONNECTING;
     streaming_errno = GS_OK;
@@ -161,5 +161,6 @@ void _streaming_thread_action(STREAMING_REQUEST *req)
 
 thread_cleanup:
     free(req);
-    pthread_exit(req);
+    pthread_exit(NULL);
+    return NULL;
 }

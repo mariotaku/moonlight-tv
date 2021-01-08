@@ -58,4 +58,4 @@ bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb);
 
 void _computer_manager_add(char *name, PSERVER_DATA p, int err);
 
-int _computer_manager_polling_action(void *data);
+void *_computer_manager_polling_action(void *data);

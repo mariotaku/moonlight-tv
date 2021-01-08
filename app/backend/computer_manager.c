@@ -3,15 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL.h>
-
+#include <pthread.h>
 #include "libgamestream/errors.h"
 #include "error_manager.h"
 
 #define LINKEDLIST_TYPE PSERVER_LIST
 #include "util/linked_list.h"
 
-static SDL_Thread *computer_manager_polling_thread = NULL;
+static pthread_t computer_manager_polling_thread;
 
 typedef struct CM_PIN_REQUEST_T
 {
@@ -20,7 +19,7 @@ typedef struct CM_PIN_REQUEST_T
     pairing_callback callback;
 } cm_pin_request;
 
-static int _computer_manager_pairing_action(void *data);
+static void *_computer_manager_pairing_action(void *data);
 PSERVER_LIST computer_list;
 
 void computer_manager_init()
@@ -38,21 +37,12 @@ void computer_manager_destroy()
 
 bool computer_manager_polling_start()
 {
-    if (computer_manager_polling_thread)
-    {
-        return false;
-    }
-    computer_manager_polling_thread = SDL_CreateThread(_computer_manager_polling_action, "cm_polling", NULL);
+    pthread_create(&computer_manager_polling_thread, NULL, _computer_manager_polling_action, NULL);
     return true;
 }
 
 void computer_manager_polling_stop()
 {
-    if (!computer_manager_polling_thread)
-    {
-        return;
-    }
-    computer_manager_polling_thread = NULL;
 }
 
 static int server_list_namecmp(PSERVER_LIST item, const void *address)
@@ -83,7 +73,8 @@ bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb)
     req->pin = strdup(pin);
     req->node = node;
     req->callback = cb;
-    SDL_CreateThread(_computer_manager_pairing_action, "cm_pairing", req);
+    pthread_t pair_thread;
+    pthread_create(&pair_thread, NULL, _computer_manager_pairing_action, req);
     return true;
 }
 
@@ -98,7 +89,7 @@ void _computer_manager_add(char *name, PSERVER_DATA p, int err)
     computer_list = linkedlist_append(computer_list, node);
 }
 
-int _computer_manager_pairing_action(void *data)
+void *_computer_manager_pairing_action(void *data)
 {
     cm_pin_request *req = (cm_pin_request *)data;
     PSERVER_LIST node = req->node;
@@ -106,5 +97,6 @@ int _computer_manager_pairing_action(void *data)
     int result = gs_pair(server, (char *)req->pin);
     req->callback(node, result, gs_error);
     free(data);
-    return 0;
+    pthread_exit(NULL);
+    return NULL;
 }
