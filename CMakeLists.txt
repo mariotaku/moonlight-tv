@@ -153,11 +153,15 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
         WEBOS_APPINFO_TITLE "Moonlight"
-        WEBOS_PACKAGE_ASSETS "assets"
     )
     if (NOT WEBOS_LEGACY)
         set_target_properties(moonlight PROPERTIES
+            WEBOS_PACKAGE_ASSETS "assets" 
+        )
+    else()
+        set_target_properties(moonlight PROPERTIES
             WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
+            WEBOS_PACKAGE_ASSETS "assets;legacy/lib"
         )
     endif()
 
