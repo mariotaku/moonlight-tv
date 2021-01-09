@@ -1,7 +1,18 @@
 #include <stdio.h>
+#include <string.h>
 
-#include "callbacks.h"
+#include "nuklear/config.h"
+#include "nuklear.h"
+#include "nuklear/ext_widgets.h"
+#include "nuklear/ext_functions.h"
+#include "nuklear/platform_lgnc_gles2.h"
+
 #include "main.h"
+#include "callbacks.h"
+#include "events.h"
+
+#include "util/bus.h"
+#include "util/user_event.h"
 
 LGNC_STATUS_T _MsgEventHandler(LGNC_MSG_TYPE_T msg, unsigned int submsg, char *pData, unsigned short dataSize)
 
@@ -41,8 +52,14 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
     // printf("MouseEvent x=%d, y=%d key=%d, cond=%d\n", posX, posY, key, keyCond);
     if (key == 412 /* remote control back */ && keyCond == LGNC_KEY_RELEASE)
     {
-        request_exit();
+        bus_pushevent(USER_QUIT, NULL, NULL);
         return 1;
     }
+    struct LGNC_MOUSE_EVENT_T *evt = malloc(sizeof(struct LGNC_MOUSE_EVENT_T));
+    evt->posX = posX;
+    evt->posY = posY;
+    evt->key = key;
+    evt->keyCond = keyCond;
+    bus_pushevent(USER_INPUT_MOUSE, evt, NULL);
     return 0;
 }

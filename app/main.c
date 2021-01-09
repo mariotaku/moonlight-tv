@@ -26,6 +26,7 @@
 #include "stream/session.h"
 #include "ui/config.h"
 #include "ui/gui_root.h"
+#include "util/bus.h"
 
 bool running = true;
 
@@ -34,7 +35,8 @@ int main(int argc, char *argv[])
 #ifdef OS_WEBOS
     REDIR_STDOUT("moonlight");
 #endif
-
+    bus_init();
+    
     int ret = app_init(argc, argv);
     if (ret != 0)
     {
@@ -45,11 +47,11 @@ int main(int argc, char *argv[])
 
     /* GUI */
     struct nk_context *ctx;
-    APP_WINDOW_CONTEXT appctx = app_window_create();
+    APP_WINDOW_CONTEXT win = app_window_create();
     streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
     gui_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    ctx = nk_platform_init(appctx);
+    ctx = nk_platform_init(win);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
@@ -83,6 +85,8 @@ int main(int argc, char *argv[])
     backend_destroy();
 
     app_destroy();
+
+    bus_destroy();
     return 0;
 }
 

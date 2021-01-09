@@ -52,7 +52,9 @@
         "app.h": "c",
         "platform_sdl_gl2.h": "c",
         "platform_sdl_gles2.h": "c",
-        "graphics.h": "c"
+        "graphics.h": "c",
+        "platform_lgnc_gles2.h": "c",
+        "nuklear_lgnc_gles2.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

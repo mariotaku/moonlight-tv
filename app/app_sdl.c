@@ -74,10 +74,8 @@ void app_destroy()
     SDL_Quit();
 }
 
-void app_main_loop(void *data)
+static void app_process_events(struct nk_context *ctx)
 {
-    struct nk_context *ctx = (struct nk_context *)data;
-
     /* Input */
     SDL_Event evt;
     nk_input_begin(ctx);
@@ -106,6 +104,13 @@ void app_main_loop(void *data)
         nk_sdl_handle_event(&evt);
     }
     nk_input_end(ctx);
+}
+
+void app_main_loop(void *data)
+{
+    struct nk_context *ctx = (struct nk_context *)data;
+
+    app_process_events(ctx);
 
     bool cont = gui_root(ctx);
 

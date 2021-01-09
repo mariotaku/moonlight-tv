@@ -15,9 +15,10 @@
 #ifndef NK_LGNC_GLES2_H_
 #define NK_LGNC_GLES2_H_
 
-#include <lgnc_egl.h>
 #include <GLES2/gl2.h>
 
+#include <lgnc_egl.h>
+#include <lgnc_system.h>
 
 NK_API struct nk_context*   nk_lgnc_init();
 NK_API void                 nk_lgnc_font_stash_begin(struct nk_font_atlas **atlas);
@@ -26,6 +27,8 @@ NK_API void                 nk_lgnc_render(enum nk_anti_aliasing , int max_verte
 NK_API void                 nk_lgnc_shutdown(void);
 NK_API void                 nk_lgnc_device_destroy(void);
 NK_API void                 nk_lgnc_device_create(void);
+
+NK_API void                 nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond);
 
 #endif
 
@@ -322,6 +325,37 @@ void nk_lgnc_shutdown(void)
     nk_free(&lgnc.ctx);
     nk_lgnc_device_destroy();
     memset(&lgnc, 0, sizeof(lgnc));
+}
+
+
+NK_API
+void nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond)
+{
+    nk_input_begin(&lgnc.ctx);
+    switch (keyCond)
+    {
+    case LGNC_KEY_PRESS:
+    case LGNC_KEY_RELEASE:
+    {
+        /* code */
+        if (key != 272)
+        {
+            break;
+        }
+        nk_input_button(&lgnc.ctx, NK_BUTTON_LEFT, posX, posY, keyCond == LGNC_KEY_PRESS);
+        break;
+    }
+    case LGNC_KEY_COND_LAST:
+    {
+        if (key != 0)
+        {
+            break;
+        }
+        nk_input_motion(&lgnc.ctx, posX, posY);
+        break;
+    }
+    }
+    nk_input_end(&lgnc.ctx);
 }
 
 #endif

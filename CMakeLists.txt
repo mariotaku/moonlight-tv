@@ -84,6 +84,7 @@ if (TARGET_WEBOS)
             app/stream/input/lgnc.c
             app/stream/audio/lgnc.c
             app/stream/video/lgnc.c
+            third_party/message_queue/message_queue.c
         )
     endif()
 elseif (TARGET_LINUX)
@@ -112,7 +113,8 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded/src)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
+target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include))
 
 target_link_libraries(moonlight PRIVATE
  PkgConfig::OpenSSL PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
