@@ -1,4 +1,4 @@
-#include "bus.h"
+#include "util/bus.h"
 
 #include <SDL.h>
 
