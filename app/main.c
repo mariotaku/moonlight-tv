@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
@@ -8,6 +10,7 @@
 #elif defined(NK_SDL_GL2)
 #include "nuklear/platform_sdl_gl2.h"
 #elif defined(NK_LGNC_GLES2)
+#include "nuklear/platform_lgnc_gles2.h"
 #else
 #error "No valid render backend specified"
 #endif
@@ -31,7 +34,8 @@ int main(int argc, char *argv[])
 #ifdef OS_WEBOS
     REDIR_STDOUT("moonlight");
 #endif
-    int ret = app_init();
+
+    int ret = app_init(argc, argv);
     if (ret != 0)
     {
         return ret;

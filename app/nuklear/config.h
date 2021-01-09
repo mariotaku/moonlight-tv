@@ -10,7 +10,11 @@
 #define NK_BUTTON_TRIGGER_ON_RELEASE
 
 #ifdef OS_WEBOS
+#ifndef WEBOS_LEGACY
 #define NK_SDL_GLES2
+#else
+#define NK_LGNC_GLES2
+#endif
 #else
 #define NK_SDL_GL2
 #endif

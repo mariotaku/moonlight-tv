@@ -1,6 +1,6 @@
-// Include source directly in order to use static functions
 #include "absinput.h"
 
+// Include source directly in order to use static functions
 #include "input/sdl.c"
 #include "stream/session.h"
 #include "util/user_event.h"

@@ -20,7 +20,6 @@
 #define NK_SDL_GL2_IMPLEMENTATION
 #include <SDL_opengl.h>
 #include "nuklear/platform_sdl_gl2.h"
-#elif defined(NK_LGNC_GLES2)
 #else
 #error "No valid render backend specified"
 #endif
@@ -36,7 +35,7 @@
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
-int app_init()
+int app_init(int argc, char *argv[])
 {
 #ifdef USE_NDL
     if (NDL_DirectMediaInit(WEBOS_APPID, NULL))
@@ -75,9 +74,9 @@ void app_destroy()
     SDL_Quit();
 }
 
-void app_main_loop(void *loopArg)
+void app_main_loop(void *data)
 {
-    struct nk_context *ctx = (struct nk_context *)loopArg;
+    struct nk_context *ctx = (struct nk_context *)data;
 
     /* Input */
     SDL_Event evt;

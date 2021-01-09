@@ -77,6 +77,11 @@ if (TARGET_WEBOS)
         )
     else()
         list(APPEND SOURCES
+            app/app_lgnc.c
+            app/platform/lgnc/bus.c
+            app/platform/lgnc/callbacks.c
+            app/platform/lgnc/graphics.c
+            app/stream/input/lgnc.c
             app/stream/audio/lgnc.c
             app/stream/video/lgnc.c
         )
@@ -85,7 +90,7 @@ elseif (TARGET_LINUX)
     list(APPEND SOURCES
         app/app_sdl.c
         app/stream/input/sdl.c
-        app/util/bus_sdl.c
+        app/platform/sdl/bus.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/audio/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c
@@ -110,7 +115,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdn
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- PkgConfig::SDL2 PkgConfig::OpenSSL PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
+ PkgConfig::OpenSSL PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
  m pthread
  moonlight-common-c
 )
@@ -121,7 +126,7 @@ if (TARGET_WEBOS)
     if (NOT WEBOS_LEGACY)
         target_compile_definitions(moonlight PUBLIC HAVE_SDL)
         target_compile_definitions(moonlight PUBLIC USE_NDL)
-        target_link_libraries(moonlight PRIVATE NDL_directmedia)
+        target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 NDL_directmedia)
     else()
         target_compile_definitions(moonlight PUBLIC WEBOS_LEGACY USE_LGNCAPI)
         target_link_libraries(moonlight PRIVATE lgncopenapi)
@@ -129,7 +134,7 @@ if (TARGET_WEBOS)
 else()
     target_compile_definitions(moonlight PUBLIC OS_LINUX)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL)
 endif()
 
 
@@ -146,9 +151,13 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
         WEBOS_APPINFO_TITLE "Moonlight"
-        WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
         WEBOS_PACKAGE_ASSETS "assets"
     )
+    if (NOT WEBOS_LEGACY)
+        set_target_properties(moonlight PROPERTIES
+            WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
+        )
+    endif()
 
     target_webos_package(moonlight)
 

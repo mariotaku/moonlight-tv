@@ -1,6 +1,6 @@
 #include "gui_root.h"
 
-#include <SDL_opengl.h>
+#include <GLES2/gl2.h>
 
 #include "stream/session.h"
 
