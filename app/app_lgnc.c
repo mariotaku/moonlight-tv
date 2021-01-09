@@ -42,6 +42,7 @@ int app_init(int argc, char *argv[])
 
 void app_destroy()
 {
+    finalize_egl();
     LGNC_SYSTEM_Finalize();
 }
 
@@ -56,6 +57,8 @@ APP_WINDOW_CONTEXT app_window_create()
     }
 
     open_display(1280, 720, displayId);
+    /* OpenGL setup */
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     return NULL;
 }
 

@@ -288,6 +288,8 @@ NK_API struct nk_context*
 nk_lgnc_init()
 {
     nk_init_default(&lgnc.ctx, 0);
+    lgnc.width = 1280; 
+    lgnc.height = 720; 
     lgnc.ctx.clip.userdata = nk_handle_ptr(0);
     nk_lgnc_device_create();
     return &lgnc.ctx;
