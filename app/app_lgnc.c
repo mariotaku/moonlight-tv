@@ -8,6 +8,7 @@
 #include "platform/lgnc/events.h"
 
 #include <lgnc_system.h>
+#include <lgnc_gamepad.h>
 
 #define NK_IMPLEMENTATION
 #include "nuklear/config.h"
@@ -31,7 +32,7 @@
 int app_init(int argc, char *argv[])
 {
     LGNC_SYSTEM_CALLBACKS_T callbacks = {
-        .pfnJoystickEventCallback = NULL,
+        .pfnJoystickEventCallback = _JoystickEventCallback,
         .pfnMsgHandler = _MsgEventHandler,
         .pfnKeyEventCallback = _KeyEventCallback,
         .pfnMouseEventCallback = _MouseEventCallback};
@@ -39,13 +40,14 @@ int app_init(int argc, char *argv[])
     {
         return -1;
     }
-    fprintf(stderr, "LGNC_SYSTEM_Initialize finished with 0\n");
+    LGNC_GAMEPAD_RegisterCallback(_GamepadEventCallback, _GamepadHotPlugCallback);
     return 0;
 }
 
 void app_destroy()
 {
     finalize_egl();
+    LGNC_GAMEPAD_UnregisterCallback();
     LGNC_SYSTEM_Finalize();
 }
 

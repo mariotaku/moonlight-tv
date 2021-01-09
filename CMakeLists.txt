@@ -1,4 +1,8 @@
 cmake_minimum_required (VERSION 3.0)
+project(moonlight 
+    VERSION 0.0.3
+    LANGUAGES C
+)
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/utils/cmake)
@@ -7,14 +11,10 @@ get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
 if (CC_BASENAME MATCHES "^arm-webos-")
     set(TARGET_WEBOS TRUE)
-    include(WebOSPackage)
+    option(WEBOS_LEGACY "Use Legacy API" OFF)
 else() 
     set(TARGET_LINUX TRUE)
 endif()
-
-option(WEBOS_LEGACY "Use Legacy API" OFF)
-
-project(moonlight LANGUAGES C)
 
 find_package(PkgConfig REQUIRED)
 
@@ -141,6 +141,7 @@ endif()
 
 
 if (TARGET_WEBOS)
+    include(WebOSPackage)
 
     add_custom_target(webos-generate-gamecontrollerdb
         COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
@@ -149,10 +150,10 @@ if (TARGET_WEBOS)
 
     set_target_properties(moonlight PROPERTIES
         WEBOS_APPINFO_ID com.limelight.webos
-        WEBOS_APPINFO_VERSION 0.0.3
+        WEBOS_APPINFO_VERSION ${CMAKE_PROJECT_VERSION}
+        WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-        WEBOS_APPINFO_TITLE "Moonlight"
     )
     if (WEBOS_LEGACY)
         set_target_properties(moonlight PROPERTIES

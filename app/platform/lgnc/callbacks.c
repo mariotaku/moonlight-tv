@@ -63,3 +63,23 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
     bus_pushevent(USER_INPUT_MOUSE, evt, NULL);
     return 0;
 }
+
+void _JoystickEventCallback(LGNC_ADDITIONAL_INPUT_INFO_T *e)
+{
+    struct input_event event = e->event;
+    printf("JoystickEvent tv_sec: %lu, type: %04x, code: %04x, value: %08x\n",
+           event.time.tv_sec, event.type, event.code, event.value);
+}
+
+void _GamepadEventCallback(LGNC_ADDITIONAL_INPUT_INFO_T *e)
+{
+    struct input_event event = e->event;
+    printf("GamepadEvent tv_sec: %lu, type: %04x, code: %04x, value: %08x\n",
+           event.time.tv_sec, event.type, event.code, event.value);
+}
+
+void _GamepadHotPlugCallback(LGNC_GAMEPAD_INFO *gamepad, int count)
+{
+    printf("GamepadHotPlug id: %d, type: %08x, count: %d\n",
+           gamepad->id, gamepad->type, count);
+}
