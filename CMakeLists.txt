@@ -154,14 +154,14 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
         WEBOS_APPINFO_TITLE "Moonlight"
     )
-    if (NOT WEBOS_LEGACY)
+    if (WEBOS_LEGACY)
         set_target_properties(moonlight PROPERTIES
-            WEBOS_PACKAGE_ASSETS "assets" 
+            WEBOS_PACKAGE_ASSETS "assets;legacy-prebuilt/lib" 
         )
     else()
         set_target_properties(moonlight PROPERTIES
             WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
-            WEBOS_PACKAGE_ASSETS "assets;legacy/lib"
+            WEBOS_PACKAGE_ASSETS "assets"
         )
     endif()
 
