@@ -69,6 +69,7 @@ if (TARGET_WEBOS)
     )
     if (NOT WEBOS_LEGACY)
         list(APPEND SOURCES
+            app/app_sdl.c
             app/stream/audio/ndl.c
             app/stream/video/ndl.c
             app/stream/input/sdl.c
@@ -82,6 +83,7 @@ if (TARGET_WEBOS)
     endif()
 elseif (TARGET_LINUX)
     list(APPEND SOURCES
+        app/app_sdl.c
         app/stream/input/sdl.c
         app/util/bus_sdl.c
         core/moonlight-embedded/src/sdl.c

@@ -46,7 +46,11 @@
         "webos_keys.h": "c",
         "absinput.h": "c",
         "connection.h": "c",
-        "settings.h": "c"
+        "settings.h": "c",
+        "sdl_gles2_init.h": "c",
+        "main.h": "c",
+        "app.h": "c",
+        "platform_sdl_gl2.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

@@ -1,7 +1,16 @@
 #pragma once
+#include "demo/sdl_opengles2/nuklear_sdl_gles2.h"
+
+#define nk_platform_init(appctx) nk_sdl_init((SDL_Window *)appctx)
+
+#define nk_platform_shutdown() nk_sdl_shutdown()
+
+#define nk_platform_font_stash_begin nk_sdl_font_stash_begin
+
+#define nk_platform_font_stash_end nk_sdl_font_stash_end
 
 #ifdef NK_SDL_GLES2_IMPLEMENTATION
-static void nk_sdl_gl_setup()
+static void nk_platform_gl_setup()
 {
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");

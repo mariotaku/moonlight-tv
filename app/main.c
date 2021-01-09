@@ -1,169 +1,63 @@
-/* nuklear - 1.40.8 - public domain */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdarg.h>
-#include <string.h>
-#include <math.h>
-#include <assert.h>
-#include <limits.h>
-#include <time.h>
-
-#define NK_IMPLEMENTATION
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
 
-#include <SDL.h>
-
-#ifdef NK_SDL_GLES2_IMPLEMENTATION
-#include "demo/sdl_opengles2/nuklear_sdl_gles2.h"
-#include "nuklear/sdl_gles2_init.h"
-#elif defined(NK_SDL_GL2_IMPLEMENTATION)
-#include <SDL_opengl.h>
-#include "demo/sdl_opengl2/nuklear_sdl_gl2.h"
-#include "nuklear/sdl_gl2_init.h"
+#if defined(NK_SDL_GLES2)
+#include "nuklear/platform_sdl_gles2.h"
+#elif defined(NK_SDL_GL2)
+#include "nuklear/platform_sdl_gl2.h"
+#elif defined(NK_LGNC_GLES2)
 #else
 #error "No valid render backend specified"
 #endif
 
 #ifdef OS_WEBOS
-#if defined(USE_NDL)
-#include <NDL_directmedia.h>
-#elif defined(USE_LGNCAPI)
-#include <lgnc_system.h>
-#endif
 #include "sdl/webos_keys.h"
 #endif
 
 #include "main.h"
+#include "app.h"
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
-#include "stream/input/absinput.h"
 #include "ui/config.h"
 #include "ui/gui_root.h"
 
-#define MAX_VERTEX_MEMORY 512 * 1024
-#define MAX_ELEMENT_MEMORY 128 * 1024
-
-/* Platform */
-SDL_Window *win;
-int running = nk_true;
-
-static void
-MainLoop(void *loopArg)
-{
-    struct nk_context *ctx = (struct nk_context *)loopArg;
-
-    /* Input */
-    SDL_Event evt;
-    nk_input_begin(ctx);
-    while (SDL_PollEvent(&evt))
-    {
-        bool block_steam_inputevent = false;
-        if (evt.type >= SDL_KEYDOWN && evt.type < SDL_CLIPBOARDUPDATE)
-        {
-            // Those are input events
-            gui_dispatch_inputevent(ctx, evt);
-            block_steam_inputevent |= gui_block_stream_inputevent();
-        }
-        else if (evt.type == SDL_USEREVENT)
-        {
-            backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-            gui_dispatch_userevent(evt.user.code);
-        }
-        else if (evt.type == SDL_QUIT)
-        {
-            request_exit();
-        }
-        if (!block_steam_inputevent)
-        {
-            absinput_dispatch_event(evt);
-        }
-        nk_sdl_handle_event(&evt);
-    }
-    nk_input_end(ctx);
-
-    bool cont = gui_root(ctx);
-
-    /* Draw */
-    {
-        gui_background();
-        /* 
-         * IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
-         * with blending, scissor, face culling, depth test and viewport and
-         * defaults everything back into a default state.
-         * Make sure to either a.) save and restore or b.) reset your own state after
-         * rendering the UI.
-         */
-#ifdef NK_SDL_GLES2_IMPLEMENTATION
-        nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-#elif defined(NK_SDL_GL2_IMPLEMENTATION)
-        nk_sdl_render(NK_ANTI_ALIASING_ON);
-#endif
-        SDL_GL_SwapWindow(win);
-    }
-    if (!cont)
-    {
-        request_exit();
-    }
-}
+bool running = true;
 
 int main(int argc, char *argv[])
 {
 #ifdef OS_WEBOS
     REDIR_STDOUT("moonlight");
-#ifdef USE_NDL
-    if (NDL_DirectMediaInit(WEBOS_APPID, NULL))
-    {
-        SDL_Log("Unable to initialize NDL\n", NDL_DirectMediaGetError());
-        return -1;
-    }
-#elif defined(USE_LGNCAPI)
-    LGNC_SYSTEM_CALLBACKS_T callbacks = {
-        .pfnJoystickEventCallback = NULL,
-        .pfnMsgHandler = NULL,
-        .pfnKeyEventCallback = NULL,
-        .pfnMouseEventCallback = NULL};
-    if (LGNC_SYSTEM_Initialize(argc, argv, NULL) != 0)
-    {
-        return -1;
-    }
 #endif
-#endif
+    int ret = app_init();
+    if (ret != 0)
+    {
+        return ret;
+    }
 
     backend_init();
 
     /* GUI */
     struct nk_context *ctx;
-    SDL_GLContext glContext;
-    nk_sdl_gl_setup();
-    SDL_SetHint("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
-    SDL_SetHint("SDL_WEBOS_CURSOR_SLEEP_TIME", "5000");
-    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                           WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+    APP_WINDOW_CONTEXT appctx = app_window_create();
     streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
     gui_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glContext = SDL_GL_CreateContext(win);
 
-    /* OpenGL setup */
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    ctx = nk_sdl_init(win);
+    ctx = nk_platform_init(appctx);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
         struct nk_font_atlas *atlas;
-        nk_sdl_font_stash_begin(&atlas);
+        nk_platform_font_stash_begin(&atlas);
         /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
         /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
         /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
         /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
         /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
         /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
-        nk_sdl_font_stash_end();
+        nk_platform_font_stash_end();
         /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
         /*nk_style_set_font(ctx, &roboto->handle)*/;
     }
@@ -175,37 +69,20 @@ int main(int argc, char *argv[])
     /*set_style(ctx, THEME_DARK);*/
     gui_root_init(ctx);
 
-    // gst_demo_initialize();
-
     while (running)
-        MainLoop((void *)ctx);
+    {
+        app_main_loop((void *)ctx);
+    }
 
-    nk_sdl_shutdown();
+    nk_platform_shutdown();
 
     backend_destroy();
 
-    // gst_demo_finalize();
-
-#ifdef OS_WEBOS
-#ifdef USE_NDL
-    NDL_DirectMediaQuit();
-#endif
-#ifdef USE_LGNCAPI
-    LGNC_SYSTEM_Finalize();
-#endif
-#endif
-    SDL_GL_DeleteContext(glContext);
-    SDL_DestroyWindow(win);
-    SDL_Quit();
+    app_destroy();
     return 0;
 }
 
 void request_exit()
 {
-    running = nk_false;
-}
-
-int exit_requested()
-{
-    return !running;
+    running = false;
 }

@@ -10,7 +10,7 @@
 #define NK_BUTTON_TRIGGER_ON_RELEASE
 
 #ifdef OS_WEBOS
-#define NK_SDL_GLES2_IMPLEMENTATION
+#define NK_SDL_GLES2
 #else
-#define NK_SDL_GL2_IMPLEMENTATION
+#define NK_SDL_GL2
 #endif

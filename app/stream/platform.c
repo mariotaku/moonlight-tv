@@ -9,9 +9,9 @@
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
 {
 #ifdef OS_WEBOS
-#ifdef USE_NDL
+#ifndef WEBOS_LEGACY
     return &audio_callbacks_ndl;
-#elif defined(USE_LGNCAPI)
+#else
     return &audio_callbacks_lgnc;
 #endif
 #else
@@ -22,9 +22,9 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 {
 #ifdef OS_WEBOS
-#ifdef USE_NDL
+#ifndef WEBOS_LEGACY
     return &decoder_callbacks_ndl;
-#elif defined(USE_LGNCAPI)
+#else
     return &decoder_callbacks_lgnc;
 #endif
 #else
