@@ -1,3 +1,4 @@
+#include "sdl.h"
 #include "absinput.h"
 
 // Include source directly in order to use static functions

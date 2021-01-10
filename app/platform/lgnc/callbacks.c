@@ -14,6 +14,10 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "ui/gui_root.h"
+#include "stream/session.h"
+#include "stream/input/lgnc.h"
+
 LGNC_STATUS_T _MsgEventHandler(LGNC_MSG_TYPE_T msg, unsigned int submsg, char *pData, unsigned short dataSize)
 
 {
@@ -54,6 +58,10 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
     {
         bus_pushevent(USER_QUIT, NULL, NULL);
         return 1;
+    }
+    if (streaming_status == STREAMING_STREAMING && !gui_should_block_input())
+    {
+        absinput_dispatch_mouse_event(posX, posY, key, keyCond);
     }
     struct LGNC_MOUSE_EVENT_T *evt = malloc(sizeof(struct LGNC_MOUSE_EVENT_T));
     evt->posX = posX;

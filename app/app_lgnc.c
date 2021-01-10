@@ -21,6 +21,7 @@
 
 #include "backend/backend_root.h"
 #include "stream/input/absinput.h"
+#include "stream/input/lgnc.h"
 #include "ui/gui_root.h"
 #include "ui/config.h"
 #include "util/bus.h"
@@ -92,11 +93,9 @@ static void app_process_events(struct nk_context *ctx)
                 break;
             }
             default:
-            {
                 backend_dispatch_userevent(which, data1, data2);
                 gui_dispatch_userevent(which);
                 break;
-            }
             }
         }
     }

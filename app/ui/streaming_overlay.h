@@ -17,4 +17,4 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat);
 
 bool streaming_overlay_dispatch_userevent(int which);
 
-bool streaming_overlay_block_stream_inputevent();
+bool streaming_overlay_should_block_input();

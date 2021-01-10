@@ -16,7 +16,7 @@
 #endif
 
 #ifdef OS_WEBOS
-#include "sdl/webos_keys.h"
+#include "platform/sdl/webos_keys.h"
 #endif
 
 #include "main.h"

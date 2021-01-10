@@ -22,7 +22,10 @@ void gui_background();
 
 bool gui_dispatch_userevent(int which);
 
-bool gui_block_stream_inputevent();
+/**
+ * @brief Check if GUI should consume input events, so it will not pass onto streaming
+ */
+bool gui_should_block_input();
 
 void gui_display_size(short width, short height);
 

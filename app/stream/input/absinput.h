@@ -10,10 +10,3 @@ void absinput_init();
 int absinput_gamepads();
 
 ConnListenerRumble absinput_getrumble();
-
-#ifdef HAVE_SDL
-#include <SDL.h>
-
-bool absinput_dispatch_event(SDL_Event ev);
-
-#endif

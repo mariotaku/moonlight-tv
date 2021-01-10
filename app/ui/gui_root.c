@@ -59,10 +59,10 @@ bool gui_dispatch_userevent(int which)
     return false;
 }
 
-bool gui_block_stream_inputevent()
+bool gui_should_block_input()
 {
     bool ret = false;
-    ret |= streaming_overlay_block_stream_inputevent();
+    ret |= streaming_overlay_should_block_input();
     return ret;
 }
 

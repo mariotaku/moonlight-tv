@@ -26,6 +26,8 @@
 
 #include "backend/backend_root.h"
 #include "stream/input/absinput.h"
+#include "stream/input/sdl.h"
+#include "platform/sdl/events.h"
 #include "ui/gui_root.h"
 #include "ui/config.h"
 
@@ -82,11 +84,11 @@ static void app_process_events(struct nk_context *ctx)
     while (SDL_PollEvent(&evt))
     {
         bool block_steam_inputevent = false;
-        if (evt.type >= SDL_KEYDOWN && evt.type < SDL_CLIPBOARDUPDATE)
+        if (SDL_IS_INPUT_EVENT(evt))
         {
             // Those are input events
             gui_dispatch_inputevent(ctx, evt);
-            block_steam_inputevent |= gui_block_stream_inputevent();
+            block_steam_inputevent |= gui_should_block_input();
         }
         else if (evt.type == SDL_USEREVENT)
         {

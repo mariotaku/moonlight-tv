@@ -65,7 +65,7 @@ set(SOURCES
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
-        app/sdl/webos_keys.c
+        app/platform/sdl/webos_keys.c
     )
     if (NOT WEBOS_LEGACY)
         list(APPEND SOURCES
