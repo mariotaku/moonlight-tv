@@ -25,7 +25,6 @@ NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 #define nk_layout_row_template_push_variable_s(ctx, min_width) nk_layout_row_template_push_variable(ctx, (min_width) * NK_UI_SCALE)
 
 #define nk_list_view_begin_s(ctx, out, id, flags, row_height, row_count) nk_list_view_begin(ctx, out, id, flags, (row_height) * NK_UI_SCALE, row_count)
-#define nk_horiz_list_view_begin_s(ctx, out, id, flags, col_width, row_count) nk_horiz_list_view_begin(ctx, out, id, flags, (col_width) * NK_UI_SCALE, row_count)
 
 #define nk_font_atlas_add_from_file_s(atlas, file_path, height, config) nk_font_atlas_add_from_file(atlas, file_path, (height) * NK_UI_SCALE, config)
 
