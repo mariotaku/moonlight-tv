@@ -1,4 +1,5 @@
 #include "streaming_overlay.h"
+#include "gui_root.h"
 #include "messages.h"
 
 #include "stream/session.h"
@@ -57,7 +58,7 @@ bool streaming_overlay_should_block_input()
 
 void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 {
-    static struct nk_rect s = {330, 240, 300, 60};
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 300, 60);
     if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -79,19 +80,22 @@ void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 
 void _streaming_error_window(struct nk_context *ctx)
 {
-    static struct nk_rect s = {330, 215, 300, 115};
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 300, 150);
     if (nk_begin(ctx, "Streaming Error", s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
-        content_height_remaining -= 30;
-        nk_layout_row_dynamic(ctx, 40, 1);
+        content_height_remaining -= 30 * NK_UI_SCALE;
+        content_height_remaining -= ctx->style.window.spacing.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
         nk_label_wrap(ctx, MSG_GS_ERRNO[-streaming_errno]);
-        nk_layout_row_template_begin(ctx, 30);
-        nk_layout_row_template_push_variable(ctx, 10);
-        nk_layout_row_template_push_static(ctx, 80);
+
+        nk_layout_row_template_begin_s(ctx, 30);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
+
         nk_spacing(ctx, 1);
         if (nk_button_label(ctx, "OK"))
         {
@@ -103,20 +107,22 @@ void _streaming_error_window(struct nk_context *ctx)
 
 void _streaming_quit_confirm_window(struct nk_context *ctx)
 {
-    static struct nk_rect s = {330, 215, 300, 120};
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 300, 150);
     if (nk_begin(ctx, "Quit Streaming", s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
-        content_height_remaining -= 30;
-        nk_layout_row_dynamic(ctx, 40, 1);
-        nk_label_wrap(ctx, "Do you want to quit streaming? If you select Quit Game, unsaved progress will be lost.");
-        nk_layout_row_template_begin(ctx, 30);
-        nk_layout_row_template_push_static(ctx, 80);
-        nk_layout_row_template_push_variable(ctx, 10);
-        nk_layout_row_template_push_static(ctx, 80);
-        nk_layout_row_template_push_static(ctx, 80);
+        content_height_remaining -= 30 * NK_UI_SCALE;
+        content_height_remaining -= ctx->style.window.spacing.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+        nk_label_wrap(ctx, "Do you want to quit streaming? If you select \"Quit\", unsaved progress will be lost.");
+
+        nk_layout_row_template_begin_s(ctx, 30);
+        nk_layout_row_template_push_static_s(ctx, 80);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 80);
+        nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
 
         if (nk_button_label(ctx, "Cancel"))
@@ -124,12 +130,12 @@ void _streaming_quit_confirm_window(struct nk_context *ctx)
             quit_confirm_showing = false;
         }
         nk_spacing(ctx, 1);
-        if (nk_button_label(ctx, "Keep Game"))
+        if (nk_button_label(ctx, "Keep"))
         {
             streaming_interrupt(false);
             quit_confirm_showing = false;
         }
-        if (nk_button_label(ctx, "Quit Game"))
+        if (nk_button_label(ctx, "Quit"))
         {
             streaming_interrupt(true);
             quit_confirm_showing = false;

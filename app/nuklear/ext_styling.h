@@ -8,12 +8,24 @@
 #define NK_UI_SCALE 1
 #endif
 
-void nk_ext_apply_styles(struct nk_context *ctx);
+void nk_ext_apply_style(struct nk_context *ctx);
 
 #ifdef NK_IMPLEMENTATION
 
-void nk_ext_apply_styles(struct nk_context *ctx)
+void nk_ext_apply_style(struct nk_context *ctx)
 {
+
+    struct nk_color table[NK_COLOR_COUNT] = {
+    #define NK_COLOR(a,b,c,d,e) {b,c,d,e},
+        NK_COLOR_MAP(NK_COLOR)
+    #undef NK_COLOR
+    };
+    table[NK_COLOR_TOGGLE] = nk_rgba(38, 38, 38, 255);
+    table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(100, 100, 100, 255);
+    table[NK_COLOR_TOGGLE_HOVER] = nk_rgba(60, 60, 60, 255);
+
+    nk_style_from_table(ctx, table);
+
     struct nk_style *style;
     struct nk_style_text *text;
     struct nk_style_button *button;
@@ -47,7 +59,7 @@ void nk_ext_apply_styles(struct nk_context *ctx)
     
     /* checkbox toggle */
     toggle = &style->checkbox;
-    toggle->padding         = nk_vec2_s(2.0f, 2.0f);
+    toggle->padding         = nk_vec2_s(0.0f, 0.0f);
 
     /* option toggle */
     toggle = &style->option;

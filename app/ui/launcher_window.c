@@ -50,8 +50,6 @@ void launcher_window_init(struct nk_context *ctx)
 
 bool launcher_window(struct nk_context *ctx)
 {
-    /* GUI */
-    int content_width_remaining, content_height_remaining;
     int window_flags = NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER;
     if (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
     {
@@ -60,19 +58,16 @@ bool launcher_window(struct nk_context *ctx)
     if (nk_begin(ctx, "Moonlight", nk_rect_s(20, 20, gui_logic_width - 40, gui_logic_height - 40),
                  window_flags))
     {
-        bool event_emitted = false;
-        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        content_height_remaining = (int)content_size.y;
+        struct nk_vec2 list_size = nk_window_get_content_inner_size(ctx);
 
-        content_width_remaining = (int)content_size.x;
-        nk_menubar_begin(ctx);
+        bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
-        nk_layout_row_template_push_static_s(ctx, 150);
+        nk_layout_row_template_push_static_s(ctx, 200);
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
-
-        content_height_remaining -= nk_widget_bounds(ctx).h;
+        list_size.y -= nk_widget_height(ctx);
+        list_size.y -= ctx->style.window.spacing.y;
 
         int computer_len = linkedlist_len(computer_list);
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
@@ -83,10 +78,9 @@ bool launcher_window(struct nk_context *ctx)
         {
             settings_window_open();
         }
-        nk_menubar_end(ctx);
 
         struct nk_list_view list_view;
-        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+        nk_layout_row_dynamic(ctx, list_size.y, 1);
         PSERVER_LIST selected = selected_server_node;
 
         if (selected != NULL)
@@ -102,7 +96,12 @@ bool launcher_window(struct nk_context *ctx)
         }
         else
         {
-            nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
+            if (nk_group_begin(ctx, "launcher_empty", NK_WINDOW_BORDER))
+            {
+                nk_layout_row_dynamic_s(ctx, 50, 1);
+                nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
+                nk_group_end(ctx);
+            }
 
             if (pairing_computer_state.state == PS_FAIL)
             {
@@ -129,7 +128,7 @@ bool launcher_window(struct nk_context *ctx)
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
-    if (nk_combo_begin_label(ctx, selected, nk_vec2_s(150, 200)))
+    if (nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200)))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
         PSERVER_LIST cur = list;

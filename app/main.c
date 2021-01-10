@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         nk_platform_font_stash_end();
         nk_style_set_font(ctx, &noto->handle);
     }
-    nk_ext_apply_styles(ctx);
+    nk_ext_apply_style(ctx);
 
     gui_root_init(ctx);
 
