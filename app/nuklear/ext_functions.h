@@ -20,6 +20,7 @@ NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 
 #define nk_layout_row_s(ctx, fmt, height, cols, ratio) nk_layout_row(ctx, fmt, (height) * NK_UI_SCALE, cols, ratio)
 #define nk_layout_row_dynamic_s(ctx, height, cols) nk_layout_row_dynamic(ctx, (height) * NK_UI_SCALE, cols)
+#define nk_layout_row_static_s(ctx, height, item_width, cols) nk_layout_row_static(ctx, (height) * NK_UI_SCALE, (item_width) * NK_UI_SCALE, cols)
 #define nk_layout_row_template_begin_s(ctx, h) nk_layout_row_template_begin(ctx, (h) * NK_UI_SCALE)
 #define nk_layout_row_template_push_static_s(ctx, width) nk_layout_row_template_push_static(ctx, (width) * NK_UI_SCALE)
 #define nk_layout_row_template_push_variable_s(ctx, min_width) nk_layout_row_template_push_variable(ctx, (min_width) * NK_UI_SCALE)

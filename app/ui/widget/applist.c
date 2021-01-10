@@ -16,16 +16,17 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
     {
         rowcount++;
     }
-    if (nk_list_view_begin_s(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, itemheight, rowcount))
+    if (nk_list_view_begin(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, itemheight, rowcount))
     {
-        nk_layout_row_dynamic_s(ctx, itemheight, colcount);
+        nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
         PAPP_LIST cur = linkedlist_nth(node->apps, startidx);
         for (int row = 0; row < list_view.count; row++)
         {
-            for (int col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
+            int col;
+            for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
             {
-                if (nk_list_item_label(ctx, cur->name, NK_TEXT_ALIGN_LEFT))
+                if (nk_list_item_label(ctx, cur->name, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_BOTTOM))
                 {
                     if (!event_emitted)
                     {
@@ -33,6 +34,10 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
                         streaming_begin(node->server, cur->id);
                     }
                 }
+            }
+            if (col < colcount)
+            {
+                nk_spacing(ctx, colcount - col);
             }
         }
 
