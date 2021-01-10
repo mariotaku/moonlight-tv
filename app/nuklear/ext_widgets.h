@@ -6,7 +6,14 @@ NK_API nk_bool nk_list_item_label(struct nk_context *ctx, const char *label, nk_
 NK_API nk_bool nk_list_item_text(struct nk_context *ctx, const char *text, int len,
                                  nk_flags alignment);
 
+NK_API nk_bool nk_horiz_list_view_begin(struct nk_context *, struct nk_list_view *out,
+                                        const char *id, nk_flags, int row_height, int row_count);
+NK_API void nk_horiz_list_view_end(struct nk_list_view *);
+
 #ifdef NK_IMPLEMENTATION
+
+#include "horiz_list_view.h"
+
 NK_API nk_bool
 nk_list_item_label(struct nk_context *ctx, const char *label, nk_flags align)
 {
