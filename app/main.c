@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     REDIR_STDOUT("moonlight");
 #endif
     bus_init();
-    
+
     int ret = app_init(argc, argv);
     if (ret != 0)
     {
@@ -53,22 +53,14 @@ int main(int argc, char *argv[])
     gui_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     ctx = nk_platform_init(win);
-    /* Load Fonts: if none of these are loaded a default font will be used  */
-    /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
         struct nk_font_atlas *atlas;
         nk_platform_font_stash_begin(&atlas);
         struct nk_font *noto = nk_font_atlas_add_from_file_s(atlas, "assets/NotoSans-Regular.ttf", 20, NULL);
         nk_platform_font_stash_end();
-        /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
         nk_style_set_font(ctx, &noto->handle);
     }
 
-    /* style.c */
-    /*set_style(ctx, THEME_WHITE);*/
-    /*set_style(ctx, THEME_RED);*/
-    /*set_style(ctx, THEME_BLUE);*/
-    /*set_style(ctx, THEME_DARK);*/
     gui_root_init(ctx);
 
     while (running)
@@ -77,11 +69,8 @@ int main(int argc, char *argv[])
     }
 
     nk_platform_shutdown();
-
     backend_destroy();
-
     app_destroy();
-
     bus_destroy();
     return 0;
 }

@@ -9,9 +9,9 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
 {
     struct nk_list_view list_view;
     int app_len = linkedlist_len(node->apps);
-    if (nk_list_view_begin(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, 25, app_len))
+    if (nk_list_view_begin_s(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, 25, app_len))
     {
-        nk_layout_row_dynamic(ctx, 25, 1);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
         PAPP_LIST cur = linkedlist_nth(node->apps, list_view.begin);
 
         for (int i = 0; i < list_view.count; ++i, cur = cur->next)
