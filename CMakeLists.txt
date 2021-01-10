@@ -53,9 +53,9 @@ set(SOURCES
     app/stream/settings.c
     app/ui/gui_root.c
     app/ui/launcher_window.c
-    app/ui/applications_list.c
     app/ui/streaming_overlay.c
     app/ui/settings_window.c
+    app/ui/widget/applist.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
