@@ -15,6 +15,7 @@
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_styling.h"
 
 #define NK_LGNC_GLES2_IMPLEMENTATION
 #include "nuklear/platform_lgnc_gles2.h"

@@ -85,72 +85,66 @@ bool settings_window(struct nk_context *ctx)
                  NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        nk_layout_row_dynamic(ctx, content_size.y, 1);
-        if (nk_group_begin(ctx, "basic_settings", NK_WINDOW_NO_SCROLLBAR))
+        struct nk_rect tmp_bounds;
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
+        static const float ratio_resolution_fps[] = {0.6, 0.4};
+        tmp_bounds = nk_layout_widget_bounds(ctx);
+        nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
+        if (nk_combo_begin_label(ctx, _res_label, nk_vec2(tmp_bounds.w * 0.6, 200 * NK_UI_SCALE)))
         {
-            struct nk_rect tmp_bounds;
             nk_layout_row_dynamic_s(ctx, 25, 1);
-            nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
-            static const float ratio_resolution_fps[] = {0.6, 0.4};
-            tmp_bounds = nk_layout_widget_bounds(ctx);
-            nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
-            if (nk_combo_begin_label(ctx, _res_label, nk_vec2(tmp_bounds.w * 0.6, 200 * NK_UI_SCALE)))
+            for (int i = 0; i < _supported_resolutions_len; i++)
             {
-                nk_layout_row_dynamic_s(ctx, 25, 1);
-                for (int i = 0; i < _supported_resolutions_len; i++)
+                struct _resolution_option o = _supported_resolutions[i];
+                if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
                 {
-                    struct _resolution_option o = _supported_resolutions[i];
-                    if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
-                    {
-                        _set_res(o.w, o.h);
-                        _update_bitrate();
-                    }
+                    _set_res(o.w, o.h);
+                    _update_bitrate();
                 }
-                nk_combo_end(ctx);
             }
-            if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(tmp_bounds.w * 0.4, 200 * NK_UI_SCALE)))
-            {
-                nk_layout_row_dynamic_s(ctx, 25, 1);
-                for (int i = 0; i < _supported_fps_len; i++)
-                {
-                    struct _fps_option o = _supported_fps[i];
-                    if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
-                    {
-                        _set_fps(o.fps);
-                        _update_bitrate();
-                    }
-                }
-                nk_combo_end(ctx);
-            }
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-            nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-            nk_property_int(ctx, "kbps:", 5000, &app_settings->stream.bitrate, 100000, 500, 50);
-
-            nk_layout_row_dynamic_s(ctx, 4, 1);
-            nk_spacing(ctx, 1);
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-            nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-
-            nk_bool sops = app_settings->sops ? nk_true : nk_false;
-            nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
-            app_settings->sops = sops == nk_true;
-
-            nk_bool localaudio = app_settings->localaudio ? nk_true : nk_false;
-            nk_checkbox_label(ctx, "Play audio on host PC", &localaudio);
-            app_settings->localaudio = localaudio == nk_true;
-
-            nk_bool quitappafter = app_settings->quitappafter ? nk_true : nk_false;
-            nk_checkbox_label(ctx, "Quit app on host PC after ending stream", &quitappafter);
-            app_settings->quitappafter = quitappafter == nk_true;
-
-            nk_bool viewonly = app_settings->viewonly ? nk_true : nk_false;
-            nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
-            app_settings->viewonly = viewonly == nk_true;
-
-            nk_group_end(ctx);
+            nk_combo_end(ctx);
         }
+        if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(tmp_bounds.w * 0.4, 200 * NK_UI_SCALE)))
+        {
+            nk_layout_row_dynamic_s(ctx, 25, 1);
+            for (int i = 0; i < _supported_fps_len; i++)
+            {
+                struct _fps_option o = _supported_fps[i];
+                if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
+                {
+                    _set_fps(o.fps);
+                    _update_bitrate();
+                }
+            }
+            nk_combo_end(ctx);
+        }
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_property_int(ctx, "kbps:", 5000, &app_settings->stream.bitrate, 100000, 500, 50);
+
+        nk_layout_row_dynamic_s(ctx, 4, 1);
+        nk_spacing(ctx, 1);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+
+        nk_bool sops = app_settings->sops ? nk_true : nk_false;
+        nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
+        app_settings->sops = sops == nk_true;
+
+        nk_bool localaudio = app_settings->localaudio ? nk_true : nk_false;
+        nk_checkbox_label(ctx, "Play audio on host PC", &localaudio);
+        app_settings->localaudio = localaudio == nk_true;
+
+        nk_bool quitappafter = app_settings->quitappafter ? nk_true : nk_false;
+        nk_checkbox_label(ctx, "Quit app on host PC after ending stream", &quitappafter);
+        app_settings->quitappafter = quitappafter == nk_true;
+
+        nk_bool viewonly = app_settings->viewonly ? nk_true : nk_false;
+        nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
+        app_settings->viewonly = viewonly == nk_true;
     }
     nk_end(ctx);
     // Why Nuklear why, the button looks like "close" but it actually "hide"

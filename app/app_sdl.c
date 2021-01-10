@@ -14,6 +14,7 @@
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_styling.h"
 
 #if defined(NK_SDL_GLES2)
 #define NK_SDL_GLES2_IMPLEMENTATION

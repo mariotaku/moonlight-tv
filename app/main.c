@@ -6,6 +6,7 @@
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_styling.h"
 
 #if defined(NK_SDL_GLES2)
 #include "nuklear/platform_sdl_gles2.h"
@@ -60,6 +61,7 @@ int main(int argc, char *argv[])
         nk_platform_font_stash_end();
         nk_style_set_font(ctx, &noto->handle);
     }
+    nk_ext_apply_styles(ctx);
 
     gui_root_init(ctx);
 
