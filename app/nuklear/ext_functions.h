@@ -14,10 +14,13 @@ NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 #define nk_vec2_s(x, y) nk_vec2((x) * NK_UI_SCALE, (y) * NK_UI_SCALE)
 #define nk_vec2_s_const(x, y) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE}
 
+#define nk_layout_row_s(ctx, fmt, height, cols, ratio) nk_layout_row(ctx, fmt, (height) * NK_UI_SCALE, cols, ratio)
 #define nk_layout_row_dynamic_s(ctx, height, cols) nk_layout_row_dynamic(ctx, (height) * NK_UI_SCALE, cols)
 #define nk_layout_row_template_begin_s(ctx, h) nk_layout_row_template_begin(ctx, (h) * NK_UI_SCALE)
 #define nk_layout_row_template_push_static_s(ctx, width) nk_layout_row_template_push_static(ctx, (width) * NK_UI_SCALE)
 #define nk_layout_row_template_push_variable_s(ctx, min_width) nk_layout_row_template_push_variable(ctx, (min_width) * NK_UI_SCALE)
+
+#define nk_font_atlas_add_from_file_s(atlas, file_path, height, config) nk_font_atlas_add_from_file(atlas, file_path, (height) * NK_UI_SCALE, config)
 
 #ifdef NK_IMPLEMENTATION
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx)

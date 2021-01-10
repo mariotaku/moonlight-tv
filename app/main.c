@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     {
         struct nk_font_atlas *atlas;
         nk_platform_font_stash_begin(&atlas);
-        struct nk_font *noto = nk_font_atlas_add_from_file(atlas, "assets/NotoSans-Regular.ttf", 20, NULL);
+        struct nk_font *noto = nk_font_atlas_add_from_file_s(atlas, "assets/NotoSans-Regular.ttf", 20, NULL);
         nk_platform_font_stash_end();
         /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
         nk_style_set_font(ctx, &noto->handle);

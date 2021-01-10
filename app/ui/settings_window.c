@@ -81,7 +81,7 @@ bool settings_window_close()
 
 bool settings_window(struct nk_context *ctx)
 {
-    if (nk_begin(ctx, WINDOW_TITLE, nk_rect(250, 60, gui_display_width - 500, gui_display_height - 120),
+    if (nk_begin(ctx, WINDOW_TITLE, nk_rect_s(120, 30, gui_logic_width - 240, gui_logic_height - 60),
                  NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -89,14 +89,14 @@ bool settings_window(struct nk_context *ctx)
         if (nk_group_begin(ctx, "basic_settings", NK_WINDOW_NO_SCROLLBAR))
         {
             struct nk_rect tmp_bounds;
-            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_layout_row_dynamic_s(ctx, 25, 1);
             nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
             static const float ratio_resolution_fps[] = {0.6, 0.4};
             tmp_bounds = nk_layout_widget_bounds(ctx);
-            nk_layout_row(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
-            if (nk_combo_begin_label(ctx, _res_label, nk_vec2(tmp_bounds.w * 0.6, 200)))
+            nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
+            if (nk_combo_begin_label(ctx, _res_label, nk_vec2(tmp_bounds.w * 0.6, 200 * NK_UI_SCALE)))
             {
-                nk_layout_row_dynamic(ctx, 25, 1);
+                nk_layout_row_dynamic_s(ctx, 25, 1);
                 for (int i = 0; i < _supported_resolutions_len; i++)
                 {
                     struct _resolution_option o = _supported_resolutions[i];
@@ -108,9 +108,9 @@ bool settings_window(struct nk_context *ctx)
                 }
                 nk_combo_end(ctx);
             }
-            if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(tmp_bounds.w * 0.4, 200)))
+            if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(tmp_bounds.w * 0.4, 200 * NK_UI_SCALE)))
             {
-                nk_layout_row_dynamic(ctx, 25, 1);
+                nk_layout_row_dynamic_s(ctx, 25, 1);
                 for (int i = 0; i < _supported_fps_len; i++)
                 {
                     struct _fps_option o = _supported_fps[i];
@@ -122,16 +122,16 @@ bool settings_window(struct nk_context *ctx)
                 }
                 nk_combo_end(ctx);
             }
-            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_layout_row_dynamic_s(ctx, 25, 1);
             nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_layout_row_dynamic_s(ctx, 25, 1);
             nk_property_int(ctx, "kbps:", 5000, &app_settings->stream.bitrate, 100000, 500, 50);
 
-            nk_layout_row_dynamic(ctx, 4, 1);
+            nk_layout_row_dynamic_s(ctx, 4, 1);
             nk_spacing(ctx, 1);
-            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_layout_row_dynamic_s(ctx, 25, 1);
             nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
-            nk_layout_row_dynamic(ctx, 25, 1);
+            nk_layout_row_dynamic_s(ctx, 25, 1);
 
             nk_bool sops = app_settings->sops ? nk_true : nk_false;
             nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
