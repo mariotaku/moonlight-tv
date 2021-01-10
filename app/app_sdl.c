@@ -7,6 +7,8 @@
 #include "app.h"
 #include "main.h"
 
+#include "ui/config.h"
+
 #define NK_IMPLEMENTATION
 #include "nuklear/config.h"
 #include "nuklear.h"

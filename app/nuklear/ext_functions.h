@@ -2,7 +2,22 @@
 #include "nuklear.h"
 #endif
 
+#ifndef NK_UI_SCALE
+#warning "NK_UI_SCALE not defined"
+#define NK_UI_SCALE 1
+#endif
+
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
+
+#define nk_rect_s(x, y, w, h) nk_rect((x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE)
+#define nk_rect_s_const(x, y, w, h) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE}
+#define nk_vec2_s(x, y) nk_vec2((x) * NK_UI_SCALE, (y) * NK_UI_SCALE)
+#define nk_vec2_s_const(x, y) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE}
+
+#define nk_layout_row_dynamic_s(ctx, height, cols) nk_layout_row_dynamic(ctx, (height) * NK_UI_SCALE, cols)
+#define nk_layout_row_template_begin_s(ctx, h) nk_layout_row_template_begin(ctx, (h) * NK_UI_SCALE)
+#define nk_layout_row_template_push_static_s(ctx, width) nk_layout_row_template_push_static(ctx, (width) * NK_UI_SCALE)
+#define nk_layout_row_template_push_variable_s(ctx, min_width) nk_layout_row_template_push_variable(ctx, (min_width) * NK_UI_SCALE)
 
 #ifdef NK_IMPLEMENTATION
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx)

@@ -1,6 +1,7 @@
-#include "gui_root.h"
-
 #include <GLES2/gl2.h>
+
+#include "gui_root.h"
+#include "ui/config.h"
 
 #include "stream/session.h"
 
@@ -9,6 +10,7 @@
 #include "streaming_overlay.h"
 
 short gui_display_width, gui_display_height;
+short gui_logic_width, gui_logic_height;
 
 bool gui_settings_showing;
 
@@ -70,6 +72,8 @@ void gui_display_size(short width, short height)
 {
     gui_display_width = width;
     gui_display_height = height;
+    gui_logic_width = width / NK_UI_SCALE;
+    gui_logic_height = height / NK_UI_SCALE;
 }
 
 #ifdef HAVE_SDL

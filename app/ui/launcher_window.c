@@ -52,12 +52,12 @@ bool launcher_window(struct nk_context *ctx)
 {
     /* GUI */
     int content_width_remaining, content_height_remaining;
-    int window_flags = NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE;
+    int window_flags = NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER;
     if (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
     {
         window_flags |= NK_WINDOW_NO_INPUT;
     }
-    if (nk_begin(ctx, "Moonlight", nk_rect(60, 50, gui_display_width - 120, gui_display_height - 100),
+    if (nk_begin(ctx, "Moonlight", nk_rect_s(20, 20, gui_logic_width - 40, gui_logic_height - 40),
                  window_flags))
     {
         bool event_emitted = false;
@@ -66,10 +66,10 @@ bool launcher_window(struct nk_context *ctx)
 
         content_width_remaining = (int)content_size.x;
         nk_menubar_begin(ctx);
-        nk_layout_row_template_begin(ctx, 25);
-        nk_layout_row_template_push_static(ctx, 150);
-        nk_layout_row_template_push_variable(ctx, 10);
-        nk_layout_row_template_push_static(ctx, 80);
+        nk_layout_row_template_begin_s(ctx, 25);
+        nk_layout_row_template_push_static_s(ctx, 150);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
 
         content_height_remaining -= nk_widget_bounds(ctx).h;
@@ -129,9 +129,9 @@ bool launcher_window(struct nk_context *ctx)
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
-    if (nk_combo_begin_label(ctx, selected, nk_vec2(150, 200)))
+    if (nk_combo_begin_label(ctx, selected, nk_vec2_s(150, 200)))
     {
-        nk_layout_row_dynamic(ctx, 25, 1);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
         PSERVER_LIST cur = list;
         int i = 0;
         while (cur != NULL)
@@ -200,12 +200,12 @@ void _open_pair(int index, PSERVER_LIST node)
 
 void _pairing_window(struct nk_context *ctx)
 {
-    static const struct nk_vec2 size = {330, 110};
+    static const struct nk_vec2 size = nk_vec2_s_const(330, 110);
     struct nk_vec2 pos = {(gui_display_width - size.x) / 2, (gui_display_height - size.y) / 2};
     struct nk_rect s = nk_recta(pos, size);
     if (nk_begin(ctx, "Pairing", s, NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_SCROLLBAR))
     {
-        nk_layout_row_dynamic(ctx, 64, 1);
+        nk_layout_row_dynamic_s(ctx, 64, 1);
 
         nk_labelf_wrap(ctx, "Please enter %s on your GameStream PC. This dialog will close when pairing is completed.",
                        pairing_computer_state.pin);

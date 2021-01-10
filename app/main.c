@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "ui/config.h"
+
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
@@ -24,7 +26,6 @@
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
-#include "ui/config.h"
 #include "ui/gui_root.h"
 #include "util/bus.h"
 
