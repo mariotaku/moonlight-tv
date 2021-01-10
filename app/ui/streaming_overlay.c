@@ -58,7 +58,7 @@ bool streaming_overlay_should_block_input()
 
 void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 300, 60);
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
     if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -80,7 +80,7 @@ void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 
 void _streaming_error_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 300, 150);
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 150);
     if (nk_begin(ctx, "Streaming Error", s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -107,7 +107,7 @@ void _streaming_error_window(struct nk_context *ctx)
 
 void _streaming_quit_confirm_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 300, 150);
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 150);
     if (nk_begin(ctx, "Quit Streaming", s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);

@@ -12,8 +12,9 @@
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 
 #define nk_rect_s(x, y, w, h) nk_rect((x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE)
-#define nk_rect_s_centered(pw, ph, w, h) nk_rect((pw - (w)) / 2 * NK_UI_SCALE, (ph - (h)) / 2 * NK_UI_SCALE, (w)*NK_UI_SCALE, (h)*NK_UI_SCALE)
 #define nk_rect_s_const(x, y, w, h) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE}
+#define nk_rect_centered(pw, ph, w, h) nk_rect(((pw) - (w)) / 2, ((ph) - (h)) / 2, w, h)
+#define nk_rect_s_centered(pw, ph, w, h) nk_rect(((pw) - (w)) / 2.0 * NK_UI_SCALE, ((ph) - (h)) / 2.0 * NK_UI_SCALE, (w)*NK_UI_SCALE, (h)*NK_UI_SCALE)
 #define nk_vec2_s(x, y) nk_vec2((x) * NK_UI_SCALE, (y) * NK_UI_SCALE)
 #define nk_vec2_s_const(x, y) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE}
 

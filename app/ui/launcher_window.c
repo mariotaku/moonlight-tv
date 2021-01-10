@@ -199,9 +199,7 @@ void _open_pair(int index, PSERVER_LIST node)
 
 void _pairing_window(struct nk_context *ctx)
 {
-    static const struct nk_vec2 size = nk_vec2_s_const(330, 110);
-    struct nk_vec2 pos = {(gui_display_width - size.x) / 2, (gui_display_height - size.y) / 2};
-    struct nk_rect s = nk_recta(pos, size);
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 110);
     if (nk_begin(ctx, "Pairing", s, NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_SCROLLBAR))
     {
         nk_layout_row_dynamic_s(ctx, 64, 1);
@@ -214,14 +212,17 @@ void _pairing_window(struct nk_context *ctx)
 
 void _pairing_error_popup(struct nk_context *ctx)
 {
-    static struct nk_rect s = {34, 40, 220, 110};
+    struct nk_vec2 window_size = nk_window_get_size(ctx);
+    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, 300 * NK_UI_SCALE, 110 * NK_UI_SCALE);
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing Failed",
                        NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
+
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
-        content_height_remaining -= 30;
+        content_height_remaining -= 30 * NK_UI_SCALE;
+        content_height_remaining -= ctx->style.window.spacing.y;
         nk_layout_row_dynamic(ctx, content_height_remaining, 1);
 
         if (pairing_computer_state.error != NULL)
@@ -232,32 +233,43 @@ void _pairing_error_popup(struct nk_context *ctx)
         {
             nk_label_wrap(ctx, "Pairing error.");
         }
-        nk_layout_space_begin(ctx, NK_STATIC, 30, 1);
-        nk_layout_space_push(ctx, nk_recti(content_size.x - 80, 0, 80, 30));
+
+        nk_layout_row_template_begin_s(ctx, 30);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 80);
+        nk_layout_row_template_end(ctx);
+        
+        nk_spacing(ctx, 1);
         if (nk_button_label(ctx, "OK"))
         {
             pairing_computer_state.state = PS_NONE;
             nk_popup_close(ctx);
         }
-        nk_layout_space_end(ctx);
         nk_popup_end(ctx);
     }
 }
 
 void _server_error_popup(struct nk_context *ctx)
 {
-    static struct nk_rect s = {34, 40, 220, 110};
+    struct nk_vec2 window_size = nk_window_get_size(ctx);
+    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, 300 * NK_UI_SCALE, 110 * NK_UI_SCALE);
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
                        NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         int content_height_remaining = (int)content_size.y;
         /* remove bottom button height */
-        content_height_remaining -= 30;
-        nk_layout_row_dynamic(ctx, 40, 1);
+        content_height_remaining -= 30 * NK_UI_SCALE;
+        content_height_remaining -= ctx->style.window.spacing.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
         nk_label_wrap(ctx, selected_server_node->errmsg);
-        nk_layout_space_begin(ctx, NK_STATIC, 30, 1);
-        nk_layout_space_push(ctx, nk_recti(content_size.x - 80, 0, 80, 30));
+
+        nk_layout_row_template_begin_s(ctx, 30);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 80);
+        nk_layout_row_template_end(ctx);
+
+        nk_spacing(ctx, 1);
         if (nk_button_label(ctx, "OK"))
         {
             selected_server_node = NULL;
