@@ -21,7 +21,7 @@ ConnListenerRumble absinput_getrumble()
     return NULL;
 }
 
-void absinput_dispatch_mouse_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond)
+void absinput_dispatch_mouse_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond, struct input_event raw)
 {
     switch (keyCond)
     {
@@ -39,11 +39,30 @@ void absinput_dispatch_mouse_event(int posX, int posY, unsigned int key, LGNC_KE
     }
     case LGNC_KEY_COND_LAST:
     {
-        if (key != 0)
+        switch (raw.type)
         {
+        case EV_REL:
+            switch (raw.code)
+            {
+            case REL_WHEEL:
+                LiSendScrollEvent(raw.value);
+                break;
+            default:
+                break;
+            }
+            break;
+        case EV_ABS:
+            switch (raw.code)
+            {
+            case ABS_X:
+            case ABS_Y:
+                LiSendMousePositionEvent(posX, posY, 1280, 720);
+                break;
+            }
+            break;
+        default:
             break;
         }
-        LiSendMousePositionEvent(posX, posY, 1280, 720);
         break;
     }
     }

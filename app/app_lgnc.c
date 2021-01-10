@@ -83,7 +83,7 @@ static void app_process_events(struct nk_context *ctx)
             case USER_INPUT_MOUSE:
             {
                 struct LGNC_MOUSE_EVENT_T *evt = data1;
-                nk_lgnc_mouse_input_event(evt->posX, evt->posY, evt->key, evt->keyCond);
+                nk_lgnc_mouse_input_event(evt->posX, evt->posY, evt->key, evt->keyCond, evt->raw);
                 free(evt);
                 break;
             }

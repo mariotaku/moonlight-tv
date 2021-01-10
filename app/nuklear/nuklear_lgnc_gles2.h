@@ -17,18 +17,20 @@
 
 #include <GLES2/gl2.h>
 
+#include <linux/input.h>
+
 #include <lgnc_egl.h>
 #include <lgnc_system.h>
 
-NK_API struct nk_context*   nk_lgnc_init();
-NK_API void                 nk_lgnc_font_stash_begin(struct nk_font_atlas **atlas);
-NK_API void                 nk_lgnc_font_stash_end(void);
-NK_API void                 nk_lgnc_render(enum nk_anti_aliasing , int max_vertex_buffer, int max_element_buffer);
-NK_API void                 nk_lgnc_shutdown(void);
-NK_API void                 nk_lgnc_device_destroy(void);
-NK_API void                 nk_lgnc_device_create(void);
+NK_API struct nk_context *nk_lgnc_init();
+NK_API void nk_lgnc_font_stash_begin(struct nk_font_atlas **atlas);
+NK_API void nk_lgnc_font_stash_end(void);
+NK_API void nk_lgnc_render(enum nk_anti_aliasing, int max_vertex_buffer, int max_element_buffer);
+NK_API void nk_lgnc_shutdown(void);
+NK_API void nk_lgnc_device_destroy(void);
+NK_API void nk_lgnc_device_create(void);
 
-NK_API void                 nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond);
+NK_API void nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond, struct input_event raw);
 
 #endif
 
@@ -43,7 +45,8 @@ NK_API void                 nk_lgnc_mouse_input_event(int posX, int posY, unsign
 
 #include <string.h>
 
-struct nk_lgnc_device {
+struct nk_lgnc_device
+{
     struct nk_buffer cmds;
     struct nk_draw_null_texture null;
     GLuint vbo, ebo;
@@ -60,22 +63,22 @@ struct nk_lgnc_device {
     size_t vp, vt, vc;
 };
 
-struct nk_lgnc_vertex {
+struct nk_lgnc_vertex
+{
     GLfloat position[2];
     GLfloat uv[2];
     nk_byte col[4];
 };
 
-static struct nk_lgnc {
+static struct nk_lgnc
+{
     int width, height;
     struct nk_lgnc_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
 } lgnc;
 
-
 #define NK_SHADER_VERSION "#version 100\n"
-
 
 NK_API void
 nk_lgnc_device_create(void)
@@ -105,7 +108,7 @@ nk_lgnc_device_create(void)
         "}\n";
 
     struct nk_lgnc_device *dev = &lgnc.ogl;
-    
+
     nk_buffer_init_default(&dev->cmds);
     dev->prog = glCreateProgram();
     dev->vert_shdr = glCreateShader(GL_VERTEX_SHADER);
@@ -124,7 +127,6 @@ nk_lgnc_device_create(void)
     glGetProgramiv(dev->prog, GL_LINK_STATUS, &status);
     assert(status == GL_TRUE);
 
-
     dev->uniform_tex = glGetUniformLocation(dev->prog, "Texture");
     dev->uniform_proj = glGetUniformLocation(dev->prog, "ProjMtx");
     dev->attrib_pos = glGetAttribLocation(dev->prog, "Position");
@@ -135,7 +137,7 @@ nk_lgnc_device_create(void)
         dev->vp = offsetof(struct nk_lgnc_vertex, position);
         dev->vt = offsetof(struct nk_lgnc_vertex, uv);
         dev->vc = offsetof(struct nk_lgnc_vertex, col);
-        
+
         /* Allocate buffers */
         glGenBuffers(1, &dev->vbo);
         glGenBuffers(1, &dev->ebo);
@@ -154,7 +156,7 @@ nk_lgnc_device_upload_atlas(const void *image, int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (GLsizei)width, (GLsizei)height, 0,
-                GL_RGBA, GL_UNSIGNED_BYTE, image);
+                 GL_RGBA, GL_UNSIGNED_BYTE, image);
 }
 
 NK_API void
@@ -181,18 +183,18 @@ nk_lgnc_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
     struct nk_vec2 scale;
     GLfloat ortho[4][4] = {
         {2.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f,-2.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f,-1.0f, 0.0f},
-        {-1.0f,1.0f, 0.0f, 1.0f},
+        {0.0f, -2.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f, 1.0f},
     };
     ortho[0][0] /= (GLfloat)width;
     ortho[1][1] /= (GLfloat)height;
 
-    scale.x = (float)display_width/(float)width;
-    scale.y = (float)display_height/(float)height;
+    scale.x = (float)display_width / (float)width;
+    scale.y = (float)display_height / (float)height;
 
     /* setup global state */
-    glViewport(0,0,display_width,display_height);
+    glViewport(0, 0, display_width, display_height);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -214,16 +216,16 @@ nk_lgnc_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
         /* Bind buffers */
         glBindBuffer(GL_ARRAY_BUFFER, dev->vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, dev->ebo);
-        
+
         {
             /* buffer setup */
             glEnableVertexAttribArray((GLuint)dev->attrib_pos);
             glEnableVertexAttribArray((GLuint)dev->attrib_uv);
             glEnableVertexAttribArray((GLuint)dev->attrib_col);
 
-            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vp);
-            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void*)dev->vt);
-            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void*)dev->vc);
+            glVertexAttribPointer((GLuint)dev->attrib_pos, 2, GL_FLOAT, GL_FALSE, dev->vs, (void *)dev->vp);
+            glVertexAttribPointer((GLuint)dev->attrib_uv, 2, GL_FLOAT, GL_FALSE, dev->vs, (void *)dev->vt);
+            glVertexAttribPointer((GLuint)dev->attrib_col, 4, GL_UNSIGNED_BYTE, GL_TRUE, dev->vs, (void *)dev->vc);
         }
 
         glBufferData(GL_ARRAY_BUFFER, max_vertex_buffer, NULL, GL_STREAM_DRAW);
@@ -239,8 +241,7 @@ nk_lgnc_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
                 {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct nk_lgnc_vertex, position)},
                 {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct nk_lgnc_vertex, uv)},
                 {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct nk_lgnc_vertex, col)},
-                {NK_VERTEX_LAYOUT_END}
-            };
+                {NK_VERTEX_LAYOUT_END}};
             NK_MEMSET(&config, 0, sizeof(config));
             config.vertex_layout = vertex_layout;
             config.vertex_size = sizeof(struct nk_lgnc_vertex);
@@ -254,10 +255,12 @@ nk_lgnc_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
             config.line_AA = AA;
 
             /* setup buffers to load vertices and elements */
-            {struct nk_buffer vbuf, ebuf;
-            nk_buffer_init_fixed(&vbuf, vertices, (nk_size)max_vertex_buffer);
-            nk_buffer_init_fixed(&ebuf, elements, (nk_size)max_element_buffer);
-            nk_convert(&lgnc.ctx, &dev->cmds, &vbuf, &ebuf, &config);}
+            {
+                struct nk_buffer vbuf, ebuf;
+                nk_buffer_init_fixed(&vbuf, vertices, (nk_size)max_vertex_buffer);
+                nk_buffer_init_fixed(&ebuf, elements, (nk_size)max_element_buffer);
+                nk_convert(&lgnc.ctx, &dev->cmds, &vbuf, &ebuf, &config);
+            }
         }
         glBufferSubData(GL_ARRAY_BUFFER, 0, (size_t)max_vertex_buffer, vertices);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, (size_t)max_element_buffer, elements);
@@ -265,13 +268,15 @@ nk_lgnc_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
         free(elements);
 
         /* iterate over and execute each draw command */
-        nk_draw_foreach(cmd, &lgnc.ctx, &dev->cmds) {
-            if (!cmd->elem_count) continue;
+        nk_draw_foreach(cmd, &lgnc.ctx, &dev->cmds)
+        {
+            if (!cmd->elem_count)
+                continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
             glScissor((GLint)(cmd->clip_rect.x * scale.x),
-                (GLint)((height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * scale.y),
-                (GLint)(cmd->clip_rect.w * scale.x),
-                (GLint)(cmd->clip_rect.h * scale.y));
+                      (GLint)((height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * scale.y),
+                      (GLint)(cmd->clip_rect.w * scale.x),
+                      (GLint)(cmd->clip_rect.h * scale.y));
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
@@ -287,12 +292,12 @@ nk_lgnc_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_
     glDisable(GL_SCISSOR_TEST);
 }
 
-NK_API struct nk_context*
+NK_API struct nk_context *
 nk_lgnc_init()
 {
     nk_init_default(&lgnc.ctx, 0);
-    lgnc.width = 1280; 
-    lgnc.height = 720; 
+    lgnc.width = 1280;
+    lgnc.height = 720;
     lgnc.ctx.clip.userdata = nk_handle_ptr(0);
     nk_lgnc_device_create();
     return &lgnc.ctx;
@@ -309,13 +314,13 @@ nk_lgnc_font_stash_begin(struct nk_font_atlas **atlas)
 NK_API void
 nk_lgnc_font_stash_end(void)
 {
-    const void *image; int w, h;
+    const void *image;
+    int w, h;
     image = nk_font_atlas_bake(&lgnc.atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
     nk_lgnc_device_upload_atlas(image, w, h);
     nk_font_atlas_end(&lgnc.atlas, nk_handle_id((int)lgnc.ogl.font_tex), &lgnc.ogl.null);
     if (lgnc.atlas.default_font)
         nk_style_set_font(&lgnc.ctx, &lgnc.atlas.default_font->handle);
-
 }
 
 NK_API
@@ -327,9 +332,8 @@ void nk_lgnc_shutdown(void)
     memset(&lgnc, 0, sizeof(lgnc));
 }
 
-
 NK_API
-void nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond)
+void nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond, struct input_event raw)
 {
     nk_input_begin(&lgnc.ctx);
     switch (keyCond)
@@ -347,11 +351,30 @@ void nk_lgnc_mouse_input_event(int posX, int posY, unsigned int key, LGNC_KEY_CO
     }
     case LGNC_KEY_COND_LAST:
     {
-        if (key != 0)
+        switch (raw.type)
         {
+        case EV_REL:
+            switch (raw.code)
+            {
+            case REL_WHEEL:
+                nk_input_scroll(&lgnc.ctx, nk_vec2(0, raw.value));
+                break;
+            default:
+                break;
+            }
+            break;
+        case EV_ABS:
+            switch (raw.code)
+            {
+            case ABS_X:
+            case ABS_Y:
+                nk_input_motion(&lgnc.ctx, posX, posY);
+                break;
+            }
+            break;
+        default:
             break;
         }
-        nk_input_motion(&lgnc.ctx, posX, posY);
         break;
     }
     }

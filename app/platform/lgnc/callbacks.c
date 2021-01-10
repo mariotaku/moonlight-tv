@@ -53,21 +53,23 @@ unsigned int _KeyEventCallback(unsigned int key, LGNC_KEY_COND_T keyCond, LGNC_A
 
 unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond, LGNC_ADDITIONAL_INPUT_INFO_T *keyInput)
 {
-    // printf("MouseEvent x=%d, y=%d key=%d, cond=%d\n", posX, posY, key, keyCond);
     if (key == 412 /* remote control back */ && keyCond == LGNC_KEY_RELEASE)
     {
         bus_pushevent(USER_QUIT, NULL, NULL);
         return 1;
     }
+    // if (keyCond != LGNC_KEY_COND_LAST)
+    struct input_event raw_event = keyInput->event;
     if (streaming_status == STREAMING_STREAMING && !gui_should_block_input())
     {
-        absinput_dispatch_mouse_event(posX, posY, key, keyCond);
+        absinput_dispatch_mouse_event(posX, posY, key, keyCond, raw_event);
     }
     struct LGNC_MOUSE_EVENT_T *evt = malloc(sizeof(struct LGNC_MOUSE_EVENT_T));
     evt->posX = posX;
     evt->posY = posY;
     evt->key = key;
     evt->keyCond = keyCond;
+    evt->raw = raw_event;
     bus_pushevent(USER_INPUT_MOUSE, evt, NULL);
     return 0;
 }
