@@ -10,8 +10,8 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
     static struct nk_list_view list_view;
     int app_len = linkedlist_len(node->apps);
     int listwidth = nk_widget_width(ctx);
-    int itemwidth = 120 * NK_UI_SCALE, itemheight = 150 * NK_UI_SCALE;
-    int colcount = listwidth / itemheight, rowcount = app_len / colcount;
+    int itemwidth = 60 * NK_UI_SCALE, itemheight = 150 * NK_UI_SCALE;
+    int colcount = 5, rowcount = app_len / colcount;
     if (app_len && app_len % colcount)
     {
         rowcount++;
