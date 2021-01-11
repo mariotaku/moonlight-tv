@@ -24,7 +24,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL2/SDL_opengl.h>
-#include <SDL2/SDL_opengles2.h>
 
 enum IMAGE_STATE_T
 {
