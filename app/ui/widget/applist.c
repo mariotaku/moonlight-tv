@@ -1,5 +1,6 @@
 #include "ui/launcher_window.h"
 #include "backend/application_manager.h"
+#include "backend/coverloader.h"
 #include "stream/session.h"
 
 #define LINKEDLIST_TYPE PAPP_LIST
@@ -26,12 +27,20 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
             int col;
             for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
             {
-                if (nk_list_item_label(ctx, cur->name, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_BOTTOM))
+                struct nk_image *cover = coverloader_get(cur->id);
+                if (cover)
                 {
-                    if (!event_emitted)
+                    nk_image(ctx, *cover);
+                }
+                else
+                {
+                    if (nk_list_item_label(ctx, cur->name, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_BOTTOM))
                     {
-                        event_emitted |= true;
-                        streaming_begin(node->server, cur->id);
+                        if (!event_emitted)
+                        {
+                            event_emitted |= true;
+                            streaming_begin(node->server, cur->id);
+                        }
                     }
                 }
             }

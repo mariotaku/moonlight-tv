@@ -18,7 +18,7 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2 SDL2_image)
 pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
 pkg_check_modules(cURL REQUIRED IMPORTED_TARGET libcurl)
 pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
@@ -46,6 +46,7 @@ set(SOURCES
     app/backend/computer_manager.c
     app/backend/computer_discovery.c
     app/backend/application_manager.c
+    app/backend/coverloader.c
     app/backend/error_manager.c
     app/stream/platform.c
     app/stream/session.c
@@ -56,6 +57,7 @@ set(SOURCES
     app/ui/streaming_overlay.c
     app/ui/settings_window.c
     app/ui/widget/applist.c
+    app/util/lruc.c
     core/moonlight-embedded/src/config.c
     core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
@@ -114,6 +116,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue
+target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/C-LRU-Cache)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include))
 
 target_link_libraries(moonlight PRIVATE

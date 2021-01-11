@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <SDL.h>
 
 #ifdef USE_NDL
