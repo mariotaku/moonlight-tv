@@ -53,13 +53,14 @@ MAIN_THREAD static void coverloader_load(struct CACHE_ITEM_T *req);
 MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(PSERVER_DATA server, int id);
 THREAD_SAFE static void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data);
 THREAD_SAFE static void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded);
+THREAD_SAFE static void coverloader_cache_item_free(void *p);
 
 static char *coverloader_cache_dir();
 
 MAIN_THREAD
 void coverloader_init()
 {
-    coverloader_mem_cache = lruc_new(128, 4);
+    coverloader_mem_cache = lruc_new(128, 4, &coverloader_cache_item_free);
     coverloader_current_task = NULL;
     coverloader_working_running = true;
     pthread_create(&coverloader_worker_thread, NULL, coverloader_worker, NULL);
@@ -314,4 +315,14 @@ char *coverloader_cache_dir()
         }
     }
     return confdir;
+}
+
+void coverloader_cache_item_free(void *p)
+{
+    struct CACHE_ITEM_T *item = p;
+    if (item->data)
+    {
+        glDeleteTextures(1, &(item->data->handle.id));
+    }
+    free(item);
 }

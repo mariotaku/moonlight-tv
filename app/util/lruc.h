@@ -21,6 +21,8 @@ typedef enum {
 // ------------------------------------------
 // types
 // ------------------------------------------
+typedef void (lruc_value_free)(void* v);
+
 typedef struct {
   void      *value;
   int       key;
@@ -38,6 +40,7 @@ typedef struct {
   uint64_t  average_item_length;
   uint32_t  hash_table_size;
   time_t    seed;
+  lruc_value_free  *value_free;
   lruc_item *free_items;
   pthread_mutex_t *mutex;
 } lruc;
@@ -46,7 +49,7 @@ typedef struct {
 // ------------------------------------------
 // api
 // ------------------------------------------
-lruc *lruc_new(uint64_t cache_size, uint32_t average_length);
+lruc *lruc_new(uint64_t cache_size, uint32_t average_length, lruc_value_free *value_free);
 lruc_error lruc_free(lruc *cache);
 lruc_error lruc_set(lruc *cache, int key, void *value, uint32_t value_length);
 lruc_error lruc_get(lruc *cache, int key, void **value);

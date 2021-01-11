@@ -42,7 +42,7 @@ void lruc_remove_item(lruc *cache, lruc_item *prev, lruc_item *item, uint32_t ha
   
   // free memory and update the free memory counter
   cache->free_memory += item->value_length;
-  free(item->value);
+  cache->value_free(item->value);
   
   // push the item to the free items queue  
   memset(item, 0, sizeof(lruc_item));
@@ -114,7 +114,7 @@ lruc_item *lruc_pop_or_create_item(lruc *cache) {
 // ------------------------------------------
 // public api
 // ------------------------------------------
-lruc *lruc_new(uint64_t cache_size, uint32_t average_length) {
+lruc *lruc_new(uint64_t cache_size, uint32_t average_length, lruc_value_free *value_free) {
   // create the cache
   lruc *cache = (lruc *) calloc(sizeof(lruc), 1);
   if(!cache) {
@@ -126,6 +126,7 @@ lruc *lruc_new(uint64_t cache_size, uint32_t average_length) {
   cache->free_memory          = cache_size;
   cache->total_memory         = cache_size;
   cache->seed                 = time(NULL);
+  cache->value_free           = value_free ? value_free : free;
   
   // size the hash table to a guestimate of the number of slots required (assuming a perfect hash)
   cache->items = (lruc_item **) calloc(sizeof(lruc_item *), cache->hash_table_size);
@@ -158,6 +159,7 @@ lruc_error lruc_free(lruc *cache) {
       item = cache->items[i];    
       while(item) {
         next = (lruc_item *) item->next;
+        cache->value_free(item->value);
         free(item);
         item = next;
       }
@@ -198,7 +200,7 @@ lruc_error lruc_set(lruc *cache, int key, void *value, uint32_t value_length) {
   if(item) {
     // update the value and value_lengths
     required = value_length - item->value_length;
-    free(item->value);
+    cache->value_free(item->value);
     item->value = value;
     item->value_length = value_length;
     
