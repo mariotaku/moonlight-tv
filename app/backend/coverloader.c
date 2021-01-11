@@ -1,14 +1,25 @@
 #define _COVERLOADER_IMPL
 #include "coverloader.h"
 
+#include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <pthread.h>
+#include <unistd.h>
+
+#include <sys/stat.h>
+
+#include <uuid/uuid.h>
 
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "util/lruc.h"
+#include "util/path.h"
+#include "util/gs/clientex.h"
+
+#include "libgamestream/errors.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -25,6 +36,7 @@ enum IMAGE_STATE_T
 struct CACHE_ITEM_T
 {
     int id;
+    PSERVER_DATA server;
     enum IMAGE_STATE_T state;
     struct nk_image *data;
 };
@@ -36,11 +48,13 @@ static bool coverloader_working_running;
 
 WORKER_THREAD static void *coverloader_worker(void *);
 WORKER_THREAD static bool coverloader_decode_image(int id, struct nk_image *decoded);
-WORKER_THREAD static bool coverloader_fetch_image(int id);
+WORKER_THREAD static bool coverloader_fetch_image(PSERVER_DATA server, int id);
 MAIN_THREAD static void coverloader_load(struct CACHE_ITEM_T *req);
-MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(int id);
+MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(PSERVER_DATA server, int id);
 THREAD_SAFE static void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data);
 THREAD_SAFE static void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded);
+
+static char *coverloader_cache_dir();
 
 MAIN_THREAD
 void coverloader_init()
@@ -60,7 +74,7 @@ void coverloader_destroy()
 }
 
 MAIN_THREAD
-struct nk_image *coverloader_get(int id)
+struct nk_image *coverloader_get(PSERVER_DATA server, int id)
 {
     // First find in memory cache
     struct CACHE_ITEM_T *cached = NULL;
@@ -72,7 +86,7 @@ struct nk_image *coverloader_get(int id)
     // Memory cache miss, start image loading pipeline.
     if (!cached)
     {
-        cached = cache_item_new(id);
+        cached = cache_item_new(server, id);
         lruc_set(coverloader_mem_cache, id, cached, 4);
     }
     // Here we have single task for image loading.
@@ -99,7 +113,7 @@ void *coverloader_worker(void *unused)
             continue;
         }
         coverloader_notify_change(req, IMAGE_STATE_LOADING, NULL);
-        struct nk_image decoded;
+        struct nk_image decoded = nk_image_id(0);
         // Load from local file cache
         if (coverloader_decode_image(req->id, &decoded))
         {
@@ -107,7 +121,7 @@ void *coverloader_worker(void *unused)
             continue;
         }
         // Local cache miss, fetch via API
-        if (!coverloader_fetch_image(req->id))
+        if (!coverloader_fetch_image(req->server, req->id))
         {
             // Unable to fetch, store negative result
             coverloader_notify_change(req, IMAGE_STATE_FINISHED, NULL);
@@ -125,10 +139,11 @@ void *coverloader_worker(void *unused)
 }
 
 MAIN_THREAD
-struct CACHE_ITEM_T *cache_item_new(int id)
+struct CACHE_ITEM_T *cache_item_new(PSERVER_DATA server, int id)
 {
     struct CACHE_ITEM_T *item = malloc(sizeof(struct CACHE_ITEM_T));
     item->id = id;
+    item->server = server;
     item->state = IMAGE_STATE_QUEUED;
     item->data = NULL;
     return item;
@@ -147,6 +162,7 @@ void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T stat
 {
     struct CACHE_ITEM_T *update = malloc(sizeof(struct CACHE_ITEM_T));
     update->id = req->id;
+    update->server = req->server;
     update->state = state;
     update->data = data;
     if (!bus_pushevent(USER_IL_STATE_CHANGED, req, update))
@@ -167,21 +183,33 @@ void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decod
 WORKER_THREAD
 bool coverloader_decode_image(int id, struct nk_image *decoded)
 {
-    SDL_Surface *s = IMG_Load("assets/dog.jpg");
+    char *cachedir = coverloader_cache_dir();
+    char path[4096];
+    sprintf(path, "%s/%d", cachedir, id);
+    free(cachedir);
+    SDL_Surface *s = IMG_Load(path);
     if (!s)
     {
         return false;
     }
     decoded->w = s->w;
     decoded->h = s->h;
+    decoded->region[0] = 0;
+    decoded->region[1] = 0;
+    decoded->region[2] = s->w;
+    decoded->region[3] = s->h;
     decoded->handle.ptr = s;
     return true;
 }
 
 WORKER_THREAD
-bool coverloader_fetch_image(int id)
+bool coverloader_fetch_image(PSERVER_DATA server, int id)
 {
-    return false;
+    char *cachedir = coverloader_cache_dir();
+    char path[4096];
+    sprintf(path, "%s/%d", cachedir, id);
+    free(cachedir);
+    return gs_download_cover(server, id, path) == GS_OK;
 }
 
 static GLuint gen_texture_from_sdl(SDL_Surface *surface)
@@ -222,7 +250,7 @@ static GLuint gen_texture_from_sdl(SDL_Surface *surface)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // Edit the texture object's image data using the information SDL_Surface gives us
-    glTexImage2D(GL_TEXTURE_2D, 0, nOfColors, surface->w, surface->h, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
                  texture_format, GL_UNSIGNED_BYTE, surface->pixels);
     return texture;
 }
@@ -263,4 +291,27 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
     {
         return false;
     }
+}
+
+char *coverloader_cache_dir()
+{
+    char *cachedir = getenv("XDG_CACHE_DIR"), *confdir = NULL;
+    if (cachedir)
+    {
+        confdir = path_join(cachedir, "moonlight-tv");
+    }
+    else
+    {
+        cachedir = getenv("HOME");
+        confdir = path_join(cachedir, ".moonlight-tv-covers");
+    }
+
+    if (access(confdir, F_OK) == -1)
+    {
+        if (errno == ENOENT)
+        {
+            mkdir(confdir, 0755);
+        }
+    }
+    return confdir;
 }

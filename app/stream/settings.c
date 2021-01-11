@@ -8,17 +8,12 @@
 
 #include <sys/stat.h>
 
-static char *_path_join(const char *parent, const char *basename)
-{
-    char *joined = calloc(strlen(parent) + 1 + strlen(basename) + 1, sizeof(char));
-    sprintf(joined, "%s/%s", parent, basename);
-    return joined;
-}
+#include "util/path.h"
 
 static char *settings_config_dir()
 {
     char *homedir = getenv("HOME");
-    char *confdir = _path_join(homedir, CONF_DIR);
+    char *confdir = path_join(homedir, CONF_DIR);
     if (access(confdir, F_OK) == -1)
     {
         if (errno == ENOENT)
@@ -34,7 +29,7 @@ static void settings_initialize(char *confdir, PCONFIGURATION config);
 PCONFIGURATION settings_load()
 {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
-    char *confdir = settings_config_dir(), *conffile = _path_join(confdir, CONF_NAME_STREAMING);
+    char *confdir = settings_config_dir(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
     settings_initialize(confdir, config);
     config_file_parse(conffile, config);
     free(conffile);
@@ -44,7 +39,7 @@ PCONFIGURATION settings_load()
 
 void settings_save(PCONFIGURATION config)
 {
-    char *confdir = settings_config_dir(), *conffile = _path_join(confdir, CONF_NAME_STREAMING);
+    char *confdir = settings_config_dir(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
     config_save(conffile, config);
     free(conffile);
     free(confdir);
@@ -64,7 +59,7 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
     config->stream.supportsHevc = false;
 
-    config->debug_level = 2;
+    config->debug_level = 1;
     config->platform = "auto";
     config->app = "Steam";
     config->action = NULL;

@@ -27,14 +27,22 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
             int col;
             for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
             {
-                struct nk_image *cover = coverloader_get(cur->id);
-                if (cover)
+                struct nk_vec2 grid_size = nk_widget_size(ctx);
+                if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
                 {
-                    nk_image(ctx, *cover);
-                }
-                else
-                {
-                    if (nk_list_item_label(ctx, cur->name, NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_BOTTOM))
+                    nk_layout_row_dynamic(ctx, grid_size.y, 1);
+                    struct nk_image *cover = coverloader_get(node->server, cur->id);
+                    if (cover)
+                    {
+                        nk_image(ctx, *cover);
+                    }
+                    else
+                    {
+                        nk_spacing(ctx, 1);
+                    }
+                    
+                    // nk_label(ctx, cur->name, NK_TEXT_ALIGN_MIDDLE);
+                    if (false)
                     {
                         if (!event_emitted)
                         {
@@ -42,6 +50,7 @@ bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_e
                             streaming_begin(node->server, cur->id);
                         }
                     }
+                    nk_group_end(ctx);
                 }
             }
             if (col < colcount)

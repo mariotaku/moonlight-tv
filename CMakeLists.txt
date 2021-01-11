@@ -58,8 +58,9 @@ set(SOURCES
     app/ui/settings_window.c
     app/ui/widget/applist.c
     app/util/lruc.c
+    app/util/path.c
+    app/util/gs/clientex.c
     core/moonlight-embedded/src/config.c
-    core/moonlight-embedded/libgamestream/client.c
     core/moonlight-embedded/libgamestream/http.c
     core/moonlight-embedded/libgamestream/mkcert.c
     core/moonlight-embedded/libgamestream/xml.c
