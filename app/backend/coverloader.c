@@ -42,6 +42,7 @@ struct CACHE_ITEM_T
 };
 
 static pthread_t coverloader_worker_thread;
+static pthread_mutex_t coverloader_worker_lock;
 static lruc *coverloader_mem_cache;
 static struct CACHE_ITEM_T *coverloader_current_task;
 static bool coverloader_working_running;
@@ -51,8 +52,8 @@ WORKER_THREAD static bool coverloader_decode_image(int id, struct nk_image *deco
 WORKER_THREAD static bool coverloader_fetch_image(PSERVER_DATA server, int id);
 MAIN_THREAD static void coverloader_load(struct CACHE_ITEM_T *req);
 MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(PSERVER_DATA server, int id);
-THREAD_SAFE static void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data);
-THREAD_SAFE static void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded);
+WORKER_THREAD static void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data);
+WORKER_THREAD static void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded);
 THREAD_SAFE static void coverloader_cache_item_free(void *p);
 
 static char *coverloader_cache_dir();
@@ -60,9 +61,11 @@ static char *coverloader_cache_dir();
 MAIN_THREAD
 void coverloader_init()
 {
-    coverloader_mem_cache = lruc_new(128, 4, &coverloader_cache_item_free);
+    // 32MB ram limit, 480KiB each
+    coverloader_mem_cache = lruc_new(32 * 1024 * 1024, 480000, &coverloader_cache_item_free);
     coverloader_current_task = NULL;
     coverloader_working_running = true;
+    pthread_mutex_init(&coverloader_worker_lock, NULL);
     pthread_create(&coverloader_worker_thread, NULL, coverloader_worker, NULL);
 }
 
@@ -71,6 +74,7 @@ void coverloader_destroy()
 {
     coverloader_working_running = false;
     pthread_join(coverloader_worker_thread, NULL);
+    pthread_mutex_destroy(&coverloader_worker_lock);
     lruc_free(coverloader_mem_cache);
 }
 
@@ -88,7 +92,7 @@ struct nk_image *coverloader_get(PSERVER_DATA server, int id)
     if (!cached)
     {
         cached = cache_item_new(server, id);
-        lruc_set(coverloader_mem_cache, id, cached, 4);
+        lruc_set(coverloader_mem_cache, id, cached, 480000);
     }
     // Here we have single task for image loading.
     if (cached->state == IMAGE_STATE_QUEUED && !coverloader_current_task)
@@ -118,6 +122,7 @@ void *coverloader_worker(void *unused)
         // Load from local file cache
         if (coverloader_decode_image(req->id, &decoded))
         {
+            printf("Local file cache hit for %d\n", req->id);
             coverloader_notify_decoded(req, &decoded);
             continue;
         }
@@ -128,9 +133,11 @@ void *coverloader_worker(void *unused)
             coverloader_notify_change(req, IMAGE_STATE_FINISHED, NULL);
             continue;
         }
+        printf("Cover fetched for %d\n", req->id);
         // Now the file is in local cache, load again
         if (coverloader_decode_image(req->id, &decoded))
         {
+            printf("Downloaded cover decoded for %d\n", req->id);
             coverloader_notify_decoded(req, &decoded);
             continue;
         }
@@ -158,9 +165,10 @@ void coverloader_load(struct CACHE_ITEM_T *req)
 }
 
 // Send state change event to a thread safe message queue
-THREAD_SAFE
+WORKER_THREAD
 void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data)
 {
+    pthread_mutex_lock(&coverloader_worker_lock);
     struct CACHE_ITEM_T *update = malloc(sizeof(struct CACHE_ITEM_T));
     update->id = req->id;
     update->server = req->server;
@@ -172,9 +180,10 @@ void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T stat
     }
 }
 
-THREAD_SAFE
+WORKER_THREAD
 void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded)
 {
+    pthread_mutex_lock(&coverloader_worker_lock);
     // Don't free this value
     void *deccpy = malloc(sizeof(struct nk_image));
     memcpy(deccpy, decoded, sizeof(struct nk_image));
@@ -213,6 +222,7 @@ bool coverloader_fetch_image(PSERVER_DATA server, int id)
     return gs_download_cover(server, id, path) == GS_OK;
 }
 
+MAIN_THREAD
 static GLuint gen_texture_from_sdl(SDL_Surface *surface)
 {
     GLuint texture;
@@ -270,6 +280,7 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
             coverloader_current_task = NULL;
         }
         free(data2);
+        pthread_mutex_unlock(&coverloader_worker_lock);
         return true;
     }
     else if (which == USER_IL_IMAGE_DECODED)
@@ -278,14 +289,20 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
         struct nk_image *img = data2;
 
         SDL_Surface *surface = img->handle.ptr;
+        int texture = gen_texture_from_sdl(surface);
 
+        struct CACHE_ITEM_T *cached = malloc(sizeof(struct CACHE_ITEM_T));
+        memcpy(cached, req, sizeof(struct CACHE_ITEM_T));
         img->handle.id = gen_texture_from_sdl(surface);
+        cached->data = img;
+        cached->state = IMAGE_STATE_FINISHED;
+
+        lruc_set(coverloader_mem_cache, cached->id, cached, surface->w * surface->h * surface->format->BytesPerPixel);
 
         // Surface has been used up
         SDL_FreeSurface(surface);
-        req->data = img;
-        req->state = IMAGE_STATE_FINISHED;
         coverloader_current_task = NULL;
+        pthread_mutex_unlock(&coverloader_worker_lock);
         return true;
     }
     else

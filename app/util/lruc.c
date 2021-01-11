@@ -188,7 +188,8 @@ lruc_error lruc_set(lruc *cache, int key, void *value, uint32_t value_length) {
   lock_cache();
   
   // see if the key already exists
-  uint32_t hash_index = lruc_hash(cache, key), required = 0;
+  uint32_t hash_index = lruc_hash(cache, key);
+  int32_t required = 0;
   lruc_item *item = NULL, *prev = NULL;
   item = cache->items[hash_index];
   
