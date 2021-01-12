@@ -40,7 +40,7 @@ if (TARGET_WEBOS)
 elseif (TARGET_DESKTOP)
     find_package(OpenSSL REQUIRED)
     find_package(OpenGL REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=58 libavutil>=56)
+    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=57 libavutil>=55)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
 
