@@ -142,7 +142,7 @@ if (TARGET_WEBOS)
 else()
     target_compile_definitions(moonlight PUBLIC OS_LINUX)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL OpenSSL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL OpenSSL::Crypto)
 endif()
 
 
