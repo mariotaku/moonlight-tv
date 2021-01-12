@@ -20,13 +20,13 @@ endif()
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2 SDL2_image)
-pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
 pkg_check_modules(cURL REQUIRED IMPORTED_TARGET libcurl)
 pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
 pkg_check_modules(Expat REQUIRED IMPORTED_TARGET expat)
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
+    pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
     add_subdirectory(third_party/opus)
     if (NOT WEBOS_LEGACY)
         add_subdirectory(system/libndl)
@@ -34,6 +34,7 @@ if (TARGET_WEBOS)
         add_subdirectory(system/lgncapi)
     endif()
 elseif (TARGET_LINUX)
+    find_package(OpenSSL REQUIRED)
     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=58 libavutil>=56)
     find_package(OpenGL REQUIRED)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
@@ -122,14 +123,14 @@ target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_pa
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include))
 
 target_link_libraries(moonlight PRIVATE
- PkgConfig::OpenSSL PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
+ PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
  m pthread
  moonlight-common-c
 )
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS)
-    target_link_libraries(moonlight PRIVATE PkgConfig::GLES opus)
+    target_link_libraries(moonlight PRIVATE PkgConfig::OpenSSL PkgConfig::GLES opus)
     if (NOT WEBOS_LEGACY)
         target_compile_definitions(moonlight PUBLIC HAVE_SDL)
         target_compile_definitions(moonlight PUBLIC USE_NDL)
@@ -141,7 +142,7 @@ if (TARGET_WEBOS)
 else()
     target_compile_definitions(moonlight PUBLIC OS_LINUX)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL OpenSSL)
 endif()
 
 
