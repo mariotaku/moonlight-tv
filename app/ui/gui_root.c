@@ -1,4 +1,6 @@
-#ifdef OS_DARWIN
+#if OS_WEBOS
+#include <GLES2/gl2.h>
+#elif OS_DARWIN
 #include <OpenGL/gl.h>
 #else
 #include <GL/gl.h>
