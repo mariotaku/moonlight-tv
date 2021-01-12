@@ -42,7 +42,9 @@ struct CACHE_ITEM_T
 };
 
 static pthread_t coverloader_worker_thread;
-static pthread_mutex_t coverloader_worker_lock;
+static pthread_mutex_t coverloader_state_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t coverloader_queue_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t coverloader_queue_cond = PTHREAD_COND_INITIALIZER;
 static lruc *coverloader_mem_cache;
 static struct CACHE_ITEM_T *coverloader_current_task;
 static bool coverloader_working_running;
@@ -65,7 +67,6 @@ void coverloader_init()
     coverloader_mem_cache = lruc_new(32 * 1024 * 1024, 480000, &coverloader_cache_item_free);
     coverloader_current_task = NULL;
     coverloader_working_running = true;
-    pthread_mutex_init(&coverloader_worker_lock, NULL);
 
     struct sched_param param;
     pthread_attr_t tattr;
@@ -80,7 +81,7 @@ void coverloader_destroy()
 {
     coverloader_working_running = false;
     pthread_join(coverloader_worker_thread, NULL);
-    pthread_mutex_destroy(&coverloader_worker_lock);
+    pthread_mutex_destroy(&coverloader_state_lock);
     lruc_free(coverloader_mem_cache);
 }
 
@@ -114,13 +115,12 @@ void *coverloader_worker(void *unused)
     while (coverloader_working_running)
     {
         struct CACHE_ITEM_T *req = coverloader_current_task;
-        if (!req)
-        {
-            continue;
-        }
         // Don't do anything if it's not in initial state
-        if (req->state != IMAGE_STATE_QUEUED)
+        if (!req || req->state != IMAGE_STATE_QUEUED)
         {
+            pthread_mutex_lock(&coverloader_queue_lock);
+            pthread_cond_wait(&coverloader_queue_cond, &coverloader_queue_lock);
+            pthread_mutex_unlock(&coverloader_queue_lock);
             continue;
         }
         coverloader_notify_change(req, IMAGE_STATE_LOADING, NULL);
@@ -168,13 +168,14 @@ void coverloader_load(struct CACHE_ITEM_T *req)
 {
     // This will make worker start to do the loading work
     coverloader_current_task = req;
+    pthread_cond_signal(&coverloader_queue_cond);
 }
 
 // Send state change event to a thread safe message queue
 WORKER_THREAD
 void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data)
 {
-    pthread_mutex_lock(&coverloader_worker_lock);
+    pthread_mutex_lock(&coverloader_state_lock);
     struct CACHE_ITEM_T *update = malloc(sizeof(struct CACHE_ITEM_T));
     update->id = req->id;
     update->server = req->server;
@@ -189,7 +190,7 @@ void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T stat
 WORKER_THREAD
 void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded)
 {
-    pthread_mutex_lock(&coverloader_worker_lock);
+    pthread_mutex_lock(&coverloader_state_lock);
     // Don't free this value
     void *deccpy = malloc(sizeof(struct nk_image));
     memcpy(deccpy, decoded, sizeof(struct nk_image));
@@ -286,7 +287,7 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
             coverloader_current_task = NULL;
         }
         free(data2);
-        pthread_mutex_unlock(&coverloader_worker_lock);
+        pthread_mutex_unlock(&coverloader_state_lock);
         return true;
     }
     else if (which == USER_IL_IMAGE_DECODED)
@@ -308,7 +309,7 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
         // Surface has been used up
         SDL_FreeSurface(surface);
         coverloader_current_task = NULL;
-        pthread_mutex_unlock(&coverloader_worker_lock);
+        pthread_mutex_unlock(&coverloader_state_lock);
         return true;
     }
     else
