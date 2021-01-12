@@ -72,6 +72,7 @@ MAIN_THREAD
 void coverloader_destroy()
 {
     coverloader_working_running = false;
+    pthread_cond_signal(&coverloader_queue_cond);
     pthread_join(coverloader_worker_thread, NULL);
     pthread_mutex_destroy(&coverloader_state_lock);
     lruc_free(coverloader_mem_cache);
