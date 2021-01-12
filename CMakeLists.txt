@@ -103,7 +103,7 @@ elseif (TARGET_DESKTOP)
         app/app_sdl.c
         app/stream/input/sdl.c
         app/platform/sdl/bus.c
-        app/platform/lgnc/nkimage.c
+        app/platform/sdl/nkimage.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/audio/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c
