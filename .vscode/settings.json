@@ -56,7 +56,8 @@
         "platform_lgnc_gles2.h": "c",
         "nuklear_lgnc_gles2.h": "c",
         "lgnc_system.h": "c",
-        "lgnc.h": "c"
+        "lgnc.h": "c",
+        "path.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

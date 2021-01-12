@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
+#include <sched.h>
 #include <unistd.h>
 
 #include <sys/stat.h>
@@ -65,7 +66,13 @@ void coverloader_init()
     coverloader_current_task = NULL;
     coverloader_working_running = true;
     pthread_mutex_init(&coverloader_worker_lock, NULL);
-    pthread_create(&coverloader_worker_thread, NULL, coverloader_worker, NULL);
+
+    struct sched_param param;
+    pthread_attr_t tattr;
+    pthread_attr_getschedparam(&tattr, &param);
+    param.sched_priority = 5;
+    pthread_attr_setschedparam(&tattr, &param);
+    pthread_create(&coverloader_worker_thread, &tattr, coverloader_worker, NULL);
 }
 
 MAIN_THREAD

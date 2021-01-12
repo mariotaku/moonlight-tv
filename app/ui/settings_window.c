@@ -85,13 +85,11 @@ bool settings_window(struct nk_context *ctx)
     if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        struct nk_rect tmp_bounds;
         nk_layout_row_dynamic_s(ctx, 25, 1);
         nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
         static const float ratio_resolution_fps[] = {0.6, 0.4};
-        tmp_bounds = nk_layout_widget_bounds(ctx);
         nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
-        if (nk_combo_begin_label(ctx, _res_label, nk_vec2(tmp_bounds.w * 0.6, 200 * NK_UI_SCALE)))
+        if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
         {
             nk_layout_row_dynamic_s(ctx, 25, 1);
             for (int i = 0; i < _supported_resolutions_len; i++)
@@ -105,7 +103,7 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_combo_end(ctx);
         }
-        if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(tmp_bounds.w * 0.4, 200 * NK_UI_SCALE)))
+        if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
         {
             nk_layout_row_dynamic_s(ctx, 25, 1);
             for (int i = 0; i < _supported_fps_len; i++)
