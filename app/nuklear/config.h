@@ -16,5 +16,5 @@
 #define NK_LGNC_GLES2
 #endif
 #else
-#define NK_SDL_GLES2
+#define NK_SDL_GL2
 #endif
