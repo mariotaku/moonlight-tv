@@ -31,6 +31,7 @@ NK_API nk_bool nk_conv2gl(struct nk_image *img)
     img->handle.id = texture;
     // Surface has been used up
     SDL_FreeSurface(surface);
+    return nk_true;
 }
 
 NK_API void nk_freeimage(struct nk_image *img)
