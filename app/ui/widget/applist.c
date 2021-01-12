@@ -87,4 +87,5 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
         }
         nk_group_end(ctx);
     }
+    return event_emitted;
 }

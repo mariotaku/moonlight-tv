@@ -1,6 +1,8 @@
 #include "path.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 char *path_join(const char *parent, const char *basename)
 {

@@ -1,4 +1,8 @@
-#include <GLES2/gl2.h>
+#ifdef OS_DARWIN
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 #include "gui_root.h"
 #include "ui/config.h"

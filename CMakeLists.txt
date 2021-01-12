@@ -12,9 +12,13 @@ get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 if (CC_BASENAME MATCHES "^arm-webos-")
     set(TARGET_WEBOS TRUE)
     option(WEBOS_LEGACY "Use Legacy API" OFF)
-else() 
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    set(TARGET_DARWIN TRUE)
+    set(TARGET_DESKTOP TRUE)
+    set(ENV{OPENSSL_ROOT_DIR} "/usr/local/opt/openssl@1.1")
+else()
     set(TARGET_LINUX TRUE)
-    list(APPEND CMAKE_C_FLAGS "-gdwarf-2")
+    set(TARGET_DESKTOP TRUE)
 endif()
 
 find_package(PkgConfig REQUIRED)
@@ -33,10 +37,10 @@ if (TARGET_WEBOS)
     else()
         add_subdirectory(system/lgncapi)
     endif()
-elseif (TARGET_LINUX)
+elseif (TARGET_DESKTOP)
     find_package(OpenSSL REQUIRED)
-    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=58 libavutil>=56)
     find_package(OpenGL REQUIRED)
+    pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=58 libavutil>=56)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
 
@@ -92,7 +96,7 @@ if (TARGET_WEBOS)
             third_party/message_queue/message_queue.c
         )
     endif()
-elseif (TARGET_LINUX)
+elseif (TARGET_DESKTOP)
     list(APPEND SOURCES
         app/app_sdl.c
         app/stream/input/sdl.c
@@ -115,11 +119,9 @@ target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded/src)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue
-target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/C-LRU-Cache)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include))
 
 target_link_libraries(moonlight PRIVATE
@@ -139,10 +141,21 @@ if (TARGET_WEBOS)
         target_compile_definitions(moonlight PUBLIC WEBOS_LEGACY USE_LGNCAPI)
         target_link_libraries(moonlight PRIVATE lgncopenapi)
     endif()
+elseif(TARGET_DARWIN)
+    target_compile_definitions(moonlight PUBLIC OS_DARWIN)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+
+    get_filename_component(SDL2_INCLUDE_DIR_PARENT ${SDL2_INCLUDE_DIRS} DIRECTORY)
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIR_PARENT})
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
+
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
 else()
     target_compile_definitions(moonlight PUBLIC OS_LINUX)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL OpenSSL::Crypto)
+
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
 endif()
 
 

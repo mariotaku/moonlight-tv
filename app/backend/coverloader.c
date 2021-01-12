@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
-#include <sched.h>
 #include <unistd.h>
 
 #include <sys/stat.h>
@@ -24,7 +23,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL2/SDL_opengl.h>
+#include <SDL_opengl.h>
 
 enum IMAGE_STATE_T
 {
@@ -68,12 +67,7 @@ void coverloader_init()
     coverloader_current_task = NULL;
     coverloader_working_running = true;
 
-    struct sched_param param;
-    pthread_attr_t tattr;
-    pthread_attr_getschedparam(&tattr, &param);
-    param.sched_priority = 5;
-    pthread_attr_setschedparam(&tattr, &param);
-    pthread_create(&coverloader_worker_thread, &tattr, coverloader_worker, NULL);
+    pthread_create(&coverloader_worker_thread, NULL, coverloader_worker, NULL);
 }
 
 MAIN_THREAD
@@ -346,7 +340,8 @@ void coverloader_cache_item_free(void *p)
     struct CACHE_ITEM_T *item = p;
     if (item->data)
     {
-        glDeleteTextures(1, &(item->data->handle.id));
+        GLuint t[1] = {item->data->handle.id};
+        glDeleteTextures(1, t);
     }
     free(item);
 }

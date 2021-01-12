@@ -1,8 +1,8 @@
 #include "session.h"
 #include "settings.h"
 
-#include "connection.h"
-#include "platform.h"
+#include "src/connection.h"
+#include "src/platform.h"
 #include "util/user_event.h"
 #include "input/absinput.h"
 

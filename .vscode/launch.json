@@ -26,6 +26,18 @@
             ]
         },
         {
+            "name": "(lldb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/moonlight",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
             "type": "gdb",
             "request": "attach",
             "name": "(gdb) Attach [Device hometv]",

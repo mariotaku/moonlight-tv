@@ -1,5 +1,5 @@
 #pragma once
-#include "config.h"
+#include "src/config.h"
 
 #define CONF_DIR ".moonlight-tv"
 #define CONF_NAME_STREAMING "streaming.conf"

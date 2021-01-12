@@ -30,7 +30,7 @@
 
 #include "backend/backend_root.h"
 #include "stream/input/absinput.h"
-#include "stream/input/sdl.h"
+#include "stream/input/sdlinput.h"
 #include "platform/sdl/events.h"
 #include "ui/gui_root.h"
 #include "ui/config.h"

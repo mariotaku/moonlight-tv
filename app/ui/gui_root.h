@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #ifdef HAVE_SDL
-#include <SDL.h>
+#include <SDL_events.h>
 #endif
 
 #ifndef NK_NUKLEAR_H_

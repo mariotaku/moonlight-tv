@@ -17,7 +17,7 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "connection.h"
+#include "src/connection.h"
 #include "session.h"
 
 #include <stdio.h>
