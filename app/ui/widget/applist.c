@@ -51,7 +51,24 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
                    int cover_width, int cover_height, bool event_emitted)
 {
-    nk_bool hovered = nk_widget_is_hovered(ctx);
+    nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);
+    static int click_down_id = -1, should_ignore_click = -1;
+    if (mouse_down && click_down_id == -1)
+    {
+        click_down_id = cur->id;
+        // If event_emitted is true, means there's combo opened. So next click event shoule be ignored
+        if (event_emitted)
+        {
+            should_ignore_click = cur->id;
+        }
+    }
+    nk_bool clicked = nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT);
+    // Captured a click event that should be ignored, reset state
+    if (should_ignore_click == cur->id && !mouse_down)
+    {
+        clicked = false;
+        should_ignore_click = -1;
+    }
     int item_height = nk_widget_height(ctx);
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
     {
@@ -77,15 +94,17 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
         nk_button_symbol(ctx, NK_SYMBOL_X);
         nk_layout_space_end(ctx);
         // nk_label(ctx, cur->name, NK_TEXT_ALIGN_MIDDLE);
-        if (false)
-        {
-            if (!event_emitted)
-            {
-                event_emitted |= true;
-                streaming_begin(node->server, cur->id);
-            }
-        }
         nk_group_end(ctx);
+    }
+    if (clicked)
+    {
+        if (should_ignore_click == -1 && click_down_id == cur->id)
+        {
+            event_emitted |= true;
+            streaming_begin(node->server, cur->id);
+        }
+        should_ignore_click = -1;
+        click_down_id = -1;
     }
     return event_emitted;
 }

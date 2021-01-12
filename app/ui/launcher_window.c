@@ -132,6 +132,7 @@ void launcher_display_size(struct nk_context *ctx, short width, short height)
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
+    bool active = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
     if (nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200)))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -165,7 +166,7 @@ bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_
         // nk_combo_item_label(ctx, "Add manually", NK_TEXT_LEFT);
         nk_combo_end(ctx);
     }
-    return event_emitted;
+    return active || event_emitted;
 }
 
 void _select_computer(PSERVER_LIST node, bool load_apps)
