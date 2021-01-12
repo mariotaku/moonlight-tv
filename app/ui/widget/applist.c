@@ -6,7 +6,7 @@
 #define LINKEDLIST_TYPE PAPP_LIST
 #include "util/linked_list.h"
 
-static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur, int cover_height, bool event_emitted);
+static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur, int cover_width, int cover_height, bool event_emitted);
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
@@ -35,7 +35,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
             int col;
             for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
             {
-                _applist_item(ctx, node, cur, coverheight, event_emitted);
+                _applist_item(ctx, node, cur, coverwidth, coverheight, event_emitted);
             }
             if (col < colcount)
             {
@@ -48,13 +48,17 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     return event_emitted;
 }
 
-bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur, int cover_height, bool event_emitted)
+bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
+                   int cover_width, int cover_height, bool event_emitted)
 {
-    struct nk_rect bounds = nk_widget_bounds(ctx);
+    nk_bool hovered = nk_widget_is_hovered(ctx);
+    int item_height = nk_widget_height(ctx);
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
     {
-        nk_layout_row_dynamic(ctx, cover_height, 1);
         struct nk_image *cover = coverloader_get(node->server, cur->id);
+        bool running = node->server->currentGame == cur->id;
+        nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : 1);
+        nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
         if (cover)
         {
             nk_image(ctx, *cover);
@@ -64,6 +68,14 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur, int
             nk_spacing(ctx, 1);
         }
 
+        const int button_size = 24 * NK_UI_SCALE;
+        int button_x = (cover_width - button_size) / 2;
+        int button_spacing = 4 * NK_UI_SCALE;
+        nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 - button_size - button_spacing, button_size, button_size));
+        nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT);
+        nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 + button_spacing, button_size, button_size));
+        nk_button_symbol(ctx, NK_SYMBOL_X);
+        nk_layout_space_end(ctx);
         // nk_label(ctx, cur->name, NK_TEXT_ALIGN_MIDDLE);
         if (false)
         {
