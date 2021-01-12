@@ -14,6 +14,7 @@ if (CC_BASENAME MATCHES "^arm-webos-")
     option(WEBOS_LEGACY "Use Legacy API" OFF)
 else() 
     set(TARGET_LINUX TRUE)
+    list(APPEND CMAKE_C_FLAGS "-gdwarf-2")
 endif()
 
 find_package(PkgConfig REQUIRED)

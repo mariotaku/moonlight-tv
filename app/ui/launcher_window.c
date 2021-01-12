@@ -87,7 +87,7 @@ bool launcher_window(struct nk_context *ctx)
         {
             if (selected->server != NULL)
             {
-                event_emitted |= cw_application_list(ctx, selected, event_emitted);
+                event_emitted |= launcher_applist(ctx, selected, event_emitted);
             }
             else
             {
@@ -123,6 +123,10 @@ bool launcher_window(struct nk_context *ctx)
         return false;
     }
     return true;
+}
+
+void launcher_display_size(struct nk_context *ctx, short width, short height)
+{
 }
 
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
@@ -238,7 +242,7 @@ void _pairing_error_popup(struct nk_context *ctx)
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
-        
+
         nk_spacing(ctx, 1);
         if (nk_button_label(ctx, "OK"))
         {

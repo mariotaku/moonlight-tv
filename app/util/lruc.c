@@ -167,12 +167,23 @@ lruc_error lruc_free(lruc *cache) {
     free(cache->items);
   }
   
+  if(cache->free_items) {
+    item = cache->free_items;
+    while(item) {
+      next = (lruc_item *) item->next;
+      cache->value_free(item->value);
+      free(item);
+      item = next;
+    }
+  }
+
   // free the cache
   if(cache->mutex) {
     if(pthread_mutex_destroy(cache->mutex)) {
       perror("LRU Cache unable to destroy mutex");
       return LRUC_PTHREAD_ERROR;
     }
+    free(cache->mutex);
   }
   free(cache);
   

@@ -68,7 +68,7 @@ bool gui_should_block_input()
     return ret;
 }
 
-void gui_display_size(short width, short height)
+void gui_display_size(struct nk_context *ctx, short width, short height)
 {
     gui_display_width = width;
     gui_display_height = height;

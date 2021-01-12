@@ -15,6 +15,8 @@
 
 void launcher_window_init(struct nk_context *ctx);
 
+void launcher_display_size(struct nk_context *ctx, short width, short height);
+
 bool launcher_window(struct nk_context *ctx);
 
-bool cw_application_list(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
+bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);

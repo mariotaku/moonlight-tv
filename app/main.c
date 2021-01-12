@@ -50,8 +50,6 @@ int main(int argc, char *argv[])
     /* GUI */
     struct nk_context *ctx;
     APP_WINDOW_CONTEXT win = app_window_create();
-    streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
-    gui_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     ctx = nk_platform_init(win);
     {
@@ -64,6 +62,9 @@ int main(int argc, char *argv[])
     nk_ext_apply_style(ctx);
 
     gui_root_init(ctx);
+
+    streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
+    gui_display_size(ctx, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     while (running)
     {

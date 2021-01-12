@@ -138,7 +138,19 @@ void nk_ext_apply_style(struct nk_context *ctx)
     button = &style->window.header.minimize_button;
     
     /* window */
+    win->rounding = 0.0f;
     win->spacing = nk_vec2_s(4,4);
+    win->scrollbar_size = nk_vec2_s(10,10);
+    win->min_size = nk_vec2_s(64,64);
+
+    win->combo_border = 1.0f * NK_UI_SCALE;
+    win->contextual_border = 1.0f * NK_UI_SCALE;
+    win->menu_border = 1.0f * NK_UI_SCALE;
+    win->group_border = 1.0f * NK_UI_SCALE;
+    win->tooltip_border = 1.0f * NK_UI_SCALE;
+    win->popup_border = 1.0f * NK_UI_SCALE;
+    win->border = 2.0f * NK_UI_SCALE;
+    win->min_row_height_padding = 8 * NK_UI_SCALE;
 
     win->padding = nk_vec2_s(4,4);
     win->group_padding = nk_vec2_s(4,4);

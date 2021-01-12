@@ -28,7 +28,7 @@ bool gui_dispatch_userevent(int which);
  */
 bool gui_should_block_input();
 
-void gui_display_size(short width, short height);
+void gui_display_size(struct nk_context *ctx, short width, short height);
 
 #ifdef HAVE_SDL
 bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev);
