@@ -13,6 +13,8 @@
 
 #include <uuid/uuid.h>
 
+#include "nuklear/ext_image.h"
+
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "util/lruc.h"
@@ -20,10 +22,6 @@
 #include "util/gs/clientex.h"
 
 #include "libgamestream/errors.h"
-
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_opengl.h>
 
 enum IMAGE_STATE_T
 {
@@ -62,8 +60,8 @@ static char *coverloader_cache_dir();
 MAIN_THREAD
 void coverloader_init()
 {
-    // 32MB ram limit, 480KiB each
-    coverloader_mem_cache = lruc_new(32 * 1024 * 1024, 480000, &coverloader_cache_item_free);
+    // 8 mega pixels limit, 120K each
+    coverloader_mem_cache = lruc_new(8 * 1024 * 1024, 120000, &coverloader_cache_item_free);
     coverloader_current_task = NULL;
     coverloader_working_running = true;
 
@@ -93,7 +91,7 @@ struct nk_image *coverloader_get(PSERVER_DATA server, int id)
     if (!cached)
     {
         cached = cache_item_new(server, id);
-        lruc_set(coverloader_mem_cache, id, cached, 480000);
+        lruc_set(coverloader_mem_cache, id, cached, 120000);
     }
     // Here we have single task for image loading.
     if (cached->state == IMAGE_STATE_QUEUED && !coverloader_current_task)
@@ -198,18 +196,10 @@ bool coverloader_decode_image(int id, struct nk_image *decoded)
     char path[4096];
     sprintf(path, "%s/%d", cachedir, id);
     free(cachedir);
-    SDL_Surface *s = IMG_Load(path);
-    if (!s)
+    if (!nk_loadimage(path, decoded))
     {
         return false;
     }
-    decoded->w = s->w;
-    decoded->h = s->h;
-    decoded->region[0] = 0;
-    decoded->region[1] = 0;
-    decoded->region[2] = s->w;
-    decoded->region[3] = s->h;
-    decoded->handle.ptr = s;
     return true;
 }
 
@@ -221,50 +211,6 @@ bool coverloader_fetch_image(PSERVER_DATA server, int id)
     sprintf(path, "%s/%d", cachedir, id);
     free(cachedir);
     return gs_download_cover(server, id, path) == GS_OK;
-}
-
-MAIN_THREAD
-static GLuint gen_texture_from_sdl(SDL_Surface *surface)
-{
-    GLuint texture;
-    GLenum texture_format;
-    GLint nOfColors;
-    // get the number of channels in the SDL surface
-    nOfColors = surface->format->BytesPerPixel;
-    if (nOfColors == 4) // contains an alpha channel
-    {
-        if (surface->format->Rmask == 0x000000ff)
-            texture_format = GL_RGBA;
-        else
-            texture_format = GL_BGRA;
-    }
-    else if (nOfColors == 3) // no alpha channel
-    {
-        if (surface->format->Rmask == 0x000000ff)
-            texture_format = GL_RGB;
-        else
-            texture_format = GL_BGR;
-    }
-    else
-    {
-        printf("warning: the image is not truecolor..  this will probably break\n");
-        // this error should not go unhandled
-    }
-
-    // Have OpenGL generate a texture object handle for us
-    glGenTextures(1, &texture);
-
-    // Bind the texture object
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    // Set the texture's stretching properties
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Edit the texture object's image data using the information SDL_Surface gives us
-    glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
-                 texture_format, GL_UNSIGNED_BYTE, surface->pixels);
-    return texture;
 }
 
 // We shouldn't write any internal state outside main thread. So do it here
@@ -289,19 +235,15 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
         struct CACHE_ITEM_T *req = data1;
         struct nk_image *img = data2;
 
-        SDL_Surface *surface = img->handle.ptr;
-        int texture = gen_texture_from_sdl(surface);
+        nk_conv2gl(img);
 
         struct CACHE_ITEM_T *cached = malloc(sizeof(struct CACHE_ITEM_T));
         memcpy(cached, req, sizeof(struct CACHE_ITEM_T));
-        img->handle.id = gen_texture_from_sdl(surface);
         cached->data = img;
         cached->state = IMAGE_STATE_FINISHED;
 
-        lruc_set(coverloader_mem_cache, cached->id, cached, surface->w * surface->h * surface->format->BytesPerPixel);
+        lruc_set(coverloader_mem_cache, cached->id, cached, img->w * img->h);
 
-        // Surface has been used up
-        SDL_FreeSurface(surface);
         coverloader_current_task = NULL;
         pthread_mutex_unlock(&coverloader_state_lock);
         return true;
@@ -340,8 +282,7 @@ void coverloader_cache_item_free(void *p)
     struct CACHE_ITEM_T *item = p;
     if (item->data)
     {
-        GLuint t[1] = {item->data->handle.id};
-        glDeleteTextures(1, t);
+        nk_freeimage(item->data);
     }
     free(item);
 }

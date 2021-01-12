@@ -83,6 +83,7 @@ if (TARGET_WEBOS)
             app/stream/video/ndl.c
             app/stream/input/sdl.c
             app/platform/sdl/bus.c
+            app/platform/sdl/nkimage.c
         )
     else()
         list(APPEND SOURCES
@@ -90,6 +91,7 @@ if (TARGET_WEBOS)
             app/platform/lgnc/bus.c
             app/platform/lgnc/callbacks.c
             app/platform/lgnc/graphics.c
+            app/platform/lgnc/nkimage.c
             app/stream/input/lgnc.c
             app/stream/audio/lgnc.c
             app/stream/video/lgnc.c
@@ -101,6 +103,7 @@ elseif (TARGET_DESKTOP)
         app/app_sdl.c
         app/stream/input/sdl.c
         app/platform/sdl/bus.c
+        app/platform/lgnc/nkimage.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/audio/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c
@@ -138,6 +141,7 @@ if (TARGET_WEBOS)
         target_compile_definitions(moonlight PUBLIC USE_NDL)
         target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 NDL_directmedia)
     else()
+        target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear/example)
         target_compile_definitions(moonlight PUBLIC WEBOS_LEGACY USE_LGNCAPI)
         target_link_libraries(moonlight PRIVATE lgncopenapi)
     endif()
