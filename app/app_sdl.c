@@ -41,6 +41,9 @@
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
+static char wintitle[32];
+
+
 int app_init(int argc, char *argv[])
 {
 #ifdef USE_NDL
@@ -114,6 +117,7 @@ static void app_process_events(struct nk_context *ctx)
 
 void app_main_loop(void *data)
 {
+    static Uint32 last_ticks = 0, framecount = 0;
     struct nk_context *ctx = (struct nk_context *)data;
 
     app_process_events(ctx);
@@ -136,6 +140,18 @@ void app_main_loop(void *data)
         nk_sdl_render(NK_ANTI_ALIASING_ON);
 #endif
         SDL_GL_SwapWindow(win);
+    }
+    Uint32 ticks = SDL_GetTicks();
+    if ((ticks - last_ticks) >= 1000)
+    {
+        sprintf(wintitle, "Moonlight | %d FPS", framecount);
+        SDL_SetWindowTitle(win, wintitle);
+        last_ticks = ticks;
+        framecount = 0;
+    }
+    else
+    {
+        framecount++;
     }
     if (!cont)
     {
