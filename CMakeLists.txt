@@ -173,7 +173,7 @@ if (TARGET_WEBOS)
 
     set_target_properties(moonlight PROPERTIES
         WEBOS_APPINFO_ID com.limelight.webos
-        WEBOS_APPINFO_VERSION ${CMAKE_PROJECT_VERSION}
+        WEBOS_APPINFO_VERSION ${PROJECT_VERSION}
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
