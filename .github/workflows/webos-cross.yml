@@ -35,8 +35,11 @@ jobs:
     - name: Install webOS NDK
       run: chmod 755 ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh && sudo ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -y
 
-    - name: Setup NDK Environment
+    - name: Initialize NDK (Environments)
       run: env -i bash -c '. /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi && env' >> $GITHUB_ENV
+      
+    - name: Initialize NDK (Paths)
+      run: env -i bash -c '. /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi && echo $PATH' >> $GITHUB_PATH
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
