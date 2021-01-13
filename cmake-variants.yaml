@@ -3,8 +3,12 @@ buildType:
   choices:
     debug:
       short: Debug
-      long: Emit debug information
+      long: Unstripped debug build
       buildType: Debug
+    reldebug:
+      short: RelWithDebInfo
+      long: Release with debug information
+      buildType: RelWithDebInfo
     release:
       short: Release
       long: Optimize generated code
@@ -15,7 +19,7 @@ webosImpl:
   choices:
     standard:
       short: Standard
-      long: SDL2 + NDL for webOS 4.x
+      long: SDL2 implementation for most platforms
       settings:
         WEBOS_LEGACY: false
     legacy:
