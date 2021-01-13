@@ -23,7 +23,7 @@ jobs:
       run: sudo apt-get -qq update || true
 
     - name: Install Dependencies
-      run: sudo apt-get -y -qq install jo nodejs npm
+      run: sudo apt-get -y install jo nodejs npm
 
     - name: Install webOS CLI
       run: sudo npm install -g @webosose/ares-cli
