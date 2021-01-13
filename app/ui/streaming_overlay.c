@@ -49,6 +49,7 @@ bool streaming_overlay_dispatch_userevent(int which)
     default:
         break;
     }
+    return false;
 }
 
 bool streaming_overlay_should_block_input()
@@ -72,6 +73,8 @@ void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
             break;
         case STREAMING_DISCONNECTING:
             nk_label(ctx, "Disconnecting...", NK_TEXT_ALIGN_LEFT);
+            break;
+        default:
             break;
         }
     }

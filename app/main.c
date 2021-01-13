@@ -71,6 +71,8 @@ int main(int argc, char *argv[])
         app_main_loop((void *)ctx);
     }
 
+    gui_root_destroy();
+
     nk_platform_shutdown();
     backend_destroy();
     app_destroy();

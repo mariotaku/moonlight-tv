@@ -68,17 +68,10 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
     int item_height = nk_widget_height(ctx);
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
-        struct nk_image *cover = coverloader_get(node->server, cur->id);
+        struct nk_image *cover = coverloader_get(node, cur->id);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : 1);
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
-        if (cover)
-        {
-            clicked = !running & nk_button_image(ctx, *cover);
-        }
-        else
-        {
-            nk_spacing(ctx, 1);
-        }
+        clicked = !running & nk_button_image(ctx, cover ? *cover : launcher_default_cover);
 
         const int button_size = 24 * NK_UI_SCALE;
         int button_x = (cover_width - button_size) / 2;
@@ -116,12 +109,12 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
                 }
                 else
                 {
-                    streaming_begin(node->server, cur->id);
+                    streaming_begin(node, cur->id);
                 }
             }
             else
             {
-                printf("TODO: quit game\n");
+                computer_manager_quitapp(node);
             }
         }
         should_ignore_click = -1;

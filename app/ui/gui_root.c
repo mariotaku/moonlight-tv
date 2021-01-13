@@ -27,6 +27,11 @@ void gui_root_init(struct nk_context *ctx)
     streaming_overlay_init(ctx);
 }
 
+void gui_root_destroy()
+{
+    launcher_window_destroy();
+}
+
 bool gui_root(struct nk_context *ctx)
 {
     STREAMING_STATUS stat = streaming_status;

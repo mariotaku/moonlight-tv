@@ -3,6 +3,7 @@
 
 #include "src/connection.h"
 #include "src/platform.h"
+#include "util/bus.h"
 #include "util/user_event.h"
 #include "input/absinput.h"
 
@@ -27,7 +28,7 @@ bool streaming_quitapp_requested;
 
 typedef struct
 {
-    SERVER_DATA *server;
+    SERVER_LIST *node;
     CONFIGURATION *config;
     int appId;
 } STREAMING_REQUEST;
@@ -53,7 +54,7 @@ void streaming_destroy()
     pthread_mutex_destroy(&lock);
 }
 
-void streaming_begin(PSERVER_DATA server, int app_id)
+void streaming_begin(PSERVER_LIST node, int app_id)
 {
     PCONFIGURATION config = settings_load();
 
@@ -63,7 +64,7 @@ void streaming_begin(PSERVER_DATA server, int app_id)
     }
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
-    req->server = server;
+    req->node = node;
     req->config = config;
     req->appId = app_id;
     pthread_create(&streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
@@ -98,7 +99,8 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
     streaming_status = STREAMING_CONNECTING;
     streaming_errno = GS_OK;
-    PSERVER_DATA server = req->server;
+    PSERVER_LIST node = req->node;
+    PSERVER_DATA server = node->server;
     PCONFIGURATION config = req->config;
     absinput_no_control = config->viewonly;
     int appId = req->appId;
@@ -155,14 +157,10 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     {
         if (config->debug_level > 0)
             printf("Sending app quit request ...\n");
-        int quitret = gs_quit_app(server);
-        if (quitret == GS_OK)
-        {
-            server->currentGame = 0;
-        }
+        gs_quit_app(server);
     }
-    // TODO https://github.com/mariotaku/moonlight-sdl/issues/3
     streaming_status = STREAMING_NONE;
+    bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
 
 thread_cleanup:
     free(req);

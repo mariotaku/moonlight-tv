@@ -15,6 +15,7 @@
 
 static PSERVER_LIST selected_server_node;
 
+struct nk_image launcher_default_cover;
 typedef enum pairing_state
 {
     PS_NONE,
@@ -37,15 +38,28 @@ static void _open_pair(int index, PSERVER_LIST node);
 static void _pairing_window(struct nk_context *ctx);
 static void _pairing_error_popup(struct nk_context *ctx);
 static void _server_error_popup(struct nk_context *ctx);
+static void _quitapp_window(struct nk_context *ctx);
 
 static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
 
 void launcher_window_init(struct nk_context *ctx)
 {
+    launcher_default_cover = nk_image_id(0);
+    if (!nk_loadimage("assets/defcover.png", &launcher_default_cover))
+    {
+        fprintf(stderr, "Cannot find assets/defcover.png\n");
+        abort();
+    }
+    nk_conv2gl(&launcher_default_cover);
     selected_server_node = NULL;
     pairing_computer_state.state = PS_NONE;
     memcpy(&cm_list_button_style, &(ctx->style.button), sizeof(struct nk_style_button));
     cm_list_button_style.text_alignment = NK_TEXT_ALIGN_LEFT;
+}
+
+void launcher_window_destroy()
+{
+    nk_freeimage(&launcher_default_cover);
 }
 
 bool launcher_window(struct nk_context *ctx)
@@ -114,6 +128,9 @@ bool launcher_window(struct nk_context *ctx)
     if (pairing_computer_state.state == PS_RUNNING)
     {
         _pairing_window(ctx);
+    } else if (computer_manager_executing_quitapp)
+    {
+        _quitapp_window(ctx);
     }
 
     // Why Nuklear why, the button looks like "close" but it actually "hide"
@@ -282,4 +299,19 @@ void _server_error_popup(struct nk_context *ctx)
         }
         nk_popup_end(ctx);
     }
+}
+
+
+void _quitapp_window(struct nk_context *ctx)
+{
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
+    if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+    {
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
+        int content_height_remaining = (int)content_size.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+
+        nk_label(ctx, "Quitting...", NK_TEXT_ALIGN_LEFT);
+    }
+    nk_end(ctx);
 }

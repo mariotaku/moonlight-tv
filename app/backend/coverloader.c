@@ -33,7 +33,7 @@ enum IMAGE_STATE_T
 struct CACHE_ITEM_T
 {
     int id;
-    PSERVER_DATA server;
+    PSERVER_LIST node;
     enum IMAGE_STATE_T state;
     struct nk_image *data;
 };
@@ -48,9 +48,9 @@ static bool coverloader_working_running;
 
 WORKER_THREAD static void *coverloader_worker(void *);
 WORKER_THREAD static bool coverloader_decode_image(int id, struct nk_image *decoded);
-WORKER_THREAD static bool coverloader_fetch_image(PSERVER_DATA server, int id);
+WORKER_THREAD static bool coverloader_fetch_image(PSERVER_LIST node, int id);
 MAIN_THREAD static void coverloader_load(struct CACHE_ITEM_T *req);
-MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(PSERVER_DATA server, int id);
+MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(PSERVER_LIST node, int id);
 WORKER_THREAD static void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T state, struct nk_image *data);
 WORKER_THREAD static void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decoded);
 THREAD_SAFE static void coverloader_cache_item_free(void *p);
@@ -79,7 +79,7 @@ void coverloader_destroy()
 }
 
 MAIN_THREAD
-struct nk_image *coverloader_get(PSERVER_DATA server, int id)
+struct nk_image *coverloader_get(PSERVER_LIST node, int id)
 {
     // First find in memory cache
     struct CACHE_ITEM_T *cached = NULL;
@@ -91,7 +91,7 @@ struct nk_image *coverloader_get(PSERVER_DATA server, int id)
     // Memory cache miss, start image loading pipeline.
     if (!cached)
     {
-        cached = cache_item_new(server, id);
+        cached = cache_item_new(node, id);
         lruc_set(coverloader_mem_cache, id, cached, 120000);
     }
     // Here we have single task for image loading.
@@ -126,7 +126,7 @@ void *coverloader_worker(void *unused)
             continue;
         }
         // Local cache miss, fetch via API
-        if (!coverloader_fetch_image(req->server, req->id))
+        if (!coverloader_fetch_image(req->node, req->id))
         {
             // Unable to fetch, store negative result
             coverloader_notify_change(req, IMAGE_STATE_FINISHED, NULL);
@@ -146,11 +146,11 @@ void *coverloader_worker(void *unused)
 }
 
 MAIN_THREAD
-struct CACHE_ITEM_T *cache_item_new(PSERVER_DATA server, int id)
+struct CACHE_ITEM_T *cache_item_new(PSERVER_LIST node, int id)
 {
     struct CACHE_ITEM_T *item = malloc(sizeof(struct CACHE_ITEM_T));
     item->id = id;
-    item->server = server;
+    item->node = node;
     item->state = IMAGE_STATE_QUEUED;
     item->data = NULL;
     return item;
@@ -171,7 +171,7 @@ void coverloader_notify_change(struct CACHE_ITEM_T *req, enum IMAGE_STATE_T stat
     pthread_mutex_lock(&coverloader_state_lock);
     struct CACHE_ITEM_T *update = malloc(sizeof(struct CACHE_ITEM_T));
     update->id = req->id;
-    update->server = req->server;
+    update->node = req->node;
     update->state = state;
     update->data = data;
     if (!bus_pushevent(USER_IL_STATE_CHANGED, req, update))
@@ -205,13 +205,13 @@ bool coverloader_decode_image(int id, struct nk_image *decoded)
 }
 
 WORKER_THREAD
-bool coverloader_fetch_image(PSERVER_DATA server, int id)
+bool coverloader_fetch_image(PSERVER_LIST node, int id)
 {
     char *cachedir = coverloader_cache_dir();
     char path[4096];
     sprintf(path, "%s/%d", cachedir, id);
     free(cachedir);
-    return gs_download_cover(server, id, path) == GS_OK;
+    return gs_download_cover(node->server, id, path) == GS_OK;
 }
 
 // We shouldn't write any internal state outside main thread. So do it here

@@ -16,6 +16,8 @@ typedef struct SERVER_LIST_T
 
 extern PSERVER_LIST computer_list;
 
+extern bool computer_manager_executing_quitapp;
+
 /**
  * @brief Initialize computer manager context
  * 
@@ -27,6 +29,8 @@ void computer_manager_init();
  * 
  */
 void computer_manager_destroy();
+
+bool computer_manager_dispatch_userevent(int which, void *data1, void *data2);
 
 /**
  * @brief Starts discovery, and computer status update in background
@@ -55,6 +59,8 @@ typedef void (*pairing_callback)(PSERVER_LIST node, int result, const char *erro
  * @param cb Callback for pairing completion
  */
 bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb);
+
+bool computer_manager_quitapp(PSERVER_LIST node);
 
 void _computer_manager_add(char *name, PSERVER_DATA p, int err);
 

@@ -9,11 +9,16 @@
 #include "nuklear.h"
 #include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_image.h"
 #endif
 
 #include "backend/computer_manager.h"
 
+extern struct nk_image launcher_default_cover;
+
 void launcher_window_init(struct nk_context *ctx);
+
+void launcher_window_destroy();
 
 void launcher_display_size(struct nk_context *ctx, short width, short height);
 
