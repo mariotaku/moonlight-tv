@@ -57,6 +57,11 @@ void streaming_begin(PSERVER_DATA server, int app_id)
 {
     PCONFIGURATION config = settings_load();
 
+    if (config->stream.bitrate < 0)
+    {
+        config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height, config->stream.fps);
+    }
+
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = server;
     req->config = config;

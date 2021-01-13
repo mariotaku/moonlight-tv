@@ -8,12 +8,6 @@
 #include "gui_root.h"
 
 #define WINDOW_TITLE "Settings"
-#define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | h & 0xFFFF)
-
-#define RES_720P RES_MERGE(1280, 720)
-#define RES_1080P RES_MERGE(1920, 1080)
-#define RES_2K RES_MERGE(2560, 1440)
-#define RES_4K RES_MERGE(3840, 2160)
 
 struct _resolution_option
 {
@@ -186,26 +180,5 @@ void _set_res(int w, int h)
 
 void _update_bitrate()
 {
-    int w = app_settings->stream.width, h = app_settings->stream.height, fps = app_settings->stream.fps;
-    if (fps <= 0)
-    {
-        fps = 60;
-    }
-    int kbps = w * h / 200;
-    switch (RES_MERGE(w, h))
-    {
-    case RES_720P:
-        kbps = 5000;
-        break;
-    case RES_1080P:
-        kbps = 10000;
-        break;
-    case RES_2K:
-        kbps = 20000;
-        break;
-    case RES_4K:
-        kbps = 40000;
-        break;
-    }
-    app_settings->stream.bitrate = kbps * fps / 30;
+    app_settings->stream.bitrate = settings_optimal_bitrate(app_settings->stream.width, app_settings->stream.height, app_settings->stream.fps);
 }

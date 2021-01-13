@@ -80,3 +80,28 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->mapping = NULL;
     sprintf(config->key_dir, "%s/%s", confdir, "key");
 }
+
+int settings_optimal_bitrate(int w, int h, int fps)
+{
+    if (fps <= 0)
+    {
+        fps = 60;
+    }
+    int kbps = w * h / 200;
+    switch (RES_MERGE(w, h))
+    {
+    case RES_720P:
+        kbps = 5000;
+        break;
+    case RES_1080P:
+        kbps = 10000;
+        break;
+    case RES_2K:
+        kbps = 20000;
+        break;
+    case RES_4K:
+        kbps = 40000;
+        break;
+    }
+    return kbps * fps / 30;
+}

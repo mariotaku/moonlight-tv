@@ -64,22 +64,16 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
     }
     bool running = node->server->currentGame == cur->id;
     // Don't react to grid click if there's action button
-    int clicked = !running && nk_widget_is_mouse_clicked(ctx, NK_BUTTON_LEFT);
-    // Captured a click event that should be ignored, reset state
-    if (should_ignore_click == cur->id && !mouse_down)
-    {
-        clicked = 0;
-        should_ignore_click = -1;
-    }
+    int clicked = 0;
     int item_height = nk_widget_height(ctx);
-    if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER))
+    if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_image *cover = coverloader_get(node->server, cur->id);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : 1);
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
         if (cover)
         {
-            nk_image(ctx, *cover);
+            clicked = !running & nk_button_image(ctx, *cover);
         }
         else
         {
@@ -102,6 +96,12 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
         nk_layout_space_end(ctx);
         // nk_label(ctx, cur->name, NK_TEXT_ALIGN_MIDDLE);
         nk_group_end(ctx);
+    }
+    // Captured a click event that should be ignored, reset state
+    if (should_ignore_click == cur->id && !mouse_down)
+    {
+        clicked = 0;
+        should_ignore_click = -1;
     }
     if (clicked)
     {
