@@ -19,8 +19,11 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Download webOS NDK
+      run: wget -q https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/1.0.g-rev.2/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -P ${{github.workspace}}/temp
+
     - name: Install webOS NDK
-      run: curl -sL https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/1.0.g-rev.2/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh | sudo bash -s -- -y
+      run: chmod 755 ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh && sudo ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -y
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory

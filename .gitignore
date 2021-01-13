@@ -1,6 +1,7 @@
 
 # Project specific
 build/
+/temp
 # Let third party libraries handle by themselves
 !/third_party/**
 
