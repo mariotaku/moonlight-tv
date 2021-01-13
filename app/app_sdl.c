@@ -43,7 +43,6 @@ SDL_Window *win;
 SDL_GLContext glContext;
 static char wintitle[32];
 
-
 int app_init(int argc, char *argv[])
 {
 #ifdef USE_NDL
@@ -117,7 +116,7 @@ static void app_process_events(struct nk_context *ctx)
 
 void app_main_loop(void *data)
 {
-    static Uint32 last_ticks = 0, framecount = 0;
+    static Uint32 fps_ticks = 0, framecount = 0;
     struct nk_context *ctx = (struct nk_context *)data;
 
     app_process_events(ctx);
@@ -142,11 +141,11 @@ void app_main_loop(void *data)
         SDL_GL_SwapWindow(win);
     }
     Uint32 ticks = SDL_GetTicks();
-    if ((ticks - last_ticks) >= 1000)
+    if ((ticks - fps_ticks) >= 1000)
     {
-        sprintf(wintitle, "Moonlight | %d FPS", framecount);
+        sprintf(wintitle, "Moonlight | %d FPS", (int)(framecount * 1000.0 / (ticks - fps_ticks)));
         SDL_SetWindowTitle(win, wintitle);
-        last_ticks = ticks;
+        fps_ticks = ticks;
         framecount = 0;
     }
     else
