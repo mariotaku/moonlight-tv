@@ -19,6 +19,15 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Update packages
+      run: sudo apt-get -qq update || true
+
+    - name: Install Dependencies
+      run: sudo apt-get -y -qq install jo nodejs npm
+
+    - name: Install webOS CLI
+      run: sudo npm install -g @webosose/ares-cli
+
     - name: Download webOS NDK
       run: wget -q https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/1.0.g-rev.2/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -P ${{github.workspace}}/temp
 
