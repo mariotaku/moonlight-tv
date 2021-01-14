@@ -1,10 +1,6 @@
 #include <stdbool.h>
 #include <SDL.h>
 
-#ifdef USE_NDL
-#include <NDL_directmedia.h>
-#endif
-
 #include "app.h"
 #include "main.h"
 
@@ -35,6 +31,10 @@
 #include "ui/gui_root.h"
 #include "ui/config.h"
 
+#if OS_WEBOS
+#include "platform/webos/app_init.h"
+#endif
+
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
@@ -45,14 +45,7 @@ static char wintitle[32];
 
 int app_init(int argc, char *argv[])
 {
-#ifdef USE_NDL
-    if (NDL_DirectMediaInit(WEBOS_APPID, NULL))
-    {
-        SDL_Log("Unable to initialize NDL\n", NDL_DirectMediaGetError());
-        return -1;
-    }
-#endif
-    return 0;
+    return app_webos_init(argc, argv);
 }
 
 APP_WINDOW_CONTEXT app_window_create()
@@ -73,9 +66,7 @@ APP_WINDOW_CONTEXT app_window_create()
 void app_destroy()
 {
 #ifdef OS_WEBOS
-#ifdef USE_NDL
-    NDL_DirectMediaQuit();
-#endif
+    app_webos_destroy();
 #endif
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(win);

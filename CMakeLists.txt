@@ -10,8 +10,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/utils/cmake)
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
 if (CC_BASENAME MATCHES "^arm-webos-")
-    set(TARGET_WEBOS TRUE)
-    option(WEBOS_LEGACY "Use Legacy API" OFF)
+    option(LGNC_LEGACY "Build for LG NetCast Platform" OFF)
+    if (LGNC_LEGACY)
+        set(TARGET_NETCAST TRUE)
+    else()
+        set(TARGET_WEBOS TRUE)
+    endif()
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     set(TARGET_DARWIN TRUE)
     set(TARGET_DESKTOP TRUE)
@@ -32,11 +36,8 @@ if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
     pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
     add_subdirectory(third_party/opus)
-    if (NOT WEBOS_LEGACY)
-        add_subdirectory(system/libndl)
-    else()
-        add_subdirectory(system/lgncapi)
-    endif()
+    add_subdirectory(system/libndl)
+    add_subdirectory(system/lgncapi)
 elseif (TARGET_DESKTOP)
     find_package(OpenSSL REQUIRED)
     find_package(OpenGL REQUIRED)
@@ -74,30 +75,17 @@ set(SOURCES
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
+        app/app_sdl.c
+        app/platform/webos/app_init.c
         app/platform/sdl/webos_keys.c
+        app/stream/input/sdl.c
+        app/platform/sdl/bus.c
+        app/platform/sdl/nkimage.c
+        app/stream/audio/ndl.c
+        app/stream/video/ndl.c
+        app/stream/audio/lgnc.c
+        app/stream/video/lgnc.c
     )
-    if (NOT WEBOS_LEGACY)
-        list(APPEND SOURCES
-            app/app_sdl.c
-            app/stream/audio/ndl.c
-            app/stream/video/ndl.c
-            app/stream/input/sdl.c
-            app/platform/sdl/bus.c
-            app/platform/sdl/nkimage.c
-        )
-    else()
-        list(APPEND SOURCES
-            app/app_lgnc.c
-            app/platform/lgnc/bus.c
-            app/platform/lgnc/callbacks.c
-            app/platform/lgnc/graphics.c
-            app/platform/lgnc/nkimage.c
-            app/stream/input/lgnc.c
-            app/stream/audio/lgnc.c
-            app/stream/video/lgnc.c
-            third_party/message_queue/message_queue.c
-        )
-    endif()
 elseif (TARGET_DESKTOP)
     list(APPEND SOURCES
         app/app_sdl.c
@@ -135,16 +123,9 @@ target_link_libraries(moonlight PRIVATE
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS)
-    target_link_libraries(moonlight PRIVATE PkgConfig::OpenSSL PkgConfig::GLES opus)
-    if (NOT WEBOS_LEGACY)
-        target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-        target_compile_definitions(moonlight PUBLIC USE_NDL)
-        target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 NDL_directmedia)
-    else()
-        target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear/example)
-        target_compile_definitions(moonlight PUBLIC WEBOS_LEGACY USE_LGNCAPI)
-        target_link_libraries(moonlight PRIVATE lgncopenapi)
-    endif()
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::OpenSSL PkgConfig::GLES opus)
+    target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
 elseif(TARGET_DARWIN)
     target_compile_definitions(moonlight PUBLIC OS_DARWIN)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
@@ -177,17 +158,8 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
+        WEBOS_PACKAGE_ASSETS "assets;legacy-prebuilt/lib" 
     )
-    if (WEBOS_LEGACY)
-        set_target_properties(moonlight PROPERTIES
-            WEBOS_PACKAGE_ASSETS "assets;legacy-prebuilt/lib" 
-        )
-    else()
-        set_target_properties(moonlight PROPERTIES
-            WEBOS_APPINFO_EXTRA "nativeLifeCycleInterfaceVersion=2"
-            WEBOS_PACKAGE_ASSETS "assets"
-        )
-    endif()
 
     target_webos_package(moonlight)
 
