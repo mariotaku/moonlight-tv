@@ -45,7 +45,11 @@ static char wintitle[32];
 
 int app_init(int argc, char *argv[])
 {
+#if OS_WEBOS
     return app_webos_init(argc, argv);
+#else
+    return 0;
+#endif
 }
 
 APP_WINDOW_CONTEXT app_window_create()

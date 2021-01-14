@@ -1,4 +1,4 @@
-name: Package Release for webOS
+name: Release for webOS
 
 on: 
   push:
