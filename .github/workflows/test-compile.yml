@@ -1,10 +1,6 @@
 name: Default Test Compile
 
-on: 
-  push:
-    # Ignore for all tags
-    tags:
-      - '!*'
+on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
