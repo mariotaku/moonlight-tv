@@ -163,5 +163,9 @@ if (TARGET_WEBOS)
 
     target_webos_package(moonlight)
 
+    add_custom_command(TARGET webos-package-moonlight POST_BUILD
+        COMMAND echo RELEASE_FILENAME=${moonlight_WEBOS_PACKAGE_FILENAME} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
+    )
+
     # add_dependencies(webos-package-moonlight webos-generate-gamecontrollerdb)
 endif()
