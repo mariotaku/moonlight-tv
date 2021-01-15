@@ -43,6 +43,8 @@ SDL_Window *win;
 SDL_GLContext glContext;
 static char wintitle[32];
 
+static void fps_cap(int diff);
+
 int app_init(int argc, char *argv[])
 {
 #if OS_WEBOS
@@ -147,8 +149,22 @@ void app_main_loop(void *data)
     {
         framecount++;
     }
+#if OS_LINUX
+    fps_cap(ticks);
+#endif
     if (!cont)
     {
         request_exit();
     }
+}
+
+void fps_cap(int ticks)
+{
+    static Uint32 prevtick = 0;
+    int tickdiff = ticks - prevtick;
+    if (tickdiff > 0 && tickdiff < 16)
+    {
+        SDL_Delay(16 - tickdiff);
+    }
+    prevtick = SDL_GetTicks();
 }
