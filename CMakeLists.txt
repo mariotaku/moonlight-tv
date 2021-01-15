@@ -79,7 +79,7 @@ if (TARGET_WEBOS)
         app/app_sdl.c
         app/platform/webos/app_init.c
         app/platform/sdl/webos_keys.c
-        app/stream/input/sdl.c
+        app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
         app/platform/sdl/nkimage.c
         app/stream/audio/ndl.c
@@ -90,7 +90,7 @@ if (TARGET_WEBOS)
 elseif (TARGET_DESKTOP)
     list(APPEND SOURCES
         app/app_sdl.c
-        app/stream/input/sdl.c
+        app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
         app/platform/sdl/nkimage.c
         core/moonlight-embedded/src/sdl.c
