@@ -1,6 +1,5 @@
 #include "app_init.h"
 
-#include <stdbool.h>
 #include <stdio.h>
 
 #include <NDL_directmedia.h>
