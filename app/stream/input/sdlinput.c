@@ -145,6 +145,24 @@ bool absinput_dispatch_event(SDL_Event ev)
     return false;
 }
 
+bool absinput_controllerdevice_event(SDL_Event ev)
+{
+    switch (ev.type)
+    {
+    case SDL_CONTROLLERDEVICEADDED:
+        printf("SDL_CONTROLLERDEVICEADDED, which: %d\n", ev.cdevice.which);
+        break;
+    case SDL_CONTROLLERDEVICEREMOVED:
+        printf("SDL_CONTROLLERDEVICEREMOVED, which: %d\n", ev.cdevice.which);
+        break;
+    case SDL_CONTROLLERDEVICEREMAPPED:
+        printf("SDL_CONTROLLERDEVICEREMAPPED, which: %d\n", ev.cdevice.which);
+        break;
+    default:
+        break;
+    }
+}
+
 void release_gamecontroller_buttons(int which)
 {
     PGAMEPAD_STATE gamepad;

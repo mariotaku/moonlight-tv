@@ -92,7 +92,14 @@ void _streaming_error_window(struct nk_context *ctx)
         content_height_remaining -= 30 * NK_UI_SCALE;
         content_height_remaining -= ctx->style.window.spacing.y;
         nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-        nk_label_wrap(ctx, MSG_GS_ERRNO[-streaming_errno]);
+        if (streaming_errmsg[0])
+        {
+            nk_label_wrap(ctx, streaming_errmsg);
+        }
+        else
+        {
+            nk_label_wrap(ctx, MSG_GS_ERRNO[-streaming_errno]);
+        }
 
         nk_layout_row_template_begin_s(ctx, 30);
         nk_layout_row_template_push_variable_s(ctx, 10);

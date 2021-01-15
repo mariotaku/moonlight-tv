@@ -1,3 +1,5 @@
 #pragma once
 
 #define SDL_IS_INPUT_EVENT(evt) (evt.type >= SDL_KEYDOWN && evt.type < SDL_CLIPBOARDUPDATE)
+#define SDL_IS_JOYDEVICE_EVENT(evt) (evt.type >= SDL_JOYDEVICEADDED && evt.type <= SDL_JOYDEVICEREMOVED)
+#define SDL_IS_CONTROLLERDEVICE_EVENT(evt) (evt.type >= SDL_CONTROLLERDEVICEADDED && evt.type <= SDL_CONTROLLERDEVICEREMAPPED)

@@ -1,6 +1,8 @@
 #include "session.h"
 #include "settings.h"
 
+#include <stdarg.h>
+
 #include "src/connection.h"
 #include "src/platform.h"
 #include "util/bus.h"
@@ -17,8 +19,10 @@
 
 STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
+char streaming_errmsg[1024];
+pthread_mutex_t streaming_errmsg_lock = PTHREAD_MUTEX_INITIALIZER;
 
-bool session_running = false;
+bool session_running = false, session_interrupted = false;
 pthread_t streaming_thread;
 pthread_mutex_t lock;
 pthread_cond_t cond;
@@ -74,7 +78,7 @@ void streaming_interrupt(bool quitapp)
 {
     pthread_mutex_lock(&lock);
     streaming_quitapp_requested = quitapp;
-    session_running = false;
+    session_interrupted = true;
     pthread_cond_signal(&cond);
     pthread_mutex_unlock(&lock);
 }
@@ -99,6 +103,12 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
     streaming_status = STREAMING_CONNECTING;
     streaming_errno = GS_OK;
+
+    pthread_mutex_lock(&lock);
+    session_interrupted = false;
+    pthread_mutex_unlock(&lock);
+
+    _streaming_errmsg_write("");
     PSERVER_LIST node = req->node;
     PSERVER_DATA server = node->server;
     PCONFIGURATION config = req->config;
@@ -131,7 +141,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
-    if (startResult != 0)
+    if (startResult != 0 || session_interrupted)
     {
         streaming_status = STREAMING_ERROR;
         streaming_errno = GS_WRONG_STATE;
@@ -142,12 +152,13 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     rumble_handler = absinput_getrumble();
 
     pthread_mutex_lock(&lock);
-    while (session_running)
+    while (!session_interrupted)
     {
         // Wait until interrupted
         pthread_cond_wait(&cond, &lock);
     }
     pthread_mutex_unlock(&lock);
+    session_running = false;
 
     rumble_handler = NULL;
     streaming_status = STREAMING_DISCONNECTING;
@@ -166,4 +177,14 @@ thread_cleanup:
     free(req);
     pthread_exit(NULL);
     return NULL;
+}
+
+void _streaming_errmsg_write(const char *fmt, ...)
+{
+    pthread_mutex_lock(&streaming_errmsg_lock);
+    va_list arglist;
+    va_start(arglist, fmt);
+    vsnprintf(streaming_errmsg, 1024, fmt, arglist);
+    va_end(arglist);
+    pthread_mutex_unlock(&streaming_errmsg_lock);
 }

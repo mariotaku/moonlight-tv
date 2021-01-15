@@ -89,9 +89,17 @@ static void app_process_events(struct nk_context *ctx)
         bool block_steam_inputevent = false;
         if (SDL_IS_INPUT_EVENT(evt))
         {
-            // Those are input events
-            gui_dispatch_inputevent(ctx, evt);
-            block_steam_inputevent |= gui_should_block_input();
+            if (SDL_IS_CONTROLLERDEVICE_EVENT(evt))
+            {
+                // Those are gamepad connect/disconnect events
+                absinput_controllerdevice_event(evt);
+            }
+            else
+            {
+                // Those are input events
+                gui_dispatch_inputevent(ctx, evt);
+                block_steam_inputevent |= gui_should_block_input();
+            }
         }
         else if (evt.type == SDL_USEREVENT)
         {

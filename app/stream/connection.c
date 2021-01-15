@@ -27,40 +27,52 @@
 bool connection_debug;
 ConnListenerRumble rumble_handler = NULL;
 
-static void connection_terminated() {
+static void connection_terminated(int errorCode)
+{
+  fprintf(stderr, "Connection terminated, errorCode = 0x%x\n", errorCode);
+  _streaming_errmsg_write("Connection terminated, errorCode = 0x%x", errorCode);
   streaming_interrupt(false);
 }
 
-static void connection_log_message(const char* format, ...) {
+static void connection_log_message(const char *format, ...)
+{
   va_list arglist;
   va_start(arglist, format);
   vprintf(format, arglist);
   va_end(arglist);
 }
 
-static void rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor) {
+static void rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor)
+{
   if (rumble_handler)
     rumble_handler(controllerNumber, lowFreqMotor, highFreqMotor);
 }
 
-static void connection_status_update(int status) {
-  switch (status) {
-    case CONN_STATUS_OKAY:
-      printf("Connection is okay\n");
-      break;
-    case CONN_STATUS_POOR:
-      printf("Connection is poor\n");
-      break;
+static void connection_status_update(int status)
+{
+  switch (status)
+  {
+  case CONN_STATUS_OKAY:
+    printf("Connection is okay\n");
+    break;
+  case CONN_STATUS_POOR:
+    printf("Connection is poor\n");
+    break;
   }
 }
 
+static void connection_stage_failed(int stage, int errorCode)
+{
+  fprintf(stderr, "Connection failed at stage %d, errorCode = 0x%x\n", stage, errorCode);
+  _streaming_errmsg_write("Connection failed at stage %d, errorCode = 0x%x", stage, errorCode);
+}
+
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
-  .stageStarting = NULL,
-  .stageComplete = NULL,
-  .stageFailed = NULL,
-  .connectionStarted = NULL,
-  .connectionTerminated = connection_terminated,
-  .logMessage = connection_log_message,
-  .rumble = rumble,
-  .connectionStatusUpdate = connection_status_update
-};
+    .stageStarting = NULL,
+    .stageComplete = NULL,
+    .stageFailed = connection_stage_failed,
+    .connectionStarted = NULL,
+    .connectionTerminated = connection_terminated,
+    .logMessage = connection_log_message,
+    .rumble = rumble,
+    .connectionStatusUpdate = connection_status_update};
