@@ -13,6 +13,8 @@
 #define LINKEDLIST_TYPE PSERVER_LIST
 #include "util/linked_list.h"
 
+#include "res.h"
+
 static PSERVER_LIST selected_server_node;
 
 struct nk_image launcher_default_cover;
@@ -45,7 +47,7 @@ static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool
 void launcher_window_init(struct nk_context *ctx)
 {
     launcher_default_cover = nk_image_id(0);
-    if (!nk_loadimage("assets/defcover.png", &launcher_default_cover))
+    if (!nk_loadimgmem(res_default_cover_data, res_default_cover_size, &launcher_default_cover))
     {
         fprintf(stderr, "Cannot find assets/defcover.png\n");
         abort();

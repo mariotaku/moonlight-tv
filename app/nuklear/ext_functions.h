@@ -28,6 +28,7 @@ NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 #define nk_list_view_begin_s(ctx, out, id, flags, row_height, row_count) nk_list_view_begin(ctx, out, id, flags, (row_height) * NK_UI_SCALE, row_count)
 
 #define nk_font_atlas_add_from_file_s(atlas, file_path, height, config) nk_font_atlas_add_from_file(atlas, file_path, (height) * NK_UI_SCALE, config)
+#define nk_font_atlas_add_from_memory_s(atlas, memory, size, height, config) nk_font_atlas_add_from_memory(atlas, memory, size, (height) * NK_UI_SCALE, config)
 
 // clang-format on
 

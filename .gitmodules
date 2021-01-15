@@ -28,3 +28,6 @@
 [submodule "third_party/message_queue"]
 	path = third_party/message_queue
 	url = https://github.com/LnxPrgr3/message_queue.git
+[submodule "third_party/incbin"]
+	path = third_party/incbin
+	url = https://github.com/graphitemaster/incbin

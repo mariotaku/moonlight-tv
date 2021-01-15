@@ -197,7 +197,7 @@ bool coverloader_decode_image(int id, struct nk_image *decoded)
     char path[4096];
     sprintf(path, "%s/%d", cachedir, id);
     free(cachedir);
-    if (!nk_loadimage(path, decoded))
+    if (!nk_loadimgfile(path, decoded))
     {
         return false;
     }

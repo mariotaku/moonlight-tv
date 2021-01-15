@@ -7,9 +7,27 @@
 
 static GLuint gen_texture_from_sdl(SDL_Surface *surface);
 
-NK_API nk_bool nk_loadimage(const char *path, struct nk_image *img)
+NK_API nk_bool nk_loadimgfile(const char *path, struct nk_image *img)
 {
     SDL_Surface *s = IMG_Load(path);
+    if (!s)
+    {
+        return nk_false;
+    }
+    img->w = s->w;
+    img->h = s->h;
+    img->region[0] = 0;
+    img->region[1] = 0;
+    img->region[2] = s->w;
+    img->region[3] = s->h;
+    img->handle.ptr = s;
+    return nk_true;
+}
+
+NK_API nk_bool nk_loadimgmem(const void *mem, size_t size, struct nk_image *img)
+{
+    SDL_RWops *rw = SDL_RWFromConstMem(mem, size);
+    SDL_Surface *s = IMG_Load_RW(rw, SDL_TRUE);
     if (!s)
     {
         return nk_false;

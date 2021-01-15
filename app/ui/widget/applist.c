@@ -6,6 +6,8 @@
 #define LINKEDLIST_TYPE PAPP_LIST
 #include "util/linked_list.h"
 
+#include "res.h"
+
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur, int cover_width, int cover_height, bool event_emitted);
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
