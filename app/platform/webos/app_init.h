@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 extern bool app_webos_ndl;
 extern bool app_webos_lgnc;
 
