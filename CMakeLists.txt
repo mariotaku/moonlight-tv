@@ -46,6 +46,7 @@ elseif (TARGET_DESKTOP)
 endif()
 
 add_subdirectory(core/moonlight-common-c)
+add_subdirectory(third_party/mdns)
 
 set(SOURCES
     app/main.c
@@ -111,7 +112,6 @@ target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 
@@ -120,7 +120,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
  m pthread
- moonlight-common-c
+ moonlight-common-c mdns
 )
 
 if (TARGET_WEBOS)
