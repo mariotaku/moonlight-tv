@@ -62,6 +62,4 @@ bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb);
 
 bool computer_manager_quitapp(PSERVER_LIST node);
 
-void _computer_manager_add(char *name, PSERVER_DATA p, int err);
-
 void *_computer_manager_polling_action(void *data);

@@ -13,6 +13,9 @@
 #include "libgamestream/errors.h"
 #include "stream/settings.h"
 
+#include "util/bus.h"
+#include "util/user_event.h"
+
 static char addrbuffer[64];
 static char entrybuffer[256];
 static char namebuffer[256];
@@ -92,7 +95,7 @@ ip_address_to_string(char *buffer, size_t capacity, const struct sockaddr *addr,
 
 static char *parse_server_name(mdns_string_t entrystr)
 {
-    const static char suffix[] = {'.', 'l', 'o', 'c', 'a', 'l', '.'};
+    const static char suffix[] = ".local.";
     int nlen = entrystr.length;
     if (entrystr.length > 7 && strncmp(&(entrystr.str[entrystr.length - 7]), suffix, 7) == 0)
     {
@@ -128,15 +131,24 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
         PCONFIGURATION config = settings_load();
         int ret = gs_init(server, srvaddr, config->key_dir, config->debug_level, config->unsupported);
+
+        PSERVER_LIST node = malloc(sizeof(SERVER_LIST));
+        node->next = NULL;
+        node->name = srvname;
+        node->err = ret;
+        node->apps = NULL;
         if (ret == GS_OK)
         {
-            _computer_manager_add(srvname, server, ret);
+            node->server = server;
+            node->errmsg = NULL;
         }
         else
         {
-            _computer_manager_add(srvname, NULL, ret);
+            node->server = NULL;
+            node->errmsg = gs_error;
             free(server);
         }
+        bus_pushevent(USER_CM_SERVER_DISCOVERED, node, NULL);
     }
     return 0;
 }

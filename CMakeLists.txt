@@ -139,7 +139,7 @@ elseif(TARGET_DARWIN)
 
     target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
 else()
-    target_compile_definitions(moonlight PUBLIC OS_LINUX)
+    target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)

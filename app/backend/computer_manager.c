@@ -72,6 +72,12 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         free(update);
         return true;
     }
+    case USER_CM_SERVER_DISCOVERED:
+    {
+        PSERVER_LIST discovered = data1;
+        computer_list = linkedlist_append(computer_list, discovered);
+        return true;
+    }
     default:
         break;
     }
@@ -81,6 +87,9 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
 bool computer_manager_polling_start()
 {
     pthread_create(&computer_manager_polling_thread, NULL, _computer_manager_polling_action, NULL);
+#if OS_LINUX
+    pthread_setname_np(computer_manager_polling_thread, "hostscan");
+#endif
     return true;
 }
 
@@ -130,17 +139,6 @@ bool computer_manager_quitapp(PSERVER_LIST node)
     pthread_t quitapp_thread;
     pthread_create(&quitapp_thread, NULL, _computer_manager_quitapp_action, node);
     return true;
-}
-
-void _computer_manager_add(char *name, PSERVER_DATA p, int err)
-{
-    PSERVER_LIST node = linkedlist_new(SERVER_LIST);
-    node->name = name;
-    node->server = p;
-    node->err = err;
-    node->errmsg = err != GS_OK ? gs_error : NULL;
-    node->apps = NULL;
-    computer_list = linkedlist_append(computer_list, node);
 }
 
 void *_computer_manager_pairing_action(void *data)

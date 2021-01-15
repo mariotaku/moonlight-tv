@@ -1,4 +1,5 @@
 #define _COVERLOADER_IMPL
+
 #include "coverloader.h"
 
 #include <errno.h>
@@ -66,6 +67,9 @@ void coverloader_init()
     coverloader_working_running = true;
 
     pthread_create(&coverloader_worker_thread, NULL, coverloader_worker, NULL);
+#if OS_LINUX
+    pthread_setname_np(coverloader_worker_thread, "coverloader");
+#endif
 }
 
 MAIN_THREAD
