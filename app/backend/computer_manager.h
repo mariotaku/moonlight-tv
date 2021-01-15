@@ -6,6 +6,7 @@
 
 typedef struct SERVER_LIST_T
 {
+    char *address;
     char *name;
     PSERVER_DATA server;
     int err;
@@ -17,6 +18,7 @@ typedef struct SERVER_LIST_T
 extern PSERVER_LIST computer_list;
 
 extern bool computer_manager_executing_quitapp;
+extern bool computer_discovery_running;
 
 /**
  * @brief Initialize computer manager context

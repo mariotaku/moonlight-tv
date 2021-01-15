@@ -9,6 +9,9 @@
 static LINKEDLIST_TYPE _linkedlist_new(size_t size)
 {
     LINKEDLIST_TYPE node = malloc(size);
+#if LINKEDLIST_DOUBLE
+    node->prev = NULL;
+#endif
     node->next = NULL;
     return node;
 }
@@ -36,7 +39,7 @@ static LINKEDLIST_TYPE linkedlist_nth(LINKEDLIST_TYPE p, int n)
     return ret;
 }
 
-typedef int (*LINKEDLIST_FIND_FN)(LINKEDLIST_TYPE p, const void *fv);
+typedef int(LINKEDLIST_FIND_FN)(LINKEDLIST_TYPE p, const void *fv);
 
 static LINKEDLIST_TYPE linkedlist_find_by(LINKEDLIST_TYPE p, const void *v, LINKEDLIST_FIND_FN fn)
 {
@@ -58,6 +61,9 @@ static LINKEDLIST_TYPE linkedlist_append(LINKEDLIST_TYPE p, LINKEDLIST_TYPE node
     while (cur->next != NULL)
         ;
     cur->next = node;
+#if LINKEDLIST_DOUBLE
+    node->prev = cur;
+#endif
     return p;
 }
 

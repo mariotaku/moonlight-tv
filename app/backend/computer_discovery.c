@@ -37,6 +37,8 @@ typedef struct
     int port;
 } service_record_t;
 
+bool computer_discovery_running = false;
+
 static mdns_string_t
 ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
                        size_t addrlen)
@@ -134,6 +136,7 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
 
         PSERVER_LIST node = malloc(sizeof(SERVER_LIST));
         node->next = NULL;
+        node->address = srvaddr;
         node->name = srvname;
         node->err = ret;
         node->apps = NULL;
@@ -259,6 +262,7 @@ open_client_sockets(int *sockets, int max_sockets, int port)
 
 void *_computer_manager_polling_action(void *data)
 {
+    computer_discovery_running = true;
     const char *service = "_nvstream._tcp.local";
     int sockets[32];
     int query_id[32];
@@ -266,6 +270,7 @@ void *_computer_manager_polling_action(void *data)
     if (num_sockets <= 0)
     {
         fprintf(stderr, "Failed to open any client sockets\n");
+        computer_discovery_running = false;
         pthread_exit(NULL);
         return NULL;
     }
@@ -326,6 +331,7 @@ void *_computer_manager_polling_action(void *data)
         mdns_socket_close(sockets[isock]);
     fprintf(stderr, "Closed socket%s\n", num_sockets ? "s" : "");
 
+    computer_discovery_running = false;
     pthread_exit(NULL);
     return NULL;
 }

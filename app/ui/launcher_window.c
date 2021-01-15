@@ -130,7 +130,8 @@ bool launcher_window(struct nk_context *ctx)
     if (pairing_computer_state.state == PS_RUNNING)
     {
         _pairing_window(ctx);
-    } else if (computer_manager_executing_quitapp)
+    }
+    else if (computer_manager_executing_quitapp)
     {
         _quitapp_window(ctx);
     }
@@ -182,7 +183,14 @@ bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_
             cur = cur->next;
             i++;
         }
-        // nk_combo_item_label(ctx, "Add manually", NK_TEXT_LEFT);
+        if (nk_combo_item_label(ctx, computer_discovery_running ? "Scanning..." : "Rescan", NK_TEXT_LEFT))
+        {
+            if (!event_emitted)
+            {
+                computer_manager_polling_start();
+            }
+            event_emitted = true;
+        }
         nk_combo_end(ctx);
     }
     return active || event_emitted;
@@ -302,7 +310,6 @@ void _server_error_popup(struct nk_context *ctx)
         nk_popup_end(ctx);
     }
 }
-
 
 void _quitapp_window(struct nk_context *ctx)
 {

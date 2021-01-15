@@ -28,6 +28,7 @@ PSERVER_LIST computer_list;
 static void *_computer_manager_pairing_action(void *data);
 static void *_computer_manager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(void *data);
+static int _server_list_compare_address(PSERVER_LIST other, const void *v);
 
 void computer_manager_init()
 {
@@ -75,7 +76,23 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
     case USER_CM_SERVER_DISCOVERED:
     {
         PSERVER_LIST discovered = data1;
-        computer_list = linkedlist_append(computer_list, discovered);
+
+        PSERVER_LIST find = linkedlist_find_by(computer_list, discovered->address, _server_list_compare_address);
+        if (find)
+        {
+            PSERVER_DATA oldsrv = find->server;
+            find->err = discovered->err;
+            find->errmsg = discovered->errmsg;
+            find->server = discovered->server;
+            if (oldsrv)
+            {
+                free(oldsrv);
+            }
+        }
+        else
+        {
+            computer_list = linkedlist_append(computer_list, discovered);
+        }
         return true;
     }
     default:
@@ -86,6 +103,10 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
 
 bool computer_manager_polling_start()
 {
+    if (computer_discovery_running)
+    {
+        return false;
+    }
     pthread_create(&computer_manager_polling_thread, NULL, _computer_manager_polling_action, NULL);
 #if OS_LINUX
     pthread_setname_np(computer_manager_polling_thread, "hostscan");
@@ -180,4 +201,9 @@ void *_computer_manager_server_update_action(void *data)
     bus_pushevent(USER_CM_SERVER_UPDATED, node, update);
     pthread_exit(NULL);
     return NULL;
+}
+
+int _server_list_compare_address(PSERVER_LIST other, const void *v)
+{
+    return strcmp(v, other->address);
 }
