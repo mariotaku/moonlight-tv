@@ -39,7 +39,7 @@ bool running = true;
 int main(int argc, char *argv[])
 {
 #ifdef OS_WEBOS
-    // REDIR_STDOUT("moonlight");
+    REDIR_STDOUT("moonlight");
 #endif
     bus_init();
 
