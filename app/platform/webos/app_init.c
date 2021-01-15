@@ -6,8 +6,8 @@
 #include <NDL_directmedia.h>
 #include <lgnc_system.h>
 
-static bool app_webos_ndl = false;
-static bool app_webos_lgnc = false;
+bool app_webos_ndl = false;
+bool app_webos_lgnc = false;
 
 int app_webos_init(int argc, char *argv[])
 {
