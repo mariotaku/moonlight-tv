@@ -1,4 +1,5 @@
 #include "app_init.h"
+#include "app.h"
 #include "stream/settings.h"
 
 #include <stdio.h>
@@ -54,5 +55,4 @@ void app_webos_destroy()
     {
         LGNC_SYSTEM_Finalize();
     }
-    free(config);
 }

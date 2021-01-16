@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     }
 
     settings_save(app_configuration);
-    
+
     gui_root_destroy();
 
     nk_platform_shutdown();
