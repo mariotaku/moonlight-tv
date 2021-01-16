@@ -38,7 +38,7 @@ NK_API nk_bool nk_loadimage(const char *path, struct nk_image *img)
     return nk_true;
 }
 
-NK_API nk_bool nk_conv2gl(struct nk_image *img)
+NK_API nk_bool nk_image2texture(struct nk_image *img)
 {
     struct stb_image *s = img->handle.ptr;
     GLuint tex;
@@ -68,14 +68,20 @@ NK_API nk_bool nk_conv2gl(struct nk_image *img)
     glTexImage2D(GL_TEXTURE_2D, 0, texfmt, img->w, img->h, 0, texfmt, GL_UNSIGNED_BYTE, s->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    nk_imagebmpfree(img);
     img->handle.id = tex;
 
-    stbi_image_free(s->data);
-    free(s);
     return nk_true;
 }
 
-NK_API void nk_freeimage(struct nk_image *img)
+NK_API void nk_imagebmpfree(struct nk_image *img)
+{
+    struct stb_image *s = img->handle.ptr;
+    stbi_image_free(s->data);
+    free(s);
+}
+
+NK_API void nk_imagetexturefree(struct nk_image *img)
 {
     GLuint t[1] = {img->handle.id};
     return glDeleteTextures(1, t);

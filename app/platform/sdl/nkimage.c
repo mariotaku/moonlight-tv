@@ -7,7 +7,7 @@
 
 static GLuint gen_texture_from_sdl(SDL_Surface *surface);
 
-NK_API nk_bool nk_loadimgfile(const char *path, struct nk_image *img)
+NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img)
 {
     SDL_Surface *s = IMG_Load(path);
     if (!s)
@@ -24,7 +24,7 @@ NK_API nk_bool nk_loadimgfile(const char *path, struct nk_image *img)
     return nk_true;
 }
 
-NK_API nk_bool nk_loadimgmem(const void *mem, size_t size, struct nk_image *img)
+NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img)
 {
     SDL_RWops *rw = SDL_RWFromConstMem(mem, size);
     SDL_Surface *s = IMG_Load_RW(rw, SDL_TRUE);
@@ -42,17 +42,29 @@ NK_API nk_bool nk_loadimgmem(const void *mem, size_t size, struct nk_image *img)
     return nk_true;
 }
 
-NK_API nk_bool nk_conv2gl(struct nk_image *img)
+NK_API nk_bool nk_image2texture(struct nk_image *img)
 {
     SDL_Surface *surface = img->handle.ptr;
     int texture = gen_texture_from_sdl(surface);
-    img->handle.id = texture;
     // Surface has been used up
-    SDL_FreeSurface(surface);
+    nk_imagebmpfree(img);
+    img->handle.id = texture;
     return nk_true;
 }
 
-NK_API void nk_freeimage(struct nk_image *img)
+NK_API size_t nk_imagebmppxsize(struct nk_image *img)
+{
+    SDL_Surface *surface = img->handle.ptr;
+    return surface->format->BytesPerPixel;
+}
+
+NK_API void nk_imagebmpfree(struct nk_image *img)
+{
+    SDL_Surface *surface = img->handle.ptr;
+    SDL_FreeSurface(surface);
+}
+
+NK_API void nk_imagetexturefree(struct nk_image *img)
 {
     GLuint t[1] = {img->handle.id};
     return glDeleteTextures(1, t);

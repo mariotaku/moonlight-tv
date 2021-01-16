@@ -49,20 +49,21 @@ static void _pairing_error_popup(struct nk_context *ctx);
 static void _server_error_popup(struct nk_context *ctx);
 static void _quitapp_window(struct nk_context *ctx);
 static void _webos_decoder_error_popup(struct nk_context *ctx);
+static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
 
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey);
 
-static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
+#define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
 
 void launcher_window_init(struct nk_context *ctx)
 {
     launcher_default_cover = nk_image_id(0);
-    if (!nk_loadimgmem(res_default_cover_data, res_default_cover_size, &launcher_default_cover))
+    if (!nk_imageloadm(res_default_cover_data, res_default_cover_size, &launcher_default_cover))
     {
         fprintf(stderr, "Cannot find assets/defcover.png\n");
         abort();
     }
-    nk_conv2gl(&launcher_default_cover);
+    nk_image2texture(&launcher_default_cover);
     selected_server_node = NULL;
     pairing_computer_state.state = PS_NONE;
     memcpy(&cm_list_button_style, &(ctx->style.button), sizeof(struct nk_style_button));
@@ -71,13 +72,13 @@ void launcher_window_init(struct nk_context *ctx)
 
 void launcher_window_destroy()
 {
-    nk_freeimage(&launcher_default_cover);
+    nk_imagetexturefree(&launcher_default_cover);
 }
 
 bool launcher_window(struct nk_context *ctx)
 {
     int window_flags = NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER;
-    if (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
+    if (launcher_blocked())
     {
         window_flags |= NK_WINDOW_NO_INPUT;
     }
@@ -187,7 +188,10 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
 
 bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 {
-    if (selected_server_node && selected_server_node->server)
+    if (launcher_blocked())
+    {
+    }
+    else if (selected_server_node && selected_server_node->server)
     {
         return _applist_dispatch_navkey(ctx, selected_server_node, navkey);
     }

@@ -57,12 +57,13 @@ WORKER_THREAD static void coverloader_notify_decoded(struct CACHE_ITEM_T *req, s
 THREAD_SAFE static void coverloader_cache_item_free(void *p);
 
 static char *coverloader_cache_dir();
+static bool _cover_is_placeholder(struct nk_image *bmp);
 
 MAIN_THREAD
 void coverloader_init()
 {
-    // 8 mega pixels limit, 120K each
-    coverloader_mem_cache = lruc_new(8 * 1024 * 1024, 120000, &coverloader_cache_item_free);
+    // 16MB limit, 360K each
+    coverloader_mem_cache = lruc_new(16 * 1024 * 1024, 360000, &coverloader_cache_item_free);
     coverloader_current_task = NULL;
     coverloader_working_running = true;
 
@@ -96,7 +97,7 @@ struct nk_image *coverloader_get(PSERVER_LIST node, int id)
     if (!cached)
     {
         cached = cache_item_new(node, id);
-        lruc_set(coverloader_mem_cache, id, cached, 120000);
+        lruc_set(coverloader_mem_cache, id, cached, 360000);
     }
     // Here we have single task for image loading.
     if (cached->state == IMAGE_STATE_QUEUED && !coverloader_current_task)
@@ -201,9 +202,14 @@ bool coverloader_decode_image(int id, struct nk_image *decoded)
     char path[4096];
     sprintf(path, "%s/%d", cachedir, id);
     free(cachedir);
-    if (!nk_loadimgfile(path, decoded))
+    if (!nk_imageloadf(path, decoded))
     {
         return false;
+    }
+    if (_cover_is_placeholder(decoded))
+    {
+        nk_imagebmpfree(decoded);
+        memset(decoded, 0, sizeof(struct nk_image));
     }
     return true;
 }
@@ -239,15 +245,25 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
     {
         struct CACHE_ITEM_T *req = data1;
         struct nk_image *img = data2;
-
-        nk_conv2gl(img);
+        unsigned int img_size;
+        if (img->w > 0 && img->h > 0)
+        {
+            size_t bpp = nk_imagebmppxsize(img);
+            nk_image2texture(img);
+            img_size = img->w * img->h * bpp;
+        }
+        else
+        {
+            // Placeholder image
+            img_size = 1;
+        }
 
         struct CACHE_ITEM_T *cached = malloc(sizeof(struct CACHE_ITEM_T));
         memcpy(cached, req, sizeof(struct CACHE_ITEM_T));
         cached->data = img;
         cached->state = IMAGE_STATE_FINISHED;
 
-        lruc_set(coverloader_mem_cache, cached->id, cached, img->w * img->h);
+        lruc_set(coverloader_mem_cache, cached->id, cached, img_size);
 
         coverloader_current_task = NULL;
         pthread_mutex_unlock(&coverloader_state_lock);
@@ -287,7 +303,12 @@ void coverloader_cache_item_free(void *p)
     struct CACHE_ITEM_T *item = p;
     if (item->data)
     {
-        nk_freeimage(item->data);
+        nk_imagetexturefree(item->data);
     }
     free(item);
+}
+
+bool _cover_is_placeholder(struct nk_image *bmp)
+{
+    return (bmp->w == 130 && bmp->h == 180) || (bmp->w == 628 && bmp->h == 888);
 }

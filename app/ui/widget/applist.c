@@ -8,12 +8,14 @@
 #include "util/linked_list.h"
 
 #include "res.h"
+#include "main.h"
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
-static bool _applist_item_select(PAPP_DLIST list, int offset);
+static bool _applist_item_select(int offset);
 
 static PAPP_DLIST _hovered_app = NULL, _focused_app = NULL;
+static PAPP_DLIST _applist_visible_start = NULL;
 static int _applist_colcount = 5;
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
@@ -38,6 +40,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
         PAPP_DLIST cur = linkedlist_nth(node->apps, startidx);
+        _applist_visible_start = cur;
         for (int row = 0; row < list_view.count; row++)
         {
             int col;
@@ -155,13 +158,13 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        return _applist_item_select(node->apps, -1);
+        return _applist_item_select(-1);
     case NAVKEY_RIGHT:
-        return _applist_item_select(node->apps, 1);
+        return _applist_item_select(1);
     case NAVKEY_UP:
-        return _applist_item_select(node->apps, -_applist_colcount);
+        return _applist_item_select(-_applist_colcount);
     case NAVKEY_DOWN:
-        return _applist_item_select(node->apps, _applist_colcount);
+        return _applist_item_select(_applist_colcount);
     case NAVKEY_ENTER:
     {
         if (_focused_app)
@@ -170,23 +173,24 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
         }
         return true;
     }
+    case NAVKEY_BACK:
+        request_exit();
     default:
         break;
     }
     return true;
 }
 
-bool _applist_item_select(PAPP_DLIST list, int offset)
+bool _applist_item_select(int offset)
 {
-    if (list == NULL)
+    if (_applist_visible_start == NULL)
     {
         return true;
     }
     if (_focused_app == NULL)
     {
-        _focused_app = list;
+        _focused_app = _applist_visible_start;
         _hovered_app = NULL;
-        printf("%s\n", list->name);
         return true;
     }
     PAPP_DLIST item = linkedlist_nth(_focused_app, offset);
@@ -194,11 +198,6 @@ bool _applist_item_select(PAPP_DLIST list, int offset)
     {
         _focused_app = item;
         _hovered_app = NULL;
-        printf("%s\n", item->name);
-    }
-    else
-    {
-        printf("NULL\n");
     }
     return true;
 }
