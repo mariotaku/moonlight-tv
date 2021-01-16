@@ -16,6 +16,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "app.h"
+
 static char addrbuffer[64];
 static char entrybuffer[256];
 static char namebuffer[256];
@@ -131,8 +133,7 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
         char *srvaddr = calloc(addrstr.length + 1, sizeof(char)), *srvname = parse_server_name(entrystr);
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
-        PCONFIGURATION config = settings_load();
-        int ret = gs_init(server, srvaddr, config->key_dir, config->debug_level, config->unsupported);
+        int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
 
         PSERVER_LIST node = malloc(sizeof(SERVER_LIST));
         node->next = NULL;

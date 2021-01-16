@@ -11,13 +11,10 @@
 bool app_webos_ndl = false;
 bool app_webos_lgnc = false;
 
-static PCONFIGURATION config;
-
 int app_webos_init(int argc, char *argv[])
 {
-    config = settings_load();
     // Try NDL if not forced to legacy
-    if (strcmp("legacy", config->platform))
+    if (strcmp("legacy", app_configuration->platform))
     {
         if (NDL_DirectMediaInit(WEBOS_APPID, NULL) == 0)
         {

@@ -11,20 +11,7 @@
 
 #include "util/path.h"
 
-static char *settings_config_dir()
-{
-    char *homedir = getenv("HOME");
-    char *confdir = path_join(homedir, CONF_DIR);
-    if (access(confdir, F_OK) == -1)
-    {
-        if (errno == ENOENT)
-        {
-            mkdir(confdir, 0755);
-        }
-    }
-    return confdir;
-}
-
+static char *settings_config_dir();
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
 
@@ -55,7 +42,7 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->stream.width = 1280;
     config->stream.height = 720;
     config->stream.fps = 60;
-    config->stream.bitrate = -1;
+    config->stream.bitrate = settings_optimal_bitrate(1280, 720, 60);
     config->stream.packetSize = 1024;
     config->stream.streamingRemotely = 0;
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
@@ -137,11 +124,27 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_bool(fd, "viewonly", config->viewonly);
     if (config->rotate != 0)
         write_config_int(fd, "rotate", config->rotate);
-    if (config->platform != NULL)
+    if (strcmp(config->platform, "auto") != 0)
         write_config_string(fd, "platform", config->platform);
+    if (config->address != NULL)
+        write_config_string(fd, "address", config->address);
 
     if (strcmp(config->app, "Steam") != 0)
         write_config_string(fd, "app", config->app);
 
     fclose(fd);
+}
+
+char *settings_config_dir()
+{
+    char *homedir = getenv("HOME");
+    char *confdir = path_join(homedir, CONF_DIR);
+    if (access(confdir, F_OK) == -1)
+    {
+        if (errno == ENOENT)
+        {
+            mkdir(confdir, 0755);
+        }
+    }
+    return confdir;
 }

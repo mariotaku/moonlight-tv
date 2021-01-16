@@ -33,6 +33,7 @@
 
 int app_init(int argc, char *argv[])
 {
+    app_configuration = settings_load();
     LGNC_SYSTEM_CALLBACKS_T callbacks = {
         .pfnJoystickEventCallback = _JoystickEventCallback,
         .pfnMsgHandler = _MsgEventHandler,
@@ -48,6 +49,7 @@ int app_init(int argc, char *argv[])
 
 void app_destroy()
 {
+    free(app_configuration);
     finalize_egl();
     LGNC_GAMEPAD_UnregisterCallback();
     LGNC_SYSTEM_Finalize();
@@ -95,7 +97,7 @@ static void app_process_events(struct nk_context *ctx)
             }
             default:
                 backend_dispatch_userevent(which, data1, data2);
-                gui_dispatch_userevent(which);
+                gui_dispatch_userevent(which, data1, data2);
                 break;
             }
         }

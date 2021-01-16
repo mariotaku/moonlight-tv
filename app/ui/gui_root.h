@@ -24,7 +24,7 @@ bool gui_root(struct nk_context *ctx);
 
 void gui_background();
 
-bool gui_dispatch_userevent(int which);
+bool gui_dispatch_userevent(int which, void *data1, void *data2);
 
 /**
  * @brief Check if GUI should consume input events, so it will not pass onto streaming

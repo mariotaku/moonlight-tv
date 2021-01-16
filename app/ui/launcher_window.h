@@ -25,3 +25,5 @@ void launcher_display_size(struct nk_context *ctx, short width, short height);
 bool launcher_window(struct nk_context *ctx);
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
+
+bool launcher_window_dispatch_userevent(int which, void *data1, void *data2);

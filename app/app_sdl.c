@@ -47,6 +47,7 @@ static void fps_cap(int diff);
 
 int app_init(int argc, char *argv[])
 {
+    app_configuration = settings_load();
 #if OS_WEBOS
     return app_webos_init(argc, argv);
 #else
@@ -71,6 +72,7 @@ APP_WINDOW_CONTEXT app_window_create()
 
 void app_destroy()
 {
+    free(app_configuration);
 #ifdef OS_WEBOS
     app_webos_destroy();
 #endif
@@ -104,7 +106,7 @@ static void app_process_events(struct nk_context *ctx)
         else if (evt.type == SDL_USEREVENT)
         {
             backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-            gui_dispatch_userevent(evt.user.code);
+            gui_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
         }
         else if (evt.type == SDL_QUIT)
         {

@@ -6,6 +6,7 @@
 #include "stream/settings.h"
 #include "settings_window.h"
 #include "gui_root.h"
+#include "app.h"
 
 #define WINDOW_TITLE "Settings"
 
@@ -36,8 +37,6 @@ static const struct _fps_option _supported_fps[] = {
 };
 #define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
 
-static PCONFIGURATION app_settings;
-
 static char _res_label[8], _fps_label[8];
 
 static void _set_fps(int fps);
@@ -55,9 +54,8 @@ bool settings_window_open()
         return false;
     }
     gui_settings_showing = true;
-    app_settings = settings_load();
-    _set_fps(app_settings->stream.fps);
-    _set_res(app_settings->stream.width, app_settings->stream.height);
+    _set_fps(app_configuration->stream.fps);
+    _set_res(app_configuration->stream.width, app_configuration->stream.height);
     return true;
 }
 
@@ -68,8 +66,7 @@ bool settings_window_close()
         return false;
     }
     gui_settings_showing = false;
-    settings_save(app_settings);
-    free(app_settings);
+    settings_save(app_configuration);
     return true;
 }
 
@@ -114,7 +111,7 @@ bool settings_window(struct nk_context *ctx)
         nk_layout_row_dynamic_s(ctx, 25, 1);
         nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
         nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_property_int(ctx, "kbps:", 5000, &app_settings->stream.bitrate, 100000, 500, 50);
+        nk_property_int(ctx, "kbps:", 5000, &app_configuration->stream.bitrate, 100000, 500, 50);
 
         nk_layout_row_dynamic_s(ctx, 4, 1);
         nk_spacing(ctx, 1);
@@ -122,21 +119,21 @@ bool settings_window(struct nk_context *ctx)
         nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
         nk_layout_row_dynamic_s(ctx, 25, 1);
 
-        nk_bool sops = app_settings->sops ? nk_true : nk_false;
+        nk_bool sops = app_configuration->sops ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
-        app_settings->sops = sops == nk_true;
+        app_configuration->sops = sops == nk_true;
 
-        nk_bool localaudio = app_settings->localaudio ? nk_true : nk_false;
+        nk_bool localaudio = app_configuration->localaudio ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Play audio on host PC", &localaudio);
-        app_settings->localaudio = localaudio == nk_true;
+        app_configuration->localaudio = localaudio == nk_true;
 
-        nk_bool quitappafter = app_settings->quitappafter ? nk_true : nk_false;
+        nk_bool quitappafter = app_configuration->quitappafter ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Quit app on host PC after ending stream", &quitappafter);
-        app_settings->quitappafter = quitappafter == nk_true;
+        app_configuration->quitappafter = quitappafter == nk_true;
 
-        nk_bool viewonly = app_settings->viewonly ? nk_true : nk_false;
+        nk_bool viewonly = app_configuration->viewonly ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
-        app_settings->viewonly = viewonly == nk_true;
+        app_configuration->viewonly = viewonly == nk_true;
 
 #if OS_WEBOS
         nk_layout_row_dynamic_s(ctx, 4, 1);
@@ -145,14 +142,14 @@ bool settings_window(struct nk_context *ctx)
         nk_label(ctx, "Audio/Video Decoder", NK_TEXT_LEFT);
         nk_layout_row_dynamic_s(ctx, 25, 1);
         static const char *platforms[] = {"auto", "legacy"};
-        if (nk_combo_begin_label(ctx, app_settings->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
+        if (nk_combo_begin_label(ctx, app_configuration->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
         {
             nk_layout_row_dynamic_s(ctx, 25, 1);
             for (int i = 0; i < NK_LEN(platforms); i++)
             {
                 if (nk_combo_item_label(ctx, platforms[i], NK_TEXT_LEFT))
                 {
-                    app_settings->platform = (char *)platforms[i];
+                    app_configuration->platform = (char *)platforms[i];
                 }
             }
             nk_combo_end(ctx);
@@ -174,7 +171,7 @@ bool settings_window(struct nk_context *ctx)
 void _set_fps(int fps)
 {
     sprintf(_fps_label, "%3d FPS", fps);
-    app_settings->stream.fps = fps;
+    app_configuration->stream.fps = fps;
 }
 
 void _set_res(int w, int h)
@@ -197,11 +194,11 @@ void _set_res(int w, int h)
         sprintf(_res_label, "%3d*%3d", w, h);
         break;
     }
-    app_settings->stream.width = w;
-    app_settings->stream.height = h;
+    app_configuration->stream.width = w;
+    app_configuration->stream.height = h;
 }
 
 void _update_bitrate()
 {
-    app_settings->stream.bitrate = settings_optimal_bitrate(app_settings->stream.width, app_settings->stream.height, app_settings->stream.fps);
+    app_configuration->stream.bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
 }

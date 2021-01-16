@@ -13,6 +13,7 @@
 #include "util/user_event.h"
 
 #include "stream/settings.h"
+#include "app.h"
 
 static pthread_t computer_manager_polling_thread;
 bool computer_manager_executing_quitapp;
@@ -92,6 +93,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         else
         {
             computer_list = linkedlist_append(computer_list, discovered);
+            bus_pushevent(USER_CM_SERVER_ADDED, discovered, NULL);
         }
         return true;
     }
@@ -191,9 +193,8 @@ void *_computer_manager_server_update_action(void *data)
     PSERVER_LIST update = malloc(sizeof(SERVER_LIST));
     memset(update, 0, sizeof(SERVER_LIST));
     update->server = malloc(sizeof(SERVER_DATA));
-    PCONFIGURATION config = settings_load();
-    update->err = gs_init(update->server, (char *)node->server->serverInfo.address, config->key_dir,
-                          config->debug_level, config->unsupported);
+    update->err = gs_init(update->server, (char *)node->server->serverInfo.address, app_configuration->key_dir,
+                          app_configuration->debug_level, app_configuration->unsupported);
     if (update->err)
     {
         update->errmsg = gs_error;

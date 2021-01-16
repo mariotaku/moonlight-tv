@@ -65,9 +65,10 @@ void gui_background()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-bool gui_dispatch_userevent(int which)
+bool gui_dispatch_userevent(int which, void *data1, void *data2)
 {
     bool handled = false;
+    handled |= launcher_window_dispatch_userevent(which, data1, data2);
     handled |= streaming_overlay_dispatch_userevent(which);
     return false;
 }

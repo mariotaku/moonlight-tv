@@ -17,6 +17,9 @@
 #define LINKEDLIST_TYPE PSERVER_LIST
 #include "util/linked_list.h"
 
+#include "util/user_event.h"
+
+#include "app.h"
 #include "res.h"
 
 static PSERVER_LIST selected_server_node;
@@ -161,6 +164,26 @@ void launcher_display_size(struct nk_context *ctx, short width, short height)
 {
 }
 
+bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
+{
+    switch (which)
+    {
+    case USER_CM_SERVER_ADDED:
+    {
+        // Select saved paired server if not selected before
+        PSERVER_LIST node = data1;
+        if (selected_server_node == NULL && node->server && node->server->paired &&
+            strcmp(app_configuration->address, node->address) == 0)
+        {
+            _select_computer(node, node->apps == NULL);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
@@ -212,6 +235,7 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
 {
     selected_server_node = node;
     pairing_computer_state.state = PS_NONE;
+    app_configuration->address = node->address;
     if (load_apps)
     {
         application_manager_load(node);
