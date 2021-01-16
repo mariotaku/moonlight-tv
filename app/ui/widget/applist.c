@@ -13,6 +13,7 @@
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
 static bool _applist_item_select(int offset);
+static bool _cover_use_default(struct nk_image *img);
 
 static PAPP_DLIST _hovered_app = NULL, _focused_app = NULL;
 static PAPP_DLIST _applist_visible_start = NULL;
@@ -92,7 +93,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         {
             nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_ext_colortable[NK_COLOR_BUTTON_HOVER]));
         }
-        clicked = !running & nk_button_image(ctx, cover ? *cover : launcher_default_cover);
+        clicked = !running & nk_button_image(ctx, _cover_use_default(cover) ? launcher_default_cover : *cover);
         if (_focused_app == cur)
         {
             nk_style_pop_style_item(ctx);
@@ -200,4 +201,9 @@ bool _applist_item_select(int offset)
         _hovered_app = NULL;
     }
     return true;
+}
+
+bool _cover_use_default(struct nk_image *img)
+{
+    return img == NULL || img->w == 0 || img->h == 0;
 }

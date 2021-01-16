@@ -56,6 +56,11 @@ bool _application_manager_applist_result(PSERVER_LIST node, PAPP_DLIST list)
     return true;
 }
 
+static int _applist_name_comparator(PAPP_DLIST p1, PAPP_DLIST p2)
+{
+    return strcmp(p1->name, p2->name);
+}
+
 void *_application_manager_applist_action(void *data)
 {
     PSERVER_LIST node = (PSERVER_LIST)data;
@@ -72,7 +77,7 @@ void *_application_manager_applist_action(void *data)
         PAPP_DLIST item = linkedlist_new();
         item->id = cur->id;
         item->name = cur->name;
-        dlist = linkedlist_append(dlist, item);
+        dlist = linkedlist_sortedinsert(dlist, item, _applist_name_comparator);
     }
     // Free the single linked list
     while (list != NULL)

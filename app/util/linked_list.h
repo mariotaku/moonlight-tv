@@ -79,6 +79,52 @@ static LINKEDLIST_TYPE *linkedlist_append(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *n
     return p;
 }
 
+#if LINKEDLIST_DOUBLE
+typedef int(LINKEDLIST_COMPARE_FN)(LINKEDLIST_TYPE *p1, LINKEDLIST_TYPE *p2);
+
+// From https://www.geeksforgeeks.org/insert-value-sorted-way-sorted-doubly-linked-list/
+static LINKEDLIST_TYPE *linkedlist_sortedinsert(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node, LINKEDLIST_COMPARE_FN fn)
+{
+    LINKEDLIST_TYPE *current;
+
+    // if list is empty
+    if (p == NULL)
+    {
+        p = node;
+    }
+    else if (fn(p, node) >= 0)
+    {
+        // if the node is to be inserted at the beginning
+        // of the doubly linked list
+        node->next = p;
+        node->next->prev = node;
+        p = node;
+    }
+    else
+    {
+        current = p;
+
+        // locate the node after which the new node
+        // is to be inserted
+        while (current->next != NULL &&
+               fn(current->next, node) < 0)
+            current = current->next;
+
+        /* Make the appropriate links */
+        node->next = current->next;
+
+        // if the new node is not inserted
+        // at the end of the list
+        if (current->next != NULL)
+            node->next->prev = node;
+
+        current->next = node;
+        node->prev = current;
+    }
+    return p;
+}
+#endif
+
 static void linkedlist_free(LINKEDLIST_TYPE *head)
 {
     LINKEDLIST_TYPE *tmp;
