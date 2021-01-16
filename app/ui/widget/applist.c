@@ -4,18 +4,24 @@
 #include "stream/session.h"
 
 #define LINKEDLIST_TYPE APP_DLIST
+#define LINKEDLIST_DOUBLE 1
 #include "util/linked_list.h"
 
 #include "res.h"
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
+static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
+static bool _applist_item_select(PAPP_DLIST list, int offset);
+
+static PAPP_DLIST _hovered_app = NULL, _focused_app = NULL;
+static int _applist_colcount = 5;
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
     static struct nk_list_view list_view;
     struct nk_style_window winstyle = ctx->style.window;
     int app_len = linkedlist_len(node->apps);
-    int colcount = 5, rowcount = app_len / colcount;
+    int colcount = _applist_colcount, rowcount = app_len / colcount;
     if (app_len && app_len % colcount)
     {
         rowcount++;
@@ -54,6 +60,12 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
                    int cover_width, int cover_height, bool event_emitted)
 {
     nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);
+    if (hovered)
+    {
+        _hovered_app = cur;
+        // Clear key selection
+        _focused_app = NULL;
+    }
     static int click_down_id = -1, should_ignore_click = -1;
     if (mouse_down && click_down_id == -1)
     {
@@ -73,7 +85,15 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         struct nk_image *cover = coverloader_get(node, cur->id);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : 1);
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
+        if (_focused_app == cur)
+        {
+            nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_ext_colortable[NK_COLOR_BUTTON_HOVER]));
+        }
         clicked = !running & nk_button_image(ctx, cover ? *cover : launcher_default_cover);
+        if (_focused_app == cur)
+        {
+            nk_style_pop_style_item(ctx);
+        }
 
         const int button_size = 24 * NK_UI_SCALE;
         int button_x = (cover_width - button_size) / 2;
@@ -103,24 +123,82 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         if (should_ignore_click == -1 && click_down_id == cur->id)
         {
             event_emitted |= true;
-            if (clicked == 1)
-            {
-                if (node->server->currentGame > 0 && node->server->currentGame != cur->id)
-                {
-                    printf("Quit running game first\n");
-                }
-                else
-                {
-                    streaming_begin(node, cur->id);
-                }
-            }
-            else
-            {
-                computer_manager_quitapp(node);
-            }
+            _applist_item_do_click(node, cur, clicked);
         }
         should_ignore_click = -1;
         click_down_id = -1;
     }
     return event_emitted;
+}
+
+void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
+{
+    if (clicked == 1)
+    {
+        if (node->server->currentGame > 0 && node->server->currentGame != cur->id)
+        {
+            printf("Quit running game first\n");
+        }
+        else
+        {
+            streaming_begin(node, cur->id);
+        }
+    }
+    else
+    {
+        computer_manager_quitapp(node);
+    }
+}
+
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey)
+{
+    switch (navkey)
+    {
+    case NAVKEY_LEFT:
+        return _applist_item_select(node->apps, -1);
+    case NAVKEY_RIGHT:
+        return _applist_item_select(node->apps, 1);
+    case NAVKEY_UP:
+        return _applist_item_select(node->apps, -_applist_colcount);
+    case NAVKEY_DOWN:
+        return _applist_item_select(node->apps, _applist_colcount);
+    case NAVKEY_ENTER:
+    {
+        if (_focused_app)
+        {
+            _applist_item_do_click(node, _focused_app, 1);
+        }
+        return true;
+    }
+    default:
+        break;
+    }
+    return true;
+}
+
+bool _applist_item_select(PAPP_DLIST list, int offset)
+{
+    if (list == NULL)
+    {
+        return true;
+    }
+    if (_focused_app == NULL)
+    {
+        _focused_app = list;
+        _hovered_app = NULL;
+        printf("%s\n", list->name);
+        return true;
+    }
+    PAPP_DLIST item = linkedlist_nth(_focused_app, offset);
+    if (item)
+    {
+        _focused_app = item;
+        _hovered_app = NULL;
+        printf("%s\n", item->name);
+    }
+    else
+    {
+        printf("NULL\n");
+    }
+    return true;
 }

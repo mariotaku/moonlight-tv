@@ -34,8 +34,18 @@ static LINKEDLIST_TYPE *linkedlist_nth(LINKEDLIST_TYPE *p, int n)
 {
     LINKEDLIST_TYPE *ret = NULL;
     int i = 0;
-    for (ret = p; ret != NULL && i < n; ret = ret->next, i++)
-        ;
+#if LINKEDLIST_DOUBLE
+    if (n < 0)
+    {
+        for (ret = p; ret != NULL && i > n; ret = ret->prev, i--)
+            ;
+    }
+    else
+#endif
+    {
+        for (ret = p; ret != NULL && i < n; ret = ret->next, i++)
+            ;
+    }
     return ret;
 }
 

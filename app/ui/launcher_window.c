@@ -50,6 +50,8 @@ static void _server_error_popup(struct nk_context *ctx);
 static void _quitapp_window(struct nk_context *ctx);
 static void _webos_decoder_error_popup(struct nk_context *ctx);
 
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey);
+
 static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
 
 void launcher_window_init(struct nk_context *ctx)
@@ -185,6 +187,10 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
 
 bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 {
+    if (selected_server_node && selected_server_node->server)
+    {
+        return _applist_dispatch_navkey(ctx, selected_server_node, navkey);
+    }
     switch (navkey)
     {
     default:
