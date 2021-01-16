@@ -87,16 +87,23 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_image *cover = coverloader_get(node, cur->id);
-        nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : 1);
+        bool defcover = _cover_use_default(cover);
+        nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : (defcover ? 2 : 1));
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
         if (_focused_app == cur)
         {
             nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_ext_colortable[NK_COLOR_BUTTON_HOVER]));
         }
-        clicked = !running & nk_button_image(ctx, _cover_use_default(cover) ? launcher_default_cover : *cover);
+        clicked = !running & nk_button_image(ctx, defcover ? launcher_default_cover : *cover);
         if (_focused_app == cur)
         {
             nk_style_pop_style_item(ctx);
+        }
+        if (defcover && !running)
+        {
+            int insetx = 8 * NK_UI_SCALE, insety = 6 * NK_UI_SCALE;
+            nk_layout_space_push(ctx, nk_rect(insetx, insety, cover_width - insetx * 2, cover_height - insety * 2));
+            nk_label(ctx, cur->name, NK_TEXT_CENTERED);
         }
 
         const int button_size = 24 * NK_UI_SCALE;
