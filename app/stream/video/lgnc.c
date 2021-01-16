@@ -74,12 +74,12 @@ static int lgnc_submit_decode_unit(PDECODE_UNIT decodeUnit)
     }
     if (LGNC_DIRECTVIDEO_Play(lgnc_buffer, length) != 0)
     {
-      fprintf(stderr, "lgnc_DirectVideoPlay returned non zero\n");
+      fprintf(stderr, "LGNC_DIRECTVIDEO_Play returned non zero\n");
     }
   }
   else
   {
-    fprintf(stderr, "Video decode buffer too small, skip this frame");
+    fprintf(stderr, "Video decode buffer too small, skip this frame\n");
     return DR_NEED_IDR;
   }
 

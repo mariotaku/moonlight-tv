@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.6)
 project(moonlight 
     VERSION 0.0.8
     LANGUAGES C
@@ -68,7 +68,6 @@ set(SOURCES
     app/util/lruc.c
     app/util/path.c
     app/util/gs/clientex.c
-    core/moonlight-embedded/src/config.c
     core/moonlight-embedded/libgamestream/http.c
     core/moonlight-embedded/libgamestream/mkcert.c
     core/moonlight-embedded/libgamestream/xml.c

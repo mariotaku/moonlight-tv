@@ -1,5 +1,8 @@
 #pragma once
+// Trick to prevent duplicated include
+#ifndef MAX_INPUTS
 #include "src/config.h"
+#endif
 
 #define CONF_DIR ".moonlight-tv"
 #define CONF_NAME_STREAMING "streaming.conf"

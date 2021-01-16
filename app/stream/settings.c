@@ -1,3 +1,4 @@
+#include "src/config.c"
 #include "settings.h"
 
 #include <errno.h>
@@ -25,6 +26,7 @@ static char *settings_config_dir()
 }
 
 static void settings_initialize(char *confdir, PCONFIGURATION config);
+static void settings_write(char *filename, PCONFIGURATION config);
 
 PCONFIGURATION settings_load()
 {
@@ -40,7 +42,7 @@ PCONFIGURATION settings_load()
 void settings_save(PCONFIGURATION config)
 {
     char *confdir = settings_config_dir(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
-    config_save(conffile, config);
+    settings_write(conffile, config);
     free(conffile);
     free(confdir);
 }
@@ -104,4 +106,42 @@ int settings_optimal_bitrate(int w, int h, int fps)
         break;
     }
     return kbps * fps / 30;
+}
+
+void settings_write(char *filename, PCONFIGURATION config)
+{
+    FILE *fd = fopen(filename, "w");
+    if (fd == NULL)
+    {
+        fprintf(stderr, "Can't open configuration file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    if (config->stream.width != 1280)
+        write_config_int(fd, "width", config->stream.width);
+    if (config->stream.height != 720)
+        write_config_int(fd, "height", config->stream.height);
+    if (config->stream.fps != 60)
+        write_config_int(fd, "fps", config->stream.fps);
+    if (config->stream.bitrate != -1)
+        write_config_int(fd, "bitrate", config->stream.bitrate);
+    if (config->stream.packetSize != 1024)
+        write_config_int(fd, "packetsize", config->stream.packetSize);
+    if (!config->sops)
+        write_config_bool(fd, "sops", config->sops);
+    if (config->localaudio)
+        write_config_bool(fd, "localaudio", config->localaudio);
+    if (config->quitappafter)
+        write_config_bool(fd, "quitappafter", config->quitappafter);
+    if (config->viewonly)
+        write_config_bool(fd, "viewonly", config->viewonly);
+    if (config->rotate != 0)
+        write_config_int(fd, "rotate", config->rotate);
+    if (config->platform != NULL)
+        write_config_string(fd, "platform", config->platform);
+
+    if (strcmp(config->app, "Steam") != 0)
+        write_config_string(fd, "app", config->app);
+
+    fclose(fd);
 }

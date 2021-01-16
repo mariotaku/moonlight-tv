@@ -10,12 +10,17 @@
 #include "gui_root.h"
 #include "settings_window.h"
 
+#if OS_WEBOS
+#include "platform/webos/app_init.h"
+#endif
+
 #define LINKEDLIST_TYPE PSERVER_LIST
 #include "util/linked_list.h"
 
 #include "res.h"
 
 static PSERVER_LIST selected_server_node;
+static bool _webos_decoder_error_dismissed;
 
 struct nk_image launcher_default_cover;
 typedef enum pairing_state
@@ -41,6 +46,7 @@ static void _pairing_window(struct nk_context *ctx);
 static void _pairing_error_popup(struct nk_context *ctx);
 static void _server_error_popup(struct nk_context *ctx);
 static void _quitapp_window(struct nk_context *ctx);
+static void _webos_decoder_error_popup(struct nk_context *ctx);
 
 static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
 
@@ -124,6 +130,12 @@ bool launcher_window(struct nk_context *ctx)
                 _pairing_error_popup(ctx);
             }
         }
+#ifdef OS_WEBOS
+        if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
+        {
+            _webos_decoder_error_popup(ctx);
+        }
+#endif
     }
     nk_end(ctx);
 
@@ -323,4 +335,34 @@ void _quitapp_window(struct nk_context *ctx)
         nk_label(ctx, "Quitting...", NK_TEXT_ALIGN_LEFT);
     }
     nk_end(ctx);
+}
+
+void _webos_decoder_error_popup(struct nk_context *ctx)
+{
+    struct nk_vec2 window_size = nk_window_get_size(ctx);
+    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, 300 * NK_UI_SCALE, 176 * NK_UI_SCALE);
+    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Decoder Error",
+                       NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+    {
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
+        int content_height_remaining = (int)content_size.y;
+        /* remove bottom button height */
+        content_height_remaining -= 30 * NK_UI_SCALE;
+        content_height_remaining -= ctx->style.window.spacing.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+        nk_label_wrap(ctx, "Unable to initialize system video decoder. Audio and video will not work during streaming. You may need to restart your TV.");
+
+        nk_layout_row_template_begin_s(ctx, 30);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 80);
+        nk_layout_row_template_end(ctx);
+
+        nk_spacing(ctx, 1);
+        if (nk_button_label(ctx, "OK"))
+        {
+            _webos_decoder_error_dismissed = true;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
+    }
 }

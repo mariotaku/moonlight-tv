@@ -137,6 +137,29 @@ bool settings_window(struct nk_context *ctx)
         nk_bool viewonly = app_settings->viewonly ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
         app_settings->viewonly = viewonly == nk_true;
+
+#if OS_WEBOS
+        nk_layout_row_dynamic_s(ctx, 4, 1);
+        nk_spacing(ctx, 1);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_label(ctx, "Audio/Video Decoder", NK_TEXT_LEFT);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        static const char *platforms[] = {"auto", "legacy"};
+        if (nk_combo_begin_label(ctx, app_settings->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
+        {
+            nk_layout_row_dynamic_s(ctx, 25, 1);
+            for (int i = 0; i < NK_LEN(platforms); i++)
+            {
+                if (nk_combo_item_label(ctx, platforms[i], NK_TEXT_LEFT))
+                {
+                    app_settings->platform = (char *)platforms[i];
+                }
+            }
+            nk_combo_end(ctx);
+        }
+        nk_layout_row_dynamic_s(ctx, 50, 1);
+        nk_spacing(ctx, 1);
+#endif
     }
     nk_end(ctx);
     // Why Nuklear why, the button looks like "close" but it actually "hide"
