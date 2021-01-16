@@ -59,7 +59,9 @@ static LINKEDLIST_TYPE *linkedlist_append(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *n
     }
     LINKEDLIST_TYPE *cur = p;
     while (cur->next != NULL)
-        ;
+    {
+        cur = cur->next;
+    }
     cur->next = node;
 #if LINKEDLIST_DOUBLE
     node->prev = cur;
