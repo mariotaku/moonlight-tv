@@ -16,7 +16,6 @@
 
 #define LINKEDLIST_TYPE SERVER_LIST
 #include "util/linked_list.h"
-
 #include "util/user_event.h"
 
 #include "app.h"
@@ -182,6 +181,16 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     default:
         break;
     }
+}
+
+bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+{
+    switch (navkey)
+    {
+    default:
+        break;
+    }
+    return true;
 }
 
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)

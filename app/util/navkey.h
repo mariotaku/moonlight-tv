@@ -1,0 +1,12 @@
+#pragma once
+
+typedef enum NAVKEY_
+{
+    NAVKEY_UP,
+    NAVKEY_DOWN,
+    NAVKEY_LEFT,
+    NAVKEY_RIGHT,
+    NAVKEY_ENTER,
+    NAVKEY_BACK,
+    NAVKEY_UNKNOWN
+} NAVKEY;

@@ -2,15 +2,13 @@
 
 #include <stdbool.h>
 
-#ifdef HAVE_SDL
-#include <SDL_events.h>
-#endif
-
 #ifndef NK_NUKLEAR_H_
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_image.h"
 #endif
+
+#include "util/navkey.h"
 
 extern short gui_display_width, gui_display_height;
 extern short gui_logic_width, gui_logic_height;
@@ -33,6 +31,4 @@ bool gui_should_block_input();
 
 void gui_display_size(struct nk_context *ctx, short width, short height);
 
-#ifdef HAVE_SDL
-bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev);
-#endif
+bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey);

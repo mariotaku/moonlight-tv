@@ -28,6 +28,7 @@
 #include "stream/input/absinput.h"
 #include "stream/input/sdlinput.h"
 #include "platform/sdl/events.h"
+#include "platform/sdl/navkey_sdl.h"
 #include "ui/gui_root.h"
 #include "ui/config.h"
 
@@ -98,8 +99,11 @@ static void app_process_events(struct nk_context *ctx)
             }
             else
             {
-                // Those are input events
-                gui_dispatch_inputevent(ctx, evt);
+                if (evt.type == SDL_KEYUP || evt.type == SDL_CONTROLLERBUTTONUP)
+                {
+                    // Those are input events
+                    gui_dispatch_navkey(ctx, navkey_from_sdl(evt));
+                }
                 block_steam_inputevent |= gui_should_block_input();
             }
         }

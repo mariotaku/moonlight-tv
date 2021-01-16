@@ -168,6 +168,20 @@ bool settings_window(struct nk_context *ctx)
     return true;
 }
 
+bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+{
+    switch (navkey)
+    {
+    case NAVKEY_BACK:
+        nk_window_show(ctx, WINDOW_TITLE, false);
+        break;
+
+    default:
+        break;
+    }
+    return true;
+}
+
 void _set_fps(int fps)
 {
     sprintf(_fps_label, "%3d FPS", fps);

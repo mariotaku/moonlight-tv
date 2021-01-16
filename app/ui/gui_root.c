@@ -88,13 +88,16 @@ void gui_display_size(struct nk_context *ctx, short width, short height)
     gui_logic_height = height / NK_UI_SCALE;
 }
 
-#ifdef HAVE_SDL
-bool gui_dispatch_inputevent(struct nk_context *ctx, SDL_Event ev)
+bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 {
-    if (ev.type == SDL_KEYUP)
+    bool handled = false;
+    if (streaming_status == STREAMING_NONE)
     {
-        printf("SDL_KEYUP scancode: %s, sym: %s\n", SDL_GetScancodeName(ev.key.keysym.scancode), SDL_GetKeyName(ev.key.keysym.sym));
+        handled |= handled || (gui_settings_showing && settings_window_dispatch_navkey(ctx, navkey));
+        handled |= handled || launcher_window_dispatch_navkey(ctx, navkey);
     }
-    return false;
+    else
+    {
+    }
+    return handled;
 }
-#endif
