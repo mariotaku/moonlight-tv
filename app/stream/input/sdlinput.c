@@ -6,8 +6,13 @@
 #include "stream/session.h"
 #include "util/user_event.h"
 
+#if OS_WEBOS
+#include "platform/sdl/webos_keys.h"
+#endif
+
 static void release_gamecontroller_buttons(int which);
 static void release_keyboard_keys(SDL_Event ev);
+static void sdlinput_handle_input_result(SDL_Event ev, int ret);
 
 bool absinput_no_control;
 
@@ -92,8 +97,17 @@ bool absinput_dispatch_event(SDL_Event ev)
     // TODO Keyboard event on webOS is incorrect
     // https://github.com/mariotaku/moonlight-sdl/issues/4
 #if OS_WEBOS
-    if (ev.type == SDL_KEYDOWN || ev.type == SDL_KEYUP)
+    if (ev.type == SDL_KEYDOWN)
     {
+        return false;
+    }
+    else if (ev.type == SDL_KEYUP)
+    {
+        if (ev.key.keysym.sym == SDLK_WEBOS_BACK)
+        {
+            sdlinput_handle_input_result(ev, SDL_QUIT_APPLICATION);
+            return false;
+        }
         return false;
     }
 #endif
@@ -112,7 +126,31 @@ bool absinput_dispatch_event(SDL_Event ev)
         }
         return false;
     }
-    switch (absinput_no_control ? nocontrol_handle_event(ev) : sdlinput_handle_event(&ev))
+    sdlinput_handle_input_result(ev, absinput_no_control ? nocontrol_handle_event(ev) : sdlinput_handle_event(&ev));
+    return false;
+}
+
+bool absinput_controllerdevice_event(SDL_Event ev)
+{
+    switch (ev.type)
+    {
+    case SDL_CONTROLLERDEVICEADDED:
+        printf("SDL_CONTROLLERDEVICEADDED, which: %d\n", ev.cdevice.which);
+        break;
+    case SDL_CONTROLLERDEVICEREMOVED:
+        printf("SDL_CONTROLLERDEVICEREMOVED, which: %d\n", ev.cdevice.which);
+        break;
+    case SDL_CONTROLLERDEVICEREMAPPED:
+        printf("SDL_CONTROLLERDEVICEREMAPPED, which: %d\n", ev.cdevice.which);
+        break;
+    default:
+        break;
+    }
+}
+
+void sdlinput_handle_input_result(SDL_Event ev, int ret)
+{
+    switch (ret)
     {
     case SDL_MOUSE_GRAB:
         break;
@@ -139,25 +177,6 @@ bool absinput_dispatch_event(SDL_Event ev)
         SDL_PushEvent(&quitapp);
         break;
     }
-    default:
-        break;
-    }
-    return false;
-}
-
-bool absinput_controllerdevice_event(SDL_Event ev)
-{
-    switch (ev.type)
-    {
-    case SDL_CONTROLLERDEVICEADDED:
-        printf("SDL_CONTROLLERDEVICEADDED, which: %d\n", ev.cdevice.which);
-        break;
-    case SDL_CONTROLLERDEVICEREMOVED:
-        printf("SDL_CONTROLLERDEVICEREMOVED, which: %d\n", ev.cdevice.which);
-        break;
-    case SDL_CONTROLLERDEVICEREMAPPED:
-        printf("SDL_CONTROLLERDEVICEREMAPPED, which: %d\n", ev.cdevice.which);
-        break;
     default:
         break;
     }

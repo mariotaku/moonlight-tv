@@ -81,6 +81,7 @@ if (TARGET_WEBOS)
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
         app/platform/sdl/nkimage.c
+        app/platform/webos/navkey_sdl_webos.c
         app/stream/audio/ndl.c
         app/stream/video/ndl.c
         app/stream/audio/lgnc.c
