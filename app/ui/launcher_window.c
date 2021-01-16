@@ -173,7 +173,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         // Select saved paired server if not selected before
         PSERVER_LIST node = data1;
         if (selected_server_node == NULL && node->server && node->server->paired &&
-            strcmp(app_configuration->address, node->address) == 0)
+            app_configuration->address && strcmp(app_configuration->address, node->address) == 0)
         {
             _select_computer(node, node->apps == NULL);
         }
