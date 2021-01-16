@@ -2,18 +2,9 @@
 
 #include <stdbool.h>
 
-#include "libgamestream/client.h"
+#include "backend_types.h"
 
-typedef struct SERVER_LIST_T
-{
-    char *address;
-    char *name;
-    PSERVER_DATA server;
-    int err;
-    const char *errmsg;
-    PAPP_LIST apps;
-    struct SERVER_LIST_T *next;
-} SERVER_LIST, *PSERVER_LIST;
+#include "libgamestream/client.h"
 
 extern PSERVER_LIST computer_list;
 

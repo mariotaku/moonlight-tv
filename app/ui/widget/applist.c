@@ -3,12 +3,12 @@
 #include "backend/coverloader.h"
 #include "stream/session.h"
 
-#define LINKEDLIST_TYPE PAPP_LIST
+#define LINKEDLIST_TYPE APP_DLIST
 #include "util/linked_list.h"
 
 #include "res.h"
 
-static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur, int cover_width, int cover_height, bool event_emitted);
+static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
@@ -31,7 +31,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     {
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
-        PAPP_LIST cur = linkedlist_nth(node->apps, startidx);
+        PAPP_DLIST cur = linkedlist_nth(node->apps, startidx);
         for (int row = 0; row < list_view.count; row++)
         {
             int col;
@@ -50,7 +50,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     return event_emitted;
 }
 
-bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_LIST cur,
+bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
                    int cover_width, int cover_height, bool event_emitted)
 {
     nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);

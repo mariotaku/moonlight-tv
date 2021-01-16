@@ -2,7 +2,7 @@
 
 #include "libgamestream/client.h"
 
-#include "computer_manager.h"
+#include "backend_types.h"
 
 /**
  * @brief Initialize application manager context
@@ -25,4 +25,4 @@ void application_manager_load(PSERVER_LIST node);
 
 bool application_manager_dispatch_userevent(int which, void *data1, void *data2);
 
-PAPP_LIST application_manager_list_of(const char *address);
+PAPP_DLIST application_manager_list_of(const char *address);

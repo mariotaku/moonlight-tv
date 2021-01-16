@@ -14,7 +14,7 @@
 #include "platform/webos/app_init.h"
 #endif
 
-#define LINKEDLIST_TYPE PSERVER_LIST
+#define LINKEDLIST_TYPE SERVER_LIST
 #include "util/linked_list.h"
 
 #include "util/user_event.h"

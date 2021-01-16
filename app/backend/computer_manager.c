@@ -7,7 +7,7 @@
 #include "libgamestream/errors.h"
 #include "error_manager.h"
 
-#define LINKEDLIST_TYPE PSERVER_LIST
+#define LINKEDLIST_TYPE SERVER_LIST
 #include "util/linked_list.h"
 #include "util/bus.h"
 #include "util/user_event.h"
