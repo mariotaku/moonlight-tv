@@ -18,7 +18,11 @@ bool absinput_no_control;
 
 void absinput_init()
 {
+#if OS_WEBOS
     sdlinput_init("assets/gamecontrollerdb.txt");
+#else
+    sdlinput_init("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");
+#endif
 }
 
 int absinput_gamepads()
