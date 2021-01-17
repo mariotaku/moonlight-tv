@@ -13,6 +13,7 @@
 static void release_gamecontroller_buttons(int which);
 static void release_keyboard_keys(SDL_Event ev);
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
+static int _sdlinput_handle_event_fix(SDL_Event *ev);
 
 bool absinput_no_control;
 
@@ -135,8 +136,36 @@ bool absinput_dispatch_event(SDL_Event ev)
         }
         return false;
     }
-    sdlinput_handle_input_result(ev, absinput_no_control ? nocontrol_handle_event(ev) : sdlinput_handle_event(&ev));
+    sdlinput_handle_input_result(ev, absinput_no_control ? nocontrol_handle_event(ev) : _sdlinput_handle_event_fix(&ev));
     return false;
+}
+
+int _sdlinput_handle_event_fix(SDL_Event *event)
+{
+    PGAMEPAD_STATE gamepad;
+    switch (event->type)
+    {
+    case SDL_CONTROLLERAXISMOTION:
+        gamepad = get_gamepad(event->caxis.which);
+        switch (event->caxis.axis)
+        {
+        case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+            gamepad->leftTrigger = (event->caxis.value >> 8) * 2;
+            LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
+                                       gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
+            return SDL_NOTHING;
+        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+            gamepad->rightTrigger = (event->caxis.value >> 8) * 2;
+            LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
+                                       gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
+            return SDL_NOTHING;
+        default:
+            break;
+        }
+    default:
+        break;
+    }
+    return sdlinput_handle_event(event);
 }
 
 bool absinput_controllerdevice_event(SDL_Event ev)
