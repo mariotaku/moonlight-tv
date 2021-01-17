@@ -92,7 +92,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
         if (_focused_app == cur)
         {
-            nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_ext_colortable[NK_COLOR_BUTTON_HOVER]));
+            nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_ext_colortable[NK_COLOR_SCROLLBAR_CURSOR]));
         }
         clicked = !running & nk_button_image(ctx, defcover ? launcher_default_cover : *cover);
         if (_focused_app == cur)

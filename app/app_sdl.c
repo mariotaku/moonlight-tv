@@ -82,6 +82,8 @@ void app_destroy()
     SDL_Quit();
 }
 
+void inputmgr_sdl_handle_event(SDL_Event ev);
+
 static void app_process_events(struct nk_context *ctx)
 {
     /* Input */
@@ -92,24 +94,13 @@ static void app_process_events(struct nk_context *ctx)
         bool block_steam_inputevent = false;
         if (SDL_IS_INPUT_EVENT(evt))
         {
-            if (SDL_IS_GAMEPAD_EVENT(evt))
+            inputmgr_sdl_handle_event(evt);
+            if (evt.type == SDL_KEYUP || evt.type == SDL_CONTROLLERBUTTONUP)
             {
-                printf("SDL gamepad event %d\n", evt.type);
+                // Those are input events
+                gui_dispatch_navkey(ctx, navkey_from_sdl(evt));
             }
-            if (SDL_IS_CONTROLLERDEVICE_EVENT(evt))
-            {
-                // Those are gamepad connect/disconnect events
-                absinput_controllerdevice_event(evt);
-            }
-            else
-            {
-                if (evt.type == SDL_KEYUP || evt.type == SDL_CONTROLLERBUTTONUP)
-                {
-                    // Those are input events
-                    gui_dispatch_navkey(ctx, navkey_from_sdl(evt));
-                }
-                block_steam_inputevent |= gui_should_block_input();
-            }
+            block_steam_inputevent |= gui_should_block_input();
         }
         else if (evt.type == SDL_USEREVENT)
         {

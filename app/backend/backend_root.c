@@ -2,6 +2,7 @@
 
 #include "computer_manager.h"
 #include "application_manager.h"
+#include "input_manager.h"
 #include "stream/session.h"
 #include "coverloader.h"
 
@@ -11,10 +12,12 @@ void backend_init()
     computer_manager_init();
     application_manager_init();
     streaming_init();
+    inputmgr_init();
 }
 
 void backend_destroy()
 {
+    inputmgr_destroy();
     streaming_destroy();
     application_manager_destroy();
     computer_manager_destroy();

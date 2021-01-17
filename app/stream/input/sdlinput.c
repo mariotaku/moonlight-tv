@@ -18,11 +18,11 @@ bool absinput_no_control;
 
 void absinput_init()
 {
-#if OS_WEBOS
-    sdlinput_init("assets/gamecontrollerdb.txt");
-#else
-    sdlinput_init("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");
-#endif
+    memset(gamepads, 0, sizeof(gamepads));
+}
+
+void absinput_destroy()
+{
 }
 
 int absinput_gamepads()
@@ -139,11 +139,17 @@ bool absinput_controllerdevice_event(SDL_Event ev)
     switch (ev.type)
     {
     case SDL_CONTROLLERDEVICEADDED:
-        printf("SDL_CONTROLLERDEVICEADDED, which: %d\n", ev.cdevice.which);
+    {
+        const char *name = SDL_GameControllerNameForIndex(ev.cdevice.which);
+        printf("SDL_CONTROLLERDEVICEADDED: %s(%d) connected\n", name, ev.cdevice.which);
         break;
+    }
     case SDL_CONTROLLERDEVICEREMOVED:
-        printf("SDL_CONTROLLERDEVICEREMOVED, which: %d\n", ev.cdevice.which);
+    {
+        const char *name = SDL_GameControllerNameForIndex(ev.cdevice.which);
+        printf("SDL_CONTROLLERDEVICEREMOVED: %s(%d) disconnected\n", name, ev.cdevice.which);
         break;
+    }
     case SDL_CONTROLLERDEVICEREMAPPED:
         printf("SDL_CONTROLLERDEVICEREMAPPED, which: %d\n", ev.cdevice.which);
         break;

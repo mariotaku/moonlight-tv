@@ -81,6 +81,7 @@ if (TARGET_WEBOS)
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
         app/platform/sdl/nkimage.c
+        app/platform/sdl/input_manager.c
         app/platform/webos/navkey_sdl_webos.c
         app/stream/audio/ndl.c
         app/stream/video/ndl.c
@@ -93,6 +94,7 @@ elseif (TARGET_DESKTOP)
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
         app/platform/sdl/nkimage.c
+        app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/audio/sdl.c

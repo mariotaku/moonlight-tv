@@ -63,8 +63,8 @@ static void connection_status_update(int status)
 
 static void connection_stage_failed(int stage, int errorCode)
 {
-  fprintf(stderr, "Connection failed at stage %d, errorCode = 0x%x\n", stage, errorCode);
-  _streaming_errmsg_write("Connection failed at stage %d, errorCode = 0x%x", stage, errorCode);
+  fprintf(stderr, "Connection failed at stage %d, errorCode = %d\n", stage, errorCode);
+  _streaming_errmsg_write("Connection failed at stage %d, errorCode = %d", stage, errorCode);
 }
 
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {

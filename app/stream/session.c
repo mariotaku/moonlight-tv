@@ -45,8 +45,6 @@ void streaming_init()
     streaming_quitapp_requested = false;
     pthread_mutex_init(&lock, NULL);
     pthread_cond_init(&cond, NULL);
-
-    absinput_init();
 }
 
 void streaming_destroy()

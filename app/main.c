@@ -49,11 +49,11 @@ int main(int argc, char *argv[])
         return ret;
     }
 
-    backend_init();
-
     /* GUI */
     struct nk_context *ctx;
     APP_WINDOW_CONTEXT win = app_window_create();
+
+    backend_init();
 
     ctx = nk_platform_init(win);
     {
