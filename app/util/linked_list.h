@@ -49,6 +49,21 @@ static LINKEDLIST_TYPE *linkedlist_nth(LINKEDLIST_TYPE *p, int n)
     return ret;
 }
 
+static int linkedlist_index(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f)
+{
+    int i = 0;
+
+    LINKEDLIST_TYPE *cur;
+    for (cur = p; cur != NULL; cur = cur->next, i++)
+    {
+        if (cur == f)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
 typedef int(LINKEDLIST_FIND_FN)(LINKEDLIST_TYPE *p, const void *fv);
 
 static LINKEDLIST_TYPE *linkedlist_find_by(LINKEDLIST_TYPE *p, const void *v, LINKEDLIST_FIND_FN fn)

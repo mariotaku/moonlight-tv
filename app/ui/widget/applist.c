@@ -12,16 +12,17 @@
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
-static bool _applist_item_select(int offset);
+static bool _applist_item_select(PSERVER_LIST node, int offset);
 static bool _cover_use_default(struct nk_image *img);
 
 static PAPP_DLIST _hovered_app = NULL, _focused_app = NULL;
 static PAPP_DLIST _applist_visible_start = NULL;
+static struct nk_list_view list_view;
 static int _applist_colcount = 5;
+static int _applist_rowcount = 0;
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
-    static struct nk_list_view list_view;
     struct nk_style_window winstyle = ctx->style.window;
     int app_len = linkedlist_len(node->apps);
     int colcount = _applist_colcount, rowcount = app_len / colcount;
@@ -35,6 +36,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     int itemwidth = (rowwidth - winstyle.spacing.x * (colcount - 1)) / colcount;
     int coverwidth = itemwidth - winstyle.group_padding.x * 2 - winstyle.group_border * 2, coverheight = coverwidth / 3 * 4;
     int itemheight = coverheight + winstyle.group_padding.y * 2 + winstyle.group_border * 2;
+    _applist_rowcount = rowcount;
 
     if (nk_list_view_begin(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, itemheight, rowcount))
     {
@@ -166,13 +168,13 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        return _applist_item_select(-1);
+        return _applist_item_select(node, -1);
     case NAVKEY_RIGHT:
-        return _applist_item_select(1);
+        return _applist_item_select(node, 1);
     case NAVKEY_UP:
-        return _applist_item_select(-_applist_colcount);
+        return _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
-        return _applist_item_select(_applist_colcount);
+        return _applist_item_select(node, _applist_colcount);
     case NAVKEY_ENTER:
     {
         if (_focused_app)
@@ -189,7 +191,7 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
     return true;
 }
 
-bool _applist_item_select(int offset)
+bool _applist_item_select(PSERVER_LIST node, int offset)
 {
     if (_applist_visible_start == NULL)
     {
@@ -206,6 +208,16 @@ bool _applist_item_select(int offset)
     {
         _focused_app = item;
         _hovered_app = NULL;
+        if (_applist_rowcount)
+        {
+            int rowheight = list_view.total_height / _applist_rowcount;
+            int index = linkedlist_index(node->apps, item);
+            if (index >= 0)
+            {
+                int row = index / _applist_colcount;
+                *list_view.scroll_pointer = rowheight * row;
+            }
+        }
     }
     return true;
 }
