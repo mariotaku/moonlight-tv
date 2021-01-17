@@ -92,6 +92,10 @@ static void app_process_events(struct nk_context *ctx)
         bool block_steam_inputevent = false;
         if (SDL_IS_INPUT_EVENT(evt))
         {
+            if (SDL_IS_GAMEPAD_EVENT(evt))
+            {
+                printf("SDL gamepad event %d\n", evt.type);
+            }
             if (SDL_IS_CONTROLLERDEVICE_EVENT(evt))
             {
                 // Those are gamepad connect/disconnect events
