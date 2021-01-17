@@ -30,9 +30,14 @@ int absinput_gamepads()
     return sdl_gamepads;
 }
 
-ConnListenerRumble absinput_getrumble()
+int absinput_max_gamepads()
 {
-    return sdlinput_rumble;
+    return 4;
+}
+
+void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor)
+{
+    sdlinput_rumble(controllerNumber, lowFreqMotor, highFreqMotor);
 }
 
 static bool nocontrol_handle_event(SDL_Event ev)
@@ -210,4 +215,65 @@ void release_gamecontroller_buttons(int which)
 void release_keyboard_keys(SDL_Event ev)
 {
     keyboard_modifiers = 0;
+}
+
+bool absinput_init_gamepad(int joystick_index)
+{
+    if (SDL_IsGameController(joystick_index))
+    {
+        sdl_gamepads++;
+        SDL_GameController *controller = SDL_GameControllerOpen(joystick_index);
+        if (!controller)
+        {
+            fprintf(stderr, "Could not open gamecontroller %i: %s\n", joystick_index, SDL_GetError());
+            return true;
+        }
+
+        SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
+        SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
+        if (haptic && (SDL_HapticQuery(haptic) & SDL_HAPTIC_LEFTRIGHT) == 0)
+        {
+            SDL_HapticClose(haptic);
+            haptic = NULL;
+        }
+
+        SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
+        PGAMEPAD_STATE state = get_gamepad(sdl_id);
+        state->haptic = haptic;
+        state->haptic_effect_id = -1;
+        printf("Controller #%d connected, sdl_id: %d\n", state->id, sdl_id);
+        return true;
+    }
+    return false;
+}
+
+void absinput_close_gamepad(SDL_JoystickID sdl_id)
+{
+    PGAMEPAD_STATE state = get_gamepad(sdl_id);
+    if (!state)
+    {
+        return;
+    }
+    SDL_GameController *controller = SDL_GameControllerFromInstanceID(sdl_id);
+    if (!controller)
+    {
+        fprintf(stderr, "Could not find gamecontroller %i: %s\n", sdl_id, SDL_GetError());
+        return;
+    }
+    // Reduce number of connected gamepads
+    sdl_gamepads--;
+    // Remove gamepad mask
+    activeGamepadMask &= ~(1 << state->id);
+    if (state->haptic)
+    {
+        SDL_HapticClose(state->haptic);
+    }
+    SDL_GameControllerClose(controller);
+    printf("Controller #%d disconnected, sdl_id: %d\n", state->id, sdl_id);
+    state->haptic = NULL;
+    state->haptic_effect_id = -1;
+    state->sdl_id = -1;
+    state->id = -1;
+    // Release the state so it can be reused later
+    state->initialized = false;
 }

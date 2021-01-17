@@ -38,6 +38,9 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
             return NAVKEY_LEFT;
         case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
             return NAVKEY_RIGHT;
+        case SDL_CONTROLLER_BUTTON_A:
+        case SDL_CONTROLLER_BUTTON_START:
+            return NAVKEY_ENTER;
         default:
             break;
         }

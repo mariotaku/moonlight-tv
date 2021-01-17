@@ -19,13 +19,13 @@
 
 #include "src/connection.h"
 #include "session.h"
+#include "input/absinput.h"
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <signal.h>
 
 bool connection_debug;
-ConnListenerRumble rumble_handler = NULL;
 
 static void connection_terminated(int errorCode)
 {
@@ -40,12 +40,6 @@ static void connection_log_message(const char *format, ...)
   va_start(arglist, format);
   vprintf(format, arglist);
   va_end(arglist);
-}
-
-static void rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor)
-{
-  if (rumble_handler)
-    rumble_handler(controllerNumber, lowFreqMotor, highFreqMotor);
 }
 
 static void connection_status_update(int status)
@@ -74,5 +68,5 @@ CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
     .connectionStarted = NULL,
     .connectionTerminated = connection_terminated,
     .logMessage = connection_log_message,
-    .rumble = rumble,
+    .rumble = absinput_rumble,
     .connectionStatusUpdate = connection_status_update};

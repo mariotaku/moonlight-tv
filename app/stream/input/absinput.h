@@ -11,4 +11,6 @@ void absinput_destroy();
 
 int absinput_gamepads();
 
-ConnListenerRumble absinput_getrumble();
+int absinput_max_gamepads();
+
+void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor);

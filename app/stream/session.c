@@ -147,7 +147,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     }
     session_running = true;
     streaming_status = STREAMING_STREAMING;
-    rumble_handler = absinput_getrumble();
 
     pthread_mutex_lock(&lock);
     while (!session_interrupted)
@@ -158,7 +157,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     pthread_mutex_unlock(&lock);
     session_running = false;
 
-    rumble_handler = NULL;
     streaming_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
