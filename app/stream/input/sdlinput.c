@@ -270,10 +270,6 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id)
     }
     SDL_GameControllerClose(controller);
     printf("Controller #%d disconnected, sdl_id: %d\n", state->id, sdl_id);
-    state->haptic = NULL;
-    state->haptic_effect_id = -1;
-    state->sdl_id = -1;
-    state->id = -1;
     // Release the state so it can be reused later
-    state->initialized = false;
+    memset(state, 0, sizeof(GAMEPAD_STATE));
 }
