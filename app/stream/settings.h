@@ -21,3 +21,5 @@ PCONFIGURATION settings_load();
 void settings_save(PCONFIGURATION config);
 
 int settings_optimal_bitrate(int w, int h, int fps);
+
+bool settings_sops_supported(int w, int h, int fps);

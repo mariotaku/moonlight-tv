@@ -110,18 +110,41 @@ bool settings_window(struct nk_context *ctx)
         }
         nk_layout_row_dynamic_s(ctx, 25, 1);
         nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_property_int(ctx, "kbps:", 5000, &app_configuration->stream.bitrate, 100000, 500, 50);
+        nk_property_int(ctx, "kbps:", 5000, &app_configuration->stream.bitrate, 120000, 500, 50);
+        if (app_configuration->stream.bitrate > 50000)
+        {
+            nk_layout_row_dynamic_s(ctx, 50, 1);
+            nk_label_wrap(ctx, "[!] Too high resolution/fps/bitrate may cause blank screen or crash.");
+        }
+        else
+        {
+            nk_layout_row_dynamic_s(ctx, 4, 1);
+            nk_spacing(ctx, 1);
+        }
 
-        nk_layout_row_dynamic_s(ctx, 4, 1);
-        nk_spacing(ctx, 1);
         nk_layout_row_dynamic_s(ctx, 25, 1);
         nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
         nk_layout_row_dynamic_s(ctx, 25, 1);
 
-        nk_bool sops = app_configuration->sops ? nk_true : nk_false;
+        int w = app_configuration->stream.width, h = app_configuration->stream.height,
+            fps = app_configuration->stream.fps;
+        bool sops_supported = settings_sops_supported(w, h, fps);
+        nk_bool sops = sops_supported && app_configuration->sops ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
-        app_configuration->sops = sops == nk_true;
+        if (sops_supported)
+        {
+            app_configuration->sops = sops == nk_true;
+        }
+        else
+        {
+            nk_layout_row_template_begin_s(ctx, 25);
+            nk_layout_row_template_push_static_s(ctx, 20);
+            nk_layout_row_template_push_variable_s(ctx, 10);
+            nk_layout_row_template_end(ctx);
+            nk_spacing(ctx, 1);
+            nk_labelf_wrap(ctx, "(Not available under %s@%s)", _res_label, _fps_label);
+            nk_layout_row_dynamic_s(ctx, 25, 1);
+        }
 
         nk_bool localaudio = app_configuration->localaudio ? nk_true : nk_false;
         nk_checkbox_label(ctx, "Play audio on host PC", &localaudio);
@@ -184,7 +207,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 
 void _set_fps(int fps)
 {
-    sprintf(_fps_label, "%3d FPS", fps);
+    sprintf(_fps_label, "%d FPS", fps % 1000);
     app_configuration->stream.fps = fps;
 }
 

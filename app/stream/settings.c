@@ -76,7 +76,7 @@ int settings_optimal_bitrate(int w, int h, int fps)
     {
         fps = 60;
     }
-    int kbps = w * h / 200;
+    int kbps = w * h / 150;
     switch (RES_MERGE(w, h))
     {
     case RES_720P:
@@ -89,10 +89,27 @@ int settings_optimal_bitrate(int w, int h, int fps)
         kbps = 20000;
         break;
     case RES_4K:
-        kbps = 40000;
+        kbps = 25000;
         break;
     }
     return kbps * fps / 30;
+}
+
+bool settings_sops_supported(int w, int h, int fps)
+{
+    if (fps != 30 && fps != 60)
+    {
+        return false;
+    }
+    switch (RES_MERGE(w, h))
+    {
+    case RES_720P:
+    case RES_1080P:
+    case RES_4K:
+        return true;
+    default:
+        return false;
+    }
 }
 
 void settings_write(char *filename, PCONFIGURATION config)

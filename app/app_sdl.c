@@ -25,6 +25,7 @@
 #endif
 
 #include "backend/backend_root.h"
+#include "stream/session.h"
 #include "stream/input/absinput.h"
 #include "stream/input/sdlinput.h"
 #include "platform/sdl/events.h"
@@ -96,10 +97,6 @@ static void app_process_events(struct nk_context *ctx)
         {
             // Interrupt streaming because app will go to background
             streaming_interrupt(false);
-        }
-        else if (evt.type == SDL_WINDOWEVENT)
-        {
-            printf("SDL_WINDOWEVENT, event:0x%x\n", evt.window.event);
         }
         else if (SDL_IS_INPUT_EVENT(evt))
         {

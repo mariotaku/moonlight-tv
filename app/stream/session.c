@@ -64,6 +64,7 @@ void streaming_begin(PSERVER_LIST node, int app_id)
     {
         config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height, config->stream.fps);
     }
+    config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->node = node;
