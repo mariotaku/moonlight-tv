@@ -87,6 +87,7 @@ if (TARGET_WEBOS)
         app/stream/video/ndl.c
         app/stream/audio/lgnc.c
         app/stream/video/lgnc.c
+        core/moonlight-embedded/src/audio/sdl.c
     )
 elseif (TARGET_DESKTOP)
     list(APPEND SOURCES

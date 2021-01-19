@@ -12,16 +12,8 @@
 
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
 {
-#if OS_WEBOS
-    if (app_webos_ndl)
-    {
-        return &audio_callbacks_ndl;
-    }
-    if (app_webos_lgnc)
-    {
-        return &audio_callbacks_lgnc;
-    }
-    return NULL;
+#if OS_LGNC
+    return &audio_callbacks_lgnc;
 #else
     return &audio_callbacks_sdl;
 #endif

@@ -162,7 +162,7 @@ bool settings_window(struct nk_context *ctx)
         nk_layout_row_dynamic_s(ctx, 4, 1);
         nk_spacing(ctx, 1);
         nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_label(ctx, "Audio/Video Decoder", NK_TEXT_LEFT);
+        nk_label(ctx, "Video Decoder", NK_TEXT_LEFT);
         nk_layout_row_dynamic_s(ctx, 25, 1);
         static const char *platforms[] = {"auto", "legacy"};
         if (nk_combo_begin_label(ctx, app_configuration->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
