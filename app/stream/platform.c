@@ -40,8 +40,7 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
     {
         return &decoder_callbacks_lgnc;
     }
-    return NULL;
 #else
-    return &decoder_callbacks_sdl;
+    return NULL;
 #endif
 }

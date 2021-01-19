@@ -99,7 +99,7 @@ elseif (TARGET_DESKTOP)
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdl.c
         core/moonlight-embedded/src/sdl.c
-        core/moonlight-embedded/src/audio/sdl.c
+        core/moonlight-embedded/src/video/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c
     )
 endif()
