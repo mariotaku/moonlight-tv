@@ -143,7 +143,7 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_int(fd, "rotate", config->rotate);
     if (strcmp(config->platform, "auto") != 0)
         write_config_string(fd, "platform", config->platform);
-    if (strcmp(config->audio_device, "sdl") == 0)
+    if (config->audio_device != NULL)
         write_config_string(fd, "audio", config->audio_device);
     if (config->address != NULL)
         write_config_string(fd, "address", config->address);
