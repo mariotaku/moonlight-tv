@@ -163,7 +163,6 @@ bool settings_window(struct nk_context *ctx)
         nk_spacing(ctx, 1);
         nk_layout_row_dynamic_s(ctx, 25, 1);
         nk_label(ctx, "Video Decoder", NK_TEXT_LEFT);
-        nk_layout_row_dynamic_s(ctx, 25, 1);
         static const char *platforms[] = {"auto", "legacy"};
         if (nk_combo_begin_label(ctx, app_configuration->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
         {
@@ -177,7 +176,10 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_combo_end(ctx);
         }
-        nk_layout_row_dynamic_s(ctx, 50, 1);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_bool sdlaud = app_configuration->audio_device && strcmp(app_configuration->audio_device, "sdl") == 0;
+        nk_checkbox_label(ctx, "Use SDL to play audio", &sdlaud);
+        app_configuration->audio_device = sdlaud ? "sdl" : NULL;
         nk_spacing(ctx, 1);
 #endif
     }

@@ -87,7 +87,7 @@ if (TARGET_WEBOS)
         app/stream/video/ndl.c
         app/stream/audio/lgnc.c
         app/stream/video/lgnc.c
-        core/moonlight-embedded/src/audio/sdl.c
+        app/stream/audio/sdl.c
     )
 elseif (TARGET_DESKTOP)
     list(APPEND SOURCES
@@ -97,10 +97,10 @@ elseif (TARGET_DESKTOP)
         app/platform/sdl/nkimage.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
+        app/stream/audio/sdl.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/audio/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c
-        core/moonlight-embedded/src/video/sdl.c
     )
 endif()
 
