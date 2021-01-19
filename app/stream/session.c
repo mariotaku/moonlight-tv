@@ -49,7 +49,7 @@ void streaming_init()
 
 void streaming_destroy()
 {
-    streaming_interrupt(streaming_quitapp_requested);
+    streaming_interrupt(false);
     streaming_wait_for_stop();
 
     pthread_cond_destroy(&cond);
@@ -74,6 +74,10 @@ void streaming_begin(PSERVER_LIST node, int app_id)
 
 void streaming_interrupt(bool quitapp)
 {
+    if (session_interrupted)
+    {
+        return;
+    }
     pthread_mutex_lock(&lock);
     streaming_quitapp_requested = quitapp;
     session_interrupted = true;

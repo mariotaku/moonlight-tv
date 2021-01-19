@@ -92,7 +92,16 @@ static void app_process_events(struct nk_context *ctx)
     while (SDL_PollEvent(&evt))
     {
         bool block_steam_inputevent = false;
-        if (SDL_IS_INPUT_EVENT(evt))
+        if (evt.type == SDL_APP_WILLENTERBACKGROUND)
+        {
+            // Interrupt streaming because app will go to background
+            streaming_interrupt(false);
+        }
+        else if (evt.type == SDL_WINDOWEVENT)
+        {
+            printf("SDL_WINDOWEVENT, event:0x%x\n", evt.window.event);
+        }
+        else if (SDL_IS_INPUT_EVENT(evt))
         {
             inputmgr_sdl_handle_event(evt);
             if (evt.type == SDL_KEYUP || evt.type == SDL_CONTROLLERBUTTONUP)
