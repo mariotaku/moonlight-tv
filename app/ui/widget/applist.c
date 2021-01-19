@@ -88,7 +88,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     int item_height = nk_widget_height(ctx);
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
-        struct nk_image *cover = coverloader_get(node, cur->id);
+        struct nk_image *cover = coverloader_get(node, cur->id, cover_width, cover_height);
         bool defcover = _cover_use_default(cover);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : (defcover ? 2 : 1));
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));

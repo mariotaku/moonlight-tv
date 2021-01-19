@@ -36,6 +36,7 @@ struct CACHE_ITEM_T
     int id;
     PSERVER_LIST node;
     enum IMAGE_STATE_T state;
+    int width, height;
     struct nk_image *data;
 };
 
@@ -48,7 +49,7 @@ static struct CACHE_ITEM_T *coverloader_current_task;
 static bool coverloader_working_running;
 
 WORKER_THREAD static void *coverloader_worker(void *);
-WORKER_THREAD static bool coverloader_decode_image(int id, struct nk_image *decoded);
+WORKER_THREAD static bool coverloader_decode_image(struct CACHE_ITEM_T *req, struct nk_image *decoded);
 WORKER_THREAD static bool coverloader_fetch_image(PSERVER_LIST node, int id);
 MAIN_THREAD static void coverloader_load(struct CACHE_ITEM_T *req);
 MAIN_THREAD static struct CACHE_ITEM_T *cache_item_new(PSERVER_LIST node, int id);
@@ -58,12 +59,15 @@ THREAD_SAFE static void coverloader_cache_item_free(void *p);
 
 static char *coverloader_cache_dir();
 static bool _cover_is_placeholder(struct nk_image *bmp);
+static bool _cover_update_region(struct nk_image *img, int width, int height);
+
+#define ITEM_AVERAGE_SIZE 360000
 
 MAIN_THREAD
 void coverloader_init()
 {
-    // 16MB limit, 360K each
-    coverloader_mem_cache = lruc_new(16 * 1024 * 1024, 360000, &coverloader_cache_item_free);
+    // 32MB limit, 720K each
+    coverloader_mem_cache = lruc_new(32 * 1024 * 1024, ITEM_AVERAGE_SIZE, &coverloader_cache_item_free);
     coverloader_current_task = NULL;
     coverloader_working_running = true;
 
@@ -84,7 +88,7 @@ void coverloader_destroy()
 }
 
 MAIN_THREAD
-struct nk_image *coverloader_get(PSERVER_LIST node, int id)
+struct nk_image *coverloader_get(PSERVER_LIST node, int id, int target_width, int target_height)
 {
     // First find in memory cache
     struct CACHE_ITEM_T *cached = NULL;
@@ -97,7 +101,9 @@ struct nk_image *coverloader_get(PSERVER_LIST node, int id)
     if (!cached)
     {
         cached = cache_item_new(node, id);
-        lruc_set(coverloader_mem_cache, id, cached, 360000);
+        cached->width = target_width;
+        cached->height = target_height;
+        lruc_set(coverloader_mem_cache, id, cached, ITEM_AVERAGE_SIZE);
     }
     // Here we have single task for image loading.
     if (cached->state == IMAGE_STATE_QUEUED && !coverloader_current_task)
@@ -124,7 +130,7 @@ void *coverloader_worker(void *unused)
         coverloader_notify_change(req, IMAGE_STATE_LOADING, NULL);
         struct nk_image decoded = nk_image_id(0);
         // Load from local file cache
-        if (coverloader_decode_image(req->id, &decoded))
+        if (coverloader_decode_image(req, &decoded))
         {
             printf("Local file cache hit for %d\n", req->id);
             coverloader_notify_decoded(req, &decoded);
@@ -139,7 +145,7 @@ void *coverloader_worker(void *unused)
         }
         printf("Cover fetched for %d\n", req->id);
         // Now the file is in local cache, load again
-        if (coverloader_decode_image(req->id, &decoded))
+        if (coverloader_decode_image(req, &decoded))
         {
             printf("Downloaded cover decoded for %d\n", req->id);
             coverloader_notify_decoded(req, &decoded);
@@ -196,11 +202,11 @@ void coverloader_notify_decoded(struct CACHE_ITEM_T *req, struct nk_image *decod
 }
 
 WORKER_THREAD
-bool coverloader_decode_image(int id, struct nk_image *decoded)
+bool coverloader_decode_image(struct CACHE_ITEM_T *req, struct nk_image *decoded)
 {
     char *cachedir = coverloader_cache_dir();
     char path[4096];
-    sprintf(path, "%s/%d", cachedir, id);
+    sprintf(path, "%s/%d", cachedir, req->id);
     free(cachedir);
     if (!nk_imageloadf(path, decoded))
     {
@@ -210,6 +216,10 @@ bool coverloader_decode_image(int id, struct nk_image *decoded)
     {
         nk_imagebmpfree(decoded);
         memset(decoded, 0, sizeof(struct nk_image));
+    }
+    else
+    {
+        _cover_update_region(decoded, req->width, req->height);
     }
     return true;
 }
@@ -315,4 +325,37 @@ void coverloader_cache_item_free(void *p)
 bool _cover_is_placeholder(struct nk_image *bmp)
 {
     return (bmp->w == 130 && bmp->h == 180) || (bmp->w == 628 && bmp->h == 888);
+}
+
+bool _cover_update_region(struct nk_image *img, int width, int height)
+{
+    if (width > height)
+    {
+        // Don't care about this case
+        return false;
+    }
+    float sratio = img->w / (float)img->h, dratio = width / (float)height;
+    if (dratio > sratio)
+    {
+        // dst image is wider, adjust src vertical crop to fit dst width
+        int croph = img->w / dratio;
+        // horizontal as-is
+        img->region[0] = 0;
+        img->region[1] = (img->h - croph) / 2;
+
+        img->region[2] = img->w;
+        img->region[3] = croph;
+    }
+    else
+    {
+        // src image is wider, adjust src horizontal crop fit dst height
+        int cropw = img->h * dratio;
+        img->region[0] = (img->w - cropw) / 2;
+        // vertical as-is
+        img->region[1] = 0;
+
+        img->region[2] = cropw;
+        img->region[3] = img->h;
+    }
+    return true;
 }
