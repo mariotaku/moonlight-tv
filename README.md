@@ -1,14 +1,17 @@
-# Moonlight SDL
+# Moonlight TV
 
-Moonlight SDL is a GUI front end for [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
-It was originally designed for LG webOS TVs, but may support running in standard Linux in the future.
+Moonlight TV is a GUI front end for [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
+It was originally designed for LG webOS TVs, but may support running in more devices in the future.
 
-## Installing
+## [Installation Guide](/mariotaku/moonlight-tv/wiki/Installation-Guide)
 
-Unfortunatly, LG webOS has many restrictions like time limited developer mode. Please follow instructions [here](http://webostv.developer.lge.com/develop/app-test/)
+## [Compatibility Status](/mariotaku/moonlight-tv/wiki/Compatibility-List)
+
+## [Gamepad Setup](/mariotaku/moonlight-tv/wiki/Gamepad-Setup)
 
 ## Building for webOS
 
 Follow instructions [here](https://github.com/webosbrew/meta-lg-webos-ndk#cmake)
 
-In order to build IPK package, you'll also need to have [jo](https://github.com/jpmens/jo) installed.
+In order to build IPK package, you'll also need to have an additional package called
+ [jo](https://github.com/jpmens/jo) installed.
