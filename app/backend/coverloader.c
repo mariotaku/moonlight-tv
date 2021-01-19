@@ -310,10 +310,6 @@ char *coverloader_cache_dir()
 
 void coverloader_cache_item_free(void *p)
 {
-    if (p == NULL)
-    {
-        return;
-    }
     struct CACHE_ITEM_T *item = p;
     if (item->data)
     {
