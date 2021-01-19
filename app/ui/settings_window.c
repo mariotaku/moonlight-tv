@@ -158,7 +158,7 @@ bool settings_window(struct nk_context *ctx)
         nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
         app_configuration->viewonly = viewonly == nk_true;
 
-// #if OS_WEBOS
+#if OS_WEBOS || DEBUG
         nk_layout_row_dynamic_s(ctx, 4, 1);
         nk_spacing(ctx, 1);
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -181,7 +181,7 @@ bool settings_window(struct nk_context *ctx)
         nk_checkbox_label(ctx, "Use SDL to play audio", &sdlaud);
         app_configuration->audio_device = sdlaud ? "sdl" : NULL;
         nk_spacing(ctx, 1);
-// #endif
+#endif
     }
     nk_end(ctx);
     // Why Nuklear why, the button looks like "close" but it actually "hide"
