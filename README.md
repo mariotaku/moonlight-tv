@@ -3,11 +3,11 @@
 Moonlight TV is a GUI front end for [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
 It was originally designed for LG webOS TVs, but may support running in more devices in the future.
 
-## [Installation Guide](/mariotaku/moonlight-tv/wiki/Installation-Guide)
+## [Installation Guide](https://github.com/mariotaku/moonlight-tv/wiki/Installation-Guide)
 
-## [Compatibility Status](/mariotaku/moonlight-tv/wiki/Compatibility-List)
+## [Compatibility Status](https://github.com/mariotaku/moonlight-tv/wiki/Compatibility-List)
 
-## [Gamepad Setup](/mariotaku/moonlight-tv/wiki/Gamepad-Setup)
+## [Gamepad Setup](https://github.com/mariotaku/moonlight-tv/wiki/Gamepad-Setup)
 
 ## Building for webOS
 
