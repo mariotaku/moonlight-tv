@@ -102,6 +102,7 @@ static void app_process_events(struct nk_context *ctx)
         else if (SDL_IS_INPUT_EVENT(evt))
         {
             inputmgr_sdl_handle_event(evt);
+            block_steam_inputevent |= gui_should_block_input();
             if (evt.type == SDL_KEYUP || evt.type == SDL_CONTROLLERBUTTONUP)
             {
                 // Those are input events
@@ -111,7 +112,6 @@ static void app_process_events(struct nk_context *ctx)
                     gui_dispatch_navkey(ctx, navkey);
                 }
             }
-            block_steam_inputevent |= gui_should_block_input();
         }
         else if (evt.type == SDL_USEREVENT)
         {
