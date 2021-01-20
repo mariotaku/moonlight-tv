@@ -54,6 +54,8 @@ static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey);
 
 #define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
+bool _launcher_has_popup;
+bool _launcher_popup_request_dismiss;
 
 void launcher_window_init(struct nk_context *ctx)
 {
@@ -78,6 +80,7 @@ void launcher_window_destroy()
 bool launcher_window(struct nk_context *ctx)
 {
     int window_flags = NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER;
+    _launcher_has_popup = false;
     if (launcher_blocked())
     {
         window_flags |= NK_WINDOW_NO_INPUT;
@@ -119,6 +122,7 @@ bool launcher_window(struct nk_context *ctx)
             else
             {
                 _server_error_popup(ctx);
+                _launcher_has_popup |= true;
             }
         }
         else
@@ -133,12 +137,14 @@ bool launcher_window(struct nk_context *ctx)
             if (pairing_computer_state.state == PS_FAIL)
             {
                 _pairing_error_popup(ctx);
+                _launcher_has_popup |= true;
             }
         }
 #ifdef OS_WEBOS
         if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
         {
             _webos_decoder_error_popup(ctx);
+            _launcher_has_popup |= true;
         }
 #endif
     }
@@ -158,6 +164,11 @@ bool launcher_window(struct nk_context *ctx)
     {
         nk_window_close(ctx, "Moonlight");
         return false;
+    }
+    // No popup, reset dismiss request
+    if (!_launcher_has_popup)
+    {
+        _launcher_popup_request_dismiss = false;
     }
     return true;
 }
@@ -190,6 +201,13 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 {
     if (launcher_blocked())
     {
+    }
+    else if (_launcher_has_popup)
+    {
+        if (navkey == NAVKEY_BACK || navkey == NAVKEY_ENTER)
+        {
+            _launcher_popup_request_dismiss = true;
+        }
     }
     else if (selected_server_node && selected_server_node->server)
     {
@@ -314,7 +332,8 @@ void _quitapp_window(struct nk_context *ctx)
 void _pairing_error_popup(struct nk_context *ctx)
 {
     char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
-    if (nk_dialog_popup(ctx, "Pairing Failed", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING)
+    bool dismissed = nk_dialog_popup(ctx, "Pairing Failed", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING;
+    if (dismissed || _launcher_popup_request_dismiss)
     {
         pairing_computer_state.state = PS_NONE;
     }
@@ -323,7 +342,8 @@ void _pairing_error_popup(struct nk_context *ctx)
 void _server_error_popup(struct nk_context *ctx)
 {
     const char *message = selected_server_node->errmsg;
-    if (nk_dialog_popup(ctx, "Connection Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING)
+    bool dismissed = nk_dialog_popup(ctx, "Connection Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING;
+    if (dismissed || _launcher_popup_request_dismiss)
     {
         selected_server_node = NULL;
     }
@@ -334,7 +354,8 @@ void _webos_decoder_error_popup(struct nk_context *ctx)
     const char *message = "Unable to initialize system video decoder. "
                           "Audio and video will not work during streaming. "
                           "You may need to restart your TV.";
-    if (nk_dialog_popup(ctx, "Decoder Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING)
+    bool dismissed = nk_dialog_popup(ctx, "Decoder Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING;
+    if (dismissed || _launcher_popup_request_dismiss)
     {
         _webos_decoder_error_dismissed = true;
     }
