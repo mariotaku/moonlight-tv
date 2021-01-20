@@ -8,5 +8,6 @@ typedef enum NAVKEY_
     NAVKEY_LEFT,
     NAVKEY_RIGHT,
     NAVKEY_ENTER,
+    NAVKEY_CONFIRM,
     NAVKEY_BACK,
 } NAVKEY;

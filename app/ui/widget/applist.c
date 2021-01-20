@@ -175,6 +175,7 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
         return _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
         return _applist_item_select(node, _applist_colcount);
+    case NAVKEY_CONFIRM:
     case NAVKEY_ENTER:
     {
         if (_focused_app)

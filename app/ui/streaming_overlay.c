@@ -52,6 +52,25 @@ bool streaming_overlay_dispatch_userevent(int which)
     return false;
 }
 
+bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+{
+    if (quit_confirm_showing)
+    {
+        switch (navkey)
+        {
+        case NAVKEY_BACK:
+            quit_confirm_showing = false;
+            break;
+        case NAVKEY_CONFIRM:
+            streaming_interrupt(true);
+            quit_confirm_showing = false;
+            break;
+        }
+        return true;
+    }
+    return false;
+}
+
 bool streaming_overlay_should_block_input()
 {
     return quit_confirm_showing;

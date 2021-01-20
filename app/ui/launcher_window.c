@@ -204,7 +204,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
     }
     else if (_launcher_has_popup)
     {
-        if (navkey == NAVKEY_BACK || navkey == NAVKEY_ENTER)
+        if (navkey == NAVKEY_BACK || navkey == NAVKEY_ENTER || navkey == NAVKEY_CONFIRM)
         {
             _launcher_popup_request_dismiss = true;
         }

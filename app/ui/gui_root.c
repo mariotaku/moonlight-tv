@@ -98,6 +98,7 @@ bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
     }
     else
     {
+        handled |= handled || streaming_overlay_dispatch_navkey(ctx, navkey);
     }
     return handled;
 }
