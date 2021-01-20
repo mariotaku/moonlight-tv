@@ -4,7 +4,6 @@
 
 #include "nuklear/config.h"
 #include "nuklear.h"
-#include "nuklear/ext_widgets.h"
 #include "nuklear/ext_functions.h"
 #include "nuklear/ext_styling.h"
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef NK_NUKLEAR_H_
 #include "nuklear.h"
 #endif

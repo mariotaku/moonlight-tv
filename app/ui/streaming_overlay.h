@@ -8,6 +8,7 @@
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_dialog.h"
 #endif
 
 #include "backend/computer_manager.h"

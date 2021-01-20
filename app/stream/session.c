@@ -127,7 +127,8 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     {
         printf("Launch app %d...\n", appId);
     }
-    int ret = gs_start_app(server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
+    // int ret = gs_start_app(server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
+    int ret = -1;
     if (ret < 0)
     {
         streaming_status = STREAMING_ERROR;
