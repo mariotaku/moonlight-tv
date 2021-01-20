@@ -332,20 +332,30 @@ void _quitapp_window(struct nk_context *ctx)
 void _pairing_error_popup(struct nk_context *ctx)
 {
     char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
-    bool dismissed = nk_dialog_popup(ctx, "Pairing Failed", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING;
-    if (dismissed || _launcher_popup_request_dismiss)
+    enum nk_dialog_result result;
+    if ((result = nk_dialog_popup_begin(ctx, "Pairing Failed", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {
-        pairing_computer_state.state = PS_NONE;
+        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        {
+            pairing_computer_state.state = PS_NONE;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
     }
 }
 
 void _server_error_popup(struct nk_context *ctx)
 {
     const char *message = selected_server_node->errmsg;
-    bool dismissed = nk_dialog_popup(ctx, "Connection Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING;
-    if (dismissed || _launcher_popup_request_dismiss)
+    enum nk_dialog_result result;
+    if ((result = nk_dialog_popup_begin(ctx, "Connection Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {
-        selected_server_node = NULL;
+        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        {
+            selected_server_node = NULL;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
     }
 }
 
@@ -354,9 +364,14 @@ void _webos_decoder_error_popup(struct nk_context *ctx)
     const char *message = "Unable to initialize system video decoder. "
                           "Audio and video will not work during streaming. "
                           "You may need to restart your TV.";
-    bool dismissed = nk_dialog_popup(ctx, "Decoder Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING;
-    if (dismissed || _launcher_popup_request_dismiss)
+    enum nk_dialog_result result;
+    if ((result = nk_dialog_popup_begin(ctx, "Decoder Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {
-        _webos_decoder_error_dismissed = true;
+        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        {
+            _webos_decoder_error_dismissed = true;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
     }
 }

@@ -84,19 +84,21 @@ void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 void _streaming_error_window(struct nk_context *ctx)
 {
     char *message = streaming_errmsg[0] ? streaming_errmsg : (char *)MSG_GS_ERRNO[-streaming_errno];
-    enum nk_dialog_result result = nk_dialog(ctx, gui_display_width, gui_display_height, "Streaming Error",
-                                             message, "OK", NULL, NULL);
+    enum nk_dialog_result result = nk_dialog_begin(ctx, gui_display_width, gui_display_height, "Streaming Error",
+                                                   message, "OK", NULL, NULL);
     if (result != NK_DIALOG_RUNNING)
     {
         streaming_status = STREAMING_NONE;
     }
+    nk_end(ctx);
 }
 
 void _streaming_quit_confirm_window(struct nk_context *ctx)
 {
-    enum nk_dialog_result result = nk_dialog(ctx, gui_display_width, gui_display_height, "Quit Streaming",
-                                             "Do you want to quit streaming? If you select \"Quit\", unsaved progress will be lost.",
-                                             "Quit", "Keep", "Cancel");
+    const char *message = "Do you want to quit streaming? "
+                          "If you select \"Quit\", unsaved progress will be lost.";
+    enum nk_dialog_result result = nk_dialog_begin(ctx, gui_display_width, gui_display_height, "Quit Streaming",
+                                                   message, "Quit", "Keep", "Cancel");
     switch (result)
     {
     case NK_DIALOG_POSITIVE:
@@ -113,4 +115,5 @@ void _streaming_quit_confirm_window(struct nk_context *ctx)
     default:
         break;
     }
+    nk_end(ctx);
 }

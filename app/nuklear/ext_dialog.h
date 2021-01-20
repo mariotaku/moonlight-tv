@@ -13,17 +13,18 @@
 enum nk_dialog_result
 {
     NK_DIALOG_CANCELLED = -1,
-    NK_DIALOG_RUNNING,
-    NK_DIALOG_POSITIVE,
+    NK_DIALOG_NONE = 0,
+    NK_DIALOG_RUNNING = 1,
+    NK_DIALOG_POSITIVE = 10,
     NK_DIALOG_NEGATIVE,
     NK_DIALOG_NEUTRAL
 };
 
-enum nk_dialog_result nk_dialog(struct nk_context *ctx, int container_width, int container_height, const char *title,
-                                const char *message, const char *positive, const char *negative, const char *neutral);
+enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_width, int container_height, const char *title,
+                                      const char *message, const char *positive, const char *negative, const char *neutral);
 
-enum nk_dialog_result nk_dialog_popup(struct nk_context *ctx, const char *title, const char *message,
-                                      const char *positive, const char *negative, const char *neutral);
+enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *title, const char *message,
+                                            const char *positive, const char *negative, const char *neutral);
 
 #ifdef NK_IMPLEMENTATION
 
@@ -65,8 +66,8 @@ inline static enum nk_dialog_result _nk_dialog_content(struct nk_context *ctx, c
     return result;
 }
 
-enum nk_dialog_result nk_dialog(struct nk_context *ctx, int container_width, int container_height, const char *title,
-                                const char *message, const char *positive, const char *negative, const char *neutral)
+enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_width, int container_height, const char *title,
+                                      const char *message, const char *positive, const char *negative, const char *neutral)
 {
     struct nk_borders dec_size = nk_style_window_get_decoration_size(&ctx->style, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR);
     int dialog_width = 330 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
@@ -76,17 +77,16 @@ enum nk_dialog_result nk_dialog(struct nk_context *ctx, int container_width, int
     int dialog_height = dec_size.t + message_height + ctx->style.window.spacing.y + 30 * NK_UI_SCALE + dec_size.b;
 
     struct nk_rect s = nk_rect_centered(container_width, container_height, dialog_width, dialog_height);
-    enum nk_dialog_result result = NK_DIALOG_RUNNING;
+    enum nk_dialog_result result = NK_DIALOG_NONE;
     if (nk_begin(ctx, title, s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         result = _nk_dialog_content(ctx, message, message_height, positive, negative, neutral);
-        nk_end(ctx);
     }
     return result;
 }
 
-enum nk_dialog_result nk_dialog_popup(struct nk_context *ctx, const char *title,
-                                      const char *message, const char *positive, const char *negative, const char *neutral)
+enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *title,
+                                            const char *message, const char *positive, const char *negative, const char *neutral)
 {
     struct nk_borders dec_size = nk_style_window_get_decoration_size(&ctx->style, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR);
     int dialog_width = 330 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
@@ -97,15 +97,10 @@ enum nk_dialog_result nk_dialog_popup(struct nk_context *ctx, const char *title,
 
     struct nk_vec2 window_size = nk_window_get_size(ctx);
     struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, dialog_width, dialog_height);
-    enum nk_dialog_result result = NK_DIALOG_RUNNING;
+    enum nk_dialog_result result = NK_DIALOG_NONE;
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, title, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR, s))
     {
         result = _nk_dialog_content(ctx, message, message_height, positive, negative, neutral);
-        if (result != NK_DIALOG_RUNNING)
-        {
-            nk_popup_close(ctx);
-        }
-        nk_popup_end(ctx);
     }
     return result;
 }
