@@ -297,6 +297,20 @@ void _pairing_window(struct nk_context *ctx)
     nk_end(ctx);
 }
 
+void _quitapp_window(struct nk_context *ctx)
+{
+    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
+    if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+    {
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
+        int content_height_remaining = (int)content_size.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+
+        nk_label(ctx, "Quitting...", NK_TEXT_ALIGN_LEFT);
+    }
+    nk_end(ctx);
+}
+
 void _pairing_error_popup(struct nk_context *ctx)
 {
     char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
