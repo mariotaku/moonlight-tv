@@ -135,12 +135,12 @@ bool launcher_window(struct nk_context *ctx)
                 _pairing_error_popup(ctx);
             }
         }
-        // #ifdef OS_WEBOS
-        if (!_webos_decoder_error_dismissed)
+#ifdef OS_WEBOS
+        if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
         {
             _webos_decoder_error_popup(ctx);
         }
-        // #endif
+#endif
     }
     nk_end(ctx);
 
