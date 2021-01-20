@@ -10,7 +10,12 @@
 
 // clang-format off
 
+struct nk_borders {
+    float l,t,r,b;
+};
+
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
+NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_style *style, enum nk_window_flags flags);
 
 #define nk_rect_s(x, y, w, h) nk_rect((x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE)
 #define nk_rect_s_const(x, y, w, h) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE}
@@ -42,5 +47,29 @@ NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx)
     size.x -= ctx->style.window.padding.x * 2;
     size.x -= ctx->style.window.border * 2;
     return size;
+}
+
+NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_style *style, enum nk_window_flags flags)
+{
+    const struct nk_style_window *win = &style->window;
+    // left, top, right, bottom
+    struct nk_borders borders = {0, 0, 0, 0};
+    if (flags & NK_WINDOW_BORDER)
+    {
+        borders.l += win->border;
+        borders.t += win->border;
+        borders.r += win->border;
+        borders.b += win->border;
+    }
+    if (flags & NK_WINDOW_TITLE)
+    {
+        borders.t += style->font->height + 2.0f * win->header.padding.y;
+        borders.t += 2.0f * win->header.label_padding.y;
+    }
+    borders.l += win->padding.x;
+    borders.r += win->padding.x;
+    borders.t += win->padding.y;
+    borders.b += win->padding.y;
+    return borders;
 }
 #endif

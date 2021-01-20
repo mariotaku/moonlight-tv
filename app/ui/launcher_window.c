@@ -135,12 +135,12 @@ bool launcher_window(struct nk_context *ctx)
                 _pairing_error_popup(ctx);
             }
         }
-#ifdef OS_WEBOS
-        if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
+        // #ifdef OS_WEBOS
+        if (!_webos_decoder_error_dismissed)
         {
             _webos_decoder_error_popup(ctx);
         }
-#endif
+        // #endif
     }
     nk_end(ctx);
 
@@ -299,113 +299,29 @@ void _pairing_window(struct nk_context *ctx)
 
 void _pairing_error_popup(struct nk_context *ctx)
 {
-    struct nk_vec2 window_size = nk_window_get_size(ctx);
-    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, 300 * NK_UI_SCALE, 110 * NK_UI_SCALE);
-    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Pairing Failed",
-                       NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+    char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
+    if (nk_dialog_popup(ctx, "Pairing Failed", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING)
     {
-
-        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        int content_height_remaining = (int)content_size.y;
-        /* remove bottom button height */
-        content_height_remaining -= 30 * NK_UI_SCALE;
-        content_height_remaining -= ctx->style.window.spacing.y;
-        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-
-        if (pairing_computer_state.error != NULL)
-        {
-            nk_label_wrap(ctx, pairing_computer_state.error);
-        }
-        else
-        {
-            nk_label_wrap(ctx, "Pairing error.");
-        }
-
-        nk_layout_row_template_begin_s(ctx, 30);
-        nk_layout_row_template_push_variable_s(ctx, 10);
-        nk_layout_row_template_push_static_s(ctx, 80);
-        nk_layout_row_template_end(ctx);
-
-        nk_spacing(ctx, 1);
-        if (nk_button_label(ctx, "OK"))
-        {
-            pairing_computer_state.state = PS_NONE;
-            nk_popup_close(ctx);
-        }
-        nk_popup_end(ctx);
+        pairing_computer_state.state = PS_NONE;
     }
 }
 
 void _server_error_popup(struct nk_context *ctx)
 {
-    struct nk_vec2 window_size = nk_window_get_size(ctx);
-    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, 300 * NK_UI_SCALE, 110 * NK_UI_SCALE);
-    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Connection Error",
-                       NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+    const char *message = selected_server_node->errmsg;
+    if (nk_dialog_popup(ctx, "Connection Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING)
     {
-        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        int content_height_remaining = (int)content_size.y;
-        /* remove bottom button height */
-        content_height_remaining -= 30 * NK_UI_SCALE;
-        content_height_remaining -= ctx->style.window.spacing.y;
-        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-        nk_label_wrap(ctx, selected_server_node->errmsg);
-
-        nk_layout_row_template_begin_s(ctx, 30);
-        nk_layout_row_template_push_variable_s(ctx, 10);
-        nk_layout_row_template_push_static_s(ctx, 80);
-        nk_layout_row_template_end(ctx);
-
-        nk_spacing(ctx, 1);
-        if (nk_button_label(ctx, "OK"))
-        {
-            selected_server_node = NULL;
-            nk_popup_close(ctx);
-        }
-        nk_popup_end(ctx);
+        selected_server_node = NULL;
     }
-}
-
-void _quitapp_window(struct nk_context *ctx)
-{
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
-    if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
-    {
-        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        int content_height_remaining = (int)content_size.y;
-        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-
-        nk_label(ctx, "Quitting...", NK_TEXT_ALIGN_LEFT);
-    }
-    nk_end(ctx);
 }
 
 void _webos_decoder_error_popup(struct nk_context *ctx)
 {
-    struct nk_vec2 window_size = nk_window_get_size(ctx);
-    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, 300 * NK_UI_SCALE, 176 * NK_UI_SCALE);
-    if (nk_popup_begin(ctx, NK_POPUP_STATIC, "Decoder Error",
-                       NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR, s))
+    const char *message = "Unable to initialize system video decoder. "
+                          "Audio and video will not work during streaming. "
+                          "You may need to restart your TV.";
+    if (nk_dialog_popup(ctx, "Decoder Error", message, "OK", NULL, NULL) != NK_DIALOG_RUNNING)
     {
-        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        int content_height_remaining = (int)content_size.y;
-        /* remove bottom button height */
-        content_height_remaining -= 30 * NK_UI_SCALE;
-        content_height_remaining -= ctx->style.window.spacing.y;
-        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-        nk_label_wrap(ctx, "Unable to initialize system video decoder. Audio and video will not work during streaming. You may need to restart your TV.");
-
-        nk_layout_row_template_begin_s(ctx, 30);
-        nk_layout_row_template_push_variable_s(ctx, 10);
-        nk_layout_row_template_push_static_s(ctx, 80);
-        nk_layout_row_template_end(ctx);
-
-        nk_spacing(ctx, 1);
-        if (nk_button_label(ctx, "OK"))
-        {
-            _webos_decoder_error_dismissed = true;
-            nk_popup_close(ctx);
-        }
-        nk_popup_end(ctx);
+        _webos_decoder_error_dismissed = true;
     }
 }
