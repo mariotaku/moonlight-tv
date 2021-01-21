@@ -1,3 +1,7 @@
 #pragma once
 
 #define SDLK_WEBOS_BACK 482
+#define SDLK_WEBOS_RED 486
+#define SDLK_WEBOS_GREEN 487
+#define SDLK_WEBOS_YELLOW 488
+#define SDLK_WEBOS_BLUE 489
