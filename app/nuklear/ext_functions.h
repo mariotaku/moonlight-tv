@@ -1,4 +1,7 @@
 #pragma once
+
+#include <stdbool.h>
+
 #ifndef NK_NUKLEAR_H_
 #include "nuklear.h"
 #endif
@@ -16,6 +19,8 @@ struct nk_borders {
 
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_style *style, enum nk_window_flags flags);
+
+NK_API nk_bool nk_checkbox_label_std(struct nk_context*, const char* label, bool *active);
 
 #define nk_rect_s(x, y, w, h) nk_rect((x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE)
 #define nk_rect_s_const(x, y, w, h) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE}
@@ -71,5 +76,13 @@ NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_sty
     borders.t += win->padding.y;
     borders.b += win->padding.y;
     return borders;
+}
+
+NK_API nk_bool nk_checkbox_label_std(struct nk_context* ctx, const char* label, bool *value)
+{
+    nk_bool value_nk = value ? nk_true : nk_false;
+    nk_bool ret = nk_checkbox_label(ctx, label, &value_nk);
+    *value = value_nk == nk_true;
+    return ret;
 }
 #endif

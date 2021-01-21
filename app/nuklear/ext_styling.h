@@ -82,6 +82,8 @@ void nk_ext_apply_style(struct nk_context *ctx)
     /* slider buttons */
     button = &style->slider.inc_button;
     button->padding = nk_vec2_s(8.0f, 8.0f);
+    button->touch_padding = nk_vec2_s(0.0f, 0.0f);
+    button->border = 1.0f * NK_UI_SCALE;
 
     /* progressbar */
     prog = &style->progress;
@@ -95,10 +97,15 @@ void nk_ext_apply_style(struct nk_context *ctx)
 
     /* edit */
     edit = &style->edit;
+    edit->row_padding = 2 * NK_UI_SCALE;
+    edit->cursor_size = 4 * NK_UI_SCALE;
+    edit->border = 1 * NK_UI_SCALE;
 
     /* property */
     property = &style->property;
     property->padding = nk_vec2_s(4, 4);
+    property->border = 1 * NK_UI_SCALE;
+    property->rounding = 10 * NK_UI_SCALE;
 
     /* property buttons */
     button = &style->property.dec_button;

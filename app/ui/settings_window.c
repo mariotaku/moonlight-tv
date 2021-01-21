@@ -10,6 +10,24 @@
 
 #define WINDOW_TITLE "Settings"
 
+#define HAS_WEBOS_SETTINGS OS_WEBOS || DEBUG
+
+enum settings_entries
+{
+    ENTRY_NONE = -1,
+    ENTRY_RES_FPS = 0,
+    ENTRY_BITRATE,
+    ENTRY_SOPS,
+    ENTRY_LOCALAUDIO,
+    ENTRY_QUITAPP,
+    ENTRY_VIEWONLY,
+#if HAS_WEBOS_SETTINGS
+    ENTRY_WEBOS_VDEC,
+    ENTRY_WEBOS_SDLAUD,
+#endif
+    ENTRY_COUNT
+};
+
 struct _resolution_option
 {
     int w, h;
@@ -39,9 +57,12 @@ static const struct _fps_option _supported_fps[] = {
 
 static char _res_label[8], _fps_label[8];
 
+static enum settings_entries _selected_entry = ENTRY_NONE;
+
 static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
+static void _settings_select_offset(int offset);
 
 void settings_window_init(struct nk_context *ctx)
 {
@@ -146,19 +167,13 @@ bool settings_window(struct nk_context *ctx)
             nk_layout_row_dynamic_s(ctx, 25, 1);
         }
 
-        nk_bool localaudio = app_configuration->localaudio ? nk_true : nk_false;
-        nk_checkbox_label(ctx, "Play audio on host PC", &localaudio);
-        app_configuration->localaudio = localaudio == nk_true;
+        nk_checkbox_label_std(ctx, "Play audio on host PC", &app_configuration->localaudio);
 
-        nk_bool quitappafter = app_configuration->quitappafter ? nk_true : nk_false;
-        nk_checkbox_label(ctx, "Quit app on host PC after ending stream", &quitappafter);
-        app_configuration->quitappafter = quitappafter == nk_true;
+        nk_checkbox_label_std(ctx, "Quit app on host PC after ending stream", &app_configuration->quitappafter);
 
-        nk_bool viewonly = app_configuration->viewonly ? nk_true : nk_false;
-        nk_checkbox_label(ctx, "Disable all input processing (view-only mode)", &viewonly);
-        app_configuration->viewonly = viewonly == nk_true;
+        nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
 
-#if OS_WEBOS || DEBUG
+#if HAS_WEBOS_SETTINGS
         nk_layout_row_dynamic_s(ctx, 4, 1);
         nk_spacing(ctx, 1);
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -200,7 +215,12 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
     case NAVKEY_BACK:
         nk_window_show(ctx, WINDOW_TITLE, false);
         break;
-
+    case NAVKEY_UP:
+        _settings_select_offset(-1);
+        break;
+    case NAVKEY_DOWN:
+        _settings_select_offset(1);
+        break;
     default:
         break;
     }
@@ -240,4 +260,28 @@ void _set_res(int w, int h)
 void _update_bitrate()
 {
     app_configuration->stream.bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
+}
+
+void _settings_select_offset(int offset)
+{
+    if (_selected_entry < 0)
+    {
+        _selected_entry = ENTRY_RES_FPS;
+    }
+    else
+    {
+        int new_entry = _selected_entry + offset;
+        if (new_entry < 0)
+        {
+            _selected_entry = 0;
+        }
+        else if (new_entry >= ENTRY_COUNT)
+        {
+            _selected_entry = ENTRY_COUNT - 1;
+        }
+        else
+        {
+            _selected_entry = new_entry;
+        }
+    }
 }
