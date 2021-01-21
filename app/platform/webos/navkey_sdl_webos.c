@@ -1,4 +1,5 @@
 #include "platform/sdl/navkey_sdl.h"
+#include "platform/sdl/webos_keys"
 
 NAVKEY navkey_from_sdl(SDL_Event ev)
 {
@@ -20,7 +21,7 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
         case 40 /* Keyboard Enter */:
             return NAVKEY_ENTER;
         case 41 /* Keyboard ESC */:
-        case 482 /* Remote Back*/:
+        case SDLK_WEBOS_BACK:
             return NAVKEY_BACK;
         default:
             printf("KeyEvent, down: %d, key: %d\n", ev.key.state, ev.key.keysym.sym);
@@ -44,6 +45,8 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
             return NAVKEY_CONFIRM;
         case SDL_CONTROLLER_BUTTON_B:
             return NAVKEY_BACK;
+        case SDL_CONTROLLER_BUTTON_BACK:
+            return NAVKEY_MENU;
         case SDL_CONTROLLER_BUTTON_START:
             return NAVKEY_ENTER;
         default:

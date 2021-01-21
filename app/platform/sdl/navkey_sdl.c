@@ -21,6 +21,8 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
             return NAVKEY_CONFIRM;
         case SDLK_ESCAPE:
             return NAVKEY_BACK;
+        case SDLK_APPLICATION:
+            return NAVKEY_MENU;
         default:
             return NAVKEY_UNKNOWN;
         }
@@ -42,6 +44,8 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
             return NAVKEY_CONFIRM;
         case SDL_CONTROLLER_BUTTON_B:
             return NAVKEY_BACK;
+        case SDL_CONTROLLER_BUTTON_BACK:
+            return NAVKEY_MENU;
         case SDL_CONTROLLER_BUTTON_START:
             return NAVKEY_ENTER;
         default:
