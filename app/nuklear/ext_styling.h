@@ -51,6 +51,8 @@ void nk_ext_apply_style(struct nk_context *ctx)
     /* default button */
     button = &style->button;
     button->padding = nk_vec2_s(2.0f, 2.0f);
+    button->border = 1.0f * NK_UI_SCALE;
+    button->rounding = 4.0f * NK_UI_SCALE;
 
     /* contextual button */
     button = &style->contextual_button;
@@ -59,14 +61,18 @@ void nk_ext_apply_style(struct nk_context *ctx)
     /* menu button */
     button = &style->menu_button;
     button->padding = nk_vec2_s(2.0f, 2.0f);
+    button->border = 0.0f * NK_UI_SCALE;
+    button->rounding = 1.0f * NK_UI_SCALE;
 
     /* checkbox toggle */
     toggle = &style->checkbox;
     toggle->padding = nk_vec2_s(0.0f, 0.0f);
+    toggle->spacing = 4 * NK_UI_SCALE;
 
     /* option toggle */
     toggle = &style->option;
     toggle->padding = nk_vec2_s(3.0f, 3.0f);
+    toggle->spacing = 4 * NK_UI_SCALE;
 
     /* selectable */
     select = &style->selectable;
@@ -78,6 +84,7 @@ void nk_ext_apply_style(struct nk_context *ctx)
     slider->cursor_size = nk_vec2_s(16, 16);
     slider->padding = nk_vec2_s(2, 2);
     slider->spacing = nk_vec2_s(2, 2);
+    slider->bar_height = 8 * NK_UI_SCALE;
 
     /* slider buttons */
     button = &style->slider.inc_button;
@@ -94,6 +101,7 @@ void nk_ext_apply_style(struct nk_context *ctx)
 
     /* scrollbars buttons */
     button = &style->scrollh.inc_button;
+    button->border = 1.0f * NK_UI_SCALE;
 
     /* edit */
     edit = &style->edit;
@@ -112,12 +120,14 @@ void nk_ext_apply_style(struct nk_context *ctx)
 
     /* property edit */
     edit = &style->property.edit;
+    edit->cursor_size = 8 * NK_UI_SCALE;
 
     /* combo */
     combo = &style->combo;
     combo->content_padding = nk_vec2_s(4, 4);
     combo->button_padding = nk_vec2_s(0, 6);
     combo->spacing = nk_vec2_s(4, 0);
+    combo->border = 1 * NK_UI_SCALE;
 
     /* combo button */
     button = &style->combo.button;
@@ -127,6 +137,8 @@ void nk_ext_apply_style(struct nk_context *ctx)
     tab = &style->tab;
     tab->padding = nk_vec2_s(4, 4);
     tab->spacing = nk_vec2_s(4, 4);
+    tab->indent = 10.0f * NK_UI_SCALE;
+    tab->border = 1 * NK_UI_SCALE;
 
     /* tab button */
     button = &style->tab.tab_minimize_button;

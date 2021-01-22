@@ -78,7 +78,7 @@ NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_sty
 
 NK_API nk_bool nk_checkbox_label_std(struct nk_context *ctx, const char *label, bool *value)
 {
-    nk_bool value_nk = value ? nk_true : nk_false;
+    nk_bool value_nk = *value ? nk_true : nk_false;
     nk_bool ret = nk_checkbox_label(ctx, label, &value_nk);
     *value = value_nk == nk_true;
     return ret;
