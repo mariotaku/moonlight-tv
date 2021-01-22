@@ -134,7 +134,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::OpenSSL PkgConfig::GLES opus)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
 elseif(TARGET_DARWIN)
-    target_compile_definitions(moonlight PUBLIC OS_DARWIN)
+    target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_DARWIN GL_SILENCE_DEPRECATION)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     get_filename_component(SDL2_INCLUDE_DIR_PARENT ${SDL2_INCLUDE_DIRS} DIRECTORY)
@@ -144,7 +144,7 @@ elseif(TARGET_DARWIN)
 
     target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
 else()
-    target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
+    target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)

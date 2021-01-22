@@ -32,7 +32,7 @@
 #include "platform/sdl/events.h"
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/gui_root.h"
-#include "ui/config.h"
+#include "util/user_event.h"
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
@@ -45,6 +45,8 @@
 SDL_Window *win;
 SDL_GLContext glContext;
 static char wintitle[32];
+
+static bool window_focus_gained;
 
 static void fps_cap(int diff);
 
@@ -99,6 +101,20 @@ static void app_process_events(struct nk_context *ctx)
             // Interrupt streaming because app will go to background
             streaming_interrupt(false);
         }
+#if TARGET_DESKTOP
+        else if (evt.type == SDL_WINDOWEVENT)
+        {
+            if (evt.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+            {
+                window_focus_gained = true;
+            }
+            else if (evt.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+            {
+                window_focus_gained = false;
+            }
+            printf("Window event %d\n", evt.window.event);
+        }
+#endif
         else if (SDL_IS_INPUT_EVENT(evt))
         {
             inputmgr_sdl_handle_event(evt);
@@ -117,6 +133,10 @@ static void app_process_events(struct nk_context *ctx)
         {
             backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
             gui_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
+            if (evt.user.code == USER_SDL_FRAME)
+            {
+                
+            }
         }
         else if (evt.type == SDL_QUIT)
         {
@@ -171,6 +191,11 @@ void app_main_loop(void *data)
     }
 #if OS_LINUX
     fps_cap(ticks);
+#elif OS_DARWIN
+    if (!window_focus_gained)
+    {
+        fps_cap(ticks);
+    }
 #endif
     if (!cont)
     {

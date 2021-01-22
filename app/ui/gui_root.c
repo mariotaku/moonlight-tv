@@ -70,7 +70,7 @@ bool gui_dispatch_userevent(int which, void *data1, void *data2)
     bool handled = false;
     handled |= launcher_window_dispatch_userevent(which, data1, data2);
     handled |= streaming_overlay_dispatch_userevent(which);
-    return false;
+    return handled;
 }
 
 bool gui_should_block_input()

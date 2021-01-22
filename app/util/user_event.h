@@ -1,5 +1,7 @@
 #pragma once
 
+#define USER_SDL_FRAME 0
+
 #define USER_QUIT 100
 
 #define USER_AM_APPLIST_ARRIVED 201
