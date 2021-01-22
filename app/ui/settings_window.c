@@ -19,7 +19,6 @@ enum settings_entries
     ENTRY_BITRATE,
     ENTRY_SOPS,
     ENTRY_LOCALAUDIO,
-    ENTRY_QUITAPP,
     ENTRY_VIEWONLY,
 #if HAS_WEBOS_SETTINGS
     ENTRY_WEBOS_VDEC,
@@ -168,8 +167,6 @@ bool settings_window(struct nk_context *ctx)
         }
 
         nk_checkbox_label_std(ctx, "Play audio on host PC", &app_configuration->localaudio);
-
-        nk_checkbox_label_std(ctx, "Quit app on host PC after ending stream", &app_configuration->quitappafter);
 
         nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
 

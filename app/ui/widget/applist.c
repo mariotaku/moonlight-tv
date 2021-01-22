@@ -175,15 +175,19 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
         return _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
         return _applist_item_select(node, _applist_colcount);
+    case NAVKEY_CLOSE:
+        if (_focused_app)
+        {
+            _applist_item_do_click(node, _focused_app, -1);
+        }
+        return true;
     case NAVKEY_CONFIRM:
     case NAVKEY_ENTER:
-    {
         if (_focused_app)
         {
             _applist_item_do_click(node, _focused_app, 1);
         }
         return true;
-    }
     case NAVKEY_BACK:
         request_exit();
     default:

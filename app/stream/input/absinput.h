@@ -13,4 +13,6 @@ int absinput_gamepads();
 
 int absinput_max_gamepads();
 
+bool absinput_gamepad_present(int which);
+
 void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor);

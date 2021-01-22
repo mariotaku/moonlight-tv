@@ -36,6 +36,11 @@ int absinput_max_gamepads()
     return 4;
 }
 
+bool absinput_gamepad_present(int which)
+{
+    return (activeGamepadMask & (1 << which)) != 0;
+}
+
 void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor)
 {
     sdlinput_rumble(controllerNumber, lowFreqMotor, highFreqMotor);

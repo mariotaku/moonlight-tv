@@ -14,6 +14,8 @@
 #include "platform/webos/app_init.h"
 #endif
 
+#include "stream/input/absinput.h"
+
 #define LINKEDLIST_TYPE SERVER_LIST
 #include "util/linked_list.h"
 #include "util/user_event.h"
@@ -77,27 +79,29 @@ void launcher_window_destroy()
     nk_imagetexturefree(&launcher_default_cover);
 }
 
+const int _launcher_bottom_bar_height_dp = 20;
+
 bool launcher_window(struct nk_context *ctx)
 {
-    int window_flags = NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER;
+    int window_flags = NK_WINDOW_NO_SCROLLBAR;
     _launcher_has_popup = false;
     if (launcher_blocked())
     {
         window_flags |= NK_WINDOW_NO_INPUT;
     }
-    if (nk_begin(ctx, "Moonlight", nk_rect_s(20, 20, gui_logic_width - 40, gui_logic_height - 40),
-                 window_flags))
+    nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
+    if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, gui_display_width, gui_display_height), window_flags))
     {
-        struct nk_vec2 list_size = nk_window_get_content_inner_size(ctx);
+        int list_height = nk_window_get_content_inner_size(ctx).y;
 
+        nk_style_push_float(ctx, &ctx->style.window.spacing.y, 10 * NK_UI_SCALE);
         bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 200);
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
-        list_size.y -= nk_widget_height(ctx);
-        list_size.y -= ctx->style.window.spacing.y;
+        list_height -= nk_widget_height(ctx);
 
         int computer_len = linkedlist_len(computer_list);
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
@@ -108,9 +112,16 @@ bool launcher_window(struct nk_context *ctx)
         {
             settings_window_open();
         }
+        list_height -= ctx->style.window.spacing.y;
+
+        nk_style_pop_float(ctx);
+
+        list_height -= _launcher_bottom_bar_height_dp * NK_UI_SCALE;
+        list_height -= ctx->style.window.spacing.y;
 
         struct nk_list_view list_view;
-        nk_layout_row_dynamic(ctx, list_size.y, 1);
+        nk_layout_row_dynamic(ctx, list_height, 1);
+
         PSERVER_LIST selected = selected_server_node;
 
         if (selected != NULL)
@@ -140,6 +151,17 @@ bool launcher_window(struct nk_context *ctx)
                 _launcher_has_popup |= true;
             }
         }
+
+        nk_layout_row_template_begin_s(ctx, _launcher_bottom_bar_height_dp);
+        nk_layout_row_template_push_static_s(ctx, 100);
+        nk_layout_row_template_push_variable_s(ctx, 1);
+        nk_layout_row_template_push_static_s(ctx, 300);
+        nk_layout_row_template_end(ctx);
+
+        nk_labelf(ctx, NK_TEXT_LEFT, "Controllers: %d", absinput_gamepads());
+        nk_spacing(ctx, 1);
+        nk_label(ctx, "(X) Close  (A) Launch", NK_TEXT_RIGHT);
+
 #ifdef OS_WEBOS
         if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
         {
@@ -149,6 +171,7 @@ bool launcher_window(struct nk_context *ctx)
 #endif
     }
     nk_end(ctx);
+    nk_style_pop_vec2(ctx);
 
     if (pairing_computer_state.state == PS_RUNNING)
     {

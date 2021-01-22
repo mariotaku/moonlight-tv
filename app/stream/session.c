@@ -165,7 +165,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     streaming_status = STREAMING_DISCONNECTING;
     LiStopConnection();
 
-    if (config->quitappafter || streaming_quitapp_requested)
+    if (streaming_quitapp_requested)
     {
         if (config->debug_level > 0)
             printf("Sending app quit request ...\n");
