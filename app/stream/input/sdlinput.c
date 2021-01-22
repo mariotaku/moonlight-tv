@@ -109,23 +109,6 @@ bool absinput_dispatch_event(SDL_Event ev)
     {
         return false;
     }
-    // TODO Keyboard event on webOS is incorrect
-    // https://github.com/mariotaku/moonlight-sdl/issues/4
-#if OS_WEBOS
-    if (ev.type == SDL_KEYDOWN)
-    {
-        return false;
-    }
-    else if (ev.type == SDL_KEYUP)
-    {
-        if (ev.key.keysym.sym == SDLK_WEBOS_BACK)
-        {
-            sdlinput_handle_input_result(ev, SDL_QUIT_APPLICATION);
-            return false;
-        }
-        return false;
-    }
-#endif
     // Don't mess with Magic Remote yet
     // TODO https://github.com/mariotaku/moonlight-sdl/issues/1
     // TODO https://github.com/mariotaku/moonlight-sdl/issues/2
@@ -150,6 +133,35 @@ int _sdlinput_handle_event_fix(SDL_Event *event)
     PGAMEPAD_STATE gamepad;
     switch (event->type)
     {
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+    {
+        // TODO Keyboard event on webOS is incorrect
+        // https://github.com/mariotaku/moonlight-sdl/issues/4
+#if OS_WEBOS
+        switch (event->key.keysym.sym)
+        {
+        case SDLK_WEBOS_BACK:
+            if (event->type == SDL_KEYUP)
+            {
+                return SDL_QUIT_APPLICATION;
+            }
+            else
+            {
+                return SDL_NOTHING;
+            }
+        case SDLK_WEBOS_YELLOW:
+        {
+            char action = event->type == SDL_KEYDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE;
+            LiSendMouseButtonEvent(action, BUTTON_RIGHT);
+            return SDL_NOTHING;
+        }
+        default:
+            break;
+        }
+#endif
+        break;
+    }
     case SDL_CONTROLLERAXISMOTION:
         gamepad = get_gamepad(event->caxis.which);
         switch (event->caxis.axis)
