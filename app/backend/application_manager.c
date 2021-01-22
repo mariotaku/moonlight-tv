@@ -68,7 +68,6 @@ void *_application_manager_applist_action(void *data)
     if (gs_applist(node->server, &list) != GS_OK)
     {
         fprintf(stderr, "Can't get app list\n");
-        pthread_exit(NULL);
         return NULL;
     }
     PAPP_DLIST dlist = NULL;
@@ -88,6 +87,5 @@ void *_application_manager_applist_action(void *data)
     }
 
     bus_pushevent(USER_AM_APPLIST_ARRIVED, data, dlist);
-    pthread_exit(NULL);
     return NULL;
 }

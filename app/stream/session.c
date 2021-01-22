@@ -176,7 +176,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
 thread_cleanup:
     free(req);
-    pthread_exit(NULL);
     return NULL;
 }
 

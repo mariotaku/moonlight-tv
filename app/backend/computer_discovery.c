@@ -272,7 +272,6 @@ void *_computer_manager_polling_action(void *data)
     {
         fprintf(stderr, "Failed to open any client sockets\n");
         computer_discovery_running = false;
-        pthread_exit(NULL);
         return NULL;
     }
     fprintf(stderr, "Opened %d socket%s for mDNS query\n", num_sockets, num_sockets ? "s" : "");
@@ -333,6 +332,5 @@ void *_computer_manager_polling_action(void *data)
     fprintf(stderr, "Closed socket%s\n", num_sockets ? "s" : "");
 
     computer_discovery_running = false;
-    pthread_exit(NULL);
     return NULL;
 }

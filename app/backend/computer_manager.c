@@ -172,7 +172,6 @@ void *_computer_manager_pairing_action(void *data)
     int result = gs_pair(server, (char *)req->pin);
     req->callback(node, result, gs_error);
     free(data);
-    pthread_exit(NULL);
     return NULL;
 }
 
@@ -183,7 +182,6 @@ void *_computer_manager_quitapp_action(void *data)
     gs_quit_app(node->server);
     computer_manager_executing_quitapp = false;
     bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
-    pthread_exit(NULL);
     return NULL;
 }
 
@@ -200,7 +198,6 @@ void *_computer_manager_server_update_action(void *data)
         update->errmsg = gs_error;
     }
     bus_pushevent(USER_CM_SERVER_UPDATED, node, update);
-    pthread_exit(NULL);
     return NULL;
 }
 

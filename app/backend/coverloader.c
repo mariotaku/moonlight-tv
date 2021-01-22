@@ -153,7 +153,7 @@ void *coverloader_worker(void *unused)
         }
         coverloader_notify_change(req, IMAGE_STATE_FINISHED, NULL);
     }
-    pthread_exit(NULL);
+    return NULL;
 }
 
 MAIN_THREAD
