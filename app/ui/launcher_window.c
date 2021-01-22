@@ -190,11 +190,12 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         {
             _select_computer(node, node->apps == NULL);
         }
-        break;
+        return true;
     }
     default:
         break;
     }
+    return false;
 }
 
 bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
