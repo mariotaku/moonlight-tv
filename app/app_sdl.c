@@ -112,7 +112,6 @@ static void app_process_events(struct nk_context *ctx)
             {
                 window_focus_gained = false;
             }
-            printf("Window event %d\n", evt.window.event);
         }
 #endif
         else if (SDL_IS_INPUT_EVENT(evt))
