@@ -36,6 +36,7 @@
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
+#include "platform/webos/SDL_webOS.h"
 #endif
 
 #define MAX_VERTEX_MEMORY 512 * 1024
@@ -64,8 +65,10 @@ APP_WINDOW_CONTEXT app_window_create()
 {
 
     nk_platform_gl_setup();
-    SDL_SetHint("SDL_WEBOS_ACCESS_POLICY_KEYS_BACK", "true");
-    SDL_SetHint("SDL_WEBOS_CURSOR_SLEEP_TIME", "5000");
+#if OS_WEBOS
+    SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
+    SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
+#endif
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     glContext = SDL_GL_CreateContext(win);
@@ -123,6 +126,10 @@ static void app_process_events(struct nk_context *ctx)
             NAVKEY navkey = navkey_from_sdl(evt);
             if (navkey != NAVKEY_UNKNOWN)
             {
+#if OS_WEBOS
+                // Hide the cursor instantly
+                SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "1");
+#endif
                 gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
             }
         }

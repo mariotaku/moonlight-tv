@@ -4,6 +4,8 @@
 #include "stream/session.h"
 
 #include "res.h"
+#include "util/bus.h"
+#include "util/user_event.h"
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
@@ -15,6 +17,7 @@ static PAPP_DLIST _applist_visible_start = NULL;
 static struct nk_list_view list_view;
 static int _applist_colcount = 5;
 static int _applist_rowcount = 0;
+static struct nk_vec2 applist_focused_center;
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
@@ -80,22 +83,23 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     bool running = node->server->currentGame == cur->id;
     // Don't react to grid click if there's action button
     int clicked = 0;
-    int item_height = nk_widget_height(ctx);
+    struct nk_rect item_bounds = nk_widget_bounds(ctx);
+    int item_height = item_bounds.h;
+    if (cur == _focused_app)
+    {
+        // Send mouse pointer to the item
+        applist_focused_center.x = item_bounds.x + item_bounds.w / 2;
+        applist_focused_center.y = item_bounds.y + item_bounds.h / 2;
+        bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_center, NULL);
+        _focused_app = NULL;
+    }
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_image *cover = coverloader_get(node, cur->id, cover_width, cover_height);
         bool defcover = _cover_use_default(cover);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : (defcover ? 2 : 1));
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
-        if (_focused_app == cur)
-        {
-            nk_style_push_style_item(ctx, &ctx->style.button.normal, nk_style_item_color(nk_ext_colortable[NK_COLOR_SCROLLBAR_CURSOR]));
-        }
         clicked = !running & nk_button_image(ctx, defcover ? launcher_default_cover : *cover);
-        if (_focused_app == cur)
-        {
-            nk_style_pop_style_item(ctx);
-        }
         if (defcover && !running)
         {
             int insetx = 8 * NK_UI_SCALE, insety = 6 * NK_UI_SCALE;
@@ -197,7 +201,7 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
     }
     if (_focused_app == NULL)
     {
-        _focused_app = _applist_visible_start;
+        _focused_app = _hovered_app ? _hovered_app : _applist_visible_start;
         _hovered_app = NULL;
         return true;
     }

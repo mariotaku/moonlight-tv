@@ -23,6 +23,8 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
         case 41 /* Keyboard ESC */:
         case SDLK_WEBOS_RED:
             return NAVKEY_CLOSE;
+        case SDLK_WEBOS_YELLOW:
+            return NAVKEY_MENU;
         case SDLK_WEBOS_BACK:
             return NAVKEY_BACK;
         default:
