@@ -7,7 +7,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
-static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
+static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height,
+                          bool event_emitted, bool *ever_hovered);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
 static bool _applist_item_select(PSERVER_LIST node, int offset);
 static bool _cover_use_default(struct nk_image *img);
@@ -38,6 +39,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
     if (nk_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
     {
+        bool ever_hovered = false;
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
         PAPP_DLIST cur = applist_nth(node->apps, startidx);
@@ -47,26 +49,31 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
             int col;
             for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
             {
-                _applist_item(ctx, node, cur, coverwidth, coverheight, event_emitted);
+                _applist_item(ctx, node, cur, coverwidth, coverheight, event_emitted, &ever_hovered);
             }
             if (col < colcount)
             {
                 nk_spacing(ctx, colcount - col);
             }
         }
-
+        if (!ever_hovered)
+        {
+            applist_hovered_item = NULL;
+        }
+        
         nk_list_view_end(&list_view);
     }
     return event_emitted;
 }
 
 bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
-                   int cover_width, int cover_height, bool event_emitted)
+                   int cover_width, int cover_height, bool event_emitted, bool *ever_hovered)
 {
     nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);
     if (hovered)
     {
         applist_hovered_item = cur;
+        *ever_hovered = true;
     }
     static int click_down_id = -1, should_ignore_click = -1;
     if (mouse_down && click_down_id == -1)
