@@ -43,7 +43,7 @@ static const struct _resolution_option _supported_resolutions[] = {
 
 struct _fps_option
 {
-    int fps;
+    unsigned short fps;
     char name[8];
 };
 
@@ -226,7 +226,11 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 
 void _set_fps(int fps)
 {
-    snprintf(_fps_label, sizeof(_fps_label) / sizeof(char), "%d FPS", fps % 1000);
+    // It is not possible to have overflow since fps is capped to 999
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wformat"
+    sprintf(_fps_label, "%d FPS", fps % 1000);
+#pragma GCC diagnostic pop
     app_configuration->stream.fps = fps;
 }
 
