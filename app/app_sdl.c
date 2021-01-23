@@ -128,10 +128,17 @@ static void app_process_events(struct nk_context *ctx)
             {
 #if OS_WEBOS
                 // Hide the cursor
-                SDL_ShowCursor(0);
+                SDL_ShowCursor(SDL_FALSE);
 #endif
                 gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
             }
+#if OS_WEBOS
+            else if (evt.type == SDL_MOUSEWHEEL)
+            {
+                // Show the cursor after scroll
+                SDL_ShowCursor(SDL_TRUE);
+            }
+#endif
         }
         else if (evt.type == SDL_USEREVENT)
         {
