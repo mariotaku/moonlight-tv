@@ -23,7 +23,7 @@ void streaming_init();
 
 void streaming_destroy();
 
-void streaming_begin(PSERVER_LIST node, int app_id);
+int streaming_begin(PSERVER_LIST node, int app_id);
 
 void streaming_interrupt(bool quitapp);
 

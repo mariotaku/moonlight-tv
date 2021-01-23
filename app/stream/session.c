@@ -20,15 +20,16 @@
 STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
-pthread_mutex_t streaming_errmsg_lock = PTHREAD_MUTEX_INITIALIZER;
 
 bool session_running = false, session_interrupted = false;
-pthread_t streaming_thread;
-pthread_mutex_t lock;
-pthread_cond_t cond;
 
 short streaming_display_width, streaming_display_height;
 bool streaming_quitapp_requested;
+
+pthread_mutex_t streaming_errmsg_lock;
+pthread_mutex_t streaming_interrupt_lock;
+pthread_cond_t streaming_interrupt_cond;
+pthread_t streaming_thread;
 
 typedef struct
 {
@@ -43,8 +44,10 @@ void streaming_init()
 {
     streaming_status = STREAMING_NONE;
     streaming_quitapp_requested = false;
-    pthread_mutex_init(&lock, NULL);
-    pthread_cond_init(&cond, NULL);
+    session_interrupted = false;
+    pthread_mutex_init(&streaming_errmsg_lock, NULL);
+    pthread_mutex_init(&streaming_interrupt_lock, NULL);
+    pthread_cond_init(&streaming_interrupt_cond, NULL);
 }
 
 void streaming_destroy()
@@ -52,11 +55,12 @@ void streaming_destroy()
     streaming_interrupt(false);
     streaming_wait_for_stop();
 
-    pthread_cond_destroy(&cond);
-    pthread_mutex_destroy(&lock);
+    pthread_cond_destroy(&streaming_interrupt_cond);
+    pthread_mutex_destroy(&streaming_interrupt_lock);
+    pthread_mutex_destroy(&streaming_errmsg_lock);
 }
 
-void streaming_begin(PSERVER_LIST node, int app_id)
+int streaming_begin(PSERVER_LIST node, int app_id)
 {
     PCONFIGURATION config = settings_load();
 
@@ -70,7 +74,7 @@ void streaming_begin(PSERVER_LIST node, int app_id)
     req->node = node;
     req->config = config;
     req->appId = app_id;
-    pthread_create(&streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
+    return pthread_create(&streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
 }
 
 void streaming_interrupt(bool quitapp)
@@ -79,11 +83,11 @@ void streaming_interrupt(bool quitapp)
     {
         return;
     }
-    pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&streaming_interrupt_lock);
     streaming_quitapp_requested = quitapp;
     session_interrupted = true;
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&lock);
+    pthread_cond_signal(&streaming_interrupt_cond);
+    pthread_mutex_unlock(&streaming_interrupt_lock);
 }
 
 void streaming_wait_for_stop()
@@ -106,10 +110,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
     streaming_status = STREAMING_CONNECTING;
     streaming_errno = GS_OK;
-
-    pthread_mutex_lock(&lock);
-    session_interrupted = false;
-    pthread_mutex_unlock(&lock);
 
     _streaming_errmsg_write("");
     PSERVER_LIST node = req->node;
@@ -153,13 +153,14 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     session_running = true;
     streaming_status = STREAMING_STREAMING;
 
-    pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&streaming_interrupt_lock);
     while (!session_interrupted)
     {
         // Wait until interrupted
-        pthread_cond_wait(&cond, &lock);
+        pthread_cond_wait(&streaming_interrupt_cond, &streaming_interrupt_lock);
     }
-    pthread_mutex_unlock(&lock);
+    session_interrupted = false;
+    pthread_mutex_unlock(&streaming_interrupt_lock);
     session_running = false;
 
     streaming_status = STREAMING_DISCONNECTING;
@@ -184,7 +185,7 @@ void _streaming_errmsg_write(const char *fmt, ...)
     pthread_mutex_lock(&streaming_errmsg_lock);
     va_list arglist;
     va_start(arglist, fmt);
-    vsnprintf(streaming_errmsg, 1024, fmt, arglist);
+    vsnprintf(streaming_errmsg, sizeof(streaming_errmsg) / sizeof(char), fmt, arglist);
     va_end(arglist);
     pthread_mutex_unlock(&streaming_errmsg_lock);
 }
