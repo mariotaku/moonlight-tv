@@ -6,7 +6,7 @@
 #include "util/user_event.h"
 #include "util/bus.h"
 
-static PSERVER_LIST pclist_focused_node;
+static PSERVER_LIST pclist_hovered_item = NULL, pclist_hover_request = NULL;
 static struct nk_vec2 pclist_focused_center;
 
 static bool pclist_item_select(PSERVER_LIST list, int offset);
@@ -22,14 +22,19 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
         int i = 0;
         while (cur != NULL)
         {
-            if (cur == pclist_focused_node)
+            nk_bool hovered = nk_widget_is_hovered(ctx);
+            if (hovered)
+            {
+                pclist_hovered_item = cur;
+            }
+            if (cur == pclist_hover_request)
             {
                 // Send mouse pointer to the item
                 struct nk_rect item_bounds = nk_widget_bounds(ctx);
                 pclist_focused_center.x = nk_rect_center_x(item_bounds);
                 pclist_focused_center.y = nk_rect_center_y(item_bounds);
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &pclist_focused_center, NULL);
-                pclist_focused_node = NULL;
+                pclist_hover_request = NULL;
             }
             if (nk_combo_item_label(ctx, cur->name, NK_TEXT_LEFT))
             {
@@ -74,8 +79,11 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
     case NAVKEY_DOWN:
         return down || pclist_item_select(computer_list, 1);
     case NAVKEY_CONFIRM:
-        // Fake click on the item
-        bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &pclist_focused_center, (void *)down);
+        if (pclist_hovered_item)
+        {
+            // Fake click on the item
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &pclist_focused_center, (void *)down);
+        }
         return true;
     default:
         break;
@@ -85,17 +93,17 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
 
 bool pclist_item_select(PSERVER_LIST list, int offset)
 {
-    if (pclist_focused_node == NULL)
+    if (pclist_hover_request == NULL)
     {
         // No item focused before, select first one
-        pclist_focused_node = list;
+        pclist_hover_request = list;
     }
     else
     {
-        PSERVER_LIST item = serverlist_nth(pclist_focused_node, offset);
+        PSERVER_LIST item = serverlist_nth(pclist_hover_request, offset);
         if (item != NULL)
         {
-            pclist_focused_node = item;
+            pclist_hover_request = item;
         }
     }
     return true;

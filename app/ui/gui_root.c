@@ -95,6 +95,7 @@ bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void
         case USER_FAKEINPUT_MOUSE_CLICK:
         {
             struct nk_vec2 *center = data1;
+            nk_input_motion(ctx, center->x, center->y);
             nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, data2 ? nk_true : nk_false);
             if (!data2)
             {

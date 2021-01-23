@@ -12,7 +12,7 @@ static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicke
 static bool _applist_item_select(PSERVER_LIST node, int offset);
 static bool _cover_use_default(struct nk_image *img);
 
-static PAPP_DLIST applist_hovered_item = NULL, applist_focused_request = NULL;
+static PAPP_DLIST applist_hovered_item = NULL, applist_hover_request = NULL;
 static PAPP_DLIST _applist_visible_start = NULL;
 static struct nk_list_view list_view;
 static int _applist_colcount = 5;
@@ -83,13 +83,13 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     int clicked = 0;
     struct nk_rect tmp_bounds = nk_widget_bounds(ctx);
     int item_height = tmp_bounds.h;
-    if (cur == applist_focused_request)
+    if (cur == applist_hover_request)
     {
         // Send mouse pointer to the item
         applist_focused_item_center.x = nk_rect_center_x(tmp_bounds);
         applist_focused_item_center.y = nk_rect_center_y(tmp_bounds);
         bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_item_center, NULL);
-        applist_focused_request = NULL;
+        applist_hover_request = NULL;
     }
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
@@ -216,24 +216,16 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
     {
         return true;
     }
-    if (applist_focused_request == NULL)
+    if (applist_hovered_item == NULL)
     {
-        if (applist_hovered_item == NULL)
-        {
-            // Select first visible item
-            applist_focused_request = _applist_visible_start;
-            return true;
-        }
-        else
-        {
-            applist_focused_request = applist_hovered_item;
-        }
+        // Select first visible item
+        applist_hover_request = _applist_visible_start;
+        return true;
     }
     PAPP_DLIST item = applist_nth(applist_hovered_item, offset);
     if (item)
     {
-        applist_focused_request = item;
-        applist_hovered_item = NULL;
+        applist_hover_request = item;
         if (_applist_rowcount)
         {
             int rowheight = list_view.total_height / _applist_rowcount;
