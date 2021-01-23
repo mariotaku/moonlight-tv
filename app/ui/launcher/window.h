@@ -32,4 +32,4 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2);
 
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey);
+bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down);

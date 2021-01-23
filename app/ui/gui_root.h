@@ -31,4 +31,4 @@ bool gui_should_block_input();
 
 void gui_display_size(struct nk_context *ctx, short width, short height);
 
-bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey);
+bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down);

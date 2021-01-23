@@ -118,14 +118,12 @@ static void app_process_events(struct nk_context *ctx)
         {
             inputmgr_sdl_handle_event(evt);
             block_steam_inputevent |= gui_should_block_input();
-            if (evt.type == SDL_KEYUP || evt.type == SDL_CONTROLLERBUTTONUP)
+
+            // Those are input events
+            NAVKEY navkey = navkey_from_sdl(evt);
+            if (navkey != NAVKEY_UNKNOWN)
             {
-                // Those are input events
-                NAVKEY navkey = navkey_from_sdl(evt);
-                if (navkey != NAVKEY_UNKNOWN)
-                {
-                    gui_dispatch_navkey(ctx, navkey);
-                }
+                gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
             }
         }
         else if (evt.type == SDL_USEREVENT)
@@ -134,7 +132,6 @@ static void app_process_events(struct nk_context *ctx)
             gui_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
             if (evt.user.code == USER_SDL_FRAME)
             {
-                
             }
         }
         else if (evt.type == SDL_QUIT)

@@ -1,4 +1,4 @@
-#include "launcher_window.h"
+#include "window.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -7,8 +7,8 @@
 #include "libgamestream/errors.h"
 
 #include "backend/application_manager.h"
-#include "gui_root.h"
-#include "settings_window.h"
+#include "ui/gui_root.h"
+#include "ui/settings_window.h"
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
@@ -21,6 +21,7 @@
 #include "util/user_event.h"
 
 #include "app.h"
+#include "main.h"
 #include "res.h"
 
 static PSERVER_LIST selected_server_node;
@@ -42,6 +43,7 @@ static struct
 } pairing_computer_state;
 
 static struct nk_style_button cm_list_button_style;
+static struct nk_rect _computer_picker_bounds = {0, 0, 0, 0};
 
 static void _select_computer(PSERVER_LIST node, bool load_apps);
 static void _open_pair(int index, PSERVER_LIST node);
@@ -56,7 +58,7 @@ static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey);
 
 #define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
-bool _launcher_has_popup;
+bool _launcher_has_popup, _launcher_showing_combo;
 bool _launcher_popup_request_dismiss;
 
 void launcher_window_init(struct nk_context *ctx)
@@ -84,7 +86,7 @@ const int _launcher_bottom_bar_height_dp = 20;
 bool launcher_window(struct nk_context *ctx)
 {
     int window_flags = NK_WINDOW_NO_SCROLLBAR;
-    _launcher_has_popup = false;
+    _launcher_has_popup = _launcher_showing_combo = false;
     if (launcher_blocked())
     {
         window_flags |= NK_WINDOW_NO_INPUT;
@@ -98,13 +100,24 @@ bool launcher_window(struct nk_context *ctx)
         bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 200);
+        nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 80);
         nk_layout_row_template_end(ctx);
         list_height -= nk_widget_height(ctx);
 
         int computer_len = linkedlist_len(computer_list);
+        _computer_picker_bounds = nk_widget_bounds(ctx);
+        _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
         event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
+        if (nk_button_label(ctx, computer_discovery_running ? ".." : "R"))
+        {
+            if (!event_emitted)
+            {
+                computer_manager_polling_start();
+            }
+            event_emitted = true;
+        }
 
         nk_spacing(ctx, 1);
 
@@ -221,24 +234,50 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     return false;
 }
 
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
 {
+    bool key_handled = false;
     if (launcher_blocked())
     {
     }
     else if (_launcher_has_popup)
     {
-        if (navkey == NAVKEY_BACK || navkey == NAVKEY_ENTER || navkey == NAVKEY_CONFIRM)
+        if (!down && (key == NAVKEY_BACK || key == NAVKEY_ENTER || key == NAVKEY_CONFIRM))
         {
             _launcher_popup_request_dismiss = true;
         }
     }
+    else if (_launcher_showing_combo)
+    {
+        nk_input_motion(ctx, 0, 0);
+        nk_input_button(ctx, NK_BUTTON_LEFT, 0, 0, down);
+        return true;
+    }
     else if (selected_server_node && selected_server_node->server)
     {
-        return _applist_dispatch_navkey(ctx, selected_server_node, navkey);
+        key_handled |= !down && _applist_dispatch_navkey(ctx, selected_server_node, key);
     }
-    switch (navkey)
+    if (key_handled)
     {
+        return true;
+    }
+    switch (key)
+    {
+    case NAVKEY_MENU:
+        if (_computer_picker_bounds.w && _computer_picker_bounds.h)
+        {
+            int x = _computer_picker_bounds.x + _computer_picker_bounds.w / 2,
+                y = _computer_picker_bounds.y + _computer_picker_bounds.h / 2;
+            nk_input_motion(ctx, x, y);
+            nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
+        }
+        return true;
+    case NAVKEY_BACK:
+        if (!down)
+        {
+            request_exit();
+        }
+        return true;
     default:
         break;
     }
@@ -248,8 +287,8 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
-    bool active = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
-    if (nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200)))
+    nk_bool active;
+    if (active = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200)))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
         PSERVER_LIST cur = list;
@@ -278,14 +317,6 @@ bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_
             }
             cur = cur->next;
             i++;
-        }
-        if (nk_combo_item_label(ctx, computer_discovery_running ? "Scanning..." : "Rescan", NK_TEXT_LEFT))
-        {
-            if (!event_emitted)
-            {
-                computer_manager_polling_start();
-            }
-            event_emitted = true;
         }
         nk_combo_end(ctx);
     }

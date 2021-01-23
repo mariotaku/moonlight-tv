@@ -23,6 +23,7 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
             return NAVKEY_BACK;
         case SDLK_BACKSPACE:
             return NAVKEY_CLOSE;
+        case SDLK_MENU:
         case SDLK_APPLICATION:
             return NAVKEY_MENU;
         default:

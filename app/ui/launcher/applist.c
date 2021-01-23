@@ -1,4 +1,4 @@
-#include "ui/launcher_window.h"
+#include "window.h"
 #include "backend/application_manager.h"
 #include "backend/coverloader.h"
 #include "stream/session.h"
@@ -8,7 +8,6 @@
 #include "util/linked_list.h"
 
 #include "res.h"
-#include "main.h"
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
@@ -188,12 +187,10 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
             _applist_item_do_click(node, _focused_app, 1);
         }
         return true;
-    case NAVKEY_BACK:
-        request_exit();
     default:
         break;
     }
-    return true;
+    return false;
 }
 
 bool _applist_item_select(PSERVER_LIST node, int offset)

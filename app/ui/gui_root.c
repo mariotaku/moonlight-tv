@@ -11,7 +11,7 @@
 
 #include "stream/session.h"
 
-#include "launcher_window.h"
+#include "launcher/window.h"
 #include "settings_window.h"
 #include "streaming_overlay.h"
 
@@ -88,17 +88,17 @@ void gui_display_size(struct nk_context *ctx, short width, short height)
     gui_logic_height = height / NK_UI_SCALE;
 }
 
-bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
 {
     bool handled = false;
     if (streaming_status == STREAMING_NONE)
     {
-        handled |= handled || (gui_settings_showing && settings_window_dispatch_navkey(ctx, navkey));
-        handled |= handled || launcher_window_dispatch_navkey(ctx, navkey);
+        handled |= handled || (!down && gui_settings_showing && settings_window_dispatch_navkey(ctx, key));
+        handled |= handled || launcher_window_dispatch_navkey(ctx, key, down);
     }
     else
     {
-        handled |= handled || streaming_overlay_dispatch_navkey(ctx, navkey);
+        handled |= handled || (!down && streaming_overlay_dispatch_navkey(ctx, key));
     }
     return handled;
 }

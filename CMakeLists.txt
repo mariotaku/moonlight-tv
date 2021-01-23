@@ -61,10 +61,10 @@ set(SOURCES
     app/stream/connection.c
     app/stream/settings.c
     app/ui/gui_root.c
-    app/ui/launcher_window.c
+    app/ui/launcher/window.c
+    app/ui/launcher/applist.c
     app/ui/streaming_overlay.c
     app/ui/settings_window.c
-    app/ui/widget/applist.c
     app/util/lruc.c
     app/util/path.c
     app/util/gs/clientex.c
