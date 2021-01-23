@@ -113,10 +113,6 @@ set_target_properties(moonlight PROPERTIES
     C_STANDARD_REQUIRED TRUE
 )
 
-target_compile_options(moonlight PRIVATE
-  $<$<C_COMPILER_ID:GNU>:-Werror>
-)
-
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)

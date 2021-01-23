@@ -227,10 +227,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 void _set_fps(int fps)
 {
     // It is not possible to have overflow since fps is capped to 999
-#pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wformat"
     sprintf(_fps_label, "%d FPS", fps % 1000);
-#pragma GCC diagnostic pop
     app_configuration->stream.fps = fps;
 }
 
