@@ -105,33 +105,35 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
             nk_label(ctx, cur->name, NK_TEXT_CENTERED);
         }
 
-        const int button_size = 24 * NK_UI_SCALE;
-        int button_x = (cover_width - button_size) / 2;
-        int button_spacing = 4 * NK_UI_SCALE;
-        nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 - button_size - button_spacing, button_size, button_size));
-        tmp_bounds = nk_widget_bounds(ctx);
-        if (hovered)
+        if (running)
         {
-            applist_focused_resume_center.x = nk_rect_center_x(tmp_bounds);
-            applist_focused_resume_center.y = nk_rect_center_y(tmp_bounds);
-        }
-        if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT))
-        {
-            clicked = 1;
-        }
-        nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 + button_spacing, button_size, button_size));
-        tmp_bounds = nk_widget_bounds(ctx);
-        if (hovered)
-        {
-            applist_focused_close_center.x = nk_rect_center_x(tmp_bounds);
-            applist_focused_close_center.y = nk_rect_center_y(tmp_bounds);
-        }
-        if (nk_button_symbol(ctx, NK_SYMBOL_X))
-        {
-            clicked = -1;
+            const int button_size = 24 * NK_UI_SCALE;
+            int button_x = (cover_width - button_size) / 2;
+            int button_spacing = 4 * NK_UI_SCALE;
+            nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 - button_size - button_spacing, button_size, button_size));
+            tmp_bounds = nk_widget_bounds(ctx);
+            if (hovered)
+            {
+                applist_focused_resume_center.x = nk_rect_center_x(tmp_bounds);
+                applist_focused_resume_center.y = nk_rect_center_y(tmp_bounds);
+            }
+            if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT))
+            {
+                clicked = 1;
+            }
+            nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 + button_spacing, button_size, button_size));
+            tmp_bounds = nk_widget_bounds(ctx);
+            if (hovered)
+            {
+                applist_focused_close_center.x = nk_rect_center_x(tmp_bounds);
+                applist_focused_close_center.y = nk_rect_center_y(tmp_bounds);
+            }
+            if (nk_button_symbol(ctx, NK_SYMBOL_X))
+            {
+                clicked = -1;
+            }
         }
         nk_layout_space_end(ctx);
-        // nk_label(ctx, cur->name, NK_TEXT_ALIGN_MIDDLE);
         nk_group_end(ctx);
     }
     // Captured a click event that should be ignored, reset state
@@ -185,7 +187,7 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
     case NAVKEY_DOWN:
         return down || _applist_item_select(node, _applist_colcount);
     case NAVKEY_CLOSE:
-        if (applist_hovered_item)
+        if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
         {
             bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_close_center, (void *)down);
         }

@@ -127,8 +127,11 @@ static void app_process_events(struct nk_context *ctx)
             if (navkey != NAVKEY_UNKNOWN)
             {
 #if OS_WEBOS
-                // Hide the cursor
-                SDL_ShowCursor(SDL_FALSE);
+                if (navkey & NAVKEY_DPAD)
+                {
+                    // Hide the cursor
+                    SDL_ShowCursor(SDL_FALSE);
+                }
 #endif
                 gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
             }

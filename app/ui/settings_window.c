@@ -226,7 +226,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 
 void _set_fps(int fps)
 {
-    sprintf(_fps_label, "%d FPS", fps % 1000);
+    snprintf(_fps_label, sizeof(_fps_label) / sizeof(char), "%d FPS", fps % 1000);
     app_configuration->stream.fps = fps;
 }
 
