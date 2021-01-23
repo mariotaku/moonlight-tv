@@ -80,6 +80,10 @@ APP_WINDOW_CONTEXT app_window_create()
 
 void app_destroy()
 {
+#if OS_WEBOS
+    // Turn cursor back on before quitting
+    SDL_ShowCursor(SDL_TRUE);
+#endif
     free(app_configuration);
 #ifdef OS_WEBOS
     app_webos_destroy();

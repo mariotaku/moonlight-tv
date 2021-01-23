@@ -157,7 +157,7 @@ int _sdlinput_handle_event_fix(SDL_Event *event)
             return SDL_NOTHING;
         }
         default:
-            break;
+            return SDL_NOTHING;
         }
 #endif
         break;
