@@ -12,12 +12,12 @@ static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicke
 static bool _applist_item_select(PSERVER_LIST node, int offset);
 static bool _cover_use_default(struct nk_image *img);
 
-static PAPP_DLIST _hovered_app = NULL, _focused_app = NULL;
+static PAPP_DLIST applist_hovered_item = NULL, applist_focused_request = NULL;
 static PAPP_DLIST _applist_visible_start = NULL;
 static struct nk_list_view list_view;
 static int _applist_colcount = 5;
 static int _applist_rowcount = 0;
-static struct nk_vec2 applist_focused_center;
+static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_close_center = {0, 0};
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
@@ -66,9 +66,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);
     if (hovered)
     {
-        _hovered_app = cur;
-        // Clear key selection
-        _focused_app = NULL;
+        applist_hovered_item = cur;
     }
     static int click_down_id = -1, should_ignore_click = -1;
     if (mouse_down && click_down_id == -1)
@@ -85,13 +83,13 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     int clicked = 0;
     struct nk_rect item_bounds = nk_widget_bounds(ctx);
     int item_height = item_bounds.h;
-    if (cur == _focused_app)
+    if (cur == applist_focused_request)
     {
         // Send mouse pointer to the item
-        applist_focused_center.x = item_bounds.x + item_bounds.w / 2;
-        applist_focused_center.y = item_bounds.y + item_bounds.h / 2;
-        bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_center, NULL);
-        _focused_app = NULL;
+        applist_focused_item_center.x = item_bounds.x + item_bounds.w / 2;
+        applist_focused_item_center.y = item_bounds.y + item_bounds.h / 2;
+        bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_item_center, NULL);
+        applist_focused_request = NULL;
     }
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
@@ -175,16 +173,16 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
     case NAVKEY_DOWN:
         return _applist_item_select(node, _applist_colcount);
     case NAVKEY_CLOSE:
-        if (_focused_app)
+        if (applist_focused_request)
         {
-            _applist_item_do_click(node, _focused_app, -1);
+            _applist_item_do_click(node, applist_focused_request, -1);
         }
         return true;
     case NAVKEY_CONFIRM:
     case NAVKEY_ENTER:
-        if (_focused_app)
+        if (applist_focused_request)
         {
-            _applist_item_do_click(node, _focused_app, 1);
+            _applist_item_do_click(node, applist_focused_request, 1);
         }
         return true;
     default:
@@ -199,17 +197,24 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
     {
         return true;
     }
-    if (_focused_app == NULL)
+    if (applist_focused_request == NULL)
     {
-        _focused_app = _hovered_app ? _hovered_app : _applist_visible_start;
-        _hovered_app = NULL;
-        return true;
+        if (applist_hovered_item == NULL)
+        {
+            // Select first visible item
+            applist_focused_request = _applist_visible_start;
+            return true;
+        }
+        else
+        {
+            applist_focused_request = applist_hovered_item;
+        }
     }
-    PAPP_DLIST item = applist_nth(_focused_app, offset);
+    PAPP_DLIST item = applist_nth(applist_hovered_item, offset);
     if (item)
     {
-        _focused_app = item;
-        _hovered_app = NULL;
+        applist_focused_request = item;
+        applist_hovered_item = NULL;
         if (_applist_rowcount)
         {
             int rowheight = list_view.total_height / _applist_rowcount;
