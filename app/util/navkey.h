@@ -11,7 +11,8 @@ typedef enum NAVKEY_
     NAVKEY_FUNCTION = 0x200,
     NAVKEY_MENU,
     NAVKEY_ENTER,
-    NAVKEY_BACK,
-    NAVKEY_CONFIRM,
-    NAVKEY_CLOSE,
+    NAVKEY_CONFIRM /* A button*/,
+    NAVKEY_BACK /* B button*/,
+    NAVKEY_CLOSE /* X button*/,
+    NAVKEY_ALTERNATIVE /* Y button*/,
 } NAVKEY;

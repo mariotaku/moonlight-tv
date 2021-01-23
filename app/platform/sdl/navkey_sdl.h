@@ -23,6 +23,8 @@ static NAVKEY navkey_gamepad_map(Uint8 button)
         return NAVKEY_BACK;
     case SDL_CONTROLLER_BUTTON_X:
         return NAVKEY_CLOSE;
+    case SDL_CONTROLLER_BUTTON_Y:
+        return NAVKEY_ALTERNATIVE;
     case SDL_CONTROLLER_BUTTON_BACK:
         return NAVKEY_MENU;
     case SDL_CONTROLLER_BUTTON_START:
