@@ -129,7 +129,7 @@ static void app_process_events(struct nk_context *ctx)
         else if (evt.type == SDL_USEREVENT)
         {
             backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-            gui_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
+            gui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
             if (evt.user.code == USER_SDL_FRAME)
             {
             }
@@ -150,6 +150,7 @@ static void app_process_events(struct nk_context *ctx)
 void app_main_loop(void *data)
 {
     static Uint32 fps_ticks = 0, framecount = 0;
+    Uint32 start_ticks = SDL_GetTicks();
     struct nk_context *ctx = (struct nk_context *)data;
 
     app_process_events(ctx);
@@ -173,39 +174,43 @@ void app_main_loop(void *data)
 #endif
         SDL_GL_SwapWindow(win);
     }
-    Uint32 ticks = SDL_GetTicks();
-    if ((ticks - fps_ticks) >= 1000)
-    {
-        sprintf(wintitle, "Moonlight | %d FPS", (int)(framecount * 1000.0 / (ticks - fps_ticks)));
-        SDL_SetWindowTitle(win, wintitle);
-        fps_ticks = ticks;
-        framecount = 0;
-    }
-    else
-    {
-        framecount++;
-    }
 #if OS_LINUX
-    fps_cap(ticks);
+    fps_cap(start_ticks);
 #elif OS_DARWIN
     if (!window_focus_gained)
     {
-        fps_cap(ticks);
+        fps_cap(start_ticks);
     }
 #endif
     if (!cont)
     {
         request_exit();
     }
+    Uint32 end_ticks = SDL_GetTicks();
+    Sint32 deltams = end_ticks - start_ticks;
+    if (deltams < 0)
+    {
+        deltams = 0;
+    }
+    ctx->delta_time_seconds = deltams / 1000.0f;
+    if ((end_ticks - fps_ticks) >= 1000)
+    {
+        sprintf(wintitle, "Moonlight | %d FPS", (int)(framecount * 1000.0 / (end_ticks - fps_ticks)));
+        SDL_SetWindowTitle(win, wintitle);
+        fps_ticks = end_ticks;
+        framecount = 0;
+    }
+    else
+    {
+        framecount++;
+    }
 }
 
-void fps_cap(int ticks)
+void fps_cap(int start)
 {
-    static Uint32 prevtick = 0;
-    int tickdiff = ticks - prevtick;
+    int tickdiff = SDL_GetTicks() - start;
     if (tickdiff > 0 && tickdiff < 16)
     {
         SDL_Delay(16 - tickdiff);
     }
-    prevtick = SDL_GetTicks();
 }

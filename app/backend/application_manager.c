@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include <pthread.h>
 
 #include "util/user_event.h"
@@ -7,10 +10,6 @@
 
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
-
-#define LINKEDLIST_TYPE APP_DLIST
-#define LINKEDLIST_DOUBLE 1
-#include "util/linked_list.h"
 
 static pthread_t _application_manager_load_thread;
 
@@ -73,10 +72,10 @@ void *_application_manager_applist_action(void *data)
     PAPP_DLIST dlist = NULL;
     for (PAPP_LIST cur = list; cur != NULL; cur = cur->next)
     {
-        PAPP_DLIST item = linkedlist_new();
+        PAPP_DLIST item = applist_new();
         item->id = cur->id;
         item->name = cur->name;
-        dlist = linkedlist_sortedinsert(dlist, item, _applist_name_comparator);
+        dlist = applist_sortedinsert(dlist, item, _applist_name_comparator);
     }
     // Free the single linked list
     while (list != NULL)

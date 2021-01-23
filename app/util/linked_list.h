@@ -1,14 +1,33 @@
-#pragma once
 #ifndef LINKEDLIST_TYPE
 #error "Please define LINKEDLIST_TYPE before include"
 #endif
+#ifndef LINKEDLIST_PREFIX
+#define LINKEDLIST_PREFIX linkedlist
+#endif
 
-#include <stdlib.h>
-#include <string.h>
+// Coming from https://stackoverflow.com/a/1489985/859190
+#define LINKEDLIST_DECL_PASTER(x, y) x##_##y
+#define LINKEDLIST_DECL_EVALUATOR(x, y) LINKEDLIST_DECL_PASTER(x, y)
+#define LINKEDLIST_FN_NAME(name) LINKEDLIST_DECL_EVALUATOR(LINKEDLIST_PREFIX, name)
 
-static LINKEDLIST_TYPE *_linkedlist_new(size_t size)
+typedef int(LINKEDLIST_FN_NAME(find_fn))(LINKEDLIST_TYPE *p, const void *fv);
+typedef int(LINKEDLIST_FN_NAME(compare_fn))(LINKEDLIST_TYPE *p1, LINKEDLIST_TYPE *p2);
+
+#ifndef LINKEDLIST_IMPL
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)();
+int LINKEDLIST_FN_NAME(len)(LINKEDLIST_TYPE *p);
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(nth)(LINKEDLIST_TYPE *p, int n);
+int LINKEDLIST_FN_NAME(index)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f);
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(find_by)(LINKEDLIST_TYPE *p, const void *v, LINKEDLIST_FN_NAME(find_fn) fn);
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(append)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node);
+#if LINKEDLIST_DOUBLE
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(sortedinsert)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node, LINKEDLIST_FN_NAME(compare_fn) fn);
+#endif
+void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head);
+#else
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)()
 {
-    LINKEDLIST_TYPE *node = malloc(size);
+    LINKEDLIST_TYPE *node = malloc(sizeof(LINKEDLIST_TYPE));
 #if LINKEDLIST_DOUBLE
     node->prev = NULL;
 #endif
@@ -16,9 +35,7 @@ static LINKEDLIST_TYPE *_linkedlist_new(size_t size)
     return node;
 }
 
-#define linkedlist_new() _linkedlist_new(sizeof(LINKEDLIST_TYPE))
-
-static int linkedlist_len(LINKEDLIST_TYPE *p)
+int LINKEDLIST_FN_NAME(len)(LINKEDLIST_TYPE *p)
 {
     int length = 0;
     LINKEDLIST_TYPE *cur = p;
@@ -30,7 +47,7 @@ static int linkedlist_len(LINKEDLIST_TYPE *p)
     return length;
 }
 
-static LINKEDLIST_TYPE *linkedlist_nth(LINKEDLIST_TYPE *p, int n)
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(nth)(LINKEDLIST_TYPE *p, int n)
 {
     LINKEDLIST_TYPE *ret = NULL;
     int i = 0;
@@ -49,7 +66,7 @@ static LINKEDLIST_TYPE *linkedlist_nth(LINKEDLIST_TYPE *p, int n)
     return ret;
 }
 
-static int linkedlist_index(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f)
+int LINKEDLIST_FN_NAME(index)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f)
 {
     int i = 0;
 
@@ -64,9 +81,7 @@ static int linkedlist_index(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f)
     return -1;
 }
 
-typedef int(LINKEDLIST_FIND_FN)(LINKEDLIST_TYPE *p, const void *fv);
-
-static LINKEDLIST_TYPE *linkedlist_find_by(LINKEDLIST_TYPE *p, const void *v, LINKEDLIST_FIND_FN fn)
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(find_by)(LINKEDLIST_TYPE *p, const void *v, LINKEDLIST_FN_NAME(find_fn) fn)
 {
     LINKEDLIST_TYPE *ret = NULL;
     int i = 0;
@@ -75,7 +90,7 @@ static LINKEDLIST_TYPE *linkedlist_find_by(LINKEDLIST_TYPE *p, const void *v, LI
     return ret;
 }
 
-static LINKEDLIST_TYPE *linkedlist_append(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node)
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(append)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node)
 {
     if (p == NULL)
     {
@@ -95,10 +110,8 @@ static LINKEDLIST_TYPE *linkedlist_append(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *n
 }
 
 #if LINKEDLIST_DOUBLE
-typedef int(LINKEDLIST_COMPARE_FN)(LINKEDLIST_TYPE *p1, LINKEDLIST_TYPE *p2);
-
 // From https://www.geeksforgeeks.org/insert-value-sorted-way-sorted-doubly-linked-list/
-static LINKEDLIST_TYPE *linkedlist_sortedinsert(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node, LINKEDLIST_COMPARE_FN fn)
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(sortedinsert)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node, LINKEDLIST_FN_NAME(compare_fn) fn)
 {
     LINKEDLIST_TYPE *current;
 
@@ -140,7 +153,7 @@ static LINKEDLIST_TYPE *linkedlist_sortedinsert(LINKEDLIST_TYPE *p, LINKEDLIST_T
 }
 #endif
 
-static void linkedlist_free(LINKEDLIST_TYPE *head)
+void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head)
 {
     LINKEDLIST_TYPE *tmp;
     while (head != NULL)
@@ -150,3 +163,4 @@ static void linkedlist_free(LINKEDLIST_TYPE *head)
         free(tmp);
     }
 }
+#endif

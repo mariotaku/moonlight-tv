@@ -3,10 +3,6 @@
 #include "backend/coverloader.h"
 #include "stream/session.h"
 
-#define LINKEDLIST_TYPE APP_DLIST
-#define LINKEDLIST_DOUBLE 1
-#include "util/linked_list.h"
-
 #include "res.h"
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height, bool event_emitted);
@@ -23,7 +19,7 @@ static int _applist_rowcount = 0;
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
     struct nk_style_window winstyle = ctx->style.window;
-    int app_len = linkedlist_len(node->apps);
+    int app_len = applist_len(node->apps);
     int colcount = _applist_colcount, rowcount = app_len / colcount;
     if (app_len && app_len % colcount)
     {
@@ -37,11 +33,11 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     int itemheight = coverheight + winstyle.group_padding.y * 2 + winstyle.group_border * 2;
     _applist_rowcount = rowcount;
 
-    if (nk_list_view_begin(ctx, &list_view, "apps_list", NK_WINDOW_BORDER, itemheight, rowcount))
+    if (nk_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
     {
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
-        PAPP_DLIST cur = linkedlist_nth(node->apps, startidx);
+        PAPP_DLIST cur = applist_nth(node->apps, startidx);
         _applist_visible_start = cur;
         for (int row = 0; row < list_view.count; row++)
         {
@@ -205,7 +201,7 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
         _hovered_app = NULL;
         return true;
     }
-    PAPP_DLIST item = linkedlist_nth(_focused_app, offset);
+    PAPP_DLIST item = applist_nth(_focused_app, offset);
     if (item)
     {
         _focused_app = item;
@@ -213,7 +209,7 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
         if (_applist_rowcount)
         {
             int rowheight = list_view.total_height / _applist_rowcount;
-            int index = linkedlist_index(node->apps, item);
+            int index = applist_index(node->apps, item);
             if (index >= 0)
             {
                 int row = index / _applist_colcount;

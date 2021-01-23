@@ -7,8 +7,6 @@
 #include "libgamestream/errors.h"
 #include "error_manager.h"
 
-#define LINKEDLIST_TYPE SERVER_LIST
-#include "util/linked_list.h"
 #include "util/bus.h"
 #include "util/user_event.h"
 
@@ -41,7 +39,7 @@ void computer_manager_destroy()
 {
     computer_manager_polling_stop();
 
-    linkedlist_free(computer_list);
+    serverlist_free(computer_list);
 }
 
 bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
@@ -78,7 +76,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
     {
         PSERVER_LIST discovered = data1;
 
-        PSERVER_LIST find = linkedlist_find_by(computer_list, discovered->address, _server_list_compare_address);
+        PSERVER_LIST find = serverlist_find_by(computer_list, discovered->address, _server_list_compare_address);
         if (find)
         {
             PSERVER_DATA oldsrv = find->server;
@@ -92,7 +90,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         }
         else
         {
-            computer_list = linkedlist_append(computer_list, discovered);
+            computer_list = serverlist_append(computer_list, discovered);
             bus_pushevent(USER_CM_SERVER_ADDED, discovered, NULL);
         }
         return true;
@@ -127,12 +125,12 @@ static int server_list_namecmp(PSERVER_LIST item, const void *address)
 
 PSERVER_LIST computer_manager_server_of(const char *address)
 {
-    return linkedlist_find_by(computer_list, address, server_list_namecmp);
+    return serverlist_find_by(computer_list, address, server_list_namecmp);
 }
 
 PSERVER_LIST computer_manager_server_at(int index)
 {
-    return linkedlist_nth(computer_list, index);
+    return serverlist_nth(computer_list, index);
 }
 
 static int pin_random(int min, int max)

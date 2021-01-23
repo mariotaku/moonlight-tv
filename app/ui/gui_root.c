@@ -15,16 +15,22 @@
 #include "settings_window.h"
 #include "streaming_overlay.h"
 
+#include "util/bus.h"
+#include "util/user_event.h"
+
 short gui_display_width, gui_display_height;
 short gui_logic_width, gui_logic_height;
 
 bool gui_settings_showing;
+
+static bool gui_send_faketouch_cancel;
 
 void gui_root_init(struct nk_context *ctx)
 {
     launcher_window_init(ctx);
     settings_window_init(ctx);
     streaming_overlay_init(ctx);
+    gui_send_faketouch_cancel = false;
 }
 
 void gui_root_destroy()
@@ -34,6 +40,11 @@ void gui_root_destroy()
 
 bool gui_root(struct nk_context *ctx)
 {
+    if (gui_send_faketouch_cancel)
+    {
+        bus_pushevent(USER_FAKEINPUT_MOUSE_CANCEL, NULL, NULL);
+        gui_send_faketouch_cancel = false;
+    }
     STREAMING_STATUS stat = streaming_status;
     if (stat == STREAMING_NONE)
     {
@@ -65,11 +76,38 @@ void gui_background()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-bool gui_dispatch_userevent(int which, void *data1, void *data2)
+bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2)
 {
     bool handled = false;
     handled |= launcher_window_dispatch_userevent(which, data1, data2);
     handled |= streaming_overlay_dispatch_userevent(which);
+    if (!handled)
+    {
+        switch (which)
+        {
+        case USER_FAKEINPUT_MOUSE_MOTION:
+        {
+            struct nk_vec2 *center = data1;
+            nk_input_motion(ctx, center->x, center->y);
+            handled = true;
+            break;
+        }
+        case USER_FAKEINPUT_MOUSE_CLICK:
+        {
+            struct nk_vec2 *center = data1;
+            nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, data2 ? nk_true : nk_false);
+            gui_send_faketouch_cancel = true;
+            break;
+        }
+        case USER_FAKEINPUT_MOUSE_CANCEL:
+        {
+            nk_input_motion(ctx, 0, 0);
+            break;
+        }
+        default:
+            break;
+        }
+    }
     return handled;
 }
 

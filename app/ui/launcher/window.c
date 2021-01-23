@@ -1,7 +1,9 @@
 #include "window.h"
+#include "priv.h"
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <memory.h>
 
 #include "libgamestream/errors.h"
@@ -15,16 +17,13 @@
 #endif
 
 #include "stream/input/absinput.h"
-
-#define LINKEDLIST_TYPE SERVER_LIST
-#include "util/linked_list.h"
 #include "util/user_event.h"
 
 #include "app.h"
 #include "main.h"
 #include "res.h"
 
-static PSERVER_LIST selected_server_node;
+PSERVER_LIST selected_server_node;
 static bool _webos_decoder_error_dismissed;
 
 struct nk_image launcher_default_cover;
@@ -45,15 +44,14 @@ static struct
 static struct nk_style_button cm_list_button_style;
 static struct nk_rect _computer_picker_bounds = {0, 0, 0, 0};
 
-static void _select_computer(PSERVER_LIST node, bool load_apps);
-static void _open_pair(int index, PSERVER_LIST node);
-
 static void _pairing_window(struct nk_context *ctx);
 static void _pairing_error_popup(struct nk_context *ctx);
 static void _server_error_popup(struct nk_context *ctx);
 static void _quitapp_window(struct nk_context *ctx);
 static void _webos_decoder_error_popup(struct nk_context *ctx);
-static bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted);
+
+bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
+bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
 
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey);
 
@@ -106,10 +104,9 @@ bool launcher_window(struct nk_context *ctx)
         nk_layout_row_template_end(ctx);
         list_height -= nk_widget_height(ctx);
 
-        int computer_len = linkedlist_len(computer_list);
         _computer_picker_bounds = nk_widget_bounds(ctx);
         _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
-        event_emitted |= cw_computer_dropdown(ctx, computer_list, event_emitted);
+        event_emitted |= pclist_dropdown(ctx, event_emitted);
         if (nk_button_label(ctx, computer_discovery_running ? ".." : "R"))
         {
             if (!event_emitted)
@@ -137,6 +134,8 @@ bool launcher_window(struct nk_context *ctx)
 
         PSERVER_LIST selected = selected_server_node;
 
+        nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2(0, 0));
+        nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2(10, 10));
         if (selected != NULL)
         {
             if (selected->server != NULL)
@@ -151,7 +150,7 @@ bool launcher_window(struct nk_context *ctx)
         }
         else
         {
-            if (nk_group_begin(ctx, "launcher_empty", NK_WINDOW_BORDER))
+            if (nk_group_begin(ctx, "launcher_empty", 0))
             {
                 nk_layout_row_dynamic_s(ctx, 50, 1);
                 nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
@@ -164,6 +163,8 @@ bool launcher_window(struct nk_context *ctx)
                 _launcher_has_popup |= true;
             }
         }
+        nk_style_pop_vec2(ctx);
+        nk_style_pop_vec2(ctx);
 
         nk_layout_row_template_begin_s(ctx, _launcher_bottom_bar_height_dp);
         nk_layout_row_template_push_static_s(ctx, 100);
@@ -249,9 +250,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     }
     else if (_launcher_showing_combo)
     {
-        nk_input_motion(ctx, 0, 0);
-        nk_input_button(ctx, NK_BUTTON_LEFT, 0, 0, down);
-        return true;
+        return pclist_dispatch_navkey(ctx, key, down);
     }
     else if (selected_server_node && selected_server_node->server)
     {
@@ -282,45 +281,6 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
         break;
     }
     return true;
-}
-
-bool cw_computer_dropdown(struct nk_context *ctx, PSERVER_LIST list, bool event_emitted)
-{
-    char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
-    nk_bool active;
-    if (active = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200)))
-    {
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        PSERVER_LIST cur = list;
-        int i = 0;
-        while (cur != NULL)
-        {
-            if (nk_combo_item_label(ctx, cur->name, NK_TEXT_LEFT))
-            {
-                if (!event_emitted)
-                {
-                    SERVER_DATA *server = (SERVER_DATA *)cur->server;
-                    if (server == NULL)
-                    {
-                        _select_computer(cur, false);
-                    }
-                    else if (server->paired)
-                    {
-                        _select_computer(cur, cur->apps == NULL);
-                    }
-                    else
-                    {
-                        _open_pair(i, cur);
-                    }
-                    event_emitted = true;
-                }
-            }
-            cur = cur->next;
-            i++;
-        }
-        nk_combo_end(ctx);
-    }
-    return active || event_emitted;
 }
 
 void _select_computer(PSERVER_LIST node, bool load_apps)

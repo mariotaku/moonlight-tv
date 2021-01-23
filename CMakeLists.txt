@@ -56,12 +56,14 @@ set(SOURCES
     app/backend/application_manager.c
     app/backend/coverloader.c
     app/backend/error_manager.c
+    app/backend/types_impl.c
     app/stream/platform.c
     app/stream/session.c
     app/stream/connection.c
     app/stream/settings.c
     app/ui/gui_root.c
     app/ui/launcher/window.c
+    app/ui/launcher/pclist.c
     app/ui/launcher/applist.c
     app/ui/streaming_overlay.c
     app/ui/settings_window.c
@@ -109,6 +111,10 @@ add_executable(moonlight ${SOURCES})
 set_target_properties(moonlight PROPERTIES
     C_STANDARD 11
     C_STANDARD_REQUIRED TRUE
+)
+
+target_compile_options(moonlight PRIVATE
+  $<$<C_COMPILER_ID:GNU>:-Werror>
 )
 
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
