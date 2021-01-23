@@ -17,7 +17,7 @@ static PAPP_DLIST _applist_visible_start = NULL;
 static struct nk_list_view list_view;
 static int _applist_colcount = 5;
 static int _applist_rowcount = 0;
-static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_close_center = {0, 0};
+static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_resume_center = {0, 0}, applist_focused_close_center = {0, 0};
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
@@ -81,13 +81,13 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     bool running = node->server->currentGame == cur->id;
     // Don't react to grid click if there's action button
     int clicked = 0;
-    struct nk_rect item_bounds = nk_widget_bounds(ctx);
-    int item_height = item_bounds.h;
+    struct nk_rect tmp_bounds = nk_widget_bounds(ctx);
+    int item_height = tmp_bounds.h;
     if (cur == applist_focused_request)
     {
         // Send mouse pointer to the item
-        applist_focused_item_center.x = item_bounds.x + item_bounds.w / 2;
-        applist_focused_item_center.y = item_bounds.y + item_bounds.h / 2;
+        applist_focused_item_center.x = nk_rect_center_x(tmp_bounds);
+        applist_focused_item_center.y = nk_rect_center_y(tmp_bounds);
         bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_item_center, NULL);
         applist_focused_request = NULL;
     }
@@ -109,11 +109,23 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         int button_x = (cover_width - button_size) / 2;
         int button_spacing = 4 * NK_UI_SCALE;
         nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 - button_size - button_spacing, button_size, button_size));
+        tmp_bounds = nk_widget_bounds(ctx);
+        if (hovered)
+        {
+            applist_focused_resume_center.x = nk_rect_center_x(tmp_bounds);
+            applist_focused_resume_center.y = nk_rect_center_y(tmp_bounds);
+        }
         if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT))
         {
             clicked = 1;
         }
         nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 + button_spacing, button_size, button_size));
+        tmp_bounds = nk_widget_bounds(ctx);
+        if (hovered)
+        {
+            applist_focused_close_center.x = nk_rect_center_x(tmp_bounds);
+            applist_focused_close_center.y = nk_rect_center_y(tmp_bounds);
+        }
         if (nk_button_symbol(ctx, NK_SYMBOL_X))
         {
             clicked = -1;
@@ -160,29 +172,36 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     }
 }
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey)
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down)
 {
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        return _applist_item_select(node, -1);
+        return down || _applist_item_select(node, -1);
     case NAVKEY_RIGHT:
-        return _applist_item_select(node, 1);
+        return down || _applist_item_select(node, 1);
     case NAVKEY_UP:
-        return _applist_item_select(node, -_applist_colcount);
+        return down || _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
-        return _applist_item_select(node, _applist_colcount);
+        return down || _applist_item_select(node, _applist_colcount);
     case NAVKEY_CLOSE:
-        if (applist_focused_request)
+        if (applist_hovered_item)
         {
-            _applist_item_do_click(node, applist_focused_request, -1);
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_close_center, (void *)down);
         }
         return true;
     case NAVKEY_CONFIRM:
     case NAVKEY_ENTER:
-        if (applist_focused_request)
+        if (applist_hovered_item)
         {
-            _applist_item_do_click(node, applist_focused_request, 1);
+            if (node->server->currentGame == applist_hovered_item->id)
+            {
+                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_resume_center, (void *)down);
+            }
+            else
+            {
+                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_item_center, (void *)down);
+            }
         }
         return true;
     default:

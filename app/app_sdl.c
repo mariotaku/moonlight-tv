@@ -127,8 +127,8 @@ static void app_process_events(struct nk_context *ctx)
             if (navkey != NAVKEY_UNKNOWN)
             {
 #if OS_WEBOS
-                // Hide the cursor instantly
-                SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "1");
+                // Hide the cursor
+                SDL_ShowCursor(0);
 #endif
                 gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
             }

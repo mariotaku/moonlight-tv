@@ -96,7 +96,10 @@ bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void
         {
             struct nk_vec2 *center = data1;
             nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, data2 ? nk_true : nk_false);
-            gui_send_faketouch_cancel = true;
+            if (!data2)
+            {
+                gui_send_faketouch_cancel = true;
+            }
             break;
         }
         case USER_FAKEINPUT_MOUSE_CANCEL:

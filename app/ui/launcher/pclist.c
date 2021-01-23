@@ -26,8 +26,8 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
             {
                 // Send mouse pointer to the item
                 struct nk_rect item_bounds = nk_widget_bounds(ctx);
-                pclist_focused_center.x = item_bounds.x + item_bounds.w / 2;
-                pclist_focused_center.y = item_bounds.y + item_bounds.h / 2;
+                pclist_focused_center.x = nk_rect_center_x(item_bounds);
+                pclist_focused_center.y = nk_rect_center_y(item_bounds);
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &pclist_focused_center, NULL);
                 pclist_focused_node = NULL;
             }

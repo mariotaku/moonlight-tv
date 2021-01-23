@@ -53,7 +53,7 @@ static void _webos_decoder_error_popup(struct nk_context *ctx);
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey);
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down);
 
 #define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
 bool _launcher_has_popup, _launcher_showing_combo;
@@ -254,7 +254,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     }
     else if (selected_server_node && selected_server_node->server)
     {
-        key_handled |= !down && _applist_dispatch_navkey(ctx, selected_server_node, key);
+        key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, down);
     }
     if (key_handled)
     {
@@ -265,8 +265,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     case NAVKEY_MENU:
         if (_computer_picker_bounds.w && _computer_picker_bounds.h)
         {
-            int x = _computer_picker_bounds.x + _computer_picker_bounds.w / 2,
-                y = _computer_picker_bounds.y + _computer_picker_bounds.h / 2;
+            int x = nk_rect_center_x(_computer_picker_bounds), y = nk_rect_center_y(_computer_picker_bounds);
             nk_input_motion(ctx, x, y);
             nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
         }
