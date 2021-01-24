@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         nk_platform_font_stash_begin(&atlas);
         struct nk_font *noto = nk_font_atlas_add_from_memory_s(atlas, (void *)res_notosans_regular_data, res_notosans_regular_size, 20, NULL);
         nk_platform_font_stash_end();
-#if DEBUG
+#if TARGET_DESKTOP && DEBUG
         nk_style_load_all_cursors(ctx, atlas->cursors);
 #endif
         nk_style_set_font(ctx, &noto->handle);
