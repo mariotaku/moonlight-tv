@@ -18,6 +18,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "res.h"
+
 short gui_display_width, gui_display_height;
 short gui_logic_width, gui_logic_height;
 
@@ -25,16 +27,23 @@ bool gui_settings_showing;
 
 static bool gui_send_faketouch_cancel;
 
+static struct nk_image gui_spritesheet;
+struct nk_spritesheet_ui sprites_ui;
+
 void gui_root_init(struct nk_context *ctx)
 {
     launcher_window_init(ctx);
     settings_window_init(ctx);
     streaming_overlay_init(ctx);
     gui_send_faketouch_cancel = false;
+    nk_imageloadm(res_spritesheet_ui_3x_data, res_spritesheet_ui_3x_size, &gui_spritesheet);
+    nk_image2texture(&gui_spritesheet);
+    nk_spritesheet_init_ui_3x(gui_spritesheet, &sprites_ui);
 }
 
 void gui_root_destroy()
 {
+    nk_imagetexturefree(&gui_spritesheet);
     launcher_window_destroy();
 }
 

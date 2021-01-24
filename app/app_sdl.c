@@ -13,6 +13,7 @@
 #include "nuklear/ext_styling.h"
 #include "nuklear/ext_text.h"
 #include "nuklear/ext_dialog.h"
+#include "nuklear/spritesheet_ui.h"
 
 #if defined(NK_SDL_GLES2)
 #define NK_SDL_GLES2_IMPLEMENTATION

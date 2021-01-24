@@ -100,7 +100,7 @@ bool launcher_window(struct nk_context *ctx)
         nk_layout_row_template_push_static_s(ctx, 200);
         nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_variable_s(ctx, 10);
-        nk_layout_row_template_push_static_s(ctx, 80);
+        nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_end(ctx);
         list_height -= nk_widget_height(ctx);
 
@@ -118,10 +118,12 @@ bool launcher_window(struct nk_context *ctx)
 
         nk_spacing(ctx, 1);
 
-        if (nk_button_label(ctx, "Settings"))
+        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
+        if (nk_button_image(ctx, sprites_ui.ic_action_settings))
         {
             settings_window_open();
         }
+        nk_style_pop_vec2(ctx);
         list_height -= ctx->style.window.spacing.y;
 
         nk_style_pop_float(ctx);
