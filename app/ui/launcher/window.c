@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <memory.h>
 
+#include "app.h"
+#include "res.h"
+
 #include "libgamestream/errors.h"
 
 #include "backend/application_manager.h"
@@ -18,9 +21,6 @@
 
 #include "stream/input/absinput.h"
 #include "util/user_event.h"
-
-#include "app.h"
-#include "res.h"
 
 PSERVER_LIST selected_server_node;
 static bool _webos_decoder_error_dismissed;
@@ -53,6 +53,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
 
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down);
+static void launcher_statbar(struct nk_context *ctx);
 
 #define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
 bool _launcher_has_popup, _launcher_showing_combo;
@@ -167,15 +168,7 @@ bool launcher_window(struct nk_context *ctx)
         nk_style_pop_vec2(ctx);
         nk_style_pop_vec2(ctx);
 
-        nk_layout_row_template_begin_s(ctx, _launcher_bottom_bar_height_dp);
-        nk_layout_row_template_push_static_s(ctx, 100);
-        nk_layout_row_template_push_variable_s(ctx, 1);
-        nk_layout_row_template_push_static_s(ctx, 300);
-        nk_layout_row_template_end(ctx);
-
-        nk_labelf(ctx, NK_TEXT_LEFT, "Controllers: %d", absinput_gamepads());
-        nk_spacing(ctx, 1);
-        nk_label(ctx, "(X) Close  (A) Launch", NK_TEXT_RIGHT);
+        launcher_statbar(ctx);
 
 #ifdef OS_WEBOS
         if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
@@ -213,6 +206,20 @@ bool launcher_window(struct nk_context *ctx)
 
 void launcher_display_size(struct nk_context *ctx, short width, short height)
 {
+}
+
+void launcher_statbar(struct nk_context *ctx)
+{
+    nk_layout_row_template_begin_s(ctx, _launcher_bottom_bar_height_dp);
+    nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
+    nk_layout_row_template_push_static_s(ctx, 50);
+    nk_layout_row_template_push_variable_s(ctx, 1);
+    nk_layout_row_template_push_static_s(ctx, 300);
+    nk_layout_row_template_end(ctx);
+    nk_image(ctx, sprites_ui.ic_gamepad);
+    nk_labelf(ctx, NK_TEXT_LEFT, "%d", absinput_gamepads());
+    nk_spacing(ctx, 1);
+    nk_label(ctx, "(X) Close  (A) Launch", NK_TEXT_RIGHT);
 }
 
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)

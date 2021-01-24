@@ -2,6 +2,7 @@
 #include <SDL.h>
 
 #include "app.h"
+#include "res.h"
 
 #include "ui/config.h"
 
@@ -9,10 +10,11 @@
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
-#include "nuklear/ext_styling.h"
 #include "nuklear/ext_text.h"
 #include "nuklear/ext_dialog.h"
-#include "nuklear/spritesheet_ui.h"
+#include "nuklear/ext_image.h"
+#include "nuklear/ext_sprites.h"
+#include "nuklear/ext_styling.h"
 
 #if defined(NK_SDL_GLES2)
 #define NK_SDL_GLES2_IMPLEMENTATION
@@ -37,7 +39,6 @@
 #include "ui/gui_root.h"
 #include "util/user_event.h"
 
-#include "res.h"
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"

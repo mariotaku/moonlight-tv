@@ -60,7 +60,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
         {
             applist_hovered_item = NULL;
         }
-        
+
         nk_list_view_end(&list_view);
     }
     return event_emitted;
@@ -124,7 +124,8 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
                 applist_focused_resume_center.x = nk_rect_center_x(tmp_bounds);
                 applist_focused_resume_center.y = nk_rect_center_y(tmp_bounds);
             }
-            if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT))
+            nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
+            if (nk_button_image(ctx, sprites_ui.ic_play))
             {
                 clicked = 1;
             }
@@ -135,10 +136,11 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
                 applist_focused_close_center.x = nk_rect_center_x(tmp_bounds);
                 applist_focused_close_center.y = nk_rect_center_y(tmp_bounds);
             }
-            if (nk_button_symbol(ctx, NK_SYMBOL_X))
+            if (nk_button_image(ctx, sprites_ui.ic_close))
             {
                 clicked = -1;
             }
+            nk_style_pop_vec2(ctx);
         }
         nk_layout_space_end(ctx);
         nk_group_end(ctx);

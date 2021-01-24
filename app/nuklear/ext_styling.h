@@ -1,6 +1,7 @@
 #pragma once
 #ifndef NK_NUKLEAR_H_
 #include "nuklear.h"
+#include "ext_sprites.h"
 #endif
 
 #ifndef NK_UI_SCALE
@@ -66,8 +67,13 @@ void nk_ext_apply_style(struct nk_context *ctx)
 
     /* checkbox toggle */
     toggle = &style->checkbox;
+    toggle->normal = nk_style_item_image(sprites_ui.ic_check_box_blank);
+    toggle->hover = nk_style_item_image(sprites_ui.ic_check_box_blank_hovered);
+    toggle->active = nk_style_item_color(nk_rgba(255, 255, 255, 0));
+    toggle->cursor_normal = nk_style_item_image(sprites_ui.ic_check_box);
+    toggle->cursor_hover = nk_style_item_image(sprites_ui.ic_check_box_hovered);
     toggle->padding = nk_vec2_s(0.0f, 0.0f);
-    toggle->spacing = 4 * NK_UI_SCALE;
+    toggle->spacing = 0;
 
     /* option toggle */
     toggle = &style->option;

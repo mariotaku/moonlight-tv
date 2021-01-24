@@ -6,7 +6,6 @@
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_image.h"
-#include "nuklear/spritesheet_ui.h"
 #include "nuklear/ext_sprites.h"
 #endif
 

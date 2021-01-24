@@ -1,10 +1,17 @@
 #include <stdio.h>
 
+#include "app.h"
+#define RES_IMPL
+#include "res.h"
+#undef RES_IMPL
+
 #include "ui/config.h"
 
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_image.h"
+#include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
 
 #if defined(NK_SDL_GLES2)
@@ -21,16 +28,11 @@
 #include "platform/sdl/webos_keys.h"
 #endif
 
-#include "app.h"
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "ui/gui_root.h"
 #include "util/bus.h"
-
-#define RES_IMPL
-#include "res.h"
-#undef RES_IMPL
 
 bool running = true;
 
@@ -64,6 +66,7 @@ int main(int argc, char *argv[])
 #endif
         nk_style_set_font(ctx, &noto->handle);
     }
+    nk_ext_sprites_init();
     nk_ext_apply_style(ctx);
 
     gui_root_init(ctx);
@@ -79,6 +82,8 @@ int main(int argc, char *argv[])
     settings_save(app_configuration);
 
     gui_root_destroy();
+    
+    nk_ext_sprites_destroy();
 
     nk_platform_shutdown();
     backend_destroy();
