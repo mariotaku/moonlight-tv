@@ -2,7 +2,6 @@
 #include <SDL.h>
 
 #include "app.h"
-#include "main.h"
 
 #include "ui/config.h"
 
@@ -25,6 +24,9 @@
 #else
 #error "No valid render backend specified"
 #endif
+#if TARGET_DESKTOP
+#include <SDL_image.h>
+#endif
 
 #include "backend/backend_root.h"
 #include "stream/session.h"
@@ -34,6 +36,8 @@
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/gui_root.h"
 #include "util/user_event.h"
+
+#include "res.h"
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
@@ -72,6 +76,11 @@ APP_WINDOW_CONTEXT app_window_create()
 #endif
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+#if TARGET_DESKTOP
+    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
+    SDL_SetWindowIcon(win, winicon);
+    SDL_FreeSurface(winicon);
+#endif
     glContext = SDL_GL_CreateContext(win);
 
     /* OpenGL setup */

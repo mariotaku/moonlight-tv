@@ -20,7 +20,6 @@
 #include "util/user_event.h"
 
 #include "app.h"
-#include "main.h"
 #include "res.h"
 
 PSERVER_LIST selected_server_node;
@@ -107,7 +106,8 @@ bool launcher_window(struct nk_context *ctx)
         _computer_picker_bounds = nk_widget_bounds(ctx);
         _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
         event_emitted |= pclist_dropdown(ctx, event_emitted);
-        if (nk_button_label(ctx, computer_discovery_running ? ".." : "R"))
+        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
+        if (nk_button_image(ctx, computer_discovery_running ? sprites_ui.ic_hourglass : sprites_ui.ic_refresh))
         {
             if (!event_emitted)
             {
@@ -118,8 +118,7 @@ bool launcher_window(struct nk_context *ctx)
 
         nk_spacing(ctx, 1);
 
-        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
-        if (nk_button_image(ctx, sprites_ui.ic_action_settings))
+        if (nk_button_image(ctx, sprites_ui.ic_settings))
         {
             settings_window_open();
         }

@@ -21,7 +21,6 @@
 #include "platform/sdl/webos_keys.h"
 #endif
 
-#include "main.h"
 #include "app.h"
 #include "debughelper.h"
 #include "backend/backend_root.h"

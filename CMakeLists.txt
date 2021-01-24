@@ -152,6 +152,10 @@ else()
     target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
 endif()
 
+add_custom_target(moonlight-spritegen
+    COMMAND nk-spritegen -n ui -i res/sprites -o res/ -c app/nuklear/ -s 1 -s 2 -s 3
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
 
 if (TARGET_WEBOS)
     include(WebOSPackage)

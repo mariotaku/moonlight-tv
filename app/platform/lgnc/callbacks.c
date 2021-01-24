@@ -6,7 +6,6 @@
 #include "nuklear/ext_functions.h"
 #include "nuklear/platform_lgnc_gles2.h"
 
-#include "main.h"
 #include "callbacks.h"
 #include "events.h"
 

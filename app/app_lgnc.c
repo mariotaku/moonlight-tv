@@ -1,7 +1,6 @@
 #include <unistd.h>
 
 #include "app.h"
-#include "main.h"
 
 #include "platform/lgnc/callbacks.h"
 #include "platform/lgnc/graphics.h"
