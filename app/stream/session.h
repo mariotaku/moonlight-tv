@@ -14,6 +14,20 @@ enum STREAMING_STATUS
 };
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
+struct VIDEO_STATS
+{
+    uint32_t totalFrames;
+    uint32_t receivedFrames;
+    uint32_t networkDroppedFrames;
+    uint32_t decodedFrames;
+    uint32_t totalReassemblyTime;
+    uint32_t totalDecodeTime;
+    long measurementStartTimestamp;
+    float totalFps;
+    float receivedFps;
+    float decodedFps;
+};
+
 extern STREAMING_STATUS streaming_status;
 extern int streaming_errno;
 extern char streaming_errmsg[];

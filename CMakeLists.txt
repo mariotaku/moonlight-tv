@@ -86,6 +86,7 @@ if (TARGET_WEBOS)
         app/platform/sdl/input_manager.c
         app/platform/webos/navkey_sdl_webos.c
         app/stream/audio/ndl.c
+        app/stream/video/delegate.c
         app/stream/video/ndl.c
         app/stream/audio/lgnc.c
         app/stream/video/lgnc.c
@@ -100,6 +101,7 @@ elseif (TARGET_DESKTOP)
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdl.c
+        app/stream/video/delegate.c
         core/moonlight-embedded/src/sdl.c
         core/moonlight-embedded/src/video/sdl.c
         core/moonlight-embedded/src/video/ffmpeg.c

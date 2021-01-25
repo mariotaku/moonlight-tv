@@ -8,6 +8,7 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "input/absinput.h"
+#include "video/delegate.h"
 
 #include <Limelight.h>
 #include <pthread.h>
@@ -142,8 +143,12 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
         printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
     }
 
+    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(NONE);
+    DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
+    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(NONE, config->audio_device);
+
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
-                                        platform_get_video(NONE), platform_get_audio(NONE, config->audio_device), NULL, drFlags, config->audio_device, 0);
+                                        &vdec_delegate, adec, vdec, drFlags, config->audio_device, 0);
     if (startResult != 0 || session_interrupted)
     {
         streaming_status = STREAMING_ERROR;
