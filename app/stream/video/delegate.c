@@ -54,7 +54,7 @@ int _vdec_delegate_submit(PDECODE_UNIT du)
         lastFrameNumber = du->frameNumber;
     }
     // Flip stats windows roughly every second
-    struct timespec ts;
+    static struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     long ticksms = (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
     if (ticksms - vdec_temp_stats.measurementStartTimestamp > 1000)
