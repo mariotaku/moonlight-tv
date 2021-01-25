@@ -69,6 +69,8 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
             streaming_interrupt(false);
             quit_confirm_showing = false;
             break;
+        default:
+            break;
         }
         return true;
     }

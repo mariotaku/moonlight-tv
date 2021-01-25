@@ -15,7 +15,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
     nk_bool active;
-    if (active = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200)))
+    if ((active = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
         PSERVER_LIST cur = computer_list;
