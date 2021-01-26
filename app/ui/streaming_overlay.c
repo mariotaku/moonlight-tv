@@ -3,10 +3,12 @@
 #include "messages.h"
 
 #include "stream/session.h"
+#include "stream/video/delegate.h"
 #include "util/user_event.h"
 
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
 static void _streaming_error_window(struct nk_context *ctx);
+static void _streaming_perf_stat(struct nk_context *ctx);
 static void _streaming_quit_confirm_window(struct nk_context *ctx);
 
 bool quit_confirm_showing;
@@ -30,6 +32,7 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
     case STREAMING_STREAMING:
         if (quit_confirm_showing)
         {
+            _streaming_perf_stat(ctx);
             _streaming_quit_confirm_window(ctx);
         }
         break;
@@ -139,6 +142,24 @@ void _streaming_quit_confirm_window(struct nk_context *ctx)
         break;
     default:
         break;
+    }
+    nk_end(ctx);
+}
+
+void _streaming_perf_stat(struct nk_context *ctx)
+{
+    if (nk_begin(ctx, "Stats", nk_rect_s(10, 10, 300, 200), NK_WINDOW_TITLE))
+    {
+        struct VIDEO_STATS *dst = &vdec_summary_stats;
+        nk_layout_row_dynamic_s(ctx, 20, 1);
+        nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "net: %.2f FPS", dst->receivedFps);
+        nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "dec: %.2f FPS", dst->decodedFps);
+        if (dst->decodedFrames)
+        {
+            nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "net drop: %.2f%%", (float)dst->networkDroppedFrames / dst->totalFrames * 100);
+            nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "avg recv: %.2fms", (float)dst->totalReassemblyTime / dst->receivedFrames);
+            nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "avg submit: %.2fms", (float)dst->totalDecodeTime / dst->decodedFrames);
+        }
     }
     nk_end(ctx);
 }

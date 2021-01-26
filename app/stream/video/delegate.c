@@ -7,7 +7,8 @@
 
 static PDECODER_RENDERER_CALLBACKS vdec;
 static int lastFrameNumber;
-static struct VIDEO_STATS vdec_temp_stats, vdec_summary_stats;
+static struct VIDEO_STATS vdec_temp_stats;
+struct VIDEO_STATS vdec_summary_stats;
 
 static int _vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags);
 static void _vdec_delegate_cleanup();
@@ -59,8 +60,7 @@ int _vdec_delegate_submit(PDECODE_UNIT du)
     long ticksms = (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
     if (ticksms - vdec_temp_stats.measurementStartTimestamp > 1000)
     {
-        memcpy(&vdec_summary_stats, &vdec_temp_stats, sizeof(vdec_temp_stats));
-        _vdec_stat_submit(&vdec_summary_stats, ticksms);
+        _vdec_stat_submit(&vdec_temp_stats, ticksms);
 
         // Move this window into the last window slot and clear it for next window
         memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
@@ -80,20 +80,11 @@ int _vdec_delegate_submit(PDECODE_UNIT du)
     return err;
 }
 
-void _vdec_stat_submit(struct VIDEO_STATS *dst, long now)
+void _vdec_stat_submit(struct VIDEO_STATS *src, long now)
 {
+    struct VIDEO_STATS *dst = &vdec_summary_stats;
+    memcpy(&dst, src, sizeof(struct VIDEO_STATS));
     dst->totalFps = (float)dst->totalFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
     dst->receivedFps = (float)dst->receivedFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
     dst->decodedFps = (float)dst->decodedFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
-    printf("net: %.2f FPS dec: %.2f FPS\n",
-           dst->receivedFps,
-           dst->decodedFps);
-    // Update overlay stats if it's enabled
-    if (dst->decodedFrames)
-    {
-        printf("net drop: %.2f%%, avg recv: %.2fms, avg submit: %.2fms\n",
-               (float)dst->networkDroppedFrames / dst->totalFrames * 100,
-               (float)dst->totalReassemblyTime / dst->receivedFrames,
-               (float)dst->totalDecodeTime / dst->decodedFrames);
-    }
 }
