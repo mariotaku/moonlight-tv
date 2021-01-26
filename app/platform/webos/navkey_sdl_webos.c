@@ -19,14 +19,14 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
         case 79 /* Keyboard/Remote Right */:
             return NAVKEY_RIGHT;
         case 40 /* Keyboard Enter */:
-            return NAVKEY_ENTER;
+            return NAVKEY_START;
         case 41 /* Keyboard ESC */:
         case SDLK_WEBOS_RED:
-            return NAVKEY_CLOSE;
+            return NAVKEY_NEGATIVE;
         case SDLK_WEBOS_YELLOW:
             return NAVKEY_MENU;
         case SDLK_WEBOS_BACK:
-            return NAVKEY_BACK;
+            return NAVKEY_CANCEL;
         default:
             printf("KeyEvent, down: %d, key: %d\n", ev.key.state, ev.key.keysym.sym);
             return NAVKEY_UNKNOWN;

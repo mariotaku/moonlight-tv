@@ -209,7 +209,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 {
     switch (navkey)
     {
-    case NAVKEY_BACK:
+    case NAVKEY_CANCEL:
         nk_window_show(ctx, WINDOW_TITLE, false);
         break;
     case NAVKEY_UP:

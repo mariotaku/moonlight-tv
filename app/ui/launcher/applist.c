@@ -195,14 +195,14 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
         return down || _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
         return down || _applist_item_select(node, _applist_colcount);
-    case NAVKEY_CLOSE:
+    case NAVKEY_NEGATIVE:
         if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
         {
             bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_close_center, (void *)down);
         }
         return true;
     case NAVKEY_CONFIRM:
-    case NAVKEY_ENTER:
+    case NAVKEY_START:
         if (applist_hovered_item)
         {
             if (node->server->currentGame == applist_hovered_item->id)

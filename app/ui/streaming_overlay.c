@@ -61,7 +61,7 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
     {
         switch (navkey)
         {
-        case NAVKEY_BACK:
+        case NAVKEY_CANCEL:
             quit_confirm_showing = false;
             break;
         case NAVKEY_CONFIRM:

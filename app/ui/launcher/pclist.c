@@ -68,7 +68,7 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
 {
     switch (key)
     {
-    case NAVKEY_BACK:
+    case NAVKEY_CANCEL:
     case NAVKEY_MENU:
         // Fake touch on blank and cancel the combo
         nk_input_motion(ctx, 0, 0);
@@ -78,7 +78,7 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
         return down || pclist_item_select(computer_list, -1);
     case NAVKEY_DOWN:
         return down || pclist_item_select(computer_list, 1);
-    case NAVKEY_ENTER:
+    case NAVKEY_START:
     case NAVKEY_CONFIRM:
         if (pclist_hovered_item)
         {

@@ -20,9 +20,9 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
         case SDLK_RETURN:
             return NAVKEY_CONFIRM;
         case SDLK_ESCAPE:
-            return NAVKEY_BACK;
+            return NAVKEY_CANCEL;
         case SDLK_BACKSPACE:
-            return NAVKEY_CLOSE;
+            return NAVKEY_NEGATIVE;
         case SDLK_MENU:
         case SDLK_APPLICATION:
             return NAVKEY_MENU;

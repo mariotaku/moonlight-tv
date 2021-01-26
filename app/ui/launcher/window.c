@@ -251,7 +251,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     }
     else if (_launcher_has_popup)
     {
-        if (!down && (key == NAVKEY_BACK || key == NAVKEY_ENTER || key == NAVKEY_CONFIRM))
+        if (!down && (key == NAVKEY_CANCEL || key == NAVKEY_START || key == NAVKEY_CONFIRM))
         {
             _launcher_popup_request_dismiss = true;
         }
@@ -278,7 +278,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
             nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
         }
         return true;
-    case NAVKEY_BACK:
+    case NAVKEY_CANCEL:
         if (!down)
         {
             request_exit();

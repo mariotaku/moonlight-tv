@@ -10,9 +10,9 @@ typedef enum NAVKEY_
     NAVKEY_RIGHT,
     NAVKEY_FUNCTION = 0x200,
     NAVKEY_MENU,
-    NAVKEY_ENTER,
+    NAVKEY_START,
     NAVKEY_CONFIRM /* A button*/,
-    NAVKEY_BACK /* B button*/,
-    NAVKEY_CLOSE /* X button*/,
+    NAVKEY_CANCEL /* B button*/,
+    NAVKEY_NEGATIVE /* X button*/,
     NAVKEY_ALTERNATIVE /* Y button*/,
 } NAVKEY;
