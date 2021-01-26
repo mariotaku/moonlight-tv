@@ -27,8 +27,7 @@ bool session_running = false, session_interrupted = false;
 short streaming_display_width, streaming_display_height;
 bool streaming_quitapp_requested;
 
-pthread_mutex_t streaming_errmsg_lock;
-pthread_mutex_t streaming_interrupt_lock;
+pthread_mutex_t streaming_errmsg_lock, streaming_interrupt_lock, streaming_status_lock;
 pthread_cond_t streaming_interrupt_cond;
 pthread_t streaming_thread;
 
@@ -40,6 +39,7 @@ typedef struct
 } STREAMING_REQUEST;
 
 static void *_streaming_thread_action(STREAMING_REQUEST *req);
+static void _streaming_set_status(STREAMING_STATUS status);
 
 void streaming_init()
 {
@@ -48,6 +48,7 @@ void streaming_init()
     session_interrupted = false;
     pthread_mutex_init(&streaming_errmsg_lock, NULL);
     pthread_mutex_init(&streaming_interrupt_lock, NULL);
+    pthread_mutex_init(&streaming_status_lock, NULL);
     pthread_cond_init(&streaming_interrupt_cond, NULL);
 }
 
@@ -58,11 +59,16 @@ void streaming_destroy()
 
     pthread_cond_destroy(&streaming_interrupt_cond);
     pthread_mutex_destroy(&streaming_interrupt_lock);
+    pthread_mutex_destroy(&streaming_status_lock);
     pthread_mutex_destroy(&streaming_errmsg_lock);
 }
 
 int streaming_begin(PSERVER_LIST node, int app_id)
 {
+    if (streaming_status != STREAMING_NONE)
+    {
+        return -1;
+    }
     PCONFIGURATION config = settings_load();
 
     if (config->stream.bitrate < 0)
@@ -93,7 +99,10 @@ void streaming_interrupt(bool quitapp)
 
 void streaming_wait_for_stop()
 {
-    pthread_join(streaming_thread, NULL);
+    if (streaming_status != STREAMING_NONE)
+    {
+        pthread_join(streaming_thread, NULL);
+    }
 }
 
 bool streaming_running()
@@ -109,7 +118,8 @@ void streaming_display_size(short width, short height)
 
 void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
-    streaming_status = STREAMING_CONNECTING;
+
+    _streaming_set_status(STREAMING_CONNECTING);
     streaming_errno = GS_OK;
 
     _streaming_errmsg_write("");
@@ -131,7 +141,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     int ret = gs_start_app(server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0)
     {
-        streaming_status = STREAMING_ERROR;
+        _streaming_set_status(STREAMING_ERROR);
         streaming_errno = ret;
         goto thread_cleanup;
     }
@@ -151,12 +161,12 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
                                         &vdec_delegate, adec, vdec, drFlags, config->audio_device, 0);
     if (startResult != 0 || session_interrupted)
     {
-        streaming_status = STREAMING_ERROR;
+        _streaming_set_status(STREAMING_ERROR);
         streaming_errno = GS_WRONG_STATE;
         goto thread_cleanup;
     }
     session_running = true;
-    streaming_status = STREAMING_STREAMING;
+    _streaming_set_status(STREAMING_STREAMING);
 
     pthread_mutex_lock(&streaming_interrupt_lock);
     while (!session_interrupted)
@@ -168,7 +178,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     pthread_mutex_unlock(&streaming_interrupt_lock);
     session_running = false;
 
-    streaming_status = STREAMING_DISCONNECTING;
+    _streaming_set_status(STREAMING_DISCONNECTING);
     LiStopConnection();
 
     if (streaming_quitapp_requested)
@@ -177,12 +187,19 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
             printf("Sending app quit request ...\n");
         gs_quit_app(server);
     }
-    streaming_status = STREAMING_NONE;
     bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
 
 thread_cleanup:
     free(req);
+    _streaming_set_status(STREAMING_NONE);
     return NULL;
+}
+
+void _streaming_set_status(STREAMING_STATUS status)
+{
+    pthread_mutex_lock(&streaming_status_lock);
+    streaming_status = status;
+    pthread_mutex_unlock(&streaming_status_lock);
 }
 
 void _streaming_errmsg_write(const char *fmt, ...)
