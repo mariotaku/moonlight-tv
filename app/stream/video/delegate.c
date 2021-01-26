@@ -83,7 +83,7 @@ int _vdec_delegate_submit(PDECODE_UNIT du)
 void _vdec_stat_submit(struct VIDEO_STATS *src, long now)
 {
     struct VIDEO_STATS *dst = &vdec_summary_stats;
-    memcpy(&dst, src, sizeof(struct VIDEO_STATS));
+    memcpy(dst, src, sizeof(struct VIDEO_STATS));
     dst->totalFps = (float)dst->totalFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
     dst->receivedFps = (float)dst->receivedFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
     dst->decodedFps = (float)dst->decodedFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
