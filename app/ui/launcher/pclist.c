@@ -78,6 +78,7 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
         return down || pclist_item_select(computer_list, -1);
     case NAVKEY_DOWN:
         return down || pclist_item_select(computer_list, 1);
+    case NAVKEY_ENTER:
     case NAVKEY_CONFIRM:
         if (pclist_hovered_item)
         {
