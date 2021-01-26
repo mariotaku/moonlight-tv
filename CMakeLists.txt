@@ -91,6 +91,7 @@ if (TARGET_WEBOS)
         app/platform/sdl/nkimage.c
         app/platform/sdl/input_manager.c
         app/platform/webos/navkey_sdl_webos.c
+        app/platform/webos/SDL_webOS.c
         app/stream/audio/ndl.c
         app/stream/video/delegate.c
         app/stream/video/ndl.c
@@ -140,7 +141,7 @@ target_link_libraries(moonlight PRIVATE
 )
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC OS_WEBOS)
+    target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)

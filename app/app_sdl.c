@@ -39,7 +39,6 @@
 #include "ui/gui_root.h"
 #include "util/user_event.h"
 
-
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
 #include "platform/webos/SDL_webOS.h"
@@ -91,10 +90,6 @@ APP_WINDOW_CONTEXT app_window_create()
 
 void app_destroy()
 {
-#if OS_WEBOS
-    // Turn cursor back on before quitting
-    SDL_ShowCursor(SDL_TRUE);
-#endif
     free(app_configuration);
 #ifdef OS_WEBOS
     app_webos_destroy();
@@ -145,18 +140,11 @@ static void app_process_events(struct nk_context *ctx)
                 if (navkey & NAVKEY_DPAD)
                 {
                     // Hide the cursor
-                    SDL_ShowCursor(SDL_FALSE);
+                    SDL_webOSCursorVisibility(SDL_FALSE);
                 }
 #endif
                 gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
             }
-#if OS_WEBOS
-            else if (evt.type == SDL_MOUSEWHEEL)
-            {
-                // Show the cursor after scroll
-                SDL_ShowCursor(SDL_TRUE);
-            }
-#endif
         }
         else if (evt.type == SDL_USEREVENT)
         {
