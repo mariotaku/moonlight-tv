@@ -14,16 +14,16 @@ buildType:
       long: Optimize generated code
       buildType: Release
 
-webosImpl:
+buildPlatform:
   default: standard
   choices:
     standard:
       short: Standard
       long: SDL2 implementation for most platforms
       settings:
-        WEBOS_LEGACY: false
-    legacy:
-      short: webOS Legacy
-      long: LGNCAPI for older webOS
+        TARGET_WEBOS: false
+    webos:
+      short: webOS
+      long: Build for webOS
       settings:
-        WEBOS_LEGACY: true
+        TARGET_WEBOS: true

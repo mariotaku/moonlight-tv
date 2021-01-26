@@ -9,12 +9,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/utils/cmake)
 
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
-if (CC_BASENAME MATCHES "^arm-webos-")
-    option(LGNC_LEGACY "Build for LG NetCast Platform" OFF)
-    if (LGNC_LEGACY)
-        set(TARGET_NETCAST TRUE)
-    else()
-        set(TARGET_WEBOS TRUE)
+option(TARGET_WEBOS "Build for LG webOS" OFF)
+
+if (TARGET_WEBOS)
+    if (NOT ENV{ARCH})
+        string(REPLACE "-" ";" CC_BASENAME_SEGS ${CC_BASENAME})
+        list(GET CC_BASENAME_SEGS 0 CC_ARCH)
+        if (CC_ARCH MATCHES [[i.86]])
+            set(ENV{ARCH} "x86")
+            set(ENV{PKG_CONFIG_PATH} "/usr/lib/i386-linux-gnu/pkgconfig")
+        else()
+            set(ENV{ARCH} ${CC_ARCH})
+        endif()
     endif()
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     set(TARGET_DARWIN TRUE)
@@ -28,13 +34,13 @@ endif()
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2 SDL2_image)
-pkg_check_modules(cURL REQUIRED IMPORTED_TARGET libcurl)
-pkg_check_modules(UUID REQUIRED IMPORTED_TARGET uuid)
-pkg_check_modules(Expat REQUIRED IMPORTED_TARGET expat)
+pkg_check_modules(CURL REQUIRED libcurl)
+pkg_check_modules(UUID REQUIRED uuid)
+pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
-    pkg_check_modules(GLES REQUIRED IMPORTED_TARGET egl glesv2)
-    pkg_check_modules(OpenSSL REQUIRED IMPORTED_TARGET openssl)
+    pkg_check_modules(GLES REQUIRED egl glesv2)
+    pkg_check_modules(OPENSSL REQUIRED openssl)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
     add_subdirectory(system/lgncapi)
@@ -123,11 +129,12 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuk
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
+target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- PkgConfig::cURL PkgConfig::UUID PkgConfig::Expat
+ ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES}
  m pthread
  moonlight-common-c
 )
@@ -135,7 +142,7 @@ target_link_libraries(moonlight PRIVATE
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::OpenSSL PkgConfig::GLES opus)
+    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
 elseif(TARGET_DARWIN)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_DARWIN GL_SILENCE_DEPRECATION)
@@ -173,7 +180,7 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-        WEBOS_PACKAGE_ASSETS "assets;legacy-prebuilt/lib" 
+        WEBOS_PACKAGE_ASSETS "assets;legacy-prebuilt/$ENV{ARCH}/lib" 
     )
 
     target_webos_package(moonlight)

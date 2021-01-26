@@ -94,11 +94,7 @@ target_include_directories(moonlight-common-c PUBLIC
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>"
 )
 
-if (OPENSSL_FOUND)
-    target_link_libraries(moonlight-common-c PRIVATE OpenSSL::Crypto)
-else()
-    target_link_libraries(moonlight-common-c PRIVATE PkgConfig::OpenSSL)
-endif()
+target_link_libraries(moonlight-common-c PRIVATE ${OPENSSL_LIBRARIES})
 
 install(TARGETS moonlight-common-c
     EXPORT        moonlight-common-c-export
