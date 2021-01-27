@@ -20,13 +20,16 @@
 
 #include "res.h"
 
+#if TARGET_DESKTOP
+#include "sdl_renderer.h"
+#endif
+
 short gui_display_width, gui_display_height;
 short gui_logic_width, gui_logic_height;
 
 bool gui_settings_showing;
 
 static bool gui_send_faketouch_cancel;
-
 
 void gui_root_init(struct nk_context *ctx)
 {
@@ -73,10 +76,22 @@ bool gui_root(struct nk_context *ctx)
     }
 }
 
-void gui_background()
+void gui_render_background()
 {
+#if OS_WEBOS
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#elif TARGET_DESKTOP
+    if (streaming_status == STREAMING_STREAMING)
+    {
+        renderer_draw();
+    }
+    else
+    {
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+#endif
 }
 
 bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2)
@@ -111,6 +126,20 @@ bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void
             nk_input_motion(ctx, 0, 0);
             break;
         }
+#if TARGET_DESKTOP
+        case USER_STREAM_OPEN:
+        {
+            PSTREAM_CONFIGURATION conf = data1;
+            renderer_setup(conf->width, conf->height);
+            break;
+        }
+        case USER_STREAM_CLOSE:
+            renderer_cleanup();
+            break;
+        case USER_SDL_FRAME:
+            renderer_submit_frame(data1, data2);
+            break;
+#endif
         default:
             break;
         }
@@ -143,7 +172,7 @@ bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
     }
     else
     {
-        handled |= handled || (!down && streaming_overlay_dispatch_navkey(ctx, key));
+        handled |= handled || streaming_overlay_dispatch_navkey(ctx, key, down);
     }
     return handled;
 }

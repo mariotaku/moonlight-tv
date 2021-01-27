@@ -72,9 +72,6 @@ void coverloader_init()
     coverloader_working_running = true;
 
     pthread_create(&coverloader_worker_thread, NULL, coverloader_worker, NULL);
-#if OS_LINUX
-    pthread_setname_np(coverloader_worker_thread, "coverloader");
-#endif
 }
 
 MAIN_THREAD
@@ -116,6 +113,9 @@ struct nk_image *coverloader_get(PSERVER_LIST node, int id, int target_width, in
 WORKER_THREAD
 void *coverloader_worker(void *unused)
 {
+#if _GNU_SOURCE
+    pthread_setname_np(pthread_self(), "coverloader");
+#endif
     while (coverloader_working_running)
     {
         struct CACHE_ITEM_T *req = coverloader_current_task;

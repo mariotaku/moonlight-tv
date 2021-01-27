@@ -47,6 +47,9 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
+extern SDL_mutex *mutex;
+extern int sdlCurrentFrame, sdlNextFrame;
+
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
@@ -68,7 +71,6 @@ int app_init(int argc, char *argv[])
 
 APP_WINDOW_CONTEXT app_window_create()
 {
-
     nk_platform_gl_setup();
 #if OS_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
@@ -81,6 +83,9 @@ APP_WINDOW_CONTEXT app_window_create()
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
 #endif
+    sdlCurrentFrame = sdlNextFrame = 0;
+    mutex = SDL_CreateMutex();
+
     glContext = SDL_GL_CreateContext(win);
 
     /* OpenGL setup */
@@ -150,9 +155,6 @@ static void app_process_events(struct nk_context *ctx)
         {
             backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
             gui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
-            if (evt.user.code == USER_SDL_FRAME)
-            {
-            }
         }
         else if (evt.type == SDL_QUIT)
         {
@@ -179,7 +181,7 @@ void app_main_loop(void *data)
 
     /* Draw */
     {
-        gui_background();
+        gui_render_background();
         /* 
          * IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
          * with blending, scissor, face culling, depth test and viewport and

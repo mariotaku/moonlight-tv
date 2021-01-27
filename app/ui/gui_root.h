@@ -21,7 +21,7 @@ void gui_root_destroy();
 
 bool gui_root(struct nk_context *ctx);
 
-void gui_background();
+void gui_render_background();
 
 bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2);
 

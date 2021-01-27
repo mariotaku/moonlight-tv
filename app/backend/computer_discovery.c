@@ -264,6 +264,9 @@ open_client_sockets(int *sockets, int max_sockets, int port)
 void *_computer_manager_polling_action(void *data)
 {
     computer_discovery_running = true;
+#if _GNU_SOURCE
+    pthread_setname_np(pthread_self(), "hostscan");
+#endif
     const char *service = "_nvstream._tcp.local";
     int sockets[32];
     int query_id[32];

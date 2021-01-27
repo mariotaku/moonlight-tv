@@ -102,6 +102,7 @@ if (TARGET_WEBOS)
 elseif (TARGET_DESKTOP)
     list(APPEND SOURCES
         app/app_sdl.c
+        app/ui/sdl_renderer.c
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
         app/platform/sdl/nkimage.c
@@ -158,8 +159,7 @@ elseif(TARGET_DARWIN)
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
+    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenSSL::Crypto OpenGL::GL)
 endif()
 
 add_custom_target(moonlight-spritegen

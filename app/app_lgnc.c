@@ -113,7 +113,7 @@ void app_main_loop(void *data)
 
     /* Draw */
     {
-        gui_background();
+        gui_render_background();
         /* 
          * IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
          * with blending, scissor, face culling, depth test and viewport and

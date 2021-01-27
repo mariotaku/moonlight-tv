@@ -118,7 +118,9 @@ void streaming_display_size(short width, short height)
 
 void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
-
+#if _GNU_SOURCE
+    pthread_setname_np(pthread_self(), "session");
+#endif
     _streaming_set_status(STREAMING_CONNECTING);
     streaming_errno = GS_OK;
 
@@ -167,6 +169,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     }
     session_running = true;
     _streaming_set_status(STREAMING_STREAMING);
+    bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
 
     pthread_mutex_lock(&streaming_interrupt_lock);
     while (!session_interrupted)
@@ -177,6 +180,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     session_interrupted = false;
     pthread_mutex_unlock(&streaming_interrupt_lock);
     session_running = false;
+    bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
 
     _streaming_set_status(STREAMING_DISCONNECTING);
     LiStopConnection();

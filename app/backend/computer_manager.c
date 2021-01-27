@@ -108,9 +108,6 @@ bool computer_manager_polling_start()
         return false;
     }
     pthread_create(&computer_manager_polling_thread, NULL, _computer_manager_polling_action, NULL);
-#if OS_LINUX
-    pthread_setname_np(computer_manager_polling_thread, "hostscan");
-#endif
     return true;
 }
 

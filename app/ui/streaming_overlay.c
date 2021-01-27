@@ -4,14 +4,18 @@
 
 #include "stream/session.h"
 #include "stream/video/delegate.h"
+#include "util/bus.h"
 #include "util/user_event.h"
+
+static struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0};
 
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
 static void _streaming_error_window(struct nk_context *ctx);
 static void _streaming_perf_stat(struct nk_context *ctx);
 static void _streaming_quit_confirm_window(struct nk_context *ctx);
+static void _streaming_bottom_bar(struct nk_context *ctx);
 
-bool quit_confirm_showing;
+bool stream_overlay_showing;
 
 void streaming_overlay_init(struct nk_context *ctx)
 {
@@ -30,10 +34,11 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
         _streaming_error_window(ctx);
         break;
     case STREAMING_STREAMING:
-        if (quit_confirm_showing)
+        if (stream_overlay_showing)
         {
             _streaming_perf_stat(ctx);
-            _streaming_quit_confirm_window(ctx);
+            _streaming_bottom_bar(ctx);
+            // _streaming_quit_confirm_window(ctx);
         }
         break;
     default:
@@ -47,7 +52,7 @@ bool streaming_overlay_dispatch_userevent(int which)
     switch (which)
     {
     case USER_ST_QUITAPP_CONFIRM:
-        quit_confirm_showing = true;
+        stream_overlay_showing = true;
         break;
     default:
         break;
@@ -55,22 +60,20 @@ bool streaming_overlay_dispatch_userevent(int which)
     return false;
 }
 
-bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down)
 {
-    if (quit_confirm_showing)
+    if (stream_overlay_showing)
     {
         switch (navkey)
         {
         case NAVKEY_CANCEL:
-            quit_confirm_showing = false;
+            stream_overlay_showing = false;
             break;
         case NAVKEY_CONFIRM:
-            streaming_interrupt(true);
-            quit_confirm_showing = false;
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_quit_center, (void *)down);
             break;
         case NAVKEY_ALTERNATIVE:
-            streaming_interrupt(false);
-            quit_confirm_showing = false;
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_suspend_center, (void *)down);
             break;
         default:
             break;
@@ -82,7 +85,7 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
 
 bool streaming_overlay_should_block_input()
 {
-    return quit_confirm_showing;
+    return stream_overlay_showing;
 }
 
 void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
@@ -131,14 +134,14 @@ void _streaming_quit_confirm_window(struct nk_context *ctx)
     {
     case NK_DIALOG_POSITIVE:
         streaming_interrupt(true);
-        quit_confirm_showing = false;
+        stream_overlay_showing = false;
         break;
     case NK_DIALOG_NEGATIVE:
         streaming_interrupt(false);
-        quit_confirm_showing = false;
+        stream_overlay_showing = false;
         break;
     case NK_DIALOG_NEUTRAL:
-        quit_confirm_showing = false;
+        stream_overlay_showing = false;
         break;
     default:
         break;
@@ -161,5 +164,39 @@ void _streaming_perf_stat(struct nk_context *ctx)
             nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "avg submit: %.2fms", (float)dst->totalDecodeTime / dst->decodedFrames);
         }
     }
+    nk_end(ctx);
+}
+
+void _streaming_bottom_bar(struct nk_context *ctx)
+{
+    const int bar_height = 50 * NK_UI_SCALE;
+    nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(15, 10));
+    if (nk_begin(ctx, "Overlay BottomBar", nk_rect(0, gui_display_height - bar_height, gui_display_width, bar_height), NK_WINDOW_NO_SCROLLBAR))
+    {
+        nk_layout_row_template_begin_s(ctx, 30);
+        nk_layout_row_template_push_static_s(ctx, 100);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 100);
+        nk_layout_row_template_end(ctx);
+
+        struct nk_rect bounds = nk_widget_bounds(ctx);
+        _btn_suspend_center.x = nk_rect_center_x(bounds);
+        _btn_suspend_center.y = nk_rect_center_y(bounds);
+        if (nk_button_label(ctx, "<- Games"))
+        {
+            streaming_interrupt(false);
+            stream_overlay_showing = false;
+        }
+        nk_spacing(ctx, 1);
+        bounds = nk_widget_bounds(ctx);
+        _btn_quit_center.x = nk_rect_center_x(bounds);
+        _btn_quit_center.y = nk_rect_center_y(bounds);
+        if (nk_button_label(ctx, "Quit game"))
+        {
+            streaming_interrupt(true);
+            stream_overlay_showing = false;
+        }
+    }
+    nk_style_pop_vec2(ctx);
     nk_end(ctx);
 }
