@@ -15,17 +15,8 @@
 #include "nuklear/ext_image.h"
 #include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
+#include "nuklear/platform.h"
 
-#if defined(NK_SDL_GLES2)
-#define NK_SDL_GLES2_IMPLEMENTATION
-#include "nuklear/platform_sdl_gles2.h"
-#elif defined(NK_SDL_GL2)
-#define NK_SDL_GL2_IMPLEMENTATION
-#include <SDL_opengl.h>
-#include "nuklear/platform_sdl_gl2.h"
-#else
-#error "No valid render backend specified"
-#endif
 #if TARGET_DESKTOP
 #include <SDL_image.h>
 #endif
@@ -52,7 +43,7 @@ extern int sdlCurrentFrame, sdlNextFrame;
 
 /* Platform */
 SDL_Window *win;
-SDL_GLContext glContext;
+SDL_GLContext gl;
 static char wintitle[32];
 
 static bool window_focus_gained;
@@ -86,7 +77,7 @@ APP_WINDOW_CONTEXT app_window_create()
     sdlCurrentFrame = sdlNextFrame = 0;
     mutex = SDL_CreateMutex();
 
-    glContext = SDL_GL_CreateContext(win);
+    gl = SDL_GL_CreateContext(win);
 
     /* OpenGL setup */
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -99,7 +90,7 @@ void app_destroy()
 #ifdef OS_WEBOS
     app_webos_destroy();
 #endif
-    SDL_GL_DeleteContext(glContext);
+    SDL_GL_DeleteContext(gl);
     SDL_DestroyWindow(win);
     SDL_Quit();
 }
@@ -182,18 +173,7 @@ void app_main_loop(void *data)
     /* Draw */
     {
         gui_render_background();
-        /* 
-         * IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
-         * with blending, scissor, face culling, depth test and viewport and
-         * defaults everything back into a default state.
-         * Make sure to either a.) save and restore or b.) reset your own state after
-         * rendering the UI.
-         */
-#ifdef NK_SDL_GLES2_IMPLEMENTATION
-        nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-#elif defined(NK_SDL_GL2_IMPLEMENTATION)
-        nk_sdl_render(NK_ANTI_ALIASING_ON);
-#endif
+        nk_platform_render();
         SDL_GL_SwapWindow(win);
     }
 #if OS_LINUX

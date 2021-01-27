@@ -13,16 +13,8 @@
 #include "nuklear/ext_image.h"
 #include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
+#include "nuklear/platform.h"
 
-#if defined(NK_SDL_GLES2)
-#include "nuklear/platform_sdl_gles2.h"
-#elif defined(NK_SDL_GL2)
-#include "nuklear/platform_sdl_gl2.h"
-#elif defined(NK_LGNC_GLES2)
-#include "nuklear/platform_lgnc_gles2.h"
-#else
-#error "No valid render backend specified"
-#endif
 
 #ifdef OS_WEBOS
 #include "platform/sdl/webos_keys.h"

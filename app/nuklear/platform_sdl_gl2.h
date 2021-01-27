@@ -1,7 +1,10 @@
 #pragma once
+#include <SDL_opengl.h>
 #include "demo/sdl_opengl2/nuklear_sdl_gl2.h"
 
 #define nk_platform_init(appctx) nk_sdl_init((SDL_Window *)appctx)
+
+#define nk_platform_render() nk_sdl_render(NK_ANTI_ALIASING_ON)
 
 #define nk_platform_shutdown() nk_sdl_shutdown()
 
@@ -9,8 +12,10 @@
 
 #define nk_platform_font_stash_end nk_sdl_font_stash_end
 
+void nk_platform_gl_setup();
+
 #ifdef NK_SDL_GL2_IMPLEMENTATION
-static void nk_platform_gl_setup()
+void nk_platform_gl_setup()
 {
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
