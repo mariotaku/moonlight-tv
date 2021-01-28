@@ -69,7 +69,10 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bo
         switch (navkey)
         {
         case NAVKEY_CANCEL:
-            stream_overlay_showing = false;
+            if (!down)
+            {
+                stream_overlay_showing = false;
+            }
             break;
         case NAVKEY_CONFIRM:
             bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_quit_center, (void *)down);
