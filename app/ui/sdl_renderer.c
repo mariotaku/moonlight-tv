@@ -12,25 +12,47 @@
 #include <SDL_opengl_glext.h>
 #include <assert.h>
 
-static const char *shader_sources[2] = {res_vertex_source_data, res_fragment_source_data};
+static const float vertices[] = {
+    -1.f, 1.f,
+    -1.f, -1.f,
+    1.f, -1.f,
+    1.f, 1.f};
+
+static const GLuint elements[] = {
+    0, 1, 2,
+    2, 3, 0};
+
+static const char *shader_sources[2] = {(const char *)res_vertex_source_data, (const char *)res_fragment_source_data};
 static const char *texture_mappings[] = {"ymap", "umap", "vmap"};
 
 static int width, height;
 
+GLuint vbo, ebo;
 static GLuint texture_id[3], texture_uniform[3];
 static GLuint vertex_shader, fragment_shader, shader_program;
 
+static bool frame_arrived;
+
 void renderer_setup(int w, int h)
 {
+    frame_arrived = false;
     width = w;
     height = h;
 
     SDL_Log("OpenGL version: %s\n", glGetString(GL_VERSION));
 
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &ebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+
     int status;
     char msg[512];
     vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &shader_sources[0], NULL);
+    glShaderSource(vertex_shader, 1, &shader_sources[0], (const int *)&res_vertex_source_size);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
     glGetShaderInfoLog(vertex_shader, sizeof msg, NULL, msg);
@@ -38,7 +60,7 @@ void renderer_setup(int w, int h)
     assert(status == GL_TRUE);
 
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &shader_sources[1], NULL);
+    glShaderSource(fragment_shader, 1, &shader_sources[1], (const int *)&res_fragment_source_size);
     glCompileShader(fragment_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
     glGetShaderInfoLog(vertex_shader, sizeof msg, NULL, msg);
@@ -72,6 +94,13 @@ void renderer_setup(int w, int h)
 void renderer_submit_frame(void *data1, void *data2)
 {
     uint8_t **image = data1;
+
+    for (int i = 0; i < 3; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, texture_id[i]);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, i > 0 ? width / 2 : width, i > 0 ? height / 2 : height, GL_LUMINANCE, GL_UNSIGNED_BYTE, image[i]);
+    }
+    frame_arrived |= true;
 }
 
 void renderer_draw()
@@ -79,8 +108,24 @@ void renderer_draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0, 0, 0, 1);
 
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glRectf(-0.75f, 0.75f, 0.75f, -0.75f);
+    if (!frame_arrived)
+    {
+        return;
+    }
+
+    glUseProgram(shader_program);
+    glEnableVertexAttribArray(0);
+
+    for (int i = 0; i < 3; i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, texture_id[i]);
+        glUniform1i(texture_uniform[i], i);
+    }
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glUseProgram(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void renderer_cleanup()
@@ -88,4 +133,6 @@ void renderer_cleanup()
     glDeleteProgram(shader_program);
     glDeleteShader(fragment_shader);
     glDeleteShader(vertex_shader);
+    glDeleteBuffers(1, &ebo);
+    glDeleteBuffers(1, &vbo);
 }
