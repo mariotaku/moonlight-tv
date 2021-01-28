@@ -68,10 +68,11 @@ set(SOURCES
     app/stream/connection.c
     app/stream/settings.c
     app/ui/gui_root.c
+    app/ui/fonts.c
     app/ui/launcher/window.c
     app/ui/launcher/pclist.c
     app/ui/launcher/applist.c
-    app/ui/streaming_overlay.c
+    app/ui/streaming/overlay.c
     app/ui/settings_window.c
     app/util/lruc.c
     app/util/path.c

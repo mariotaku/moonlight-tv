@@ -1,6 +1,7 @@
-#include "streaming_overlay.h"
-#include "gui_root.h"
-#include "messages.h"
+#include "overlay.h"
+#include "ui/gui_root.h"
+#include "ui/messages.h"
+#include "ui/fonts.h"
 
 #include "stream/session.h"
 #include "stream/video/delegate.h"
@@ -12,8 +13,10 @@ static struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0};
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
 static void _streaming_error_window(struct nk_context *ctx);
 static void _streaming_perf_stat(struct nk_context *ctx);
-static void _streaming_quit_confirm_window(struct nk_context *ctx);
 static void _streaming_bottom_bar(struct nk_context *ctx);
+
+void _overlay_windows_push_style(struct nk_context *ctx);
+void _overlay_windows_pop_style(struct nk_context *ctx);
 
 bool stream_overlay_showing;
 
@@ -36,9 +39,8 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
     case STREAMING_STREAMING:
         if (stream_overlay_showing)
         {
-            _streaming_perf_stat(ctx);
             _streaming_bottom_bar(ctx);
-            // _streaming_quit_confirm_window(ctx);
+            _streaming_perf_stat(ctx);
         }
         break;
     default:
@@ -124,52 +126,42 @@ void _streaming_error_window(struct nk_context *ctx)
     nk_end(ctx);
 }
 
-void _streaming_quit_confirm_window(struct nk_context *ctx)
-{
-    const char *message = "Do you want to quit streaming? "
-                          "If you select \"Quit\", unsaved progress will be lost.";
-    enum nk_dialog_result result = nk_dialog_begin(ctx, gui_display_width, gui_display_height, "Quit Streaming",
-                                                   message, "Quit", "Keep", "Cancel");
-    switch (result)
-    {
-    case NK_DIALOG_POSITIVE:
-        streaming_interrupt(true);
-        stream_overlay_showing = false;
-        break;
-    case NK_DIALOG_NEGATIVE:
-        streaming_interrupt(false);
-        stream_overlay_showing = false;
-        break;
-    case NK_DIALOG_NEUTRAL:
-        stream_overlay_showing = false;
-        break;
-    default:
-        break;
-    }
-    nk_end(ctx);
-}
-
 void _streaming_perf_stat(struct nk_context *ctx)
 {
-    if (nk_begin(ctx, "Stats", nk_rect_s(10, 10, 300, 200), NK_WINDOW_TITLE))
+    _overlay_windows_push_style(ctx);
+    static struct nk_vec2 wndpos = nk_vec2_s_const(10, 10);
+    static const struct nk_vec2 wndsize = nk_vec2_s_const(240, 150);
+    if (nk_begin(ctx, "Performance Stats", nk_recta(wndpos, wndsize), NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MINIMIZABLE | NK_WINDOW_MOVABLE))
     {
         struct VIDEO_STATS *dst = &vdec_summary_stats;
-        nk_layout_row_dynamic_s(ctx, 20, 1);
-        nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "net: %.2f FPS", dst->receivedFps);
-        nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "dec: %.2f FPS", dst->decodedFps);
+        static const float ratios[] = {0.7f, 0.3f};
+        nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios);
+        nk_label(ctx, "Network framerate", NK_TEXT_ALIGN_LEFT);
+        nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2f FPS", dst->receivedFps);
+        nk_label(ctx, "Decode framerate", NK_TEXT_ALIGN_LEFT);
+        nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2f FPS", dst->decodedFps);
+
         if (dst->decodedFrames)
         {
-            nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "net drop: %.2f%%", (float)dst->networkDroppedFrames / dst->totalFrames * 100);
-            nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "avg recv: %.2fms", (float)dst->totalReassemblyTime / dst->receivedFrames);
-            nk_labelf(ctx, NK_TEXT_ALIGN_LEFT, "avg submit: %.2fms", (float)dst->totalDecodeTime / dst->decodedFrames);
+            nk_label(ctx, "Network frame drop:", NK_TEXT_ALIGN_LEFT);
+            nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2f%%", (float)dst->networkDroppedFrames / dst->totalFrames * 100);
+            nk_label(ctx, "Data receive:", NK_TEXT_ALIGN_LEFT);
+            nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2fms", (float)dst->totalReassemblyTime / dst->receivedFrames);
+            nk_label(ctx, "Frame submit:", NK_TEXT_ALIGN_LEFT);
+            nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2fms", (float)dst->totalDecodeTime / dst->decodedFrames);
         }
     }
+    wndpos = nk_window_get_position(ctx);
     nk_end(ctx);
+    _overlay_windows_pop_style(ctx);
 }
 
 void _streaming_bottom_bar(struct nk_context *ctx)
 {
     const int bar_height = 50 * NK_UI_SCALE;
+    struct nk_style_item window_bg = ctx->style.window.fixed_background;
+    window_bg.data.color.a = 160;
+    nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, window_bg);
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(15, 10));
     if (nk_begin(ctx, "Overlay BottomBar", nk_rect(0, gui_display_height - bar_height, gui_display_width, bar_height), NK_WINDOW_NO_SCROLLBAR))
     {
@@ -197,6 +189,40 @@ void _streaming_bottom_bar(struct nk_context *ctx)
             stream_overlay_showing = false;
         }
     }
-    nk_style_pop_vec2(ctx);
     nk_end(ctx);
+    nk_style_pop_vec2(ctx);
+    nk_style_pop_style_item(ctx);
+}
+
+void _overlay_windows_push_style(struct nk_context *ctx)
+{
+
+    struct nk_style_item window_bg = ctx->style.window.fixed_background,
+                         header_bg = ctx->style.window.header.normal,
+                         button_bg = ctx->style.window.header.close_button.normal;
+    window_bg.data.color.a = 160;
+    header_bg.data.color.a = 192;
+    button_bg.data.color.a = 64;
+    nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, window_bg);
+    nk_style_push_style_item(ctx, &ctx->style.window.header.normal, header_bg);
+    nk_style_push_style_item(ctx, &ctx->style.window.header.active, header_bg);
+    nk_style_push_style_item(ctx, &ctx->style.window.header.hover, header_bg);
+    nk_style_push_style_item(ctx, &ctx->style.window.header.minimize_button.normal, button_bg);
+    nk_style_push_style_item(ctx, &ctx->style.window.header.close_button.normal, button_bg);
+    nk_style_push_vec2(ctx, &ctx->style.window.header.label_padding, nk_vec2_s(2, 2));
+    nk_style_push_vec2(ctx, &ctx->style.window.header.padding, nk_vec2_s(2, 2));
+    nk_style_push_font(ctx, &font_ui_15->handle);
+}
+
+void _overlay_windows_pop_style(struct nk_context *ctx)
+{
+    nk_style_pop_font(ctx);
+    nk_style_pop_vec2(ctx);
+    nk_style_pop_vec2(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
+    nk_style_pop_style_item(ctx);
 }

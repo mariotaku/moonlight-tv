@@ -15,7 +15,6 @@
 #include "nuklear/ext_styling.h"
 #include "nuklear/platform.h"
 
-
 #ifdef OS_WEBOS
 #include "platform/sdl/webos_keys.h"
 #endif
@@ -24,6 +23,7 @@
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "ui/gui_root.h"
+#include "ui/fonts.h"
 #include "util/bus.h"
 
 bool running = true;
@@ -51,12 +51,10 @@ int main(int argc, char *argv[])
     {
         struct nk_font_atlas *atlas;
         nk_platform_font_stash_begin(&atlas);
-        struct nk_font *noto = nk_font_atlas_add_from_memory_s(atlas, (void *)res_notosans_regular_data, res_notosans_regular_size, 20, NULL);
+        struct nk_font *noto20 = nk_font_atlas_add_from_memory_s(atlas, (void *)res_notosans_regular_data, res_notosans_regular_size, 20, NULL);
+        fonts_init(atlas);
         nk_platform_font_stash_end();
-#if TARGET_DESKTOP && DEBUG
-        nk_style_load_all_cursors(ctx, atlas->cursors);
-#endif
-        nk_style_set_font(ctx, &noto->handle);
+        nk_style_set_font(ctx, &noto20->handle);
     }
     nk_ext_sprites_init();
     nk_ext_apply_style(ctx);
@@ -74,7 +72,7 @@ int main(int argc, char *argv[])
     settings_save(app_configuration);
 
     gui_root_destroy();
-    
+
     nk_ext_sprites_destroy();
 
     nk_platform_shutdown();

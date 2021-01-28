@@ -13,7 +13,7 @@
 
 #include "launcher/window.h"
 #include "settings_window.h"
-#include "streaming_overlay.h"
+#include "streaming/overlay.h"
 
 #include "util/bus.h"
 #include "util/user_event.h"
