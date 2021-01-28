@@ -5,11 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
 #include <NDL_directmedia.h>
 #include <lgnc_system.h>
-
-#include "SDL_webOS.h"
 
 bool app_webos_ndl = false;
 bool app_webos_lgnc = false;
@@ -43,9 +40,6 @@ int app_webos_init(int argc, char *argv[])
     {
         fprintf(stderr, "Unable to initialize LGNC\n");
     }
-
-    SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
-    SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
     return 0;
 }
 
