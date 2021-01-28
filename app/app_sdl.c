@@ -63,10 +63,6 @@ int app_init(int argc, char *argv[])
 APP_WINDOW_CONTEXT app_window_create()
 {
     nk_platform_preinit();
-#if TARGET_WEBOS
-    SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
-    SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
-#endif
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 #if TARGET_DESKTOP
