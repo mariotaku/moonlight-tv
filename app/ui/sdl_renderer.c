@@ -10,7 +10,6 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_opengl_glext.h>
-#include <assert.h>
 
 static const float vertices[] = {
     -1.f, 1.f,
@@ -31,10 +30,11 @@ GLuint vbo, ebo;
 static GLuint texture_id[3], texture_uniform[3];
 static GLuint vertex_shader, fragment_shader, shader_program;
 
-static bool frame_arrived;
+static bool renderer_ready = false, frame_arrived;
 
 void renderer_setup(int w, int h)
 {
+    renderer_ready = false;
     frame_arrived = false;
     width = w;
     height = h;
@@ -55,17 +55,13 @@ void renderer_setup(int w, int h)
     glShaderSource(vertex_shader, 1, &shader_sources[0], (const int *)&res_vertex_source_size);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
-    glGetShaderInfoLog(vertex_shader, sizeof msg, NULL, msg);
-    SDL_Log("vertex shader info: %s\n", msg);
-    assert(status == GL_TRUE);
+    SDL_assert_release(status == GL_TRUE);
 
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &shader_sources[1], (const int *)&res_fragment_source_size);
     glCompileShader(fragment_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
-    glGetShaderInfoLog(vertex_shader, sizeof msg, NULL, msg);
-    SDL_Log("fragment shader info: %s\n", msg);
-    assert(status == GL_TRUE);
+    SDL_assert_release(status == GL_TRUE);
 
     shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
@@ -73,7 +69,7 @@ void renderer_setup(int w, int h)
 
     glLinkProgram(shader_program);
     glGetProgramiv(shader_program, GL_LINK_STATUS, &status);
-    assert(status == GL_TRUE);
+    SDL_assert_release(status == GL_TRUE);
 
     glBindAttribLocation(shader_program, 0, "position");
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
@@ -87,15 +83,21 @@ void renderer_setup(int w, int h)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, i > 0 ? width / 2 : width, i > 0 ? height / 2 : height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, 0);
 
         texture_uniform[i] = glGetUniformLocation(shader_program, texture_mappings[i]);
-        assert(glGetError() == GL_NO_ERROR);
+        SDL_assert_release(glGetError() == GL_NO_ERROR);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    renderer_ready = true;
 }
 
 void renderer_submit_frame(void *data1, void *data2)
 {
+    if (!renderer_ready)
+    {
+        return;
+    }
     uint8_t **image = data1;
 
     for (int i = 0; i < 3; i++)
@@ -111,7 +113,7 @@ void renderer_draw()
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0, 0, 0, 1);
 
-    if (!frame_arrived)
+    if (!frame_arrived || !renderer_ready)
     {
         return;
     }
@@ -142,6 +144,7 @@ void renderer_draw()
 
 void renderer_cleanup()
 {
+    renderer_ready = false;
     glDeleteProgram(shader_program);
     glDeleteShader(fragment_shader);
     glDeleteShader(vertex_shader);
