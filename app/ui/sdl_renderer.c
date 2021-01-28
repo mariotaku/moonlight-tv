@@ -89,6 +89,9 @@ void renderer_setup(int w, int h)
         texture_uniform[i] = glGetUniformLocation(shader_program, texture_mappings[i]);
         assert(glGetError() == GL_NO_ERROR);
     }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void renderer_submit_frame(void *data1, void *data2)
@@ -105,7 +108,7 @@ void renderer_submit_frame(void *data1, void *data2)
 
 void renderer_draw()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0, 0, 0, 1);
 
     if (!frame_arrived)
@@ -113,6 +116,8 @@ void renderer_draw()
         return;
     }
 
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glUseProgram(shader_program);
     glEnableVertexAttribArray(0);
 
@@ -124,7 +129,14 @@ void renderer_draw()
     }
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    glDisableVertexAttribArray(0);
     glUseProgram(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
