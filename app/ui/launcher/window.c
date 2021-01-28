@@ -216,6 +216,7 @@ void launcher_statbar(struct nk_context *ctx)
     nk_layout_row_template_push_variable_s(ctx, 1);
     nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Close"));
+    nk_layout_row_template_push_static_s(ctx, 10);
     nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Launch"));
     nk_layout_row_template_end(ctx);
@@ -223,9 +224,10 @@ void launcher_statbar(struct nk_context *ctx)
     nk_image(ctx, sprites_ui.ic_gamepad);
     nk_labelf(ctx, NK_TEXT_LEFT, "%d", absinput_gamepads());
     nk_spacing(ctx, 1);
-    nk_image_padded(ctx, sprites_ui.ic_gamepad_x, nk_vec2_s(4, 4));
+    nk_image_padded(ctx, sprites_ui.ic_gamepad_x, nk_vec2_s(5, 5));
     nk_label(ctx, "Close", NK_TEXT_RIGHT);
-    nk_image_padded(ctx, sprites_ui.ic_gamepad_a, nk_vec2_s(4, 4));
+    nk_spacing(ctx, 1);
+    nk_image_padded(ctx, sprites_ui.ic_gamepad_a, nk_vec2_s(5, 5));
     nk_label(ctx, "Launch", NK_TEXT_RIGHT);
 }
 
