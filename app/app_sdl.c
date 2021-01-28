@@ -15,6 +15,7 @@
 #include "nuklear/ext_image.h"
 #include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
+#include "nuklear/ext_widgets.h"
 #include "nuklear/platform.h"
 
 #if TARGET_DESKTOP
