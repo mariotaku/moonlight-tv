@@ -55,7 +55,7 @@ void app_destroy()
 
 APP_WINDOW_CONTEXT app_window_create()
 {
-    nk_platform_gl_setup();
+    nk_platform_preinit();
 
     int displayId;
     if (LGNC_SYSTEM_GetDisplayId(&displayId) != 0)
