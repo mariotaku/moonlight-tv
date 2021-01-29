@@ -129,14 +129,27 @@ static void app_process_events(struct nk_context *ctx)
             NAVKEY navkey = navkey_from_sdl(evt);
             if (navkey != NAVKEY_UNKNOWN)
             {
-#if OS_WEBOS
-                if (navkey & NAVKEY_DPAD)
+                bool down = evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN;
+                if (down && (navkey & NAVKEY_DPAD))
                 {
+#if OS_WEBOS
                     // Hide the cursor
                     SDL_webOSCursorVisibility(SDL_FALSE);
-                }
 #endif
-                gui_dispatch_navkey(ctx, navkey, evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN);
+                    if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP)
+                    {
+                        ui_set_input_mode(UI_INPUT_MODE_KEY);
+                    }
+                    else if (evt.type == SDL_CONTROLLERBUTTONDOWN || evt.type == SDL_CONTROLLERBUTTONUP)
+                    {
+                        ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
+                    }
+                }
+                gui_dispatch_navkey(ctx, navkey, down);
+            }
+            else if (evt.type == SDL_MOUSEMOTION)
+            {
+                ui_set_input_mode(UI_INPUT_MODE_POINTER);
             }
         }
         else if (evt.type == SDL_USEREVENT)

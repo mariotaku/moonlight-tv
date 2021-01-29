@@ -2,6 +2,7 @@
 #include "backend/application_manager.h"
 #include "backend/coverloader.h"
 #include "stream/session.h"
+#include "ui/gui_root.h"
 
 #include "res.h"
 #include "util/bus.h"
@@ -104,7 +105,20 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         bool defcover = _cover_use_default(cover);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : (defcover ? 2 : 1));
         nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
+
+        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
+        if (ui_input_mode != UI_INPUT_MODE_POINTER)
+        {
+            nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_ext_color_style[NK_EXT_COLOR_FOCUSED]));
+            nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_ext_color_style[NK_EXT_COLOR_FOCUSED_PRESSED]));
+        }
         clicked = !running & nk_button_image(ctx, defcover ? launcher_default_cover : *cover);
+        if (ui_input_mode != UI_INPUT_MODE_POINTER)
+        {
+            nk_style_pop_style_item(ctx);
+            nk_style_pop_style_item(ctx);
+        }
+        nk_style_pop_vec2(ctx);
         if (defcover && !running)
         {
             int insetx = 8 * NK_UI_SCALE, insety = 6 * NK_UI_SCALE;

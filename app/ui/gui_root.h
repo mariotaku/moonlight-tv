@@ -11,9 +11,16 @@
 
 #include "util/navkey.h"
 
+enum UI_INPUT_MODE {
+    UI_INPUT_MODE_POINTER, 
+    UI_INPUT_MODE_KEY, 
+    UI_INPUT_MODE_GAMEPAD, 
+};
+
 extern short gui_display_width, gui_display_height;
 extern short gui_logic_width, gui_logic_height;
 extern bool gui_settings_showing;
+extern enum UI_INPUT_MODE ui_input_mode;
 
 void gui_root_init(struct nk_context *ctx);
 
@@ -33,3 +40,5 @@ bool gui_should_block_input();
 void gui_display_size(struct nk_context *ctx, short width, short height);
 
 bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down);
+
+bool ui_set_input_mode(enum UI_INPUT_MODE mode);

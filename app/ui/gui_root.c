@@ -28,6 +28,7 @@ short gui_display_width, gui_display_height;
 short gui_logic_width, gui_logic_height;
 
 bool gui_settings_showing;
+enum UI_INPUT_MODE ui_input_mode;
 
 static bool gui_send_faketouch_cancel;
 
@@ -37,6 +38,7 @@ void gui_root_init(struct nk_context *ctx)
     settings_window_init(ctx);
     streaming_overlay_init(ctx);
     gui_send_faketouch_cancel = false;
+    ui_input_mode = UI_INPUT_MODE_POINTER;
 }
 
 void gui_root_destroy()
@@ -175,4 +177,15 @@ bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
         handled |= handled || streaming_overlay_dispatch_navkey(ctx, key, down);
     }
     return handled;
+}
+
+bool ui_set_input_mode(enum UI_INPUT_MODE mode)
+{
+    if (ui_input_mode == mode)
+    {
+        return false;
+    }
+    ui_input_mode = mode;
+    printf("UI Input mode changed to %d\n", mode);
+    return true;
 }

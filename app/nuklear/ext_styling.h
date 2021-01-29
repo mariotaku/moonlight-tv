@@ -9,25 +9,39 @@
 #define NK_UI_SCALE 1
 #endif
 
-extern struct nk_color nk_ext_colortable[NK_COLOR_COUNT];
+enum nk_ext_style_colors
+{
+    NK_EXT_COLOR_FOCUSED,
+    NK_EXT_COLOR_FOCUSED_PRESSED,
+    NK_EXT_COLOR_COUNT
+};
+
+extern const struct nk_color nk_ext_color_style[NK_EXT_COLOR_COUNT];
 
 void nk_ext_apply_style(struct nk_context *ctx);
 
 #ifdef NK_IMPLEMENTATION
 
-struct nk_color nk_ext_colortable[NK_COLOR_COUNT] = {
-#define NK_COLOR(a, b, c, d, e) {b, c, d, e},
-    NK_COLOR_MAP(NK_COLOR)
+const struct nk_color nk_ext_color_style[NK_EXT_COLOR_COUNT] = {
+#define NK_COLOR(n, r, g, b, a) {r, g, b, a},
+    // From https://moonlight-stream.org/ link highlight
+    NK_COLOR(NK_EXT_COLOR_FOCUSED, 176, 188, 223, 255) 
+    NK_COLOR(NK_EXT_COLOR_FOCUSED_PRESSED, 142, 152, 182, 255) 
 #undef NK_COLOR
 };
 
 void nk_ext_apply_style(struct nk_context *ctx)
 {
 
-    nk_ext_colortable[NK_COLOR_TOGGLE] = nk_rgba(38, 38, 38, 255);
-    nk_ext_colortable[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(100, 100, 100, 255);
-    nk_ext_colortable[NK_COLOR_TOGGLE_HOVER] = nk_rgba(60, 60, 60, 255);
-    nk_style_from_table(ctx, nk_ext_colortable);
+    struct nk_color color_table[NK_COLOR_COUNT] = {
+#define NK_COLOR(n, r, g, b, a) {r, g, b, a},
+        NK_COLOR_MAP(NK_COLOR)
+#undef NK_COLOR
+    };
+    color_table[NK_COLOR_TEXT] = nk_rgb(216, 216, 216);
+    color_table[NK_COLOR_EDIT_CURSOR] = nk_rgb(216, 216, 216);
+
+    nk_style_from_table(ctx, color_table);
 
     struct nk_style *style;
     struct nk_style_text *text;
