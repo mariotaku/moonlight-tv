@@ -98,7 +98,6 @@ bool launcher_window(struct nk_context *ctx)
         bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 200);
-        nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_end(ctx);
@@ -107,17 +106,10 @@ bool launcher_window(struct nk_context *ctx)
         _computer_picker_bounds = nk_widget_bounds(ctx);
         _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
         event_emitted |= pclist_dropdown(ctx, event_emitted);
-        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
-        if (nk_button_image(ctx, computer_discovery_running ? sprites_ui.ic_hourglass : sprites_ui.ic_refresh))
-        {
-            if (!event_emitted)
-            {
-                computer_manager_run_scan();
-            }
-            event_emitted = true;
-        }
 
         nk_spacing(ctx, 1);
+
+        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
 
         if (nk_button_image(ctx, sprites_ui.ic_settings))
         {
