@@ -10,6 +10,7 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "stream/session.h"
 #include "stream/settings.h"
 #include "app.h"
 
@@ -32,12 +33,17 @@ static int _server_list_compare_address(PSERVER_LIST other, const void *v);
 void computer_manager_init()
 {
     computer_list = NULL;
-    computer_manager_polling_start();
+    computer_manager_run_scan();
+    computer_manager_auto_discovery_start();
 }
 
 void computer_manager_destroy()
 {
-    computer_manager_polling_stop();
+    computer_manager_auto_discovery_stop();
+    if (computer_discovery_running)
+    {
+        pthread_join(computer_manager_polling_thread, NULL);
+    }
 
     serverlist_free(computer_list);
 }
@@ -101,18 +107,14 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
     return false;
 }
 
-bool computer_manager_polling_start()
+bool computer_manager_run_scan()
 {
-    if (computer_discovery_running)
+    if (computer_discovery_running || streaming_status != STREAMING_NONE)
     {
         return false;
     }
     pthread_create(&computer_manager_polling_thread, NULL, _computer_manager_polling_action, NULL);
     return true;
-}
-
-void computer_manager_polling_stop()
-{
 }
 
 static int server_list_namecmp(PSERVER_LIST item, const void *address)

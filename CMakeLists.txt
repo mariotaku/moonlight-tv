@@ -85,6 +85,7 @@ set(SOURCES
 if (TARGET_WEBOS)
     list(APPEND SOURCES
         app/app_sdl.c
+        app/backend/pcmanager/sdl_impl.c
         app/platform/webos/app_init.c
         app/platform/sdl/webos_keys.c
         app/stream/input/sdlinput.c
@@ -103,6 +104,7 @@ if (TARGET_WEBOS)
 elseif (TARGET_DESKTOP)
     list(APPEND SOURCES
         app/app_sdl.c
+        app/backend/pcmanager/sdl_impl.c
         app/ui/sdl_renderer.c
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c

@@ -26,16 +26,14 @@ void computer_manager_destroy();
 bool computer_manager_dispatch_userevent(int which, void *data1, void *data2);
 
 /**
- * @brief Starts discovery, and computer status update in background
+ * @brief Run scan task
  * 
  */
-bool computer_manager_polling_start();
+bool computer_manager_run_scan();
 
-/**
- * @brief Stops polling
- * 
- */
-void computer_manager_polling_stop();
+void computer_manager_auto_discovery_start();
+
+void computer_manager_auto_discovery_stop();
 
 PSERVER_LIST computer_manager_server_of(const char *address);
 

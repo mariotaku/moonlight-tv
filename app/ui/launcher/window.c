@@ -112,7 +112,7 @@ bool launcher_window(struct nk_context *ctx)
         {
             if (!event_emitted)
             {
-                computer_manager_polling_start();
+                computer_manager_run_scan();
             }
             event_emitted = true;
         }
