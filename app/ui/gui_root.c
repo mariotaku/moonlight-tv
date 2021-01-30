@@ -32,6 +32,12 @@ bool ui_fake_mouse_click_started;
 enum UI_INPUT_MODE ui_input_mode;
 
 static bool gui_send_faketouch_cancel;
+static bool ui_fake_mouse_event_received;
+static struct
+{
+    struct nk_vec2 *center;
+    void *down;
+} ui_pending_faketouch;
 
 void gui_root_init(struct nk_context *ctx)
 {
@@ -50,11 +56,17 @@ void gui_root_destroy()
 
 bool gui_root(struct nk_context *ctx)
 {
-    if (gui_send_faketouch_cancel)
+    if (ui_fake_mouse_event_received && ui_pending_faketouch.center)
+    {
+        bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, ui_pending_faketouch.center, (void *)ui_pending_faketouch.down);
+    }
+    else if (gui_send_faketouch_cancel)
     {
         bus_pushevent(USER_FAKEINPUT_MOUSE_CANCEL, NULL, NULL);
         gui_send_faketouch_cancel = false;
     }
+    ui_fake_mouse_event_received = false;
+    ui_pending_faketouch.center = NULL;
     STREAMING_STATUS stat = streaming_status;
     if (stat == STREAMING_NONE)
     {
@@ -117,6 +129,14 @@ bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void
         case USER_FAKEINPUT_MOUSE_CLICK:
         {
             struct nk_vec2 *center = data1;
+            if (ui_fake_mouse_event_received)
+            {
+                // This is not the first time event received
+                ui_pending_faketouch.center = center;
+                ui_pending_faketouch.down = data2;
+                break;
+            }
+            ui_fake_mouse_event_received = true;
             ui_fake_mouse_click_started = true;
             nk_input_motion(ctx, center->x, center->y);
             nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, data2 ? nk_true : nk_false);
