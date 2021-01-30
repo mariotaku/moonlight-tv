@@ -1,5 +1,6 @@
 #include "window.h"
 #include "strings.h"
+#include "priv.h"
 
 #include <string.h>
 
@@ -65,7 +66,10 @@ void launcher_statbar(struct nk_context *ctx)
     nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static_s(ctx, 50);
     nk_layout_row_template_push_variable_s(ctx, 1);
-    if (pclist_showing)
+    if (_launcher_modals)
+    {
+    }
+    else if (pclist_showing)
     {
         nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
         nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, STR_ACTION_BACK));
@@ -92,7 +96,10 @@ void launcher_statbar(struct nk_context *ctx)
     nk_image(ctx, sprites_ui.ic_gamepad);
     nk_labelf(ctx, NK_TEXT_LEFT, "%d", absinput_gamepads());
     nk_spacing(ctx, 1);
-    if (pclist_showing)
+    if (_launcher_modals)
+    {
+    }
+    else if (pclist_showing)
     {
         nk_image_padded(ctx, ic_navkey_cancel(), statbar_image_padding);
         nk_label(ctx, STR_ACTION_BACK, NK_TEXT_RIGHT);

@@ -176,9 +176,13 @@ void *_computer_manager_quitapp_action(void *data)
 {
     computer_manager_executing_quitapp = true;
     PSERVER_LIST node = data;
-    gs_quit_app(node->server);
+    int quitret = gs_quit_app(node->server);
     computer_manager_executing_quitapp = false;
     bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
+    if (quitret != GS_OK)
+    {
+        bus_pushevent(USER_CM_QUITAPP_FAILED, node, NULL);
+    }
     return NULL;
 }
 

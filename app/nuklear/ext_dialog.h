@@ -88,7 +88,7 @@ enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_widt
 enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *title,
                                             const char *message, const char *positive, const char *negative, const char *neutral)
 {
-    struct nk_borders dec_size = nk_style_window_get_decoration_size(&ctx->style, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR);
+    struct nk_borders dec_size = nk_style_popup_get_decoration_size(&ctx->style, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR);
     int dialog_width = 330 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
     // 10 extra dp is to preserve last line, as Nuklear will stop if total line height >= available height
     // Also extra padding can make UI looks better

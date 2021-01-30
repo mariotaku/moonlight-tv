@@ -24,31 +24,20 @@
 #include "util/user_event.h"
 
 PSERVER_LIST selected_server_node;
-static bool _webos_decoder_error_dismissed;
 
 struct nk_image launcher_default_cover;
-typedef enum pairing_state
-{
-    PS_NONE,
-    PS_RUNNING,
-    PS_FAIL
-} pairing_state;
 
-static struct
-{
-    pairing_state state;
-    char pin[5];
-    char *error;
-} pairing_computer_state;
+struct pairing_computer_state pairing_computer_state;
 
 static struct nk_style_button cm_list_button_style;
 static struct nk_vec2 _computer_picker_center = {0, 0};
 
-static void _pairing_window(struct nk_context *ctx);
-static void _pairing_error_popup(struct nk_context *ctx);
-static void _server_error_popup(struct nk_context *ctx);
-static void _quitapp_window(struct nk_context *ctx);
-static void _webos_decoder_error_popup(struct nk_context *ctx);
+void _pairing_window(struct nk_context *ctx);
+void _pairing_error_popup(struct nk_context *ctx);
+void _server_error_popup(struct nk_context *ctx);
+void _quitapp_window(struct nk_context *ctx);
+void _quitapp_error_popup(struct nk_context *ctx);
+void _webos_decoder_error_popup(struct nk_context *ctx);
 
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
@@ -56,9 +45,16 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down, uint32_t timestamp);
 void launcher_statbar(struct nk_context *ctx);
 
-#define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
-bool _launcher_has_popup, _launcher_showing_combo;
+static void _launcher_modal_flags_update();
+void _launcher_modal_popups_show(struct nk_context *ctx);
+void _launcher_modal_windows_show(struct nk_context *ctx);
+
+#define launcher_blocked() ((_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW) || gui_settings_showing)
+
+uint32_t _launcher_modals;
+bool _launcher_showing_combo;
 bool _launcher_popup_request_dismiss;
+bool _quitapp_errno = false;
 
 void launcher_window_init(struct nk_context *ctx)
 {
@@ -83,15 +79,19 @@ void launcher_window_destroy()
 bool launcher_window(struct nk_context *ctx)
 {
     int window_flags = NK_WINDOW_NO_SCROLLBAR;
-    _launcher_has_popup = _launcher_showing_combo = false;
+    _launcher_showing_combo = false;
+    _launcher_modals = 0;
     if (launcher_blocked())
     {
         window_flags |= NK_WINDOW_NO_INPUT;
     }
+
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
     if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, gui_display_width, gui_display_height), window_flags))
     {
         int list_height = nk_window_get_content_inner_size(ctx).y;
+        bool show_server_error_popup = false, show_pairing_error_popup = false,
+             show_quitapp_error_popup = false;
 
         nk_style_push_float(ctx, &ctx->style.window.spacing.y, 10 * NK_UI_SCALE);
         bool event_emitted = false;
@@ -137,11 +137,6 @@ bool launcher_window(struct nk_context *ctx)
             {
                 event_emitted |= launcher_applist(ctx, selected, event_emitted);
             }
-            else
-            {
-                _server_error_popup(ctx);
-                _launcher_has_popup |= true;
-            }
         }
         else
         {
@@ -151,37 +146,17 @@ bool launcher_window(struct nk_context *ctx)
                 nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
                 nk_group_end(ctx);
             }
-
-            if (pairing_computer_state.state == PS_FAIL)
-            {
-                _pairing_error_popup(ctx);
-                _launcher_has_popup |= true;
-            }
         }
         nk_style_pop_vec2(ctx);
         nk_style_pop_vec2(ctx);
 
+        _launcher_modal_flags_update();
         launcher_statbar(ctx);
 
-#ifdef OS_WEBOS
-        if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
-        {
-            _webos_decoder_error_popup(ctx);
-            _launcher_has_popup |= true;
-        }
-#endif
+        _launcher_modal_popups_show(ctx);
     }
     nk_end(ctx);
     nk_style_pop_vec2(ctx);
-
-    if (pairing_computer_state.state == PS_RUNNING)
-    {
-        _pairing_window(ctx);
-    }
-    else if (computer_manager_executing_quitapp)
-    {
-        _quitapp_window(ctx);
-    }
 
     // Why Nuklear why, the button looks like "close" but it actually "hide"
     if (nk_window_is_hidden(ctx, "Moonlight"))
@@ -189,8 +164,10 @@ bool launcher_window(struct nk_context *ctx)
         nk_window_close(ctx, "Moonlight");
         return false;
     }
+
+    _launcher_modal_windows_show(ctx);
     // No popup, reset dismiss request
-    if (!_launcher_has_popup)
+    if (!(_launcher_modals & LAUNCHER_MODAL_MASK_POPUP))
     {
         _launcher_popup_request_dismiss = false;
     }
@@ -216,6 +193,11 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         }
         return true;
     }
+    case USER_CM_QUITAPP_FAILED:
+    {
+        _quitapp_errno = true;
+        return true;
+    }
     default:
         break;
     }
@@ -228,7 +210,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     if (launcher_blocked())
     {
     }
-    else if (_launcher_has_popup)
+    else if (_launcher_modals & LAUNCHER_MODAL_MASK_POPUP)
     {
         if (!down && (key == NAVKEY_CANCEL || key == NAVKEY_START || key == NAVKEY_CONFIRM))
         {
@@ -301,76 +283,39 @@ void _open_pair(int index, PSERVER_LIST node)
     computer_manager_pair(node, &pairing_computer_state.pin[0], cw_pairing_callback);
 }
 
-void _pairing_window(struct nk_context *ctx)
+void _launcher_modal_flags_update()
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 110);
-    if (nk_begin(ctx, "Pairing", s, NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_SCROLLBAR))
+    if (pairing_computer_state.state == PS_RUNNING)
     {
-        nk_layout_row_dynamic_s(ctx, 64, 1);
-
-        nk_labelf_wrap(ctx, "Please enter %s on your GameStream PC. This dialog will close when pairing is completed.",
-                       pairing_computer_state.pin);
+        _launcher_modals |= LAUNCHER_MODAL_PAIRING;
     }
-    nk_end(ctx);
-}
-
-void _quitapp_window(struct nk_context *ctx)
-{
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
-    if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+    if (computer_manager_executing_quitapp)
     {
-        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        int content_height_remaining = (int)content_size.y;
-        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
-
-        nk_label(ctx, "Quitting...", NK_TEXT_ALIGN_LEFT);
+        _launcher_modals |= LAUNCHER_MODAL_QUITAPP;
     }
-    nk_end(ctx);
-}
-
-void _pairing_error_popup(struct nk_context *ctx)
-{
-    char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
-    enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Pairing Failed", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    if (_quitapp_errno)
     {
-        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        _launcher_modals |= LAUNCHER_MODAL_QUITERR;
+    }
+    if (selected_server_node != NULL)
+    {
+        if (selected_server_node->server == NULL)
         {
-            pairing_computer_state.state = PS_NONE;
-            nk_popup_close(ctx);
+            _launcher_modals |= LAUNCHER_MODAL_SERVERR;
         }
-        nk_popup_end(ctx);
     }
-}
-
-void _server_error_popup(struct nk_context *ctx)
-{
-    const char *message = selected_server_node->errmsg;
-    enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Connection Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    else
     {
-        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        if (pairing_computer_state.state == PS_FAIL)
         {
-            selected_server_node = NULL;
-            nk_popup_close(ctx);
+            _launcher_modals |= LAUNCHER_MODAL_PAIRERR;
         }
-        nk_popup_end(ctx);
     }
-}
-
-void _webos_decoder_error_popup(struct nk_context *ctx)
-{
-    const char *message = "Unable to initialize system video decoder. "
-                          "Audio and video will not work during streaming. "
-                          "You may need to restart your TV.";
-    enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Decoder Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+#if OS_WEBOS
+    if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
     {
-        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
-        {
-            _webos_decoder_error_dismissed = true;
-            nk_popup_close(ctx);
-        }
-        nk_popup_end(ctx);
+        _launcher_modals |= LAUNCHER_MODAL_WDECERR;
     }
+#endif
+    _launcher_modals |= LAUNCHER_MODAL_WDECERR;
 }

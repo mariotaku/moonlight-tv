@@ -19,6 +19,7 @@ struct nk_borders {
 
 NK_API struct nk_vec2 nk_window_get_content_inner_size(struct nk_context *ctx);
 NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_style *style, enum nk_window_flags flags);
+NK_API struct nk_borders nk_style_popup_get_decoration_size(const struct nk_style *style, enum nk_window_flags flags);
 
 NK_API nk_bool nk_checkbox_label_std(struct nk_context*, const char* label, bool *active);
 
@@ -76,6 +77,30 @@ NK_API struct nk_borders nk_style_window_get_decoration_size(const struct nk_sty
     borders.r += win->padding.x;
     borders.t += win->padding.y;
     borders.b += win->padding.y;
+    return borders;
+}
+
+NK_API struct nk_borders nk_style_popup_get_decoration_size(const struct nk_style *style, enum nk_window_flags flags)
+{
+    const struct nk_style_window *win = &style->window;
+    // left, top, right, bottom
+    struct nk_borders borders = {0, 0, 0, 0};
+    if (flags & NK_WINDOW_BORDER)
+    {
+        borders.l += win->popup_border;
+        borders.t += win->popup_border;
+        borders.r += win->popup_border;
+        borders.b += win->popup_border;
+    }
+    if (flags & NK_WINDOW_TITLE)
+    {
+        borders.t += style->font->height + 2.0f * win->header.padding.y;
+        borders.t += 2.0f * win->header.label_padding.y;
+    }
+    borders.l += win->popup_padding.x;
+    borders.r += win->popup_padding.x;
+    borders.t += win->popup_padding.y;
+    borders.b += win->popup_padding.y;
     return borders;
 }
 
