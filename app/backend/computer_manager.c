@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include <pthread.h>
+#include <signal.h>
+
 #include "libgamestream/errors.h"
 #include "error_manager.h"
 
@@ -42,7 +44,7 @@ void computer_manager_destroy()
     computer_manager_auto_discovery_stop();
     if (computer_discovery_running)
     {
-        pthread_join(computer_manager_polling_thread, NULL);
+        pthread_kill(computer_manager_polling_thread, 0);
     }
 
     serverlist_free(computer_list);

@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
 #include <unistd.h>
 
 #include <sys/stat.h>
@@ -79,7 +80,7 @@ void coverloader_destroy()
 {
     coverloader_working_running = false;
     pthread_cond_signal(&coverloader_queue_cond);
-    pthread_join(coverloader_worker_thread, NULL);
+    pthread_kill(coverloader_worker_thread, 0);
     pthread_mutex_destroy(&coverloader_state_lock);
     lruc_free(coverloader_mem_cache);
 }
