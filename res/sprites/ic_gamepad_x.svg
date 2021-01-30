@@ -41,7 +41,8 @@
      inkscape:window-y="390"
      inkscape:window-maximized="1"
      objecttolerance="1"
-     guidetolerance="1">
+     guidetolerance="1"
+     inkscape:pagecheckerboard="true">
     <inkscape:grid
        type="xygrid"
        id="grid16" />
@@ -71,7 +72,8 @@
     <g
        aria-label="X"
        id="text849"
-       style="font-weight:bold;font-size:3.52777px;line-height:1.25;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans, Bold';stroke-width:0.264583">
+       style="font-weight:bold;font-size:3.52777px;line-height:1.25;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans, Bold';stroke-width:0.264583"
+       transform="translate(-0.0219989,0.05126092)">
       <path
          d="M 3.3345795,3.2824869 H 2.7242753 L 2.1386655,2.329989 1.5530556,3.2824869 H 0.98155689 L 1.8176384,1.9842675 1.0344734,0.76365911 H 1.623611 L 2.1668876,1.670296 2.6995809,0.76365911 H 3.2746074 L 2.4843869,2.0124897 Z"
          style="stroke-width:0.264583"

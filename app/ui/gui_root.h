@@ -11,11 +11,13 @@
 
 #include "util/navkey.h"
 
-enum UI_INPUT_MODE {
-    UI_INPUT_MODE_POINTER, 
-    UI_INPUT_MODE_KEY, 
-    UI_INPUT_MODE_GAMEPAD, 
+enum UI_INPUT_MODE
+{
+    UI_INPUT_MODE_POINTER,
+    UI_INPUT_MODE_KEY,
+    UI_INPUT_MODE_GAMEPAD
 };
+#define UI_INPUT_MODE_COUNT 3
 
 extern short gui_display_width, gui_display_height;
 extern short gui_logic_width, gui_logic_height;

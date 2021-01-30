@@ -186,6 +186,5 @@ bool ui_set_input_mode(enum UI_INPUT_MODE mode)
         return false;
     }
     ui_input_mode = mode;
-    printf("UI Input mode changed to %d\n", mode);
     return true;
 }

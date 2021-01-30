@@ -72,6 +72,7 @@ set(SOURCES
     app/ui/launcher/window.c
     app/ui/launcher/pclist.c
     app/ui/launcher/applist.c
+    app/ui/launcher/statbar.c
     app/ui/streaming/overlay.c
     app/ui/settings_window.c
     app/util/lruc.c

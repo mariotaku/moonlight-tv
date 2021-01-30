@@ -13,7 +13,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="1.0.2 (e86c870879, 2021-01-15, custom)"
-   sodipodi:docname="ic_gamepad_a.svg">
+   sodipodi:docname="ic_remote_blue.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -24,8 +24,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="44.8"
-     inkscape:cx="10.573574"
-     inkscape:cy="4.6125335"
+     inkscape:cx="9.9932166"
+     inkscape:cy="6.1415514"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -41,8 +41,7 @@
      inkscape:window-y="390"
      inkscape:window-maximized="1"
      objecttolerance="1"
-     guidetolerance="1"
-     inkscape:pagecheckerboard="true">
+     guidetolerance="1">
     <inkscape:grid
        type="xygrid"
        id="grid16" />
@@ -55,7 +54,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -63,21 +62,14 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <circle
-       style="fill:#ffffff;fill-rule:evenodd;stroke-width:0.264879;fill-opacity:1"
-       id="path10"
-       cx="2.1166666"
-       cy="2.1166666"
-       r="2.1166666" />
-    <g
-       aria-label="A"
-       id="text842"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       transform="translate(-0.02882061,0.03831886)">
-      <path
-         d="M 2.787544,3.2848494 2.6040994,2.6851268 H 1.6868766 L 1.5034321,3.2848494 H 0.92840391 L 1.8174045,0.75543111 H 2.4700438 L 3.3625722,3.2848494 Z M 2.4770994,2.2370987 2.2936548,1.6514872 Q 2.2760159,1.591515 2.2477937,1.4997927 2.2195714,1.4080704 2.1913492,1.3128204 2.1631269,1.2175703 2.145488,1.1470147 2.127849,1.2175707 2.096099,1.3234037 2.067877,1.4257093 2.039654,1.5209594 2.01496,1.6126814 2.000848,1.6514872 L 1.8209323,2.2370987 Z"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;font-family:'Noto Sans';-inkscape-font-specification:'Noto Sans, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
-         id="path844" />
-    </g>
+    <rect
+       style="fill:#0084ff;fill-opacity:1;stroke-width:0.265;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect842"
+       width="3.7041667"
+       height="1.5874999"
+       x="0.26458332"
+       y="1.3229166"
+       rx="0.26458335"
+       ry="0.26458332" />
   </g>
 </svg>
