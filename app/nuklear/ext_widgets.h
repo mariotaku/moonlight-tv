@@ -24,8 +24,8 @@ nk_image_padded(struct nk_context *ctx, struct nk_image img, struct nk_vec2 padd
         return;
     bounds.x += padding.x;
     bounds.y += padding.y;
-    bounds.w -= padding.x;
-    bounds.h -= padding.y;
+    bounds.w -= padding.x * 2;
+    bounds.h -= padding.y * 2;
     nk_draw_image(&win->buffer, bounds, &img, nk_white);
 }
 #endif

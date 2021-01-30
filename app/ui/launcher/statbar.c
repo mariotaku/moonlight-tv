@@ -7,7 +7,7 @@
 #include "ui/gui_root.h"
 #include "stream/input/absinput.h"
 
-static const struct nk_vec2 statbar_image_padding = nk_vec2_s_const(5, 5);
+static const struct nk_vec2 statbar_image_padding = nk_vec2_s_const(2, 2);
 
 static inline struct nk_image ic_navkey_cancel()
 {
@@ -107,28 +107,28 @@ void launcher_statbar(struct nk_context *ctx)
     else if (pclist_showing)
     {
         nk_image_padded(ctx, ic_navkey_cancel(), statbar_image_padding);
-        nk_label(ctx, STR_ACTION_BACK, NK_TEXT_RIGHT);
+        nk_label(ctx, STR_ACTION_BACK, NK_TEXT_CENTERED);
         nk_spacing(ctx, 1);
         nk_image_padded(ctx, ic_navkey_confirm(), statbar_image_padding);
-        nk_label(ctx, "Confirm", NK_TEXT_RIGHT);
+        nk_label(ctx, "Confirm", NK_TEXT_CENTERED);
     }
     else if (apps_showing)
     {
         nk_image_padded(ctx, ic_navkey_menu(), statbar_image_padding);
-        nk_label(ctx, "Change PC", NK_TEXT_RIGHT);
+        nk_label(ctx, "Change PC", NK_TEXT_CENTERED);
         if (is_running)
         {
             nk_spacing(ctx, 1);
             nk_image_padded(ctx, ic_navkey_close(), statbar_image_padding);
-            nk_label(ctx, "Quit Game", NK_TEXT_RIGHT);
+            nk_label(ctx, "Quit Game", NK_TEXT_CENTERED);
         }
         nk_spacing(ctx, 1);
         nk_image_padded(ctx, ic_navkey_confirm(), statbar_image_padding);
-        nk_label(ctx, is_running ? STR_ACTION_RESUME : STR_ACTION_LAUNCH, NK_TEXT_RIGHT);
+        nk_label(ctx, is_running ? STR_ACTION_RESUME : STR_ACTION_LAUNCH, NK_TEXT_CENTERED);
     }
     else
     {
         nk_image_padded(ctx, ic_navkey_menu(), statbar_image_padding);
-        nk_label(ctx, "Select PC", NK_TEXT_RIGHT);
+        nk_label(ctx, "Select PC", NK_TEXT_CENTERED);
     }
 }
