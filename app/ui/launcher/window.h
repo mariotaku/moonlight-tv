@@ -22,6 +22,7 @@
 
 extern struct nk_image launcher_default_cover;
 extern PSERVER_LIST selected_server_node;
+extern PAPP_DLIST applist_hovered_item;
 
 void launcher_window_init(struct nk_context *ctx);
 

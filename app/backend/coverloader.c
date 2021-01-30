@@ -132,7 +132,6 @@ void *coverloader_worker(void *unused)
         // Load from local file cache
         if (coverloader_decode_image(req, &decoded))
         {
-            printf("Local file cache hit for %d\n", req->id);
             coverloader_notify_decoded(req, &decoded);
             continue;
         }

@@ -202,25 +202,41 @@ void launcher_display_size(struct nk_context *ctx, short width, short height)
 
 void launcher_statbar(struct nk_context *ctx)
 {
+    bool has_selected = applist_hovered_item != NULL;
+    bool is_running = applist_hovered_item && selected_server_node && selected_server_node->server &&
+                      applist_hovered_item->id == selected_server_node->server->currentGame;
+
     nk_layout_row_template_begin_s(ctx, _launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static_s(ctx, 50);
     nk_layout_row_template_push_variable_s(ctx, 1);
-    nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
-    nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Close"));
-    nk_layout_row_template_push_static_s(ctx, 10);
-    nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
-    nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Launch"));
+    if (has_selected)
+    {
+        if (is_running)
+        {
+            nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
+            nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Close"));
+        }
+        nk_layout_row_template_push_static_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, _launcher_bottom_bar_height_dp);
+        nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Launch"));
+    }
     nk_layout_row_template_end(ctx);
-    
+
     nk_image(ctx, sprites_ui.ic_gamepad);
     nk_labelf(ctx, NK_TEXT_LEFT, "%d", absinput_gamepads());
     nk_spacing(ctx, 1);
-    nk_image_padded(ctx, sprites_ui.ic_gamepad_x, nk_vec2_s(5, 5));
-    nk_label(ctx, "Close", NK_TEXT_RIGHT);
-    nk_spacing(ctx, 1);
-    nk_image_padded(ctx, sprites_ui.ic_gamepad_a, nk_vec2_s(5, 5));
-    nk_label(ctx, "Launch", NK_TEXT_RIGHT);
+    if (has_selected)
+    {
+        if (is_running)
+        {
+            nk_image_padded(ctx, sprites_ui.ic_gamepad_x, nk_vec2_s(5, 5));
+            nk_label(ctx, "Close", NK_TEXT_RIGHT);
+        }
+        nk_spacing(ctx, 1);
+        nk_image_padded(ctx, sprites_ui.ic_gamepad_a, nk_vec2_s(5, 5));
+        nk_label(ctx, "Launch", NK_TEXT_RIGHT);
+    }
 }
 
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)

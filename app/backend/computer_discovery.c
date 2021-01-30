@@ -204,13 +204,6 @@ open_client_sockets(int *sockets, int max_sockets, int port)
                         log_addr = 0;
                     }
                 }
-                if (log_addr)
-                {
-                    char buffer[128];
-                    mdns_string_t addr = ipv4_address_to_string(buffer, sizeof(buffer), saddr,
-                                                                sizeof(struct sockaddr_in));
-                    fprintf(stderr, "Local IPv4 address: %.*s\n", MDNS_STRING_FORMAT(addr));
-                }
             }
         }
         else if (ifa->ifa_addr->sa_family == AF_INET6)
@@ -245,13 +238,6 @@ open_client_sockets(int *sockets, int max_sockets, int port)
                         log_addr = 0;
                     }
                 }
-                if (log_addr)
-                {
-                    char buffer[128];
-                    mdns_string_t addr = ipv6_address_to_string(buffer, sizeof(buffer), saddr,
-                                                                sizeof(struct sockaddr_in6));
-                    fprintf(stderr, "Local IPv6 address: %.*s\n", MDNS_STRING_FORMAT(addr));
-                }
             }
         }
     }
@@ -277,14 +263,12 @@ void *_computer_manager_polling_action(void *data)
         computer_discovery_running = false;
         return NULL;
     }
-    fprintf(stderr, "Opened %d socket%s for mDNS query\n", num_sockets, num_sockets ? "s" : "");
 
     size_t capacity = 2048;
     void *buffer = malloc(capacity);
     void *user_data = 0;
     size_t records;
 
-    fprintf(stderr, "Sending mDNS query: %s\n", service);
     for (int isock = 0; isock < num_sockets; ++isock)
     {
         query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, service,
@@ -295,7 +279,6 @@ void *_computer_manager_polling_action(void *data)
 
     // This is a simple implementation that loops for 5 seconds or as long as we get replies
     int res;
-    fprintf(stderr, "Reading mDNS query replies\n");
     do
     {
         struct timeval timeout;
@@ -332,8 +315,6 @@ void *_computer_manager_polling_action(void *data)
 
     for (int isock = 0; isock < num_sockets; ++isock)
         mdns_socket_close(sockets[isock]);
-    fprintf(stderr, "Closed socket%s\n", num_sockets ? "s" : "");
-
     computer_discovery_running = false;
     return NULL;
 }

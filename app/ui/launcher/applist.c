@@ -14,7 +14,8 @@ static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicke
 static bool _applist_item_select(PSERVER_LIST node, int offset);
 static bool _cover_use_default(struct nk_image *img);
 
-static PAPP_DLIST applist_hovered_item = NULL, applist_hover_request = NULL;
+PAPP_DLIST applist_hovered_item = NULL;
+static PAPP_DLIST applist_hover_request = NULL;
 static PAPP_DLIST _applist_visible_start = NULL;
 static struct nk_list_view list_view;
 static int _applist_colcount = 5;
