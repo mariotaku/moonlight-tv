@@ -317,5 +317,4 @@ void _launcher_modal_flags_update()
         _launcher_modals |= LAUNCHER_MODAL_WDECERR;
     }
 #endif
-    _launcher_modals |= LAUNCHER_MODAL_WDECERR;
 }

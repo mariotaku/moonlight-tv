@@ -96,7 +96,7 @@ enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *
     int dialog_height = dec_size.t + message_height + ctx->style.window.spacing.y + 30 * NK_UI_SCALE + dec_size.b;
 
     struct nk_vec2 window_size = nk_window_get_size(ctx);
-    struct nk_rect s = nk_rect_centered(window_size.x, window_size.y, dialog_width, dialog_height);
+    struct nk_rect s = nk_rect_centered(window_size.x - ctx->style.window.padding.x * 2, window_size.y, dialog_width, dialog_height);
     enum nk_dialog_result result = NK_DIALOG_NONE;
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, title, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR, s))
     {
