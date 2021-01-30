@@ -54,6 +54,10 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
 static void ndl_cleanup()
 {
   NDL_DirectVideoClose();
+  if (ndl_buffer)
+  {
+    free(ndl_buffer);
+  }
 }
 
 static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
@@ -70,7 +74,7 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
     }
     if (NDL_DirectVideoPlay(ndl_buffer, length) == -1)
     {
-        fprintf(stderr, "NDL_DirectVideoPlay returned -1\n");
+      fprintf(stderr, "NDL_DirectVideoPlay returned -1\n");
     }
   }
   else

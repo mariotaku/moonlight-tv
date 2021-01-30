@@ -58,6 +58,10 @@ static int lgnc_setup(int videoFormat, int width, int height, int redrawRate, vo
 static void lgnc_cleanup()
 {
   LGNC_DIRECTVIDEO_Close();
+  if (lgnc_buffer)
+  {
+    free(lgnc_buffer);
+  }
 }
 
 static int lgnc_submit_decode_unit(PDECODE_UNIT decodeUnit)
