@@ -15,3 +15,5 @@
 #define WINDOW_HEIGHT 576
 #define NK_UI_SCALE 1.5
 #endif
+
+#define KEY_REPEAT_DURATION 300

@@ -13,6 +13,7 @@ static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST 
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
 static bool _applist_item_select(PSERVER_LIST node, int offset);
 static bool _cover_use_default(struct nk_image *img);
+static bool _intercept_nav_repeat(bool down, uint32_t timestamp);
 
 PAPP_DLIST applist_hovered_item = NULL;
 static PAPP_DLIST applist_hover_request = NULL;
@@ -58,7 +59,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
                 nk_spacing(ctx, colcount - col);
             }
         }
-        if (!ever_hovered)
+        if (!ever_hovered && !event_emitted && !ui_fake_mouse_click_started)
         {
             applist_hovered_item = NULL;
         }
@@ -72,7 +73,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
                    int cover_width, int cover_height, bool event_emitted, bool *ever_hovered)
 {
     nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);
-    if (hovered)
+    if (hovered && !event_emitted)
     {
         applist_hovered_item = cur;
         *ever_hovered = true;
@@ -198,18 +199,18 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     }
 }
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down)
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down, uint32_t timestamp)
 {
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        return down || _applist_item_select(node, -1);
+        return _intercept_nav_repeat(down, timestamp) || _applist_item_select(node, -1);
     case NAVKEY_RIGHT:
-        return down || _applist_item_select(node, 1);
+        return _intercept_nav_repeat(down, timestamp) || _applist_item_select(node, 1);
     case NAVKEY_UP:
-        return down || _applist_item_select(node, -_applist_colcount);
+        return _intercept_nav_repeat(down, timestamp) || _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
-        return down || _applist_item_select(node, _applist_colcount);
+        return _intercept_nav_repeat(down, timestamp) || _applist_item_select(node, _applist_colcount);
     case NAVKEY_NEGATIVE:
         if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
         {
@@ -269,4 +270,20 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
 bool _cover_use_default(struct nk_image *img)
 {
     return img == NULL || img->w == 0 || img->h == 0;
+}
+
+bool _intercept_nav_repeat(bool down, uint32_t timestamp)
+{
+    static uint32_t last_timestamp;
+    if (!down)
+    {
+        last_timestamp = 0;
+        return true;
+    }
+    if (timestamp - last_timestamp > KEY_REPEAT_DURATION)
+    {
+        last_timestamp = timestamp;
+        return false;
+    }
+    return true;
 }

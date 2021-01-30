@@ -129,6 +129,18 @@ static void app_process_events(struct nk_context *ctx)
             NAVKEY navkey = navkey_from_sdl(evt);
             if (navkey != NAVKEY_UNKNOWN)
             {
+                Uint32 timestamp = 0;
+                bool is_key = false, is_gamepad = false;
+                if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP)
+                {
+                    timestamp = evt.key.timestamp;
+                    is_key = true;
+                }
+                else if (evt.type == SDL_CONTROLLERBUTTONDOWN || evt.type == SDL_CONTROLLERBUTTONUP)
+                {
+                    timestamp = evt.cbutton.timestamp;
+                    is_gamepad = true;
+                }
                 bool down = evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN;
                 if (down && (navkey & NAVKEY_DPAD))
                 {
@@ -136,16 +148,16 @@ static void app_process_events(struct nk_context *ctx)
                     // Hide the cursor
                     SDL_webOSCursorVisibility(SDL_FALSE);
 #endif
-                    if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP)
+                    if (is_key)
                     {
                         ui_set_input_mode(UI_INPUT_MODE_KEY);
                     }
-                    else if (evt.type == SDL_CONTROLLERBUTTONDOWN || evt.type == SDL_CONTROLLERBUTTONUP)
+                    else if (is_gamepad)
                     {
                         ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
                     }
                 }
-                gui_dispatch_navkey(ctx, navkey, down);
+                gui_dispatch_navkey(ctx, navkey, down, timestamp);
             }
             else if (evt.type == SDL_MOUSEMOTION)
             {

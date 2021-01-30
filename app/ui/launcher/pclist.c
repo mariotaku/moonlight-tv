@@ -11,11 +11,12 @@ static struct nk_vec2 pclist_focused_center;
 
 static bool pclist_item_select(PSERVER_LIST list, int offset);
 
+bool pclist_showing;
+
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
-    nk_bool active;
-    if ((active = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
+    if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
         PSERVER_LIST cur = computer_list;
@@ -61,7 +62,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
         }
         nk_combo_end(ctx);
     }
-    return active || event_emitted;
+    return pclist_showing || event_emitted;
 }
 
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)

@@ -25,6 +25,7 @@
 extern struct nk_image launcher_default_cover;
 extern PSERVER_LIST selected_server_node;
 extern PAPP_DLIST applist_hovered_item;
+extern bool pclist_showing;
 
 void launcher_window_init(struct nk_context *ctx);
 
@@ -38,4 +39,4 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2);
 
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down);
+bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down, uint32_t timestamp);

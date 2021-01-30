@@ -20,6 +20,7 @@
 #endif
 
 #include "stream/input/absinput.h"
+#include "util/bus.h"
 #include "util/user_event.h"
 
 PSERVER_LIST selected_server_node;
@@ -41,7 +42,7 @@ static struct
 } pairing_computer_state;
 
 static struct nk_style_button cm_list_button_style;
-static struct nk_rect _computer_picker_bounds = {0, 0, 0, 0};
+static struct nk_vec2 _computer_picker_center = {0, 0};
 
 static void _pairing_window(struct nk_context *ctx);
 static void _pairing_error_popup(struct nk_context *ctx);
@@ -52,7 +53,7 @@ static void _webos_decoder_error_popup(struct nk_context *ctx);
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down);
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down, uint32_t timestamp);
 void launcher_statbar(struct nk_context *ctx);
 
 #define launcher_blocked() (pairing_computer_state.state == PS_RUNNING || gui_settings_showing)
@@ -79,7 +80,6 @@ void launcher_window_destroy()
     nk_imagetexturefree(&launcher_default_cover);
 }
 
-
 bool launcher_window(struct nk_context *ctx)
 {
     int window_flags = NK_WINDOW_NO_SCROLLBAR;
@@ -102,7 +102,9 @@ bool launcher_window(struct nk_context *ctx)
         nk_layout_row_template_end(ctx);
         list_height -= nk_widget_height(ctx);
 
-        _computer_picker_bounds = nk_widget_bounds(ctx);
+        struct nk_rect bounds = nk_widget_bounds(ctx);
+        _computer_picker_center.x = nk_rect_center_x(bounds);
+        _computer_picker_center.y = nk_rect_center_y(bounds);
         _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
         event_emitted |= pclist_dropdown(ctx, event_emitted);
 
@@ -220,7 +222,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     return false;
 }
 
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down)
+bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down, uint32_t timestamp)
 {
     bool key_handled = false;
     if (launcher_blocked())
@@ -239,7 +241,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     }
     else if (selected_server_node && selected_server_node->server)
     {
-        key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, down);
+        key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, down, timestamp);
     }
     if (key_handled)
     {
@@ -248,11 +250,9 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     switch (key)
     {
     case NAVKEY_MENU:
-        if (_computer_picker_bounds.w && _computer_picker_bounds.h)
+        if (_computer_picker_center.x && _computer_picker_center.y)
         {
-            int x = nk_rect_center_x(_computer_picker_bounds), y = nk_rect_center_y(_computer_picker_bounds);
-            nk_input_motion(ctx, x, y);
-            nk_input_button(ctx, NK_BUTTON_LEFT, x, y, down);
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_computer_picker_center, (void *)down);
         }
         return true;
     case NAVKEY_CANCEL:
