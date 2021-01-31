@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifndef NK_NUKLEAR_H_
 #include "nuklear/config.h"

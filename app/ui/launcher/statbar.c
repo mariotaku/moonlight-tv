@@ -9,53 +9,6 @@
 
 static const struct nk_vec2 statbar_image_padding = nk_vec2_s_const(2, 2);
 
-static inline struct nk_image ic_navkey_cancel()
-{
-    switch (ui_input_mode)
-    {
-    case UI_INPUT_MODE_POINTER:
-    case UI_INPUT_MODE_KEY:
-        return sprites_ui.ic_remote_back;
-    case UI_INPUT_MODE_GAMEPAD:
-        return sprites_ui.ic_gamepad_b;
-    }
-};
-static inline struct nk_image ic_navkey_close()
-{
-    switch (ui_input_mode)
-    {
-    case UI_INPUT_MODE_POINTER:
-    case UI_INPUT_MODE_KEY:
-        return sprites_ui.ic_remote_red;
-    case UI_INPUT_MODE_GAMEPAD:
-        return sprites_ui.ic_gamepad_x;
-    }
-};
-
-static inline struct nk_image ic_navkey_menu()
-{
-    switch (ui_input_mode)
-    {
-    case UI_INPUT_MODE_POINTER:
-    case UI_INPUT_MODE_KEY:
-        return sprites_ui.ic_remote_yellow;
-    case UI_INPUT_MODE_GAMEPAD:
-        return sprites_ui.ic_gamepad_view;
-    }
-};
-
-static inline struct nk_image ic_navkey_confirm()
-{
-    switch (ui_input_mode)
-    {
-    case UI_INPUT_MODE_POINTER:
-    case UI_INPUT_MODE_KEY:
-        return sprites_ui.ic_remote_center;
-    case UI_INPUT_MODE_GAMEPAD:
-        return sprites_ui.ic_gamepad_a;
-    }
-};
-
 void launcher_statbar(struct nk_context *ctx)
 {
     bool apps_showing = selected_server_node && selected_server_node->server;
@@ -79,7 +32,7 @@ void launcher_statbar(struct nk_context *ctx)
     {
         nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
         nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, STR_ACTION_BACK));
-        nk_layout_row_template_push_static_s(ctx, 1);
+        nk_layout_row_template_push_static(ctx, 1);
         nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
         nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Confirm"));
     }
@@ -89,11 +42,11 @@ void launcher_statbar(struct nk_context *ctx)
         nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Change PC"));
         if (is_running)
         {
-            nk_layout_row_template_push_static_s(ctx, 1);
+            nk_layout_row_template_push_static(ctx, 1);
             nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
             nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, "Quit Game"));
         }
-        nk_layout_row_template_push_static_s(ctx, 1);
+        nk_layout_row_template_push_static(ctx, 1);
         nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
         nk_layout_row_template_push_static(ctx, nk_string_measure_width(ctx, is_running ? STR_ACTION_RESUME : STR_ACTION_LAUNCH));
     }

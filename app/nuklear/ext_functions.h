@@ -39,6 +39,7 @@ NK_API nk_bool nk_checkbox_label_std(struct nk_context*, const char* label, bool
 #define nk_layout_row_template_begin_s(ctx, h) nk_layout_row_template_begin(ctx, (h) * NK_UI_SCALE)
 #define nk_layout_row_template_push_static_s(ctx, width) nk_layout_row_template_push_static(ctx, (width) * NK_UI_SCALE)
 #define nk_layout_row_template_push_variable_s(ctx, min_width) nk_layout_row_template_push_variable(ctx, (min_width) * NK_UI_SCALE)
+#define nk_layout_space_begin_s(ctx, format, height, widget_count) nk_layout_space_begin(ctx, format, (height) * NK_UI_SCALE, widget_count)
 
 #define nk_list_view_begin_s(ctx, out, id, flags, row_height, row_count) nk_list_view_begin(ctx, out, id, flags, (row_height) * NK_UI_SCALE, row_count)
 

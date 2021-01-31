@@ -13,7 +13,8 @@
 #include "nuklear/ext_dialog.h"
 #include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
-#include "nuklear/ext_widgets.h"
+#include "nuklear/ext_imgview.h"
+#include "nuklear/platform_sprites.h"
 #endif
 
 #include "util/navkey.h"

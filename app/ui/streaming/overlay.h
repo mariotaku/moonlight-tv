@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <string.h>
 
 #include "ui/config.h"
 
@@ -8,13 +9,20 @@
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_image.h"
 #include "nuklear/ext_dialog.h"
+#include "nuklear/ext_sprites.h"
+#include "nuklear/ext_text.h"
+#include "nuklear/ext_imgview.h"
+#include "nuklear/platform_sprites.h"
 #endif
 
 #include "backend/computer_manager.h"
 #include "stream/session.h"
 
 #include "util/navkey.h"
+
+extern bool stream_overlay_showing;
 
 void streaming_overlay_init(struct nk_context *ctx);
 

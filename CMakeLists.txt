@@ -75,7 +75,9 @@ set(SOURCES
     app/ui/launcher/statbar.c
     app/ui/launcher/modals.c
     app/ui/streaming/overlay.c
+    app/ui/streaming/bottombar.c
     app/ui/settings_window.c
+    app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
     app/util/gs/clientex.c

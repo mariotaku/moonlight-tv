@@ -1,4 +1,5 @@
 #include "overlay.h"
+#include "priv.h"
 #include "ui/gui_root.h"
 #include "ui/messages.h"
 #include "ui/fonts.h"
@@ -8,12 +9,14 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
-static struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0};
+struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0};
 
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
 static void _streaming_error_window(struct nk_context *ctx);
+
+static void _overlay_backdrop(struct nk_context *ctx);
 static void _streaming_perf_stat(struct nk_context *ctx);
-static void _streaming_bottom_bar(struct nk_context *ctx);
+void _streaming_bottom_bar(struct nk_context *ctx);
 
 void _overlay_windows_push_style(struct nk_context *ctx);
 void _overlay_windows_pop_style(struct nk_context *ctx);
@@ -22,6 +25,7 @@ bool stream_overlay_showing;
 
 void streaming_overlay_init(struct nk_context *ctx)
 {
+    stream_overlay_showing = false;
 }
 
 bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
@@ -39,6 +43,7 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
     case STREAMING_STREAMING:
         if (stream_overlay_showing)
         {
+            _overlay_backdrop(ctx);
             _streaming_bottom_bar(ctx);
             _streaming_perf_stat(ctx);
         }
@@ -74,10 +79,10 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bo
                 stream_overlay_showing = false;
             }
             break;
-        case NAVKEY_CONFIRM:
+        case NAVKEY_NEGATIVE:
             bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_quit_center, (void *)down);
             break;
-        case NAVKEY_ALTERNATIVE:
+        case NAVKEY_MENU:
             bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_suspend_center, (void *)down);
             break;
         default:
@@ -129,6 +134,17 @@ void _streaming_error_window(struct nk_context *ctx)
     nk_end(ctx);
 }
 
+void _overlay_backdrop(struct nk_context *ctx)
+{
+    if (!nk_window_is_any_hovered(ctx))
+    {
+        if (nk_input_mouse_clicked(&ctx->input, NK_BUTTON_LEFT, nk_rect(0, 0, gui_display_width, gui_display_height)))
+        {
+            stream_overlay_showing = false;
+        }
+    }
+}
+
 void _streaming_perf_stat(struct nk_context *ctx)
 {
     _overlay_windows_push_style(ctx);
@@ -157,44 +173,6 @@ void _streaming_perf_stat(struct nk_context *ctx)
     wndpos = nk_window_get_position(ctx);
     nk_end(ctx);
     _overlay_windows_pop_style(ctx);
-}
-
-void _streaming_bottom_bar(struct nk_context *ctx)
-{
-    const int bar_height = 50 * NK_UI_SCALE;
-    struct nk_style_item window_bg = ctx->style.window.fixed_background;
-    window_bg.data.color.a = 160;
-    nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, window_bg);
-    nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(15, 10));
-    if (nk_begin(ctx, "Overlay BottomBar", nk_rect(0, gui_display_height - bar_height, gui_display_width, bar_height), NK_WINDOW_NO_SCROLLBAR))
-    {
-        nk_layout_row_template_begin_s(ctx, 30);
-        nk_layout_row_template_push_static_s(ctx, 100);
-        nk_layout_row_template_push_variable_s(ctx, 10);
-        nk_layout_row_template_push_static_s(ctx, 100);
-        nk_layout_row_template_end(ctx);
-
-        struct nk_rect bounds = nk_widget_bounds(ctx);
-        _btn_suspend_center.x = nk_rect_center_x(bounds);
-        _btn_suspend_center.y = nk_rect_center_y(bounds);
-        if (nk_button_label(ctx, "<- Games"))
-        {
-            streaming_interrupt(false);
-            stream_overlay_showing = false;
-        }
-        nk_spacing(ctx, 1);
-        bounds = nk_widget_bounds(ctx);
-        _btn_quit_center.x = nk_rect_center_x(bounds);
-        _btn_quit_center.y = nk_rect_center_y(bounds);
-        if (nk_button_label(ctx, "Quit game"))
-        {
-            streaming_interrupt(true);
-            stream_overlay_showing = false;
-        }
-    }
-    nk_end(ctx);
-    nk_style_pop_vec2(ctx);
-    nk_style_pop_style_item(ctx);
 }
 
 void _overlay_windows_push_style(struct nk_context *ctx)
