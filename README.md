@@ -5,9 +5,9 @@ It was originally designed for LG webOS TVs, but may support running in more dev
 
 ## Features
 
-Supports up to 4 controllers
-Utilizes system hardware decoder to get best performance (webOS 3/4)
-Easy to port to other OSes (Now runs on macOS, Linux)
+* Supports up to 4 controllers
+* Utilizes system hardware decoder to get best performance (webOS 3/4)
+* Easy to port to other OSes (Now runs on macOS, Linux)
 
 ## Screenshots
 
@@ -17,6 +17,9 @@ Easy to port to other OSes (Now runs on macOS, Linux)
 
 ![In-game Overlay](https://user-images.githubusercontent.com/830358/106390396-9b7d8d00-642b-11eb-8f34-58ae4f037f2e.png)
 
+## Download
+
+Download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/releases/latest)
 
 ## [Installation Guide](https://github.com/mariotaku/moonlight-tv/wiki/Installation-Guide)
 
