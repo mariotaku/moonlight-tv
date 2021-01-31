@@ -8,6 +8,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include <math.h>
+
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height,
                           bool event_emitted, bool *ever_hovered);
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
@@ -40,6 +42,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     int itemheight = coverheight + winstyle.group_padding.y * 2;
     _applist_rowcount = rowcount;
 
+    struct nk_rect listview_bounds = nk_widget_bounds(ctx);
     if (nk_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
     {
         bool ever_hovered = false;
@@ -66,6 +69,14 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
         nk_list_view_end(&list_view);
     }
+    const float fading_edge_size = 5 * NK_UI_SCALE;
+    struct nk_rect fadingedge_bounds = nk_rect(listview_bounds.x, ceil(listview_bounds.y + listview_bounds.h - fading_edge_size),
+                                               listview_bounds.w, fading_edge_size);
+    struct nk_color bg_color = ctx->style.window.fixed_background.data.color;
+#define nk_withalpha(color, alpha) nk_rgba(color.r, color.g, color.b, alpha)
+    nk_fill_rect_multi_color(&ctx->current->buffer, fadingedge_bounds, nk_withalpha(bg_color, 0), nk_withalpha(bg_color, 0),
+                             nk_withalpha(bg_color, 255), nk_withalpha(bg_color, 255));
+#undef nk_withalpha
     return event_emitted;
 }
 
