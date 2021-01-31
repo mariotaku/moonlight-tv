@@ -1,11 +1,22 @@
 # Moonlight TV
 
-Moonlight TV is a GUI front end for [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
+Moonlight TV is a GUI front end for [Moonlight GameStream Client](https://moonlight-stream.org/). With some components from [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
 It was originally designed for LG webOS TVs, but may support running in more devices in the future.
 
-![Launcher](https://user-images.githubusercontent.com/830358/105636817-60201300-5ead-11eb-80e6-601b89ebcc6f.png)
+## Features
 
-![Settings](https://user-images.githubusercontent.com/830358/105636856-88a80d00-5ead-11eb-9ade-918cd81cabcb.png)
+Supports up to 4 controllers
+Utilizes system hardware decoder to get best performance (webOS 3/4)
+Easy to port to other OSes (Now runs on macOS, Linux)
+
+## Screenshots
+
+![Launcher](https://user-images.githubusercontent.com/830358/106390397-9c162380-642b-11eb-948f-529e7f0d5e5e.png)
+
+![Settings](https://user-images.githubusercontent.com/830358/106390394-9a4c6000-642b-11eb-8870-3c8c6e4a5c78.png)
+
+![In-game Overlay](https://user-images.githubusercontent.com/830358/106390396-9b7d8d00-642b-11eb-8f34-58ae4f037f2e.png)
+
 
 ## [Installation Guide](https://github.com/mariotaku/moonlight-tv/wiki/Installation-Guide)
 
