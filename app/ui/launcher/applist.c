@@ -34,10 +34,10 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     }
 
     // Row width of list item content
-    int rowwidth = nk_widget_width(ctx) - winstyle.group_padding.x * 2 - winstyle.group_border * 2 - winstyle.scrollbar_size.x;
+    int rowwidth = nk_widget_width(ctx) - winstyle.group_padding.x * 2 - winstyle.scrollbar_size.x;
     int itemwidth = (rowwidth - winstyle.spacing.x * (colcount - 1)) / colcount;
-    int coverwidth = itemwidth - winstyle.group_padding.x * 2 - winstyle.group_border * 2, coverheight = coverwidth / 3 * 4;
-    int itemheight = coverheight + winstyle.group_padding.y * 2 + winstyle.group_border * 2;
+    int coverwidth = itemwidth - winstyle.group_padding.x * 2, coverheight = coverwidth / 3 * 4;
+    int itemheight = coverheight + winstyle.group_padding.y * 2;
     _applist_rowcount = rowcount;
 
     if (nk_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))

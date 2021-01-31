@@ -182,7 +182,7 @@ void nk_ext_apply_style(struct nk_context *ctx)
     /* window */
     win->rounding = 0.0f;
     win->spacing = nk_vec2_s(4, 4);
-    win->scrollbar_size = nk_vec2_s(2, 2);
+    win->scrollbar_size = nk_vec2_s(10, 10);
     win->min_size = nk_vec2_s(64, 64);
 
     win->combo_border = 1.0f * NK_UI_SCALE;

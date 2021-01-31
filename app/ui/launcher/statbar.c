@@ -62,6 +62,12 @@ void launcher_statbar(struct nk_context *ctx)
     bool is_running = applist_hovered_item && selected_server_node && selected_server_node->server &&
                       applist_hovered_item->id == selected_server_node->server->currentGame;
 
+    struct nk_rect bar_bounds = nk_widget_bounds(ctx);
+
+    float divider_y = bar_bounds.y - ctx->style.window.spacing.y - ctx->style.window.scrollbar_size.y - ctx->style.scrollh.border - 1 * NK_UI_SCALE;
+    nk_stroke_line(&ctx->current->buffer, bar_bounds.x, divider_y, bar_bounds.x + bar_bounds.w, divider_y,
+                   1 * NK_UI_SCALE, ctx->style.text.color);
+
     nk_layout_row_template_begin_s(ctx, launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static_s(ctx, launcher_bottom_bar_height_dp);
     nk_layout_row_template_push_static_s(ctx, 50);

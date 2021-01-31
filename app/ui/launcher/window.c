@@ -87,6 +87,7 @@ bool launcher_window(struct nk_context *ctx)
     }
 
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
+    nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(0, 0));
     if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, gui_display_width, gui_display_height), window_flags))
     {
         int list_height = nk_window_get_content_inner_size(ctx).y;
@@ -156,6 +157,7 @@ bool launcher_window(struct nk_context *ctx)
         _launcher_modal_popups_show(ctx);
     }
     nk_end(ctx);
+    nk_style_pop_vec2(ctx);
     nk_style_pop_vec2(ctx);
 
     // Why Nuklear why, the button looks like "close" but it actually "hide"

@@ -93,6 +93,7 @@ bool settings_window_close()
 bool settings_window(struct nk_context *ctx)
 {
     struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, gui_logic_width - 240, gui_logic_height - 60);
+    nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2(ctx->style.window.scrollbar_size.x, 0));
     if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -196,6 +197,7 @@ bool settings_window(struct nk_context *ctx)
 #endif
     }
     nk_end(ctx);
+    nk_style_pop_vec2(ctx);
     // Why Nuklear why, the button looks like "close" but it actually "hide"
     if (nk_window_is_hidden(ctx, WINDOW_TITLE))
     {
