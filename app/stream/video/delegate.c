@@ -43,9 +43,13 @@ void _vdec_delegate_cleanup()
 
 int _vdec_delegate_submit(PDECODE_UNIT du)
 {
+    static struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    long ticksms = (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
     if (lastFrameNumber <= 0)
     {
-        vdec_temp_stats.totalFrames = du->frameNumber;
+        vdec_temp_stats.measurementStartTimestamp = ticksms;
+        lastFrameNumber = du->frameNumber;
     }
     else
     {
@@ -55,9 +59,6 @@ int _vdec_delegate_submit(PDECODE_UNIT du)
         lastFrameNumber = du->frameNumber;
     }
     // Flip stats windows roughly every second
-    static struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    long ticksms = (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
     if (ticksms - vdec_temp_stats.measurementStartTimestamp > 1000)
     {
         _vdec_stat_submit(&vdec_temp_stats, ticksms);
