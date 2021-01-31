@@ -28,8 +28,9 @@ void _streaming_bottom_bar(struct nk_context *ctx)
         float action_icon_width = overlay_bottom_bar_height_dp * NK_UI_SCALE;
         float quit_label_width = nk_string_measure_width(ctx, "Quit Game");
         float back_label_width = nk_string_measure_width(ctx, "Games List");
+        float bar_content_height = bar_height - ctx->style.window.padding.y * 2;
 
-        nk_layout_space_push(ctx, nk_rect(0, 0, region.w, 30 * NK_UI_SCALE));
+        nk_layout_space_push(ctx, nk_rect(0, 0, region.w, bar_content_height));
 
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2(0, 0));
         if (nk_group_begin(ctx, "overlay_bottom_buttons", NK_WINDOW_NO_SCROLLBAR))
@@ -64,7 +65,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
         }
         nk_style_pop_vec2(ctx);
 
-        nk_layout_space_push(ctx, nk_rect(0, 0, region.w, 30 * NK_UI_SCALE));
+        nk_layout_space_push(ctx, nk_rect(0, 0, region.w, bar_content_height));
 
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2_s(0, 5));
         if (nk_group_begin(ctx, "overlay_bottom_actions", NK_WINDOW_NO_SCROLLBAR))
