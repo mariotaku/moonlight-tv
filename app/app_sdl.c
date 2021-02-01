@@ -64,8 +64,8 @@ int app_init(int argc, char *argv[])
 APP_WINDOW_CONTEXT app_window_create()
 {
     nk_platform_preinit();
-    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                           WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
+                           SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
 #if TARGET_DESKTOP
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
@@ -117,6 +117,10 @@ static void app_process_events(struct nk_context *ctx)
             else if (evt.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
             {
                 window_focus_gained = false;
+            }
+            else if (evt.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                gui_display_size(ctx, evt.window.data1, evt.window.data2);
             }
         }
 #endif

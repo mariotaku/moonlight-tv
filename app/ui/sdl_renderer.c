@@ -94,7 +94,7 @@ void renderer_setup(int w, int h)
 
 void renderer_submit_frame(void *data1, void *data2)
 {
-    if (!renderer_ready)
+    if (!renderer_ready || !data1)
     {
         return;
     }
