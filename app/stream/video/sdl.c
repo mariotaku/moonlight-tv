@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#define DECODER_BUFFER_SIZE 92 * 1024
+#define DECODER_BUFFER_SIZE 2048 * 1024
 
 static unsigned char *ffmpeg_buffer;
 
