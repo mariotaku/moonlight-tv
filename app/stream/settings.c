@@ -13,6 +13,7 @@
 
 static char *settings_config_dir();
 static void settings_initialize(char *confdir, PCONFIGURATION config);
+static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
 
 PCONFIGURATION settings_load()
@@ -20,7 +21,7 @@ PCONFIGURATION settings_load()
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
     char *confdir = settings_config_dir(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
     settings_initialize(confdir, config);
-    config_file_parse(conffile, config);
+    settings_read(conffile, config);
     free(conffile);
     free(confdir);
     return config;
@@ -110,6 +111,63 @@ bool settings_sops_supported(int w, int h, int fps)
     default:
         return false;
     }
+}
+
+bool settings_read(char *filename, PCONFIGURATION config)
+{
+    FILE *fd = fopen(filename, "r");
+    if (fd == NULL)
+    {
+        fprintf(stderr, "Can't open configuration file: %s\n", filename);
+        return false;
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+
+    while (getline(&line, &len, fd) != -1)
+    {
+        char key[256], valtmp[256];
+        if (sscanf(line, "%s = %s", key, valtmp) == 2)
+        {
+            char *value = strdup(valtmp);
+            if (strcmp(key, "address") == 0)
+            {
+                config->address = value;
+            }
+            else if (strcmp(key, "sops") == 0)
+            {
+                config->sops = strcmp("true", value) == 0;
+                free(value);
+            }
+            else
+            {
+                for (int i = 0; long_options[i].name != NULL; i++)
+                {
+                    if (strcmp(long_options[i].name, key) == 0)
+                    {
+                        if (long_options[i].has_arg == required_argument)
+                            parse_argument(long_options[i].val, value, config);
+                        else if (strcmp("true", value) == 0)
+                            parse_argument(long_options[i].val, NULL, config);
+
+                        switch (long_options[i].val)
+                        {
+                        case 'i':
+                        case 'm':
+                        case 'p':
+                        case 'q':
+                            break;
+                        default:
+                            free(value);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
 }
 
 void settings_write(char *filename, PCONFIGURATION config)

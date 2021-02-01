@@ -30,7 +30,7 @@
 
 #define DECODER_BUFFER_SIZE 92 * 1024
 
-static char *ffmpeg_buffer;
+static unsigned char *ffmpeg_buffer;
 
 static int sdl_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
