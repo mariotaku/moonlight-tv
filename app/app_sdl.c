@@ -70,6 +70,7 @@ APP_WINDOW_CONTEXT app_window_create()
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
+    SDL_SetWindowMinimumSize(win, 640, 400);
 #endif
     sdlCurrentFrame = sdlNextFrame = 0;
     mutex = SDL_CreateMutex();

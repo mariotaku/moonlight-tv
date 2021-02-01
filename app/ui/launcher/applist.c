@@ -29,15 +29,21 @@ static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_resu
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
 {
     struct nk_style_window winstyle = ctx->style.window;
-    int app_len = applist_len(node->apps);
+    int app_len = node->applen;
+
+    // Row width of list item content
+    int rowwidth = nk_widget_width(ctx) - winstyle.group_padding.x * 2 - winstyle.scrollbar_size.x;
+    _applist_colcount = rowwidth / (120 * NK_UI_SCALE);
+    if (!_applist_colcount)
+    {
+        _applist_colcount = 1;
+    }
     int colcount = _applist_colcount, rowcount = app_len / colcount;
     if (app_len && app_len % colcount)
     {
         rowcount++;
     }
 
-    // Row width of list item content
-    int rowwidth = nk_widget_width(ctx) - winstyle.group_padding.x * 2 - winstyle.scrollbar_size.x;
     int itemwidth = (rowwidth - winstyle.spacing.x * (colcount - 1)) / colcount;
     int coverwidth = itemwidth - winstyle.group_padding.x * 2, coverheight = coverwidth / 3 * 4;
     int itemheight = coverheight + winstyle.group_padding.y * 2;
@@ -278,12 +284,18 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
             int rowheight = (list_view.total_height - spacing * (_applist_rowcount - 1)) / _applist_rowcount;
             // Fully visible rows
             int full_rows = list_view_bounds.h / (rowheight + spacing);
+            if (!full_rows)
+            {
+                // If the screen is so tiny, focing to 1 row
+                full_rows = 1;
+            }
 
             int index = applist_index(node->apps, item);
-            if (index >= 0 && full_rows)
+            if (index >= 0)
             {
                 // Row index for selected item
                 int row = index / _applist_colcount;
+                // Only change list offset if select row is not fully visible
                 if (row < list_view.begin || row >= list_view.begin + full_rows)
                 {
                     // Scroll the list if selected item is out of bounds

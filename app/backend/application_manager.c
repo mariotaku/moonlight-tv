@@ -52,6 +52,7 @@ PAPP_DLIST application_manager_list_of(const char *address)
 bool _application_manager_applist_result(PSERVER_LIST node, PAPP_DLIST list)
 {
     node->apps = list;
+    node->applen = list ? applist_len(list) : 0;
     return true;
 }
 
