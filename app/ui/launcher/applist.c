@@ -21,6 +21,7 @@ PAPP_DLIST applist_hovered_item = NULL;
 static PAPP_DLIST applist_hover_request = NULL;
 static PAPP_DLIST _applist_visible_start = NULL;
 static struct nk_list_view list_view;
+static struct nk_rect list_view_bounds;
 static int _applist_colcount = 5;
 static int _applist_rowcount = 0;
 static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_resume_center = {0, 0}, applist_focused_close_center = {0, 0};
@@ -42,9 +43,11 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     int itemheight = coverheight + winstyle.group_padding.y * 2;
     _applist_rowcount = rowcount;
 
-    struct nk_rect listview_bounds = nk_widget_bounds(ctx);
+    list_view_bounds = nk_widget_bounds(ctx);
+    int scroll_diff;
     if (nk_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
     {
+        scroll_diff = list_view.scroll_value;
         bool ever_hovered = false;
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
@@ -68,10 +71,17 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
         }
 
         nk_list_view_end(&list_view);
+        scroll_diff = list_view.scroll_value - scroll_diff;
+    }
+    if (applist_hover_request)
+    {
+        applist_focused_item_center.y += scroll_diff;
+        bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_item_center, NULL);
+        applist_hover_request = NULL;
     }
     const float fading_edge_size = 5 * NK_UI_SCALE;
-    struct nk_rect fadingedge_bounds = nk_rect(listview_bounds.x, ceil(listview_bounds.y + listview_bounds.h - fading_edge_size),
-                                               listview_bounds.w, fading_edge_size);
+    struct nk_rect fadingedge_bounds = nk_rect(list_view_bounds.x, ceil(list_view_bounds.y + list_view_bounds.h - fading_edge_size),
+                                               list_view_bounds.w, fading_edge_size);
     struct nk_color bg_color = ctx->style.window.fixed_background.data.color;
 #define nk_withalpha(color, alpha) nk_rgba(color.r, color.g, color.b, alpha)
     nk_fill_rect_multi_color(&ctx->current->buffer, fadingedge_bounds, nk_withalpha(bg_color, 0), nk_withalpha(bg_color, 0),
@@ -109,8 +119,6 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         // Send mouse pointer to the item
         applist_focused_item_center.x = nk_rect_center_x(tmp_bounds);
         applist_focused_item_center.y = nk_rect_center_y(tmp_bounds);
-        bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_item_center, NULL);
-        applist_hover_request = NULL;
     }
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
@@ -266,12 +274,22 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
         applist_hover_request = item;
         if (_applist_rowcount)
         {
-            int rowheight = list_view.total_height / _applist_rowcount;
+            int spacing = list_view.ctx->style.window.spacing.y;
+            int rowheight = (list_view.total_height - spacing * (_applist_rowcount - 1)) / _applist_rowcount;
+            // Fully visible rows
+            int full_rows = list_view_bounds.h / (rowheight + spacing);
+
             int index = applist_index(node->apps, item);
-            if (index >= 0)
+            if (index >= 0 && full_rows)
             {
+                // Row index for selected item
                 int row = index / _applist_colcount;
-                *list_view.scroll_pointer = rowheight * row;
+                if (row < list_view.begin || row >= list_view.begin + full_rows)
+                {
+                    // Scroll the list if selected item is out of bounds
+                    int new_row = row > 0 ? row - (full_rows - 1) : 0;
+                    *list_view.scroll_pointer = (rowheight + spacing) * new_row;
+                }
             }
         }
     }
