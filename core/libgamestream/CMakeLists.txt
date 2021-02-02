@@ -35,6 +35,6 @@ target_include_directories(gamestream PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 )
 
-target_link_libraries(gamestream moonlight-common-c ${CURL_LIBRARIES} ${OPENSSL_LIBRARIES} ${EXPAT_LIBRARIES} ${LIBUUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+target_link_libraries(gamestream moonlight-common-c ${CURL_LIBRARIES} ${OPENSSL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 install(TARGETS gamestream DESTINATION ${CMAKE_INSTALL_LIBDIR})
