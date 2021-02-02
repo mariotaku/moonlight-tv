@@ -53,12 +53,13 @@ elseif (TARGET_DESKTOP)
 endif()
 
 add_subdirectory(core/moonlight-common-c)
+add_subdirectory(core/libgamestream)
 
 set(SOURCES
     app/main.c
     app/backend/backend_root.c
     app/backend/computer_manager.c
-    app/backend/computer_discovery.c
+    app/backend/pcmanager/discovery.c
     app/backend/application_manager.c
     app/backend/coverloader.c
     app/backend/error_manager.c
@@ -80,10 +81,6 @@ set(SOURCES
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
-    app/util/gs/clientex.c
-    core/moonlight-embedded/libgamestream/http.c
-    core/moonlight-embedded/libgamestream/mkcert.c
-    core/moonlight-embedded/libgamestream/xml.c
 )
 
 if (TARGET_WEBOS)
@@ -118,8 +115,7 @@ elseif (TARGET_DESKTOP)
         app/stream/audio/sdl.c
         app/stream/video/sdl.c
         app/stream/video/delegate.c
-        core/moonlight-embedded/src/sdl.c
-        core/moonlight-embedded/src/video/ffmpeg.c
+        app/stream/video/ffmpeg.c
     )
 endif()
 
@@ -133,7 +129,7 @@ set_target_properties(moonlight PROPERTIES
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/moonlight-embedded)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
@@ -144,8 +140,8 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
  ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES}
- m pthread
- moonlight-common-c
+ m ${CMAKE_THREAD_LIBS_INIT}
+ moonlight-common-c gamestream
 )
 
 if (TARGET_WEBOS)

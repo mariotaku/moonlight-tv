@@ -3,8 +3,8 @@
 
 #include <stdarg.h>
 
-#include "src/connection.h"
-#include "src/platform.h"
+#include "connection.h"
+#include "platform.h"
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "input/absinput.h"

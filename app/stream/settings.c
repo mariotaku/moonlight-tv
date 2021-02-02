@@ -1,4 +1,3 @@
-#include "src/config.c"
 #include "settings.h"
 
 #include <errno.h>
@@ -6,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include <sys/stat.h>
 
@@ -15,6 +15,43 @@ static char *settings_config_dir();
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
+static void parse_argument(int c, char* value, PCONFIGURATION config);
+
+#define write_config_string(fd, key, value) fprintf(fd, "%s = %s\n", key, value)
+#define write_config_int(fd, key, value) fprintf(fd, "%s = %d\n", key, value)
+#define write_config_bool(fd, key, value) fprintf(fd, "%s = %s\n", key, value ? "true":"false")
+
+static struct option long_options[] = {
+  {"720", no_argument, NULL, 'a'},
+  {"1080", no_argument, NULL, 'b'},
+  {"4k", no_argument, NULL, '0'},
+  {"width", required_argument, NULL, 'c'},
+  {"height", required_argument, NULL, 'd'},
+  {"bitrate", required_argument, NULL, 'g'},
+  {"packetsize", required_argument, NULL, 'h'},
+  {"app", required_argument, NULL, 'i'},
+  {"input", required_argument, NULL, 'j'},
+  {"mapping", required_argument, NULL, 'k'},
+  {"nosops", no_argument, NULL, 'l'},
+  {"audio", required_argument, NULL, 'm'},
+  {"localaudio", no_argument, NULL, 'n'},
+  {"config", required_argument, NULL, 'o'},
+  {"platform", required_argument, NULL, 'p'},
+  {"save", required_argument, NULL, 'q'},
+  {"keydir", required_argument, NULL, 'r'},
+  {"remote", no_argument, NULL, 's'},
+  {"windowed", no_argument, NULL, 't'},
+  {"surround", no_argument, NULL, 'u'},
+  {"fps", required_argument, NULL, 'v'},
+  {"codec", required_argument, NULL, 'x'},
+  {"unsupported", no_argument, NULL, 'y'},
+  {"quitappafter", no_argument, NULL, '1'},
+  {"viewonly", no_argument, NULL, '2'},
+  {"rotate", required_argument, NULL, '3'},
+  {"verbose", no_argument, NULL, 'z'},
+  {"debug", no_argument, NULL, 'Z'},
+  {0, 0, 0, 0},
+};
 
 PCONFIGURATION settings_load()
 {
@@ -224,4 +261,101 @@ char *settings_config_dir()
         }
     }
     return confdir;
+}
+
+ void parse_argument(int c, char* value, PCONFIGURATION config) {
+  switch (c) {
+  case 'a':
+    config->stream.width = 1280;
+    config->stream.height = 720;
+    break;
+  case 'b':
+    config->stream.width = 1920;
+    config->stream.height = 1080;
+    break;
+  case '0':
+    config->stream.width = 3840;
+    config->stream.height = 2160;
+    break;
+  case 'c':
+    config->stream.width = atoi(value);
+    break;
+  case 'd':
+    config->stream.height = atoi(value);
+    break;
+  case 'g':
+    config->stream.bitrate = atoi(value);
+    break;
+  case 'h':
+    config->stream.packetSize = atoi(value);
+    break;
+  case 'i':
+    config->app = value;
+    break;
+  case 'l':
+    config->sops = false;
+    break;
+  case 'm':
+    config->audio_device = value;
+    break;
+  case 'n':
+    config->localaudio = true;
+    break;
+  case 'p':
+    config->platform = value;
+    break;
+  case 'q':
+    config->config_file = value;
+    break;
+  case 'r':
+    strcpy(config->key_dir, value);
+    break;
+  case 's':
+    config->stream.streamingRemotely = 1;
+    break;
+  case 't':
+    config->fullscreen = false;
+    break;
+  case 'u':
+    config->stream.audioConfiguration = AUDIO_CONFIGURATION_51_SURROUND;
+    break;
+  case 'v':
+    config->stream.fps = atoi(value);
+    break;
+  case 'x':
+    if (strcasecmp(value, "auto") == 0)
+      config->codec = CODEC_UNSPECIFIED;
+    else if (strcasecmp(value, "h264") == 0)
+      config->codec = CODEC_H264;
+    if (strcasecmp(value, "h265") == 0 || strcasecmp(value, "hevc") == 0)
+      config->codec = CODEC_HEVC;
+    break;
+  case 'y':
+    config->unsupported = true;
+    break;
+  case '1':
+    config->quitappafter = true;
+    break;
+  case '2':
+    config->viewonly = true;
+    break;
+  case '3':
+    config->rotate = atoi(value);
+    break;
+  case 'z':
+    config->debug_level = 1;
+    break;
+  case 'Z':
+    config->debug_level = 2;
+    break;
+  case 1:
+    if (config->action == NULL)
+      config->action = value;
+    else if (config->address == NULL)
+      config->address = value;
+    else {
+      perror("Too many options");
+      exit(-1);
+    }
+  }
 }

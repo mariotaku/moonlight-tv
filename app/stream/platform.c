@@ -1,5 +1,5 @@
 
-#include "src/platform.h"
+#include "platform.h"
 
 #include <Limelight.h>
 

@@ -21,8 +21,8 @@
 #include "util/user_event.h"
 #include "util/lruc.h"
 #include "util/path.h"
-#include "util/gs/clientex.h"
 
+#include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
 enum IMAGE_STATE_T

@@ -2,7 +2,7 @@
 #include "absinput.h"
 
 // Include source directly in order to use static functions
-#include "src/input/sdl.c"
+#include "sdl_emb.c"
 #include "stream/session.h"
 #include "util/user_event.h"
 
@@ -207,6 +207,7 @@ bool absinput_controllerdevice_event(SDL_Event ev)
     default:
         break;
     }
+    return false;
 }
 
 void sdlinput_handle_input_result(SDL_Event ev, int ret)

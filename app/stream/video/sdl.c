@@ -18,9 +18,9 @@
  */
 
 #include "video.h"
-#include "src/video/ffmpeg.h"
+#include "ffmpeg.h"
 
-#include "src/sdl.h"
+#include "sdlvid.h"
 
 #include <SDL.h>
 #include <SDL_thread.h>
