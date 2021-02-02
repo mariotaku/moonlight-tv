@@ -51,7 +51,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
     list_view_bounds = nk_widget_bounds(ctx);
     int scroll_diff;
-    if (nk_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
+    if (nk_smooth_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
     {
         scroll_diff = list_view.scroll_value;
         bool ever_hovered = false;
@@ -76,7 +76,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
             applist_hovered_item = NULL;
         }
 
-        nk_list_view_end(&list_view);
+        nk_smooth_list_view_end(&list_view);
         scroll_diff = list_view.scroll_value - scroll_diff;
     }
     if (applist_hover_request)
@@ -300,7 +300,12 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
                 {
                     // Scroll the list if selected item is out of bounds
                     int new_row = row > 0 ? row - (full_rows - 1) : 0;
-                    *list_view.scroll_pointer = (rowheight + spacing) * new_row;
+                    int max_scroll = list_view.total_height - list_view_bounds.h;
+                    int new_scroll = (rowheight + spacing) * new_row;
+                    if (new_scroll > max_scroll) {
+                        new_scroll = max_scroll + spacing;
+                    }
+                    *list_view.scroll_pointer = new_scroll;
                 }
             }
         }

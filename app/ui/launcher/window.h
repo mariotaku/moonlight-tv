@@ -14,6 +14,7 @@
 #include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
 #include "nuklear/ext_imgview.h"
+#include "nuklear/ext_smooth_list_view.h"
 #include "nuklear/platform_sprites.h"
 #endif
 
