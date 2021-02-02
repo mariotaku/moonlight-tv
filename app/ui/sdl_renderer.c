@@ -97,8 +97,9 @@ void renderer_submit_frame(void *data1, void *data2)
 {
     if (SDL_LockMutex(mutex) == 0)
     {
-        if (!renderer_ready || !data1)
+        if (!renderer_ready || !data1 || !data2)
         {
+            SDL_UnlockMutex(mutex);
             return;
         }
         uint8_t **image = data1;
