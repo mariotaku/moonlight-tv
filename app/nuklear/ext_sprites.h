@@ -13,18 +13,18 @@ void nk_ext_sprites_destroy();
 
 #ifdef NK_IMPLEMENTATION
 
-static struct nk_image gui_spritesheet;
+static struct nk_image ui_spritesheet;
 struct nk_spritesheet_ui sprites_ui;
 
 void nk_ext_sprites_init()
 {
-    nk_imageloadm(res_spritesheet_ui_3x_data, res_spritesheet_ui_3x_size, &gui_spritesheet);
-    nk_image2texture(&gui_spritesheet);
-    nk_spritesheet_init_ui_3x(gui_spritesheet, &sprites_ui);
+    nk_imageloadm(res_spritesheet_ui_3x_data, res_spritesheet_ui_3x_size, &ui_spritesheet);
+    nk_image2texture(&ui_spritesheet);
+    nk_spritesheet_init_ui_3x(ui_spritesheet, &sprites_ui);
 }
 
 void nk_ext_sprites_destroy()
 {
-    nk_imagetexturefree(&gui_spritesheet);
+    nk_imagetexturefree(&ui_spritesheet);
 }
 #endif

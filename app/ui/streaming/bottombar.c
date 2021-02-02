@@ -1,7 +1,7 @@
 #include "overlay.h"
 #include "priv.h"
 
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "stream/input/absinput.h"
 
 static const struct nk_vec2 statbar_image_padding = nk_vec2_s_const(2, 2);
@@ -14,7 +14,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
     window_bg.data.color.a = 160;
     nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, window_bg);
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 10));
-    if (nk_begin(ctx, "Overlay BottomBar", nk_rect(0, gui_display_height - bar_height, gui_display_width, bar_height), NK_WINDOW_NO_SCROLLBAR))
+    if (nk_begin(ctx, "Overlay BottomBar", nk_rect(0, ui_display_height - bar_height, ui_display_width, bar_height), NK_WINDOW_NO_SCROLLBAR))
     {
         nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
         nk_style_push_float(ctx, &ctx->style.window.group_border, 0);

@@ -28,7 +28,7 @@
 #include "stream/input/sdlinput.h"
 #include "platform/sdl/events.h"
 #include "platform/sdl/navkey_sdl.h"
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "util/user_event.h"
 
 #if OS_WEBOS
@@ -121,14 +121,14 @@ static void app_process_events(struct nk_context *ctx)
             }
             else if (evt.window.event == SDL_WINDOWEVENT_RESIZED)
             {
-                gui_display_size(ctx, evt.window.data1, evt.window.data2);
+                ui_display_size(ctx, evt.window.data1, evt.window.data2);
             }
         }
 #endif
         else if (SDL_IS_INPUT_EVENT(evt))
         {
             inputmgr_sdl_handle_event(evt);
-            block_steam_inputevent |= gui_should_block_input();
+            block_steam_inputevent |= ui_should_block_input();
 
             // Those are input events
             NAVKEY navkey = navkey_from_sdl(evt);
@@ -162,7 +162,7 @@ static void app_process_events(struct nk_context *ctx)
                     SDL_webOSCursorVisibility(SDL_FALSE);
                 }
 #endif
-                gui_dispatch_navkey(ctx, navkey, down, timestamp);
+                ui_dispatch_navkey(ctx, navkey, down, timestamp);
             }
             else if (evt.type == SDL_MOUSEMOTION)
             {
@@ -172,7 +172,7 @@ static void app_process_events(struct nk_context *ctx)
         else if (evt.type == SDL_USEREVENT)
         {
             backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-            gui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
+            ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
         }
         else if (evt.type == SDL_QUIT)
         {
@@ -195,11 +195,11 @@ void app_main_loop(void *data)
 
     app_process_events(ctx);
 
-    bool cont = gui_root(ctx);
+    bool cont = ui_root(ctx);
 
     /* Draw */
     {
-        gui_render_background();
+        ui_render_background();
         nk_platform_render();
         SDL_GL_SwapWindow(win);
     }

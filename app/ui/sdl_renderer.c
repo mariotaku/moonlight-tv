@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #include "sdl_renderer.h"
-#include "gui_root.h"
+#include "root.h"
 
 #define GL_GLEXT_PROTOTYPES
 

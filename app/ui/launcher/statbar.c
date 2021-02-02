@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "stream/input/absinput.h"
 
 static const struct nk_vec2 statbar_image_padding = nk_vec2_s_const(2, 2);

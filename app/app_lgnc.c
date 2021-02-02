@@ -21,7 +21,7 @@
 #include "backend/backend_root.h"
 #include "stream/input/absinput.h"
 #include "stream/input/lgnc.h"
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "ui/config.h"
 #include "util/bus.h"
 #include "util/user_event.h"
@@ -95,7 +95,7 @@ static void app_process_events(struct nk_context *ctx)
             }
             default:
                 backend_dispatch_userevent(which, data1, data2);
-                gui_dispatch_userevent(which, data1, data2);
+                ui_dispatch_userevent(which, data1, data2);
                 break;
             }
         }
@@ -109,11 +109,11 @@ void app_main_loop(void *data)
 
     app_process_events(ctx);
 
-    bool cont = gui_root(ctx);
+    bool cont = ui_root(ctx);
 
     /* Draw */
     {
-        gui_render_background();
+        ui_render_background();
         /* 
          * IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
          * with blending, scissor, face culling, depth test and viewport and

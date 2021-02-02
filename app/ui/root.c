@@ -6,13 +6,13 @@
 #include <GL/gl.h>
 #endif
 
-#include "gui_root.h"
-#include "ui/config.h"
+#include "root.h"
+#include "config.h"
 
 #include "stream/session.h"
 
 #include "launcher/window.h"
-#include "settings_window.h"
+#include "settings/window.h"
 #include "streaming/overlay.h"
 
 #include "util/bus.h"
@@ -24,14 +24,14 @@
 #include "sdl_renderer.h"
 #endif
 
-short gui_display_width, gui_display_height;
-short gui_logic_width, gui_logic_height;
+short ui_display_width, ui_display_height;
+short ui_logic_width, ui_logic_height;
 
-bool gui_settings_showing;
+bool ui_settings_showing;
 bool ui_fake_mouse_click_started;
 enum UI_INPUT_MODE ui_input_mode;
 
-static bool gui_send_faketouch_cancel;
+static bool ui_send_faketouch_cancel;
 static bool ui_fake_mouse_event_received;
 static struct
 {
@@ -39,31 +39,31 @@ static struct
     void *down;
 } ui_pending_faketouch;
 
-void gui_root_init(struct nk_context *ctx)
+void ui_root_init(struct nk_context *ctx)
 {
     launcher_window_init(ctx);
     settings_window_init(ctx);
     streaming_overlay_init(ctx);
-    gui_send_faketouch_cancel = false;
+    ui_send_faketouch_cancel = false;
     ui_fake_mouse_click_started = false;
     ui_input_mode = UI_INPUT_MODE_POINTER;
 }
 
-void gui_root_destroy()
+void ui_root_destroy()
 {
     launcher_window_destroy();
 }
 
-bool gui_root(struct nk_context *ctx)
+bool ui_root(struct nk_context *ctx)
 {
     if (ui_fake_mouse_event_received && ui_pending_faketouch.center)
     {
         bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, ui_pending_faketouch.center, (void *)ui_pending_faketouch.down);
     }
-    else if (gui_send_faketouch_cancel)
+    else if (ui_send_faketouch_cancel)
     {
         bus_pushevent(USER_FAKEINPUT_MOUSE_CANCEL, NULL, NULL);
-        gui_send_faketouch_cancel = false;
+        ui_send_faketouch_cancel = false;
     }
     ui_fake_mouse_event_received = false;
     ui_pending_faketouch.center = NULL;
@@ -72,7 +72,7 @@ bool gui_root(struct nk_context *ctx)
     {
         if (launcher_window(ctx))
         {
-            if (gui_settings_showing)
+            if (ui_settings_showing)
             {
                 if (!settings_window(ctx))
                 {
@@ -92,7 +92,7 @@ bool gui_root(struct nk_context *ctx)
     }
 }
 
-void gui_render_background()
+void ui_render_background()
 {
 #if OS_WEBOS
     glClearColor(0, 0, 0, 0);
@@ -110,7 +110,7 @@ void gui_render_background()
 #endif
 }
 
-bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2)
+bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2)
 {
     bool handled = false;
     handled |= launcher_window_dispatch_userevent(which, data1, data2);
@@ -142,7 +142,7 @@ bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void
             nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, data2 ? nk_true : nk_false);
             if (!data2)
             {
-                gui_send_faketouch_cancel = true;
+                ui_send_faketouch_cancel = true;
                 ui_fake_mouse_click_started = false;
             }
             break;
@@ -173,27 +173,27 @@ bool gui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void
     return handled;
 }
 
-bool gui_should_block_input()
+bool ui_should_block_input()
 {
     bool ret = false;
     ret |= streaming_overlay_should_block_input();
     return ret;
 }
 
-void gui_display_size(struct nk_context *ctx, short width, short height)
+void ui_display_size(struct nk_context *ctx, short width, short height)
 {
-    gui_display_width = width;
-    gui_display_height = height;
-    gui_logic_width = width / NK_UI_SCALE;
-    gui_logic_height = height / NK_UI_SCALE;
+    ui_display_width = width;
+    ui_display_height = height;
+    ui_logic_width = width / NK_UI_SCALE;
+    ui_logic_height = height / NK_UI_SCALE;
 }
 
-bool gui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down, uint32_t timestamp)
+bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down, uint32_t timestamp)
 {
     bool handled = false;
     if (streaming_status == STREAMING_NONE)
     {
-        handled |= handled || (!down && gui_settings_showing && settings_window_dispatch_navkey(ctx, key));
+        handled |= handled || (!down && ui_settings_showing && settings_window_dispatch_navkey(ctx, key));
         handled |= handled || launcher_window_dispatch_navkey(ctx, key, down, timestamp);
     }
     else

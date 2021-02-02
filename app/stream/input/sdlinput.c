@@ -41,9 +41,35 @@ bool absinput_gamepad_present(int which)
     return (activeGamepadMask & (1 << which)) != 0;
 }
 
-void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor)
+void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor, unsigned short high_freq_motor)
 {
-    sdlinput_rumble(controllerNumber, lowFreqMotor, highFreqMotor);
+    if (controller_id >= 4)
+        return;
+
+    PGAMEPAD_STATE state = &gamepads[controller_id];
+
+    SDL_Haptic *haptic = state->haptic;
+    if (!haptic)
+        return;
+
+    if (state->haptic_effect_id >= 0)
+        SDL_HapticDestroyEffect(haptic, state->haptic_effect_id);
+
+    if (low_freq_motor == 0 && high_freq_motor == 0)
+        return;
+
+    SDL_HapticEffect effect;
+    SDL_memset(&effect, 0, sizeof(effect));
+    effect.type = SDL_HAPTIC_LEFTRIGHT;
+    effect.leftright.length = SDL_HAPTIC_INFINITY;
+
+    // SDL haptics range from 0-32767 but XInput uses 0-65535, so divide by 2 to correct for SDL's scaling
+    effect.leftright.large_magnitude = low_freq_motor / 2;
+    effect.leftright.small_magnitude = high_freq_motor / 2;
+
+    state->haptic_effect_id = SDL_HapticNewEffect(haptic, &effect);
+    if (state->haptic_effect_id >= 0)
+        SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
 static bool nocontrol_handle_event(SDL_Event ev)

@@ -1,7 +1,7 @@
 #include "nuklear/platform_sprites.h"
 #include "nuklear/ext_sprites.h"
 
-#include "ui/gui_root.h"
+#include "ui/root.h"
 
 struct nk_image ic_navkey_cancel()
 {

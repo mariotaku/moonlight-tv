@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "ui/fonts.h"
 #include "backend/computer_manager.h"
 
@@ -20,7 +20,7 @@ void _pairing_window(struct nk_context *ctx)
         message_height = nk_text_wrap_measure_height(ctx, message_width, message, strlen(message)) + 1;
     }
     int dialog_height = dec_size.t + message_height + ctx->style.window.spacing.y + 50 * NK_UI_SCALE + 12 * NK_UI_SCALE + dec_size.b;
-    struct nk_rect s = nk_rect_centered(gui_display_width, gui_display_height, dialog_width, dialog_height);
+    struct nk_rect s = nk_rect_centered(ui_display_width, ui_display_height, dialog_width, dialog_height);
     if (nk_begin(ctx, "Pairing", s, NK_WINDOW_BORDER | NK_WINDOW_TITLE | NK_WINDOW_NOT_INTERACTIVE | NK_WINDOW_NO_SCROLLBAR))
     {
         nk_layout_row_dynamic(ctx, message_height, 1);
@@ -35,7 +35,7 @@ void _pairing_window(struct nk_context *ctx)
 
 void _quitapp_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
+    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height, 330, 60);
     if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);

@@ -12,8 +12,8 @@
 #include "libgamestream/errors.h"
 
 #include "backend/application_manager.h"
-#include "ui/gui_root.h"
-#include "ui/settings_window.h"
+#include "ui/root.h"
+#include "ui/settings/window.h"
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
@@ -49,7 +49,7 @@ static void _launcher_modal_flags_update();
 void _launcher_modal_popups_show(struct nk_context *ctx);
 void _launcher_modal_windows_show(struct nk_context *ctx);
 
-#define launcher_blocked() ((_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW) || gui_settings_showing)
+#define launcher_blocked() ((_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW) || ui_settings_showing)
 
 uint32_t _launcher_modals;
 bool _launcher_showing_combo;
@@ -88,7 +88,7 @@ bool launcher_window(struct nk_context *ctx)
 
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(0, 0));
-    if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, gui_display_width, gui_display_height), window_flags))
+    if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, ui_display_width, ui_display_height), window_flags))
     {
         int list_height = nk_window_get_content_inner_size(ctx).y;
         bool show_server_error_popup = false, show_pairing_error_popup = false,

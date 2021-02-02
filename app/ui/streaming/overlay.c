@@ -1,6 +1,6 @@
 #include "overlay.h"
 #include "priv.h"
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "ui/messages.h"
 #include "ui/fonts.h"
 
@@ -100,7 +100,7 @@ bool streaming_overlay_should_block_input()
 
 void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, 330, 60);
+    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height, 330, 60);
     if (nk_begin(ctx, "Connection", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -125,7 +125,7 @@ void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
 void _streaming_error_window(struct nk_context *ctx)
 {
     char *message = streaming_errmsg[0] ? streaming_errmsg : (char *)MSG_GS_ERRNO[-streaming_errno];
-    enum nk_dialog_result result = nk_dialog_begin(ctx, gui_display_width, gui_display_height, "Streaming Error",
+    enum nk_dialog_result result = nk_dialog_begin(ctx, ui_display_width, ui_display_height, "Streaming Error",
                                                    message, "OK", NULL, NULL);
     if (result != NK_DIALOG_RUNNING)
     {
@@ -138,7 +138,7 @@ void _overlay_backdrop(struct nk_context *ctx)
 {
     if (!nk_window_is_any_hovered(ctx))
     {
-        if (nk_input_mouse_clicked(&ctx->input, NK_BUTTON_LEFT, nk_rect(0, 0, gui_display_width, gui_display_height)))
+        if (nk_input_mouse_clicked(&ctx->input, NK_BUTTON_LEFT, nk_rect(0, 0, ui_display_width, ui_display_height)))
         {
             stream_overlay_showing = false;
         }

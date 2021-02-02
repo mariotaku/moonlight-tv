@@ -99,6 +99,4 @@ static const short keyCodes5[] = {
   0x5C, //SDLK_RGUI
 };
 
-void sdlinput_init(char* mappings);
 int sdlinput_handle_event(SDL_Event* event);
-void sdlinput_rumble(unsigned short controller_id, unsigned short low_freq_motor, unsigned short high_freq_motor);

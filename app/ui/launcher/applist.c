@@ -2,7 +2,7 @@
 #include "backend/application_manager.h"
 #include "backend/coverloader.h"
 #include "stream/session.h"
-#include "ui/gui_root.h"
+#include "ui/root.h"
 
 #include "res.h"
 #include "util/bus.h"

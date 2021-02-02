@@ -22,7 +22,7 @@
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "ui/fonts.h"
 #include "util/bus.h"
 
@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
     nk_ext_sprites_init();
     nk_ext_apply_style(ctx);
 
-    gui_root_init(ctx);
+    ui_root_init(ctx);
 
     streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
-    gui_display_size(ctx, WINDOW_WIDTH, WINDOW_HEIGHT);
+    ui_display_size(ctx, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     while (running)
     {
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
     settings_save(app_configuration);
 
-    gui_root_destroy();
+    ui_root_destroy();
 
     nk_ext_sprites_destroy();
 

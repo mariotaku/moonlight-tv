@@ -68,7 +68,7 @@ set(SOURCES
     app/stream/session.c
     app/stream/connection.c
     app/stream/settings.c
-    app/ui/gui_root.c
+    app/ui/root.c
     app/ui/fonts.c
     app/ui/launcher/window.c
     app/ui/launcher/pclist.c
@@ -77,7 +77,7 @@ set(SOURCES
     app/ui/launcher/modals.c
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
-    app/ui/settings_window.c
+    app/ui/settings/window.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c

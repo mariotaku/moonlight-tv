@@ -12,7 +12,7 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
-#include "ui/gui_root.h"
+#include "ui/root.h"
 #include "stream/session.h"
 #include "stream/input/lgnc.h"
 
@@ -58,7 +58,7 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
     }
     // if (keyCond != LGNC_KEY_COND_LAST)
     struct input_event raw_event = keyInput->event;
-    if (streaming_status == STREAMING_STREAMING && !gui_should_block_input())
+    if (streaming_status == STREAMING_STREAMING && !ui_should_block_input())
     {
         absinput_dispatch_mouse_event(posX, posY, key, keyCond, raw_event);
     }

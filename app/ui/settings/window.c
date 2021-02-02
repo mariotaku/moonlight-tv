@@ -1,11 +1,12 @@
+#include "window.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
 #include "stream/settings.h"
-#include "settings_window.h"
-#include "gui_root.h"
+#include "ui/root.h"
 #include "app.h"
 
 #define WINDOW_TITLE "Settings"
@@ -69,11 +70,11 @@ void settings_window_init(struct nk_context *ctx)
 
 bool settings_window_open()
 {
-    if (gui_settings_showing)
+    if (ui_settings_showing)
     {
         return false;
     }
-    gui_settings_showing = true;
+    ui_settings_showing = true;
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
     return true;
@@ -81,18 +82,18 @@ bool settings_window_open()
 
 bool settings_window_close()
 {
-    if (!gui_settings_showing)
+    if (!ui_settings_showing)
     {
         return false;
     }
-    gui_settings_showing = false;
+    ui_settings_showing = false;
     settings_save(app_configuration);
     return true;
 }
 
 bool settings_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s_centered(gui_logic_width, gui_logic_height, gui_logic_width - 240, gui_logic_height - 60);
+    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height, ui_logic_width - 240, ui_logic_height - 60);
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2(ctx->style.window.scrollbar_size.x, 0));
     if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
