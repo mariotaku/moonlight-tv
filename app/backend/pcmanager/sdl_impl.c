@@ -1,12 +1,12 @@
 #include "backend/computer_manager.h"
 #include <SDL.h>
 
-static Uint32 _auto_discovery_cb(Uint32 interval, void *param);
+static Uint32 _auto_discovery_cb(Uint32 interval, void *repeat);
 static SDL_TimerID _auto_discovery_timer;
 
 void computer_manager_auto_discovery_start()
 {
-    _auto_discovery_timer = SDL_AddTimer(30000, _auto_discovery_cb, NULL);
+    _auto_discovery_timer = SDL_AddTimer(30000, _auto_discovery_cb, (void *)1);
 }
 
 void computer_manager_auto_discovery_stop()
@@ -14,8 +14,13 @@ void computer_manager_auto_discovery_stop()
     SDL_RemoveTimer(_auto_discovery_timer);
 }
 
-Uint32 _auto_discovery_cb(Uint32 interval, void *param)
+void computer_manager_auto_discovery_schedule(unsigned int ms)
+{
+    SDL_AddTimer(ms, _auto_discovery_cb, (void *)0);
+}
+
+Uint32 _auto_discovery_cb(Uint32 interval, void *repeat)
 {
     computer_manager_run_scan();
-    return interval;
+    return repeat ? interval : 0;
 }

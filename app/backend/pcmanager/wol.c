@@ -8,14 +8,24 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include <pthread.h>
+
+static void *pcmanager_send_wol_action(void *arg);
 static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
 bool pcmanager_send_wol(PSERVER_LIST node)
 {
+  pthread_t t;
+  pthread_create(&t, NULL, pcmanager_send_wol_action, node->mac);
+  return true;
+}
+
+void *pcmanager_send_wol_action(void *arg)
+{
   uint8_t packet[102];
-  if (!wol_build_packet(node->mac, packet))
+  if (!wol_build_packet((char *)arg, packet))
   {
-    return false;
+    return NULL;
   }
   int broadcast = 1;
   int sockfd;
@@ -23,7 +33,7 @@ bool pcmanager_send_wol(PSERVER_LIST node)
   if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast))
   {
     fprintf(stderr, "setsockopt() error: %d %s\n", errno, strerror(errno));
-    return false;
+    return NULL;
   }
 
   struct sockaddr_in client, server;
@@ -34,7 +44,7 @@ bool pcmanager_send_wol(PSERVER_LIST node)
   if (bind(sockfd, (struct sockaddr *)&client, sizeof(client)))
   {
     fprintf(stderr, "bind() error: %d %s\n", errno, strerror(errno));
-    return false;
+    return NULL;
   }
 
   // Set server endpoint (broadcast)
@@ -42,12 +52,14 @@ bool pcmanager_send_wol(PSERVER_LIST node)
   server.sin_addr.s_addr = inet_addr("255.255.255.255");
   server.sin_port = htons(9);
 
-  if (sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&server, sizeof(server)))
+  sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&server, sizeof(server));
+  if (errno)
   {
     fprintf(stderr, "sendto() error: %d %s\n", errno, strerror(errno));
-    return false;
+    return NULL;
   }
-  return true;
+  computer_manager_auto_discovery_schedule(10000);
+  return NULL;
 }
 
 static bool wol_build_packet(const char *macstr, uint8_t *packet)

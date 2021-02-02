@@ -65,7 +65,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         pthread_create(&update_thread, NULL, _computer_manager_server_update_action, data1);
         return true;
     }
-    case USER_CM_SERVER_UPDATED:
+    case USER_CM_REQ_SERVER_UPDATED:
     {
         PSERVER_LIST orig = data1, update = data2;
         orig->err = update->err;
@@ -92,6 +92,8 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         if (find)
         {
             PSERVER_DATA oldsrv = find->server;
+            find->mac = discovered->mac;
+            find->hostname = discovered->hostname;
             find->err = discovered->err;
             find->errmsg = discovered->errmsg;
             find->server = discovered->server;
@@ -99,6 +101,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
             {
                 free(oldsrv);
             }
+            bus_pushevent(USER_CM_SERVER_UPDATED, find, NULL);
         }
         else
         {
@@ -204,7 +207,7 @@ void *_computer_manager_server_update_action(void *data)
     {
         update->errmsg = gs_error;
     }
-    bus_pushevent(USER_CM_SERVER_UPDATED, node, update);
+    bus_pushevent(USER_CM_REQ_SERVER_UPDATED, node, update);
     return NULL;
 }
 

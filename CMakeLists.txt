@@ -31,6 +31,10 @@ else()
     set(TARGET_DESKTOP TRUE)
 endif()
 
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2 SDL2_image)
@@ -73,6 +77,7 @@ set(SOURCES
     app/ui/fonts.c
     app/ui/launcher/window.c
     app/ui/launcher/pclist.c
+    app/ui/launcher/pcempty.c
     app/ui/launcher/applist.c
     app/ui/launcher/statbar.c
     app/ui/launcher/modals.c
@@ -141,7 +146,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
  ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES}
- m ${CMAKE_THREAD_LIBS_INIT}
+ m Threads::Threads
  moonlight-common-c gamestream
 )
 

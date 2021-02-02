@@ -27,6 +27,9 @@ NK_API nk_bool nk_checkbox_label_std(struct nk_context*, const char* label, bool
 #define nk_rect_s_const(x, y, w, h) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE, (w) * NK_UI_SCALE, (h) * NK_UI_SCALE}
 #define nk_rect_centered(pw, ph, w, h) nk_rect(((pw) - (w)) / 2, ((ph) - (h)) / 2, w, h)
 #define nk_rect_s_centered(pw, ph, w, h) nk_rect(((pw) - (w)) / 2.0 * NK_UI_SCALE, ((ph) - (h)) / 2.0 * NK_UI_SCALE, (w)*NK_UI_SCALE, (h)*NK_UI_SCALE)
+#define nk_rect_s_centered_size(size, w, h) nk_rect(((size).x - (w) * NK_UI_SCALE) / 2.0, ((size).y - (h) * NK_UI_SCALE) / 2.0, (w)*NK_UI_SCALE, (h)*NK_UI_SCALE)
+#define nk_rect_centered_in_rect(bounds, w, h) nk_rect((bounds).x + ((bounds).w - (w)) / 2, (bounds).y + ((bounds).h - (h)) / 2, w, h)
+#define nk_rect_s_centered_in_rect(bounds, cw, ch) nk_rect((bounds).x + ((bounds).w - (cw) * NK_UI_SCALE) / 2, (bounds).y + ((bounds).h - (ch) * NK_UI_SCALE) / 2, (cw) * NK_UI_SCALE, (ch) * NK_UI_SCALE)
 #define nk_vec2_s(x, y) nk_vec2((x) * NK_UI_SCALE, (y) * NK_UI_SCALE)
 #define nk_vec2_s_const(x, y) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE}
 

@@ -31,6 +31,8 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2);
  */
 bool computer_manager_run_scan();
 
+void computer_manager_auto_discovery_schedule(unsigned int ms);
+
 void computer_manager_auto_discovery_start();
 
 void computer_manager_auto_discovery_stop();

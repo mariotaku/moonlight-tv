@@ -44,6 +44,7 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
 
 bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down, uint32_t timestamp);
 void launcher_statbar(struct nk_context *ctx);
+bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
 
 static void _launcher_modal_flags_update();
 void _launcher_modal_popups_show(struct nk_context *ctx);
@@ -149,16 +150,7 @@ bool launcher_window(struct nk_context *ctx)
             }
             else
             {
-                if (nk_group_begin(ctx, "launcher_empty", 0))
-                {
-                    nk_layout_row_dynamic_s(ctx, 50, 1);
-                    nk_label(ctx, "Empty", NK_TEXT_ALIGN_LEFT);
-                    if (nk_button_label(ctx, "Send wake signal"))
-                    {
-                        pcmanager_send_wol(selected);
-                    }
-                    nk_group_end(ctx);
-                }
+                event_emitted |= launcher_pcempty(ctx, selected, event_emitted);
             }
         }
         else
@@ -207,13 +199,20 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     switch (which)
     {
     case USER_CM_SERVER_ADDED:
+    case USER_CM_SERVER_UPDATED:
     {
         // Select saved paired server if not selected before
         PSERVER_LIST node = data1;
-        if (selected_server_node == NULL && node->server && node->server->paired &&
-            app_configuration->address && strcmp(app_configuration->address, node->server->serverInfo.address) == 0)
+        if (node->server && node->server->paired && app_configuration->address)
         {
-            _select_computer(node, node->apps == NULL);
+            if (selected_server_node == NULL && strcmp(app_configuration->address, node->server->serverInfo.address) == 0)
+            {
+                _select_computer(node, node->apps == NULL);
+            }
+            else if (selected_server_node == node && !node->apps)
+            {
+                application_manager_load(node);
+            }
         }
         return true;
     }
