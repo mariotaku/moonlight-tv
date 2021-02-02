@@ -59,6 +59,8 @@ typedef struct _CONFIGURATION {
 #define RES_2K RES_MERGE(2560, 1440)
 #define RES_4K RES_MERGE(3840, 2160)
 
+char *settings_config_dir();
+
 void config_save(char *filename, PCONFIGURATION config);
 
 PCONFIGURATION settings_load();

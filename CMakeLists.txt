@@ -60,6 +60,7 @@ set(SOURCES
     app/backend/backend_root.c
     app/backend/computer_manager.c
     app/backend/pcmanager/discovery.c
+    app/backend/pcmanager/wol.c
     app/backend/application_manager.c
     app/backend/coverloader.c
     app/backend/error_manager.c

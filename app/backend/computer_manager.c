@@ -11,6 +11,7 @@
 
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "util/path.h"
 
 #include "stream/session.h"
 #include "stream/settings.h"
@@ -30,11 +31,14 @@ PSERVER_LIST computer_list;
 static void *_computer_manager_pairing_action(void *data);
 static void *_computer_manager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(void *data);
-static int _server_list_compare_address(PSERVER_LIST other, const void *v);
+static int _server_list_compare_uuid(PSERVER_LIST other, const void *v);
+static void pcmanager_load_known_hosts();
+static void pcmanager_save_known_hosts();
 
 void computer_manager_init()
 {
     computer_list = NULL;
+    pcmanager_load_known_hosts();
     computer_manager_run_scan();
     computer_manager_auto_discovery_start();
 }
@@ -46,7 +50,7 @@ void computer_manager_destroy()
     {
         pthread_kill(computer_manager_polling_thread, 0);
     }
-
+    pcmanager_save_known_hosts();
     serverlist_free(computer_list);
 }
 
@@ -84,7 +88,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
     {
         PSERVER_LIST discovered = data1;
 
-        PSERVER_LIST find = serverlist_find_by(computer_list, discovered->address, _server_list_compare_address);
+        PSERVER_LIST find = serverlist_find_by(computer_list, discovered->uuid, _server_list_compare_uuid);
         if (find)
         {
             PSERVER_DATA oldsrv = find->server;
@@ -121,7 +125,7 @@ bool computer_manager_run_scan()
 
 static int server_list_namecmp(PSERVER_LIST item, const void *address)
 {
-    return strcmp(item->server->address, address);
+    return strcmp(item->server->serverInfo.address, address);
 }
 
 PSERVER_LIST computer_manager_server_of(const char *address)
@@ -204,7 +208,63 @@ void *_computer_manager_server_update_action(void *data)
     return NULL;
 }
 
-int _server_list_compare_address(PSERVER_LIST other, const void *v)
+int _server_list_compare_uuid(PSERVER_LIST other, const void *v)
 {
-    return strcmp(v, other->address);
+    return strcmp(v, other->uuid);
+}
+
+void pcmanager_load_known_hosts()
+{
+    char *confdir = settings_config_dir(), *conffile = path_join(confdir, "known_hosts");
+    FILE *fd = fopen(conffile, "r");
+    free(conffile);
+    if (fd == NULL)
+    {
+        return;
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+
+    while (getline(&line, &len, fd) != -1)
+    {
+        if (strlen(line) > 100)
+        {
+            continue;
+        }
+        char uuid[40], mac[20], hostname[40];
+        if (sscanf(line, "%s %s %s", uuid, mac, hostname) != 3)
+        {
+            continue;
+        }
+        PSERVER_LIST node = serverlist_new();
+        node->uuid = strdup(uuid);
+        node->mac = strdup(mac);
+        node->hostname = strdup(hostname);
+        node->known = true;
+        computer_list = serverlist_append(computer_list, node);
+    }
+    fclose(fd);
+}
+
+void pcmanager_save_known_hosts()
+{
+    char *confdir = settings_config_dir(), *conffile = path_join(confdir, "known_hosts");
+    FILE *fd = fopen(conffile, "w");
+    free(conffile);
+    if (fd == NULL)
+    {
+        return;
+    }
+    SERVER_LIST *cur = computer_list;
+    while (cur != NULL)
+    {
+        if (!cur->known || !cur->uuid || !cur->mac || !cur->hostname)
+        {
+            continue;
+        }
+        fprintf(fd, "%s %s %s\n", cur->uuid, cur->mac, cur->hostname);
+        cur = cur->next;
+    }
+    fclose(fd);
 }

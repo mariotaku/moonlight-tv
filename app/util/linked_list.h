@@ -28,6 +28,7 @@ void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head);
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)()
 {
     LINKEDLIST_TYPE *node = malloc(sizeof(LINKEDLIST_TYPE));
+    memset(node, 0, sizeof(LINKEDLIST_TYPE));
 #if LINKEDLIST_DOUBLE
     node->prev = NULL;
 #endif

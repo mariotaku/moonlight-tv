@@ -22,8 +22,10 @@ typedef struct _APP_DLIST
 
 typedef struct SERVER_LIST_T
 {
-  char *address;
-  char *name;
+  bool known;
+  char *uuid;
+  char *mac;
+  char *hostname;
   PSERVER_DATA server;
   int err;
   const char *errmsg;

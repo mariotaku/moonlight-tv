@@ -138,10 +138,32 @@ bool launcher_window(struct nk_context *ctx)
             {
                 event_emitted |= launcher_applist(ctx, selected, event_emitted);
             }
+            else if (selected->err)
+            {
+                if (nk_group_begin(ctx, "launcher_err", 0))
+                {
+                    nk_layout_row_dynamic_s(ctx, 50, 1);
+                    nk_label(ctx, "Error", NK_TEXT_ALIGN_LEFT);
+                    nk_group_end(ctx);
+                }
+            }
+            else
+            {
+                if (nk_group_begin(ctx, "launcher_empty", 0))
+                {
+                    nk_layout_row_dynamic_s(ctx, 50, 1);
+                    nk_label(ctx, "Empty", NK_TEXT_ALIGN_LEFT);
+                    if (nk_button_label(ctx, "Send wake signal"))
+                    {
+                        pcmanager_send_wol(selected);
+                    }
+                    nk_group_end(ctx);
+                }
+            }
         }
         else
         {
-            if (nk_group_begin(ctx, "launcher_empty", 0))
+            if (nk_group_begin(ctx, "launcher_not_selected", 0))
             {
                 nk_layout_row_dynamic_s(ctx, 50, 1);
                 nk_label(ctx, "Not selected", NK_TEXT_ALIGN_LEFT);
@@ -189,7 +211,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         // Select saved paired server if not selected before
         PSERVER_LIST node = data1;
         if (selected_server_node == NULL && node->server && node->server->paired &&
-            app_configuration->address && strcmp(app_configuration->address, node->address) == 0)
+            app_configuration->address && strcmp(app_configuration->address, node->server->serverInfo.address) == 0)
         {
             _select_computer(node, node->apps == NULL);
         }
@@ -255,7 +277,10 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
 {
     selected_server_node = node;
     pairing_computer_state.state = PS_NONE;
-    app_configuration->address = node->address;
+    if (node->server)
+    {
+        app_configuration->address = strdup(node->server->serverInfo.address);
+    }
     if (load_apps)
     {
         application_manager_load(node);
@@ -301,7 +326,7 @@ void _launcher_modal_flags_update()
     }
     if (selected_server_node != NULL)
     {
-        if (selected_server_node->server == NULL)
+        if (selected_server_node->err)
         {
             _launcher_modals |= LAUNCHER_MODAL_SERVERR;
         }

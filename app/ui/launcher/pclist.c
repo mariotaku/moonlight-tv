@@ -15,7 +15,7 @@ bool pclist_showing;
 
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
 {
-    char *selected = selected_server_node != NULL ? selected_server_node->name : "Computer";
+    char *selected = selected_server_node != NULL ? selected_server_node->hostname : "Computer";
     if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -37,7 +37,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &pclist_focused_center, NULL);
                 pclist_hover_request = NULL;
             }
-            if (nk_combo_item_label(ctx, cur->name, NK_TEXT_LEFT))
+            if (nk_combo_item_label(ctx, cur->hostname, NK_TEXT_LEFT))
             {
                 if (!event_emitted)
                 {

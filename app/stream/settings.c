@@ -11,7 +11,6 @@
 
 #include "util/path.h"
 
-static char *settings_config_dir();
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);

@@ -135,14 +135,17 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
         int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
 
-        PSERVER_LIST node = malloc(sizeof(SERVER_LIST));
-        node->next = NULL;
-        node->address = srvaddr;
-        node->name = srvname;
+        PSERVER_LIST node = serverlist_new();
         node->err = ret;
-        node->apps = NULL;
         if (ret == GS_OK)
         {
+            node->uuid = server->uuid;
+            node->mac = server->mac;
+            node->hostname = server->hostname;
+            if (server->paired)
+            {
+                node->known = true;
+            }
             node->server = server;
             node->errmsg = NULL;
         }

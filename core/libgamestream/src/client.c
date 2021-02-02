@@ -224,6 +224,19 @@ static int load_server_status(PSERVER_DATA server)
       goto cleanup;
     }
 
+    if (xml_search(data->memory, data->size, "uniqueid", &server->uuid) != GS_OK)
+    {
+      goto cleanup;
+    }
+    if (xml_search(data->memory, data->size, "mac", &server->mac) != GS_OK)
+    {
+      goto cleanup;
+    }
+    if (xml_search(data->memory, data->size, "hostname", &server->hostname) != GS_OK)
+    {
+      server->hostname = strdup(server->serverInfo.address);
+    }
+
     if (xml_search(data->memory, data->size, "currentgame", &currentGameText) != GS_OK)
     {
       goto cleanup;
