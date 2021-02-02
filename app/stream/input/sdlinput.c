@@ -240,10 +240,14 @@ void sdlinput_handle_input_result(SDL_Event ev, int ret)
 {
     switch (ret)
     {
+#if TARGET_DESKTOP
     case SDL_MOUSE_GRAB:
+        SDL_SetRelativeMouseMode(SDL_TRUE);
         break;
     case SDL_MOUSE_UNGRAB:
+        SDL_SetRelativeMouseMode(SDL_FALSE);
         break;
+#endif
     case SDL_QUIT_APPLICATION:
     {
         switch (ev.type)

@@ -4,6 +4,7 @@
 
 #include "sdl_renderer.h"
 #include "root.h"
+#include "stream/video/sdlvid.h"
 
 #define GL_GLEXT_PROTOTYPES
 
@@ -94,18 +95,22 @@ void renderer_setup(int w, int h)
 
 void renderer_submit_frame(void *data1, void *data2)
 {
-    if (!renderer_ready || !data1)
+    if (SDL_LockMutex(mutex) == 0)
     {
-        return;
-    }
-    uint8_t **image = data1;
+        if (!renderer_ready || !data1)
+        {
+            return;
+        }
+        uint8_t **image = data1;
 
-    for (int i = 0; i < 3; i++)
-    {
-        glBindTexture(GL_TEXTURE_2D, texture_id[i]);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, i > 0 ? width / 2 : width, i > 0 ? height / 2 : height, GL_LUMINANCE, GL_UNSIGNED_BYTE, image[i]);
+        for (int i = 0; i < 3; i++)
+        {
+            glBindTexture(GL_TEXTURE_2D, texture_id[i]);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, i > 0 ? width / 2 : width, i > 0 ? height / 2 : height, GL_LUMINANCE, GL_UNSIGNED_BYTE, image[i]);
+        }
+        frame_arrived |= true;
+        SDL_UnlockMutex(mutex);
     }
-    frame_arrived |= true;
 }
 
 void renderer_draw()
