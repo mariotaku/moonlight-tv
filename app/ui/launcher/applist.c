@@ -43,7 +43,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     {
         rowcount++;
     }
-
+    int rowspacing = winstyle.spacing.y;
     int itemwidth = (rowwidth - winstyle.spacing.x * (colcount - 1)) / colcount;
     int coverwidth = itemwidth - winstyle.group_padding.x * 2, coverheight = coverwidth / 3 * 4;
     int itemheight = coverheight + winstyle.group_padding.y * 2;
@@ -58,9 +58,15 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
         PAPP_DLIST cur = applist_nth(node->apps, startidx);
-        _applist_visible_start = cur;
-        for (int row = 0; row < list_view.count; row++)
+        int visible_top = list_view.scroll_value, visible_bottom = visible_top + list_view_bounds.h;
+        for (int i = 0; i < list_view.count; i++)
         {
+            int row = list_view.begin + i;
+            int row_top = itemheight * row + rowspacing * row, row_bottom = row_top + itemheight;
+            if (row_top >= visible_top && row_bottom <= visible_bottom)
+            {
+                _applist_visible_start = cur;
+            }
             int col;
             for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
             {
@@ -268,46 +274,36 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
     {
         return true;
     }
-    if (applist_hovered_item == NULL)
+
+    PAPP_DLIST item = applist_hovered_item == NULL ? _applist_visible_start : applist_nth(applist_hovered_item, offset);
+    if (!item || !_applist_rowcount)
     {
-        // Select first visible item
-        applist_hover_request = _applist_visible_start;
         return true;
     }
-    PAPP_DLIST item = applist_nth(applist_hovered_item, offset);
-    if (item)
+    applist_hover_request = item;
+    int spacing = list_view.ctx->style.window.spacing.y;
+    int rowheight = (list_view.total_height - spacing * (_applist_rowcount - 1)) / _applist_rowcount;
+    // Fully visible rows
+    int full_rows = list_view_bounds.h / (rowheight + spacing);
+    if (!full_rows)
     {
-        applist_hover_request = item;
-        if (_applist_rowcount)
-        {
-            int spacing = list_view.ctx->style.window.spacing.y;
-            int rowheight = (list_view.total_height - spacing * (_applist_rowcount - 1)) / _applist_rowcount;
-            // Fully visible rows
-            int full_rows = list_view_bounds.h / (rowheight + spacing);
-            if (!full_rows)
-            {
-                // If the screen is so tiny, focing to 1 row
-                full_rows = 1;
-            }
+        // If the screen is so tiny, focing to 1 row
+        full_rows = 1;
+    }
 
-            int index = applist_index(node->apps, item);
-            if (index >= 0)
-            {
-                // Row index for selected item
-                int row = index / _applist_colcount;
-                // Only change list offset if select row is not fully visible
-                if (row < list_view.begin || row >= list_view.begin + full_rows)
-                {
-                    // Scroll the list if selected item is out of bounds
-                    int new_row = row > 0 ? row - (full_rows - 1) : 0;
-                    int max_scroll = list_view.total_height - list_view_bounds.h;
-                    int new_scroll = (rowheight + spacing) * new_row;
-                    if (new_scroll > max_scroll) {
-                        new_scroll = max_scroll + spacing;
-                    }
-                    *list_view.scroll_pointer = new_scroll;
-                }
-            }
+    int index = applist_index(node->apps, item);
+    if (index >= 0)
+    {
+        // Row index for selected item
+        int row = index / _applist_colcount;
+        int target_top = row * rowheight + spacing * row, target_bottom = target_top + rowheight;
+        int visible_top = list_view.scroll_value, visible_bottom = visible_top + list_view_bounds.h;
+        // Only change list offset if select row is not fully visible
+        if (target_top < visible_top || target_bottom > visible_bottom)
+        {
+            // Scroll the list if selected item is out of bounds
+            int max_scroll = list_view.total_height - list_view_bounds.h + spacing;
+            *list_view.scroll_pointer = NK_CLAMP(0, target_top, max_scroll);
         }
     }
     return true;

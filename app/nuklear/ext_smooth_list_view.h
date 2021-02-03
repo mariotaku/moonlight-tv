@@ -38,7 +38,6 @@ nk_smooth_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
     win = ctx->current;
     style = &ctx->style;
     item_spacing = style->window.spacing;
-    row_height += NK_MAX(0, (int)item_spacing.y);
 
     /* find persistent list view scrollbar offset */
     title_len = (int)nk_strlen(title);
@@ -61,20 +60,18 @@ nk_smooth_list_view_begin(struct nk_context *ctx, struct nk_list_view *view,
     win = ctx->current;
     layout = win->layout;
 
-    view->total_height = row_height * NK_MAX(row_count,1);
-    view->begin = (int)NK_MAX(((float)*y_offset / (float)row_height), 0.0f);
+    view->total_height = row_height * NK_MAX(row_count,1) + (int) (NK_MAX(row_count - 1, 0) * item_spacing.y);
+    view->begin = (int)NK_MAX(((float)*y_offset / (float)(row_height + item_spacing.y)), 0.0f);
     view->count = (int)NK_MAX(nk_iceilf((layout->clip.h)/(float)row_height)+1,0);
     view->count = NK_MIN(view->count, row_count - view->begin);
 
     view->end = view->begin + view->count;
     view->ctx = ctx;
 
-    if (result)
+    if (result && view->begin)
     {
-        for (int i = 0; i < view->begin; i++)
-        {
-            nk_layout_row_dynamic(ctx, row_height, 0);
-        }
+        int spacing_rows = view->begin;
+        nk_layout_row_dynamic(ctx, row_height * spacing_rows + item_spacing.y * NK_MAX(spacing_rows - 1, 0), 0);
     }
     return result;
 }
@@ -95,16 +92,13 @@ nk_smooth_list_view_end(struct nk_list_view *view)
     layout = win->layout;
     if (view->count)
     {
-        // layout->at_y = layout->bounds.y + (float)view->total_height - ((int) layout->bounds.h % (int) layout->row.height);
-        int rows = view->total_height / layout->row.height;
-        int item_spacing = ctx->style.window.spacing.y;
-        layout->at_y = layout->bounds.y + (layout->row.height) * (rows - 1) + item_spacing * (rows - 2);
+        float item_spacing = ctx->style.window.spacing.y;
+        layout->at_y = layout->bounds.y + view->total_height - layout->row.height + item_spacing;
     }
     else
     {
         layout->at_y = 0;
     }
-    // *view->scroll_pointer = *view->scroll_pointer + view->scroll_value;
     nk_group_end(view->ctx);
 }
 
