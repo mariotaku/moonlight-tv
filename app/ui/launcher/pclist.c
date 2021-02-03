@@ -16,7 +16,7 @@ bool pclist_showing;
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->hostname : "Computer";
-    nk_style_push_vec2(ctx, &ctx->style.window.popup_padding, nk_vec2_s(0, 10));
+    nk_style_push_vec2(ctx, &ctx->style.window.popup_padding, nk_vec2_s(0, 5));
     if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -65,9 +65,9 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                 event_emitted = true;
             }
         }
-        nk_style_pop_float(ctx);
         nk_combo_end(ctx);
     }
+    nk_style_pop_vec2(ctx);
     return pclist_showing || event_emitted;
 }
 
