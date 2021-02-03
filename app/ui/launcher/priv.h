@@ -17,7 +17,7 @@ struct pairing_computer_state
 {
     pairing_state state;
     char pin[5];
-    char *error;
+    const char *error;
 };
 
 #define LAUNCHER_MODAL_MASK_WINDOW 0b00001111

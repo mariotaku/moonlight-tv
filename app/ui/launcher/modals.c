@@ -49,7 +49,7 @@ void _quitapp_window(struct nk_context *ctx)
 
 void _pairing_error_popup(struct nk_context *ctx)
 {
-    char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
+    const char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
     enum nk_dialog_result result;
     if ((result = nk_dialog_popup_begin(ctx, "Pairing Failed", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {

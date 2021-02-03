@@ -23,7 +23,6 @@ typedef struct CM_PIN_REQUEST_T
 {
     PSERVER_LIST node;
     char *pin;
-    pairing_callback callback;
 } cm_pin_request;
 
 PSERVER_LIST computer_list;
@@ -146,14 +145,13 @@ static int pin_random(int min, int max)
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
-bool computer_manager_pair(PSERVER_LIST node, char *pin, pairing_callback cb)
+bool computer_manager_pair(PSERVER_LIST node, char *pin)
 {
     int pin_int = pin_random(0, 9999);
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     snprintf(pin, 5, "%04u", pin_int);
     req->pin = strdup(pin);
     req->node = node;
-    req->callback = cb;
     pthread_t pair_thread;
     pthread_create(&pair_thread, NULL, _computer_manager_pairing_action, req);
     return true;
@@ -175,8 +173,9 @@ void *_computer_manager_pairing_action(void *data)
     cm_pin_request *req = (cm_pin_request *)data;
     PSERVER_LIST node = req->node;
     PSERVER_DATA server = node->server;
-    int result = gs_pair(server, (char *)req->pin);
-    req->callback(node, result, gs_error);
+    node->err = gs_pair(server, (char *)req->pin);
+    node->errmsg = gs_error;
+    bus_pushevent(USER_CM_PAIRING_DONE, node, NULL);
     free(data);
     return NULL;
 }

@@ -216,6 +216,23 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         }
         return true;
     }
+    case USER_CM_PAIRING_DONE:
+    {
+        PSERVER_LIST node = data1;
+        if (node->err == GS_OK)
+        {
+            // Close pairing window
+            pairing_computer_state.state = PS_NONE;
+            _select_computer(node, node->apps == NULL);
+        }
+        else
+        {
+            // Show pairing error instead
+            pairing_computer_state.state = PS_FAIL;
+            pairing_computer_state.error = node->errmsg;
+        }
+        break;
+    }
     case USER_CM_QUITAPP_FAILED:
     {
         _quitapp_errno = true;
@@ -286,27 +303,11 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
     }
 }
 
-static void cw_pairing_callback(PSERVER_LIST node, int result, const char *error)
-{
-    if (result == GS_OK)
-    {
-        // Close pairing window
-        pairing_computer_state.state = PS_NONE;
-        _select_computer(node, node->apps == NULL);
-    }
-    else
-    {
-        // Show pairing error instead
-        pairing_computer_state.state = PS_FAIL;
-        pairing_computer_state.error = (char *)error;
-    }
-}
-
 void _open_pair(int index, PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_RUNNING;
-    computer_manager_pair(node, &pairing_computer_state.pin[0], cw_pairing_callback);
+    computer_manager_pair(node, &pairing_computer_state.pin[0]);
 }
 
 void _launcher_modal_flags_update()
