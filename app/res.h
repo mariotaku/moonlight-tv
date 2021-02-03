@@ -11,8 +11,8 @@ INCBIN(spritesheet_ui_2x, "../res/spritesheet_ui@2x.png");
 INCBIN(spritesheet_ui_3x, "../res/spritesheet_ui@3x.png");
 #ifdef TARGET_DESKTOP
 INCBIN(window_icon_32, "../res/moonlight_32.png");
-INCBIN(vertex_source, "../res/shaders/vertex_source.glsl");
-INCBIN(fragment_source, "../res/shaders/fragment_source.glsl");
+INCBIN(vertex_source, "../res/shaders/vertex_source_gl2.glsl");
+INCBIN(fragment_source, "../res/shaders/fragment_source_gl2.glsl");
 #endif
 #else
 INCBIN_EXTERN(notosans_regular);

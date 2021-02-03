@@ -120,7 +120,7 @@ static void app_process_events(struct nk_context *ctx)
             {
                 window_focus_gained = false;
             }
-            else if (evt.window.event == SDL_WINDOWEVENT_RESIZED)
+            else if (evt.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
                 ui_display_size(ctx, evt.window.data1, evt.window.data2);
             }
