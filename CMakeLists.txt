@@ -81,6 +81,7 @@ set(SOURCES
     app/ui/launcher/applist.c
     app/ui/launcher/statbar.c
     app/ui/launcher/modals.c
+    app/ui/launcher/pairing.c
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
     app/ui/settings/window.c

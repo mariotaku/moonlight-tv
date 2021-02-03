@@ -55,6 +55,7 @@ void _launcher_modal_windows_show(struct nk_context *ctx);
 uint32_t _launcher_modals;
 bool _launcher_showing_combo;
 bool _launcher_popup_request_dismiss;
+bool _launcher_show_manual_pair;
 bool _quitapp_errno = false;
 
 void launcher_window_init(struct nk_context *ctx)
@@ -81,7 +82,7 @@ bool launcher_window(struct nk_context *ctx)
 {
     int window_flags = NK_WINDOW_NO_SCROLLBAR;
     _launcher_showing_combo = false;
-    _launcher_modals = 0;
+    _launcher_modal_flags_update();
     if (launcher_blocked())
     {
         window_flags |= NK_WINDOW_NO_INPUT;
@@ -165,7 +166,6 @@ bool launcher_window(struct nk_context *ctx)
         nk_style_pop_vec2(ctx);
         nk_style_pop_vec2(ctx);
 
-        _launcher_modal_flags_update();
         launcher_statbar(ctx);
 
         _launcher_modal_popups_show(ctx);
@@ -289,6 +289,11 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     return true;
 }
 
+void launcher_add_server()
+{
+    _launcher_show_manual_pair = true;
+}
+
 void _select_computer(PSERVER_LIST node, bool load_apps)
 {
     selected_server_node = node;
@@ -312,6 +317,7 @@ void _open_pair(int index, PSERVER_LIST node)
 
 void _launcher_modal_flags_update()
 {
+    _launcher_modals = 0;
     if (pairing_computer_state.state == PS_RUNNING)
     {
         _launcher_modals |= LAUNCHER_MODAL_PAIRING;
@@ -337,6 +343,10 @@ void _launcher_modal_flags_update()
         {
             _launcher_modals |= LAUNCHER_MODAL_PAIRERR;
         }
+    }
+    if (_launcher_show_manual_pair)
+    {
+        _launcher_modals |= LAUNCHER_MODAL_MANPAIR;
     }
 #if OS_WEBOS
     if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)

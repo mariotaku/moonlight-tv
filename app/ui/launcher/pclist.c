@@ -62,6 +62,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
         {
             if (!event_emitted)
             {
+                launcher_add_server();
                 event_emitted = true;
             }
         }
