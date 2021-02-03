@@ -88,7 +88,7 @@ bool launcher_window(struct nk_context *ctx)
     }
 
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
-    nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(10, 0));
+    nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(0, 0));
     if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, ui_display_width, ui_display_height), window_flags))
     {
         int list_height = nk_window_get_content_inner_size(ctx).y;

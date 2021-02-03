@@ -16,12 +16,12 @@ bool pclist_showing;
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
 {
     char *selected = selected_server_node != NULL ? selected_server_node->hostname : "Computer";
+    nk_style_push_vec2(ctx, &ctx->style.window.popup_padding, nk_vec2_s(0, 10));
     if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
-        PSERVER_LIST cur = computer_list;
         int i = 0;
-        while (cur != NULL)
+        for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next, i++)
         {
             struct nk_rect item_bounds = nk_widget_bounds(ctx);
             nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, item_bounds);
@@ -57,9 +57,15 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                     event_emitted = true;
                 }
             }
-            cur = cur->next;
-            i++;
         }
+        if (nk_combo_item_label(ctx, "Add manually...", NK_TEXT_LEFT))
+        {
+            if (!event_emitted)
+            {
+                event_emitted = true;
+            }
+        }
+        nk_style_pop_float(ctx);
         nk_combo_end(ctx);
     }
     return pclist_showing || event_emitted;
