@@ -35,6 +35,7 @@ extern bool _launcher_popup_request_dismiss;
 extern struct pairing_computer_state pairing_computer_state;
 extern bool _webos_decoder_error_dismissed;
 extern bool _quitapp_errno;
+extern bool _launcher_show_manual_pair;
 
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
