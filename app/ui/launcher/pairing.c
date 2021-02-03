@@ -1,6 +1,7 @@
 #include "window.h"
 #include "priv.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "ui/root.h"
@@ -51,7 +52,13 @@ void _manual_add_window(struct nk_context *ctx)
         {
             _launcher_show_manual_pair = false;
         }
-        nk_button_label(ctx, "OK");
+        if (nk_button_label(ctx, "OK"))
+        {
+            char *addr = malloc(text_len + 1);
+            strncpy(addr, text, text_len);
+            addr[text_len - 1] = '\0';
+            pcmanager_manual_add(addr);
+        }
     }
     nk_end(ctx);
 }
@@ -61,7 +68,8 @@ nk_bool nk_filter_ip(const struct nk_text_edit *box, nk_rune unicode)
     NK_UNUSED(box);
     if ((unicode < '0' || unicode > '9') &&
         (unicode < 'a' || unicode > 'f') &&
-        (unicode < 'A' || unicode > 'F'))
+        (unicode < 'A' || unicode > 'F') &&
+        unicode != ':' && unicode != '.')
         return nk_false;
     else
         return nk_true;

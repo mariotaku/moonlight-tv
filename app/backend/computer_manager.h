@@ -54,4 +54,6 @@ bool computer_manager_quitapp(PSERVER_LIST node);
 
 bool pcmanager_send_wol(PSERVER_LIST node);
 
+bool pcmanager_manual_add(char *address);
+
 void *_computer_manager_polling_action(void *data);
