@@ -103,6 +103,7 @@ if (TARGET_WEBOS)
         app/platform/sdl/input_manager.c
         app/platform/webos/navkey_sdl_webos.c
         app/platform/webos/SDL_webOS.c
+        app/platform/webos/path_webos.c
         app/stream/audio/ndl.c
         app/stream/video/delegate.c
         app/stream/video/ndl.c

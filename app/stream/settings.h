@@ -49,7 +49,6 @@ typedef struct _CONFIGURATION {
   enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 
-#define CONF_DIR ".moonlight-tv"
 #define CONF_NAME_STREAMING "streaming.conf"
 
 #define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | h & 0xFFFF)
