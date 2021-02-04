@@ -93,7 +93,9 @@ bool settings_window_close()
 
 bool settings_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height, ui_logic_width - 240, ui_logic_height - 60);
+    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height,
+                                          NK_MAX(ui_logic_width - 240, NK_MIN(400, ui_logic_width)),
+                                          NK_MAX(ui_logic_height - 60, NK_MIN(300, ui_logic_height)));
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2(ctx->style.window.scrollbar_size.x, 0));
     if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
     {
