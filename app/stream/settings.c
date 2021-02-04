@@ -122,7 +122,7 @@ int settings_optimal_bitrate(int w, int h, int fps)
     case RES_1080P:
         kbps = 10000;
         break;
-    case RES_2K:
+    case RES_1440P:
         kbps = 20000;
         break;
     case RES_4K:

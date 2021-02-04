@@ -55,7 +55,7 @@ typedef struct _CONFIGURATION {
 
 #define RES_720P RES_MERGE(1280, 720)
 #define RES_1080P RES_MERGE(1920, 1080)
-#define RES_2K RES_MERGE(2560, 1440)
+#define RES_1440P RES_MERGE(2560, 1440)
 #define RES_4K RES_MERGE(3840, 2160)
 
 void config_save(char *filename, PCONFIGURATION config);

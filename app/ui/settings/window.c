@@ -244,8 +244,8 @@ void _set_res(int w, int h)
     case RES_1080P:
         sprintf(_res_label, "1080P");
         break;
-    case RES_2K:
-        sprintf(_res_label, "2K");
+    case RES_1440P:
+        sprintf(_res_label, "1440P");
         break;
     case RES_4K:
         sprintf(_res_label, "4K");
