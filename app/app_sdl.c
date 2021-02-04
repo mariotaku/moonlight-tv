@@ -236,8 +236,13 @@ void app_main_loop(void *data)
     }
 }
 
-void app_start_text_input()
+void app_start_text_input(int x, int y, int w, int h)
 {
+    if (w > 0 && h > 0)
+    {
+        struct SDL_Rect rect = {x, y, w, h};
+        SDL_SetTextInputRect(&rect);
+    }
     SDL_StartTextInput();
 }
 

@@ -40,10 +40,11 @@ void _manual_add_window(struct nk_context *ctx)
         nk_layout_row_dynamic(ctx, message_height, 1);
         nk_label_wrap(ctx, message);
         nk_layout_row_dynamic_s(ctx, 30, 1);
+        struct nk_rect editor_bounds = nk_widget_bounds(ctx);
         nk_flags editor_state = nk_edit_string(ctx, NK_EDIT_FIELD, text, &text_len, 64, nk_filter_ip);
         if (editor_state & NK_EDIT_ACTIVATED)
         {
-            app_start_text_input();
+            app_start_text_input(editor_bounds.x, editor_bounds.y, editor_bounds.w, editor_bounds.h);
         }
         else if (editor_state & NK_EDIT_DEACTIVATED)
         {

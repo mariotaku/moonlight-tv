@@ -16,6 +16,6 @@ void app_main_loop(void *data);
 
 void app_request_exit();
 
-void app_start_text_input();
+void app_start_text_input(int x, int y, int w, int h);
 
 void app_stop_text_input();
