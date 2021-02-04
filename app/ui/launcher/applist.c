@@ -33,11 +33,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
     // Row width of list item content
     int rowwidth = nk_widget_width(ctx) - winstyle.group_padding.x * 2 - winstyle.scrollbar_size.x;
-    _applist_colcount = (rowwidth + winstyle.spacing.x) / (120 * NK_UI_SCALE);
-    if (!_applist_colcount)
-    {
-        _applist_colcount = 1;
-    }
+    _applist_colcount = NK_MAX((rowwidth + winstyle.spacing.x) / (120 * NK_UI_SCALE), 1);
     int colcount = _applist_colcount, rowcount = app_len / colcount;
     if (app_len && app_len % colcount)
     {
