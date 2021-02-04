@@ -68,13 +68,11 @@ static int lgnc_submit_decode_unit(PDECODE_UNIT decodeUnit)
 {
   if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
   {
-    PLENTRY entry = decodeUnit->bufferList;
     int length = 0;
-    while (entry != NULL)
+    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
     {
       memcpy(lgnc_buffer + length, entry->data, entry->length);
       length += entry->length;
-      entry = entry->next;
     }
     if (LGNC_DIRECTVIDEO_Play(lgnc_buffer, length) != 0)
     {

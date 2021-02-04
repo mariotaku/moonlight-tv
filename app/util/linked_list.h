@@ -39,11 +39,9 @@ LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)()
 int LINKEDLIST_FN_NAME(len)(LINKEDLIST_TYPE *p)
 {
     int length = 0;
-    LINKEDLIST_TYPE *cur = p;
-    while (cur != NULL)
+    for (LINKEDLIST_TYPE *cur = p; cur != NULL; cur = cur->next)
     {
         length++;
-        cur = cur->next;
     }
     return length;
 }

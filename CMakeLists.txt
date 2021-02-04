@@ -120,6 +120,7 @@ elseif (TARGET_DESKTOP)
         app/platform/sdl/nkimage.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
+        app/platform/sdl/path_sdl.c
         app/stream/audio/sdl.c
         app/stream/video/sdl.c
         app/stream/video/delegate.c

@@ -55,7 +55,7 @@ static struct option long_options[] = {
 PCONFIGURATION settings_load()
 {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
-    char *confdir = settings_config_dir(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
     settings_initialize(confdir, config);
     settings_read(conffile, config);
     free(conffile);
@@ -65,7 +65,7 @@ PCONFIGURATION settings_load()
 
 void settings_save(PCONFIGURATION config)
 {
-    char *confdir = settings_config_dir(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
     settings_write(conffile, config);
     free(conffile);
     free(confdir);
@@ -246,20 +246,6 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_string(fd, "app", config->app);
 
     fclose(fd);
-}
-
-char *settings_config_dir()
-{
-    char *homedir = getenv("HOME");
-    char *confdir = path_join(homedir, CONF_DIR);
-    if (access(confdir, F_OK) == -1)
-    {
-        if (errno == ENOENT)
-        {
-            mkdir(confdir, 0755);
-        }
-    }
-    return confdir;
 }
 
  void parse_argument(int c, char* value, PCONFIGURATION config) {

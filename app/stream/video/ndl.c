@@ -66,11 +66,10 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
   {
     PLENTRY entry = decodeUnit->bufferList;
     int length = 0;
-    while (entry != NULL)
+    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
     {
       memcpy(ndl_buffer + length, entry->data, entry->length);
       length += entry->length;
-      entry = entry->next;
     }
     if (NDL_DirectVideoPlay(ndl_buffer, length) == -1)
     {

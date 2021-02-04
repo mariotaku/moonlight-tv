@@ -217,7 +217,7 @@ int _server_list_compare_uuid(PSERVER_LIST other, const void *v)
 
 void pcmanager_load_known_hosts()
 {
-    char *confdir = settings_config_dir(), *conffile = path_join(confdir, "known_hosts");
+    char *confdir = path_pref(), *conffile = path_join(confdir, "known_hosts");
     FILE *fd = fopen(conffile, "r");
     free(conffile);
     if (fd == NULL)
@@ -251,22 +251,20 @@ void pcmanager_load_known_hosts()
 
 void pcmanager_save_known_hosts()
 {
-    char *confdir = settings_config_dir(), *conffile = path_join(confdir, "known_hosts");
+    char *confdir = path_pref(), *conffile = path_join(confdir, "known_hosts");
     FILE *fd = fopen(conffile, "w");
     free(conffile);
     if (fd == NULL)
     {
         return;
     }
-    SERVER_LIST *cur = computer_list;
-    while (cur != NULL)
+    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
     {
         if (!cur->known || !cur->uuid || !cur->mac || !cur->hostname)
         {
             continue;
         }
         fprintf(fd, "%s %s %s\n", cur->uuid, cur->mac, cur->hostname);
-        cur = cur->next;
     }
     fclose(fd);
 }
