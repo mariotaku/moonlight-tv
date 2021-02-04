@@ -73,6 +73,17 @@ APP_WINDOW_CONTEXT app_window_create()
     SDL_FreeSurface(winicon);
     SDL_SetWindowMinimumSize(win, 640, 400);
 #endif
+#if OS_WEBOS
+    {
+        int refresh_rate, panel_width, panel_height;
+        SDL_webOSGetRefreshRate(&refresh_rate);
+        SDL_webOSGetPanelResolution(&panel_width, &panel_height);
+        printf("webOS TV: refresh: %d Hz, panel: %d * %d\n", refresh_rate, panel_width, panel_height);
+    }
+#endif
+    char *base_path = SDL_GetPrefPath("com.limelight", "moonlight-tv");
+    printf("Pref path: %s\n", base_path);
+    SDL_free(base_path);
     sdlCurrentFrame = sdlNextFrame = 0;
     mutex = SDL_CreateMutex();
 
