@@ -177,7 +177,7 @@ static void app_process_events(struct nk_context *ctx)
         }
         else if (evt.type == SDL_QUIT)
         {
-            request_exit();
+            app_request_exit();
         }
         if (!block_steam_inputevent)
         {
@@ -214,7 +214,7 @@ void app_main_loop(void *data)
 #endif
     if (!cont)
     {
-        request_exit();
+        app_request_exit();
     }
     Uint32 end_ticks = SDL_GetTicks();
     Sint32 deltams = end_ticks - start_ticks;
@@ -234,6 +234,16 @@ void app_main_loop(void *data)
     {
         framecount++;
     }
+}
+
+void app_start_text_input()
+{
+    SDL_StartTextInput();
+}
+
+void app_stop_text_input()
+{
+    SDL_StopTextInput();
 }
 
 void fps_cap(int start)

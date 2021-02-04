@@ -90,7 +90,7 @@ static void app_process_events(struct nk_context *ctx)
             }
             case USER_QUIT:
             {
-                request_exit();
+                app_request_exit();
                 break;
             }
             default:
@@ -131,6 +131,6 @@ void app_main_loop(void *data)
     }
     else
     {
-        request_exit();
+        app_request_exit();
     }
 }

@@ -14,4 +14,8 @@ void app_destroy();
 
 void app_main_loop(void *data);
 
-void request_exit();
+void app_request_exit();
+
+void app_start_text_input();
+
+void app_stop_text_input();

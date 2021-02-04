@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void request_exit()
+void app_request_exit()
 {
     running = false;
 }

@@ -249,6 +249,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     bool key_handled = false;
     if (launcher_blocked())
     {
+        return true;
     }
     else if (_launcher_modals & LAUNCHER_MODAL_MASK_POPUP)
     {
@@ -280,7 +281,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     case NAVKEY_CANCEL:
         if (!down)
         {
-            request_exit();
+            app_request_exit();
         }
         return true;
     default:
