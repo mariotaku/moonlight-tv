@@ -66,6 +66,7 @@ if (TARGET_WEBOS)
     else()
         pkg_check_modules(SDL2 REQUIRED sdl2)
     endif()
+    find_package(SDL2_image REQUIRED)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenSSL REQUIRED)
@@ -106,11 +107,20 @@ set(SOURCES
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
     app/ui/settings/window.c
-    app/nuklear/ext_image.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
 )
+
+if (SDL2_IMAGE_FOUND)
+    list(APPEND SOURCES
+        app/nuklear/nkimage_sdl.c
+    )
+else()
+    list(APPEND SOURCES
+        app/nuklear/nkimage_stb.c
+    )
+endif()
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES

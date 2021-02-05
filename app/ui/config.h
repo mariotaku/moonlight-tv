@@ -11,9 +11,9 @@
 #define NK_UI_SCALE 2
 #endif
 #else
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
-#define NK_UI_SCALE 2
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 540
+#define NK_UI_SCALE 1.5
 #endif
 
 #define KEY_REPEAT_DURATION 300
