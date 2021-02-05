@@ -1,6 +1,8 @@
 #include "sdlinput.h"
 #include "absinput.h"
 
+#include <string.h>
+
 // Include source directly in order to use static functions
 #include "sdl_emb.c"
 #include "stream/session.h"
