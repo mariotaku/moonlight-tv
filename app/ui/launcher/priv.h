@@ -39,4 +39,4 @@ extern bool _launcher_show_manual_pair;
 
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
-void _open_pair(int index, PSERVER_LIST node);
+void _open_pair(PSERVER_LIST node);

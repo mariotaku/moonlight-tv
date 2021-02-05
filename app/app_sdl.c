@@ -181,8 +181,12 @@ static void app_process_events(struct nk_context *ctx)
         }
         else if (evt.type == SDL_USEREVENT)
         {
-            backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-            ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
+            bool handled = backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
+            handled = handled || ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
+            if (!handled)
+            {
+                fprintf(stderr, "Nobody handles event %d\n", evt.user.code);
+            }
         }
         else if (evt.type == SDL_QUIT)
         {

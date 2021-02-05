@@ -19,15 +19,9 @@
 
 static pthread_t computer_manager_polling_thread;
 bool computer_manager_executing_quitapp;
-typedef struct CM_PIN_REQUEST_T
-{
-    PSERVER_LIST node;
-    char *pin;
-} cm_pin_request;
 
 PSERVER_LIST computer_list;
 
-static void *_computer_manager_pairing_action(void *data);
 static void *_computer_manager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(void *data);
 static int _server_list_compare_uuid(PSERVER_LIST other, const void *v);
@@ -86,26 +80,33 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
     case USER_CM_SERVER_DISCOVERED:
     {
         PSERVER_LIST discovered = data1;
-
-        PSERVER_LIST find = serverlist_find_by(computer_list, discovered->uuid, _server_list_compare_uuid);
-        if (find)
+        bool manual_pair = data2;
+        if (discovered->err)
         {
-            PSERVER_DATA oldsrv = find->server;
-            find->mac = discovered->mac;
-            find->hostname = discovered->hostname;
-            find->err = discovered->err;
-            find->errmsg = discovered->errmsg;
-            find->server = discovered->server;
-            if (oldsrv)
+            if (manual_pair)
             {
-                free(oldsrv);
+                bus_pushevent(USER_CM_PAIRING_DONE, discovered, data2);
             }
-            bus_pushevent(USER_CM_SERVER_UPDATED, find, NULL);
+            return true;
+        }
+        PSERVER_LIST node = serverlist_find_by(computer_list, discovered->uuid, _server_list_compare_uuid);
+        if (node)
+        {
+            PSERVER_DATA oldsrv = node->server;
+            node->mac = discovered->mac;
+            node->hostname = discovered->hostname;
+            node->err = discovered->err;
+            node->errmsg = discovered->errmsg;
+            node->server = discovered->server;
+
+            free(discovered->server);
+            free(discovered);
+            bus_pushevent(USER_CM_SERVER_UPDATED, node, data2);
         }
         else
         {
             computer_list = serverlist_append(computer_list, discovered);
-            bus_pushevent(USER_CM_SERVER_ADDED, discovered, NULL);
+            bus_pushevent(USER_CM_SERVER_ADDED, discovered, data2);
         }
         return true;
     }
@@ -140,23 +141,6 @@ PSERVER_LIST computer_manager_server_at(int index)
     return serverlist_nth(computer_list, index);
 }
 
-static int pin_random(int min, int max)
-{
-    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
-}
-
-bool computer_manager_pair(PSERVER_LIST node, char *pin)
-{
-    int pin_int = pin_random(0, 9999);
-    cm_pin_request *req = malloc(sizeof(cm_pin_request));
-    snprintf(pin, 5, "%04u", pin_int);
-    req->pin = strdup(pin);
-    req->node = node;
-    pthread_t pair_thread;
-    pthread_create(&pair_thread, NULL, _computer_manager_pairing_action, req);
-    return true;
-}
-
 bool computer_manager_quitapp(PSERVER_LIST node)
 {
     if (node->server->currentGame == 0)
@@ -166,18 +150,6 @@ bool computer_manager_quitapp(PSERVER_LIST node)
     pthread_t quitapp_thread;
     pthread_create(&quitapp_thread, NULL, _computer_manager_quitapp_action, node);
     return true;
-}
-
-void *_computer_manager_pairing_action(void *data)
-{
-    cm_pin_request *req = (cm_pin_request *)data;
-    PSERVER_LIST node = req->node;
-    PSERVER_DATA server = node->server;
-    node->err = gs_pair(server, (char *)req->pin);
-    node->errmsg = gs_error;
-    bus_pushevent(USER_CM_PAIRING_DONE, node, NULL);
-    free(data);
-    return NULL;
 }
 
 void *_computer_manager_quitapp_action(void *data)

@@ -61,14 +61,19 @@ void _manual_add_window(struct nk_context *ctx)
         nk_spacing(ctx, 1);
         if (nk_button_label(ctx, "Cancel"))
         {
+            // Clear input text
+            text_len = 0;
             _launcher_show_manual_pair = false;
         }
-        if (nk_button_label(ctx, "OK"))
+        if (nk_button_label(ctx, "OK") && text_len)
         {
             char *addr = malloc(text_len + 1);
             strncpy(addr, text, text_len);
-            addr[text_len - 1] = '\0';
+            addr[text_len] = '\0';
             pcmanager_manual_add(addr);
+            // Clear input text
+            text_len = 0;
+            _launcher_show_manual_pair = false;
         }
     }
     nk_end(ctx);

@@ -52,7 +52,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                     }
                     else
                     {
-                        _open_pair(i, cur);
+                        _open_pair(cur);
                     }
                     event_emitted = true;
                 }

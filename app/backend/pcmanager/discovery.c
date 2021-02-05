@@ -17,6 +17,7 @@
 #include "util/user_event.h"
 
 #include "app.h"
+#include "priv.h"
 
 static char addrbuffer[64];
 static char entrybuffer[256];
@@ -130,32 +131,9 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         mdns_record_parse_a(data, size, record_offset, record_length, &addr);
         mdns_string_t addrstr =
             ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
-        PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
         char *srvaddr = calloc(addrstr.length + 1, sizeof(char)), *srvname = parse_server_name(entrystr);
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
-        int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
-
-        PSERVER_LIST node = serverlist_new();
-        node->err = ret;
-        if (ret == GS_OK)
-        {
-            node->uuid = server->uuid;
-            node->mac = server->mac;
-            node->hostname = server->hostname;
-            if (server->paired)
-            {
-                node->known = true;
-            }
-            node->server = server;
-            node->errmsg = NULL;
-        }
-        else
-        {
-            node->server = NULL;
-            node->errmsg = gs_error;
-            free(server);
-        }
-        bus_pushevent(USER_CM_SERVER_DISCOVERED, node, NULL);
+        pcmanager_insert_by_address(srvaddr, false);
     }
     return 0;
 }
@@ -320,4 +298,34 @@ void *_computer_manager_polling_action(void *data)
         mdns_socket_close(sockets[isock]);
     computer_discovery_running = false;
     return NULL;
+}
+
+int pcmanager_insert_by_address(char *srvaddr, bool pair)
+{
+    PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
+    memset(server, 0, sizeof(SERVER_DATA));
+    int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
+
+    PSERVER_LIST node = serverlist_new();
+    node->err = ret;
+    if (ret == GS_OK)
+    {
+        node->uuid = server->uuid;
+        node->mac = server->mac;
+        node->hostname = server->hostname;
+        if (server->paired)
+        {
+            node->known = true;
+        }
+        node->server = server;
+        node->errmsg = NULL;
+    }
+    else
+    {
+        node->server = NULL;
+        node->errmsg = gs_error;
+        free(server);
+    }
+    bus_pushevent(USER_CM_SERVER_DISCOVERED, node, (void *)pair);
+    return ret;
 }

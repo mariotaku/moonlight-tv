@@ -203,7 +203,19 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     {
         // Select saved paired server if not selected before
         PSERVER_LIST node = data1;
-        if (node->server && node->server->paired && app_configuration->address)
+        if (data2)
+        {
+            if (node->server->paired)
+            {
+                _select_computer(node, node->apps == NULL);
+            }
+            else
+            {
+                _open_pair(node);
+            }
+            return true;
+        }
+        else if (node->server && node->server->paired && app_configuration->address)
         {
             if (selected_server_node == NULL && strcmp(app_configuration->address, node->server->serverInfo.address) == 0)
             {
@@ -309,7 +321,7 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
     }
 }
 
-void _open_pair(int index, PSERVER_LIST node)
+void _open_pair(PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_RUNNING;

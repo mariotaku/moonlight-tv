@@ -31,6 +31,7 @@ typedef struct SERVER_LIST_T
   const char *errmsg;
   PAPP_DLIST apps;
   int applen;
+  bool appload;
   struct SERVER_LIST_T *prev;
   struct SERVER_LIST_T *next;
 } SERVER_LIST, *PSERVER_LIST;
