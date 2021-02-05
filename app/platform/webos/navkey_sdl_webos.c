@@ -1,6 +1,8 @@
 #include "platform/sdl/navkey_sdl.h"
 #include "platform/sdl/webos_keys.h"
 
+#include <stdio.h>
+
 NAVKEY navkey_from_sdl(SDL_Event ev)
 {
     switch (ev.type)
@@ -8,6 +10,7 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
+        printf("KeyEvent, down: %d, key: %d\n", ev.key.state == SDL_PRESSED, ev.key.keysym.sym);
         switch (ev.key.keysym.sym)
         {
         case 82 /* Keyboard/Remote Up */:
@@ -28,7 +31,6 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
         case SDLK_WEBOS_BACK:
             return NAVKEY_CANCEL;
         default:
-            printf("KeyEvent, down: %d, key: %d\n", ev.key.state, ev.key.keysym.sym);
             return NAVKEY_UNKNOWN;
         }
     }

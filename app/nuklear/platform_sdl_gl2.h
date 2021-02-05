@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL_opengl.h>
-#include "demo/sdl_opengl2/nuklear_sdl_gl2.h"
+#include "nuklear_sdl_gl2.h"
 
 void nk_platform_preinit();
 

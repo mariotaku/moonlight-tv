@@ -74,6 +74,7 @@ APP_WINDOW_CONTEXT app_window_create()
     SDL_SetWindowMinimumSize(win, 640, 400);
 #endif
 #if OS_WEBOS
+    app_webos_window_setup(win);
     {
         int refresh_rate, panel_width, panel_height;
         SDL_webOSGetRefreshRate(&refresh_rate);

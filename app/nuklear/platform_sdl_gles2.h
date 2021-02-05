@@ -1,5 +1,5 @@
 #pragma once
-#include "demo/sdl_opengles2/nuklear_sdl_gles2.h"
+#include "nuklear_sdl_gles2.h"
 
 void nk_platform_preinit();
 

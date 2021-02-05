@@ -5,7 +5,10 @@ project(moonlight
 )
 
 # Add folder where are supportive functions
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/utils/cmake)
+set(CMAKE_MODULE_PATH 
+    ${CMAKE_SOURCE_DIR}/utils/cmake
+    ${CMAKE_SOURCE_DIR}/cmake
+)
 
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
@@ -37,7 +40,6 @@ find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2 SDL2_image)
 pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
@@ -45,13 +47,27 @@ pkg_check_modules(EXPAT REQUIRED expat)
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
     pkg_check_modules(OPENSSL REQUIRED openssl)
+    pkg_check_modules(Wayland REQUIRED IMPORTED_TARGET wayland-client)
+    pkg_check_modules(XkbCommon REQUIRED IMPORTED_TARGET xkbcommon)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
     add_subdirectory(system/lgncapi)
+    
+    add_compile_definitions(MESA_EGL_NO_X11_HEADERS)
+    option(LIBSAMPLERATE "Don't link libsamplerate" OFF)
+    option(VIDEO_RPI "Workaround for homebrew SDK" OFF)
+    option(VIDEO_WAYLAND_QT_TOUCH "No Qt Touch stuff" OFF)
+    option(VIDEO_KMSDRM "" OFF)
+    option(VIDEO_VULKAN "" OFF)
+    add_subdirectory(deps/system/SDL2-webOS)
+
+    find_package(SDL2_image REQUIRED)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenSSL REQUIRED)
     find_package(OpenGL REQUIRED)
+    find_package(SDL2 REQUIRED)
+    find_package(SDL2_image REQUIRED)
     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=57 libavutil>=55)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
@@ -144,7 +160,6 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuk
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
-target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
@@ -156,23 +171,31 @@ target_link_libraries(moonlight PRIVATE
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
-    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
+
+    pkg_check_modules(SDL2_SYSTEM REQUIRED sdl2)
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
+
+    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
+    target_link_libraries(moonlight PRIVATE PkgConfig::Wayland PkgConfig::XkbCommon)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
+    target_link_libraries(moonlight PRIVATE ${SDL2_IMAGE_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE SDL2-static)
 elseif(TARGET_DARWIN)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_DARWIN GL_SILENCE_DEPRECATION)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     get_filename_component(SDL2_INCLUDE_DIR_PARENT ${SDL2_INCLUDE_DIRS} DIRECTORY)
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIR_PARENT})
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
 
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
+    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
+    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    target_link_libraries(moonlight PRIVATE PkgConfig::SDL2 PkgConfig::Opus PkgConfig::FFMPEG OpenSSL::Crypto OpenGL::GL)
+    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenSSL::Crypto OpenGL::GL)
+    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 endif()
 
 add_custom_target(moonlight-spritegen
