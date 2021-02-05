@@ -15,7 +15,7 @@ get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 option(TARGET_WEBOS "Build for LG webOS" OFF)
 if (CC_BASENAME MATCHES "^arm-webos-linux")
     set(TARGET_WEBOS ON)
-    option(WEBOS_SDL_STATIC "" ON)
+    set(WEBOS_SDL_STATIC TRUE)
 endif()
 
 if (TARGET_WEBOS)
