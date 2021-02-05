@@ -5,7 +5,7 @@
 #include <GLES2/gl2.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "example/stb_image.h"
 
 struct stb_image
 {
@@ -13,12 +13,37 @@ struct stb_image
     unsigned char *data;
 };
 
-NK_API nk_bool nk_loadimage(const char *path, struct nk_image *img)
+NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img)
 {
     int x, y, n;
     struct stb_image *s = malloc(sizeof(struct stb_image));
     memset(s, 0, sizeof(struct stb_image));
     s->data = stbi_load(path, &x, &y, &n, 0);
+    if (!s->data)
+    {
+        free(s);
+        return nk_false;
+    }
+    s->x = x;
+    s->y = y;
+    s->n = n;
+
+    img->w = x;
+    img->h = y;
+    img->region[0] = 0;
+    img->region[1] = 0;
+    img->region[2] = x;
+    img->region[3] = y;
+    img->handle.ptr = s;
+    return nk_true;
+}
+
+NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img)
+{
+    int x, y, n;
+    struct stb_image *s = malloc(sizeof(struct stb_image));
+    memset(s, 0, sizeof(struct stb_image));
+    s->data = stbi_load_from_memory(mem, size, &x, &y, &n, 0);
     if (!s->data)
     {
         free(s);
@@ -72,6 +97,13 @@ NK_API nk_bool nk_image2texture(struct nk_image *img)
     img->handle.id = tex;
 
     return nk_true;
+}
+
+
+NK_API size_t nk_imagebmppxsize(struct nk_image *img)
+{
+    struct stb_image *s = img->handle.ptr;
+    return s->n;
 }
 
 NK_API void nk_imagebmpfree(struct nk_image *img)

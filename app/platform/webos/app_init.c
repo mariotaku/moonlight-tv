@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <wayland-client.h>
-#include <xkbcommon/xkbcommon.h>
 #include <SDL_syswm.h>
 #include "platform/webos/SDL_webOS.h"
 
@@ -19,20 +17,6 @@
 
 bool app_webos_ndl = false;
 bool app_webos_lgnc = false;
-
-static struct wl_seat *_seat = NULL;
-
-static void _registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version);
-static void _registry_remover(void *data, struct wl_registry *registry, uint32_t id);
-static void _seat_handle_capabilities(void *data, struct wl_seat *seat, enum wl_seat_capability caps);
-
-static const struct wl_registry_listener _registery_listener = {
-    _registry_handler,
-    _registry_remover,
-};
-static const struct wl_seat_listener _seat_listener = {
-    _seat_handle_capabilities,
-};
 
 int app_webos_init(int argc, char *argv[])
 {
@@ -88,31 +72,4 @@ void app_webos_window_setup(SDL_Window *window)
     {
         return;
     }
-
-    struct wl_display *display = info.info.wl.display;
-    struct wl_registry *registery = wl_display_get_registry(display);
-    wl_registry_add_listener(registery, &_registery_listener, NULL);
-
-    wl_display_dispatch(display);
-    // wait for a synchronous response
-    wl_display_roundtrip(display);
-}
-
-void _registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version)
-{
-    if (strcmp(interface, "wl_seat") == 0)
-    {
-        _seat = wl_registry_bind(registry, id, &wl_seat_interface, 1);
-        wl_seat_add_listener(_seat, &_seat_listener, NULL);
-    }
-}
-
-void _registry_remover(void *data, struct wl_registry *registry, uint32_t id)
-{
-}
-
-void _seat_handle_capabilities(void *data, struct wl_seat *seat,
-                               enum wl_seat_capability caps)
-{
-
 }

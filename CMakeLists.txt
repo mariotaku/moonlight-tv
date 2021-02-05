@@ -13,6 +13,10 @@ set(CMAKE_MODULE_PATH
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
 option(TARGET_WEBOS "Build for LG webOS" OFF)
+if (CC_BASENAME MATCHES "^arm-webos-linux")
+    set(TARGET_WEBOS ON)
+    option(WEBOS_SDL_STATIC "" ON)
+endif()
 
 if (TARGET_WEBOS)
     if (NOT ENV{ARCH})
@@ -46,28 +50,29 @@ pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
-    pkg_check_modules(OPENSSL REQUIRED openssl)
+    find_package(OpenSSL)
     pkg_check_modules(Wayland REQUIRED IMPORTED_TARGET wayland-client)
     pkg_check_modules(XkbCommon REQUIRED IMPORTED_TARGET xkbcommon)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
     add_subdirectory(system/lgncapi)
-    
-    add_compile_definitions(MESA_EGL_NO_X11_HEADERS)
-    option(LIBSAMPLERATE "Don't link libsamplerate" OFF)
-    option(VIDEO_RPI "Workaround for homebrew SDK" OFF)
-    option(VIDEO_WAYLAND_QT_TOUCH "No Qt Touch stuff" OFF)
-    option(VIDEO_KMSDRM "" OFF)
-    option(VIDEO_VULKAN "" OFF)
-    add_subdirectory(deps/system/SDL2-webOS)
 
-    find_package(SDL2_image REQUIRED)
+    if (WEBOS_SDL_STATIC)
+        option(LIBSAMPLERATE "Don't link libsamplerate" OFF)
+        option(VIDEO_RPI "Workaround for homebrew SDK" OFF)
+        option(VIDEO_WAYLAND_QT_TOUCH "No Qt Touch stuff" OFF)
+        option(VIDEO_KMSDRM "" OFF)
+        option(VIDEO_VULKAN "" OFF)
+        add_subdirectory(deps/system/SDL2-webOS)
+        target_compile_definitions(SDL2-static PRIVATE MESA_EGL_NO_X11_HEADERS)
+    else()
+        pkg_check_modules(SDL2 REQUIRED sdl2)
+    endif()
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenSSL REQUIRED)
     find_package(OpenGL REQUIRED)
     find_package(SDL2 REQUIRED)
-    find_package(SDL2_image REQUIRED)
     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=57 libavutil>=55)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
@@ -102,6 +107,7 @@ set(SOURCES
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
     app/ui/settings/window.c
+    app/nuklear/ext_image.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
@@ -115,7 +121,6 @@ if (TARGET_WEBOS)
         app/platform/sdl/webos_keys.c
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
-        app/platform/sdl/nkimage.c
         app/platform/sdl/input_manager.c
         app/platform/webos/navkey_sdl_webos.c
         app/platform/webos/SDL_webOS.c
@@ -134,7 +139,6 @@ elseif (TARGET_DESKTOP)
         app/ui/sdl_renderer.c
         app/stream/input/sdlinput.c
         app/platform/sdl/bus.c
-        app/platform/sdl/nkimage.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/platform/sdl/path_sdl.c
@@ -173,14 +177,15 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
 
-    pkg_check_modules(SDL2_SYSTEM REQUIRED sdl2)
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
-
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
-    target_link_libraries(moonlight PRIVATE PkgConfig::Wayland PkgConfig::XkbCommon)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
-    target_link_libraries(moonlight PRIVATE ${SDL2_IMAGE_LIBRARIES})
-    target_link_libraries(moonlight PRIVATE SDL2-static)
+
+    if (WEBOS_SDL_STATIC)
+        target_link_libraries(moonlight PRIVATE SDL2-static)
+    else()
+        target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+        target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES})
+    endif()
 elseif(TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     if(TARGET_DARWIN)
@@ -191,10 +196,8 @@ elseif(TARGET_DESKTOP)
 
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-
     target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE SDL2::SDL2)
 endif()
 
 add_custom_target(moonlight-spritegen
