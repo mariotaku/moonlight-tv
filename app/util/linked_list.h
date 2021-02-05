@@ -109,6 +109,27 @@ LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(append)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE 
 }
 
 #if LINKEDLIST_DOUBLE
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(remove)(LINKEDLIST_TYPE *head, LINKEDLIST_TYPE *node)
+{
+    LINKEDLIST_TYPE *prev = node->prev, *next = node->next;
+    if (prev)
+    {
+        prev->next = next;
+    }
+    else
+    {
+        // This is the new first item
+        head = next;
+    }
+    if (next)
+    {
+        next->prev = prev;
+    }
+    return head;
+}
+#endif
+
+#if LINKEDLIST_DOUBLE
 // From https://www.geeksforgeeks.org/insert-value-sorted-way-sorted-doubly-linked-list/
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(sortedinsert)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node, LINKEDLIST_FN_NAME(compare_fn) fn)
 {

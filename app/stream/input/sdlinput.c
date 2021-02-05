@@ -3,8 +3,6 @@
 
 #include <string.h>
 
-// Include source directly in order to use static functions
-#include "sdl_emb.c"
 #include "stream/session.h"
 #include "util/user_event.h"
 
@@ -15,9 +13,18 @@
 static void release_gamecontroller_buttons(int which);
 static void release_keyboard_keys(SDL_Event ev);
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
-static int _sdlinput_handle_event_fix(SDL_Event *ev);
+static void sdlinput_handle_mouse_event(SDL_Event *ev);
+static void _sdlinput_handle_event_fix(SDL_Event *ev);
+
+void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
+void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
+void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event);
 
 bool absinput_no_control;
+
+GAMEPAD_STATE gamepads[4];
+int activeGamepadMask = 0;
+int sdl_gamepads = 0;
 
 void absinput_init()
 {
@@ -74,63 +81,6 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
-static bool nocontrol_handle_event(SDL_Event ev)
-{
-    switch (ev.type)
-    {
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-    {
-        int modifier = 0;
-        switch (ev.key.keysym.sym)
-        {
-        case SDLK_RSHIFT:
-        case SDLK_LSHIFT:
-            modifier = MODIFIER_SHIFT;
-            break;
-        case SDLK_RALT:
-        case SDLK_LALT:
-            modifier = MODIFIER_ALT;
-            break;
-        case SDLK_RCTRL:
-        case SDLK_LCTRL:
-            modifier = MODIFIER_CTRL;
-            break;
-        }
-
-        if (modifier != 0)
-        {
-            if (ev.type == SDL_KEYDOWN)
-            {
-                keyboard_modifiers |= modifier;
-            }
-            else
-            {
-                keyboard_modifiers &= ~modifier;
-            }
-        }
-
-        // Quit the stream if all the required quit keys are down
-        if ((keyboard_modifiers & ACTION_MODIFIERS) == ACTION_MODIFIERS && ev.key.keysym.sym == QUIT_KEY && ev.type == SDL_KEYUP)
-        {
-            return SDL_QUIT_APPLICATION;
-        }
-        else if ((keyboard_modifiers & ACTION_MODIFIERS) == ACTION_MODIFIERS && ev.key.keysym.sym == FULLSCREEN_KEY && ev.type == SDL_KEYUP)
-        {
-            return SDL_TOGGLE_FULLSCREEN;
-        }
-        else if ((keyboard_modifiers & ACTION_MODIFIERS) == ACTION_MODIFIERS)
-        {
-            return SDL_MOUSE_UNGRAB;
-        }
-        break;
-    }
-    default:
-        break;
-    }
-    return SDL_NOTHING;
-}
-
 bool absinput_dispatch_event(SDL_Event ev)
 {
     if (streaming_status != STREAMING_STREAMING)
@@ -152,11 +102,11 @@ bool absinput_dispatch_event(SDL_Event ev)
         }
         return false;
     }
-    sdlinput_handle_input_result(ev, absinput_no_control ? nocontrol_handle_event(ev) : _sdlinput_handle_event_fix(&ev));
+    _sdlinput_handle_event_fix(&ev);
     return false;
 }
 
-int _sdlinput_handle_event_fix(SDL_Event *event)
+void _sdlinput_handle_event_fix(SDL_Event *event)
 {
     PGAMEPAD_STATE gamepad;
     switch (event->type)
@@ -164,53 +114,20 @@ int _sdlinput_handle_event_fix(SDL_Event *event)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-        // TODO Keyboard event on webOS is incorrect
-        // https://github.com/mariotaku/moonlight-sdl/issues/4
-#if OS_WEBOS
-        switch (event->key.keysym.sym)
-        {
-        case SDLK_WEBOS_BACK:
-            if (event->type == SDL_KEYUP)
-            {
-                return SDL_QUIT_APPLICATION;
-            }
-            else
-            {
-                return SDL_NOTHING;
-            }
-        case SDLK_WEBOS_YELLOW:
-        {
-            char action = event->type == SDL_KEYDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE;
-            LiSendMouseButtonEvent(action, BUTTON_RIGHT);
-            return SDL_NOTHING;
-        }
-        default:
-            return SDL_NOTHING;
-        }
-#endif
+        sdlinput_handle_key_event(&event->key);
         break;
     }
     case SDL_CONTROLLERAXISMOTION:
-        gamepad = get_gamepad(event->caxis.which);
-        switch (event->caxis.axis)
-        {
-        case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-            gamepad->leftTrigger = (event->caxis.value >> 8) * 2;
-            LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
-                                       gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
-            return SDL_NOTHING;
-        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-            gamepad->rightTrigger = (event->caxis.value >> 8) * 2;
-            LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
-                                       gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
-            return SDL_NOTHING;
-        default:
-            break;
-        }
+        sdlinput_handle_caxis_event(&event->caxis);
+        break;
+    case SDL_CONTROLLERBUTTONDOWN:
+    case SDL_CONTROLLERBUTTONUP:
+        sdlinput_handle_cbutton_event(&event->cbutton);
+        break;
     default:
+        sdlinput_handle_mouse_event(event);
         break;
     }
-    return sdlinput_handle_event(event);
 }
 
 bool absinput_controllerdevice_event(SDL_Event ev)
@@ -238,44 +155,6 @@ bool absinput_controllerdevice_event(SDL_Event ev)
     return false;
 }
 
-void sdlinput_handle_input_result(SDL_Event ev, int ret)
-{
-    switch (ret)
-    {
-#if TARGET_DESKTOP
-    case SDL_MOUSE_GRAB:
-        SDL_SetRelativeMouseMode(SDL_TRUE);
-        break;
-    case SDL_MOUSE_UNGRAB:
-        SDL_SetRelativeMouseMode(SDL_FALSE);
-        break;
-#endif
-    case SDL_QUIT_APPLICATION:
-    {
-        switch (ev.type)
-        {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-            release_keyboard_keys(ev);
-            break;
-        case SDL_CONTROLLERBUTTONDOWN:
-        case SDL_CONTROLLERBUTTONUP:
-            // Put gamepad to neutral state
-            release_gamecontroller_buttons(ev.cbutton.which);
-            break;
-        }
-
-        SDL_Event quitapp;
-        quitapp.type = SDL_USEREVENT;
-        quitapp.user.code = USER_ST_QUITAPP_CONFIRM;
-        SDL_PushEvent(&quitapp);
-        break;
-    }
-    default:
-        break;
-    }
-}
-
 void release_gamecontroller_buttons(int which)
 {
     PGAMEPAD_STATE gamepad;
@@ -293,7 +172,6 @@ void release_gamecontroller_buttons(int which)
 
 void release_keyboard_keys(SDL_Event ev)
 {
-    keyboard_modifiers = 0;
 }
 
 bool absinput_init_gamepad(int joystick_index)

@@ -130,6 +130,9 @@ if (TARGET_WEBOS)
         app/platform/webos/app_init.c
         app/platform/sdl/webos_keys.c
         app/stream/input/sdlinput.c
+        app/stream/input/sdl/keyboard.c
+        app/stream/input/sdl/gamepad.c
+        app/stream/input/sdl/mouse.c
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/webos/navkey_sdl_webos.c
@@ -148,6 +151,9 @@ elseif (TARGET_DESKTOP)
         app/backend/pcmanager/sdl_impl.c
         app/ui/sdl_renderer.c
         app/stream/input/sdlinput.c
+        app/stream/input/sdl/keyboard.c
+        app/stream/input/sdl/gamepad.c
+        app/stream/input/sdl/mouse.c
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
