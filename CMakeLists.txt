@@ -71,6 +71,7 @@ elseif (TARGET_DESKTOP)
     find_package(OpenSSL REQUIRED)
     find_package(OpenGL REQUIRED)
     find_package(SDL2 REQUIRED)
+    find_package(SDL2_image REQUIRED)
     pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET libavcodec>=57 libavutil>=55)
     pkg_check_modules(Opus opus REQUIRED IMPORTED_TARGET opus)
 endif()
@@ -195,7 +196,9 @@ elseif(TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
-    target_link_libraries(moonlight PRIVATE SDL2::SDL2)
+    
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 endif()
 
 add_custom_target(moonlight-spritegen
