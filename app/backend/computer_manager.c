@@ -58,7 +58,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         pthread_create(&update_thread, NULL, _computer_manager_server_update_action, data1);
         return true;
     }
-    case USER_CM_REQ_SERVER_UPDATED:
+    case USER_CM_RESP_SERVER_UPDATED:
     {
         PSERVER_LIST orig = data1, update = data2;
         orig->err = update->err;
@@ -169,8 +169,7 @@ void *_computer_manager_quitapp_action(void *data)
 void *_computer_manager_server_update_action(void *data)
 {
     PSERVER_LIST node = data;
-    PSERVER_LIST update = malloc(sizeof(SERVER_LIST));
-    memset(update, 0, sizeof(SERVER_LIST));
+    PSERVER_LIST update = serverlist_new();
     update->server = malloc(sizeof(SERVER_DATA));
     update->err = gs_init(update->server, (char *)node->server->serverInfo.address, app_configuration->key_dir,
                           app_configuration->debug_level, app_configuration->unsupported);
@@ -178,7 +177,7 @@ void *_computer_manager_server_update_action(void *data)
     {
         update->errmsg = gs_error;
     }
-    bus_pushevent(USER_CM_REQ_SERVER_UPDATED, node, update);
+    bus_pushevent(USER_CM_RESP_SERVER_UPDATED, node, update);
     return NULL;
 }
 
