@@ -194,6 +194,9 @@ elseif(TARGET_DARWIN)
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+    
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+    
     target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenSSL::Crypto OpenGL::GL)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 endif()
