@@ -1,6 +1,6 @@
 #include "util/path.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 char *path_pref()
 {
