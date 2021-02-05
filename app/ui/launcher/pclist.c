@@ -58,6 +58,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                 }
             }
         }
+#ifndef OS_WEBOS
         if (nk_combo_item_label(ctx, "Add manually...", NK_TEXT_LEFT))
         {
             if (!event_emitted)
@@ -66,6 +67,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                 event_emitted = true;
             }
         }
+#endif
         nk_combo_end(ctx);
     }
     nk_style_pop_vec2(ctx);
