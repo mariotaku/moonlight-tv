@@ -181,23 +181,19 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
     target_link_libraries(moonlight PRIVATE ${SDL2_IMAGE_LIBRARIES})
     target_link_libraries(moonlight PRIVATE SDL2-static)
-elseif(TARGET_DARWIN)
-    target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_DARWIN GL_SILENCE_DEPRECATION)
+elseif(TARGET_DESKTOP)
+    target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
+    if(TARGET_DARWIN)
+        target_compile_definitions(moonlight PUBLIC OS_DARWIN GL_SILENCE_DEPRECATION)
+    elseif(TARGET_LINUX)
+        target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
+    endif()
+
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-    get_filename_component(SDL2_INCLUDE_DIR_PARENT ${SDL2_INCLUDE_DIRS} DIRECTORY)
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIR_PARENT})
 
     target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenGL::GL OpenSSL::Crypto)
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
-else()
-    target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP OS_LINUX _GNU_SOURCE)
-    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
-    
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-    
-    target_link_libraries(moonlight PRIVATE PkgConfig::Opus PkgConfig::FFMPEG OpenSSL::Crypto OpenGL::GL)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 endif()
 
