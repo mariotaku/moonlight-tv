@@ -26,7 +26,7 @@ typedef struct SERVER_LIST_T
   char *uuid;
   char *mac;
   char *hostname;
-  PSERVER_DATA server;
+  const SERVER_DATA *server;
   int err;
   const char *errmsg;
   PAPP_DLIST apps;

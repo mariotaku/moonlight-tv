@@ -126,7 +126,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     _streaming_errmsg_write("");
     PSERVER_LIST node = req->node;
-    PSERVER_DATA server = node->server;
+    PSERVER_DATA server = (PSERVER_DATA)node->server;
     PCONFIGURATION config = req->config;
     absinput_no_control = config->viewonly;
     int appId = req->appId;

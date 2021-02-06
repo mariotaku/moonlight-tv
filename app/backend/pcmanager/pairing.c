@@ -39,11 +39,12 @@ void *_computer_manager_pairing_action(void *data)
 {
     cm_pin_request *req = (cm_pin_request *)data;
     PSERVER_LIST node = req->node;
-    PSERVER_DATA server = node->server;
+    // Pairing will change server pointer
+    PSERVER_DATA server = (PSERVER_DATA) node->server;
     node->err = gs_pair(server, (char *)req->pin);
     node->errmsg = gs_error;
     bus_pushevent(USER_CM_PAIRING_DONE, node, NULL);
-    free(data);
+    free(req);
     return NULL;
 }
 

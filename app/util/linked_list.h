@@ -12,6 +12,7 @@
 
 typedef int(LINKEDLIST_FN_NAME(find_fn))(LINKEDLIST_TYPE *p, const void *fv);
 typedef int(LINKEDLIST_FN_NAME(compare_fn))(LINKEDLIST_TYPE *p1, LINKEDLIST_TYPE *p2);
+typedef void(LINKEDLIST_FN_NAME(nodefree_fn))(LINKEDLIST_TYPE *p);
 
 #ifndef LINKEDLIST_IMPL
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)();
@@ -23,7 +24,7 @@ LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(append)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE 
 #if LINKEDLIST_DOUBLE
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(sortedinsert)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node, LINKEDLIST_FN_NAME(compare_fn) fn);
 #endif
-void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head);
+void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head, LINKEDLIST_FN_NAME(nodefree_fn) fn);
 #else
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)()
 {
@@ -173,14 +174,21 @@ LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(sortedinsert)(LINKEDLIST_TYPE *p, LINKEDLIST
 }
 #endif
 
-void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head)
+void LINKEDLIST_FN_NAME(free)(LINKEDLIST_TYPE *head, LINKEDLIST_FN_NAME(nodefree_fn) fn)
 {
     LINKEDLIST_TYPE *tmp;
     while (head != NULL)
     {
         tmp = head;
         head = head->next;
-        free(tmp);
+        if (fn)
+        {
+            fn(tmp);
+        }
+        else
+        {
+            free(tmp);
+        }
     }
 }
 #endif

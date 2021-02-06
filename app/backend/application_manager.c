@@ -72,7 +72,7 @@ void *_application_manager_applist_action(void *data)
     PSERVER_LIST node = (PSERVER_LIST)data;
     PAPP_LIST list = NULL, tmp;
     int ret;
-    if ((ret = gs_applist(node->server, &list)) != GS_OK)
+    if ((ret = gs_applist((PSERVER_DATA)node->server, &list)) != GS_OK)
     {
         fprintf(stderr, "Can't get app list: %d\n", ret);
         bus_pushevent(USER_AM_APPLIST_LOADED, data, NULL);

@@ -231,7 +231,7 @@ bool coverloader_fetch_image(PSERVER_LIST node, int id)
     char path[4096];
     sprintf(path, "%s/%d", cachedir, id);
     free(cachedir);
-    return gs_download_cover(node->server, id, path) == GS_OK;
+    return gs_download_cover((PSERVER_DATA)node->server, id, path) == GS_OK;
 }
 
 // We shouldn't write any internal state outside main thread. So do it here

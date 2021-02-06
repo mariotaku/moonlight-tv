@@ -1,4 +1,5 @@
 #include "computer_manager.h"
+#include "pcmanager/priv.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +45,7 @@ void computer_manager_destroy()
         pthread_kill(computer_manager_polling_thread, 0);
     }
     pcmanager_save_known_hosts();
-    serverlist_free(computer_list);
+    serverlist_free(computer_list, serverlist_nodefree);
 }
 
 bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
@@ -64,15 +65,20 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         orig->err = update->err;
         if (update->err == GS_OK)
         {
-            PSERVER_DATA old = orig->server;
-            free(old);
+            if (orig->server)
+            {
+                serverdata_free((PSERVER_DATA)orig->server);
+            }
             orig->server = update->server;
         }
         else
         {
             orig->errmsg = update->errmsg;
             orig->server = NULL;
-            free(update->server);
+            if (update->server)
+            {
+                serverdata_free((PSERVER_DATA)update->server);
+            }
         }
         free(update);
         return true;
@@ -92,14 +98,16 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         PSERVER_LIST node = serverlist_find_by(computer_list, discovered->uuid, _server_list_compare_uuid);
         if (node)
         {
-            PSERVER_DATA oldsrv = node->server;
+            if (node->server)
+            {
+                serverdata_free((PSERVER_DATA)node->server);
+            }
             node->mac = discovered->mac;
             node->hostname = discovered->hostname;
             node->err = discovered->err;
             node->errmsg = discovered->errmsg;
             node->server = discovered->server;
 
-            free(discovered->server);
             free(discovered);
             bus_pushevent(USER_CM_SERVER_UPDATED, node, data2);
         }
@@ -156,7 +164,7 @@ void *_computer_manager_quitapp_action(void *data)
 {
     computer_manager_executing_quitapp = true;
     PSERVER_LIST node = data;
-    int quitret = gs_quit_app(node->server);
+    int quitret = gs_quit_app((PSERVER_DATA)node->server);
     computer_manager_executing_quitapp = false;
     bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
     if (quitret != GS_OK)
@@ -171,7 +179,7 @@ void *_computer_manager_server_update_action(void *data)
     PSERVER_LIST node = data;
     PSERVER_LIST update = serverlist_new();
     update->server = malloc(sizeof(SERVER_DATA));
-    update->err = gs_init(update->server, (char *)node->server->serverInfo.address, app_configuration->key_dir,
+    update->err = gs_init((PSERVER_DATA)update->server, (char *)node->server->serverInfo.address, app_configuration->key_dir,
                           app_configuration->debug_level, app_configuration->unsupported);
     if (update->err)
     {
@@ -238,4 +246,22 @@ void pcmanager_save_known_hosts()
         fprintf(fd, "%s %s %s\n", cur->uuid, cur->mac, cur->hostname);
     }
     fclose(fd);
+}
+
+void serverdata_free(PSERVER_DATA data)
+{
+    if (data->modes)
+    {
+        free(data->modes);
+    }
+    free(data);
+}
+
+void serverlist_nodefree(PSERVER_LIST node)
+{
+    if (node->server)
+    {
+        serverdata_free((PSERVER_DATA)node->server);
+    }
+    free(node);
 }

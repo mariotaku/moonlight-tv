@@ -13,12 +13,12 @@
 static void release_gamecontroller_buttons(int which);
 static void release_keyboard_keys(SDL_Event ev);
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
-static void sdlinput_handle_mouse_event(SDL_Event *ev);
 static void _sdlinput_handle_event_fix(SDL_Event *ev);
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
 void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event);
+void sdlinput_handle_mouse_event(SDL_Event *ev);
 
 bool absinput_no_control;
 
