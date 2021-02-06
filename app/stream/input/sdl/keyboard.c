@@ -5,7 +5,9 @@
 #include <Limelight.h>
 #include <SDL.h>
 
+#if OS_WEBOS
 #include "platform/sdl/webos_keys.h"
+#endif
 
 #include "util/bus.h"
 #include "util/user_event.h"
@@ -18,6 +20,10 @@
 #define VK_F1 0x70
 #define VK_F13 0x7C
 #define VK_NUMPAD0 0x60
+#endif
+
+#if OS_WEBOS
+static bool sdlinput_handle_key_event_webos(SDL_KeyboardEvent *event, short *keyCode);
 #endif
 
 enum KeyCombo
@@ -489,6 +495,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
     }
 }
 
+#if OS_WEBOS
 bool sdlinput_handle_key_event_webos(SDL_KeyboardEvent *event, short *keyCode)
 {
     // TODO Keyboard event on webOS is incorrect
@@ -508,3 +515,4 @@ bool sdlinput_handle_key_event_webos(SDL_KeyboardEvent *event, short *keyCode)
         return false;
     }
 }
+#endif
