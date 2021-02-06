@@ -157,14 +157,14 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
         {
             PSTREAM_CONFIGURATION conf = data1;
             renderer_setup(conf->width, conf->height);
-            break;
+            return true;
         }
         case USER_STREAM_CLOSE:
             renderer_cleanup();
             break;
         case USER_SDL_FRAME:
             renderer_submit_frame(data1, data2);
-            break;
+            return true;
 #endif
         default:
             break;

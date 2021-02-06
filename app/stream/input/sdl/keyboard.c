@@ -1,10 +1,14 @@
 #include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
+#include "stream/session.h"
 
 #include <Limelight.h>
 #include <SDL.h>
 
 #include "platform/sdl/webos_keys.h"
+
+#include "util/bus.h"
+#include "util/user_event.h"
 
 #define VK_0 0x30
 #define VK_A 0x41
@@ -28,15 +32,25 @@ enum KeyCombo
     KeyComboMax
 };
 
-static struct
+struct SpecialKeyCombo
 {
     enum KeyCombo keyCombo;
     SDL_Keycode keyCode;
     SDL_Scancode scanCode;
     bool enabled;
-} m_SpecialKeyCombos[KeyComboMax];
+};
 
-enum KeyCombo m_PendingKeyCombo;
+static struct SpecialKeyCombo m_SpecialKeyCombos[KeyComboMax] = {
+    {KeyComboQuit, SDLK_q, SDL_SCANCODE_Q, true},
+    {KeyComboUngrabInput, SDLK_z, SDL_SCANCODE_Z, true},
+    {KeyComboToggleFullScreen, SDLK_x, SDL_SCANCODE_X, true},
+    {KeyComboToggleStatsOverlay, SDLK_s, SDL_SCANCODE_S, true},
+    {KeyComboToggleMouseMode, SDLK_m, SDL_SCANCODE_M, true},
+    {KeyComboToggleCursorHide, SDLK_c, SDL_SCANCODE_C, true},
+    {KeyComboToggleMinimize, SDLK_d, SDL_SCANCODE_D, true},
+};
+
+enum KeyCombo m_PendingKeyCombo = KeyComboMax;
 
 struct KeysDown
 {
@@ -79,6 +93,7 @@ void performPendingSpecialKeyCombo()
     case KeyComboQuit:
         SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
                     "Detected quit key combo");
+        streaming_interrupt(false);
         break;
 
     case KeyComboUngrabInput:
@@ -94,6 +109,7 @@ void performPendingSpecialKeyCombo()
     case KeyComboToggleStatsOverlay:
         SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
                     "Detected stats toggle combo");
+        bus_pushevent(USER_ST_QUITAPP_CONFIRM, NULL, NULL);
         break;
 
     case KeyComboToggleMouseMode:

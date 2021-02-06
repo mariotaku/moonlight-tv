@@ -18,7 +18,9 @@ static void _sdlinput_handle_event_fix(SDL_Event *ev);
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
 void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event);
-void sdlinput_handle_mouse_event(SDL_Event *ev);
+void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event);
+void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event);
+void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 
 bool absinput_no_control;
 
@@ -124,8 +126,15 @@ void _sdlinput_handle_event_fix(SDL_Event *event)
     case SDL_CONTROLLERBUTTONUP:
         sdlinput_handle_cbutton_event(&event->cbutton);
         break;
-    default:
-        sdlinput_handle_mouse_event(event);
+    case SDL_MOUSEMOTION:
+        sdlinput_handle_mmotion_event(&event->motion);
+        break;
+    case SDL_MOUSEWHEEL:
+        sdlinput_handle_mwheel_event(&event->wheel);
+        break;
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+        sdlinput_handle_mbutton_event(&event->button);
         break;
     }
 }

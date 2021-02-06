@@ -60,7 +60,7 @@ bool streaming_overlay_dispatch_userevent(int which)
     {
     case USER_ST_QUITAPP_CONFIRM:
         stream_overlay_showing = true;
-        break;
+        return true;
     default:
         break;
     }
