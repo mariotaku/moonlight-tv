@@ -56,4 +56,6 @@ install(TARGETS gamestream
 )
 
 target_link_libraries(gamestream moonlight-common-c ${CURL_LIBRARIES} ${OPENSSL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-target_link_libraries(gamestream h264bitstream)
+if (GS_SPS)
+    target_link_libraries(gamestream h264bitstream)
+endif()
