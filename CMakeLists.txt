@@ -33,10 +33,10 @@ if (TARGET_WEBOS)
     endif()
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
-    set(HAVE_PI TRUE)
     set(TARGET_LINUX TRUE)
     option(GS_SPS "" ON)
     add_subdirectory(third_party/h264bitstream)
+    add_subdirectory(third_party/ilclient)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     set(TARGET_DARWIN TRUE)
     set(TARGET_DESKTOP TRUE)
@@ -77,7 +77,8 @@ if (TARGET_WEBOS)
     endif()
 elseif (TARGET_RASPI)
     find_package(OpenSSL REQUIRED)
-    
+    find_package(Broadcom REQUIRED)
+
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(GLES REQUIRED bcm_host brcmglesv2)
@@ -181,11 +182,12 @@ else()
     )
 endif()
 
-if(HAVE_PI)
+if(BROADCOM_FOUND)
     list(APPEND SOURCES
         app/stream/audio/omx.c
         app/stream/video/mmal.c
         app/stream/video/pi.c
+        app/stream/util.c
     )
 endif()
 
@@ -231,6 +233,7 @@ elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_RASPI)
+    target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
     
     target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
 
@@ -247,6 +250,8 @@ elseif(TARGET_RASPI)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
+
+    target_link_libraries(moonlight PRIVATE ilclient ${BROADCOM_MMAL_LIBRARIES})
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GL2)

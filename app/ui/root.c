@@ -152,7 +152,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
             nk_input_motion(ctx, 0, 0);
             break;
         }
-#if TARGET_DESKTOP || TARGET_RASPI
+#if TARGET_DESKTOP
         case USER_STREAM_OPEN:
         {
             PSTREAM_CONFIGURATION conf = data1;

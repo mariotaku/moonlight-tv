@@ -128,6 +128,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     PSERVER_LIST node = req->node;
     PSERVER_DATA server = (PSERVER_DATA)node->server;
     PCONFIGURATION config = req->config;
+    enum platform system = platform_check(config->platform);
     absinput_no_control = config->viewonly;
     int appId = req->appId;
 
@@ -155,10 +156,11 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
         printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
     }
 
-    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(NONE);
+    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(system);
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
-    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(NONE, config->audio_device);
+    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(system, config->audio_device);
 
+    platform_start(system);
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &vdec_delegate, adec, vdec, drFlags, config->audio_device, 0);
     if (startResult != 0 || session_interrupted)
@@ -194,6 +196,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
 
 thread_cleanup:
+    platform_stop(system);
     free(req);
     _streaming_set_status(STREAMING_NONE);
     return NULL;

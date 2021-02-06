@@ -41,3 +41,11 @@ extern DECODER_RENDERER_CALLBACKS decoder_callbacks_lgnc;
 #ifdef HAVE_SDL
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl;
 #endif
+
+#ifdef HAVE_PI
+extern DECODER_RENDERER_CALLBACKS decoder_callbacks_pi;
+#endif
+
+#ifdef HAVE_MMAL
+extern DECODER_RENDERER_CALLBACKS decoder_callbacks_mmal;
+#endif

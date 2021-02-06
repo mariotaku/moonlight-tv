@@ -1,7 +1,7 @@
 /*
  * This file is part of Moonlight Embedded.
  *
- * Copyright (C) 2015-2017 Iwan Timmer
+ * Copyright (C) 2017 Iwan Timmer
  *
  * Moonlight is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,21 +19,4 @@
 
 #include <stdbool.h>
 
-#include <Limelight.h>
-
-#define MAX_CHANNEL_COUNT 6
-#define FRAME_SIZE 240
-#define FRAME_BUFFER 12
-
-#ifdef OS_WEBOS
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl;
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_lgnc;
-#endif
-
-#ifdef HAVE_PI
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_omx;
-#endif
-
-#ifdef HAVE_SDL
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
-#endif
+int blank_fb(char *path, bool clear);
