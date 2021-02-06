@@ -15,7 +15,7 @@
 enum platform platform_check(char *name)
 {
 #if TARGET_RASPI
-    return MMAL;
+    return PI;
 #elif OS_WEBOS
     if (app_webos_ndl)
     {
@@ -78,10 +78,6 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #if OS_WEBOS
     case NDL:
         return &decoder_callbacks_ndl;
-#endif
-#if TARGET_DESKTOP
-    case SDL:
-        return &decoder_callbacks_sdl;
 #endif
 #if HAVE_PI
     case PI:

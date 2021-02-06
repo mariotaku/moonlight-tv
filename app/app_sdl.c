@@ -36,6 +36,9 @@
 #include "platform/webos/app_init.h"
 #include "platform/webos/SDL_webOS.h"
 #endif
+#if TARGET_RASPI
+#include "platform/raspi/app_init.h"
+#endif
 
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
@@ -83,6 +86,10 @@ APP_WINDOW_CONTEXT app_window_create()
         printf("webOS TV: refresh: %d Hz, panel: %d * %d\n", refresh_rate, panel_width, panel_height);
     }
 #endif
+#if TARGET_RASPI
+    app_rpi_window_setup(win);
+#endif
+    SDL_Log("Video Driver: %s\n", SDL_GetCurrentVideoDriver());
     sdlCurrentFrame = sdlNextFrame = 0;
     mutex = SDL_CreateMutex();
 

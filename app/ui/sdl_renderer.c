@@ -117,7 +117,7 @@ void renderer_submit_frame(void *data1, void *data2)
 void renderer_draw()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0, 0, 0, 0);
 
     if (!frame_arrived || !renderer_ready)
     {

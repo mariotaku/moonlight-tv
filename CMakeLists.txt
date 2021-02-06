@@ -69,7 +69,7 @@ if (TARGET_WEBOS)
         option(VIDEO_WAYLAND_QT_TOUCH "No Qt Touch stuff" OFF)
         option(VIDEO_KMSDRM "" OFF)
         option(VIDEO_VULKAN "" OFF)
-        add_subdirectory(deps/system/SDL2-webOS)
+        add_subdirectory(deps/system/SDL2)
         target_compile_definitions(SDL2-static PRIVATE MESA_EGL_NO_X11_HEADERS)
     else()
         pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -79,7 +79,7 @@ elseif (TARGET_RASPI)
     find_package(OpenSSL REQUIRED)
     find_package(Broadcom REQUIRED)
 
-    pkg_check_modules(SDL2 REQUIRED sdl2)
+    add_subdirectory(deps/system/SDL2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(GLES REQUIRED bcm_host brcmglesv2)
     pkg_check_modules(FFMPEG REQUIRED libavcodec>=57 libavutil>=55)
@@ -184,6 +184,7 @@ endif()
 
 if(BROADCOM_FOUND)
     list(APPEND SOURCES
+        app/platform/raspi/app_init.c
         app/stream/audio/omx.c
         app/stream/video/mmal.c
         app/stream/video/pi.c
@@ -242,9 +243,10 @@ elseif(TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
-    
+    target_link_libraries(moonlight PRIVATE SDL2-static)
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${SDL2_IMAGE_LIBRARIES})
+
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
 
@@ -252,6 +254,10 @@ elseif(TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
 
     target_link_libraries(moonlight PRIVATE ilclient ${BROADCOM_MMAL_LIBRARIES})
+
+    target_include_directories(moonlight PRIVATE ${BROADCOM_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${BROADCOM_OMX_LIBRARIES})
+    target_compile_definitions(moonlight PUBLIC ${BROADCOM_OMX_DEFINITIONS})
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GL2)
