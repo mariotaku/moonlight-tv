@@ -13,34 +13,42 @@
 
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
 {
-#if OS_LGNC
-    return &audio_callbacks_lgnc;
-#elif OS_WEBOS
-    bool use_sdl = audio_device && strcmp(audio_device, "sdl") == 0;
-    if (app_webos_ndl && !use_sdl)
+    switch (system)
     {
-        return &audio_callbacks_ndl;
-    }
-    if (app_webos_lgnc && !use_sdl)
-    {
+#if OS_LGNC || OS_WEBOS
+    case LGNC:
         return &audio_callbacks_lgnc;
-    }
 #endif
-    return &audio_callbacks_sdl;
+#if OS_WEBOS
+    case NDL:
+        return &audio_callbacks_ndl;
+#endif
+#if TARGET_DESKTOP
+    case SDL:
+        return &audio_callbacks_sdl;
+#endif
+    default:
+        return NULL;
+    }
 }
 
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 {
-#ifdef OS_WEBOS
-    if (app_webos_ndl)
+    switch (system)
     {
-        return &decoder_callbacks_ndl;
-    }
-    if (app_webos_lgnc)
-    {
+#if OS_LGNC || OS_WEBOS
+    case LGNC:
         return &decoder_callbacks_lgnc;
-    }
-#else
-    return &decoder_callbacks_sdl;
 #endif
+#if OS_WEBOS
+    case NDL:
+        return &decoder_callbacks_ndl;
+#endif
+#if TARGET_DESKTOP
+    case SDL:
+        return &decoder_callbacks_sdl;
+#endif
+    default:
+        return NULL;
+    }
 }

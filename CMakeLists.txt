@@ -13,6 +13,8 @@ set(CMAKE_MODULE_PATH
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
 option(TARGET_WEBOS "Build for LG webOS" OFF)
+option(TARGET_RASPI "Build for Raspberry Pi" OFF)
+
 if (CC_BASENAME MATCHES "^arm-webos-linux")
     set(TARGET_WEBOS ON)
     option(WEBOS_SDL_STATIC "Link SDL statically" ON)
@@ -29,6 +31,12 @@ if (TARGET_WEBOS)
             set(ENV{ARCH} ${CC_ARCH})
         endif()
     endif()
+elseif (TARGET_RASPI)
+    set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
+    set(HAVE_PI TRUE)
+    set(TARGET_LINUX TRUE)
+    option(GS_SPS "" ON)
+    add_subdirectory(third_party/h264bitstream)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
     set(TARGET_DARWIN TRUE)
     set(TARGET_DESKTOP TRUE)
@@ -67,6 +75,14 @@ if (TARGET_WEBOS)
         pkg_check_modules(SDL2 REQUIRED sdl2)
         pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     endif()
+elseif (TARGET_RASPI)
+    find_package(OpenSSL REQUIRED)
+    
+    pkg_check_modules(SDL2 REQUIRED sdl2)
+    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+    pkg_check_modules(GLES REQUIRED bcm_host brcmglesv2)
+    pkg_check_modules(FFMPEG REQUIRED libavcodec>=57 libavutil>=55)
+    pkg_check_modules(OPUS REQUIRED opus)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
@@ -145,7 +161,7 @@ if (TARGET_WEBOS)
         app/stream/video/lgnc.c
         app/stream/audio/sdl.c
     )
-elseif (TARGET_DESKTOP)
+else()
     list(APPEND SOURCES
         app/app_sdl.c
         app/backend/pcmanager/sdl_impl.c
@@ -162,6 +178,14 @@ elseif (TARGET_DESKTOP)
         app/stream/video/sdl.c
         app/stream/video/delegate.c
         app/stream/video/ffmpeg.c
+    )
+endif()
+
+if(HAVE_PI)
+    list(APPEND SOURCES
+        app/stream/audio/omx.c
+        app/stream/video/mmal.c
+        app/stream/video/pi.c
     )
 endif()
 
@@ -191,6 +215,7 @@ target_link_libraries(moonlight PRIVATE
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
@@ -202,8 +227,30 @@ if (TARGET_WEBOS)
         target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
         target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
     endif()
-elseif(TARGET_DESKTOP)
+elseif(TARGET_RASPI)
+    target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_RASPI)
+    
+    target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
+
+    target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
+    target_include_directories(moonlight SYSTEM PRIVATE ${GLES_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
+    target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
+
+    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+    
+    target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+
+    target_include_directories(moonlight SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
+else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GL2)
+    
     if(TARGET_DARWIN)
         target_compile_definitions(moonlight PUBLIC OS_DARWIN GL_SILENCE_DEPRECATION)
     elseif(TARGET_LINUX)

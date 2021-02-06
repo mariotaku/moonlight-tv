@@ -1,7 +1,7 @@
 /*
  * This file is part of Moonlight Embedded.
  *
- * Copyright (C) 2015-2017 Iwan Timmer
+ * Copyright (C) 2015 Iwan Timmer
  *
  * Moonlight is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,7 @@
 
 #include <Limelight.h>
 
-#include <dlfcn.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
+#define GS_SPS_BITSTREAM_FIXUP 0x01
 
-#define IS_EMBEDDED(SYSTEM) SYSTEM != SDL
-
-enum platform { NONE, SDL, X11, X11_VDPAU, X11_VAAPI, PI, MMAL, IMX, AML, RK, NDL, LGNC, FAKE };
-
-enum platform platform_check(char*);
-PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system);
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char* audio_device);
-bool platform_supports_hevc(enum platform system);
-char* platform_name(enum platform system);
-
-void platform_start(enum platform system);
-void platform_stop(enum platform system);
+void gs_sps_init(int width, int height);
+void gs_sps_fix(PLENTRY sps, int flags, uint8_t* out_buf, uint32_t* out_offset);

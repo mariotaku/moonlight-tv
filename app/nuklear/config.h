@@ -8,9 +8,3 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_BUTTON_TRIGGER_ON_RELEASE
-
-#ifdef OS_WEBOS
-#define NK_SDL_GLES2
-#else
-#define NK_SDL_GL2
-#endif

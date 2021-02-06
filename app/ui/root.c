@@ -20,7 +20,7 @@
 
 #include "res.h"
 
-#if TARGET_DESKTOP
+#if TARGET_DESKTOP || TARGET_RASPI
 #include "sdl_renderer.h"
 #endif
 
@@ -97,7 +97,7 @@ void ui_render_background()
 #if OS_WEBOS
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#elif TARGET_DESKTOP
+#else
     if (streaming_status == STREAMING_STREAMING)
     {
         renderer_draw();
@@ -152,7 +152,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
             nk_input_motion(ctx, 0, 0);
             break;
         }
-#if TARGET_DESKTOP
+#if TARGET_DESKTOP || TARGET_RASPI
         case USER_STREAM_OPEN:
         {
             PSTREAM_CONFIGURATION conf = data1;

@@ -27,3 +27,8 @@ buildPlatform:
       long: Build for webOS
       settings:
         TARGET_WEBOS: true
+    raspi:
+      short: Raspberry Pi
+      long: Build for Raspberry Pi
+      settings:
+        TARGET_RASPI: true

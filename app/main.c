@@ -33,6 +33,9 @@ int main(int argc, char *argv[])
 #ifdef OS_WEBOS
     REDIR_STDOUT("moonlight");
 #endif
+#if TARGET_RASPI
+    setenv("SDL_VIDEODRIVER", "rpi", 1);
+#endif
     bus_init();
 
     int ret = app_init(argc, argv);

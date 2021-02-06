@@ -19,7 +19,7 @@
 #include "nuklear/ext_smooth_list_view.h"
 #include "nuklear/platform.h"
 
-#if TARGET_DESKTOP
+#if TARGET_DESKTOP || TARGET_RASPI
 #include <SDL_image.h>
 #endif
 
@@ -58,6 +58,7 @@ int app_init(int argc, char *argv[])
 #if OS_WEBOS
     return app_webos_init(argc, argv);
 #else
+
     return 0;
 #endif
 }
@@ -67,7 +68,7 @@ APP_WINDOW_CONTEXT app_window_create()
     nk_platform_preinit();
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
                            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
-#if TARGET_DESKTOP
+#if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
@@ -118,7 +119,7 @@ static void app_process_events(struct nk_context *ctx)
             // Interrupt streaming because app will go to background
             streaming_interrupt(false);
         }
-#if TARGET_DESKTOP
+#if TARGET_DESKTOP || TARGET_RASPI
         else if (evt.type == SDL_WINDOWEVENT)
         {
             if (evt.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
