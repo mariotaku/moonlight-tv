@@ -213,7 +213,7 @@ elseif(TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
-    target_link_libraries(moonlight PRIVATE OpenGL::OpenGL)
+    target_link_libraries(moonlight PRIVATE OpenGL::GL)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})

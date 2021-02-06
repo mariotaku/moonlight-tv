@@ -130,6 +130,8 @@ void performPendingSpecialKeyCombo()
         SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
                     "Detected minimize combo");
         break;
+    default:
+        break;
     }
 
     // Reset pending key combo
