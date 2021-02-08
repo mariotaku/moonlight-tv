@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include <SDL_opengl.h>
 
-static GLuint gen_texture_from_sdl(SDL_Surface *surface);
+static GLuint gen_texture_from_sdl(SDL_Surface *surface, int subsample);
 
 NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img)
 {
@@ -42,10 +42,26 @@ NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img)
     return nk_true;
 }
 
-NK_API nk_bool nk_image2texture(struct nk_image *img)
+NK_API nk_bool nk_image2texture(struct nk_image *img, int size_limit)
 {
     SDL_Surface *surface = img->handle.ptr;
-    int texture = gen_texture_from_sdl(surface);
+    int subsample = 1;
+    int max_size = NK_MAX(img->w, img->h);
+    while (size_limit && max_size > size_limit)
+    {
+        max_size /= 2;
+        subsample *= 2;
+    }
+    if (subsample > 1)
+    {
+        img->w /= subsample;
+        img->h /= subsample;
+        img->region[0] /= subsample;
+        img->region[1] /= subsample;
+        img->region[2] /= subsample;
+        img->region[3] /= subsample;
+    }
+    int texture = gen_texture_from_sdl(surface, subsample);
     // Surface has been used up
     nk_imagebmpfree(img);
     img->handle.id = texture;
@@ -70,7 +86,7 @@ NK_API void nk_imagetexturefree(struct nk_image *img)
     return glDeleteTextures(1, t);
 }
 
-GLuint gen_texture_from_sdl(SDL_Surface *surface)
+GLuint gen_texture_from_sdl(SDL_Surface *surface, int subsample)
 {
     GLuint texture;
     GLenum texture_format;
@@ -95,6 +111,7 @@ GLuint gen_texture_from_sdl(SDL_Surface *surface)
     {
         printf("warning: the image is not truecolor..  this will probably break\n");
         // this error should not go unhandled
+        return 0;
     }
 
     // Have OpenGL generate a texture object handle for us
@@ -107,8 +124,24 @@ GLuint gen_texture_from_sdl(SDL_Surface *surface)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Edit the texture object's image data using the information SDL_Surface gives us
-    glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
-                 texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+    if (subsample > 1)
+    {
+        /* Scaled width and height */
+        int sw = surface->w / subsample,
+            sh = surface->h / subsample;
+        SDL_Surface *scaled = SDL_CreateRGBSurface(0, sw, sh, surface->format->BitsPerPixel, surface->format->Rmask,
+                                                   surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
+        SDL_BlitScaled(surface, NULL, scaled, NULL);
+        // Edit the texture object's image data using the information SDL_Surface gives us
+        glTexImage2D(GL_TEXTURE_2D, 0, texture_format, scaled->w, scaled->h, 0, texture_format,
+                     GL_UNSIGNED_BYTE, scaled->pixels);
+        SDL_FreeSurface(scaled);
+    }
+    else
+    {
+        // Edit the texture object's image data using the information SDL_Surface gives us
+        glTexImage2D(GL_TEXTURE_2D, 0, texture_format, surface->w, surface->h, 0,
+                     texture_format, GL_UNSIGNED_BYTE, surface->pixels);
+    }
     return texture;
 }

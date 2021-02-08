@@ -63,7 +63,7 @@ NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img)
     return nk_true;
 }
 
-NK_API nk_bool nk_image2texture(struct nk_image *img)
+NK_API nk_bool nk_image2texture(struct nk_image *img, int size_limit)
 {
     struct stb_image *s = img->handle.ptr;
     GLuint tex;

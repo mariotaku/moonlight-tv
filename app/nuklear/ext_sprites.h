@@ -19,7 +19,7 @@ struct nk_spritesheet_ui sprites_ui;
 void nk_ext_sprites_init()
 {
     nk_imageloadm(res_spritesheet_ui_3x_data, res_spritesheet_ui_3x_size, &ui_spritesheet);
-    nk_image2texture(&ui_spritesheet);
+    nk_image2texture(&ui_spritesheet, 0);
     nk_spritesheet_init_ui_3x(ui_spritesheet, &sprites_ui);
 }
 

@@ -66,7 +66,7 @@ void launcher_window_init(struct nk_context *ctx)
         fprintf(stderr, "Cannot find assets/defcover.png\n");
         abort();
     }
-    nk_image2texture(&launcher_default_cover);
+    nk_image2texture(&launcher_default_cover, 0);
     selected_server_node = NULL;
     pairing_computer_state.state = PS_NONE;
     memcpy(&cm_list_button_style, &(ctx->style.button), sizeof(struct nk_style_button));
@@ -96,11 +96,12 @@ bool launcher_window(struct nk_context *ctx)
         bool show_server_error_popup = false, show_pairing_error_popup = false,
              show_quitapp_error_popup = false;
 
-        nk_style_push_float(ctx, &ctx->style.window.spacing.y, 10 * NK_UI_SCALE);
+        nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2_s(10, 10));
         bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 200);
         nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_end(ctx);
         list_height -= nk_widget_height(ctx);
@@ -119,10 +120,15 @@ bool launcher_window(struct nk_context *ctx)
         {
             settings_window_open();
         }
+        if (nk_button_image(ctx, sprites_ui.ic_close))
+        {
+            app_request_exit();
+        }
         nk_style_pop_vec2(ctx);
+
         list_height -= ctx->style.window.spacing.y;
 
-        nk_style_pop_float(ctx);
+        nk_style_pop_vec2(ctx);
 
         list_height -= launcher_bottom_bar_height_dp * NK_UI_SCALE;
         list_height -= ctx->style.window.spacing.y;
@@ -133,7 +139,7 @@ bool launcher_window(struct nk_context *ctx)
         PSERVER_LIST selected = selected_server_node;
 
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2(0, 0));
-        nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2(10, 10));
+        nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2_s(5, 5));
         if (selected != NULL)
         {
             if (selected->server != NULL)

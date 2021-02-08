@@ -259,7 +259,7 @@ bool coverloader_dispatch_userevent(int which, void *data1, void *data2)
         if (img->w > 0 && img->h > 0)
         {
             size_t bpp = nk_imagebmppxsize(img);
-            nk_image2texture(img);
+            nk_image2texture(img, 512);
             img_size = img->w * img->h * bpp;
         }
         else

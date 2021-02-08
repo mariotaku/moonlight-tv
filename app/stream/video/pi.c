@@ -137,10 +137,17 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   displayRegion.nVersion.nVersion = OMX_VERSION;
   displayRegion.nPortIndex = 90;
   displayRegion.fullscreen = OMX_TRUE;
+  displayRegion.layer = 10000;
   displayRegion.mode = OMX_DISPLAY_SET_FULLSCREEN;
+  displayRegion.set = OMX_DISPLAY_SET_LAYER;
 
   if(OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigLatencyTarget, &latencyTarget) != OMX_ErrorNone) {
     fprintf(stderr, "Failed to set video render parameters\n");
+    exit(EXIT_FAILURE);
+  }
+
+  if(OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigDisplayRegion, &displayRegion) != OMX_ErrorNone) {
+    fprintf(stderr, "Failed to set video region parameters\n");
     exit(EXIT_FAILURE);
   }
 

@@ -157,7 +157,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   param.hdr.id = MMAL_PARAMETER_DISPLAYREGION;
   param.hdr.size = sizeof(MMAL_DISPLAYREGION_T);
   param.set = MMAL_DISPLAY_SET_LAYER | MMAL_DISPLAY_SET_NUM | MMAL_DISPLAY_SET_FULLSCREEN | MMAL_DISPLAY_SET_TRANSFORM;
-  param.layer = 128;
+  param.layer = 10000;
   param.display_num = 0;
   param.fullscreen = true;
   int displayRotation = drFlags & DISPLAY_ROTATE_MASK;

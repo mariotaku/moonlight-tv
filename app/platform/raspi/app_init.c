@@ -19,4 +19,9 @@ void app_rpi_window_setup(SDL_Window *window)
     {
         return;
     }
+    SDL_SysWMinfo info;
+    if (SDL_GetWindowWMInfo(window, &info))
+    {
+        printf("syswm info\n");
+    }
 }

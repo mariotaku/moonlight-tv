@@ -10,7 +10,7 @@ NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img);
 
 NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img);
 
-NK_API nk_bool nk_image2texture(struct nk_image *img);
+NK_API nk_bool nk_image2texture(struct nk_image *img, int size_limit);
 
 NK_API size_t nk_imagebmppxsize(struct nk_image *img);
 
