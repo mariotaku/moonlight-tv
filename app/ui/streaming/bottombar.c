@@ -49,7 +49,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
             if (nk_button_label(ctx, ""))
             {
                 streaming_interrupt(false);
-                stream_overlay_showing = false;
+                streaming_overlay_hide();
             }
 
             nk_spacing(ctx, 1);
@@ -59,7 +59,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
             if (nk_button_label(ctx, ""))
             {
                 streaming_interrupt(true);
-                stream_overlay_showing = false;
+                streaming_overlay_hide();
             }
             nk_group_end(ctx);
         }

@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "video/presenter.h"
+
 #define IS_EMBEDDED(SYSTEM) SYSTEM != SDL
 
 enum platform { NONE, SDL, X11, X11_VDPAU, X11_VAAPI, PI, MMAL, IMX, AML, RK, NDL, LGNC, FAKE };
@@ -31,6 +33,7 @@ enum platform { NONE, SDL, X11, X11_VDPAU, X11_VAAPI, PI, MMAL, IMX, AML, RK, ND
 enum platform platform_check(char*);
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system);
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char* audio_device);
+PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system);
 bool platform_supports_hevc(enum platform system);
 char* platform_name(enum platform system);
 

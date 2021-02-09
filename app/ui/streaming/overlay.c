@@ -23,6 +23,12 @@ void _overlay_windows_pop_style(struct nk_context *ctx);
 
 bool stream_overlay_showing;
 
+#if TARGET_RASPI
+#define OVERLAY_WINDOW_FLAGS NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR
+#else
+#define OVERLAY_WINDOW_FLAGS NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MINIMIZABLE | NK_WINDOW_MOVABLE
+#endif
+
 void streaming_overlay_init(struct nk_context *ctx)
 {
     stream_overlay_showing = false;
@@ -59,7 +65,7 @@ bool streaming_overlay_dispatch_userevent(int which)
     switch (which)
     {
     case USER_ST_QUITAPP_CONFIRM:
-        stream_overlay_showing = true;
+        streaming_overlay_show();
         return true;
     default:
         break;
@@ -76,7 +82,7 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bo
         case NAVKEY_CANCEL:
             if (!down)
             {
-                stream_overlay_showing = false;
+                streaming_overlay_hide();
             }
             break;
         case NAVKEY_NEGATIVE:
@@ -96,6 +102,24 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bo
 bool streaming_overlay_should_block_input()
 {
     return stream_overlay_showing;
+}
+
+bool streaming_overlay_hide()
+{
+    if (!stream_overlay_showing)
+        return false;
+    stream_overlay_showing = false;
+    streaming_enter_fullscreen();
+}
+
+bool streaming_overlay_show()
+{
+    if (stream_overlay_showing)
+        return false;
+    stream_overlay_showing = true;
+    static struct nk_vec2 wndpos = nk_vec2_s_const(10, 10);
+
+    streaming_enter_overlay(ui_display_width / 2 - wndpos.x, wndpos.y, ui_display_width / 2, ui_display_height / 2);
 }
 
 void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
@@ -140,7 +164,7 @@ void _overlay_backdrop(struct nk_context *ctx)
     {
         if (nk_input_mouse_clicked(&ctx->input, NK_BUTTON_LEFT, nk_rect(0, 0, ui_display_width, ui_display_height)))
         {
-            stream_overlay_showing = false;
+            streaming_overlay_hide();
         }
     }
 }
@@ -150,7 +174,7 @@ void _streaming_perf_stat(struct nk_context *ctx)
     _overlay_windows_push_style(ctx);
     static struct nk_vec2 wndpos = nk_vec2_s_const(10, 10);
     static const struct nk_vec2 wndsize = nk_vec2_s_const(240, 150);
-    if (nk_begin(ctx, "Performance Stats", nk_recta(wndpos, wndsize), NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MINIMIZABLE | NK_WINDOW_MOVABLE))
+    if (nk_begin(ctx, "Performance Stats", nk_recta(wndpos, wndsize), OVERLAY_WINDOW_FLAGS))
     {
         struct VIDEO_STATS *dst = &vdec_summary_stats;
         static const float ratios[] = {0.7f, 0.3f};

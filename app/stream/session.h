@@ -47,4 +47,8 @@ void streaming_display_size(short width, short height);
 
 bool streaming_running();
 
+void streaming_enter_fullscreen();
+
+void streaming_enter_overlay(int x, int y, int w, int h);
+
 void _streaming_errmsg_write(const char *fmt, ...);

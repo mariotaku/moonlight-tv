@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Based upon video decode example from the Raspberry Pi firmware
 
 #include "video.h"
+#include "stream/platform.h"
 
 #include <Limelight.h>
 
@@ -138,8 +139,8 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   displayRegion.nPortIndex = 90;
   displayRegion.fullscreen = OMX_TRUE;
   displayRegion.layer = 10000;
-  displayRegion.mode = OMX_DISPLAY_SET_FULLSCREEN;
-  displayRegion.set = OMX_DISPLAY_SET_LAYER;
+  displayRegion.mode = OMX_DISPLAY_MODE_LETTERBOX;
+  displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN | OMX_DISPLAY_SET_LAYER | OMX_DISPLAY_SET_MODE;
 
   if(OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigLatencyTarget, &latencyTarget) != OMX_ErrorNone) {
     fprintf(stderr, "Failed to set video render parameters\n");
@@ -289,9 +290,50 @@ static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {
   return DR_OK;
 }
 
+static void presenter_enter_fullscreen()
+{
+  OMX_CONFIG_DISPLAYREGIONTYPE displayRegion;
+  displayRegion.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+  displayRegion.nVersion.nVersion = OMX_VERSION;
+  displayRegion.nPortIndex = 90;
+  displayRegion.fullscreen = OMX_TRUE;
+  displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN;
+
+  if (OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigDisplayRegion, &displayRegion) != OMX_ErrorNone)
+  {
+    fprintf(stderr, "Failed to set video region parameters\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+static void presenter_enter_overlay(int x, int y, int w, int h)
+{
+  OMX_CONFIG_DISPLAYREGIONTYPE displayRegion;
+  displayRegion.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
+  displayRegion.nVersion.nVersion = OMX_VERSION;
+  displayRegion.nPortIndex = 90;
+  displayRegion.fullscreen = OMX_FALSE;
+  displayRegion.dest_rect.x_offset = x;
+  displayRegion.dest_rect.y_offset = y;
+  displayRegion.dest_rect.width = w;
+  displayRegion.dest_rect.height = h;
+  displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN | OMX_DISPLAY_SET_DEST_RECT;
+
+  if (OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigDisplayRegion, &displayRegion) != OMX_ErrorNone)
+  {
+    fprintf(stderr, "Failed to set video region parameters\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
 DECODER_RENDERER_CALLBACKS decoder_callbacks_pi = {
   .setup = decoder_renderer_setup,
   .cleanup = decoder_renderer_cleanup,
   .submitDecodeUnit = decoder_renderer_submit_decode_unit,
   .capabilities = CAPABILITY_DIRECT_SUBMIT,
+};
+
+VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi = {
+  .enterFullScreen = presenter_enter_fullscreen,
+  .enterOverlay = presenter_enter_overlay,
 };

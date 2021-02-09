@@ -21,6 +21,8 @@
 
 #include <stdbool.h>
 
+#include "presenter.h"
+
 #define DISPLAY_FULLSCREEN 1
 #define ENABLE_HARDWARE_ACCELERATION_1 2
 #define ENABLE_HARDWARE_ACCELERATION_2 4
@@ -44,6 +46,7 @@ extern DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl;
 
 #ifdef HAVE_PI
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_pi;
+extern VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi;
 #endif
 
 #ifdef HAVE_MMAL

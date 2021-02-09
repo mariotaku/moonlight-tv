@@ -31,6 +31,8 @@ pthread_mutex_t streaming_errmsg_lock, streaming_interrupt_lock, streaming_statu
 pthread_cond_t streaming_interrupt_cond;
 pthread_t streaming_thread;
 
+static PVIDEO_PRESENTER_CALLBACKS video_presenter_cb = NULL;
+
 typedef struct
 {
     SERVER_LIST *node;
@@ -159,6 +161,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(system);
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
     PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(system, config->audio_device);
+    PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter(system);
 
     platform_start(system);
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
@@ -171,14 +174,15 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     }
     session_running = true;
     _streaming_set_status(STREAMING_STREAMING);
+    video_presenter_cb = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
-
     pthread_mutex_lock(&streaming_interrupt_lock);
     while (!session_interrupted)
     {
         // Wait until interrupted
         pthread_cond_wait(&streaming_interrupt_cond, &streaming_interrupt_lock);
     }
+    video_presenter_cb = NULL;
     session_interrupted = false;
     pthread_mutex_unlock(&streaming_interrupt_lock);
     session_running = false;
@@ -200,6 +204,20 @@ thread_cleanup:
     free(req);
     _streaming_set_status(STREAMING_NONE);
     return NULL;
+}
+
+void streaming_enter_fullscreen()
+{
+    if (!video_presenter_cb)
+        return;
+    video_presenter_cb->enterFullScreen();
+}
+
+void streaming_enter_overlay(int x, int y, int w, int h)
+{
+    if (!video_presenter_cb)
+        return;
+    video_presenter_cb->enterOverlay(x, y, w, h);
 }
 
 void _streaming_set_status(STREAMING_STATUS status)

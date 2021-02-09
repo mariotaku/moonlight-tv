@@ -124,3 +124,14 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 #endif
     }
 }
+
+PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system)
+{
+    switch (system)
+    {
+#if HAVE_PI
+    case PI:
+        return &presenter_callbacks_pi;
+#endif
+    }
+}
