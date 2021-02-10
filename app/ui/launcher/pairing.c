@@ -8,9 +8,24 @@
 
 #include "ui/root.h"
 #include "ui/fonts.h"
+
 #include "backend/computer_manager.h"
+#include "util/bus.h"
+#include "util/user_event.h"
 
 static nk_bool nk_filter_ip(const struct nk_text_edit *box, nk_rune unicode);
+static bool _pairing_keypad(struct nk_context *ctx);
+
+#define USE_KEYPAD OS_WEBOS
+
+const static char input_table_chars[2][10] = {
+    "0123456789",
+    "ABCDEF:.  ",
+};
+const static float input_table_spans[2][10] = {
+    {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
+    {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.19},
+};
 
 void _manual_add_window(struct nk_context *ctx)
 {
@@ -28,11 +43,17 @@ void _manual_add_window(struct nk_context *ctx)
 
     int dialog_height = dec_size.t + message_height +
                         ctx->style.window.spacing.y +
-                        30 * NK_UI_SCALE +
+                        30 * NK_UI_SCALE + // Input bar
+#if USE_KEYPAD
+                        ctx->style.window.spacing.y +
+                        30 * NK_UI_SCALE + // Keypad row 1
+                        ctx->style.window.spacing.y +
+                        30 * NK_UI_SCALE + // Keypad row 2
+#endif
                         ctx->style.window.spacing.y +
                         5 * NK_UI_SCALE +
                         ctx->style.window.spacing.y +
-                        30 * NK_UI_SCALE +
+                        30 * NK_UI_SCALE + // Buttons
                         dec_size.b;
     struct nk_rect s = nk_rect_centered(ui_display_width, ui_display_height, dialog_width, dialog_height);
     if (nk_begin(ctx, "Add PC Manually", s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
@@ -41,6 +62,12 @@ void _manual_add_window(struct nk_context *ctx)
         nk_label_wrap(ctx, message);
         nk_layout_row_dynamic_s(ctx, 30, 1);
         struct nk_rect editor_bounds = nk_widget_bounds(ctx);
+        static bool input_focus = false;
+        if (input_focus)
+        {
+            nk_edit_focus(ctx, 0);
+            input_focus = false;
+        }
         nk_flags editor_state = nk_edit_string(ctx, NK_EDIT_FIELD, text, &text_len, 64, nk_filter_ip);
         if (editor_state & NK_EDIT_ACTIVATED)
         {
@@ -50,7 +77,14 @@ void _manual_add_window(struct nk_context *ctx)
         {
             app_stop_text_input();
         }
-        nk_layout_row_dynamic_s(ctx, 3, 0);
+
+#if USE_KEYPAD
+        if (_pairing_keypad(ctx))
+        {
+            input_focus = true;
+        }
+#endif
+        nk_layout_row_dynamic_s(ctx, 5, 0);
 
         nk_layout_row_template_begin_s(ctx, 30);
         nk_layout_row_template_push_variable_s(ctx, 10);
@@ -113,4 +147,34 @@ void _pairing_window(struct nk_context *ctx)
         nk_style_pop_font(ctx);
     }
     nk_end(ctx);
+}
+
+bool _pairing_keypad(struct nk_context *ctx)
+{
+    bool result = false;
+    nk_layout_row_s(ctx, NK_DYNAMIC, 30, 10, input_table_spans[0]);
+    for (int i = 0; i < 10; i++)
+    {
+        if (nk_button_text(ctx, &input_table_chars[0][i], 1))
+        {
+            bus_pushevent(USER_FAKEINPUT_CHAR, (void *)(int)input_table_chars[0][i], NULL);
+            result = true;
+        }
+    }
+    nk_layout_row_s(ctx, NK_DYNAMIC, 30, 10, input_table_spans[1]);
+    for (int i = 0; i < 8; i++)
+    {
+        if (nk_button_text(ctx, &input_table_chars[1][i], 1))
+        {
+            bus_pushevent(USER_FAKEINPUT_CHAR, (void *)(int)input_table_chars[1][i], NULL);
+            result = true;
+        }
+    }
+    nk_spacing(ctx, 1);
+    if (nk_button_label(ctx, "<-"))
+    {
+        bus_pushevent(USER_FAKEINPUT_BKSP, NULL, NULL);
+        result = true;
+    }
+    return result;
 }

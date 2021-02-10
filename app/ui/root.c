@@ -32,6 +32,7 @@ bool ui_fake_mouse_click_started;
 enum UI_INPUT_MODE ui_input_mode;
 
 static bool ui_send_faketouch_cancel;
+static bool ui_send_fakebksp_release;
 static bool ui_fake_mouse_event_received;
 static struct
 {
@@ -64,6 +65,11 @@ bool ui_root(struct nk_context *ctx)
     {
         bus_pushevent(USER_FAKEINPUT_MOUSE_CANCEL, NULL, NULL);
         ui_send_faketouch_cancel = false;
+    }
+    else if (ui_send_fakebksp_release)
+    {
+        bus_pushevent(USER_FAKEINPUT_BKSP_RELEASE, NULL, NULL);
+        ui_send_fakebksp_release = false;
     }
     ui_fake_mouse_event_received = false;
     ui_pending_faketouch.center = NULL;
@@ -134,7 +140,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
                 // This is not the first time event received
                 ui_pending_faketouch.center = center;
                 ui_pending_faketouch.down = data2;
-                break;
+                return true;
             }
             ui_fake_mouse_event_received = true;
             ui_fake_mouse_click_started = true;
@@ -145,13 +151,23 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
                 ui_send_faketouch_cancel = true;
                 ui_fake_mouse_click_started = false;
             }
-            break;
+            return true;
         }
         case USER_FAKEINPUT_MOUSE_CANCEL:
         {
             nk_input_motion(ctx, 0, 0);
-            break;
+            return true;
         }
+        case USER_FAKEINPUT_CHAR:
+            nk_input_char(ctx, (int)data1);
+            return true;
+        case USER_FAKEINPUT_BKSP:
+            nk_input_key(ctx, NK_KEY_BACKSPACE, 1);
+            ui_send_fakebksp_release = true;
+            return true;
+        case USER_FAKEINPUT_BKSP_RELEASE:
+            nk_input_key(ctx, NK_KEY_BACKSPACE, 0);
+            return true;
 #if TARGET_DESKTOP
         case USER_STREAM_OPEN:
         {

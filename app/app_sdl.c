@@ -186,6 +186,17 @@ static void app_process_events(struct nk_context *ctx)
             {
                 ui_set_input_mode(UI_INPUT_MODE_POINTER);
             }
+            else
+            {
+                if (evt.type == SDL_TEXTEDITING)
+                {
+                    printf("SDL_TEXTEDITING: %s\n", evt.edit.text);
+                }
+                else if (evt.type == SDL_TEXTINPUT)
+                {
+                    printf("SDL_TEXTINPUT: %s\n", evt.text.text);
+                }
+            }
         }
         else if (evt.type == SDL_USEREVENT)
         {
@@ -259,17 +270,21 @@ void app_main_loop(void *data)
 
 void app_start_text_input(int x, int y, int w, int h)
 {
+#ifndef OS_WEBOS
     if (w > 0 && h > 0)
     {
         struct SDL_Rect rect = {x, y, w, h};
         SDL_SetTextInputRect(&rect);
     }
     SDL_StartTextInput();
+#endif
 }
 
 void app_stop_text_input()
 {
+#ifndef OS_WEBOS
     SDL_StopTextInput();
+#endif
 }
 
 void fps_cap(int start)
