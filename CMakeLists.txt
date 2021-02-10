@@ -286,7 +286,7 @@ else()
         target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
     endif()
 
-    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
     target_link_libraries(moonlight PRIVATE OpenGL::GL)

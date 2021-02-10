@@ -87,7 +87,7 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
     case MMAL:
         return &decoder_callbacks_mmal;
 #endif
-#if HAVE_SDL
+#if HAVE_SDL && HAVE_FFMPEG
     case SDL:
         return &decoder_callbacks_sdl;
 #endif
