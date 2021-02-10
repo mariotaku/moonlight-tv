@@ -28,6 +28,3 @@
 [submodule "third_party/incbin"]
 	path = third_party/incbin
 	url = https://github.com/graphitemaster/incbin
-[submodule "deps/system/SDL2"]
-	path = deps/system/SDL2
-	url = https://github.com/webosbrew/SDL2.git
