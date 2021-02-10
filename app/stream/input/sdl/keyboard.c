@@ -71,6 +71,10 @@ static struct KeysDown *_pressed_keys;
 #undef LINKEDLIST_PREFIX
 #undef LINKEDLIST_DOUBLE
 
+#if OS_WEBOS
+bool webos_intercept_remote_keys(SDL_KeyboardEvent *event);
+#endif
+
 static int keys_find_by_code(struct KeysDown *p, const void *fv)
 {
     return p->keyCode == *((short *)fv);
@@ -132,6 +136,12 @@ void performPendingSpecialKeyCombo()
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 {
+#if OS_WEBOS
+    if (webos_intercept_remote_keys(event))
+    {
+        return;
+    }
+#endif
     short keyCode;
     char modifiers;
 

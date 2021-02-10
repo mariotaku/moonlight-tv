@@ -141,6 +141,7 @@ if (TARGET_WEBOS)
         app/platform/sdl/webos_keys.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c
+        app/stream/input/sdl/keyboard_webos.c
         app/stream/input/sdl/gamepad.c
         app/stream/input/sdl/mouse.c
         app/platform/sdl/bus.c

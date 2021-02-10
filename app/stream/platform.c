@@ -133,5 +133,7 @@ PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system)
     case PI:
         return &presenter_callbacks_pi;
 #endif
+    default:
+        return NULL;
     }
 }
