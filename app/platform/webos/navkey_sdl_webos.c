@@ -10,27 +10,32 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-        printf("KeyEvent, down: %d, key: %d\n", ev.key.state == SDL_PRESSED, ev.key.keysym.sym);
         switch (ev.key.keysym.sym)
         {
-        case 82 /* Keyboard/Remote Up */:
+        case SDLK_UP /* Keyboard/Remote Up */:
             return NAVKEY_UP;
-        case 81 /* Keyboard/Remote Down */:
+        case SDLK_DOWN /* Keyboard/Remote Down */:
             return NAVKEY_DOWN;
-        case 80 /* Keyboard/Remote Left */:
+        case SDLK_LEFT /* Keyboard/Remote Left */:
             return NAVKEY_LEFT;
-        case 79 /* Keyboard/Remote Right */:
+        case SDLK_RIGHT /* Keyboard/Remote Right */:
             return NAVKEY_RIGHT;
-        case 40 /* Keyboard Enter */:
+        case SDLK_RETURN /* Keyboard Enter */:
             return NAVKEY_START;
-        case 41 /* Keyboard ESC */:
-        case SDLK_WEBOS_RED:
+        case SDLK_ESCAPE /* Keyboard ESC */:
             return NAVKEY_NEGATIVE;
-        case SDLK_WEBOS_YELLOW:
-            return NAVKEY_MENU;
-        case SDLK_WEBOS_BACK:
-            return NAVKEY_CANCEL;
         default:
+            switch (ev.key.keysym.scancode)
+            {
+            case SDL_WEBOS_SCANCODE_RED:
+                return NAVKEY_NEGATIVE;
+            case SDL_WEBOS_SCANCODE_YELLOW:
+                return NAVKEY_MENU;
+            case SDL_WEBOS_SCANCODE_BACK:
+                return NAVKEY_CANCEL;
+            default:
+                break;
+            }
             return NAVKEY_UNKNOWN;
         }
     }

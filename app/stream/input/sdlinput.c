@@ -13,7 +13,6 @@
 static void release_gamecontroller_buttons(int which);
 static void release_keyboard_keys(SDL_Event ev);
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
-static void _sdlinput_handle_event_fix(SDL_Event *ev);
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
@@ -83,60 +82,50 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
+void print_bytes(void *ptr, int size)
+{
+    unsigned char *p = ptr;
+    int i;
+    for (i = 0; i < size; i++)
+    {
+        printf("%02hhX ", p[i]);
+    }
+    printf("\n");
+}
+
 bool absinput_dispatch_event(SDL_Event ev)
 {
     if (streaming_status != STREAMING_STREAMING)
     {
         return false;
     }
-    // Don't mess with Magic Remote yet
-    // TODO https://github.com/mariotaku/moonlight-sdl/issues/1
-    // TODO https://github.com/mariotaku/moonlight-sdl/issues/2
-    if (!absinput_no_control && ev.type == SDL_MOUSEMOTION)
-    {
-        if (ev.motion.state == SDL_PRESSED)
-        {
-            LiSendMouseMoveEvent(ev.motion.xrel, ev.motion.yrel);
-        }
-        else
-        {
-            LiSendMousePositionEvent(ev.motion.x, ev.motion.y, streaming_display_width, streaming_display_height);
-        }
-        return false;
-    }
-    _sdlinput_handle_event_fix(&ev);
-    return false;
-}
-
-void _sdlinput_handle_event_fix(SDL_Event *event)
-{
-    PGAMEPAD_STATE gamepad;
-    switch (event->type)
+    switch (ev.type)
     {
     case SDL_KEYDOWN:
     case SDL_KEYUP:
-    {
-        sdlinput_handle_key_event(&event->key);
+        printf("| type     | timestamp | windowID  | inputDev  |st|rp|p2|p3| scancode  | sym       | mod | unused    |\n");
+        print_bytes(&ev, sizeof(SDL_Event));
+        sdlinput_handle_key_event(&ev.key);
         break;
-    }
     case SDL_CONTROLLERAXISMOTION:
-        sdlinput_handle_caxis_event(&event->caxis);
+        sdlinput_handle_caxis_event(&ev.caxis);
         break;
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
-        sdlinput_handle_cbutton_event(&event->cbutton);
+        sdlinput_handle_cbutton_event(&ev.cbutton);
         break;
     case SDL_MOUSEMOTION:
-        sdlinput_handle_mmotion_event(&event->motion);
+        sdlinput_handle_mmotion_event(&ev.motion);
         break;
     case SDL_MOUSEWHEEL:
-        sdlinput_handle_mwheel_event(&event->wheel);
+        sdlinput_handle_mwheel_event(&ev.wheel);
         break;
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
-        sdlinput_handle_mbutton_event(&event->button);
+        sdlinput_handle_mbutton_event(&ev.button);
         break;
     }
+    return false;
 }
 
 bool absinput_controllerdevice_event(SDL_Event ev)

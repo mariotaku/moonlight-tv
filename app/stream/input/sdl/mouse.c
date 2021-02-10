@@ -1,6 +1,8 @@
 #include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 
+#include "stream/session.h"
+
 #include <Limelight.h>
 #include <SDL.h>
 
@@ -48,5 +50,14 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
 {
     if (absinput_no_control)
         return;
-    LiSendMouseMoveEvent(event->xrel, event->yrel);
+    // TODO https://github.com/mariotaku/moonlight-tv/issues/1
+    // TODO https://github.com/mariotaku/moonlight-tv/issues/2
+    if (event->state == SDL_PRESSED)
+    {
+        LiSendMouseMoveEvent(event->xrel, event->yrel);
+    }
+    else
+    {
+        LiSendMousePositionEvent(event->x, event->y, streaming_display_width, streaming_display_height);
+    }
 }
