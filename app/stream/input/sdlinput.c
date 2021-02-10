@@ -103,8 +103,6 @@ bool absinput_dispatch_event(SDL_Event ev)
     {
     case SDL_KEYDOWN:
     case SDL_KEYUP:
-        printf("| type     | timestamp | windowID  | inputDev  |st|rp|p2|p3| scancode  | sym       | mod | unused    |\n");
-        print_bytes(&ev, sizeof(SDL_Event));
         sdlinput_handle_key_event(&ev.key);
         break;
     case SDL_CONTROLLERAXISMOTION:
