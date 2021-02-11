@@ -138,7 +138,6 @@ if (TARGET_WEBOS)
         app/app_sdl.c
         app/backend/pcmanager/sdl_impl.c
         app/platform/webos/app_init.c
-        app/platform/sdl/webos_keys.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c
         app/stream/input/sdl/keyboard_webos.c
@@ -146,6 +145,7 @@ if (TARGET_WEBOS)
         app/stream/input/sdl/mouse.c
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
+        app/platform/sdl/navkey_sdl.c
         app/platform/webos/navkey_sdl_webos.c
         app/platform/webos/SDL_webOS.c
         app/platform/webos/path_webos.c

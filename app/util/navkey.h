@@ -2,7 +2,7 @@
 
 typedef enum NAVKEY_
 {
-    NAVKEY_UNKNOWN = -1,
+    NAVKEY_UNKNOWN = 0,
     NAVKEY_DPAD = 0x100,
     NAVKEY_UP,
     NAVKEY_DOWN,

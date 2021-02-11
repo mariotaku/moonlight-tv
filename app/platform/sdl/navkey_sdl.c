@@ -1,5 +1,9 @@
 #include "navkey_sdl.h"
 
+#if OS_WEBOS
+NAVKEY navkey_from_sdl_webos(SDL_Event ev);
+#endif
+
 NAVKEY navkey_from_sdl(SDL_Event ev)
 {
     switch (ev.type)
@@ -27,7 +31,16 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
         case SDLK_APPLICATION:
             return NAVKEY_MENU;
         default:
+        {
+#if OS_WEBOS
+            NAVKEY navkey;
+            if (navkey = navkey_from_sdl_webos(ev))
+            {
+                return navkey;
+            }
+#endif
             return NAVKEY_UNKNOWN;
+        }
         }
     }
     case SDL_CONTROLLERBUTTONDOWN:

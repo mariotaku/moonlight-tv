@@ -150,7 +150,7 @@ static void app_process_events(struct nk_context *ctx)
 
             // Those are input events
             NAVKEY navkey = navkey_from_sdl(evt);
-            if (navkey != NAVKEY_UNKNOWN)
+            if (navkey)
             {
                 Uint32 timestamp = 0;
                 bool is_key = false, is_gamepad = false;
