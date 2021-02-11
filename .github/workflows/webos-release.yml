@@ -36,7 +36,7 @@ jobs:
       run: sudo npm install -g @webosose/ares-cli
 
     - name: Download webOS NDK
-      run: wget -q https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/latest/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -P ${{github.workspace}}/temp
+      run: wget -q https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/1.0.g-rev.3/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -P ${{github.workspace}}/temp
 
     - name: Install webOS NDK
       run: chmod 755 ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh && sudo ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -y
