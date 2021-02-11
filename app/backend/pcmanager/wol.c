@@ -64,7 +64,7 @@ void *pcmanager_send_wol_action(void *arg)
 
 static bool wol_build_packet(const char *macstr, uint8_t *packet)
 {
-  int values[6];
+  unsigned int values[6];
   if (sscanf(macstr, "%x:%x:%x:%x:%x:%x%*c", &values[0], &values[1], &values[2], &values[3], &values[4], &values[5]) != 6)
   {
     return false;

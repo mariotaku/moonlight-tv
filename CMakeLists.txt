@@ -19,7 +19,10 @@ option(BUILD_CUSTOM_SDL "Include custom SDL" OFF)
 
 if (CC_BASENAME MATCHES "^arm-webos-linux")
     set(TARGET_WEBOS ON)
+    set(CMAKE_C_COMPILER_ID "GNU")
 endif()
+
+include(LintOptions)
 
 if (TARGET_WEBOS)
     if (NOT ENV{ARCH})
@@ -187,6 +190,8 @@ if(BROADCOM_FOUND)
 endif()
 
 add_executable(moonlight ${SOURCES})
+
+target_compile_lint(moonlight)
 
 set_target_properties(moonlight PROPERTIES
     C_STANDARD 11

@@ -110,6 +110,7 @@ bool streaming_overlay_hide()
         return false;
     stream_overlay_showing = false;
     streaming_enter_fullscreen();
+    return true;
 }
 
 bool streaming_overlay_show()
@@ -120,6 +121,7 @@ bool streaming_overlay_show()
     static struct nk_vec2 wndpos = nk_vec2_s_const(10, 10);
 
     streaming_enter_overlay(ui_display_width / 2 - wndpos.x, wndpos.y, ui_display_width / 2, ui_display_height / 2);
+    return true;
 }
 
 void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)

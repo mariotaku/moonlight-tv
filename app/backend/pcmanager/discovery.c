@@ -100,7 +100,7 @@ ip_address_to_string(char *buffer, size_t capacity, const struct sockaddr *addr,
 
 static char *parse_server_name(mdns_string_t entrystr)
 {
-    const static char suffix[] = ".local.";
+    static const char suffix[] = ".local.";
     int nlen = entrystr.length;
     if (entrystr.length > 7 && strncmp(&(entrystr.str[entrystr.length - 7]), suffix, 7) == 0)
     {
