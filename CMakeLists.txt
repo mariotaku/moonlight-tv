@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.6)
 project(moonlight 
-    VERSION 0.4.0
+    VERSION 0.4.1
     LANGUAGES C
 )
 
@@ -69,8 +69,6 @@ if (TARGET_WEBOS)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(WAYLAND REQUIRED wayland-client)
-    pkg_check_modules(XKB REQUIRED xkbcommon)
 elseif (TARGET_RASPI)
     find_package(OpenSSL REQUIRED)
     find_package(Broadcom REQUIRED)
@@ -225,9 +223,6 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${WAY_INCLUDE_DIRS} ${XKB_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${WAYLAND_LIBRARIES} ${XKB_LIBRARIES})
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
