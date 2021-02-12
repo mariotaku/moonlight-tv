@@ -83,7 +83,7 @@ bool settings_window(struct nk_context *ctx)
 {
     struct nk_rect s = nk_rect(0, 0, ui_display_width, ui_display_height);
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
-    nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2(ctx->style.window.scrollbar_size.x, 0));
+    nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(2, 0));
     if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
@@ -97,17 +97,18 @@ bool settings_window(struct nk_context *ctx)
         static int selected_index = 0;
         if (nk_group_begin(ctx, "settings_nav", 0))
         {
-            nk_layout_row_dynamic_s(ctx, 25, 1);
+            nk_layout_row_dynamic_s(ctx, 30, 1);
             for (int i = 0; i < settings_panes_size; i++)
             {
                 nk_bool selected = i == selected_index;
-                if (nk_selectable_label(ctx, settings_panes[i].title, NK_TEXT_ALIGN_LEFT, &selected))
+                if (nk_selectable_label(ctx, settings_panes[i].title, NK_TEXT_LEFT, &selected))
                 {
                     selected_index = i;
                 }
             }
             nk_group_end(ctx);
         }
+        nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, nk_style_item_color(nk_rgb(40, 40, 40)));
         if (nk_group_begin_titled(ctx, "settings_pane", "Settings", 0))
         {
             if (settings_panes[selected_index].render)
@@ -116,6 +117,7 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_group_end(ctx);
         }
+        nk_style_pop_style_item(ctx);
         settings_statbar(ctx);
     }
     nk_end(ctx);

@@ -136,10 +136,10 @@ void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat)
         switch (stat)
         {
         case STREAMING_CONNECTING:
-            nk_label(ctx, "Connecting...", NK_TEXT_ALIGN_LEFT);
+            nk_label(ctx, "Connecting...", NK_TEXT_LEFT);
             break;
         case STREAMING_DISCONNECTING:
-            nk_label(ctx, "Disconnecting...", NK_TEXT_ALIGN_LEFT);
+            nk_label(ctx, "Disconnecting...", NK_TEXT_LEFT);
             break;
         default:
             break;
