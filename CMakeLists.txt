@@ -123,6 +123,7 @@ set(SOURCES
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
     app/ui/settings/pane_advanced.c
+    app/ui/settings/statbar.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c

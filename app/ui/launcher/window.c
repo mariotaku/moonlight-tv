@@ -92,7 +92,7 @@ bool launcher_window(struct nk_context *ctx)
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(0, 0));
     if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, ui_display_width, ui_display_height), window_flags))
     {
-        int list_height = nk_window_get_content_inner_size(ctx).y;
+        float list_height = nk_window_get_content_inner_size(ctx).y;
         bool show_server_error_popup = false, show_pairing_error_popup = false,
              show_quitapp_error_popup = false;
 
@@ -130,10 +130,9 @@ bool launcher_window(struct nk_context *ctx)
 
         nk_style_pop_vec2(ctx);
 
-        list_height -= launcher_bottom_bar_height_dp * NK_UI_SCALE;
+        list_height -= UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
         list_height -= ctx->style.window.spacing.y;
 
-        struct nk_list_view list_view;
         nk_layout_row_dynamic(ctx, list_height, 1);
 
         PSERVER_LIST selected = selected_server_node;

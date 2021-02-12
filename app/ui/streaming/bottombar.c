@@ -4,9 +4,6 @@
 #include "ui/root.h"
 #include "stream/input/absinput.h"
 
-static const struct nk_vec2 statbar_image_padding = nk_vec2_s_const(2, 2);
-#define overlay_bottom_bar_height_dp 20
-
 void _streaming_bottom_bar(struct nk_context *ctx)
 {
     const int bar_height = 50 * NK_UI_SCALE;
@@ -25,7 +22,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
 
         struct nk_vec2 action_button_padding = nk_vec2(5 * NK_UI_SCALE, 0);
         float action_spacing = ctx->style.window.spacing.x;
-        float action_icon_width = overlay_bottom_bar_height_dp * NK_UI_SCALE;
+        float action_icon_width = UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
         float quit_label_width = nk_string_measure_width(ctx, "Quit Game");
         float back_label_width = nk_string_measure_width(ctx, "Games List");
         float bar_content_height = bar_height - ctx->style.window.padding.y * 2;
@@ -70,8 +67,8 @@ void _streaming_bottom_bar(struct nk_context *ctx)
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2_s(0, 5));
         if (nk_group_begin(ctx, "overlay_bottom_actions", NK_WINDOW_NO_SCROLLBAR))
         {
-            nk_layout_row_template_begin_s(ctx, overlay_bottom_bar_height_dp);
-            nk_layout_row_template_push_static_s(ctx, overlay_bottom_bar_height_dp);
+            nk_layout_row_template_begin_s(ctx, UI_BOTTOM_BAR_HEIGHT_DP);
+            nk_layout_row_template_push_static_s(ctx, UI_BOTTOM_BAR_HEIGHT_DP);
             nk_layout_row_template_push_static_s(ctx, 50);
             nk_layout_row_template_push_variable(ctx, 1);
             nk_layout_row_template_push_static(ctx, action_icon_width);
@@ -85,10 +82,10 @@ void _streaming_bottom_bar(struct nk_context *ctx)
             nk_labelf(ctx, NK_TEXT_LEFT, "%d", absinput_gamepads());
 
             nk_spacing(ctx, 1);
-            nk_image_padded(ctx, ic_navkey_menu(), statbar_image_padding);
+            nk_image_padded(ctx, ic_navkey_menu(), ui_statbar_icon_padding);
             nk_label(ctx, "Games List", NK_TEXT_LEFT);
             nk_spacing(ctx, 1);
-            nk_image_padded(ctx, ic_navkey_close(), statbar_image_padding);
+            nk_image_padded(ctx, ic_navkey_close(), ui_statbar_icon_padding);
             nk_label(ctx, "Quit Game", NK_TEXT_LEFT);
 
             nk_group_end(ctx);

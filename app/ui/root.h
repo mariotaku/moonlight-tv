@@ -6,6 +6,7 @@
 #ifndef NK_NUKLEAR_H_
 #include "nuklear/config.h"
 #include "nuklear.h"
+#include "nuklear/ext_functions.h"
 #include "nuklear/ext_image.h"
 #include "nuklear/ext_sprites.h"
 #endif
@@ -21,11 +22,15 @@ enum UI_INPUT_MODE
 };
 #define UI_INPUT_MODE_COUNT 3
 
+#define UI_BOTTOM_BAR_HEIGHT_DP 20
+
 extern short ui_display_width, ui_display_height;
 extern short ui_logic_width, ui_logic_height;
 extern bool ui_settings_showing;
 extern enum UI_INPUT_MODE ui_input_mode;
 extern bool ui_fake_mouse_click_started;
+
+extern struct nk_vec2 ui_statbar_icon_padding;
 
 void ui_root_init(struct nk_context *ctx);
 

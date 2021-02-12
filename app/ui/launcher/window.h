@@ -22,8 +22,6 @@
 
 #include "backend/computer_manager.h"
 
-#define launcher_bottom_bar_height_dp 20
-
 extern struct nk_image launcher_default_cover;
 extern PSERVER_LIST selected_server_node;
 extern PAPP_DLIST applist_hovered_item;

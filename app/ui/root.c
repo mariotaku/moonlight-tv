@@ -30,6 +30,7 @@ short ui_logic_width, ui_logic_height;
 bool ui_settings_showing;
 bool ui_fake_mouse_click_started;
 enum UI_INPUT_MODE ui_input_mode;
+struct nk_vec2 ui_statbar_icon_padding;
 
 static bool ui_send_faketouch_cancel;
 static bool ui_fake_mouse_event_received;
@@ -47,6 +48,7 @@ void ui_root_init(struct nk_context *ctx)
     ui_send_faketouch_cancel = false;
     ui_fake_mouse_click_started = false;
     ui_input_mode = UI_INPUT_MODE_POINTER;
+    ui_statbar_icon_padding = nk_vec2_s(2, 2);
 }
 
 void ui_root_destroy()

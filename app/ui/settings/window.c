@@ -28,7 +28,7 @@ typedef void (*settings_panel_render)(struct nk_context *);
 
 struct settings_pane
 {
-    const char title[64];
+    const char *title;
     settings_panel_render render;
 };
 
@@ -39,6 +39,7 @@ void _settings_nav(struct nk_context *ctx);
 void _settings_pane_basic(struct nk_context *ctx);
 void _settings_pane_host(struct nk_context *ctx);
 void _settings_pane_advanced(struct nk_context *ctx);
+void settings_statbar(struct nk_context *ctx);
 
 void _pane_basic_open();
 void _pane_host_open();
@@ -80,13 +81,19 @@ bool settings_window_close()
 
 bool settings_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s(0, 0, ui_logic_width, ui_logic_height);
+    struct nk_rect s = nk_rect(0, 0, ui_display_width, ui_display_height);
+    nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2(ctx->style.window.scrollbar_size.x, 0));
-    if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
+    if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
+        float content_height = content_size.y;
+
+        content_height -= UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
+        content_height -= ctx->style.window.spacing.y;
+
         static const float pane_ratio[] = {0.33, 0.67};
-        nk_layout_row(ctx, NK_DYNAMIC, content_size.y, 2, pane_ratio);
+        nk_layout_row(ctx, NK_DYNAMIC, content_height, 2, pane_ratio);
         static int selected_index = 0;
         if (nk_group_begin(ctx, "settings_nav", 0))
         {
@@ -109,8 +116,10 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_group_end(ctx);
         }
+        settings_statbar(ctx);
     }
     nk_end(ctx);
+    nk_style_pop_vec2(ctx);
     nk_style_pop_vec2(ctx);
     // Why Nuklear why, the button looks like "close" but it actually "hide"
     if (nk_window_is_hidden(ctx, WINDOW_TITLE))
