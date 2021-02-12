@@ -11,6 +11,9 @@
 #include "nuklear/ext_functions.h"
 #endif
 
+#include "stream/settings.h"
+#include "app.h"
+
 void settings_window_init(struct nk_context *ctx);
 
 bool settings_window_open();

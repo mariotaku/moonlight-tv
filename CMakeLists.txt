@@ -120,6 +120,9 @@ set(SOURCES
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
     app/ui/settings/window.c
+    app/ui/settings/pane_basic.c
+    app/ui/settings/pane_host.c
+    app/ui/settings/pane_advanced.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c

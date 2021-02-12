@@ -5,13 +5,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "stream/settings.h"
 #include "ui/root.h"
-#include "app.h"
 
 #define WINDOW_TITLE "Settings"
-
-#define HAS_WEBOS_SETTINGS OS_WEBOS || DEBUG
 
 enum settings_entries
 {
@@ -28,41 +24,32 @@ enum settings_entries
     ENTRY_COUNT
 };
 
-struct _resolution_option
+typedef void (*settings_panel_render)(struct nk_context *);
+
+struct settings_pane
 {
-    int w, h;
-    char name[8];
+    const char title[64];
+    settings_panel_render render;
 };
-
-static const struct _resolution_option _supported_resolutions[] = {
-    {1280, 720, "720P\0"},
-    {1920, 1080, "1080P\0"},
-    {2560, 1440, "2K\0"},
-    {3840, 2160, "4K\0"},
-};
-#define _supported_resolutions_len sizeof(_supported_resolutions) / sizeof(struct _resolution_option)
-
-struct _fps_option
-{
-    unsigned short fps;
-    char name[8];
-};
-
-static const struct _fps_option _supported_fps[] = {
-    {30, "30 FPS"},
-    {60, "60 FPS"},
-    {120, "120 FPS"},
-};
-#define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
-
-static char _res_label[8], _fps_label[8];
 
 static enum settings_entries _selected_entry = ENTRY_NONE;
-
-static void _set_fps(int fps);
-static void _set_res(int w, int h);
-static void _update_bitrate();
 static void _settings_select_offset(int offset);
+
+void _settings_nav(struct nk_context *ctx);
+void _settings_pane_basic(struct nk_context *ctx);
+void _settings_pane_host(struct nk_context *ctx);
+void _settings_pane_advanced(struct nk_context *ctx);
+
+void _pane_basic_open();
+void _pane_host_open();
+
+const struct settings_pane settings_panes[] = {
+    {"Basic Settings", _settings_pane_basic},
+    {"Host Settings", _settings_pane_host},
+    // {"Mouse Settings", NULL},
+    {"Advanced Settings", _settings_pane_advanced},
+};
+#define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane)))
 
 void settings_window_init(struct nk_context *ctx)
 {
@@ -75,8 +62,8 @@ bool settings_window_open()
         return false;
     }
     ui_settings_showing = true;
-    _set_fps(app_configuration->stream.fps);
-    _set_res(app_configuration->stream.width, app_configuration->stream.height);
+    _pane_basic_open();
+    _pane_host_open();
     return true;
 }
 
@@ -93,111 +80,35 @@ bool settings_window_close()
 
 bool settings_window(struct nk_context *ctx)
 {
-    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height,
-                                          NK_MAX(ui_logic_width - 240, NK_MIN(400, ui_logic_width)),
-                                          NK_MAX(ui_logic_height - 60, NK_MIN(300, ui_logic_height)));
+    struct nk_rect s = nk_rect_s(0, 0, ui_logic_width, ui_logic_height);
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2(ctx->style.window.scrollbar_size.x, 0));
-    if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_BORDER | NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE))
+    if (nk_begin(ctx, WINDOW_TITLE, s, NK_WINDOW_CLOSABLE | NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
     {
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
-        static const float ratio_resolution_fps[] = {0.6, 0.4};
-        nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
-        if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
+        static const float pane_ratio[] = {0.33, 0.67};
+        nk_layout_row(ctx, NK_DYNAMIC, content_size.y, 2, pane_ratio);
+        static int selected_index = 0;
+        if (nk_group_begin(ctx, "settings_nav", 0))
         {
             nk_layout_row_dynamic_s(ctx, 25, 1);
-            for (int i = 0; i < _supported_resolutions_len; i++)
+            for (int i = 0; i < settings_panes_size; i++)
             {
-                struct _resolution_option o = _supported_resolutions[i];
-                if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
+                nk_bool selected = i == selected_index;
+                if (nk_selectable_label(ctx, settings_panes[i].title, NK_TEXT_ALIGN_LEFT, &selected))
                 {
-                    _set_res(o.w, o.h);
-                    _update_bitrate();
+                    selected_index = i;
                 }
             }
-            nk_combo_end(ctx);
+            nk_group_end(ctx);
         }
-        if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
+        if (nk_group_begin_titled(ctx, "settings_pane", "Settings", 0))
         {
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-            for (int i = 0; i < _supported_fps_len; i++)
+            if (settings_panes[selected_index].render)
             {
-                struct _fps_option o = _supported_fps[i];
-                if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
-                {
-                    _set_fps(o.fps);
-                    _update_bitrate();
-                }
+                settings_panes[selected_index].render(ctx);
             }
-            nk_combo_end(ctx);
+            nk_group_end(ctx);
         }
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
-        nk_property_int(ctx, "kbps:", 5000, &app_configuration->stream.bitrate, 120000, 500, 50);
-        if (app_configuration->stream.bitrate > 50000)
-        {
-            nk_layout_row_dynamic_s(ctx, 50, 1);
-            nk_label_wrap(ctx, "[!] Too high resolution/fps/bitrate may cause blank screen or crash.");
-        }
-        else
-        {
-            nk_layout_row_dynamic_s(ctx, 4, 1);
-            nk_spacing(ctx, 1);
-        }
-
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-
-        int w = app_configuration->stream.width, h = app_configuration->stream.height,
-            fps = app_configuration->stream.fps;
-        bool sops_supported = settings_sops_supported(w, h, fps);
-        nk_bool sops = sops_supported && app_configuration->sops ? nk_true : nk_false;
-        nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
-        if (sops_supported)
-        {
-            app_configuration->sops = sops == nk_true;
-        }
-        else
-        {
-            nk_layout_row_template_begin_s(ctx, 25);
-            nk_layout_row_template_push_static_s(ctx, 20);
-            nk_layout_row_template_push_variable_s(ctx, 10);
-            nk_layout_row_template_end(ctx);
-            nk_spacing(ctx, 1);
-            nk_labelf_wrap(ctx, "(Not available under %s@%s)", _res_label, _fps_label);
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-        }
-
-        nk_checkbox_label_std(ctx, "Play audio on host PC", &app_configuration->localaudio);
-
-        nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
-
-#if HAS_WEBOS_SETTINGS
-        nk_layout_row_dynamic_s(ctx, 4, 1);
-        nk_spacing(ctx, 1);
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_label(ctx, "Video Decoder", NK_TEXT_LEFT);
-        static const char *platforms[] = {"auto", "legacy"};
-        if (nk_combo_begin_label(ctx, app_configuration->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
-        {
-            nk_layout_row_dynamic_s(ctx, 25, 1);
-            for (int i = 0; i < NK_LEN(platforms); i++)
-            {
-                if (nk_combo_item_label(ctx, platforms[i], NK_TEXT_LEFT))
-                {
-                    app_configuration->platform = (char *)platforms[i];
-                }
-            }
-            nk_combo_end(ctx);
-        }
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        nk_bool sdlaud = app_configuration->audio_device && strcmp(app_configuration->audio_device, "sdl") == 0;
-        nk_checkbox_label(ctx, "Use SDL to play audio", &sdlaud);
-        app_configuration->audio_device = sdlaud ? "sdl" : NULL;
-        nk_spacing(ctx, 1);
-#endif
     }
     nk_end(ctx);
     nk_style_pop_vec2(ctx);
@@ -227,42 +138,6 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
         break;
     }
     return true;
-}
-
-void _set_fps(int fps)
-{
-    // It is not possible to have overflow since fps is capped to 999
-    sprintf(_fps_label, "%d FPS", fps % 1000);
-    app_configuration->stream.fps = fps;
-}
-
-void _set_res(int w, int h)
-{
-    switch (RES_MERGE(w, h))
-    {
-    case RES_720P:
-        sprintf(_res_label, "720P");
-        break;
-    case RES_1080P:
-        sprintf(_res_label, "1080P");
-        break;
-    case RES_1440P:
-        sprintf(_res_label, "1440P");
-        break;
-    case RES_4K:
-        sprintf(_res_label, "4K");
-        break;
-    default:
-        sprintf(_res_label, "%3d*%3d", w, h);
-        break;
-    }
-    app_configuration->stream.width = w;
-    app_configuration->stream.height = h;
-}
-
-void _update_bitrate()
-{
-    app_configuration->stream.bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
 }
 
 void _settings_select_offset(int offset)

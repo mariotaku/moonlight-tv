@@ -51,7 +51,7 @@ typedef struct _CONFIGURATION {
 
 #define CONF_NAME_STREAMING "streaming.conf"
 
-#define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | h & 0xFFFF)
+#define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | (h & 0xFFFF))
 
 #define RES_720P RES_MERGE(1280, 720)
 #define RES_1080P RES_MERGE(1920, 1080)
