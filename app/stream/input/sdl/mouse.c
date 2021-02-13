@@ -6,8 +6,8 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-static void _mouse_position_map(int raw_x, int raw_y, int raw_width, int raw_height,
-                                int *out_x, int *out_y, int *out_width, int *out_height);
+static void _mouse_position_map(short raw_x, short raw_y, short raw_width, short raw_height,
+                                short *out_x, short *out_y, short *out_width, short *out_height);
 
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event)
 {
@@ -39,7 +39,9 @@ void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event)
     }
 
     if (button != 0)
+    {
         LiSendMouseButtonEvent(event->type == SDL_MOUSEBUTTONDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, button);
+    }
 }
 
 void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event)
@@ -55,7 +57,7 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
         return;
     // TODO https://github.com/mariotaku/moonlight-tv/issues/1
     // TODO https://github.com/mariotaku/moonlight-tv/issues/2
-    if (event->state == SDL_PRESSED)
+    if (SDL_GetRelativeMouseMode())
     {
         LiSendMouseMoveEvent(event->xrel, event->yrel);
     }
@@ -67,11 +69,11 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
     }
 }
 
-void _mouse_position_map(int raw_x, int raw_y, int raw_width, int raw_height,
-                         int *out_x, int *out_y, int *out_width, int *out_height)
+void _mouse_position_map(short raw_x, short raw_y, short raw_width, short raw_height,
+                         short *out_x, short *out_y, short *out_width, short *out_height)
 {
-    int screen_x = 0, screen_y = 237, screen_width = 2560, screen_height = 1440;
-    int area_width = 3640, area_height = 1920;
+    short screen_x = 0, screen_y = 193, screen_width = 2560, screen_height = 1440;
+    short area_width = 3640, area_height = 1920;
     *out_width = area_width;
     *out_height = area_height;
     *out_x = screen_x + raw_x / (raw_width / (float)screen_width);
