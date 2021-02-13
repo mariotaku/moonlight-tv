@@ -38,6 +38,7 @@ static void _settings_select_offset(int offset);
 void _settings_nav(struct nk_context *ctx);
 void _settings_pane_basic(struct nk_context *ctx);
 void _settings_pane_host(struct nk_context *ctx);
+void _settings_pane_mouse(struct nk_context *ctx);
 void _settings_pane_advanced(struct nk_context *ctx);
 void settings_statbar(struct nk_context *ctx);
 
@@ -47,7 +48,7 @@ void _pane_host_open();
 const struct settings_pane settings_panes[] = {
     {"Basic Settings", _settings_pane_basic},
     {"Host Settings", _settings_pane_host},
-    // {"Mouse Settings", NULL},
+    {"Mouse Settings", _settings_pane_mouse},
     {"Advanced Settings", _settings_pane_advanced},
 };
 #define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane)))

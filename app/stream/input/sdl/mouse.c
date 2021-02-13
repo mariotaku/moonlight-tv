@@ -6,6 +6,9 @@
 #include <Limelight.h>
 #include <SDL.h>
 
+static void _mouse_position_map(int raw_x, int raw_y, int raw_width, int raw_height,
+                                int *out_x, int *out_y, int *out_width, int *out_height);
+
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event)
 {
     if (absinput_no_control)
@@ -58,6 +61,19 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
     }
     else
     {
-        LiSendMousePositionEvent(event->x, event->y, streaming_display_width, streaming_display_height);
+        short x, y, w, h;
+        _mouse_position_map(event->x, event->y, streaming_display_width, streaming_display_height, &x, &y, &w, &h);
+        LiSendMousePositionEvent(x, y, w, h);
     }
+}
+
+void _mouse_position_map(int raw_x, int raw_y, int raw_width, int raw_height,
+                         int *out_x, int *out_y, int *out_width, int *out_height)
+{
+    int screen_x = 0, screen_y = 237, screen_width = 2560, screen_height = 1440;
+    int area_width = 3640, area_height = 1920;
+    *out_width = area_width;
+    *out_height = area_height;
+    *out_x = screen_x + raw_x / (raw_width / (float)screen_width);
+    *out_y = screen_y + raw_y / (raw_height / (float)screen_height);
 }
