@@ -72,21 +72,20 @@ bool ui_root(struct nk_context *ctx)
     STREAMING_STATUS stat = streaming_status;
     if (stat == STREAMING_NONE)
     {
-        if (launcher_window(ctx))
-        {
-            if (ui_settings_showing)
-            {
-                if (!settings_window(ctx))
-                {
-                    settings_window_close();
-                }
-            }
-            return true;
-        }
-        else
+        if (!launcher_window(ctx))
         {
             return false;
         }
+        
+        if (ui_settings_showing)
+        {
+            if (!settings_window(ctx))
+            {
+                settings_window_close();
+            }
+        }
+
+        return true;
     }
     else
     {

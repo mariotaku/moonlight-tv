@@ -89,8 +89,14 @@ bool settings_window(struct nk_context *ctx)
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         float content_height = content_size.y;
 
+        nk_layout_row_dynamic_s(ctx, UI_TITLE_BAR_HEIGHT_DP, 1);
+        content_height -= nk_widget_height(ctx);
+        content_height -= ctx->style.window.spacing.y;
+        nk_label(ctx, "Settings", NK_TEXT_LEFT);
+
         content_height -= UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
         content_height -= ctx->style.window.spacing.y;
+        struct nk_rect content_bounds = nk_widget_bounds(ctx);
 
         static const float pane_ratio[] = {0.33, 0.67};
         nk_layout_row(ctx, NK_DYNAMIC, content_height, 2, pane_ratio);
@@ -109,6 +115,7 @@ bool settings_window(struct nk_context *ctx)
             nk_group_end(ctx);
         }
         nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, nk_style_item_color(nk_rgb(40, 40, 40)));
+        nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2_s(10, 10));
         if (nk_group_begin_titled(ctx, "settings_pane", "Settings", 0))
         {
             if (settings_panes[selected_index].render)
@@ -117,7 +124,12 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_group_end(ctx);
         }
+        nk_style_pop_vec2(ctx);
         nk_style_pop_style_item(ctx);
+
+        nk_stroke_line(&ctx->current->buffer, content_bounds.x, content_bounds.y, content_bounds.x + content_bounds.w,
+                       content_bounds.y, 1 * NK_UI_SCALE, ctx->style.text.color);
+
         settings_statbar(ctx);
     }
     nk_end(ctx);

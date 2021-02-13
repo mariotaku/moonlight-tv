@@ -80,7 +80,7 @@ void launcher_window_destroy()
 
 bool launcher_window(struct nk_context *ctx)
 {
-    int window_flags = NK_WINDOW_NO_SCROLLBAR;
+    int window_flags = NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND;
     _launcher_showing_combo = false;
     _launcher_modal_flags_update();
     if (launcher_blocked())
