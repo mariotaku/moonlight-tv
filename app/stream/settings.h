@@ -29,7 +29,6 @@ enum codecs { CODEC_UNSPECIFIED, CODEC_H264, CODEC_HEVC };
 typedef struct _CONFIGURATION {
   STREAM_CONFIGURATION stream;
   int debug_level;
-  char* app;
   char* action;
   char* address;
   char* mapping;

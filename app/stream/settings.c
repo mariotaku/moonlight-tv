@@ -28,7 +28,6 @@ static struct option long_options[] = {
   {"height", required_argument, NULL, 'd'},
   {"bitrate", required_argument, NULL, 'g'},
   {"packetsize", required_argument, NULL, 'h'},
-  {"app", required_argument, NULL, 'i'},
   {"input", required_argument, NULL, 'j'},
   {"mapping", required_argument, NULL, 'k'},
   {"nosops", no_argument, NULL, 'l'},
@@ -87,7 +86,6 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
 
     config->debug_level = 1;
     config->platform = "auto";
-    config->app = "Steam";
     config->action = NULL;
     config->address = NULL;
     config->config_file = NULL;
@@ -242,26 +240,11 @@ void settings_write(char *filename, PCONFIGURATION config)
     if (config->address != NULL)
         write_config_string(fd, "address", config->address);
 
-    if (strcmp(config->app, "Steam") != 0)
-        write_config_string(fd, "app", config->app);
-
     fclose(fd);
 }
 
  void parse_argument(int c, char* value, PCONFIGURATION config) {
   switch (c) {
-  case 'a':
-    config->stream.width = 1280;
-    config->stream.height = 720;
-    break;
-  case 'b':
-    config->stream.width = 1920;
-    config->stream.height = 1080;
-    break;
-  case '0':
-    config->stream.width = 3840;
-    config->stream.height = 2160;
-    break;
   case 'c':
     config->stream.width = atoi(value);
     break;
@@ -274,8 +257,6 @@ void settings_write(char *filename, PCONFIGURATION config)
   case 'h':
     config->stream.packetSize = atoi(value);
     break;
-  case 'i':
-    config->app = value;
     break;
   case 'l':
     config->sops = false;
