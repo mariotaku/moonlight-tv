@@ -14,8 +14,12 @@
             "cwd": "${workspaceFolder}",
             "externalConsole": false,
             "MIMode": "gdb",
-            "sourceFileMap":{
-                "/build/glibc-vjB4T1/": "/usr/src/glibc"
+            "sourceFileMap": {
+                "/build/glibc-vjB4T1/": "/usr/src/glibc",
+                "${workspaceFolder}": {
+                    "editorPath": "${workspaceFolder}",
+                    "useForBreakpoints": "true"
+                }
             },
             "setupCommands": [
                 {

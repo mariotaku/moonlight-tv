@@ -7,6 +7,9 @@
 
 #include "ui/root.h"
 
+#include "util/bus.h"
+#include "util/user_event.h"
+
 #define WINDOW_TITLE "Settings"
 
 enum settings_entries
@@ -25,35 +28,48 @@ enum settings_entries
 };
 
 typedef void (*settings_panel_render)(struct nk_context *);
+typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, bool down, uint32_t timestamp);
+typedef int (*settings_panel_itemcount)();
 
 struct settings_pane
 {
     const char *title;
     settings_panel_render render;
+    settings_panel_navkey navkey;
+    settings_panel_itemcount itemcount;
 };
 
 static enum settings_entries _selected_entry = ENTRY_NONE;
 static void _pane_select_offset(int offset);
+static void _pane_item_offset(int offset);
+static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, bool down, uint32_t timestamp);
+static int _pane_itemcount(int index);
 
 void _settings_nav(struct nk_context *ctx);
 void _settings_pane_basic(struct nk_context *ctx);
 void _settings_pane_host(struct nk_context *ctx);
+int _settings_pane_host_itemcount();
 void _settings_pane_mouse(struct nk_context *ctx);
 void _settings_pane_advanced(struct nk_context *ctx);
 void settings_statbar(struct nk_context *ctx);
+void settings_set_pane_focused(bool focused);
 
 void _pane_basic_open();
 void _pane_host_open();
 
 const struct settings_pane settings_panes[] = {
-    {"Basic Settings", _settings_pane_basic},
-    {"Host Settings", _settings_pane_host},
-    {"Mouse Settings", _settings_pane_mouse},
-    {"Advanced Settings", _settings_pane_advanced},
+    {"Basic Settings", _settings_pane_basic, NULL, NULL},
+    {"Host Settings", _settings_pane_host, NULL, _settings_pane_host_itemcount},
+    {"Mouse Settings", _settings_pane_mouse, NULL},
+    {"Advanced Settings", _settings_pane_advanced, NULL},
 };
 #define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane)))
 
 static int selected_pane_index = 0;
+bool settings_pane_focused = false;
+int settings_hovered_item = -1;
+int settings_item_hover_request = -1;
+struct nk_vec2 settings_focused_item_center = {0, 0};
 
 void settings_window_init(struct nk_context *ctx)
 {
@@ -124,6 +140,11 @@ bool settings_window(struct nk_context *ctx)
             {
                 settings_panes[selected_pane_index].render(ctx);
             }
+            if (settings_item_hover_request >= 0)
+            {
+                bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &settings_focused_item_center, NULL);
+                settings_item_hover_request = -1;
+            }
             nk_group_end(ctx);
         }
         nk_style_pop_vec2(ctx);
@@ -146,23 +167,88 @@ bool settings_window(struct nk_context *ctx)
     return true;
 }
 
-bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
+bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down, uint32_t timestamp)
 {
     switch (navkey)
     {
     case NAVKEY_CANCEL:
-        nk_window_show(ctx, WINDOW_TITLE, false);
+        if (down)
+        {
+            return true;
+        }
+        if (settings_pane_focused)
+        {
+            settings_set_pane_focused(false);
+        }
+        else
+        {
+            nk_window_show(ctx, WINDOW_TITLE, false);
+        }
         break;
     case NAVKEY_UP:
-        _pane_select_offset(-1);
+        if (navkey_intercept_repeat(down, timestamp))
+        {
+            return true;
+        }
+        if (settings_pane_focused)
+        {
+            _pane_item_offset(-1);
+        }
+        else
+        {
+            _pane_select_offset(-1);
+        }
         break;
     case NAVKEY_DOWN:
-        _pane_select_offset(1);
+        if (navkey_intercept_repeat(down, timestamp))
+        {
+            return true;
+        }
+        if (settings_pane_focused)
+        {
+            _pane_item_offset(1);
+        }
+        else
+        {
+            _pane_select_offset(1);
+        }
+        break;
+    case NAVKEY_LEFT:
+        if (settings_pane_focused)
+        {
+            if (!_pane_dispatch_navkey(ctx, selected_pane_index, navkey, down, timestamp))
+            {
+                settings_set_pane_focused(false);
+            }
+        }
+        break;
+    case NAVKEY_RIGHT:
+    case NAVKEY_CONFIRM:
+        if (settings_pane_focused)
+        {
+            _pane_dispatch_navkey(ctx, selected_pane_index, navkey, down, timestamp);
+        }
+        else if (_pane_itemcount(selected_pane_index))
+        {
+            if (!down)
+            {
+                settings_set_pane_focused(true);
+            }
+        }
+        else
+        {
+            _pane_dispatch_navkey(ctx, selected_pane_index, navkey, down, timestamp);
+        }
         break;
     default:
         break;
     }
     return true;
+}
+
+bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, bool down, uint32_t timestamp)
+{
+    return settings_panes[pane_index].navkey && settings_panes[pane_index].navkey(ctx, navkey, down, timestamp);
 }
 
 void _pane_select_offset(int offset)
@@ -179,5 +265,67 @@ void _pane_select_offset(int offset)
     else
     {
         selected_pane_index = new_index;
+    }
+}
+
+void _pane_item_offset(int offset)
+{
+    if (!settings_panes[selected_pane_index].itemcount)
+    {
+        return;
+    }
+    int itemcount = settings_panes[selected_pane_index].itemcount();
+    int new_index = settings_hovered_item + offset;
+    if (new_index < 0)
+    {
+        settings_item_hover_request = 0;
+    }
+    else if (new_index >= itemcount)
+    {
+        settings_item_hover_request = itemcount - 1;
+    }
+    else
+    {
+        settings_item_hover_request = new_index;
+    }
+}
+
+int _pane_itemcount(int index)
+{
+    if (!settings_panes[index].itemcount)
+    {
+        return 0;
+    }
+    return settings_panes[index].itemcount();
+}
+
+void settings_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds)
+{
+    if (nk_widget_is_hovered(ctx))
+    {
+        settings_hovered_item = index;
+    }
+    if (settings_item_hover_request == index)
+    {
+        *bounds = nk_widget_bounds(ctx);
+
+        settings_focused_item_center.x = nk_rect_center_x(*bounds);
+        settings_focused_item_center.y = nk_rect_center_y(*bounds);
+    }
+}
+
+void settings_set_pane_focused(bool focused)
+{
+    settings_pane_focused = focused;
+    if (!focused)
+    {
+        settings_item_hover_request = -1;
+        settings_focused_item_center.x = 0;
+        settings_focused_item_center.y = 0;
+        bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &settings_focused_item_center, NULL);
+    }
+    else
+    {
+        settings_item_hover_request = 0;
     }
 }

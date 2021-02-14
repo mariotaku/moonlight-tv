@@ -128,6 +128,7 @@ set(SOURCES
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
+    app/util/navkey.c
 )
 
 if (SDL2_IMAGE_FOUND)

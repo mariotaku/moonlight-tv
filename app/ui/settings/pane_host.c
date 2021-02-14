@@ -1,7 +1,9 @@
 #include "window.h"
+#include "ui/root.h"
 
 #include <stddef.h>
 #include <stdio.h>
+
 
 static char _res_label[8], _fps_label[8];
 
@@ -15,6 +17,8 @@ void _settings_pane_host(struct nk_context *ctx)
         fps = app_configuration->stream.fps;
     bool sops_supported = settings_sops_supported(w, h, fps);
     nk_bool sops = sops_supported && app_configuration->sops ? nk_true : nk_false;
+    static struct nk_rect item_bounds = {0, 0, 0, 0};
+    settings_item_update_selected_bounds(ctx, 0, &item_bounds);
     nk_checkbox_label(ctx, "Optimize game settings for streaming", &sops);
     if (sops_supported)
     {
@@ -31,9 +35,17 @@ void _settings_pane_host(struct nk_context *ctx)
         nk_layout_row_dynamic_s(ctx, 25, 1);
     }
 
+    settings_item_update_selected_bounds(ctx, 1, &item_bounds);
     nk_checkbox_label_std(ctx, "Play audio on host PC", &app_configuration->localaudio);
 
+    settings_item_update_selected_bounds(ctx, 2, &item_bounds);
     nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
+
+}
+
+int _settings_pane_host_itemcount()
+{
+    return 3;
 }
 
 void _pane_host_open()

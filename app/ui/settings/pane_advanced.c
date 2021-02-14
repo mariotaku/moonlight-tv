@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 #define HAS_WEBOS_SETTINGS OS_WEBOS || DEBUG
 

@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "ui/config.h"
+
 #ifndef NK_NUKLEAR_H_
 #include "nuklear/config.h"
 #include "nuklear.h"

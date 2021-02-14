@@ -194,7 +194,7 @@ bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down, uint32_t 
     bool handled = false;
     if (streaming_status == STREAMING_NONE)
     {
-        handled |= handled || (!down && ui_settings_showing && settings_window_dispatch_navkey(ctx, key));
+        handled |= handled || (ui_settings_showing && settings_window_dispatch_navkey(ctx, key, down, timestamp));
         handled |= handled || launcher_window_dispatch_navkey(ctx, key, down, timestamp);
     }
     else

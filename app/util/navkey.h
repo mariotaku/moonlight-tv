@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+
 typedef enum NAVKEY_
 {
     NAVKEY_UNKNOWN = 0,
@@ -16,3 +19,5 @@ typedef enum NAVKEY_
     NAVKEY_NEGATIVE /* X button*/,
     NAVKEY_ALTERNATIVE /* Y button*/,
 } NAVKEY;
+
+bool navkey_intercept_repeat(bool down, uint32_t timestamp);
