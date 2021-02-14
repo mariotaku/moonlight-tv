@@ -24,17 +24,29 @@
 
 #define MAX_INPUTS 6
 
-enum codecs { CODEC_UNSPECIFIED, CODEC_H264, CODEC_HEVC };
+enum codecs
+{
+  CODEC_UNSPECIFIED,
+  CODEC_H264,
+  CODEC_HEVC
+};
 
-typedef struct _CONFIGURATION {
+typedef struct _ABSMOUSE_MAPPING
+{
+  unsigned short desktop_w, desktop_h;
+  unsigned short screen_w, screen_h;
+  unsigned short screen_x, screen_y;
+} ABSMOUSE_MAPPING;
+
+typedef struct _CONFIGURATION
+{
   STREAM_CONFIGURATION stream;
   int debug_level;
-  char* action;
-  char* address;
-  char* mapping;
-  char* platform;
-  char* audio_device;
-  char* config_file;
+  char *address;
+  char *mapping;
+  char *platform;
+  char *audio_device;
+  char *config_file;
   char key_dir[4096];
   bool sops;
   bool localaudio;
@@ -43,8 +55,7 @@ typedef struct _CONFIGURATION {
   bool unsupported;
   bool quitappafter;
   bool viewonly;
-  char* inputs[MAX_INPUTS];
-  int inputsCount;
+  ABSMOUSE_MAPPING absmouse_mapping;
   enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 
@@ -66,3 +77,5 @@ void settings_save(PCONFIGURATION config);
 int settings_optimal_bitrate(int w, int h, int fps);
 
 bool settings_sops_supported(int w, int h, int fps);
+
+bool absmouse_mapping_valid(ABSMOUSE_MAPPING mapping);

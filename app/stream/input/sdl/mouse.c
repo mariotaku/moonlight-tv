@@ -1,7 +1,10 @@
 #include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 
+#include "app.h"
+
 #include "stream/session.h"
+#include "stream/settings.h"
 
 #include <Limelight.h>
 #include <SDL.h>
@@ -72,10 +75,19 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
 void _mouse_position_map(short raw_x, short raw_y, short raw_width, short raw_height,
                          short *out_x, short *out_y, short *out_width, short *out_height)
 {
-    short screen_x = 0, screen_y = 193, screen_width = 2560, screen_height = 1440;
-    short area_width = 3640, area_height = 1920;
-    *out_width = area_width;
-    *out_height = area_height;
-    *out_x = screen_x + raw_x / (raw_width / (float)screen_width);
-    *out_y = screen_y + raw_y / (raw_height / (float)screen_height);
+    ABSMOUSE_MAPPING mapping = app_configuration->absmouse_mapping;
+    if (absmouse_mapping_valid(mapping))
+    {
+        *out_width = mapping.desktop_w;
+        *out_height = mapping.desktop_h;
+        *out_x = mapping.screen_x + raw_x / (raw_width / (float)mapping.screen_w);
+        *out_y = mapping.screen_y + raw_y / (raw_height / (float)mapping.screen_h);
+    }
+    else
+    {
+        *out_x = raw_x;
+        *out_y = raw_y;
+        *out_width = raw_width;
+        *out_height = raw_height;
+    }
 }

@@ -14,41 +14,42 @@
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
-static void parse_argument(int c, char* value, PCONFIGURATION config);
+static void parse_argument(int c, char *value, PCONFIGURATION config);
+
+static void write_config_absmouse_mapping(FILE *fd, char *key, ABSMOUSE_MAPPING mapping);
+static bool parse_config_absmouse_mapping(char *value, ABSMOUSE_MAPPING *mapping);
 
 #define write_config_string(fd, key, value) fprintf(fd, "%s = %s\n", key, value)
 #define write_config_int(fd, key, value) fprintf(fd, "%s = %d\n", key, value)
-#define write_config_bool(fd, key, value) fprintf(fd, "%s = %s\n", key, value ? "true":"false")
+#define write_config_bool(fd, key, value) fprintf(fd, "%s = %s\n", key, value ? "true" : "false")
 
 static struct option long_options[] = {
-  {"720", no_argument, NULL, 'a'},
-  {"1080", no_argument, NULL, 'b'},
-  {"4k", no_argument, NULL, '0'},
-  {"width", required_argument, NULL, 'c'},
-  {"height", required_argument, NULL, 'd'},
-  {"bitrate", required_argument, NULL, 'g'},
-  {"packetsize", required_argument, NULL, 'h'},
-  {"input", required_argument, NULL, 'j'},
-  {"mapping", required_argument, NULL, 'k'},
-  {"nosops", no_argument, NULL, 'l'},
-  {"audio", required_argument, NULL, 'm'},
-  {"localaudio", no_argument, NULL, 'n'},
-  {"config", required_argument, NULL, 'o'},
-  {"platform", required_argument, NULL, 'p'},
-  {"save", required_argument, NULL, 'q'},
-  {"keydir", required_argument, NULL, 'r'},
-  {"remote", no_argument, NULL, 's'},
-  {"windowed", no_argument, NULL, 't'},
-  {"surround", no_argument, NULL, 'u'},
-  {"fps", required_argument, NULL, 'v'},
-  {"codec", required_argument, NULL, 'x'},
-  {"unsupported", no_argument, NULL, 'y'},
-  {"quitappafter", no_argument, NULL, '1'},
-  {"viewonly", no_argument, NULL, '2'},
-  {"rotate", required_argument, NULL, '3'},
-  {"verbose", no_argument, NULL, 'z'},
-  {"debug", no_argument, NULL, 'Z'},
-  {0, 0, 0, 0},
+    {"width", required_argument, NULL, 'c'},
+    {"height", required_argument, NULL, 'd'},
+    {"absmouse_mapping", required_argument, NULL, 'e'},
+    {"bitrate", required_argument, NULL, 'g'},
+    {"packetsize", required_argument, NULL, 'h'},
+    {"input", required_argument, NULL, 'j'},
+    {"mapping", required_argument, NULL, 'k'},
+    {"nosops", no_argument, NULL, 'l'},
+    {"audio", required_argument, NULL, 'm'},
+    {"localaudio", no_argument, NULL, 'n'},
+    {"config", required_argument, NULL, 'o'},
+    {"platform", required_argument, NULL, 'p'},
+    {"save", required_argument, NULL, 'q'},
+    {"keydir", required_argument, NULL, 'r'},
+    {"remote", no_argument, NULL, 's'},
+    {"windowed", no_argument, NULL, 't'},
+    {"surround", no_argument, NULL, 'u'},
+    {"fps", required_argument, NULL, 'v'},
+    {"codec", required_argument, NULL, 'x'},
+    {"unsupported", no_argument, NULL, 'y'},
+    {"quitappafter", no_argument, NULL, '1'},
+    {"viewonly", no_argument, NULL, '2'},
+    {"rotate", required_argument, NULL, '3'},
+    {"verbose", no_argument, NULL, 'z'},
+    {"debug", no_argument, NULL, 'Z'},
+    {0, 0, 0, 0},
 };
 
 PCONFIGURATION settings_load()
@@ -86,7 +87,6 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
 
     config->debug_level = 1;
     config->platform = "auto";
-    config->action = NULL;
     config->address = NULL;
     config->config_file = NULL;
     config->audio_device = NULL;
@@ -100,7 +100,6 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->rotate = 0;
     config->codec = CODEC_UNSPECIFIED;
 
-    config->inputsCount = 0;
     config->mapping = NULL;
     sprintf(config->key_dir, "%s/%s", confdir, "key");
 }
@@ -184,18 +183,6 @@ bool settings_read(char *filename, PCONFIGURATION config)
                             parse_argument(long_options[i].val, value, config);
                         else if (strcmp("true", value) == 0)
                             parse_argument(long_options[i].val, NULL, config);
-
-                        switch (long_options[i].val)
-                        {
-                        case 'i':
-                        case 'm':
-                        case 'p':
-                        case 'q':
-                            break;
-                        default:
-                            free(value);
-                            break;
-                        }
                     }
                 }
             }
@@ -239,89 +226,128 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_string(fd, "audio", config->audio_device);
     if (config->address != NULL)
         write_config_string(fd, "address", config->address);
+    if (absmouse_mapping_valid(config->absmouse_mapping))
+        write_config_absmouse_mapping(fd, "absmouse_mapping", config->absmouse_mapping);
 
     fclose(fd);
 }
 
- void parse_argument(int c, char* value, PCONFIGURATION config) {
-  switch (c) {
-  case 'c':
-    config->stream.width = atoi(value);
-    break;
-  case 'd':
-    config->stream.height = atoi(value);
-    break;
-  case 'g':
-    config->stream.bitrate = atoi(value);
-    break;
-  case 'h':
-    config->stream.packetSize = atoi(value);
-    break;
-    break;
-  case 'l':
-    config->sops = false;
-    break;
-  case 'm':
-    config->audio_device = value;
-    break;
-  case 'n':
-    config->localaudio = true;
-    break;
-  case 'p':
-    config->platform = value;
-    break;
-  case 'q':
-    config->config_file = value;
-    break;
-  case 'r':
-    strcpy(config->key_dir, value);
-    break;
-  case 's':
-    config->stream.streamingRemotely = 1;
-    break;
-  case 't':
-    config->fullscreen = false;
-    break;
-  case 'u':
-    config->stream.audioConfiguration = AUDIO_CONFIGURATION_51_SURROUND;
-    break;
-  case 'v':
-    config->stream.fps = atoi(value);
-    break;
-  case 'x':
-    if (strcasecmp(value, "auto") == 0)
-      config->codec = CODEC_UNSPECIFIED;
-    else if (strcasecmp(value, "h264") == 0)
-      config->codec = CODEC_H264;
-    if (strcasecmp(value, "h265") == 0 || strcasecmp(value, "hevc") == 0)
-      config->codec = CODEC_HEVC;
-    break;
-  case 'y':
-    config->unsupported = true;
-    break;
-  case '1':
-    config->quitappafter = true;
-    break;
-  case '2':
-    config->viewonly = true;
-    break;
-  case '3':
-    config->rotate = atoi(value);
-    break;
-  case 'z':
-    config->debug_level = 1;
-    break;
-  case 'Z':
-    config->debug_level = 2;
-    break;
-  case 1:
-    if (config->action == NULL)
-      config->action = value;
-    else if (config->address == NULL)
-      config->address = value;
-    else {
-      perror("Too many options");
-      exit(-1);
+void parse_argument(int c, char *value, PCONFIGURATION config)
+{
+    bool free_value = true;
+    switch (c)
+    {
+    case 'c':
+        config->stream.width = atoi(value);
+        break;
+    case 'd':
+        config->stream.height = atoi(value);
+        break;
+    case 'e':
+        parse_config_absmouse_mapping(value, &config->absmouse_mapping);
+        break;
+    case 'g':
+        config->stream.bitrate = atoi(value);
+        break;
+    case 'h':
+        config->stream.packetSize = atoi(value);
+        break;
+        break;
+    case 'l':
+        config->sops = false;
+        break;
+    case 'm':
+        config->audio_device = value;
+        free_value = false;
+        break;
+    case 'n':
+        config->localaudio = true;
+        break;
+    case 'p':
+        config->platform = value;
+        free_value = false;
+        break;
+    case 'q':
+        config->config_file = value;
+        free_value = false;
+        break;
+    case 'r':
+        strcpy(config->key_dir, value);
+        break;
+    case 's':
+        config->stream.streamingRemotely = 1;
+        break;
+    case 't':
+        config->fullscreen = false;
+        break;
+    case 'u':
+        config->stream.audioConfiguration = AUDIO_CONFIGURATION_51_SURROUND;
+        break;
+    case 'v':
+        config->stream.fps = atoi(value);
+        break;
+    case 'x':
+        if (strcasecmp(value, "auto") == 0)
+            config->codec = CODEC_UNSPECIFIED;
+        else if (strcasecmp(value, "h264") == 0)
+            config->codec = CODEC_H264;
+        if (strcasecmp(value, "h265") == 0 || strcasecmp(value, "hevc") == 0)
+            config->codec = CODEC_HEVC;
+        break;
+    case 'y':
+        config->unsupported = true;
+        break;
+    case '1':
+        config->quitappafter = true;
+        break;
+    case '2':
+        config->viewonly = true;
+        break;
+    case '3':
+        config->rotate = atoi(value);
+        break;
+    case 'z':
+        config->debug_level = 1;
+        break;
+    case 'Z':
+        config->debug_level = 2;
+        break;
+    case 1:
+        if (config->address == NULL)
+        {
+            config->address = value;
+            free_value = false;
+        }
     }
-  }
+    if (free_value)
+    {
+        free(value);
+    }
+}
+
+bool absmouse_mapping_valid(ABSMOUSE_MAPPING mapping)
+{
+    return mapping.desktop_w && mapping.desktop_h && mapping.screen_w && mapping.screen_h;
+}
+
+void write_config_absmouse_mapping(FILE *fd, char *key, ABSMOUSE_MAPPING mapping)
+{
+    fprintf(fd, "%s = [%d,%d][%d*%d]@[%d*%d]\n", key, mapping.screen_x, mapping.screen_y, mapping.screen_w, mapping.screen_h,
+            mapping.desktop_w, mapping.desktop_h);
+}
+
+bool parse_config_absmouse_mapping(char *value, ABSMOUSE_MAPPING *mapping)
+{
+    int screen_x, screen_y, screen_w, screen_h, desktop_w, desktop_h;
+    if (sscanf(value, "[%d,%d][%d*%d]@[%d*%d]", &screen_x, &screen_y, &screen_w, &screen_h, &desktop_w, &desktop_h) != 6)
+    {
+        return false;
+    }
+    mapping->desktop_w = desktop_w;
+    mapping->desktop_h = desktop_h;
+    mapping->screen_w = screen_w;
+    mapping->screen_h = screen_h;
+    mapping->screen_x = screen_x;
+    mapping->screen_y = screen_y;
+    return true;
 }
