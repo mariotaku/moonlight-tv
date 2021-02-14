@@ -33,7 +33,7 @@ struct settings_pane
 };
 
 static enum settings_entries _selected_entry = ENTRY_NONE;
-static void _settings_select_offset(int offset);
+static void _pane_select_offset(int offset);
 
 void _settings_nav(struct nk_context *ctx);
 void _settings_pane_basic(struct nk_context *ctx);
@@ -52,6 +52,8 @@ const struct settings_pane settings_panes[] = {
     {"Advanced Settings", _settings_pane_advanced},
 };
 #define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane)))
+
+static int selected_pane_index = 0;
 
 void settings_window_init(struct nk_context *ctx)
 {
@@ -101,16 +103,15 @@ bool settings_window(struct nk_context *ctx)
 
         static const float pane_ratio[] = {0.33, 0.67};
         nk_layout_row(ctx, NK_DYNAMIC, content_height, 2, pane_ratio);
-        static int selected_index = 0;
         if (nk_group_begin(ctx, "settings_nav", 0))
         {
             nk_layout_row_dynamic_s(ctx, 30, 1);
             for (int i = 0; i < settings_panes_size; i++)
             {
-                nk_bool selected = i == selected_index;
+                nk_bool selected = i == selected_pane_index;
                 if (nk_selectable_label(ctx, settings_panes[i].title, NK_TEXT_LEFT, &selected))
                 {
-                    selected_index = i;
+                    selected_pane_index = i;
                 }
             }
             nk_group_end(ctx);
@@ -119,9 +120,9 @@ bool settings_window(struct nk_context *ctx)
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2_s(10, 10));
         if (nk_group_begin_titled(ctx, "settings_pane", "Settings", 0))
         {
-            if (settings_panes[selected_index].render)
+            if (settings_panes[selected_pane_index].render)
             {
-                settings_panes[selected_index].render(ctx);
+                settings_panes[selected_pane_index].render(ctx);
             }
             nk_group_end(ctx);
         }
@@ -153,10 +154,10 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
         nk_window_show(ctx, WINDOW_TITLE, false);
         break;
     case NAVKEY_UP:
-        _settings_select_offset(-1);
+        _pane_select_offset(-1);
         break;
     case NAVKEY_DOWN:
-        _settings_select_offset(1);
+        _pane_select_offset(1);
         break;
     default:
         break;
@@ -164,26 +165,19 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey)
     return true;
 }
 
-void _settings_select_offset(int offset)
+void _pane_select_offset(int offset)
 {
-    if (_selected_entry < 0)
+    int new_index = selected_pane_index + offset;
+    if (new_index < 0)
     {
-        _selected_entry = ENTRY_RES_FPS;
+        selected_pane_index = 0;
+    }
+    else if (new_index >= settings_panes_size)
+    {
+        selected_pane_index = settings_panes_size - 1;
     }
     else
     {
-        int new_entry = _selected_entry + offset;
-        if (new_entry < 0)
-        {
-            _selected_entry = 0;
-        }
-        else if (new_entry >= ENTRY_COUNT)
-        {
-            _selected_entry = ENTRY_COUNT - 1;
-        }
-        else
-        {
-            _selected_entry = new_entry;
-        }
+        selected_pane_index = new_index;
     }
 }
