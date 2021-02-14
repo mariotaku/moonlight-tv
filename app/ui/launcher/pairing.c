@@ -42,12 +42,6 @@ void _manual_add_window(struct nk_context *ctx)
         nk_label_wrap(ctx, message);
         nk_layout_row_dynamic_s(ctx, 30, 1);
         struct nk_rect editor_bounds = nk_widget_bounds(ctx);
-        static bool input_focus = false;
-        if (input_focus)
-        {
-            nk_edit_focus(ctx, 0);
-            input_focus = false;
-        }
         nk_flags editor_state = nk_edit_string(ctx, NK_EDIT_FIELD, text, &text_len, 64, nk_filter_ip);
         if (editor_state & NK_EDIT_ACTIVATED)
         {

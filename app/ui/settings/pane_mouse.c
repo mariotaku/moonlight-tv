@@ -56,6 +56,15 @@ void _nk_edit_ushort(struct nk_context *ctx, unsigned short *num)
 {
     static char buf[8];
     snprintf(buf, 7, "%d", *num);
-    nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, 5, nk_filter_numeric);
+    struct nk_rect editor_bounds = nk_widget_bounds(ctx);
+   nk_flags editor_state = nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, 5, nk_filter_numeric);
+    if (editor_state & NK_EDIT_ACTIVATED)
+    {
+        app_start_text_input(editor_bounds.x, editor_bounds.y, editor_bounds.w, editor_bounds.h);
+    }
+    else if (editor_state & NK_EDIT_DEACTIVATED)
+    {
+        app_stop_text_input();
+    }
     *num = atoi(buf);
 }
