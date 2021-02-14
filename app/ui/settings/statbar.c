@@ -1,5 +1,7 @@
 #include "window.h"
 
+#include <string.h>
+
 #include "ui/root.h"
 #include "ui/strings.h"
 

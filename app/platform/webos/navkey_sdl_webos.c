@@ -1,5 +1,5 @@
 #include "platform/sdl/navkey_sdl.h"
-#include "platform/sdl/webos_keys.h"
+#include "platform/webos/SDL_webOS.h"
 
 NAVKEY navkey_from_sdl_webos(SDL_Event ev)
 {

@@ -49,6 +49,7 @@ int app_webos_init(int argc, char *argv[])
     }
 finish:
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
+    SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
     return 0;
 }

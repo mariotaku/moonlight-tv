@@ -15,10 +15,6 @@
 #include "nuklear/ext_styling.h"
 #include "nuklear/platform.h"
 
-#ifdef OS_WEBOS
-#include "platform/sdl/webos_keys.h"
-#endif
-
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"

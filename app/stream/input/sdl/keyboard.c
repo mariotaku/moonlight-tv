@@ -72,7 +72,7 @@ static struct KeysDown *_pressed_keys;
 #undef LINKEDLIST_DOUBLE
 
 #if OS_WEBOS
-bool webos_intercept_remote_keys(SDL_KeyboardEvent *event);
+bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode);
 #endif
 
 static int keys_find_by_code(struct KeysDown *p, const void *fv)
@@ -136,13 +136,13 @@ void performPendingSpecialKeyCombo()
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 {
+    short keyCode = 0;
 #if OS_WEBOS
-    if (webos_intercept_remote_keys(event))
+    if (webos_intercept_remote_keys(event, &keyCode))
     {
         return;
     }
 #endif
-    short keyCode;
     char modifiers;
 
     // Check for our special key combos
@@ -441,9 +441,15 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
             break;
         default:
             SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                        "Unhandled button event: %d",
-                        event->keysym.scancode);
-            return;
+                        "Unhandled button event: %d, keyCode now: %d",
+                        event->keysym.scancode, keyCode);
+            if (!keyCode)
+            {
+                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                            "Unhandled button event: %d",
+                            event->keysym.scancode);
+                return;
+            }
         }
     }
 

@@ -186,6 +186,12 @@ static void app_process_events(struct nk_context *ctx)
             {
                 ui_set_input_mode(UI_INPUT_MODE_POINTER);
             }
+#if OS_WEBOS
+            else if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_WEBOS_SCANCODE_EXIT)
+            {
+                app_request_exit();
+            }
+#endif
         }
         else if (evt.type == SDL_USEREVENT)
         {

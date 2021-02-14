@@ -5,25 +5,34 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-#include "platform/sdl/webos_keys.h"
+#include "platform/webos/SDL_webOS.h"
 
 #include "util/bus.h"
 #include "util/user_event.h"
 
-bool webos_intercept_remote_keys(SDL_KeyboardEvent *event)
+bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode)
 {
     // TODO Keyboard event on webOS is incorrect
     // https://github.com/mariotaku/moonlight-sdl/issues/4
-    switch (event->keysym.scancode)
+    switch ((unsigned int)event->keysym.scancode)
     {
-    case SDL_WEBOS_SCANCODE_BACK:
+    case SDL_WEBOS_SCANCODE_EXIT:
     {
-        if (event->state == SDL_RELEASED)
+        if (event->state == SDL_PRESSED)
         {
             bus_pushevent(USER_ST_QUITAPP_CONFIRM, NULL, NULL);
         }
         return true;
     }
+    case SDL_WEBOS_SCANCODE_BACK:
+        *keyCode = 0x1B /* SDL_SCANCODE_ESCAPE */;
+        return false;
+    case SDL_WEBOS_SCANCODE_CH_UP:
+        *keyCode = 0x21 /* SDL_SCANCODE_PAGEUP */;
+        return false;
+    case SDL_WEBOS_SCANCODE_CH_DOWN:
+        *keyCode = 0x22 /* SDL_SCANCODE_PAGEDOWN */;
+        return false;
     case SDL_WEBOS_SCANCODE_YELLOW:
         if (!absinput_no_control)
         {
