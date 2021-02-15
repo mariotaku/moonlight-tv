@@ -27,7 +27,7 @@ enum settings_entries
     ENTRY_COUNT
 };
 
-typedef void (*settings_panel_render)(struct nk_context *);
+typedef bool (*settings_panel_render)(struct nk_context *);
 typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 typedef int (*settings_panel_itemcount)();
 
@@ -45,15 +45,19 @@ static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY
 static int _pane_itemcount(int index);
 
 void _settings_nav(struct nk_context *ctx);
-void _settings_pane_basic(struct nk_context *ctx);
+
+bool _settings_pane_basic(struct nk_context *ctx);
 bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 int _settings_pane_basic_itemcount();
 
-void _settings_pane_host(struct nk_context *ctx);
+bool _settings_pane_host(struct nk_context *ctx);
 int _settings_pane_host_itemcount();
 
-void _settings_pane_mouse(struct nk_context *ctx);
-void _settings_pane_advanced(struct nk_context *ctx);
+bool _settings_pane_mouse(struct nk_context *ctx);
+
+bool _settings_pane_advanced(struct nk_context *ctx);
+int _settings_pane_advanced_itemcount();
+
 void settings_statbar(struct nk_context *ctx);
 void settings_set_pane_focused(bool focused);
 
@@ -63,8 +67,8 @@ void _pane_host_open();
 const struct settings_pane settings_panes[] = {
     {"Basic Settings", _settings_pane_basic, _settings_pane_basic_navkey, _settings_pane_basic_itemcount},
     {"Host Settings", _settings_pane_host, NULL, _settings_pane_host_itemcount},
-    {"Mouse Settings", _settings_pane_mouse, NULL},
-    {"Advanced Settings", _settings_pane_advanced, NULL},
+    {"Mouse Settings", _settings_pane_mouse, NULL, NULL},
+    {"Advanced Settings", _settings_pane_advanced, NULL, _settings_pane_advanced_itemcount},
 };
 #define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane)))
 
@@ -73,6 +77,7 @@ bool settings_pane_focused = false;
 int settings_hovered_item = -1;
 int settings_item_hover_request = -1;
 struct nk_vec2 settings_focused_item_center = {0, 0};
+bool event_emitted = false;
 
 void settings_window_init(struct nk_context *ctx)
 {
@@ -135,13 +140,15 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_group_end(ctx);
         }
+        event_emitted = false;
+
         nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, nk_style_item_color(nk_rgb(40, 40, 40)));
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2_s(10, 10));
         if (nk_group_begin_titled(ctx, "settings_pane", "Settings", 0))
         {
             if (settings_panes[selected_pane_index].render)
             {
-                settings_panes[selected_pane_index].render(ctx);
+                event_emitted |= settings_panes[selected_pane_index].render(ctx);
             }
             if (settings_item_hover_request >= 0)
             {
@@ -183,7 +190,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
         {
             settings_set_pane_focused(false);
         }
-        else
+        else if (!event_emitted)
         {
             nk_window_show(ctx, WINDOW_TITLE, false);
         }
@@ -239,7 +246,14 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
     case NAVKEY_CONFIRM:
         if (settings_pane_focused)
         {
-            _pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp);
+            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
+            {
+                break;
+            }
+            else if (settings_hovered_item >= 0)
+            {
+                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &settings_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
+            }
         }
         else if (state == NAVKEY_STATE_UP)
         {

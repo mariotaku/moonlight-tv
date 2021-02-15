@@ -25,6 +25,7 @@ typedef enum NAVKEY_STATE_
     NAVKEY_STATE_UP = 0x0,
     NAVKEY_STATE_DOWN = 0x1,
     NAVKEY_STATE_REPEAT = 0x2,
+    NAVKEY_STATE_NO_RESET = 0x4,
 } NAVKEY_STATE;
 
 bool navkey_intercept_repeat(NAVKEY_STATE state, uint32_t timestamp);

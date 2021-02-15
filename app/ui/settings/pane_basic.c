@@ -40,10 +40,11 @@ static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
 
-void _settings_pane_basic(struct nk_context *ctx)
+bool _settings_pane_basic(struct nk_context *ctx)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
+    bool event_emitted = false;
 
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
@@ -52,6 +53,7 @@ void _settings_pane_basic(struct nk_context *ctx)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
+        event_emitted |= true;
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < _supported_resolutions_len; i++)
         {
@@ -67,6 +69,7 @@ void _settings_pane_basic(struct nk_context *ctx)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
+        event_emitted |= true;
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < _supported_fps_len; i++)
         {
@@ -92,6 +95,7 @@ void _settings_pane_basic(struct nk_context *ctx)
     {
         nk_layout_row_dynamic_s(ctx, 4, 1);
     }
+    return event_emitted;
 }
 
 int _settings_pane_basic_itemcount()

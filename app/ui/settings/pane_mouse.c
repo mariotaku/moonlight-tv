@@ -4,7 +4,7 @@
 #include <stdio.h>
 static void _nk_edit_ushort(struct nk_context *ctx, unsigned short *num);
 
-void _settings_pane_mouse(struct nk_context *ctx)
+bool _settings_pane_mouse(struct nk_context *ctx)
 {
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Absolute mouse mapping", NK_TEXT_LEFT);
@@ -41,6 +41,8 @@ void _settings_pane_mouse(struct nk_context *ctx)
     _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.screen_x);
     nk_label(ctx, ",", NK_TEXT_CENTERED);
     _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.screen_y);
+
+    return false;
 }
 
 static nk_bool nk_filter_numeric(const struct nk_text_edit *box, nk_rune unicode)
