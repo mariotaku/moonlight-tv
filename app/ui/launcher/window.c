@@ -40,9 +40,9 @@ void _quitapp_error_popup(struct nk_context *ctx);
 void _webos_decoder_error_popup(struct nk_context *ctx);
 
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
-bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down);
+bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down, uint32_t timestamp);
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 void launcher_statbar(struct nk_context *ctx);
 bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
 
@@ -261,7 +261,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     return false;
 }
 
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down, uint32_t timestamp)
+bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
 {
     bool key_handled = false;
     if (launcher_blocked())
@@ -270,18 +270,18 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     }
     else if (_launcher_modals & LAUNCHER_MODAL_MASK_POPUP)
     {
-        if (!down && (key == NAVKEY_CANCEL || key == NAVKEY_START || key == NAVKEY_CONFIRM))
+        if (state == NAVKEY_STATE_UP && (key == NAVKEY_CANCEL || key == NAVKEY_START || key == NAVKEY_CONFIRM))
         {
             _launcher_popup_request_dismiss = true;
         }
     }
     else if (_launcher_showing_combo)
     {
-        return pclist_dispatch_navkey(ctx, key, down);
+        return pclist_dispatch_navkey(ctx, key, state, timestamp);
     }
     else if (selected_server_node && selected_server_node->server)
     {
-        key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, down, timestamp);
+        key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, state, timestamp);
     }
     if (key_handled)
     {
@@ -292,11 +292,11 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool do
     case NAVKEY_MENU:
         if (_computer_picker_center.x && _computer_picker_center.y)
         {
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_computer_picker_center, (void *)down);
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_computer_picker_center, (void *)state);
         }
         return true;
     case NAVKEY_CANCEL:
-        if (!down)
+        if (state == NAVKEY_STATE_UP)
         {
             app_request_exit();
         }

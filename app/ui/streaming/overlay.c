@@ -73,23 +73,23 @@ bool streaming_overlay_dispatch_userevent(int which)
     return false;
 }
 
-bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down)
+bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state)
 {
     if (stream_overlay_showing)
     {
         switch (navkey)
         {
         case NAVKEY_CANCEL:
-            if (!down)
+            if (state == NAVKEY_STATE_UP)
             {
                 streaming_overlay_hide();
             }
             break;
         case NAVKEY_NEGATIVE:
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_quit_center, (void *)down);
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_quit_center, (void *)state);
             break;
         case NAVKEY_MENU:
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_suspend_center, (void *)down);
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_suspend_center, (void *)state);
             break;
         default:
             break;

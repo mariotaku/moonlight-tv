@@ -52,6 +52,6 @@ bool ui_should_block_input();
 
 void ui_display_size(struct nk_context *ctx, short width, short height);
 
-bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down, uint32_t timestamp);
+bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 
 bool ui_set_input_mode(enum UI_INPUT_MODE mode);

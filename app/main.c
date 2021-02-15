@@ -54,7 +54,9 @@ int main(int argc, char *argv[])
         fonts_init(atlas);
         nk_platform_font_stash_end();
         nk_style_set_font(ctx, &noto20->handle);
+#if TARGET_DESKTOP && DEBUG
         nk_style_load_all_cursors(ctx, atlas->cursors);
+#endif
     }
     nk_ext_sprites_init();
     nk_ext_apply_style(ctx);

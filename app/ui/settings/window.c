@@ -28,7 +28,7 @@ enum settings_entries
 };
 
 typedef void (*settings_panel_render)(struct nk_context *);
-typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, bool down, uint32_t timestamp);
+typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 typedef int (*settings_panel_itemcount)();
 
 struct settings_pane
@@ -41,14 +41,17 @@ struct settings_pane
 
 static enum settings_entries _selected_entry = ENTRY_NONE;
 static void _pane_select_offset(int offset);
-static void _pane_item_offset(int offset);
-static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, bool down, uint32_t timestamp);
+static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 static int _pane_itemcount(int index);
 
 void _settings_nav(struct nk_context *ctx);
 void _settings_pane_basic(struct nk_context *ctx);
+bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
+int _settings_pane_basic_itemcount();
+
 void _settings_pane_host(struct nk_context *ctx);
 int _settings_pane_host_itemcount();
+
 void _settings_pane_mouse(struct nk_context *ctx);
 void _settings_pane_advanced(struct nk_context *ctx);
 void settings_statbar(struct nk_context *ctx);
@@ -58,7 +61,7 @@ void _pane_basic_open();
 void _pane_host_open();
 
 const struct settings_pane settings_panes[] = {
-    {"Basic Settings", _settings_pane_basic, NULL, NULL},
+    {"Basic Settings", _settings_pane_basic, _settings_pane_basic_navkey, _settings_pane_basic_itemcount},
     {"Host Settings", _settings_pane_host, NULL, _settings_pane_host_itemcount},
     {"Mouse Settings", _settings_pane_mouse, NULL},
     {"Advanced Settings", _settings_pane_advanced, NULL},
@@ -167,12 +170,12 @@ bool settings_window(struct nk_context *ctx)
     return true;
 }
 
-bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down, uint32_t timestamp)
+bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
 {
     switch (navkey)
     {
     case NAVKEY_CANCEL:
-        if (down)
+        if (state)
         {
             return true;
         }
@@ -186,29 +189,35 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool
         }
         break;
     case NAVKEY_UP:
-        if (navkey_intercept_repeat(down, timestamp))
-        {
-            return true;
-        }
         if (settings_pane_focused)
         {
-            _pane_item_offset(-1);
+            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
+            {
+                break;
+            }
+            else if (!navkey_intercept_repeat(state, timestamp))
+            {
+                settings_pane_item_offset(-1);
+            }
         }
-        else
+        else if (!navkey_intercept_repeat(state, timestamp))
         {
             _pane_select_offset(-1);
         }
         break;
     case NAVKEY_DOWN:
-        if (navkey_intercept_repeat(down, timestamp))
-        {
-            return true;
-        }
         if (settings_pane_focused)
         {
-            _pane_item_offset(1);
+            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
+            {
+                break;
+            }
+            else if (!navkey_intercept_repeat(state, timestamp))
+            {
+                settings_pane_item_offset(1);
+            }
         }
-        else
+        else if (!navkey_intercept_repeat(state, timestamp))
         {
             _pane_select_offset(1);
         }
@@ -216,7 +225,11 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool
     case NAVKEY_LEFT:
         if (settings_pane_focused)
         {
-            if (!_pane_dispatch_navkey(ctx, selected_pane_index, navkey, down, timestamp))
+            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
+            {
+                break;
+            }
+            else if (state == NAVKEY_STATE_UP)
             {
                 settings_set_pane_focused(false);
             }
@@ -226,18 +239,12 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool
     case NAVKEY_CONFIRM:
         if (settings_pane_focused)
         {
-            _pane_dispatch_navkey(ctx, selected_pane_index, navkey, down, timestamp);
+            _pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp);
         }
-        else if (_pane_itemcount(selected_pane_index))
+        else if (state == NAVKEY_STATE_UP)
         {
-            if (!down)
-            {
-                settings_set_pane_focused(true);
-            }
-        }
-        else
-        {
-            _pane_dispatch_navkey(ctx, selected_pane_index, navkey, down, timestamp);
+
+            settings_set_pane_focused(true);
         }
         break;
     default:
@@ -246,9 +253,9 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool
     return true;
 }
 
-bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, bool down, uint32_t timestamp)
+bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
 {
-    return settings_panes[pane_index].navkey && settings_panes[pane_index].navkey(ctx, navkey, down, timestamp);
+    return settings_panes[pane_index].navkey && settings_panes[pane_index].navkey(ctx, navkey, state, timestamp);
 }
 
 void _pane_select_offset(int offset)
@@ -268,7 +275,7 @@ void _pane_select_offset(int offset)
     }
 }
 
-void _pane_item_offset(int offset)
+void settings_pane_item_offset(int offset)
 {
     if (!settings_panes[selected_pane_index].itemcount)
     {

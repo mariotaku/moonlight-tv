@@ -225,22 +225,22 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     }
 }
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, bool down, uint32_t timestamp)
+bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
 {
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        return navkey_intercept_repeat(down, timestamp) || _applist_item_select(node, -1);
+        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, -1);
     case NAVKEY_RIGHT:
-        return navkey_intercept_repeat(down, timestamp) || _applist_item_select(node, 1);
+        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, 1);
     case NAVKEY_UP:
-        return navkey_intercept_repeat(down, timestamp) || _applist_item_select(node, -_applist_colcount);
+        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
-        return navkey_intercept_repeat(down, timestamp) || _applist_item_select(node, _applist_colcount);
+        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, _applist_colcount);
     case NAVKEY_NEGATIVE:
         if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
         {
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_close_center, (void *)down);
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_close_center, (void *)state);
         }
         return true;
     case NAVKEY_CONFIRM:
@@ -249,11 +249,11 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
         {
             if (node->server->currentGame == applist_hovered_item->id)
             {
-                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_resume_center, (void *)down);
+                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_resume_center, (void *)state);
             }
             else
             {
-                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_item_center, (void *)down);
+                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_item_center, (void *)state);
             }
         }
         return true;

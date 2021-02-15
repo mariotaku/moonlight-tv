@@ -30,6 +30,10 @@ static const struct _fps_option _supported_fps[] = {
 };
 #define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
 
+#define BITRATE_MIN 5000
+#define BITRATE_MAX 120000
+#define BITRATE_STEP 500
+
 static char _res_label[8], _fps_label[8];
 
 static void _set_fps(int fps);
@@ -38,10 +42,14 @@ static void _update_bitrate();
 
 void _settings_pane_basic(struct nk_context *ctx)
 {
+    static struct nk_rect item_bounds = {0, 0, 0, 0};
+    int item_index = 0;
+
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
     static const float ratio_resolution_fps[] = {0.6, 0.4};
     nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -56,6 +64,7 @@ void _settings_pane_basic(struct nk_context *ctx)
         }
         nk_combo_end(ctx);
     }
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -72,7 +81,8 @@ void _settings_pane_basic(struct nk_context *ctx)
     }
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
-    nk_property_int(ctx, "kbps:", 5000, &app_configuration->stream.bitrate, 120000, 500, 50);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, BITRATE_MAX, BITRATE_STEP, 50);
     if (app_configuration->stream.bitrate > 50000)
     {
         nk_layout_row_dynamic_s(ctx, 50, 1);
@@ -84,10 +94,69 @@ void _settings_pane_basic(struct nk_context *ctx)
     }
 }
 
+int _settings_pane_basic_itemcount()
+{
+    return 3;
+}
+
 void _pane_basic_open()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
+}
+
+bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
+{
+    switch (navkey)
+    {
+    case NAVKEY_LEFT:
+        if (settings_hovered_item == 1)
+        {
+            if (state == NAVKEY_STATE_UP)
+                settings_pane_item_offset(-1);
+            return true;
+        }
+        else if (settings_hovered_item == 2)
+        {
+            if (!navkey_intercept_repeat(state, timestamp))
+                app_configuration->stream.bitrate = NK_CLAMP(BITRATE_MIN, app_configuration->stream.bitrate - BITRATE_STEP,
+                                                             BITRATE_MAX);
+            return true;
+        }
+        return false;
+    case NAVKEY_RIGHT:
+        if (settings_hovered_item == 0)
+        {
+            if (state == NAVKEY_STATE_UP)
+                settings_pane_item_offset(1);
+            return true;
+        }
+        else if (settings_hovered_item == 2)
+        {
+            if (!navkey_intercept_repeat(state, timestamp))
+                app_configuration->stream.bitrate = NK_CLAMP(BITRATE_MIN, app_configuration->stream.bitrate + BITRATE_STEP,
+                                                             BITRATE_MAX);
+            return true;
+        }
+        return true;
+    case NAVKEY_UP:
+        if (settings_hovered_item >= 2)
+        {
+            if (state == NAVKEY_STATE_UP)
+                settings_pane_item_offset(0 - settings_hovered_item);
+        }
+        return true;
+    case NAVKEY_DOWN:
+        if (settings_hovered_item < 2)
+        {
+            if (state == NAVKEY_STATE_UP)
+                settings_pane_item_offset(2 - settings_hovered_item);
+        }
+        return true;
+    default:
+        break;
+    }
+    return false;
 }
 
 void _set_fps(int fps)

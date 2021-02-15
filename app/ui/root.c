@@ -189,17 +189,17 @@ void ui_display_size(struct nk_context *ctx, short width, short height)
     ui_logic_height = height / NK_UI_SCALE;
 }
 
-bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, bool down, uint32_t timestamp)
+bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
 {
     bool handled = false;
     if (streaming_status == STREAMING_NONE)
     {
-        handled |= handled || (ui_settings_showing && settings_window_dispatch_navkey(ctx, key, down, timestamp));
-        handled |= handled || launcher_window_dispatch_navkey(ctx, key, down, timestamp);
+        handled |= handled || (ui_settings_showing && settings_window_dispatch_navkey(ctx, key, state, timestamp));
+        handled |= handled || launcher_window_dispatch_navkey(ctx, key, state, timestamp);
     }
     else
     {
-        handled |= handled || streaming_overlay_dispatch_navkey(ctx, key, down);
+        handled |= handled || streaming_overlay_dispatch_navkey(ctx, key, state);
     }
     return handled;
 }

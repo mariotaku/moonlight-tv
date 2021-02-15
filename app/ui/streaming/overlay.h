@@ -30,7 +30,7 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat);
 
 bool streaming_overlay_dispatch_userevent(int which);
 
-bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down);
+bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state);
 
 bool streaming_overlay_should_block_input();
 

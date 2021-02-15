@@ -164,23 +164,29 @@ static void app_process_events(struct nk_context *ctx)
                     timestamp = evt.cbutton.timestamp;
                     is_gamepad = true;
                 }
+                NAVKEY_STATE state;
                 if (is_key)
                 {
-                    ui_set_input_mode(UI_INPUT_MODE_KEY);
+                    state = evt.key.state == SDL_PRESSED;
+                    if (evt.key.repeat)
+                        state |= NAVKEY_STATE_REPEAT;
+                    else
+                        ui_set_input_mode(UI_INPUT_MODE_KEY);
                 }
                 else if (is_gamepad)
                 {
+                    state = evt.cbutton.state == SDL_PRESSED;
                     ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
                 }
-                bool down = evt.type == SDL_KEYDOWN || evt.type == SDL_CONTROLLERBUTTONDOWN;
+
 #if OS_WEBOS
-                if (down && (navkey & NAVKEY_DPAD))
+                if (state == NAVKEY_STATE_DOWN && (navkey & NAVKEY_DPAD))
                 {
                     // Hide the cursor
                     SDL_webOSCursorVisibility(SDL_FALSE);
                 }
 #endif
-                ui_dispatch_navkey(ctx, navkey, down, timestamp);
+                ui_dispatch_navkey(ctx, navkey, state, timestamp);
             }
             else if (evt.type == SDL_MOUSEMOTION)
             {

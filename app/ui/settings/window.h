@@ -21,6 +21,7 @@
 
 extern bool settings_pane_focused;
 extern struct nk_vec2 settings_focused_item_center;
+extern int settings_hovered_item;
 
 void settings_window_init(struct nk_context *ctx);
 
@@ -30,6 +31,8 @@ bool settings_window_close();
 
 bool settings_window(struct nk_context *ctx);
 
-bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, bool down, uint32_t timestamp);
+bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 
 void settings_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds);
+
+void settings_pane_item_offset(int offset);
