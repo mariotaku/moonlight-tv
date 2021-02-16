@@ -6,11 +6,10 @@
 
 #define HAS_WEBOS_SETTINGS OS_WEBOS || DEBUG
 
-bool _settings_pane_advanced(struct nk_context *ctx, bool *item_hovered)
+bool _settings_pane_advanced(struct nk_context *ctx, bool *showing_combo)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
-    bool event_emitted = false;
 
 #if HAS_WEBOS_SETTINGS
     nk_layout_row_dynamic_s(ctx, 25, 1);
@@ -19,7 +18,7 @@ bool _settings_pane_advanced(struct nk_context *ctx, bool *item_hovered)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, app_configuration->platform, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
-        event_emitted |= true;
+        *showing_combo = true;
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < NK_LEN(platforms); i++)
         {
@@ -37,7 +36,7 @@ bool _settings_pane_advanced(struct nk_context *ctx, bool *item_hovered)
     app_configuration->audio_device = sdlaud ? "sdl" : NULL;
     nk_spacing(ctx, 1);
 #endif
-    return event_emitted;
+    return true;
 }
 int _settings_pane_advanced_itemcount()
 {

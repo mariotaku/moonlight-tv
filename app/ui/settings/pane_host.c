@@ -6,7 +6,7 @@
 
 static char _res_label[8], _fps_label[8];
 
-bool _settings_pane_host(struct nk_context *ctx, bool *item_hovered)
+bool _settings_pane_host(struct nk_context *ctx, bool *showing_combo)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
@@ -42,7 +42,7 @@ bool _settings_pane_host(struct nk_context *ctx, bool *item_hovered)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
 
-    return false;
+    return true;
 }
 
 int _settings_pane_host_itemcount()

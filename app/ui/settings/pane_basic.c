@@ -40,11 +40,10 @@ static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
 
-bool _settings_pane_basic(struct nk_context *ctx, bool *item_hovered)
+bool _settings_pane_basic(struct nk_context *ctx, bool *showing_combo)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
-    bool event_emitted = false;
 
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Resolution and FPS", NK_TEXT_LEFT);
@@ -53,7 +52,7 @@ bool _settings_pane_basic(struct nk_context *ctx, bool *item_hovered)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
-        event_emitted |= true;
+        *showing_combo = true;
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < _supported_resolutions_len; i++)
         {
@@ -69,7 +68,7 @@ bool _settings_pane_basic(struct nk_context *ctx, bool *item_hovered)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
-        event_emitted |= true;
+        *showing_combo = true;
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < _supported_fps_len; i++)
         {
@@ -95,7 +94,7 @@ bool _settings_pane_basic(struct nk_context *ctx, bool *item_hovered)
     {
         nk_layout_row_dynamic_s(ctx, 4, 1);
     }
-    return event_emitted;
+    return true;
 }
 
 int _settings_pane_basic_itemcount()
@@ -114,7 +113,11 @@ bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_S
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        if (settings_hovered_item == 1)
+        if (settings_showing_combo)
+        {
+            return true;
+        }
+        else if (settings_hovered_item == 1)
         {
             if (state == NAVKEY_STATE_UP)
                 settings_pane_item_offset(-1);
@@ -129,7 +132,11 @@ bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_S
         }
         return false;
     case NAVKEY_RIGHT:
-        if (settings_hovered_item == 0)
+        if (settings_showing_combo)
+        {
+            return true;
+        }
+        else if (settings_hovered_item == 0)
         {
             if (state == NAVKEY_STATE_UP)
                 settings_pane_item_offset(1);
@@ -144,14 +151,22 @@ bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_S
         }
         return true;
     case NAVKEY_UP:
-        if (settings_hovered_item >= 2)
+        if (settings_showing_combo)
+        {
+            return true;
+        }
+        else if (settings_hovered_item >= 2)
         {
             if (state == NAVKEY_STATE_UP)
                 settings_pane_item_offset(0 - settings_hovered_item);
         }
         return true;
     case NAVKEY_DOWN:
-        if (settings_hovered_item < 2)
+        if (settings_showing_combo)
+        {
+            return true;
+        }
+        else if (settings_hovered_item < 2)
         {
             if (state == NAVKEY_STATE_UP)
                 settings_pane_item_offset(2 - settings_hovered_item);

@@ -27,7 +27,7 @@ enum settings_entries
     ENTRY_COUNT
 };
 
-typedef bool (*settings_panel_render)(struct nk_context *, bool *item_hovered);
+typedef bool (*settings_panel_render)(struct nk_context *, bool *showing_combo);
 typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 typedef int (*settings_panel_itemcount)();
 
@@ -77,9 +77,9 @@ static int selected_pane_index = 0;
 bool settings_pane_focused = false;
 int settings_hovered_item = -1;
 int settings_item_hover_request = -1;
-struct nk_rect settings_focused_item_bounds = {0, 0, 0, 0};
+struct nk_rect settings_hovering_item_bounds = {0, 0, 0, 0};
 struct nk_vec2 settings_focused_item_center = {0, 0};
-bool event_emitted = false;
+bool settings_showing_combo = false;
 
 void settings_window_init(struct nk_context *ctx)
 {
@@ -142,22 +142,20 @@ bool settings_window(struct nk_context *ctx)
             }
             nk_group_end(ctx);
         }
-        event_emitted = false;
+        settings_showing_combo = false;
 
         nk_style_push_style_item(ctx, &ctx->style.window.fixed_background, nk_style_item_color(nk_rgb(40, 40, 40)));
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2_s(10, 10));
         if (nk_group_begin_titled(ctx, "settings_pane", "Settings", 0))
         {
-            bool item_hovered = false;
+            bool showing_combo = false;
             settings_hovered_item = -1;
+            settings_hovering_item_bounds.w = 0;
             if (settings_panes[selected_pane_index].render)
             {
-                event_emitted |= settings_panes[selected_pane_index].render(ctx, &item_hovered);
+                settings_panes[selected_pane_index].render(ctx, &showing_combo);
+                settings_showing_combo |= showing_combo;
             }
-            // if (!item_hovered)
-            // {
-            //     settings_hovered_item = -1;
-            // }
             if (settings_item_hover_request >= 0)
             {
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &settings_focused_item_center, NULL);
@@ -170,9 +168,9 @@ bool settings_window(struct nk_context *ctx)
 
         nk_stroke_line(&ctx->current->buffer, content_bounds.x, content_bounds.y, content_bounds.x + content_bounds.w,
                        content_bounds.y, 1 * NK_UI_SCALE, ctx->style.text.color);
-        if (settings_hovered_item >= 0 && ui_input_mode != UI_INPUT_MODE_POINTER)
+        if (!settings_showing_combo)
         {
-            nk_stroke_rect(&ctx->current->buffer, settings_focused_item_bounds, 0, 1 * NK_UI_SCALE, nk_rgb(0, 255, 255));
+            settings_draw_highlight(ctx);
         }
         settings_statbar(ctx);
     }
@@ -193,7 +191,12 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
     switch (navkey)
     {
     case NAVKEY_CANCEL:
-        if (state)
+        if (settings_showing_combo)
+        {
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &settings_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
+            return true;
+        }
+        else if (state)
         {
             return true;
         }
@@ -201,7 +204,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
         {
             settings_set_pane_focused(false);
         }
-        else if (!event_emitted)
+        else
         {
             nk_window_show(ctx, WINDOW_TITLE, false);
         }
@@ -218,7 +221,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
                 settings_pane_item_offset(-1);
             }
         }
-        else if (!navkey_intercept_repeat(state, timestamp))
+        else if (!settings_showing_combo && !navkey_intercept_repeat(state, timestamp))
         {
             _pane_select_offset(-1);
         }
@@ -235,7 +238,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
                 settings_pane_item_offset(1);
             }
         }
-        else if (!navkey_intercept_repeat(state, timestamp))
+        else if (!settings_showing_combo && !navkey_intercept_repeat(state, timestamp))
         {
             _pane_select_offset(1);
         }
@@ -247,13 +250,26 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
             {
                 break;
             }
-            else if (state == NAVKEY_STATE_UP)
+            else if (!settings_showing_combo && state == NAVKEY_STATE_UP)
             {
                 settings_set_pane_focused(false);
             }
         }
         break;
     case NAVKEY_RIGHT:
+        if (settings_pane_focused)
+        {
+            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
+            {
+                break;
+            }
+        }
+        else if (!settings_showing_combo && state == NAVKEY_STATE_UP)
+        {
+
+            settings_set_pane_focused(true);
+        }
+        break;
     case NAVKEY_CONFIRM:
         if (settings_pane_focused)
         {
@@ -261,12 +277,12 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
             {
                 break;
             }
-            else if (settings_hovered_item >= 0)
+            else if (settings_focused_item_center.x)
             {
                 bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &settings_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
             }
         }
-        else if (state == NAVKEY_STATE_UP)
+        else if (!settings_showing_combo && state == NAVKEY_STATE_UP)
         {
 
             settings_set_pane_focused(true);
@@ -333,16 +349,28 @@ int _pane_itemcount(int index)
 
 void settings_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds)
 {
-    if (nk_widget_is_hovered(ctx))
+    if (!settings_showing_combo && nk_widget_is_hovered(ctx))
     {
         settings_hovered_item = index;
+        settings_hovering_item_bounds = nk_widget_bounds(ctx);
     }
     if (settings_item_hover_request == index)
     {
         *bounds = nk_widget_bounds(ctx);
-        settings_focused_item_bounds = *bounds;
         settings_focused_item_center.x = nk_rect_center_x(*bounds);
         settings_focused_item_center.y = nk_rect_center_y(*bounds);
+    }
+}
+
+void settings_draw_highlight(struct nk_context *ctx)
+{
+#ifndef DEBUG
+    if (ui_input_mode != UI_INPUT_MODE_POINTER)
+        return;
+#endif
+    if (settings_hovering_item_bounds.w)
+    {
+        nk_stroke_rect(&ctx->current->buffer, settings_hovering_item_bounds, 0, 1 * NK_UI_SCALE, nk_rgb(0, 255, 255));
     }
 }
 

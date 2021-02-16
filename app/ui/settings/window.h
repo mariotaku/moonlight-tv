@@ -20,6 +20,7 @@
 #include "app.h"
 
 extern bool settings_pane_focused;
+extern bool settings_showing_combo;
 extern struct nk_vec2 settings_focused_item_center;
 extern int settings_hovered_item;
 
@@ -36,3 +37,5 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
 void settings_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds);
 
 void settings_pane_item_offset(int offset);
+
+void settings_draw_highlight(struct nk_context *ctx);

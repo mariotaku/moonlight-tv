@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-bool _settings_pane_mouse(struct nk_context *ctx, bool *item_hovered)
+bool _settings_pane_mouse(struct nk_context *ctx, bool *showing_combo)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
@@ -44,7 +44,7 @@ bool _settings_pane_mouse(struct nk_context *ctx, bool *item_hovered)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_property_int(ctx, "y:", 0, &app_configuration->absmouse_mapping.screen_y, 12800, 1, 0);
 
-    return false;
+    return true;
 }
 
 int _settings_pane_mouse_itemcount()
