@@ -6,7 +6,7 @@
 
 static char _res_label[8], _fps_label[8];
 
-bool _settings_pane_host(struct nk_context *ctx)
+bool _settings_pane_host(struct nk_context *ctx, bool *item_hovered)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;

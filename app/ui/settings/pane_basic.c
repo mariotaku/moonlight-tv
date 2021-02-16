@@ -40,7 +40,7 @@ static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
 
-bool _settings_pane_basic(struct nk_context *ctx)
+bool _settings_pane_basic(struct nk_context *ctx, bool *item_hovered)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;

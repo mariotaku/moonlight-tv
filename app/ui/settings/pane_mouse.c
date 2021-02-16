@@ -2,71 +2,52 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-static void _nk_edit_ushort(struct nk_context *ctx, unsigned short *num);
 
-bool _settings_pane_mouse(struct nk_context *ctx)
+bool _settings_pane_mouse(struct nk_context *ctx, bool *item_hovered)
 {
+    static struct nk_rect item_bounds = {0, 0, 0, 0};
+    int item_index = 0;
+
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Absolute mouse mapping", NK_TEXT_LEFT);
 
     nk_layout_row_template_begin_s(ctx, 25);
     nk_layout_row_template_push_static_s(ctx, 120);
     nk_layout_row_template_push_dynamic(ctx);
-    nk_layout_row_template_push_static_s(ctx, 10);
     nk_layout_row_template_push_dynamic(ctx);
     nk_layout_row_template_end(ctx);
     nk_label(ctx, "Desktop size", NK_TEXT_LEFT);
-    _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.desktop_w);
-    nk_label(ctx, "*", NK_TEXT_CENTERED);
-    _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.desktop_h);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "w:", 0, &app_configuration->absmouse_mapping.desktop_w, 12800, 1, 0);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "h:", 0, &app_configuration->absmouse_mapping.desktop_h, 12800, 1, 0);
 
     nk_layout_row_template_begin_s(ctx, 25);
     nk_layout_row_template_push_static_s(ctx, 120);
     nk_layout_row_template_push_dynamic(ctx);
-    nk_layout_row_template_push_static_s(ctx, 10);
     nk_layout_row_template_push_dynamic(ctx);
     nk_layout_row_template_end(ctx);
     nk_label(ctx, "Screen size", NK_TEXT_LEFT);
-    _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.screen_w);
-    nk_label(ctx, "*", NK_TEXT_CENTERED);
-    _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.screen_h);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "w: ", 0, &app_configuration->absmouse_mapping.screen_w, 12800, 1, 0);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "h: ", 0, &app_configuration->absmouse_mapping.screen_h, 12800, 1, 0);
 
     nk_layout_row_template_begin_s(ctx, 25);
     nk_layout_row_template_push_static_s(ctx, 120);
     nk_layout_row_template_push_dynamic(ctx);
-    nk_layout_row_template_push_static_s(ctx, 10);
     nk_layout_row_template_push_dynamic(ctx);
     nk_layout_row_template_end(ctx);
     nk_label(ctx, "Screen position", NK_TEXT_LEFT);
-    _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.screen_x);
-    nk_label(ctx, ",", NK_TEXT_CENTERED);
-    _nk_edit_ushort(ctx, &app_configuration->absmouse_mapping.screen_y);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "x:", 0, &app_configuration->absmouse_mapping.screen_x, 12800, 1, 0);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_property_int(ctx, "y:", 0, &app_configuration->absmouse_mapping.screen_y, 12800, 1, 0);
 
     return false;
 }
 
-static nk_bool nk_filter_numeric(const struct nk_text_edit *box, nk_rune unicode)
+int _settings_pane_mouse_itemcount()
 {
-    NK_UNUSED(box);
-    if (unicode < '0' || unicode > '9')
-        return nk_false;
-    else
-        return nk_true;
-}
-
-void _nk_edit_ushort(struct nk_context *ctx, unsigned short *num)
-{
-    static char buf[8];
-    snprintf(buf, 7, "%d", *num);
-    struct nk_rect editor_bounds = nk_widget_bounds(ctx);
-   nk_flags editor_state = nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, 5, nk_filter_numeric);
-    if (editor_state & NK_EDIT_ACTIVATED)
-    {
-        app_start_text_input(editor_bounds.x, editor_bounds.y, editor_bounds.w, editor_bounds.h);
-    }
-    else if (editor_state & NK_EDIT_DEACTIVATED)
-    {
-        app_stop_text_input();
-    }
-    *num = atoi(buf);
+    return 6;
 }

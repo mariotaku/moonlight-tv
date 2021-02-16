@@ -33,9 +33,9 @@ enum codecs
 
 typedef struct _ABSMOUSE_MAPPING
 {
-  unsigned short desktop_w, desktop_h;
-  unsigned short screen_w, screen_h;
-  unsigned short screen_x, screen_y;
+  int desktop_w, desktop_h;
+  int screen_w, screen_h;
+  int screen_x, screen_y;
 } ABSMOUSE_MAPPING;
 
 typedef struct _CONFIGURATION

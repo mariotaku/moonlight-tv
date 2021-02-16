@@ -6,7 +6,7 @@
 
 #define HAS_WEBOS_SETTINGS OS_WEBOS || DEBUG
 
-bool _settings_pane_advanced(struct nk_context *ctx)
+bool _settings_pane_advanced(struct nk_context *ctx, bool *item_hovered)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
