@@ -369,13 +369,13 @@ void settings_item_update_selected_bounds(struct nk_context *ctx, int index, str
 
 void settings_draw_highlight(struct nk_context *ctx)
 {
-#ifndef DEBUG
+#if !TARGET_DESKTOP && !DEBUG 
     if (ui_input_mode != UI_INPUT_MODE_POINTER)
         return;
 #endif
     if (settings_hovering_item_bounds.w)
     {
-        nk_stroke_rect(&ctx->current->buffer, settings_hovering_item_bounds, 0, 1 * NK_UI_SCALE, nk_rgb(0, 255, 255));
+        nk_stroke_rect(&ctx->current->buffer, settings_hovering_item_bounds, 0, 1 * NK_UI_SCALE, nk_ext_color_style[NK_EXT_COLOR_FOCUSED]);
     }
 }
 

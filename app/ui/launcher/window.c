@@ -32,6 +32,13 @@ struct pairing_computer_state pairing_computer_state;
 static struct nk_style_button cm_list_button_style;
 static struct nk_vec2 _computer_picker_center = {0, 0};
 
+int topbar_item_hover_request = -1;
+int topbar_hovered_item = -1;
+struct nk_rect topbar_hovering_item_bounds = {0, 0, 0, 0};
+struct nk_vec2 topbar_focused_item_center = {0, 0};
+static int topbar_item_count = 0;
+bool topbar_showing_combo = false;
+
 void _pairing_window(struct nk_context *ctx);
 void _pairing_error_popup(struct nk_context *ctx);
 void _server_error_popup(struct nk_context *ctx);
@@ -49,6 +56,9 @@ bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 static void _launcher_modal_flags_update();
 void _launcher_modal_popups_show(struct nk_context *ctx);
 void _launcher_modal_windows_show(struct nk_context *ctx);
+
+void launcher_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds);
+void topbar_item_offset(int offset);
 
 #define launcher_blocked() ((_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW) || ui_settings_showing)
 
@@ -92,6 +102,9 @@ bool launcher_window(struct nk_context *ctx)
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(0, 0));
     if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, ui_display_width, ui_display_height), window_flags))
     {
+        static struct nk_rect item_bounds = {0, 0, 0, 0};
+        topbar_item_count = 0;
+        topbar_hovered_item = -1;
         float list_height = nk_window_get_content_inner_size(ctx).y;
         bool show_server_error_popup = false, show_pairing_error_popup = false,
              show_quitapp_error_popup = false;
@@ -111,20 +124,29 @@ bool launcher_window(struct nk_context *ctx)
         _computer_picker_center.x = nk_rect_center_x(bounds);
         _computer_picker_center.y = nk_rect_center_y(bounds);
         _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
-        event_emitted |= pclist_dropdown(ctx, event_emitted);
-
+        int dropdown_index;
+        launcher_item_update_selected_bounds(ctx, dropdown_index = topbar_item_count++, &item_bounds);
+        bool dropdown_highlight = ui_input_mode != UI_INPUT_MODE_POINTER && topbar_hovered_item == dropdown_index;
+        if (dropdown_highlight)
+            nk_style_push_color(ctx, &ctx->style.combo.border_color, nk_ext_color_style[NK_EXT_COLOR_FOCUSED]);
+        topbar_showing_combo = (event_emitted |= pclist_dropdown(ctx, event_emitted));
+        if (dropdown_highlight)
+            nk_style_pop_color(ctx);
         nk_spacing(ctx, 1);
 
         nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
 
+        launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_add_to_queue))
         {
             launcher_add_server();
         }
+        launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_settings))
         {
             settings_window_open();
         }
+        launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_close))
         {
             app_request_exit();
@@ -178,6 +200,11 @@ bool launcher_window(struct nk_context *ctx)
 
         launcher_statbar(ctx);
 
+        if (topbar_item_hover_request >= 0)
+        {
+            bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &topbar_focused_item_center, NULL);
+            topbar_item_hover_request = -1;
+        }
         _launcher_modal_popups_show(ctx);
     }
     nk_end(ctx);
@@ -284,7 +311,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_
     {
         return pclist_dispatch_navkey(ctx, key, state, timestamp);
     }
-    else if (selected_server_node && selected_server_node->server)
+    else if (selected_server_node && selected_server_node->server && topbar_hovered_item < 0)
     {
         key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, state, timestamp);
     }
@@ -305,6 +332,29 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_
         {
             app_request_exit();
         }
+        return true;
+    case NAVKEY_UP:
+        if (!navkey_intercept_repeat(state, timestamp))
+            topbar_item_offset(0);
+        return true;
+    case NAVKEY_DOWN:
+        if (!navkey_intercept_repeat(state, timestamp))
+        {
+            topbar_hovered_item = -1;
+            _applist_dispatch_navkey(ctx, selected_server_node, key, state, timestamp);
+        }
+        return true;
+    case NAVKEY_LEFT:
+        if (!navkey_intercept_repeat(state, timestamp))
+            topbar_item_offset(-1);
+        return true;
+    case NAVKEY_RIGHT:
+        if (!navkey_intercept_repeat(state, timestamp))
+            topbar_item_offset(1);
+        return true;
+    case NAVKEY_CONFIRM:
+        if (topbar_focused_item_center.x)
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &topbar_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
         return true;
     default:
         break;
@@ -377,4 +427,41 @@ void _launcher_modal_flags_update()
         _launcher_modals |= LAUNCHER_MODAL_WDECERR;
     }
 #endif
+}
+
+void launcher_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds)
+{
+    if (!topbar_showing_combo && nk_widget_is_hovered(ctx))
+    {
+        topbar_hovered_item = index;
+        topbar_hovering_item_bounds = nk_widget_bounds(ctx);
+        if (ui_input_mode == UI_INPUT_MODE_POINTER)
+        {
+            topbar_focused_item_center.x = nk_rect_center_x(topbar_hovering_item_bounds);
+            topbar_focused_item_center.y = nk_rect_center_y(topbar_hovering_item_bounds);
+        }
+    }
+    if (topbar_item_hover_request == index)
+    {
+        *bounds = nk_widget_bounds(ctx);
+        topbar_focused_item_center.x = nk_rect_center_x(*bounds);
+        topbar_focused_item_center.y = nk_rect_center_y(*bounds);
+    }
+}
+
+void topbar_item_offset(int offset)
+{
+    int new_index = topbar_hovered_item + offset;
+    if (new_index < 0)
+    {
+        topbar_item_hover_request = 0;
+    }
+    else if (new_index >= topbar_item_count)
+    {
+        topbar_item_hover_request = topbar_item_count - 1;
+    }
+    else
+    {
+        topbar_item_hover_request = new_index;
+    }
 }

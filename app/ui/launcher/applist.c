@@ -230,13 +230,19 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
     switch (navkey)
     {
     case NAVKEY_LEFT:
-        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, -1);
+        if (!navkey_intercept_repeat(state, timestamp))
+            _applist_item_select(node, -1);
+        return true;
     case NAVKEY_RIGHT:
-        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, 1);
+        if (!navkey_intercept_repeat(state, timestamp))
+            _applist_item_select(node, 1);
+        return true;
     case NAVKEY_UP:
         return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, -_applist_colcount);
     case NAVKEY_DOWN:
-        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, _applist_colcount);
+        if (!navkey_intercept_repeat(state, timestamp))
+            _applist_item_select(node, _applist_colcount);
+        return true;
     case NAVKEY_NEGATIVE:
         if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
         {
@@ -273,7 +279,7 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
     PAPP_DLIST item = applist_hovered_item == NULL ? _applist_visible_start : applist_nth(applist_hovered_item, offset);
     if (!item || !_applist_rowcount)
     {
-        return true;
+        return false;
     }
     applist_hover_request = item;
     int spacing = list_view.ctx->style.window.spacing.y;

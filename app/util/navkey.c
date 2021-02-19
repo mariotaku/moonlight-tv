@@ -26,5 +26,5 @@ bool navkey_intercept_repeat(NAVKEY_STATE state, uint32_t timestamp)
         last_timestamp = timestamp;
         return false;
     }
-    return true;
+    return state != NAVKEY_STATE_DOWN;
 }
