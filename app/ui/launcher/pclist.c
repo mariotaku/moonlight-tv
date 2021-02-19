@@ -58,14 +58,6 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                 }
             }
         }
-        if (nk_combo_item_label(ctx, "Add manually...", NK_TEXT_LEFT))
-        {
-            if (!event_emitted)
-            {
-                launcher_add_server();
-                event_emitted = true;
-            }
-        }
         nk_combo_end(ctx);
     }
     nk_style_pop_vec2(ctx);
