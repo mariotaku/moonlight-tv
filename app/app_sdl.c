@@ -195,7 +195,10 @@ static void app_process_events(struct nk_context *ctx)
 #if OS_WEBOS
             else if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_WEBOS_SCANCODE_EXIT)
             {
-                app_request_exit();
+                if (!streaming_running)
+                {
+                    app_request_exit();
+                }
             }
 #endif
         }

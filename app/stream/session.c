@@ -22,7 +22,7 @@ STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
 
-bool session_running = false, session_interrupted = false;
+bool streaming_running = false, session_interrupted = false;
 
 short streaming_display_width, streaming_display_height;
 bool streaming_quitapp_requested;
@@ -107,11 +107,6 @@ void streaming_wait_for_stop()
     }
 }
 
-bool streaming_running()
-{
-    return session_running;
-}
-
 void streaming_display_size(short width, short height)
 {
     streaming_display_width = width;
@@ -172,7 +167,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
         streaming_errno = GS_WRONG_STATE;
         goto thread_cleanup;
     }
-    session_running = true;
+    streaming_running = true;
     _streaming_set_status(STREAMING_STREAMING);
     video_presenter_cb = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
@@ -185,7 +180,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     video_presenter_cb = NULL;
     session_interrupted = false;
     pthread_mutex_unlock(&streaming_interrupt_lock);
-    session_running = false;
+    streaming_running = false;
     bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
 
     _streaming_set_status(STREAMING_DISCONNECTING);

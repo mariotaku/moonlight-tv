@@ -32,6 +32,7 @@ extern STREAMING_STATUS streaming_status;
 extern int streaming_errno;
 extern char streaming_errmsg[];
 extern short streaming_display_width, streaming_display_height;
+extern bool streaming_running;
 
 void streaming_init();
 
@@ -45,7 +46,6 @@ void streaming_wait_for_stop();
 
 void streaming_display_size(short width, short height);
 
-bool streaming_running();
 
 void streaming_enter_fullscreen();
 
