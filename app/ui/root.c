@@ -142,7 +142,8 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
             ui_fake_mouse_click_started = true;
             nk_input_motion(ctx, center->x, center->y);
             nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, (state & NAVKEY_STATE_DOWN) ? nk_true : nk_false);
-            if (!(state & NAVKEY_STATE_NO_RESET))
+            // Reset to (0,0) if only UP flag is present, and no NO_RESET flag
+            if (state == NAVKEY_STATE_UP)
             {
                 ui_send_faketouch_cancel = true;
                 ui_fake_mouse_click_started = false;
