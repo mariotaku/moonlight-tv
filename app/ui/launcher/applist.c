@@ -272,12 +272,20 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
 bool _applist_item_select(PSERVER_LIST node, int offset)
 {
     if (_applist_visible_start == NULL)
-    {
         return true;
-    }
+    if (!_applist_rowcount)
+        return false;
 
-    PAPP_DLIST item = applist_hovered_item == NULL ? _applist_visible_start : applist_nth(applist_hovered_item, offset);
-    if (!item || !_applist_rowcount)
+    PAPP_DLIST item;
+    if (!applist_hovered_item)
+        item = _applist_visible_start;
+    else
+    {
+        item = applist_nth(applist_hovered_item, offset);
+        if (offset > 0 && !item)
+            item = applist_tail(applist_hovered_item);
+    }
+    if (!item)
     {
         return false;
     }

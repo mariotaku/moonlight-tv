@@ -18,6 +18,7 @@ typedef void(LINKEDLIST_FN_NAME(nodefree_fn))(LINKEDLIST_TYPE *p);
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(new)();
 int LINKEDLIST_FN_NAME(len)(LINKEDLIST_TYPE *p);
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(nth)(LINKEDLIST_TYPE *p, int n);
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(tail)(LINKEDLIST_TYPE *p);
 int LINKEDLIST_FN_NAME(index)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f);
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(find_by)(LINKEDLIST_TYPE *p, const void *v, LINKEDLIST_FN_NAME(find_fn) fn);
 LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(append)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *node);
@@ -64,6 +65,18 @@ LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(nth)(LINKEDLIST_TYPE *p, int n)
             ;
     }
     return ret;
+}
+
+LINKEDLIST_TYPE *LINKEDLIST_FN_NAME(tail)(LINKEDLIST_TYPE *p)
+{
+    if (!p)
+        return NULL;
+    LINKEDLIST_TYPE *cur = p;
+    while (cur->next != NULL)
+    {
+        cur = cur->next;
+    }
+    return cur;
 }
 
 int LINKEDLIST_FN_NAME(index)(LINKEDLIST_TYPE *p, LINKEDLIST_TYPE *f)

@@ -341,7 +341,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_
         if (!navkey_intercept_repeat(state, timestamp))
         {
             topbar_hovered_item = -1;
-            _applist_dispatch_navkey(ctx, selected_server_node, key, state, timestamp);
+            _applist_dispatch_navkey(ctx, selected_server_node, NAVKEY_UP, state, timestamp);
         }
         return true;
     case NAVKEY_LEFT:
