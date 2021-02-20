@@ -296,11 +296,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
 bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
 {
     bool key_handled = false;
-    if (ui_settings_showing)
-    {
-        return true;
-    }
-    else if (_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW)
+    if (_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW)
     {
         _launcher_modal_windows_navkey(ctx, key, state, timestamp);
         return true;

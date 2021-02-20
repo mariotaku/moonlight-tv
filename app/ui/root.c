@@ -76,7 +76,7 @@ bool ui_root(struct nk_context *ctx)
         {
             return false;
         }
-        
+
         if (ui_settings_showing)
         {
             if (!settings_window(ctx))
@@ -130,7 +130,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
         case USER_FAKEINPUT_MOUSE_CLICK:
         {
             struct nk_vec2 *center = data1;
-            NAVKEY_STATE state = (NAVKEY_STATE) data2;
+            NAVKEY_STATE state = (NAVKEY_STATE)data2;
             if (ui_fake_mouse_event_received)
             {
                 // This is not the first time event received
@@ -196,12 +196,14 @@ bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, 
     bool handled = false;
     if (streaming_status == STREAMING_NONE)
     {
-        handled |= handled || (ui_settings_showing && settings_window_dispatch_navkey(ctx, key, state, timestamp));
-        handled |= handled || launcher_window_dispatch_navkey(ctx, key, state, timestamp);
+        if (ui_settings_showing)
+            handled |= settings_window_dispatch_navkey(ctx, key, state, timestamp);
+        else
+            handled |= launcher_window_dispatch_navkey(ctx, key, state, timestamp);
     }
     else
     {
-        handled |= handled || streaming_overlay_dispatch_navkey(ctx, key, state);
+        handled |= streaming_overlay_dispatch_navkey(ctx, key, state);
     }
     return handled;
 }
