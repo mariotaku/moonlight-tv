@@ -124,8 +124,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     if (cur == applist_hover_request)
     {
         // Send mouse pointer to the item
-        applist_focused_item_center.x = nk_rect_center_x(tmp_bounds);
-        applist_focused_item_center.y = nk_rect_center_y(tmp_bounds);
+        applist_focused_item_center = nk_rect_center(tmp_bounds);
     }
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
@@ -163,8 +162,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
             tmp_bounds = nk_widget_bounds(ctx);
             if (hovered)
             {
-                applist_focused_resume_center.x = nk_rect_center_x(tmp_bounds);
-                applist_focused_resume_center.y = nk_rect_center_y(tmp_bounds);
+                applist_focused_resume_center = nk_rect_center(tmp_bounds);
             }
             nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
             if (nk_button_image(ctx, sprites_ui.ic_play))
@@ -175,8 +173,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
             tmp_bounds = nk_widget_bounds(ctx);
             if (hovered)
             {
-                applist_focused_close_center.x = nk_rect_center_x(tmp_bounds);
-                applist_focused_close_center.y = nk_rect_center_y(tmp_bounds);
+                applist_focused_close_center = nk_rect_center(tmp_bounds);
             }
             if (nk_button_image(ctx, sprites_ui.ic_close))
             {

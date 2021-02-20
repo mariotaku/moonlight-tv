@@ -11,7 +11,14 @@
 
 #include "backend/computer_manager.h"
 
+#include "util/bus.h"
+#include "util/user_event.h"
+
 static nk_bool nk_filter_ip(const struct nk_text_edit *box, nk_rune unicode);
+
+static void manual_add_dismiss();
+
+static struct nk_vec2 manual_add_cancel_center = {0, 0}, manual_add_confirm_center = {0, 0};
 
 void _manual_add_window(struct nk_context *ctx)
 {
@@ -42,7 +49,14 @@ void _manual_add_window(struct nk_context *ctx)
         nk_label_wrap(ctx, message);
         nk_layout_row_dynamic_s(ctx, 30, 1);
         struct nk_rect editor_bounds = nk_widget_bounds(ctx);
-        nk_flags editor_state = nk_edit_string(ctx, NK_EDIT_FIELD, text, &text_len, 64, nk_filter_ip);
+        static bool should_focus = false;
+        if (should_focus)
+        {
+            nk_edit_focus(ctx, NK_EDIT_FIELD | NK_EDIT_GOTO_END_ON_ACTIVATE);
+            app_start_text_input(editor_bounds.x, editor_bounds.y, editor_bounds.w, editor_bounds.h);
+            should_focus = false;
+        }
+        nk_flags editor_state = nk_edit_string(ctx, NK_EDIT_FIELD | NK_EDIT_GOTO_END_ON_ACTIVATE, text, &text_len, 64, nk_filter_ip);
         if (editor_state & NK_EDIT_ACTIVATED)
         {
             app_start_text_input(editor_bounds.x, editor_bounds.y, editor_bounds.w, editor_bounds.h);
@@ -50,6 +64,10 @@ void _manual_add_window(struct nk_context *ctx)
         else if (editor_state & NK_EDIT_DEACTIVATED)
         {
             app_stop_text_input();
+        }
+        else if (editor_state == NK_EDIT_INACTIVE)
+        {
+            should_focus = true;
         }
 
         nk_layout_row_dynamic_s(ctx, 5, 0);
@@ -61,12 +79,17 @@ void _manual_add_window(struct nk_context *ctx)
         nk_layout_row_template_end(ctx);
 
         nk_spacing(ctx, 1);
+        struct nk_rect btn_bounds = nk_widget_bounds(ctx);
+        manual_add_cancel_center = nk_rect_center(btn_bounds);
         if (nk_button_label(ctx, "Cancel"))
         {
             // Clear input text
             text_len = 0;
             _launcher_show_manual_pair = false;
         }
+
+        btn_bounds = nk_widget_bounds(ctx);
+        manual_add_confirm_center = nk_rect_center(btn_bounds);
         if (nk_button_label(ctx, "OK") && text_len)
         {
             char *addr = malloc(text_len + 1);
@@ -79,6 +102,24 @@ void _manual_add_window(struct nk_context *ctx)
         }
     }
     nk_end(ctx);
+}
+
+bool manual_add_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
+{
+    switch (key)
+    {
+    case NAVKEY_CANCEL:
+        bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &manual_add_cancel_center, (void *)state);
+        return true;
+    case NAVKEY_CONFIRM:
+        bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &manual_add_confirm_center, (void *)state);
+        return true;
+    }
+    return true;
+}
+
+void manual_add_dismiss()
+{
 }
 
 nk_bool nk_filter_ip(const struct nk_text_edit *box, nk_rune unicode)

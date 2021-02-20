@@ -32,8 +32,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
             if (cur == pclist_hover_request)
             {
                 // Send mouse pointer to the item
-                pclist_focused_center.x = nk_rect_center_x(item_bounds);
-                pclist_focused_center.y = nk_rect_center_y(item_bounds);
+                pclist_focused_center = nk_rect_center(item_bounds);
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &pclist_focused_center, NULL);
                 pclist_hover_request = NULL;
             }

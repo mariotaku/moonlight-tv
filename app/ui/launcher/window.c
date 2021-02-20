@@ -56,6 +56,7 @@ bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 static void _launcher_modal_flags_update();
 void _launcher_modal_popups_show(struct nk_context *ctx);
 void _launcher_modal_windows_show(struct nk_context *ctx);
+bool _launcher_modal_windows_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
 
 void launcher_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds);
 void topbar_item_offset(int offset);
@@ -121,8 +122,7 @@ bool launcher_window(struct nk_context *ctx)
         list_height -= nk_widget_height(ctx);
 
         struct nk_rect bounds = nk_widget_bounds(ctx);
-        _computer_picker_center.x = nk_rect_center_x(bounds);
-        _computer_picker_center.y = nk_rect_center_y(bounds);
+        _computer_picker_center = nk_rect_center(bounds);
         _launcher_showing_combo = ctx->current->popup.win != NULL && ctx->current->popup.type != NK_PANEL_TOOLTIP;
         int dropdown_index;
         launcher_item_update_selected_bounds(ctx, dropdown_index = topbar_item_count++, &item_bounds);
@@ -280,7 +280,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
             pairing_computer_state.state = PS_FAIL;
             pairing_computer_state.error = node->errmsg;
         }
-        break;
+        return true;
     }
     case USER_CM_QUITAPP_FAILED:
     {
@@ -296,8 +296,13 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
 bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
 {
     bool key_handled = false;
-    if (launcher_blocked())
+    if (ui_settings_showing)
     {
+        return true;
+    }
+    else if (_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW)
+    {
+        _launcher_modal_windows_navkey(ctx, key, state, timestamp);
         return true;
     }
     else if (_launcher_modals & LAUNCHER_MODAL_MASK_POPUP)
@@ -391,9 +396,19 @@ void _open_pair(PSERVER_LIST node)
 void _launcher_modal_flags_update()
 {
     _launcher_modals = 0;
-    if (pairing_computer_state.state == PS_RUNNING)
+    if (pairing_computer_state.state != PS_NONE)
     {
-        _launcher_modals |= LAUNCHER_MODAL_PAIRING;
+        switch (pairing_computer_state.state)
+        {
+        case PS_RUNNING:
+            _launcher_modals |= LAUNCHER_MODAL_PAIRING;
+            break;
+        case PS_FAIL:
+            _launcher_modals |= LAUNCHER_MODAL_PAIRERR;
+            break;
+        default:
+            break;
+        }
     }
     if (computer_manager_executing_quitapp)
     {
@@ -410,16 +425,9 @@ void _launcher_modal_flags_update()
             _launcher_modals |= LAUNCHER_MODAL_SERVERR;
         }
     }
-    else
-    {
-        if (pairing_computer_state.state == PS_FAIL)
-        {
-            _launcher_modals |= LAUNCHER_MODAL_PAIRERR;
-        }
-    }
     if (_launcher_show_manual_pair)
     {
-        _launcher_modals |= LAUNCHER_MODAL_MANPAIR;
+        _launcher_modals |= LAUNCHER_MODAL_MANUAL_ADD;
     }
 #if OS_WEBOS
     if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
@@ -437,15 +445,13 @@ void launcher_item_update_selected_bounds(struct nk_context *ctx, int index, str
         topbar_hovering_item_bounds = nk_widget_bounds(ctx);
         if (ui_input_mode == UI_INPUT_MODE_POINTER)
         {
-            topbar_focused_item_center.x = nk_rect_center_x(topbar_hovering_item_bounds);
-            topbar_focused_item_center.y = nk_rect_center_y(topbar_hovering_item_bounds);
+            topbar_focused_item_center = nk_rect_center(topbar_hovering_item_bounds);
         }
     }
     if (topbar_item_hover_request == index)
     {
         *bounds = nk_widget_bounds(ctx);
-        topbar_focused_item_center.x = nk_rect_center_x(*bounds);
-        topbar_focused_item_center.y = nk_rect_center_y(*bounds);
+        topbar_focused_item_center = nk_rect_center(*bounds);
     }
 }
 

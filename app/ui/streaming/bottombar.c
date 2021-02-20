@@ -41,8 +41,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
 
             nk_spacing(ctx, 1);
             struct nk_rect bounds = nk_widget_bounds(ctx);
-            _btn_suspend_center.x = nk_rect_center_x(bounds);
-            _btn_suspend_center.y = nk_rect_center_y(bounds);
+            _btn_suspend_center = nk_rect_center(bounds);
             if (nk_button_label(ctx, ""))
             {
                 streaming_interrupt(false);
@@ -51,8 +50,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
 
             nk_spacing(ctx, 1);
             bounds = nk_widget_bounds(ctx);
-            _btn_quit_center.x = nk_rect_center_x(bounds);
-            _btn_quit_center.y = nk_rect_center_y(bounds);
+            _btn_quit_center = nk_rect_center(bounds);
             if (nk_button_label(ctx, ""))
             {
                 streaming_interrupt(true);

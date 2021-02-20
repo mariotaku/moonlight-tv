@@ -33,8 +33,7 @@ NK_API nk_bool nk_checkbox_label_std(struct nk_context*, const char* label, bool
 #define nk_vec2_s(x, y) nk_vec2((x) * NK_UI_SCALE, (y) * NK_UI_SCALE)
 #define nk_vec2_s_const(x, y) {(x) * NK_UI_SCALE, (y) * NK_UI_SCALE}
 
-#define nk_rect_center_x(rect) (rect).x + (rect).w / 2
-#define nk_rect_center_y(rect) (rect).y + (rect).h / 2
+#define nk_rect_center(rect) nk_vec2(((rect).x + (rect).w / 2), ((rect).y + (rect).h / 2))
 
 #define nk_layout_row_s(ctx, fmt, height, cols, ratio) nk_layout_row(ctx, fmt, (height) * NK_UI_SCALE, cols, ratio)
 #define nk_layout_row_dynamic_s(ctx, height, cols) nk_layout_row_dynamic(ctx, (height) * NK_UI_SCALE, cols)

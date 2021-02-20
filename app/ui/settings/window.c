@@ -355,15 +355,13 @@ void settings_item_update_selected_bounds(struct nk_context *ctx, int index, str
         settings_hovering_item_bounds = nk_widget_bounds(ctx);
         if (ui_input_mode == UI_INPUT_MODE_POINTER)
         {
-            settings_focused_item_center.x = nk_rect_center_x(settings_hovering_item_bounds);
-            settings_focused_item_center.y = nk_rect_center_y(settings_hovering_item_bounds);
+            settings_focused_item_center = nk_rect_center(settings_hovering_item_bounds);
         }
     }
     if (settings_item_hover_request == index)
     {
         *bounds = nk_widget_bounds(ctx);
-        settings_focused_item_center.x = nk_rect_center_x(*bounds);
-        settings_focused_item_center.y = nk_rect_center_y(*bounds);
+        settings_focused_item_center = nk_rect_center(*bounds);
     }
 }
 

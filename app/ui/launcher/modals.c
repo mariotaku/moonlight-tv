@@ -10,6 +10,7 @@
 bool _webos_decoder_error_dismissed;
 
 void _manual_add_window(struct nk_context *ctx);
+bool manual_add_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
 
 void _pairing_window(struct nk_context *ctx);
 
@@ -111,7 +112,7 @@ void _launcher_modal_popups_show(struct nk_context *ctx)
 
 void _launcher_modal_windows_show(struct nk_context *ctx)
 {
-    if (_launcher_modals & LAUNCHER_MODAL_MANPAIR)
+    if (_launcher_modals & LAUNCHER_MODAL_MANUAL_ADD)
     {
         _manual_add_window(ctx);
     }
@@ -123,4 +124,13 @@ void _launcher_modal_windows_show(struct nk_context *ctx)
     {
         _quitapp_window(ctx);
     }
+}
+
+bool _launcher_modal_windows_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
+{
+    if (_launcher_modals & LAUNCHER_MODAL_MANUAL_ADD)
+    {
+        return manual_add_navkey(ctx, key, state, timestamp);
+    }
+    return false;
 }
