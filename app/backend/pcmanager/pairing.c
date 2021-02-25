@@ -13,6 +13,7 @@
 #include "util/user_event.h"
 
 static void *_computer_manager_pairing_action(void *data);
+static void *_computer_manager_unpairing_action(void *data);
 static void *_manual_adding_action(void *data);
 static int pin_random(int min, int max);
 
@@ -28,6 +29,15 @@ bool computer_manager_pair(PSERVER_LIST node, char *pin)
     return true;
 }
 
+bool computer_manager_unpair(PSERVER_LIST node)
+{
+    cm_pin_request *req = malloc(sizeof(cm_pin_request));
+    req->node = node;
+    pthread_t pair_thread;
+    pthread_create(&pair_thread, NULL, _computer_manager_unpairing_action, req);
+    return true;
+}
+
 bool pcmanager_manual_add(char *address)
 {
     pthread_t add_thread;
@@ -40,10 +50,30 @@ void *_computer_manager_pairing_action(void *data)
     cm_pin_request *req = (cm_pin_request *)data;
     PSERVER_LIST node = req->node;
     // Pairing will change server pointer
-    PSERVER_DATA server = (PSERVER_DATA) node->server;
+    PSERVER_DATA server = (PSERVER_DATA)node->server;
     node->err = gs_pair(server, (char *)req->pin);
     node->errmsg = gs_error;
     bus_pushevent(USER_CM_PAIRING_DONE, node, NULL);
+    free(req);
+    return NULL;
+}
+
+void *_computer_manager_unpairing_action(void *data)
+{
+    cm_pin_request *req = (cm_pin_request *)data;
+    PSERVER_LIST node = req->node;
+    // Pairing will change server pointer
+    PSERVER_DATA server = (PSERVER_DATA)node->server;
+    if (server)
+    {
+        node->err = gs_unpair(server);
+        node->errmsg = gs_error;
+    }
+    else
+    {
+        node->err = GS_OK;
+    }
+    bus_pushevent(USER_CM_UNPAIRING_DONE, node, NULL);
     free(req);
     return NULL;
 }

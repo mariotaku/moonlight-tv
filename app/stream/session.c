@@ -194,10 +194,11 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     }
     bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
 
+    // Don't always reset status as error state should be kept
+    _streaming_set_status(STREAMING_NONE);
 thread_cleanup:
     platform_stop(system);
     free(req);
-    _streaming_set_status(STREAMING_NONE);
     return NULL;
 }
 

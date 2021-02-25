@@ -39,7 +39,6 @@ struct nk_vec2 topbar_focused_item_center = {0, 0};
 static int topbar_item_count = 0;
 bool topbar_showing_combo = false;
 
-void _pairing_window(struct nk_context *ctx);
 void _pairing_error_popup(struct nk_context *ctx);
 void _server_error_popup(struct nk_context *ctx);
 void _quitapp_window(struct nk_context *ctx);
@@ -282,6 +281,23 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         }
         return true;
     }
+    case USER_CM_UNPAIRING_DONE:
+    {
+        PSERVER_LIST node = data1;
+        if (node->err == GS_OK)
+        {
+            // Close pairing window
+            pairing_computer_state.state = PS_NONE;
+            node->known = false;
+        }
+        else
+        {
+            // Show pairing error instead
+            pairing_computer_state.state = PS_FAIL;
+            pairing_computer_state.error = node->errmsg;
+        }
+        return true;
+    }
     case USER_CM_QUITAPP_FAILED:
     {
         _quitapp_errno = true;
@@ -385,8 +401,15 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
 void _open_pair(PSERVER_LIST node)
 {
     selected_server_node = NULL;
-    pairing_computer_state.state = PS_RUNNING;
+    pairing_computer_state.state = PS_PAIRING;
     computer_manager_pair(node, &pairing_computer_state.pin[0]);
+}
+
+void _open_unpair(PSERVER_LIST node)
+{
+    selected_server_node = NULL;
+    pairing_computer_state.state = PS_UNPAIRING;
+    computer_manager_unpair(node);
 }
 
 void _launcher_modal_flags_update()
@@ -396,8 +419,11 @@ void _launcher_modal_flags_update()
     {
         switch (pairing_computer_state.state)
         {
-        case PS_RUNNING:
+        case PS_PAIRING:
             _launcher_modals |= LAUNCHER_MODAL_PAIRING;
+            break;
+        case PS_UNPAIRING:
+            _launcher_modals |= LAUNCHER_MODAL_UNPAIRING;
             break;
         case PS_FAIL:
             _launcher_modals |= LAUNCHER_MODAL_PAIRERR;

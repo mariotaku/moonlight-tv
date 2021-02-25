@@ -146,3 +146,16 @@ void _pairing_window(struct nk_context *ctx)
     }
     nk_end(ctx);
 }
+
+void _unpairing_window(struct nk_context *ctx)
+{
+    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height, 330, 60);
+    if (nk_begin(ctx, "Unpairing", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+    {
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
+        int content_height_remaining = (int)content_size.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+        nk_label(ctx, "Unpairing...", NK_TEXT_ALIGN_LEFT);
+    }
+    nk_end(ctx);
+}

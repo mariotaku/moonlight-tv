@@ -19,8 +19,13 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
     nk_style_push_vec2(ctx, &ctx->style.window.popup_padding, nk_vec2_s(0, 5));
     if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
-        nk_layout_row_dynamic_s(ctx, 25, 1);
+        nk_style_push_float(ctx, &ctx->style.window.spacing.x, 0);
+        nk_layout_row_template_begin_s(ctx, 25);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, 25);
+        nk_layout_row_template_end(ctx);
         int i = 0;
+        bool ever_hovered = false;
         for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next, i++)
         {
             struct nk_rect item_bounds = nk_widget_bounds(ctx);
@@ -28,6 +33,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
             if (hovered)
             {
                 pclist_hovered_item = cur;
+                ever_hovered = true;
             }
             if (cur == pclist_hover_request)
             {
@@ -56,8 +62,18 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                     event_emitted = true;
                 }
             }
+            if (nk_button_image(ctx, sprites_ui.ic_close))
+            {
+                _open_unpair(cur);
+            }
         }
+        nk_style_pop_float(ctx);
         nk_combo_end(ctx);
+
+        if (!ever_hovered)
+        {
+            pclist_hovered_item = NULL;
+        }
     }
     nk_style_pop_vec2(ctx);
     return pclist_showing || event_emitted;
@@ -93,14 +109,14 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE sta
 
 bool pclist_item_select(PSERVER_LIST list, int offset)
 {
-    if (pclist_hover_request == NULL)
+    if (pclist_hovered_item == NULL)
     {
         // No item focused before, select first one
         pclist_hover_request = list;
     }
     else
     {
-        PSERVER_LIST item = serverlist_nth(pclist_hover_request, offset);
+        PSERVER_LIST item = serverlist_nth(pclist_hovered_item, offset);
         if (item != NULL)
         {
             pclist_hover_request = item;

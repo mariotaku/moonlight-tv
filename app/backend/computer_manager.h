@@ -50,6 +50,8 @@ PSERVER_LIST computer_manager_server_at(int index);
  */
 bool computer_manager_pair(PSERVER_LIST node, char *pin);
 
+bool computer_manager_unpair(PSERVER_LIST node);
+
 bool computer_manager_quitapp(PSERVER_LIST node);
 
 bool pcmanager_send_wol(PSERVER_LIST node);

@@ -13,6 +13,7 @@ void _manual_add_window(struct nk_context *ctx);
 bool manual_add_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
 
 void _pairing_window(struct nk_context *ctx);
+void _unpairing_window(struct nk_context *ctx);
 
 void _quitapp_window(struct nk_context *ctx)
 {
@@ -119,6 +120,10 @@ void _launcher_modal_windows_show(struct nk_context *ctx)
     if (_launcher_modals & LAUNCHER_MODAL_PAIRING)
     {
         _pairing_window(ctx);
+    }
+    else if (_launcher_modals & LAUNCHER_MODAL_UNPAIRING)
+    {
+        _unpairing_window(ctx);
     }
     else if (_launcher_modals & LAUNCHER_MODAL_QUITAPP)
     {

@@ -9,7 +9,8 @@
 typedef enum pairing_state
 {
     PS_NONE,
-    PS_RUNNING,
+    PS_PAIRING,
+    PS_UNPAIRING,
     PS_FAIL
 } pairing_state;
 
@@ -24,6 +25,7 @@ struct pairing_computer_state
 #define LAUNCHER_MODAL_PAIRING 0x0001
 #define LAUNCHER_MODAL_QUITAPP 0x0002
 #define LAUNCHER_MODAL_MANUAL_ADD 0x0004
+#define LAUNCHER_MODAL_UNPAIRING 0x0008
 #define LAUNCHER_MODAL_MASK_POPUP 0xFF00
 #define LAUNCHER_MODAL_SERVERR 0x0100
 #define LAUNCHER_MODAL_PAIRERR 0x0200
@@ -40,3 +42,4 @@ extern bool _launcher_show_manual_pair;
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
 void _open_pair(PSERVER_LIST node);
+void _open_unpair(PSERVER_LIST node);
