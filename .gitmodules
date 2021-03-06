@@ -28,3 +28,6 @@
 [submodule "third_party/incbin"]
 	path = third_party/incbin
 	url = https://github.com/graphitemaster/incbin
+[submodule "third_party/mbedtls"]
+	path = third_party/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
