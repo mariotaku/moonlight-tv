@@ -42,12 +42,14 @@ elseif (TARGET_RASPI)
     option(GS_SPS "" ON)
     add_subdirectory(third_party/h264bitstream)
     add_subdirectory(third_party/ilclient)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
-    set(TARGET_DARWIN TRUE)
-    set(TARGET_DESKTOP TRUE)
-    set(ENV{OPENSSL_ROOT_DIR} "/usr/local/opt/openssl@1.1")
 else()
-    set(TARGET_LINUX TRUE)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+        set(TARGET_DARWIN TRUE)
+        set(ENV{OPENSSL_ROOT_DIR} "/usr/local/opt/openssl@1.1")
+    else()
+        set(TARGET_LINUX TRUE)
+    endif()
+    
     set(TARGET_DESKTOP TRUE)
 endif()
 
@@ -60,6 +62,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
+
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
@@ -89,6 +92,8 @@ elseif (TARGET_DESKTOP)
     pkg_check_modules(FFMPEG REQUIRED libavcodec>=57 libavutil>=55)
     pkg_check_modules(OPUS REQUIRED opus)
 endif()
+
+add_subdirectory(third_party/mbedtls)
 
 add_subdirectory(core/moonlight-common-c)
 add_subdirectory(core/libgamestream)
@@ -220,6 +225,8 @@ target_link_libraries(moonlight PRIVATE
  moonlight-common-c gamestream
 )
 
+target_link_libraries(moonlight PRIVATE mbedtls)
+
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
@@ -237,6 +244,7 @@ elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
     
     target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
+    target_link_libraries(moonlight PRIVATE mbedcrypto)
 
     target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
     target_include_directories(moonlight SYSTEM PRIVATE ${GLES_INCLUDE_DIRS})
@@ -270,6 +278,7 @@ else()
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
+    target_link_libraries(moonlight PRIVATE mbedtls)
     target_link_libraries(moonlight PRIVATE OpenGL::GL)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})

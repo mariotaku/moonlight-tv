@@ -40,7 +40,6 @@ set_target_properties(gamestream PROPERTIES
     SOVERSION             ${PROJECT_VERSION_MAJOR}
 )
 
-target_include_directories(gamestream SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_include_directories(gamestream PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgamestream>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
@@ -55,7 +54,9 @@ install(TARGETS gamestream
     PUBLIC_HEADER DESTINATION "${INCLUDE_INSTALL_DIR}"
 )
 
-target_link_libraries(gamestream moonlight-common-c ${CURL_LIBRARIES} ${OPENSSL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+target_link_libraries(gamestream moonlight-common-c)
+target_link_libraries(gamestream mbedtls)
+target_link_libraries(gamestream ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 if (GS_SPS)
     target_link_libraries(gamestream h264bitstream)
 endif()

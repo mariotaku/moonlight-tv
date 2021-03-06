@@ -22,7 +22,7 @@
 #include "mkcert.h"
 #include "client.h"
 #include "errors.h"
-#include "limits.h"
+#include <limits.h>
 
 #include <Limelight.h>
 
@@ -127,14 +127,16 @@ static int load_cert(const char *keyDirectory)
   if (fd == NULL)
   {
     printf("Generating certificate...");
-    CERT_KEY_PAIR cert = mkcert_generate();
-    printf("done\n");
+    if (mkcert_generate(certificateFilePath, keyFilePath) == 0)
+    {
+      printf("done\n");
+    }
+    else
+    {
+      printf("\n");
+      return GS_FAILED;
+    }
 
-    char p12FilePath[PATH_MAX];
-    snprintf(p12FilePath, PATH_MAX, "%s/%s", keyDirectory, P12_FILE_NAME);
-
-    mkcert_save(certificateFilePath, p12FilePath, keyFilePath, cert);
-    mkcert_free(cert);
     fd = fopen(certificateFilePath, "r");
   }
 
@@ -828,36 +830,36 @@ cleanup:
 
 int gs_download_cover(PSERVER_DATA server, int appid, const char *path)
 {
-    int ret = GS_OK;
-    char url[4096];
-    uuid_t uuid;
-    char uuid_str[37];
-    PHTTP_DATA data = http_create_data();
-    if (data == NULL)
-        return GS_OUT_OF_MEMORY;
+  int ret = GS_OK;
+  char url[4096];
+  uuid_t uuid;
+  char uuid_str[37];
+  PHTTP_DATA data = http_create_data();
+  if (data == NULL)
+    return GS_OUT_OF_MEMORY;
 
-    uuid_generate_random(uuid);
-    uuid_unparse(uuid, uuid_str);
-    snprintf(url, sizeof(url), "https://%s:47984/appasset?uniqueid=%s&uuid=%s&appid=%d&AssetType=2&AssetIdx=0",
-             server->serverInfo.address, unique_id, uuid_str, appid);
-    ret = http_request(url, data);
-    if (ret != GS_OK)
-        goto cleanup;
+  uuid_generate_random(uuid);
+  uuid_unparse(uuid, uuid_str);
+  snprintf(url, sizeof(url), "https://%s:47984/appasset?uniqueid=%s&uuid=%s&appid=%d&AssetType=2&AssetIdx=0",
+           server->serverInfo.address, unique_id, uuid_str, appid);
+  ret = http_request(url, data);
+  if (ret != GS_OK)
+    goto cleanup;
 
-    FILE *f = fopen(path, "wb");
-    if (!f)
-    {
-        ret = GS_IO_ERROR;
-        goto cleanup;
-    }
+  FILE *f = fopen(path, "wb");
+  if (!f)
+  {
+    ret = GS_IO_ERROR;
+    goto cleanup;
+  }
 
-    fwrite(data->memory, data->size, 1, f);
-    fflush(f);
-    fclose(f);
+  fwrite(data->memory, data->size, 1, f);
+  fflush(f);
+  fclose(f);
 
 cleanup:
-    http_free_data(data);
-    return ret;
+  http_free_data(data);
+  return ret;
 }
 
 int gs_init(PSERVER_DATA server, char *address, const char *keyDirectory, int log_level, bool unsupported)
