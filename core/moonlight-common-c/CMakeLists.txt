@@ -95,7 +95,6 @@ target_include_directories(moonlight-common-c PUBLIC
 )
 
 target_include_directories(moonlight-common-c SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(moonlight-common-c PRIVATE ${OPENSSL_LIBRARIES})
 
 install(TARGETS moonlight-common-c
     EXPORT        moonlight-common-c-export

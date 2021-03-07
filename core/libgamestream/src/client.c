@@ -22,7 +22,8 @@
 #include "mkcert.h"
 #include "client.h"
 #include "errors.h"
-#include <limits.h>
+#include <linux/limits.h>
+#include <errno.h>
 
 #include <Limelight.h>
 
@@ -31,13 +32,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <uuid/uuid.h>
-#include <openssl/sha.h>
-#include <openssl/aes.h>
-#include <openssl/rand.h>
-#include <openssl/evp.h>
-#include <openssl/x509.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
+#include <mbedtls/sha1.h>
+#include <mbedtls/sha256.h>
+#include <mbedtls/aes.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/x509_crt.h>
 
 #define UNIQUE_FILE_NAME "uniqueid.dat"
 #define P12_FILE_NAME "client.p12"
@@ -46,9 +47,9 @@
 #define UNIQUEID_CHARS (UNIQUEID_BYTES * 2)
 
 static char unique_id[UNIQUEID_CHARS + 1];
-static X509 *cert;
+static mbedtls_pk_context privateKey;
+static mbedtls_x509_crt cert;
 static char cert_hex[4096];
-static EVP_PKEY *privateKey;
 
 const char *gs_error;
 
@@ -93,12 +94,8 @@ static int load_unique_id(const char *keyDirectory)
   FILE *fd = fopen(uniqueFilePath, "r");
   if (fd == NULL)
   {
-    unsigned char unique_data[UNIQUEID_BYTES];
-    RAND_bytes(unique_data, UNIQUEID_BYTES);
-    for (int i = 0; i < UNIQUEID_BYTES; i++)
-    {
-      sprintf(unique_id + (i * 2), "%02x", unique_data[i]);
-    }
+    snprintf(unique_id, UNIQUEID_CHARS + 1, "0123456789ABCDEF");
+
     fd = fopen(uniqueFilePath, "w");
     if (fd == NULL)
       return GS_FAILED;
@@ -146,13 +143,11 @@ static int load_cert(const char *keyDirectory)
     return GS_FAILED;
   }
 
-  if (!(cert = PEM_read_X509(fd, NULL, NULL, NULL)))
+  if (mbedtls_x509_crt_parse_file(&cert, certificateFilePath) != 0)
   {
     gs_error = "Error loading cert into memory";
     return GS_FAILED;
   }
-
-  rewind(fd);
 
   int c;
   int length = 0;
@@ -165,15 +160,12 @@ static int load_cert(const char *keyDirectory)
 
   fclose(fd);
 
-  fd = fopen(keyFilePath, "r");
-  if (fd == NULL)
+  mbedtls_pk_init(&privateKey);
+  if (mbedtls_pk_parse_keyfile(&privateKey, keyFilePath, NULL) != 0)
   {
     gs_error = "Error loading key into memory";
     return GS_FAILED;
   }
-
-  PEM_read_PrivateKey(fd, &privateKey, NULL, NULL);
-  fclose(fd);
 
   return GS_OK;
 }
@@ -328,82 +320,42 @@ static void bytes_to_hex(unsigned char *in, char *out, size_t len)
   out[len * 2] = 0;
 }
 
-static int sign_it(const unsigned char *msg, size_t mlen, unsigned char **sig, size_t *slen, EVP_PKEY *pkey)
+static int sign_it(const unsigned char *msg, size_t mlen, unsigned char *sig, size_t *slen, mbedtls_pk_context *pkey, mbedtls_ctr_drbg_context *rng)
 {
   int result = GS_FAILED;
 
-  *sig = NULL;
+  sig[0] = '\0';
   *slen = 0;
 
-  EVP_MD_CTX *ctx = EVP_MD_CTX_create();
-  if (ctx == NULL)
-    return GS_FAILED;
-
-  const EVP_MD *md = EVP_get_digestbyname("SHA256");
-  if (md == NULL)
-    goto cleanup;
-
-  int rc = EVP_DigestInit_ex(ctx, md, NULL);
-  if (rc != 1)
-    goto cleanup;
-
-  rc = EVP_DigestSignInit(ctx, NULL, md, NULL, pkey);
-  if (rc != 1)
-    goto cleanup;
-
-  rc = EVP_DigestSignUpdate(ctx, msg, mlen);
-  if (rc != 1)
-    goto cleanup;
-
-  size_t req = 0;
-  rc = EVP_DigestSignFinal(ctx, NULL, &req);
-  if (rc != 1 || !(req > 0))
-    goto cleanup;
-
-  *sig = OPENSSL_malloc(req);
-  if (*sig == NULL)
-    goto cleanup;
-
-  *slen = req;
-  rc = EVP_DigestSignFinal(ctx, *sig, slen);
-  if (rc != 1 || req != *slen)
-    goto cleanup;
+  unsigned char hash[32];
+  mbedtls_sha256_ret(msg, mlen, hash, 0);
+  mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, slen, mbedtls_ctr_drbg_random, rng);
 
   result = GS_OK;
 
 cleanup:
-  EVP_MD_CTX_destroy(ctx);
-  ctx = NULL;
-
   return result;
 }
 
 static bool verifySignature(const unsigned char *data, int dataLength, unsigned char *signature, int signatureLength, const char *cert)
 {
-  X509 *x509;
-  BIO *bio = BIO_new(BIO_s_mem());
-  BIO_puts(bio, cert);
-  x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+  int result = 0;
+  mbedtls_x509_crt x509;
+  mbedtls_x509_crt_init(&x509);
 
-  BIO_free(bio);
-
-  if (!x509)
+  if ((result = mbedtls_x509_crt_parse(&x509, cert, strlen(cert) + 1)) != 0)
   {
-    return false;
+    goto cleanup;
   }
 
-  EVP_PKEY *pubKey = X509_get_pubkey(x509);
-  EVP_MD_CTX *mdctx = NULL;
-  mdctx = EVP_MD_CTX_create();
-  EVP_DigestVerifyInit(mdctx, NULL, EVP_sha256(), NULL, pubKey);
-  EVP_DigestVerifyUpdate(mdctx, data, dataLength);
-  int result = EVP_DigestVerifyFinal(mdctx, signature, signatureLength);
+  unsigned char hash[32];
+  mbedtls_sha256_ret(data, dataLength, hash, 0);
 
-  X509_free(x509);
-  EVP_PKEY_free(pubKey);
-  EVP_MD_CTX_destroy(mdctx);
+  result = mbedtls_pk_verify(&x509.pk, MBEDTLS_MD_SHA256, hash, 32, signature, signatureLength);
 
-  return result > 0;
+cleanup:
+  mbedtls_x509_crt_free(&x509);
+  return result == 0;
 }
 
 int gs_unpair(PSERVER_DATA server)
@@ -433,6 +385,20 @@ int gs_pair(PSERVER_DATA server, char *pin)
   uuid_t uuid;
   char uuid_str[37];
 
+  mbedtls_entropy_context entropy;
+  mbedtls_entropy_init(&entropy);
+
+  mbedtls_ctr_drbg_context ctr_drbg;
+  mbedtls_ctr_drbg_init(&ctr_drbg);
+
+  mbedtls_aes_context aes;
+  mbedtls_aes_init(&aes);
+
+  if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0)) != 0)
+  {
+    goto cleanup;
+  }
+
   if (server->paired)
   {
     gs_error = "Already paired";
@@ -447,7 +413,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   unsigned char salt_data[16];
   char salt_hex[33];
-  RAND_bytes(salt_data, 16);
+  mbedtls_ctr_drbg_random(&ctr_drbg, salt_data, 16);
   bytes_to_hex(salt_data, salt_hex, 16);
 
   uuid_generate_random(uuid);
@@ -492,24 +458,23 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   unsigned char salt_pin[20];
   unsigned char aes_key_hash[32];
-  AES_KEY enc_key, dec_key;
   memcpy(salt_pin, salt_data, 16);
   memcpy(salt_pin + 16, pin, 4);
 
   int hash_length = server->serverMajorVersion >= 7 ? 32 : 20;
   if (server->serverMajorVersion >= 7)
-    SHA256(salt_pin, 20, aes_key_hash);
+    mbedtls_sha256_ret(salt_pin, 20, aes_key_hash, 0);
   else
-    SHA1(salt_pin, 20, aes_key_hash);
+    mbedtls_sha1_ret(salt_pin, 20, aes_key_hash);
 
-  AES_set_encrypt_key((unsigned char *)aes_key_hash, 128, &enc_key);
-  AES_set_decrypt_key((unsigned char *)aes_key_hash, 128, &dec_key);
+  mbedtls_aes_setkey_enc(&aes, (unsigned char *)aes_key_hash, 128);
+  mbedtls_aes_setkey_dec(&aes, (unsigned char *)aes_key_hash, 128);
 
   unsigned char challenge_data[16];
   unsigned char challenge_enc[16];
   char challenge_hex[33];
-  RAND_bytes(challenge_data, 16);
-  AES_encrypt(challenge_data, challenge_enc, &enc_key);
+  mbedtls_ctr_drbg_random(&ctr_drbg, challenge_data, 16);
+  mbedtls_aes_encrypt(&aes, challenge_data, challenge_enc);
   bytes_to_hex(challenge_enc, challenge_hex, 16);
 
   uuid_generate_random(uuid);
@@ -549,30 +514,27 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   for (int i = 0; i < 48; i += 16)
   {
-    AES_decrypt(&challenge_response_data_enc[i], &challenge_response_data[i], &dec_key);
+    mbedtls_aes_decrypt(&aes, &challenge_response_data_enc[i], &challenge_response_data[i]);
   }
 
   unsigned char client_secret_data[16];
-  RAND_bytes(client_secret_data, 16);
-
-  const ASN1_BIT_STRING *asnSignature;
-  X509_get0_signature(&asnSignature, NULL, cert);
+  mbedtls_ctr_drbg_random(&ctr_drbg, client_secret_data, 16);
 
   unsigned char challenge_response[16 + 256 + 16];
   unsigned char challenge_response_hash[32];
   unsigned char challenge_response_hash_enc[32];
   char challenge_response_hex[65];
   memcpy(challenge_response, challenge_response_data + hash_length, 16);
-  memcpy(challenge_response + 16, asnSignature->data, 256);
+  memcpy(challenge_response + 16, cert.sig.p, 256);
   memcpy(challenge_response + 16 + 256, client_secret_data, 16);
   if (server->serverMajorVersion >= 7)
-    SHA256(challenge_response, 16 + 256 + 16, challenge_response_hash);
+    mbedtls_sha256_ret(challenge_response, 16 + 256 + 16, challenge_response_hash, 0);
   else
-    SHA1(challenge_response, 16 + 256 + 16, challenge_response_hash);
+    mbedtls_sha1_ret(challenge_response, 16 + 256 + 16, challenge_response_hash);
 
   for (int i = 0; i < 32; i += 16)
   {
-    AES_encrypt(&challenge_response_hash[i], &challenge_response_hash_enc[i], &enc_key);
+    mbedtls_aes_encrypt(&aes, &challenge_response_hash[i], &challenge_response_hash_enc[i]);
   }
   bytes_to_hex(challenge_response_hash_enc, challenge_response_hex, 32);
 
@@ -617,9 +579,9 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
-  unsigned char *signature = NULL;
+  unsigned char signature[256];
   size_t s_len;
-  if (sign_it(client_secret_data, 16, &signature, &s_len, privateKey) != GS_OK)
+  if (sign_it(client_secret_data, 16, signature, &s_len, &privateKey, &ctr_drbg) != GS_OK)
   {
     gs_error = "Failed to sign data";
     ret = GS_FAILED;
@@ -683,6 +645,9 @@ cleanup:
 
   http_free_data(data);
 
+  mbedtls_aes_free(&aes);
+  mbedtls_ctr_drbg_free(&ctr_drbg);
+
   return ret;
 }
 
@@ -717,6 +682,17 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
   char *result = NULL;
   char uuid_str[37];
 
+  mbedtls_entropy_context entropy;
+  mbedtls_entropy_init(&entropy);
+
+  mbedtls_ctr_drbg_context ctr_drbg;
+  mbedtls_ctr_drbg_init(&ctr_drbg);
+
+  if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0)) != 0)
+  {
+    goto cleanup;
+  }
+
   PDISPLAY_MODE mode = server->modes;
   bool correct_mode = false;
   bool supported_resolution = false;
@@ -740,7 +716,7 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
   if (config->height >= 2160 && !server->supports4K)
     return GS_NOT_SUPPORTED_4K;
 
-  RAND_bytes((unsigned char *)config->remoteInputAesKey, 16);
+  mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *)config->remoteInputAesKey, 16);
   memset(config->remoteInputAesIv, 0, 16);
 
   srand(time(NULL));
@@ -789,6 +765,8 @@ cleanup:
     free(result);
 
   http_free_data(data);
+
+  mbedtls_ctr_drbg_free(&ctr_drbg);
   return ret;
 }
 

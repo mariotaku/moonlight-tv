@@ -45,7 +45,6 @@ elseif (TARGET_RASPI)
 else()
     if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
         set(TARGET_DARWIN TRUE)
-        set(ENV{OPENSSL_ROOT_DIR} "/usr/local/opt/openssl@1.1")
     else()
         set(TARGET_LINUX TRUE)
     endif()
@@ -66,7 +65,6 @@ pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
-    pkg_check_modules(OPENSSL REQUIRED openssl)
     add_subdirectory(third_party/opus)
     add_subdirectory(system/libndl)
     add_subdirectory(system/lgncapi)
@@ -74,7 +72,6 @@ if (TARGET_WEBOS)
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 elseif (TARGET_RASPI)
-    find_package(OpenSSL REQUIRED)
     find_package(Broadcom REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -85,7 +82,6 @@ elseif (TARGET_RASPI)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
-    find_package(OpenSSL REQUIRED)
     
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -134,6 +130,7 @@ set(SOURCES
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
+    app/util/openssl_compat.c
 )
 
 if (SDL2_IMAGE_FOUND)
@@ -232,7 +229,7 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
 
-    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} ${OPENSSL_LIBRARIES} opus)
+    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} opus)
     target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
@@ -242,9 +239,6 @@ elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_RASPI)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
-    
-    target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
-    target_link_libraries(moonlight PRIVATE mbedcrypto)
 
     target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
     target_include_directories(moonlight SYSTEM PRIVATE ${GLES_INCLUDE_DIRS})
@@ -277,7 +271,6 @@ else()
 
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
-    target_link_libraries(moonlight PRIVATE OpenSSL::Crypto)
     target_link_libraries(moonlight PRIVATE mbedtls)
     target_link_libraries(moonlight PRIVATE OpenGL::GL)
 
