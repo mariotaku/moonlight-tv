@@ -54,21 +54,11 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     mbedtls_entropy_init(&entropy);
     mbedtls_mpi_init(&serial);
 
-    printf("  . Seeding the random number generator...");
-    fflush(stdout);
     if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (const unsigned char *)pers, strlen(pers))) != 0)
     {
         printf(" failed\n  ! mbedtls_ctr_drbg_seed returned -0x%04x\n", (unsigned int)-ret);
         goto exit;
     }
-
-    printf(" ok\n");
-
-    /*
-     * 1.1. Generate the key
-     */
-    printf("  . Generating the private key ...");
-    fflush(stdout);
 
     if ((ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))) != 0)
     {
@@ -76,8 +66,6 @@ int mkcert_generate(const char *certFile, const char *keyFile)
         printf(" failed\n  !  mbedtls_pk_setup returned -0x%04x - %s", (unsigned int)-ret, buf);
         goto exit;
     }
-
-    printf(" ok\n");
 
     if ((ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, NUM_BITS, 65537)) != 0)
     {

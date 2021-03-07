@@ -226,6 +226,10 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_string(fd, "audio", config->audio_device);
     if (config->address != NULL)
         write_config_string(fd, "address", config->address);
+    if (config->debug_level == 1)
+        write_config_bool(fd, "verbose", true);
+    if (config->debug_level == 2)
+        write_config_bool(fd, "debug", true);
     if (absmouse_mapping_valid(config->absmouse_mapping))
         write_config_absmouse_mapping(fd, "absmouse_mapping", config->absmouse_mapping);
 
