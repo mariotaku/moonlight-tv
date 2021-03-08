@@ -72,7 +72,7 @@ set(SRC
     "moonlight-common-c/src/VideoStream.c"
 )
 
-add_library(moonlight-common-c ${INCLUDES} ${SRC})
+add_library(moonlight-common-c ${INCLUDES} ${SRC} mbed-openssl-compat/impl.c)
 
 set_target_properties(moonlight-common-c PROPERTIES
     PUBLIC_HEADER         moonlight-common-c/src/Limelight.h
@@ -90,11 +90,11 @@ target_include_directories(moonlight-common-c PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/moonlight-common-c/enet/include>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/moonlight-common-c/reedsolomon>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/moonlight-common-c/src>"
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mbed-openssl-compat>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>"
+    PRIVATE "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/mbedtls/include>"
 )
-
-target_include_directories(moonlight-common-c SYSTEM PRIVATE ${OPENSSL_INCLUDE_DIR})
 
 install(TARGETS moonlight-common-c
     EXPORT        moonlight-common-c-export

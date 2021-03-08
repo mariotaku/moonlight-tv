@@ -41,7 +41,6 @@
 #include <mbedtls/x509_crt.h>
 
 #define UNIQUE_FILE_NAME "uniqueid.dat"
-#define P12_FILE_NAME "client.p12"
 
 #define UNIQUEID_BYTES 8
 #define UNIQUEID_CHARS (UNIQUEID_BYTES * 2)
@@ -137,15 +136,9 @@ static int load_cert(const char *keyDirectory)
     fd = fopen(certificateFilePath, "r");
   }
 
-  if (fd == NULL)
+  if (fd == NULL || mbedtls_x509_crt_parse_file(&cert, certificateFilePath) != 0)
   {
     gs_error = "Can't open certificate file";
-    return GS_FAILED;
-  }
-
-  if (mbedtls_x509_crt_parse_file(&cert, certificateFilePath) != 0)
-  {
-    gs_error = "Error loading cert into memory";
     return GS_FAILED;
   }
 

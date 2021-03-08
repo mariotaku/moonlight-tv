@@ -130,7 +130,6 @@ set(SOURCES
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
-    app/util/openssl_compat.c
 )
 
 if (SDL2_IMAGE_FOUND)

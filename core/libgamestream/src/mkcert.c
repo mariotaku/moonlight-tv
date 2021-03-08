@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define mbedtls_printf printf
 #define mbedtls_exit exit
@@ -98,7 +99,15 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     mbedtls_x509write_crt_set_version(&crt, MBEDTLS_X509_CRT_VERSION_2);
     mbedtls_x509write_crt_set_md_alg(&crt, MBEDTLS_MD_SHA1);
 
-    ret = mbedtls_x509write_crt_set_validity(&crt, "20010101000000", "20301231235959");
+    time_t now;
+    time(&now);
+    struct tm *ptr_time;
+    ptr_time = gmtime(&now);
+    char not_before[16], not_after[16];
+    strftime(not_before, 16, "%Y%m%d%H%M%S", ptr_time);
+    ptr_time->tm_year += 30;
+    strftime(not_after, 16, "%Y%m%d%H%M%S", ptr_time);
+    ret = mbedtls_x509write_crt_set_validity(&crt, not_before, not_after);
     if (ret != 0)
     {
         mbedtls_strerror(ret, buf, 1024);
