@@ -17,14 +17,17 @@ int main(int argc, char *argv[])
 {
     const char plaintext[16] = "0123456789abcdef";
     char actual_txt[128], expected_txt[128];
-    memset(actual_txt, 0, 128);
-    memset(expected_txt, 0, 128);
-    int actual_len = 0, expected_len = 0;
-    assert(do_native(plaintext, 16, expected_txt, &expected_len) == 0);
-    assert(do_compat(plaintext, 16, actual_txt, &actual_len) == 0);
+    for (int i = 0; i < 10; i++)
+    {
+        memset(actual_txt, 0, 128);
+        memset(expected_txt, 0, 128);
+        int actual_len = 0, expected_len = 0;
+        assert(do_native(plaintext, 16, expected_txt, &expected_len) == 0);
+        assert(do_compat(plaintext, 16, actual_txt, &actual_len) == 0);
 
-    assert(actual_len == expected_len);
-    assert(memcmp(actual_txt, expected_txt, actual_len) == 0);
+        assert(actual_len == expected_len);
+        assert(memcmp(actual_txt, expected_txt, actual_len) == 0);
+    }
     return 0;
 }
 
