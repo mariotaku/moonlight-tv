@@ -3,6 +3,7 @@ project(moonlight
     VERSION 0.4.4
     LANGUAGES C
 )
+enable_testing()
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH 

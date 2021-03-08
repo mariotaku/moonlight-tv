@@ -1,19 +1,4 @@
 cmake_minimum_required(VERSION 3.1)
-project(moonlight-common-c)
-
-set(PROJECT_NAME "MoonlightCore")
-set(PROJECT_DESCRIPTION "Moonlight Streaming Core Library")
-set(PROJECT_AUTHOR "moonlight-stream")
-set(PROJECT_URL "https://github.com/moonlight-stream/moonlight-common-c")
-
-set(PROJECT_VERSION_MAJOR 0)
-set(PROJECT_VERSION_MINOR 1)
-set(PROJECT_VERSION_PATCH 0)
-set(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
-
-set(BIN_INSTALL_DIR bin CACHE STRING "Binary installation directory relative to the install prefix")
-set(LIB_INSTALL_DIR lib CACHE STRING "Library installation directory relative to the install prefix")
-set(INCLUDE_INSTALL_DIR include CACHE STRING "Header installation directory relative to the install prefix")
 
 set(HEADERS
     "moonlight-common-c/enet/include/enet/callbacks.h"
@@ -72,7 +57,7 @@ set(SRC
     "moonlight-common-c/src/VideoStream.c"
 )
 
-add_library(moonlight-common-c ${INCLUDES} ${SRC} mbed-openssl-compat/impl.c)
+add_library(moonlight-common-c ${INCLUDES} ${SRC})
 
 set_target_properties(moonlight-common-c PROPERTIES
     PUBLIC_HEADER         moonlight-common-c/src/Limelight.h
@@ -96,39 +81,6 @@ target_include_directories(moonlight-common-c PUBLIC
     PRIVATE "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/mbedtls/include>"
 )
 
-install(TARGETS moonlight-common-c
-    EXPORT        moonlight-common-c-export
-    RUNTIME       DESTINATION "${BIN_INSTALL_DIR}"
-    LIBRARY       DESTINATION "${LIB_INSTALL_DIR}"
-    ARCHIVE       DESTINATION "${LIB_INSTALL_DIR}"
-    PUBLIC_HEADER DESTINATION "${INCLUDE_INSTALL_DIR}"
-)
+add_subdirectory(mbed-openssl-compat)
 
-install(EXPORT moonlight-common-c-export
-    FILE        moonlight-common-c-config.cmake
-    DESTINATION "${LIB_INSTALL_DIR}/cmake/moonlight-common-c"
-)
-
-include(CMakePackageConfigHelpers)
-
-write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/moonlight-common-c-config-version.cmake"
-    VERSION       ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/moonlight-common-c-config-version.cmake"
-    DESTINATION "${LIB_INSTALL_DIR}/cmake/moonlight-common-c"
-)
-
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VENDOR "${PROJECT_AUTHOR}")
-set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
-
-set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "Documentation")
-set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "Documentation generated for the library")
-set(CPACK_COMPONENT_EXAMPLES_DISPLAY_NAME "Examples")
-set(CPACK_COMPONENT_EXAMPLES_DESCRIPTION "Sample applications using the library")
-
-include(CPack)
+target_link_libraries(moonlight-common-c PRIVATE mbed-openssl-compat)
