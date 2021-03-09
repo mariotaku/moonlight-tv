@@ -82,5 +82,4 @@ target_include_directories(moonlight-common-c PUBLIC
 )
 
 add_subdirectory(mbed-openssl-compat)
-
 target_link_libraries(moonlight-common-c PRIVATE mbed-openssl-compat)
