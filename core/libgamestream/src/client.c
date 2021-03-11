@@ -39,6 +39,7 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
+#include <mbedtls/rsa.h>
 
 #define UNIQUE_FILE_NAME "uniqueid.dat"
 
@@ -146,7 +147,7 @@ static int load_cert(const char *keyDirectory)
   int length = 0;
   while ((c = fgetc(fd)) != EOF)
   {
-    sprintf(cert_hex + length, "%02x", c);
+    sprintf(&cert_hex[length], "%02x", c);
     length += 2;
   }
   cert_hex[length] = 0;
@@ -313,21 +314,26 @@ static void bytes_to_hex(unsigned char *in, char *out, size_t len)
   out[len * 2] = 0;
 }
 
-static int sign_it(const unsigned char *msg, size_t mlen, unsigned char *sig, size_t *slen, mbedtls_pk_context *pkey, mbedtls_ctr_drbg_context *rng)
+static bool sign_it(const unsigned char *msg, size_t mlen, unsigned char *sig, size_t *slen, mbedtls_pk_context *pkey, mbedtls_ctr_drbg_context *rng)
 {
-  int result = GS_FAILED;
+  int result = 0;
 
-  sig[0] = '\0';
   *slen = 0;
 
   unsigned char hash[32];
-  mbedtls_sha256_ret(msg, mlen, hash, 0);
-  mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, slen, mbedtls_ctr_drbg_random, rng);
+  if ((result = mbedtls_sha256_ret(msg, mlen, hash, 0)) != 0)
+  {
+    goto cleanup;
+  }
 
-  result = GS_OK;
+  mbedtls_rsa_context *rsa = mbedtls_pk_rsa(*pkey);
+  if ((result = mbedtls_rsa_pkcs1_sign(rsa, mbedtls_ctr_drbg_random, rng, MBEDTLS_RSA_PRIVATE, MBEDTLS_MD_SHA256, 32, hash, sig)) != 0)
+  {
+    goto cleanup;
+  }
 
 cleanup:
-  return result;
+  return result == 0;
 }
 
 static bool verifySignature(const unsigned char *data, int dataLength, unsigned char *signature, int signatureLength, const char *cert)
@@ -342,7 +348,10 @@ static bool verifySignature(const unsigned char *data, int dataLength, unsigned 
   }
 
   unsigned char hash[32];
-  mbedtls_sha256_ret(data, dataLength, hash, 0);
+  if ((result = mbedtls_sha256_ret(data, dataLength, hash, 0)) != 0)
+  {
+    goto cleanup;
+  }
 
   result = mbedtls_pk_verify(&x509.pk, MBEDTLS_MD_SHA256, hash, 32, signature, signatureLength);
 
@@ -425,7 +434,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #1";
     ret = GS_FAILED;
     goto cleanup;
   }
@@ -433,7 +442,11 @@ int gs_pair(PSERVER_DATA server, char *pin)
   free(result);
   result = NULL;
   if ((ret = xml_search(data->memory, data->size, "plaincert", &result)) != GS_OK)
+  {
+    gs_error = "Failed to parse plaincert";
+    ret = GS_FAILED;
     goto cleanup;
+  }
 
   if (strlen(result) / 2 > 8191)
   {
@@ -460,8 +473,8 @@ int gs_pair(PSERVER_DATA server, char *pin)
   else
     mbedtls_sha1_ret(salt_pin, 20, aes_key_hash);
 
-  mbedtls_aes_setkey_enc(&aes, (unsigned char *)aes_key_hash, 128);
-  mbedtls_aes_setkey_dec(&aes, (unsigned char *)aes_key_hash, 128);
+  mbedtls_aes_setkey_enc(&aes, aes_key_hash, 128);
+  mbedtls_aes_setkey_dec(&aes, aes_key_hash, 128);
 
   unsigned char challenge_data[16];
   unsigned char challenge_enc[16];
@@ -485,7 +498,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #2";
     ret = GS_FAILED;
     goto cleanup;
   }
@@ -546,7 +559,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #3";
     ret = GS_FAILED;
     goto cleanup;
   }
@@ -574,7 +587,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   unsigned char signature[256];
   size_t s_len;
-  if (sign_it(client_secret_data, 16, signature, &s_len, &privateKey, &ctr_drbg) != GS_OK)
+  if (!sign_it(client_secret_data, 16, signature, &s_len, &privateKey, &ctr_drbg))
   {
     gs_error = "Failed to sign data";
     ret = GS_FAILED;
@@ -584,7 +597,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
   unsigned char client_pairing_secret[16 + 256];
   char client_pairing_secret_hex[(16 + 256) * 2 + 1];
   memcpy(client_pairing_secret, client_secret_data, 16);
-  memcpy(client_pairing_secret + 16, signature, 256);
+  memcpy(&client_pairing_secret[16], signature, 256);
   bytes_to_hex(client_pairing_secret, client_pairing_secret_hex, 16 + 256);
 
   uuid_generate_random(uuid);
@@ -602,7 +615,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #4";
     ret = GS_FAILED;
     goto cleanup;
   }
@@ -622,7 +635,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #5";
     ret = GS_FAILED;
     goto cleanup;
   }

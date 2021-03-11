@@ -97,7 +97,8 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     mbedtls_x509write_crt_set_serial(&crt, &serial);
 
     mbedtls_x509write_crt_set_version(&crt, MBEDTLS_X509_CRT_VERSION_2);
-    mbedtls_x509write_crt_set_md_alg(&crt, MBEDTLS_MD_SHA1);
+    mbedtls_x509write_crt_set_md_alg(&crt, MBEDTLS_MD_SHA256);
+    mbedtls_x509write_crt_set_key_usage(&crt, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_KEY_ENCIPHERMENT);
 
     time_t now;
     time(&now);
@@ -105,7 +106,7 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     ptr_time = gmtime(&now);
     char not_before[16], not_after[16];
     strftime(not_before, 16, "%Y%m%d%H%M%S", ptr_time);
-    ptr_time->tm_year += 30;
+    ptr_time->tm_year += NUM_YEARS;
     strftime(not_after, 16, "%Y%m%d%H%M%S", ptr_time);
     ret = mbedtls_x509write_crt_set_validity(&crt, not_before, not_after);
     if (ret != 0)
