@@ -944,7 +944,7 @@ bool crypt_data(mbedtls_aes_context *ctx, int mode, const unsigned char *input, 
 {
   for (int i = 0; i < len; i += 16)
   {
-    if (mbedtls_aes_crypt_ecb(ctx, mode, input, output) != 0)
+    if (mbedtls_aes_crypt_ecb(ctx, mode, &input[i], &output[i]) != 0)
     {
       return false;
     }

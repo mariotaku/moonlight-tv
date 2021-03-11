@@ -41,3 +41,10 @@ target_link_libraries(gamestream ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIB
 if (GS_SPS)
     target_link_libraries(gamestream h264bitstream)
 endif()
+
+find_package(OpenSSL 1.0)
+
+add_executable(test-crypt test/crypt.c)
+target_link_libraries(test-crypt mbedtls ${OPENSSL_LIBRARIES})
+
+add_test(test-mbed-crypt test-crypt)
