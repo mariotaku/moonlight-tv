@@ -44,7 +44,7 @@ endif()
 
 find_package(OpenSSL 1.0)
 
-foreach(suite_name aes hash sign)
+foreach(suite_name aes challenge hash sign)
     add_executable(test-gamestream-crypt-${suite_name} test/${suite_name}.c)
     target_include_directories(test-gamestream-crypt-${suite_name} PUBLIC libgamestream src)
     target_link_libraries(test-gamestream-crypt-${suite_name} mbedtls ${OPENSSL_LIBRARIES})
