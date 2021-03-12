@@ -41,3 +41,13 @@ target_link_libraries(gamestream ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIB
 if (GS_SPS)
     target_link_libraries(gamestream h264bitstream)
 endif()
+
+find_package(OpenSSL 1.0)
+
+foreach(suite_name aes challenge hash sign)
+    add_executable(test-gamestream-crypt-${suite_name} test/${suite_name}.c)
+    target_include_directories(test-gamestream-crypt-${suite_name} PUBLIC libgamestream src)
+    target_link_libraries(test-gamestream-crypt-${suite_name} mbedtls ${OPENSSL_LIBRARIES})
+    add_test(test-gamestream-crypt-${suite_name} test-gamestream-crypt-${suite_name})
+endforeach()
+

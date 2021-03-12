@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <uuid/uuid.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
@@ -39,6 +40,12 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
+#include <mbedtls/rsa.h>
+#include <mbedtls/error.h>
+
+#include <assert.h>
+
+#include "crypto.h"
 
 #define UNIQUE_FILE_NAME "uniqueid.dat"
 
@@ -48,9 +55,11 @@
 static char unique_id[UNIQUEID_CHARS + 1];
 static mbedtls_pk_context privateKey;
 static mbedtls_x509_crt cert;
-static char cert_hex[4096];
+static char cert_hex[8192];
 
 const char *gs_error;
+
+static bool construct_url(char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...);
 
 static int mkdirtree(const char *directory)
 {
@@ -146,7 +155,7 @@ static int load_cert(const char *keyDirectory)
   int length = 0;
   while ((c = fgetc(fd)) != EOF)
   {
-    sprintf(cert_hex + length, "%02x", c);
+    sprintf(&cert_hex[length], "%02x", c);
     length += 2;
   }
   cert_hex[length] = 0;
@@ -165,10 +174,6 @@ static int load_cert(const char *keyDirectory)
 
 static int load_server_status(PSERVER_DATA server)
 {
-
-  uuid_t uuid;
-  char uuid_str[37];
-
   int ret;
   char url[4096];
   int i;
@@ -183,15 +188,11 @@ static int load_server_status(PSERVER_DATA server)
 
     ret = GS_INVALID;
 
-    uuid_generate_random(uuid);
-    uuid_unparse(uuid, uuid_str);
-
     // Modern GFE versions don't allow serverinfo to be fetched over HTTPS if the client
     // is not already paired. Since we can't pair without knowing the server version, we
     // make another request over HTTP if the HTTPS request fails. We can't just use HTTP
     // for everything because it doesn't accurately tell us if we're paired.
-    snprintf(url, sizeof(url), "%s://%s:%d/serverinfo?uniqueid=%s&uuid=%s",
-             i == 0 ? "https" : "http", server->serverInfo.address, i == 0 ? 47984 : 47989, unique_id, uuid_str);
+    construct_url(url, sizeof(url), i == 0, server->serverInfo.address, "serverinfo", NULL);
 
     PHTTP_DATA data = http_create_data();
     if (data == NULL)
@@ -304,7 +305,7 @@ static int load_server_status(PSERVER_DATA server)
   return ret;
 }
 
-static void bytes_to_hex(unsigned char *in, char *out, size_t len)
+static void bytes_to_hex(const unsigned char *in, char *out, size_t len)
 {
   for (int i = 0; i < len; i++)
   {
@@ -313,70 +314,66 @@ static void bytes_to_hex(unsigned char *in, char *out, size_t len)
   out[len * 2] = 0;
 }
 
-static int sign_it(const unsigned char *msg, size_t mlen, unsigned char *sig, size_t *slen, mbedtls_pk_context *pkey, mbedtls_ctr_drbg_context *rng)
+static void hex_to_bytes(const char *in, unsigned char *out, size_t *len)
 {
-  int result = GS_FAILED;
-
-  sig[0] = '\0';
-  *slen = 0;
-
-  unsigned char hash[32];
-  mbedtls_sha256_ret(msg, mlen, hash, 0);
-  mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, slen, mbedtls_ctr_drbg_random, rng);
-
-  result = GS_OK;
-
-cleanup:
-  return result;
-}
-
-static bool verifySignature(const unsigned char *data, int dataLength, unsigned char *signature, int signatureLength, const char *cert)
-{
-  int result = 0;
-  mbedtls_x509_crt x509;
-  mbedtls_x509_crt_init(&x509);
-
-  if ((result = mbedtls_x509_crt_parse(&x509, cert, strlen(cert) + 1)) != 0)
+  size_t inl = strlen(in);
+  for (int count = 0; count < inl; count += 2)
   {
-    goto cleanup;
+    sscanf(&in[count], "%2hhx", &out[count / 2]);
   }
-
-  unsigned char hash[32];
-  mbedtls_sha256_ret(data, dataLength, hash, 0);
-
-  result = mbedtls_pk_verify(&x509.pk, MBEDTLS_MD_SHA256, hash, 32, signature, signatureLength);
-
-cleanup:
-  mbedtls_x509_crt_free(&x509);
-  return result == 0;
+  if (len)
+  {
+    *len = inl / 2;
+  }
 }
 
 int gs_unpair(PSERVER_DATA server)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "http://%s:47989/unpair?uniqueid=%s&uuid=%s", server->serverInfo.address, unique_id, uuid_str);
+  construct_url(url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
   ret = http_request(url, data);
 
   http_free_data(data);
   return ret;
 }
 
+struct challenge_response_t
+{
+  unsigned char challenge[16];
+  unsigned char signature[256];
+  unsigned char secret[16];
+};
+
+struct pairing_secret_t
+{
+  unsigned char secret[16];
+  unsigned char signature[256];
+};
+
 int gs_pair(PSERVER_DATA server, char *pin)
 {
+  mbedtls_md_type_t hash_algo;
+  size_t hash_length;
+  if (server->serverMajorVersion >= 7)
+  {
+    // Gen 7+ uses SHA-256 hashing
+    hash_algo = MBEDTLS_MD_SHA256;
+    hash_length = 32;
+  }
+  else
+  {
+    // Prior to Gen 7, SHA-1 is used
+    hash_algo = MBEDTLS_MD_SHA1;
+    hash_length = 20;
+  }
   int ret = GS_OK;
   char *result = NULL;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
 
   mbedtls_entropy_context entropy;
   mbedtls_entropy_init(&entropy);
@@ -384,8 +381,12 @@ int gs_pair(PSERVER_DATA server, char *pin)
   mbedtls_ctr_drbg_context ctr_drbg;
   mbedtls_ctr_drbg_init(&ctr_drbg);
 
-  mbedtls_aes_context aes;
-  mbedtls_aes_init(&aes);
+  mbedtls_aes_context aes_enc, aes_dec;
+  mbedtls_aes_init(&aes_enc);
+  mbedtls_aes_init(&aes_dec);
+
+  mbedtls_x509_crt server_cert;
+  mbedtls_x509_crt_init(&server_cert);
 
   if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0)) != 0)
   {
@@ -394,24 +395,38 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (server->paired)
   {
+    ret = GS_WRONG_STATE;
     gs_error = "Already paired";
-    return GS_WRONG_STATE;
+    goto cleanup;
   }
 
   if (server->currentGame != 0)
   {
+    ret = GS_WRONG_STATE;
     gs_error = "The computer is currently in a game. You must close the game before pairing";
-    return GS_WRONG_STATE;
+    goto cleanup;
   }
 
-  unsigned char salt_data[16];
-  char salt_hex[33];
-  mbedtls_ctr_drbg_random(&ctr_drbg, salt_data, 16);
-  bytes_to_hex(salt_data, salt_hex, 16);
+  // Generate the salted pin, then create an AES key from them
+  struct
+  {
+    unsigned char salt[16];
+    unsigned char pin[4];
+  } salted_pin;
+  memcpy(salted_pin.pin, pin, 4);
+  mbedtls_ctr_drbg_random(&ctr_drbg, salted_pin.salt, 16);
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "http://%s:47989/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", server->serverInfo.address, unique_id, uuid_str, salt_hex, cert_hex);
+  char salt_hex[33];
+  bytes_to_hex(salted_pin.salt, salt_hex, 16);
+
+  unsigned char aes_key[32];
+
+  hash_data(hash_algo, (unsigned char *)&salted_pin, sizeof(salted_pin), aes_key, NULL);
+
+  // Send the salt and get the server cert. This doesn't have a read timeout
+  // because the user must enter the PIN before the server responds
+  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, cert_hex);
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
@@ -425,15 +440,22 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #1";
     ret = GS_FAILED;
     goto cleanup;
   }
 
   free(result);
   result = NULL;
+  // Save this cert for retrieval later
   if ((ret = xml_search(data->memory, data->size, "plaincert", &result)) != GS_OK)
+  {
+    // Attempting to pair while another device is pairing will cause GFE
+    // to give an empty cert in the response.
+    gs_error = "Failed to parse plaincert";
+    ret = GS_FAILED;
     goto cleanup;
+  }
 
   if (strlen(result) / 2 > 8191)
   {
@@ -442,37 +464,42 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
-  char plaincert[8192];
-  for (int count = 0; count < strlen(result); count += 2)
+  char server_cert_str[8192];
+  size_t plaincert_len = 0;
+  hex_to_bytes(result, server_cert_str, &plaincert_len);
+  server_cert_str[plaincert_len] = 0;
+
+  if ((ret = mbedtls_x509_crt_parse(&server_cert, server_cert_str, plaincert_len + 1)) != 0)
   {
-    sscanf(&result[count], "%2hhx", &plaincert[count / 2]);
+    char errstr[4096];
+    mbedtls_strerror(ret, errstr, 4096);
+    printf("%s\n", errstr);
+    gs_error = "Failed to parse server cert";
+    ret = GS_FAILED;
+    goto cleanup;
   }
-  plaincert[strlen(result) / 2] = '\0';
 
-  unsigned char salt_pin[20];
-  unsigned char aes_key_hash[32];
-  memcpy(salt_pin, salt_data, 16);
-  memcpy(salt_pin + 16, pin, 4);
+  mbedtls_aes_setkey_enc(&aes_enc, aes_key, 128);
+  mbedtls_aes_setkey_dec(&aes_dec, aes_key, 128);
 
-  int hash_length = server->serverMajorVersion >= 7 ? 32 : 20;
-  if (server->serverMajorVersion >= 7)
-    mbedtls_sha256_ret(salt_pin, 20, aes_key_hash, 0);
-  else
-    mbedtls_sha1_ret(salt_pin, 20, aes_key_hash);
+  // Generate a random challenge and encrypt it with our AES key
+  unsigned char random_challenge[16];
+  mbedtls_ctr_drbg_random(&ctr_drbg, random_challenge, 16);
 
-  mbedtls_aes_setkey_enc(&aes, (unsigned char *)aes_key_hash, 128);
-  mbedtls_aes_setkey_dec(&aes, (unsigned char *)aes_key_hash, 128);
+  unsigned char encrypted_challenge[16];
+  if (!crypt_data(&aes_enc, MBEDTLS_AES_ENCRYPT, random_challenge, encrypted_challenge, 16))
+  {
+    gs_error = "Failed to encrypt random_challenge";
+    ret = GS_FAILED;
+    goto cleanup;
+  }
 
-  unsigned char challenge_data[16];
-  unsigned char challenge_enc[16];
-  char challenge_hex[33];
-  mbedtls_ctr_drbg_random(&ctr_drbg, challenge_data, 16);
-  mbedtls_aes_encrypt(&aes, challenge_data, challenge_enc);
-  bytes_to_hex(challenge_enc, challenge_hex, 16);
+  char encrypted_challenge_hex[33];
+  bytes_to_hex(encrypted_challenge, encrypted_challenge_hex, 16);
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "http://%s:47989/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&clientchallenge=%s", server->serverInfo.address, unique_id, uuid_str, challenge_hex);
+  // Send the encrypted challenge to the server
+  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -485,55 +512,47 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #2";
     ret = GS_FAILED;
     goto cleanup;
   }
 
   free(result);
   result = NULL;
+  // Decode the server's response and subsequent challenge
   if (xml_search(data->memory, data->size, "challengeresponse", &result) != GS_OK)
   {
     ret = GS_INVALID;
     goto cleanup;
   }
 
-  unsigned char challenge_response_data_enc[48];
-  unsigned char challenge_response_data[48];
-  for (int count = 0; count < strlen(result); count += 2)
-  {
-    sscanf(&result[count], "%2hhx", &challenge_response_data_enc[count / 2]);
-  }
+  unsigned char enc_server_challenge_response[48];
+  hex_to_bytes(result, enc_server_challenge_response, NULL);
 
-  for (int i = 0; i < 48; i += 16)
-  {
-    mbedtls_aes_decrypt(&aes, &challenge_response_data_enc[i], &challenge_response_data[i]);
-  }
+  unsigned char dec_server_challenge_response[48];
+  crypt_data(&aes_dec, MBEDTLS_AES_DECRYPT, enc_server_challenge_response, dec_server_challenge_response, 48);
 
-  unsigned char client_secret_data[16];
-  mbedtls_ctr_drbg_random(&ctr_drbg, client_secret_data, 16);
+  // Using another 16 bytes secret, compute a challenge response hash using the secret, our cert sig, and the challenge
+  unsigned char client_secret[16];
+  mbedtls_ctr_drbg_random(&ctr_drbg, client_secret, 16);
 
-  unsigned char challenge_response[16 + 256 + 16];
+  struct challenge_response_t challenge_response;
+  memcpy(challenge_response.challenge, &dec_server_challenge_response[hash_length], sizeof(challenge_response.challenge));
+  memcpy(challenge_response.signature, cert.sig.p, sizeof(challenge_response.signature));
+  memcpy(challenge_response.secret, client_secret, sizeof(challenge_response.secret));
+
   unsigned char challenge_response_hash[32];
-  unsigned char challenge_response_hash_enc[32];
+  memset(challenge_response_hash, 0, sizeof(challenge_response_hash));
+  hash_data(hash_algo, (unsigned char *)&challenge_response, sizeof(struct challenge_response_t), challenge_response_hash, NULL);
+
+  unsigned char challenge_response_encrypted[32];
+  crypt_data(&aes_enc, MBEDTLS_AES_ENCRYPT, challenge_response_hash, challenge_response_encrypted, 32);
+
   char challenge_response_hex[65];
-  memcpy(challenge_response, challenge_response_data + hash_length, 16);
-  memcpy(challenge_response + 16, cert.sig.p, 256);
-  memcpy(challenge_response + 16 + 256, client_secret_data, 16);
-  if (server->serverMajorVersion >= 7)
-    mbedtls_sha256_ret(challenge_response, 16 + 256 + 16, challenge_response_hash, 0);
-  else
-    mbedtls_sha1_ret(challenge_response, 16 + 256 + 16, challenge_response_hash);
+  bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
 
-  for (int i = 0; i < 32; i += 16)
-  {
-    mbedtls_aes_encrypt(&aes, &challenge_response_hash[i], &challenge_response_hash_enc[i]);
-  }
-  bytes_to_hex(challenge_response_hash_enc, challenge_response_hex, 32);
-
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "http://%s:47989/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&serverchallengeresp=%s", server->serverInfo.address, unique_id, uuid_str, challenge_response_hex);
+  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+                "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -546,50 +565,65 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #3";
     ret = GS_FAILED;
     goto cleanup;
   }
 
   free(result);
   result = NULL;
+  // Get the server's signed secret
   if (xml_search(data->memory, data->size, "pairingsecret", &result) != GS_OK)
   {
     ret = GS_INVALID;
     goto cleanup;
   }
 
-  unsigned char pairing_secret[16 + 256];
-  for (int count = 0; count < strlen(result); count += 2)
-  {
-    sscanf(&result[count], "%2hhx", &pairing_secret[count / 2]);
-  }
+  struct pairing_secret_t pairing_secret;
+  hex_to_bytes(result, (unsigned char *)&pairing_secret, NULL);
 
-  if (!verifySignature(pairing_secret, 16, pairing_secret + 16, 256, plaincert))
+  // Ensure the authenticity of the data
+  if (!verifySignature(pairing_secret.secret, sizeof(pairing_secret.secret),
+                       pairing_secret.signature, sizeof(pairing_secret.signature), &server_cert))
   {
     gs_error = "MITM attack detected";
     ret = GS_FAILED;
     goto cleanup;
   }
 
-  unsigned char signature[256];
+  // Ensure the server challenge matched what we expected (aka the PIN was correct)
+  struct challenge_response_t expected_response_data;
+  memcpy(expected_response_data.challenge, random_challenge, 16);
+  memcpy(expected_response_data.signature, server_cert.sig.p, 256);
+  memcpy(expected_response_data.secret, pairing_secret.secret, 16);
+
+  unsigned char expected_hash[32];
+  hash_data(hash_algo, (unsigned char *)&expected_response_data, sizeof(expected_response_data),
+            expected_hash, NULL);
+  if (memcmp(expected_hash, dec_server_challenge_response, hash_length) != 0)
+  {
+    // Probably got the wrong PIN
+    gs_error = "Incorrect PIN";
+    ret = GS_FAILED;
+    goto cleanup;
+  }
+
+  // Send the server our signed secret
+  struct pairing_secret_t client_pairing_secret;
+  memcpy(client_pairing_secret.secret, client_secret, 16);
   size_t s_len;
-  if (sign_it(client_secret_data, 16, signature, &s_len, &privateKey, &ctr_drbg) != GS_OK)
+  if (!generateSignature(client_pairing_secret.secret, 16, client_pairing_secret.signature, &s_len, &privateKey, &ctr_drbg))
   {
     gs_error = "Failed to sign data";
     ret = GS_FAILED;
     goto cleanup;
   }
 
-  unsigned char client_pairing_secret[16 + 256];
-  char client_pairing_secret_hex[(16 + 256) * 2 + 1];
-  memcpy(client_pairing_secret, client_secret_data, 16);
-  memcpy(client_pairing_secret + 16, signature, 256);
-  bytes_to_hex(client_pairing_secret, client_pairing_secret_hex, 16 + 256);
+  char client_pairing_secret_hex[sizeof(client_pairing_secret) * 2 + 1];
+  bytes_to_hex((unsigned char *)&client_pairing_secret, client_pairing_secret_hex, sizeof(client_pairing_secret));
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "http://%s:47989/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&clientpairingsecret=%s", server->serverInfo.address, unique_id, uuid_str, client_pairing_secret_hex);
+  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -602,14 +636,14 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #4";
     ret = GS_FAILED;
     goto cleanup;
   }
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&phrase=pairchallenge", server->serverInfo.address, unique_id, uuid_str);
+  // Do the initial challenge (seems neccessary for us to show as paired)
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&phrase=pairchallenge");
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -622,7 +656,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   if (strcmp(result, "1") != 0)
   {
-    gs_error = "Pairing failed";
+    gs_error = "Failed pairing at stage #5";
     ret = GS_FAILED;
     goto cleanup;
   }
@@ -638,8 +672,11 @@ cleanup:
 
   http_free_data(data);
 
-  mbedtls_aes_free(&aes);
+  mbedtls_aes_free(&aes_enc);
+  mbedtls_aes_free(&aes_dec);
+  mbedtls_entropy_free(&entropy);
   mbedtls_ctr_drbg_free(&ctr_drbg);
+  mbedtls_x509_crt_free(&server_cert);
 
   return ret;
 }
@@ -648,15 +685,11 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/applist?uniqueid=%s&uuid=%s", server->serverInfo.address, unique_id, uuid_str);
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
   if (http_request(url, data) != GS_OK)
     ret = GS_IO_ERROR;
   else if (xml_status(data->memory, data->size) == GS_ERROR)
@@ -671,9 +704,7 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
 int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio, int gamepad_mask)
 {
   int ret = GS_OK;
-  uuid_t uuid;
   char *result = NULL;
-  char uuid_str[37];
 
   mbedtls_entropy_context entropy;
   mbedtls_entropy_init(&entropy);
@@ -722,8 +753,6 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
   int surround_info = SURROUNDAUDIOINFO_FROM_AUDIO_CONFIGURATION(config->audioConfiguration);
   if (server->currentGame == 0)
   {
@@ -732,11 +761,15 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
     // used to use 60 here but that locked the frame rate to 60 FPS
     // on GFE 3.20.3.
     int fps = config->fps > 60 ? 0 : config->fps;
-    snprintf(url, sizeof(url), "https://%s:47984/launch?uniqueid=%s&uuid=%s&appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d", server->serverInfo.address, unique_id, uuid_str, appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info, gamepad_mask, gamepad_mask);
+    construct_url(url, sizeof(url), true, server->serverInfo.address, "launch",
+                  "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d",
+                  appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info, gamepad_mask, gamepad_mask);
   }
   else
-    snprintf(url, sizeof(url), "https://%s:47984/resume?uniqueid=%s&uuid=%s&rikey=%s&rikeyid=%d&surroundAudioInfo=%d", server->serverInfo.address, unique_id, uuid_str, rikey_hex, rikeyid, surround_info);
-
+  {
+    construct_url(url, sizeof(url), true, server->serverInfo.address, "resume",
+                  "rikey=%s&rikeyid=%d&surroundAudioInfo=%d", rikey_hex, rikeyid, surround_info);
+  }
   if ((ret = http_request(url, data)) == GS_OK)
     server->currentGame = appId;
   else
@@ -767,16 +800,12 @@ int gs_quit_app(PSERVER_DATA server)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   char *result = NULL;
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/cancel?uniqueid=%s&uuid=%s", server->serverInfo.address, unique_id, uuid_str);
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -803,16 +832,12 @@ int gs_download_cover(PSERVER_DATA server, int appid, const char *path)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/appasset?uniqueid=%s&uuid=%s&appid=%d&AssetType=2&AssetIdx=0",
-           server->serverInfo.address, unique_id, uuid_str, appid);
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "appasset",
+                "appid=%d&AssetType=2&AssetIdx=0", appid);
   ret = http_request(url, data);
   if (ret != GS_OK)
     goto cleanup;
@@ -848,4 +873,30 @@ int gs_init(PSERVER_DATA server, char *address, const char *keyDirectory, int lo
   server->serverInfo.address = address;
   server->unsupported = unsupported;
   return load_server_status(server);
+}
+
+static bool construct_url(char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...)
+{
+  uuid_t uuid;
+  char uuid_str[37];
+
+  uuid_generate_random(uuid);
+  uuid_unparse(uuid, uuid_str);
+
+  if (fmt)
+  {
+    char params[4096];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(params, 4096, fmt, ap);
+    va_end(ap);
+    snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%s&%s", secure ? "https" : "http", address, secure ? 47984 : 47989,
+             action, unique_id, uuid_str, params);
+  }
+  else
+  {
+    snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%s", secure ? "https" : "http", address, secure ? 47984 : 47989,
+             action, unique_id, uuid_str);
+  }
+  return true;
 }

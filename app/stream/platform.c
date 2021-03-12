@@ -28,6 +28,8 @@ enum platform platform_check(char *name)
     return NONE;
 #elif TARGET_DESKTOP
     return SDL;
+#else
+#error "Unknown platform"
 #endif
 }
 
