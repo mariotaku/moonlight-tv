@@ -53,7 +53,7 @@
 static char unique_id[UNIQUEID_CHARS + 1];
 static mbedtls_pk_context privateKey;
 static mbedtls_x509_crt cert;
-static char cert_bin[4096], cert_hex[4096];
+static char cert_hex[4096];
 
 const char *gs_error;
 
@@ -158,10 +158,8 @@ static int load_cert(const char *keyDirectory)
   while ((c = fgetc(fd)) != EOF)
   {
     sprintf(&cert_hex[length], "%02x", c);
-    cert_bin[length / 2] = c;
     length += 2;
   }
-  cert_bin[length / 2] = 0;
   cert_hex[length] = 0;
 
   fclose(fd);
@@ -389,16 +387,31 @@ struct challenge_response_t
   unsigned char secret[16];
 };
 
+struct pairing_secret_t
+{
+  unsigned char secret[16];
+  unsigned char signature[256];
+};
+
 int gs_pair(PSERVER_DATA server, char *pin)
 {
-  int svrversion = server->serverMajorVersion;
-  mbedtls_md_type_t hash_algo = svrversion >= 7 ? MBEDTLS_MD_SHA256 : MBEDTLS_MD_SHA1;
+  mbedtls_md_type_t hash_algo;
   size_t hash_length;
+  if (server->serverMajorVersion >= 7)
+  {
+    // Gen 7+ uses SHA-256 hashing
+    hash_algo = MBEDTLS_MD_SHA256;
+    hash_length = 32;
+  }
+  else
+  {
+    // Prior to Gen 7, SHA-1 is used
+    hash_algo = MBEDTLS_MD_SHA1;
+    hash_length = 20;
+  }
   int ret = GS_OK;
   char *result = NULL;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
 
   mbedtls_entropy_context entropy;
   mbedtls_entropy_init(&entropy);
@@ -431,19 +444,23 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
+  // Generate a salt for hashing the PIN
   unsigned char salt[16];
   mbedtls_ctr_drbg_random(&ctr_drbg, salt, 16);
   char salt_hex[33];
   bytes_to_hex(salt, salt_hex, 16);
 
+  // Combine the salt and pin, then create an AES key from them
   unsigned char salted_pin[20];
   memcpy(salted_pin, salt, 16);
   memcpy(&salted_pin[16], pin, 4);
 
   unsigned char aes_key[32];
 
-  hash_data(hash_algo, salted_pin, 20, aes_key, &hash_length);
+  hash_data(hash_algo, salted_pin, 20, aes_key, NULL);
 
+  // Send the salt and get the server cert. This doesn't have a read timeout
+  // because the user must enter the PIN before the server responds
   construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, cert_hex);
   PHTTP_DATA data = http_create_data();
@@ -466,8 +483,11 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   free(result);
   result = NULL;
+  // Save this cert for retrieval later
   if ((ret = xml_search(data->memory, data->size, "plaincert", &result)) != GS_OK)
   {
+    // Attempting to pair while another device is pairing will cause GFE
+    // to give an empty cert in the response.
     gs_error = "Failed to parse plaincert";
     ret = GS_FAILED;
     goto cleanup;
@@ -498,6 +518,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
   mbedtls_aes_setkey_enc(&aes, aes_key, 128);
   mbedtls_aes_setkey_dec(&aes, aes_key, 128);
 
+  // Generate a random challenge and encrypt it with our AES key
   unsigned char random_challenge[16];
   mbedtls_ctr_drbg_random(&ctr_drbg, random_challenge, 16);
 
@@ -512,6 +533,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
   char encrypted_challenge_hex[33];
   bytes_to_hex(encrypted_challenge, encrypted_challenge_hex, 16);
 
+  // Send the encrypted challenge to the server
   construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
   if ((ret = http_request(url, data)) != GS_OK)
@@ -533,39 +555,40 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   free(result);
   result = NULL;
+  // Decode the server's response and subsequent challenge
   if (xml_search(data->memory, data->size, "challengeresponse", &result) != GS_OK)
   {
     ret = GS_INVALID;
     goto cleanup;
   }
 
-  unsigned char challenge_response_data_enc[48];
-  unsigned char challenge_response_data[48];
-  hex_to_bytes(result, challenge_response_data_enc, NULL);
+  unsigned char enc_server_challenge_response[48];
+  hex_to_bytes(result, enc_server_challenge_response, NULL);
 
-  crypt_data(&aes, MBEDTLS_AES_DECRYPT, challenge_response_data_enc, challenge_response_data, 48);
+  unsigned char dec_server_challenge_response[48];
+  crypt_data(&aes, MBEDTLS_AES_DECRYPT, enc_server_challenge_response, dec_server_challenge_response, 48);
 
-  unsigned char client_secret_data[16];
-  mbedtls_ctr_drbg_random(&ctr_drbg, client_secret_data, 16);
+  // Using another 16 bytes secret, compute a challenge response hash using the secret, our cert sig, and the challenge
+  unsigned char client_secret[16];
+  mbedtls_ctr_drbg_random(&ctr_drbg, client_secret, 16);
 
   struct challenge_response_t challenge_response;
-  unsigned char challenge_response_hash[32], challenge_response_hash_enc[32];
-  memset(challenge_response_hash, 0, sizeof(challenge_response_hash));
-  memcpy(challenge_response.challenge, &challenge_response_data[hash_length], sizeof(challenge_response.challenge));
+  memcpy(challenge_response.challenge, &dec_server_challenge_response[hash_length], sizeof(challenge_response.challenge));
   memcpy(challenge_response.signature, cert.sig.p, sizeof(challenge_response.signature));
-  memcpy(challenge_response.secret, client_secret_data, sizeof(challenge_response.secret));
-  if (server->serverMajorVersion >= 7)
-    mbedtls_sha256_ret((unsigned char *)&challenge_response, sizeof(struct challenge_response_t), challenge_response_hash, 0);
-  else
-    mbedtls_sha1_ret((unsigned char *)&challenge_response, sizeof(struct challenge_response_t), challenge_response_hash);
+  memcpy(challenge_response.secret, client_secret, sizeof(challenge_response.secret));
 
-  crypt_data(&aes, MBEDTLS_AES_ENCRYPT, challenge_response_hash, challenge_response_hash_enc, 32);
+  unsigned char challenge_response_hash[32];
+  memset(challenge_response_hash, 0, sizeof(challenge_response_hash));
+  hash_data(hash_algo, (unsigned char *)&challenge_response, sizeof(struct challenge_response_t), challenge_response_hash, NULL);
+
+  unsigned char challenge_response_encrypted[32];
+  crypt_data(&aes, MBEDTLS_AES_ENCRYPT, challenge_response_hash, challenge_response_encrypted, 32);
 
   char challenge_response_hex[65];
-  bytes_to_hex(challenge_response_hash_enc, challenge_response_hex, 32);
+  bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
 
   construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
-                "updateState=1&serverchallengeresp=%s", challenge_response_hex);
+                "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -585,19 +608,17 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   free(result);
   result = NULL;
+  // Get the server's signed secret
   if (xml_search(data->memory, data->size, "pairingsecret", &result) != GS_OK)
   {
     ret = GS_INVALID;
     goto cleanup;
   }
 
-  struct
-  {
-    unsigned char secret[16];
-    unsigned char signature[256];
-  } pairing_secret;
+  struct pairing_secret_t pairing_secret;
   hex_to_bytes(result, (unsigned char *)&pairing_secret, NULL);
 
+  // Ensure the authenticity of the data
   if (!verifySignature(pairing_secret.secret, sizeof(pairing_secret.secret),
                        pairing_secret.signature, sizeof(pairing_secret.signature), &server_cert))
   {
@@ -606,6 +627,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
+  // Ensure the server challenge matched what we expected (aka the PIN was correct)
   struct challenge_response_t expected_response_data;
   memcpy(expected_response_data.challenge, random_challenge, 16);
   memcpy(expected_response_data.signature, server_cert.sig.p, 256);
@@ -613,30 +635,31 @@ int gs_pair(PSERVER_DATA server, char *pin)
 
   unsigned char expected_hash[32];
   hash_data(hash_algo, (unsigned char *)&expected_response_data, sizeof(expected_response_data),
-            expected_hash, &hash_length);
-  if (memcmp(expected_hash, challenge_response_data, hash_length) != 0)
+            expected_hash, NULL);
+  if (memcmp(expected_hash, dec_server_challenge_response, hash_length) != 0)
   {
+    // Probably got the wrong PIN
     gs_error = "Incorrect PIN";
     ret = GS_FAILED;
     goto cleanup;
   }
 
-  unsigned char client_pairing_secret[16 + 256];
-  memcpy(client_pairing_secret, client_secret_data, 16);
+  // Send the server our signed secret
+  struct pairing_secret_t client_pairing_secret;
+  memcpy(client_pairing_secret.secret, client_secret, 16);
   size_t s_len;
-  if (!generateSignature(client_pairing_secret, 16, &client_pairing_secret[16], &s_len, &privateKey, &ctr_drbg))
+  if (!generateSignature(client_pairing_secret.secret, 16, client_pairing_secret.signature, &s_len, &privateKey, &ctr_drbg))
   {
     gs_error = "Failed to sign data";
     ret = GS_FAILED;
     goto cleanup;
   }
 
-  char client_pairing_secret_hex[(16 + 256) * 2 + 1];
-  bytes_to_hex(client_pairing_secret, client_pairing_secret_hex, 16 + 256);
+  char client_pairing_secret_hex[sizeof(client_pairing_secret) * 2 + 1];
+  bytes_to_hex((unsigned char *)&client_pairing_secret, client_pairing_secret_hex, sizeof(client_pairing_secret));
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "http://%s:47989/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&clientpairingsecret=%s", server->serverInfo.address, unique_id, uuid_str, client_pairing_secret_hex);
+  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -654,9 +677,9 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/pair?uniqueid=%s&uuid=%s&devicename=roth&updateState=1&phrase=pairchallenge", server->serverInfo.address, unique_id, uuid_str);
+  // Do the initial challenge (seems neccessary for us to show as paired)
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&phrase=pairchallenge");
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -930,10 +953,12 @@ int hash_data(mbedtls_md_type_t type, const unsigned char *input, size_t ilen, u
   switch (type)
   {
   case MBEDTLS_MD_SHA1:
-    *olen = 20;
+    if (olen)
+      *olen = 20;
     return mbedtls_sha1_ret(input, ilen, output);
   case MBEDTLS_MD_SHA256:
-    *olen = 32;
+    if (olen)
+      *olen = 32;
     return mbedtls_sha256_ret(input, ilen, output, 0);
   default:
     return -1;
