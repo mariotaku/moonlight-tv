@@ -45,6 +45,8 @@
 
 #include <assert.h>
 
+#include "crypto.h"
+
 #define UNIQUE_FILE_NAME "uniqueid.dat"
 
 #define UNIQUEID_BYTES 8
@@ -57,11 +59,7 @@ static char cert_hex[4096];
 
 const char *gs_error;
 
-static bool generateSignature(const unsigned char *msg, size_t mlen, unsigned char *sig, size_t *slen, mbedtls_pk_context *pkey, mbedtls_ctr_drbg_context *rng);
-static bool verifySignature(const unsigned char *msg, size_t mlen, const unsigned char *sig, size_t slen, mbedtls_x509_crt *cert);
 static bool construct_url(char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...);
-static int hash_data(mbedtls_md_type_t type, const unsigned char *input, size_t ilen, unsigned char *output, size_t *olen);
-static bool crypt_data(mbedtls_aes_context *ctx, int mode, const unsigned char input[16], unsigned char output[16], size_t len);
 
 static int mkdirtree(const char *directory)
 {
@@ -329,50 +327,14 @@ static void hex_to_bytes(const char *in, unsigned char *out, size_t *len)
   }
 }
 
-static bool generateSignature(const unsigned char *msg, size_t mlen, unsigned char *sig, size_t *slen, mbedtls_pk_context *pkey, mbedtls_ctr_drbg_context *rng)
-{
-  int result = 0;
-  unsigned char hash[32];
-  if ((result = mbedtls_sha256_ret(msg, mlen, hash, 0)) != 0)
-  {
-    goto cleanup;
-  }
-
-  if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, slen, mbedtls_ctr_drbg_random, rng)) != 0)
-  {
-    goto cleanup;
-  }
-
-cleanup:
-  return result == 0;
-}
-
-static bool verifySignature(const unsigned char *msg, size_t mlen, const unsigned char *sig, size_t slen, mbedtls_x509_crt *cert)
-{
-  int result = 0;
-  unsigned char hash[32];
-  if ((result = mbedtls_sha256_ret(msg, mlen, hash, 0)) != 0)
-  {
-    return false;
-  }
-
-  result = mbedtls_pk_verify(&cert->pk, MBEDTLS_MD_SHA256, hash, 32, sig, slen);
-
-  return result == 0;
-}
-
 int gs_unpair(PSERVER_DATA server)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
   construct_url(url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
   ret = http_request(url, data);
 
@@ -720,15 +682,11 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/applist?uniqueid=%s&uuid=%s", server->serverInfo.address, unique_id, uuid_str);
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
   if (http_request(url, data) != GS_OK)
     ret = GS_IO_ERROR;
   else if (xml_status(data->memory, data->size) == GS_ERROR)
@@ -743,9 +701,7 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
 int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio, int gamepad_mask)
 {
   int ret = GS_OK;
-  uuid_t uuid;
   char *result = NULL;
-  char uuid_str[37];
 
   mbedtls_entropy_context entropy;
   mbedtls_entropy_init(&entropy);
@@ -794,8 +750,6 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
   int surround_info = SURROUNDAUDIOINFO_FROM_AUDIO_CONFIGURATION(config->audioConfiguration);
   if (server->currentGame == 0)
   {
@@ -804,11 +758,15 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
     // used to use 60 here but that locked the frame rate to 60 FPS
     // on GFE 3.20.3.
     int fps = config->fps > 60 ? 0 : config->fps;
-    snprintf(url, sizeof(url), "https://%s:47984/launch?uniqueid=%s&uuid=%s&appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d", server->serverInfo.address, unique_id, uuid_str, appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info, gamepad_mask, gamepad_mask);
+    construct_url(url, sizeof(url), true, server->serverInfo.address, "launch",
+                  "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d",
+                  appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info, gamepad_mask, gamepad_mask);
   }
   else
-    snprintf(url, sizeof(url), "https://%s:47984/resume?uniqueid=%s&uuid=%s&rikey=%s&rikeyid=%d&surroundAudioInfo=%d", server->serverInfo.address, unique_id, uuid_str, rikey_hex, rikeyid, surround_info);
-
+  {
+    construct_url(url, sizeof(url), true, server->serverInfo.address, "resume",
+                  "rikey=%s&rikeyid=%d&surroundAudioInfo=%d", rikey_hex, rikeyid, surround_info);
+  }
   if ((ret = http_request(url, data)) == GS_OK)
     server->currentGame = appId;
   else
@@ -839,16 +797,12 @@ int gs_quit_app(PSERVER_DATA server)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   char *result = NULL;
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/cancel?uniqueid=%s&uuid=%s", server->serverInfo.address, unique_id, uuid_str);
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
   if ((ret = http_request(url, data)) != GS_OK)
     goto cleanup;
 
@@ -875,16 +829,12 @@ int gs_download_cover(PSERVER_DATA server, int appid, const char *path)
 {
   int ret = GS_OK;
   char url[4096];
-  uuid_t uuid;
-  char uuid_str[37];
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  uuid_generate_random(uuid);
-  uuid_unparse(uuid, uuid_str);
-  snprintf(url, sizeof(url), "https://%s:47984/appasset?uniqueid=%s&uuid=%s&appid=%d&AssetType=2&AssetIdx=0",
-           server->serverInfo.address, unique_id, uuid_str, appid);
+  construct_url(url, sizeof(url), true, server->serverInfo.address, "appasset",
+                "appid=%d&AssetType=2&AssetIdx=0", appid);
   ret = http_request(url, data);
   if (ret != GS_OK)
     goto cleanup;
@@ -944,35 +894,6 @@ static bool construct_url(char *url, size_t ulen, bool secure, const char *addre
   {
     snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%s", secure ? "https" : "http", address, secure ? 47984 : 47989,
              action, unique_id, uuid_str);
-  }
-  return true;
-}
-
-int hash_data(mbedtls_md_type_t type, const unsigned char *input, size_t ilen, unsigned char *output, size_t *olen)
-{
-  switch (type)
-  {
-  case MBEDTLS_MD_SHA1:
-    if (olen)
-      *olen = 20;
-    return mbedtls_sha1_ret(input, ilen, output);
-  case MBEDTLS_MD_SHA256:
-    if (olen)
-      *olen = 32;
-    return mbedtls_sha256_ret(input, ilen, output, 0);
-  default:
-    return -1;
-  }
-}
-
-bool crypt_data(mbedtls_aes_context *ctx, int mode, const unsigned char *input, unsigned char *output, size_t len)
-{
-  for (int i = 0; i < len; i += 16)
-  {
-    if (mbedtls_aes_crypt_ecb(ctx, mode, &input[i], &output[i]) != 0)
-    {
-      return false;
-    }
   }
   return true;
 }

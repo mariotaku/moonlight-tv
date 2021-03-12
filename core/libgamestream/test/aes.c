@@ -8,6 +8,8 @@
 #include <mbedtls/cipher.h>
 #include <mbedtls/error.h>
 
+#include "crypto.h"
+
 void encrypt_ossl(const unsigned char *input, unsigned char *output, size_t len, const unsigned char *key)
 {
     EVP_CIPHER_CTX *cipher;
@@ -30,17 +32,8 @@ void encrypt_mbed(const unsigned char *input, unsigned char *output, size_t len,
     mbedtls_aes_context aes;
     mbedtls_aes_init(&aes);
     mbedtls_aes_setkey_enc(&aes, key, 128);
-    int ret;
-    for (int i = 0; i < len; i += 16)
-    {
-        if ((ret = mbedtls_aes_crypt_ecb(&aes, MBEDTLS_AES_ENCRYPT, &input[i], &output[i])) != 0)
-        {
-            char buf[4096];
-            mbedtls_strerror(ret, buf, 4096);
-            printf("%s\n", buf);
-            abort();
-        }
-    }
+
+    assert(crypt_data(&aes, MBEDTLS_AES_ENCRYPT, input, output, len));
 
     mbedtls_aes_free(&aes);
 }
@@ -67,17 +60,8 @@ void decrypt_mbed(const unsigned char *input, unsigned char *output, size_t len,
     mbedtls_aes_context aes;
     mbedtls_aes_init(&aes);
     mbedtls_aes_setkey_dec(&aes, key, 128);
-    int ret;
-    for (int i = 0; i < len; i += 16)
-    {
-        if ((ret = mbedtls_aes_crypt_ecb(&aes, MBEDTLS_AES_DECRYPT, &input[i], &output[i])) != 0)
-        {
-            char buf[4096];
-            mbedtls_strerror(ret, buf, 4096);
-            printf("%s\n", buf);
-            abort();
-        }
-    }
+
+    assert(crypt_data(&aes, MBEDTLS_AES_DECRYPT, input, output, len));
 
     mbedtls_aes_free(&aes);
 }
