@@ -67,7 +67,6 @@ pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
-    add_subdirectory(system/lgncapi)
     add_subdirectory(third_party/opus)
     target_compile_options(opus PRIVATE -fPIC)
     set_target_properties(opus PROPERTIES 
@@ -165,8 +164,6 @@ if (TARGET_WEBOS)
         app/platform/webos/SDL_webOS.c
         app/platform/webos/path_webos.c
         app/stream/video/delegate.c
-        app/stream/audio/lgnc.c
-        app/stream/video/lgnc.c
         app/stream/audio/sdl.c
     )
 else()
@@ -233,7 +230,6 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} opus)
-    target_link_libraries(moonlight PRIVATE lgncopenapi)
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
