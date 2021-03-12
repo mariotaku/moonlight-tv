@@ -14,23 +14,42 @@
 
 enum platform platform_check(char *name)
 {
-#if TARGET_RASPI
-    return PI;
-#elif OS_WEBOS
-    if (app_webos_ndl)
+    bool std = strcmp(name, "auto") == 0;
+#ifdef HAVE_NDL
+    if (std || strcmp(name, "ndl") == 0)
     {
-        return NDL;
+        void *handle = dlopen("libmoonlight-ndl.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle)
+        {
+            return NDL;
+        }
     }
-    else if (app_webos_lgnc)
-    {
-        return LGNC;
-    }
-    return NONE;
-#elif TARGET_DESKTOP
-    return SDL;
-#else
-#error "Unknown platform"
 #endif
+#ifdef HAVE_LGNC
+    if (std || strcmp(name, "lgnc") == 0)
+    {
+        void *handle = dlopen("libmoonlight-lgnc.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle)
+        {
+            return LGNC;
+        }
+    }
+#endif
+#ifdef HAVE_PI
+    if (std || strcmp(name, "pi") == 0)
+    {
+        void *handle = dlopen("libmoonlight-pi.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle != NULL && dlsym(RTLD_DEFAULT, "bcm_host_init") != NULL)
+            return PI;
+    }
+#endif
+#ifdef HAVE_SDL
+    if (std || strcmp(name, "sdl") == 0)
+        return SDL;
+#endif
+    if (strcmp(name, "fake") == 0)
+        return FAKE;
+    return 0;
 }
 
 void platform_start(enum platform system)
@@ -77,9 +96,9 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
     case LGNC:
         return &decoder_callbacks_lgnc;
 #endif
-#if OS_WEBOS
+#if HAVE_NDL
     case NDL:
-        return &decoder_callbacks_ndl;
+        return (PDECODER_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "decoder_callbacks_ndl");
 #endif
 #if HAVE_PI
     case PI:
@@ -106,9 +125,9 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
     case LGNC:
         return &audio_callbacks_lgnc;
 #endif
-#if OS_WEBOS
+#if HAVE_NDL
     case NDL:
-        return &audio_callbacks_ndl;
+        return (PAUDIO_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "audio_callbacks_ndl");
 #endif
 #if HAVE_SDL
     case SDL:
@@ -137,5 +156,32 @@ PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system)
 #endif
     default:
         return NULL;
+    }
+}
+
+typedef void (*platform_init_fn)(int argc, char *argv[]);
+typedef void (*platform_finalize_fn)();
+
+void platform_init(enum platform system, int argc, char *argv[])
+{
+    switch (system)
+    {
+#ifdef HAVE_NDL
+    case NDL:
+        ((platform_init_fn)dlsym(RTLD_DEFAULT, "platform_init_ndl"))(argc, argv);
+        break;
+#endif
+    }
+}
+
+void platform_finalize(enum platform system)
+{
+    switch (system)
+    {
+#ifdef HAVE_NDL
+    case NDL:
+        ((platform_finalize_fn)dlsym(RTLD_DEFAULT, "platform_finalize_ndl"))();
+        break;
+#endif
     }
 }

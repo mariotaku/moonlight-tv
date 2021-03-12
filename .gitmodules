@@ -20,7 +20,7 @@
 	path = third_party/SDL_GameControllerDB
 	url = https://github.com/gabomdq/SDL_GameControllerDB.git
 [submodule "system/lgncapi"]
-	path = system/lgncapi
+	path = decoder/lgnc/stub
 	url = https://github.com/webosbrew/lgncapi.git
 [submodule "third_party/message_queue"]
 	path = third_party/message_queue

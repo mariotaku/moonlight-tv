@@ -27,6 +27,7 @@
 #include "stream/session.h"
 #include "stream/input/absinput.h"
 #include "stream/input/sdlinput.h"
+#include "stream/platform.h"
 #include "platform/sdl/events.h"
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/root.h"
@@ -58,6 +59,8 @@ static void fps_cap(int diff);
 int app_init(int argc, char *argv[])
 {
     app_configuration = settings_load();
+    enum platform platform = platform_check(app_configuration->platform);
+    platform_init(platform, argc, argv);
 #if OS_WEBOS
     return app_webos_init(argc, argv);
 #else

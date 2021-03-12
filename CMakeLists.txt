@@ -3,7 +3,6 @@ project(moonlight
     VERSION 0.4.4
     LANGUAGES C
 )
-enable_testing()
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH 
@@ -17,6 +16,8 @@ option(TARGET_WEBOS "Build for LG webOS" OFF)
 option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 
 option(BUILD_CUSTOM_SDL "Include custom SDL" OFF)
+
+set(OPUS_BUILD_SHARED_LIBRARY ON)
 
 if (CC_BASENAME MATCHES "^arm-webos-linux")
     set(TARGET_WEBOS ON)
@@ -66,9 +67,12 @@ pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
-    add_subdirectory(third_party/opus)
-    add_subdirectory(system/libndl)
     add_subdirectory(system/lgncapi)
+    add_subdirectory(third_party/opus)
+    target_compile_options(opus PRIVATE -fPIC)
+    set_target_properties(opus PROPERTIES 
+        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/assets/lib
+    )
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -94,6 +98,7 @@ add_subdirectory(third_party/mbedtls)
 
 add_subdirectory(core/moonlight-common-c)
 add_subdirectory(core/libgamestream)
+add_subdirectory(decoder)
 
 set(SOURCES
     app/main.c
@@ -159,9 +164,7 @@ if (TARGET_WEBOS)
         app/platform/webos/navkey_sdl_webos.c
         app/platform/webos/SDL_webOS.c
         app/platform/webos/path_webos.c
-        app/stream/audio/ndl.c
         app/stream/video/delegate.c
-        app/stream/video/ndl.c
         app/stream/audio/lgnc.c
         app/stream/video/lgnc.c
         app/stream/audio/sdl.c
@@ -230,7 +233,8 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} opus)
-    target_link_libraries(moonlight PRIVATE NDL_directmedia lgncopenapi)
+    target_link_libraries(moonlight PRIVATE lgncopenapi)
+    target_link_libraries(moonlight PRIVATE moonlight-ndl)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
@@ -303,7 +307,7 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-        WEBOS_PACKAGE_ASSETS "assets;legacy-prebuilt/$ENV{ARCH}/lib" 
+        WEBOS_PACKAGE_ASSETS "assets;${CMAKE_BINARY_DIR}/assets/lib" 
     )
 
     target_webos_package(moonlight)
