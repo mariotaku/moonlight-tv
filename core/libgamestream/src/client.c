@@ -55,7 +55,7 @@
 static char unique_id[UNIQUEID_CHARS + 1];
 static mbedtls_pk_context privateKey;
 static mbedtls_x509_crt cert;
-static char cert_hex[4096];
+static char cert_hex[8192];
 
 const char *gs_error;
 
@@ -406,20 +406,21 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
-  // Generate a salt for hashing the PIN
-  unsigned char salt[16];
-  mbedtls_ctr_drbg_random(&ctr_drbg, salt, 16);
-  char salt_hex[33];
-  bytes_to_hex(salt, salt_hex, 16);
+  // Generate the salted pin, then create an AES key from them
+  struct
+  {
+    unsigned char salt[16];
+    unsigned char pin[4];
+  } salted_pin;
+  memcpy(salted_pin.pin, pin, 4);
+  mbedtls_ctr_drbg_random(&ctr_drbg, salted_pin.salt, 16);
 
-  // Combine the salt and pin, then create an AES key from them
-  unsigned char salted_pin[20];
-  memcpy(salted_pin, salt, 16);
-  memcpy(&salted_pin[16], pin, 4);
+  char salt_hex[33];
+  bytes_to_hex(salted_pin.salt, salt_hex, 16);
 
   unsigned char aes_key[32];
 
-  hash_data(hash_algo, salted_pin, 20, aes_key, NULL);
+  hash_data(hash_algo, (unsigned char *)&salted_pin, sizeof(salted_pin), aes_key, NULL);
 
   // Send the salt and get the server cert. This doesn't have a read timeout
   // because the user must enter the PIN before the server responds

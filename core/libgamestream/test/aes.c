@@ -73,14 +73,19 @@ int main(int argc, char *argv[])
     RAND_bytes(key, 16);
 
     unsigned char output1[48], output2[48];
-    encrypt_ossl(input, output1, 48, key);
-    encrypt_mbed(input, output2, 48, key);
-
-    assert(memcmp(output1, output2, 48) == 0);
+    for (int i = 16; i <= 48; i += 16)
+    {
+        encrypt_ossl(input, output1, i, key);
+        encrypt_mbed(input, output2, i, key);
+        assert(memcmp(output1, output2, i) == 0);
+    }
 
     unsigned char decrypt1[48], decrypt2[48];
-    decrypt_ossl(output1, decrypt1, 48, key);
-    decrypt_mbed(output2, decrypt2, 48, key);
-    assert(memcmp(decrypt1, decrypt2, 48) == 0);
+    for (int i = 16; i <= 48; i += 16)
+    {
+        decrypt_ossl(output1, decrypt1, i, key);
+        decrypt_mbed(output2, decrypt2, i, key);
+        assert(memcmp(decrypt1, decrypt2, i) == 0);
+    }
     return 0;
 }

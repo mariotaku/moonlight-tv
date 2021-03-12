@@ -46,11 +46,12 @@ void _pairing_error_popup(struct nk_context *ctx)
 
 void _server_error_popup(struct nk_context *ctx)
 {
-    const char *message = selected_server_node->errmsg;
-    if (!message)
-    {
+    const char *message;
+    if (selected_server_node && selected_server_node->errmsg)
+        message = selected_server_node->errmsg;
+    else
         message = "";
-    }
+
     enum nk_dialog_result result;
     if ((result = nk_dialog_popup_begin(ctx, "Connection Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {
