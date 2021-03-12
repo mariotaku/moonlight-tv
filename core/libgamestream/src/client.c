@@ -381,8 +381,9 @@ int gs_pair(PSERVER_DATA server, char *pin)
   mbedtls_ctr_drbg_context ctr_drbg;
   mbedtls_ctr_drbg_init(&ctr_drbg);
 
-  mbedtls_aes_context aes;
-  mbedtls_aes_init(&aes);
+  mbedtls_aes_context aes_enc, aes_dec;
+  mbedtls_aes_init(&aes_enc);
+  mbedtls_aes_init(&aes_dec);
 
   mbedtls_x509_crt server_cert;
   mbedtls_x509_crt_init(&server_cert);
@@ -478,15 +479,15 @@ int gs_pair(PSERVER_DATA server, char *pin)
     goto cleanup;
   }
 
-  mbedtls_aes_setkey_enc(&aes, aes_key, 128);
-  mbedtls_aes_setkey_dec(&aes, aes_key, 128);
+  mbedtls_aes_setkey_enc(&aes_enc, aes_key, 128);
+  mbedtls_aes_setkey_dec(&aes_dec, aes_key, 128);
 
   // Generate a random challenge and encrypt it with our AES key
   unsigned char random_challenge[16];
   mbedtls_ctr_drbg_random(&ctr_drbg, random_challenge, 16);
 
   unsigned char encrypted_challenge[16];
-  if (!crypt_data(&aes, MBEDTLS_AES_ENCRYPT, random_challenge, encrypted_challenge, 16))
+  if (!crypt_data(&aes_enc, MBEDTLS_AES_ENCRYPT, random_challenge, encrypted_challenge, 16))
   {
     gs_error = "Failed to encrypt random_challenge";
     ret = GS_FAILED;
@@ -529,7 +530,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
   hex_to_bytes(result, enc_server_challenge_response, NULL);
 
   unsigned char dec_server_challenge_response[48];
-  crypt_data(&aes, MBEDTLS_AES_DECRYPT, enc_server_challenge_response, dec_server_challenge_response, 48);
+  crypt_data(&aes_dec, MBEDTLS_AES_DECRYPT, enc_server_challenge_response, dec_server_challenge_response, 48);
 
   // Using another 16 bytes secret, compute a challenge response hash using the secret, our cert sig, and the challenge
   unsigned char client_secret[16];
@@ -545,7 +546,7 @@ int gs_pair(PSERVER_DATA server, char *pin)
   hash_data(hash_algo, (unsigned char *)&challenge_response, sizeof(struct challenge_response_t), challenge_response_hash, NULL);
 
   unsigned char challenge_response_encrypted[32];
-  crypt_data(&aes, MBEDTLS_AES_ENCRYPT, challenge_response_hash, challenge_response_encrypted, 32);
+  crypt_data(&aes_enc, MBEDTLS_AES_ENCRYPT, challenge_response_hash, challenge_response_encrypted, 32);
 
   char challenge_response_hex[65];
   bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
@@ -671,7 +672,8 @@ cleanup:
 
   http_free_data(data);
 
-  mbedtls_aes_free(&aes);
+  mbedtls_aes_free(&aes_enc);
+  mbedtls_aes_free(&aes_dec);
   mbedtls_entropy_free(&entropy);
   mbedtls_ctr_drbg_free(&ctr_drbg);
   mbedtls_x509_crt_free(&server_cert);
