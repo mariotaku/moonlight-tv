@@ -51,3 +51,11 @@ int _settings_pane_mouse_itemcount()
 {
     return 6;
 }
+
+struct settings_pane settings_pane_mouse = {
+    .title = "Mouse Settings",
+    .render = _settings_pane_mouse,
+    .navkey = NULL,
+    .itemcount = _settings_pane_mouse_itemcount,
+    .onselect = NULL,
+};

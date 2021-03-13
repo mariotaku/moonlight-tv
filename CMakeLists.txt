@@ -75,6 +75,8 @@ if (TARGET_WEBOS)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
+    pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
+    pkg_check_modules(LUNA_SERVICE REQUIRED luna-service2)
 elseif (TARGET_RASPI)
     find_package(Broadcom REQUIRED)
 
@@ -129,7 +131,7 @@ set(SOURCES
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
     app/ui/settings/pane_mouse.c
-    app/ui/settings/pane_advanced.c
+    app/ui/settings/pane_sysinfo.c
     app/ui/settings/statbar.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
@@ -235,6 +237,8 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${LUNA_SERVICE_LIBRARIES})
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)

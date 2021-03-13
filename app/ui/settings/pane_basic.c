@@ -213,3 +213,11 @@ void _update_bitrate()
 {
     app_configuration->stream.bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
 }
+
+struct settings_pane settings_pane_basic = {
+    .title = "Basic Settings",
+    .render = _settings_pane_basic,
+    .navkey = _settings_pane_basic_navkey,
+    .itemcount = _settings_pane_basic_itemcount,
+    .onselect = NULL,
+};

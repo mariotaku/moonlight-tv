@@ -27,37 +27,13 @@ enum settings_entries
     ENTRY_COUNT
 };
 
-typedef bool (*settings_panel_render)(struct nk_context *, bool *showing_combo);
-typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
-typedef int (*settings_panel_itemcount)();
-
-struct settings_pane
-{
-    const char *title;
-    settings_panel_render render;
-    settings_panel_navkey navkey;
-    settings_panel_itemcount itemcount;
-};
-
 static enum settings_entries _selected_entry = ENTRY_NONE;
+static void _pane_select_index(int new_index);
 static void _pane_select_offset(int offset);
 static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 static int _pane_itemcount(int index);
 
 void _settings_nav(struct nk_context *ctx);
-
-bool _settings_pane_basic(struct nk_context *ctx, bool *item_hovered);
-bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
-int _settings_pane_basic_itemcount();
-
-bool _settings_pane_host(struct nk_context *ctx, bool *item_hovered);
-int _settings_pane_host_itemcount();
-
-bool _settings_pane_mouse(struct nk_context *ctx, bool *item_hovered);
-int _settings_pane_mouse_itemcount();
-
-bool _settings_pane_advanced(struct nk_context *ctx, bool *item_hovered);
-int _settings_pane_advanced_itemcount();
 
 void settings_statbar(struct nk_context *ctx);
 void settings_set_pane_focused(bool focused);
@@ -65,13 +41,13 @@ void settings_set_pane_focused(bool focused);
 void _pane_basic_open();
 void _pane_host_open();
 
-const struct settings_pane settings_panes[] = {
-    {"Basic Settings", _settings_pane_basic, _settings_pane_basic_navkey, _settings_pane_basic_itemcount},
-    {"Host Settings", _settings_pane_host, NULL, _settings_pane_host_itemcount},
-    {"Mouse Settings", _settings_pane_mouse, NULL, _settings_pane_mouse_itemcount},
-    {"Advanced Settings", _settings_pane_advanced, NULL, _settings_pane_advanced_itemcount},
+const struct settings_pane *settings_panes[] = {
+    &settings_pane_basic,
+    &settings_pane_host,
+    &settings_pane_mouse,
+    &settings_pane_sysinfo,
 };
-#define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane)))
+#define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane *)))
 
 static int selected_pane_index = 0;
 bool settings_pane_focused = false;
@@ -135,9 +111,9 @@ bool settings_window(struct nk_context *ctx)
             for (int i = 0; i < settings_panes_size; i++)
             {
                 nk_bool selected = i == selected_pane_index;
-                if (nk_selectable_label(ctx, settings_panes[i].title, NK_TEXT_LEFT, &selected))
+                if (nk_selectable_label(ctx, settings_panes[i]->title, NK_TEXT_LEFT, &selected))
                 {
-                    selected_pane_index = i;
+                    _pane_select_index(i);
                 }
             }
             nk_group_end(ctx);
@@ -151,9 +127,9 @@ bool settings_window(struct nk_context *ctx)
             bool showing_combo = false;
             settings_hovered_item = -1;
             settings_hovering_item_bounds.w = 0;
-            if (settings_panes[selected_pane_index].render)
+            if (settings_panes[selected_pane_index]->render)
             {
-                settings_panes[selected_pane_index].render(ctx, &showing_combo);
+                settings_panes[selected_pane_index]->render(ctx, &showing_combo);
                 settings_showing_combo |= showing_combo;
             }
             if (settings_item_hover_request >= 0)
@@ -296,12 +272,11 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
 
 bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
 {
-    return settings_panes[pane_index].navkey && settings_panes[pane_index].navkey(ctx, navkey, state, timestamp);
+    return settings_panes[pane_index]->navkey && settings_panes[pane_index]->navkey(ctx, navkey, state, timestamp);
 }
 
-void _pane_select_offset(int offset)
+void _pane_select_index(int new_index)
 {
-    int new_index = selected_pane_index + offset;
     if (new_index < 0)
     {
         selected_pane_index = 0;
@@ -314,15 +289,24 @@ void _pane_select_offset(int offset)
     {
         selected_pane_index = new_index;
     }
+    if (settings_panes[selected_pane_index]->onselect)
+    {
+        settings_panes[selected_pane_index]->onselect();
+    }
+}
+
+void _pane_select_offset(int offset)
+{
+    _pane_select_index(selected_pane_index + offset);
 }
 
 void settings_pane_item_offset(int offset)
 {
-    if (!settings_panes[selected_pane_index].itemcount)
+    if (!settings_panes[selected_pane_index]->itemcount)
     {
         return;
     }
-    int itemcount = settings_panes[selected_pane_index].itemcount();
+    int itemcount = settings_panes[selected_pane_index]->itemcount();
     int new_index = settings_hovered_item + offset;
     if (new_index < 0)
     {
@@ -340,11 +324,11 @@ void settings_pane_item_offset(int offset)
 
 int _pane_itemcount(int index)
 {
-    if (!settings_panes[index].itemcount)
+    if (!settings_panes[index]->itemcount)
     {
         return 0;
     }
-    return settings_panes[index].itemcount();
+    return settings_panes[index]->itemcount();
 }
 
 void settings_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds)
@@ -367,7 +351,7 @@ void settings_item_update_selected_bounds(struct nk_context *ctx, int index, str
 
 void settings_draw_highlight(struct nk_context *ctx)
 {
-#if !TARGET_DESKTOP && !DEBUG 
+#if !TARGET_DESKTOP && !DEBUG
     if (ui_input_mode != UI_INPUT_MODE_POINTER)
         return;
 #endif
