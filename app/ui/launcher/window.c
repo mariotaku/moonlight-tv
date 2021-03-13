@@ -452,10 +452,10 @@ void _launcher_modal_flags_update()
         _launcher_modals |= LAUNCHER_MODAL_MANUAL_ADD;
     }
 #if OS_WEBOS
-    if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
-    {
-        _launcher_modals |= LAUNCHER_MODAL_WDECERR;
-    }
+    // if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
+    // {
+    //     _launcher_modals |= LAUNCHER_MODAL_WDECERR;
+    // }
 #endif
 }
 

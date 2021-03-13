@@ -59,12 +59,11 @@ static void fps_cap(int diff);
 int app_init(int argc, char *argv[])
 {
     app_configuration = settings_load();
-    enum platform platform = platform_check(app_configuration->platform);
-    platform_init(platform, argc, argv);
+    platform_current = platform_init(app_configuration->platform, argc, argv);
+    printf("Decoder platform: %d\n", platform_current);
 #if OS_WEBOS
     return app_webos_init(argc, argv);
 #else
-
     return 0;
 #endif
 }
@@ -82,12 +81,6 @@ APP_WINDOW_CONTEXT app_window_create()
 #endif
 #if OS_WEBOS
     app_webos_window_setup(win);
-    {
-        int refresh_rate, panel_width, panel_height;
-        SDL_webOSGetRefreshRate(&refresh_rate);
-        SDL_webOSGetPanelResolution(&panel_width, &panel_height);
-        printf("webOS TV: refresh: %d Hz, panel: %d * %d\n", refresh_rate, panel_width, panel_height);
-    }
 #endif
 #if TARGET_RASPI
     app_rpi_window_setup(win);
@@ -106,6 +99,7 @@ APP_WINDOW_CONTEXT app_window_create()
 void app_destroy()
 {
     free(app_configuration);
+    platform_finalize(platform_current);
 #ifdef OS_WEBOS
     app_webos_destroy();
 #endif

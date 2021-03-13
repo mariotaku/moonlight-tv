@@ -45,7 +45,9 @@ enum platform
     FAKE
 };
 
-enum platform platform_check(char *);
+extern enum platform platform_current;
+
+enum platform platform_init(const char *name, int argc, char *argv[]);
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system);
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device);
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system);
@@ -56,5 +58,4 @@ char *platform_name(enum platform system);
 void platform_start(enum platform system);
 void platform_stop(enum platform system);
 
-void platform_init(enum platform system, int argc, char *argv[]);
 void platform_finalize(enum platform system);

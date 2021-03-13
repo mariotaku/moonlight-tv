@@ -1,8 +1,5 @@
 cmake_minimum_required (VERSION 3.6)
 
-set(BUILD_SHARED_LIBS ON)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 add_subdirectory(ndl/stub)
 add_subdirectory(lgnc/stub)
 

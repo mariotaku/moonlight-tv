@@ -229,8 +229,9 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
 
-    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES} opus)
+    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
+    target_link_libraries(moonlight PRIVATE moonlight-lgnc)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

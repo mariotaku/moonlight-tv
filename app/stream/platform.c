@@ -1,5 +1,7 @@
-
 #include "platform.h"
+
+#include <dlfcn.h>
+#include <string.h>
 
 #include <Limelight.h>
 
@@ -7,32 +9,36 @@
 #include "video/video.h"
 #include "util.h"
 
-#if OS_WEBOS
-#include "platform/webos/app_init.h"
-#include <string.h>
-#endif
+static void dlerror_log();
+static bool checkinit(enum platform system, int argc, char *argv[]);
 
-enum platform platform_check(char *name)
+enum platform platform_current;
+
+enum platform platform_init(const char *name, int argc, char *argv[])
 {
     bool std = strcmp(name, "auto") == 0;
 #ifdef HAVE_NDL
     if (std || strcmp(name, "ndl") == 0)
     {
         void *handle = dlopen("libmoonlight-ndl.so", RTLD_NOW | RTLD_GLOBAL);
-        if (handle)
-        {
+        if (handle == NULL)
+            dlerror_log();
+        else if (!checkinit(NDL, argc, argv))
+            fprintf(stderr, "NDL check failed\n");
+        else
             return NDL;
-        }
     }
 #endif
 #ifdef HAVE_LGNC
     if (std || strcmp(name, "lgnc") == 0)
     {
         void *handle = dlopen("libmoonlight-lgnc.so", RTLD_NOW | RTLD_GLOBAL);
-        if (handle)
-        {
+        if (handle == NULL)
+            dlerror_log();
+        else if (!checkinit(LGNC, argc, argv))
+            fprintf(stderr, "LGNC check failed\n");
+        else
             return LGNC;
-        }
     }
 #endif
 #ifdef HAVE_PI
@@ -92,13 +98,13 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 {
     switch (system)
     {
-#if OS_LGNC || OS_WEBOS
-    case LGNC:
-        return &decoder_callbacks_lgnc;
-#endif
 #if HAVE_NDL
     case NDL:
         return (PDECODER_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "decoder_callbacks_ndl");
+#endif
+#if HAVE_LGNC
+    case LGNC:
+        return (PDECODER_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "decoder_callbacks_lgnc");
 #endif
 #if HAVE_PI
     case PI:
@@ -121,13 +127,13 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 {
     switch (system)
     {
-#if OS_LGNC || OS_WEBOS
-    case LGNC:
-        return &audio_callbacks_lgnc;
-#endif
 #if HAVE_NDL
     case NDL:
         return (PAUDIO_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "audio_callbacks_ndl");
+#endif
+#if HAVE_LGNC
+    case LGNC:
+        return (PAUDIO_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "audio_callbacks_lgnc");
 #endif
 #if HAVE_SDL
     case SDL:
@@ -159,19 +165,48 @@ PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system)
     }
 }
 
-typedef void (*platform_init_fn)(int argc, char *argv[]);
+typedef bool (*platform_init_fn)(int argc, char *argv[]);
+typedef bool (*platform_check_fn)();
 typedef void (*platform_finalize_fn)();
 
-void platform_init(enum platform system, int argc, char *argv[])
+#define platform_init_simple(name, argc, argv) ((platform_init_fn)dlsym(RTLD_DEFAULT, "platform_init_" name))(argc, argv)
+#define platform_finalize_simple(name) ((platform_finalize_fn)dlsym(RTLD_DEFAULT, "platform_finalize_" name))()
+static bool platform_check_simple(const char *name)
+{
+    char fname[32];
+    snprintf(fname, sizeof(fname), "platform_check_%s", name);
+    platform_check_fn hnd = dlsym(RTLD_DEFAULT, fname);
+    return hnd == NULL || hnd();
+}
+
+bool checkinit(enum platform system, int argc, char *argv[])
 {
     switch (system)
     {
 #ifdef HAVE_NDL
     case NDL:
-        ((platform_init_fn)dlsym(RTLD_DEFAULT, "platform_init_ndl"))(argc, argv);
-        break;
+        if (!platform_init_simple("ndl", argc, argv))
+            return false;
+        if (!platform_check_simple("ndl"))
+        {
+            platform_finalize(system);
+            return false;
+        }
+        return true;
+#endif
+#ifdef HAVE_LGNC
+    case LGNC:
+        if (!platform_init_simple("lgnc", argc, argv))
+            return false;
+        if (!platform_check_simple("lgnc"))
+        {
+            platform_finalize(system);
+            return false;
+        }
+        return true;
 #endif
     }
+    return false;
 }
 
 void platform_finalize(enum platform system)
@@ -180,8 +215,18 @@ void platform_finalize(enum platform system)
     {
 #ifdef HAVE_NDL
     case NDL:
-        ((platform_finalize_fn)dlsym(RTLD_DEFAULT, "platform_finalize_ndl"))();
+        platform_finalize_simple("ndl");
+        break;
+#endif
+#ifdef HAVE_LGNC
+    case LGNC:
+        platform_finalize_simple("lgnc");
         break;
 #endif
     }
+}
+
+void dlerror_log()
+{
+    fprintf(stderr, "Unable to load platform library: %s\n", dlerror());
 }
