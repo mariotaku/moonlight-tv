@@ -49,10 +49,8 @@ static void _onselect()
         size_t buflen;
         while ((buflen = fread(buf, sizeof(char), 8192, f)) > 0)
         {
-            printf("%.*s", buflen, buf);
             jdomparser_feed(parser, buf, buflen);
         }
-        printf("\n");
         fclose(f);
     }
     jdomparser_end(parser);
