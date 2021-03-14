@@ -23,7 +23,8 @@ DECODER_RENDERER_CALLBACKS decoder_render_callbacks_delegate(PDECODER_RENDERER_C
         .stop = cb->stop,
         .cleanup = _vdec_delegate_cleanup,
         .submitDecodeUnit = _vdec_delegate_submit,
-        .capabilities = cb->capabilities};
+        .capabilities = cb->capabilities,
+    };
     return vdec_delegate;
 }
 

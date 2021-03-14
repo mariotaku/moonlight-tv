@@ -20,3 +20,13 @@ target_include_directories(moonlight-lgnc PRIVATE ${CMAKE_SOURCE_DIR}/app/stream
 target_link_libraries(moonlight-lgnc moonlight-common-c opus lgncopenapi)
 target_compile_options(moonlight-lgnc PRIVATE -fPIC)
 target_compile_definitions(moonlight-lgnc PUBLIC HAVE_LGNC)
+
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GStreamer REQUIRED IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0)
+
+add_library(moonlight-gst SHARED gst/gst_platform.c gst/gst_video.c)
+target_include_directories(moonlight-gst PRIVATE ${CMAKE_SOURCE_DIR}/app/stream/audio ${CMAKE_SOURCE_DIR}/app/stream/video)
+target_link_libraries(moonlight-gst moonlight-common-c PkgConfig::GStreamer)
+target_compile_options(moonlight-gst PRIVATE -fPIC)
+target_compile_definitions(moonlight-gst PUBLIC HAVE_GST)

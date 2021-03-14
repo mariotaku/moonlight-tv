@@ -42,6 +42,7 @@ enum platform
     RK,
     NDL,
     LGNC,
+    GST,
     FAKE
 };
 

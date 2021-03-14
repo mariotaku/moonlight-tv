@@ -127,6 +127,7 @@ set(SOURCES
     app/ui/launcher/pairing.c
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
+    app/stream/video/dummy.c
     app/ui/settings/window.c
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
@@ -234,6 +235,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
+    target_link_libraries(moonlight PRIVATE moonlight-gst)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

@@ -41,6 +41,18 @@ enum platform platform_init(const char *name, int argc, char *argv[])
             return LGNC;
     }
 #endif
+#ifdef HAVE_GST
+    if (std || strcmp(name, "gst") == 0)
+    {
+        void *handle = dlopen("libmoonlight-gst.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle == NULL)
+            dlerror_log();
+        else if (!checkinit(GST, argc, argv))
+            fprintf(stderr, "GST check failed\n");
+        else
+            return GST;
+    }
+#endif
 #ifdef HAVE_PI
     if (std || strcmp(name, "pi") == 0)
     {
@@ -94,17 +106,23 @@ void platform_stop(enum platform system)
     }
 }
 
+#define get_decoder_callbacks_simple(name) (PDECODER_RENDERER_CALLBACKS) dlsym(RTLD_DEFAULT, "decoder_callbacks_" name)
+
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 {
     switch (system)
     {
 #if HAVE_NDL
     case NDL:
-        return (PDECODER_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "decoder_callbacks_ndl");
+        return get_decoder_callbacks_simple("ndl");
 #endif
 #if HAVE_LGNC
     case LGNC:
-        return (PDECODER_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "decoder_callbacks_lgnc");
+        return get_decoder_callbacks_simple("lgnc");
+#endif
+#if HAVE_GST
+    case GST:
+        return get_decoder_callbacks_simple("gst");
 #endif
 #if HAVE_PI
     case PI:
@@ -119,9 +137,11 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
         return &decoder_callbacks_sdl;
 #endif
     default:
-        return NULL;
+        return &decoder_callbacks_dummy;
     }
 }
+
+#define get_audio_callbacks_simple(name) (PAUDIO_RENDERER_CALLBACKS) dlsym(RTLD_DEFAULT, "audio_callbacks_" name)
 
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
 {
@@ -129,11 +149,11 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
     {
 #if HAVE_NDL
     case NDL:
-        return (PAUDIO_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "audio_callbacks_ndl");
+        return get_audio_callbacks_simple("ndl");
 #endif
 #if HAVE_LGNC
     case LGNC:
-        return (PAUDIO_RENDERER_CALLBACKS)dlsym(RTLD_DEFAULT, "audio_callbacks_lgnc");
+        return get_audio_callbacks_simple("lgnc");
 #endif
 #if HAVE_SDL
     case SDL:
@@ -205,6 +225,17 @@ bool checkinit(enum platform system, int argc, char *argv[])
         }
         return true;
 #endif
+#ifdef HAVE_GST
+    case GST:
+        if (!platform_init_simple("gst", argc, argv))
+            return false;
+        if (!platform_check_simple("gst"))
+        {
+            platform_finalize(system);
+            return false;
+        }
+        return true;
+#endif
     }
     return false;
 }
@@ -221,6 +252,11 @@ void platform_finalize(enum platform system)
 #ifdef HAVE_LGNC
     case LGNC:
         platform_finalize_simple("lgnc");
+        break;
+#endif
+#ifdef HAVE_GST
+    case GST:
+        platform_finalize_simple("gst");
         break;
 #endif
     }

@@ -52,3 +52,5 @@ extern VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi;
 #ifdef HAVE_MMAL
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_mmal;
 #endif
+
+extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
