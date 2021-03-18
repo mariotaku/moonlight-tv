@@ -6,11 +6,14 @@
 #include "root.h"
 #include "stream/video/sdlvid.h"
 
-#define GL_GLEXT_PROTOTYPES
-
 #include <SDL.h>
+#if TARGET_DESKTOP
+#define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
 #include <SDL_opengl_glext.h>
+#else
+#include <GLES2/gl2.h>
+#endif
 
 static const float vertices[] = {
     -1.f, 1.f,
@@ -56,12 +59,26 @@ void renderer_setup(int w, int h)
     glShaderSource(vertex_shader, 1, &shader_sources[0], (const int *)&res_vertex_source_size);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
+    if (status != GL_TRUE)
+    {
+        char buf[1024];
+        size_t len;
+        glGetShaderInfoLog(vertex_shader, 1024, &len, buf);
+        SDL_Log("Vertex shader compile error:%.*s", len, buf);
+    }
     SDL_assert_release(status == GL_TRUE);
 
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &shader_sources[1], (const int *)&res_fragment_source_size);
     glCompileShader(fragment_shader);
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
+    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status);
+    if (status != GL_TRUE)
+    {
+        char buf[1024];
+        size_t len;
+        glGetShaderInfoLog(fragment_shader, 1024, &len, buf);
+        SDL_Log("Fragment shader compile error:%.*s", len, buf);
+    }
     SDL_assert_release(status == GL_TRUE);
 
     shader_program = glCreateProgram();

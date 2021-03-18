@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+#include "util/user_event.h"
+
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
 static unsigned char *ffmpeg_buffer;
@@ -84,7 +86,7 @@ static int sdl_submit_decode_unit(PDECODE_UNIT decodeUnit)
 
         SDL_Event event;
         event.type = SDL_USEREVENT;
-        event.user.code = SDL_CODE_FRAME;
+        event.user.code = USER_SDL_FRAME;
         event.user.data1 = &frame->data;
         event.user.data2 = &frame->linesize;
         SDL_PushEvent(&event);

@@ -21,20 +21,7 @@
 
 #include <SDL.h>
 
-#include <stdbool.h>
-
-#define SDL_NOTHING 0
-#define SDL_QUIT_APPLICATION 1
-#define SDL_MOUSE_GRAB 2
-#define SDL_MOUSE_UNGRAB 3
-#define SDL_TOGGLE_FULLSCREEN 4
-
-#define SDL_CODE_FRAME 0
-
 #define SDL_BUFFER_FRAMES 2
-
-void sdl_init(int width, int height, bool fullscreen);
-void sdl_loop();
 
 extern SDL_mutex *mutex;
 extern int sdlCurrentFrame, sdlNextFrame;

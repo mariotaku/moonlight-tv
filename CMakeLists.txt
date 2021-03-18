@@ -38,9 +38,11 @@ if (TARGET_WEBOS)
         endif()
     endif()
     set(THREADS_PTHREAD_ARG "2" CACHE STRING "Result from TRY_RUN" FORCE)
+    set(HAVE_SDL TRUE)
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
     set(TARGET_LINUX TRUE)
+    set(HAVE_SDL TRUE)
     option(GS_SPS "" ON)
     add_subdirectory(third_party/h264bitstream)
     add_subdirectory(third_party/ilclient)
@@ -52,6 +54,7 @@ else()
     endif()
     
     set(TARGET_DESKTOP TRUE)
+    set(HAVE_SDL TRUE)
 endif()
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -72,6 +75,7 @@ if (TARGET_WEBOS)
     set_target_properties(opus PROPERTIES 
         LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/assets/lib
     )
+    add_subdirectory(prebuilt/webos)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -150,43 +154,41 @@ else()
     )
 endif()
 
-if (TARGET_WEBOS)
+if (HAVE_SDL)
     list(APPEND SOURCES
         app/app_sdl.c
         app/backend/pcmanager/sdl_impl.c
-        app/platform/webos/app_init.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c
-        app/stream/input/sdl/keyboard_webos.c
         app/stream/input/sdl/gamepad.c
         app/stream/input/sdl/mouse.c
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
-        app/platform/webos/navkey_sdl_webos.c
-        app/platform/webos/SDL_webOS.c
-        app/platform/webos/path_webos.c
-        app/stream/video/delegate.c
         app/stream/audio/sdl.c
+        app/stream/video/delegate.c
     )
-else()
+    if (TARGET_WEBOS)
+        list(APPEND SOURCES
+            app/platform/webos/app_init.c
+            app/stream/input/sdl/keyboard_webos.c
+            app/platform/webos/navkey_sdl_webos.c
+            app/platform/webos/SDL_webOS.c
+            app/platform/webos/path_webos.c
+        )
+    else()
+        list(APPEND SOURCES
+            app/platform/sdl/path_sdl.c
+        )
+    endif()
+
+    if (FFMPEG_FOUND)
     list(APPEND SOURCES
-        app/app_sdl.c
-        app/backend/pcmanager/sdl_impl.c
         app/ui/sdl_renderer.c
-        app/stream/input/sdlinput.c
-        app/stream/input/sdl/keyboard.c
-        app/stream/input/sdl/gamepad.c
-        app/stream/input/sdl/mouse.c
-        app/platform/sdl/bus.c
-        app/platform/sdl/input_manager.c
-        app/platform/sdl/navkey_sdl.c
-        app/platform/sdl/path_sdl.c
-        app/stream/audio/sdl.c
         app/stream/video/sdl.c
-        app/stream/video/delegate.c
         app/stream/video/ffmpeg.c
     )
+    endif()
 endif()
 
 if(BROADCOM_FOUND)
@@ -230,11 +232,12 @@ target_link_libraries(moonlight PRIVATE mbedtls)
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
-    target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_WAYLAND)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
+    target_link_libraries(moonlight PRIVATE libavcodec libavutil)
     # target_link_libraries(moonlight PRIVATE moonlight-smp)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
