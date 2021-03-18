@@ -90,7 +90,6 @@ void renderer_setup(int w, int h)
     SDL_assert_release(status == GL_TRUE);
 
     glBindAttribLocation(shader_program, 0, "position");
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
 
     glGenTextures(3, texture_id);
     for (int i = 0; i < 3; i++)
@@ -145,6 +144,7 @@ void renderer_draw()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glUseProgram(shader_program);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), 0);
 
     for (int i = 0; i < 3; i++)
     {
