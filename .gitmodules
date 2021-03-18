@@ -31,3 +31,6 @@
 [submodule "third_party/mbedtls"]
 	path = third_party/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "decoder/smp/stub"]
+	path = decoder/smp/stub
+	url = https://github.com/webosbrew/starfish-media-pipeline-api.git
