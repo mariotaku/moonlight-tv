@@ -235,7 +235,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
-    target_link_libraries(moonlight PRIVATE moonlight-gst)
+    # target_link_libraries(moonlight PRIVATE moonlight-smp)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
@@ -310,7 +310,8 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-        WEBOS_PACKAGE_ASSETS "assets;${CMAKE_BINARY_DIR}/assets/lib" 
+        WEBOS_APPINFO_EXTRA "trustLevel=netcast;privilegedJail=true;nativeLifeCycleInterfaceVersion=2"
+        WEBOS_PACKAGE_ASSETS "assets;${CMAKE_BINARY_DIR}/assets/lib"
     )
 
     target_webos_package(moonlight)

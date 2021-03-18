@@ -17,6 +17,18 @@ enum platform platform_current;
 enum platform platform_init(const char *name, int argc, char *argv[])
 {
     bool std = strcmp(name, "auto") == 0;
+#ifdef HAVE_SMP
+    if (std || strcmp(name, "smp") == 0)
+    {
+        void *handle = dlopen("libmoonlight-smp.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle == NULL)
+            dlerror_log();
+        else if (!checkinit(SMP, argc, argv))
+            fprintf(stderr, "SMP check failed\n");
+        else
+            return SMP;
+    }
+#endif
 #ifdef HAVE_NDL
     if (std || strcmp(name, "ndl") == 0)
     {
@@ -39,18 +51,6 @@ enum platform platform_init(const char *name, int argc, char *argv[])
             fprintf(stderr, "LGNC check failed\n");
         else
             return LGNC;
-    }
-#endif
-#ifdef HAVE_GST
-    if (std || strcmp(name, "gst") == 0)
-    {
-        void *handle = dlopen("libmoonlight-gst.so", RTLD_NOW | RTLD_GLOBAL);
-        if (handle == NULL)
-            dlerror_log();
-        else if (!checkinit(GST, argc, argv))
-            fprintf(stderr, "GST check failed\n");
-        else
-            return GST;
     }
 #endif
 #ifdef HAVE_PI
@@ -120,9 +120,9 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
     case LGNC:
         return get_decoder_callbacks_simple("lgnc");
 #endif
-#if HAVE_GST
-    case GST:
-        return get_decoder_callbacks_simple("gst");
+#if HAVE_SMP
+    case SMP:
+        return get_decoder_callbacks_simple("smp");
 #endif
 #if HAVE_PI
     case PI:
@@ -154,6 +154,10 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 #if HAVE_LGNC
     case LGNC:
         return get_audio_callbacks_simple("lgnc");
+#endif
+#if HAVE_SMP
+    case SMP:
+        return get_audio_callbacks_simple("smp");
 #endif
 #if HAVE_SDL
     case SDL:
@@ -225,11 +229,11 @@ bool checkinit(enum platform system, int argc, char *argv[])
         }
         return true;
 #endif
-#ifdef HAVE_GST
-    case GST:
-        if (!platform_init_simple("gst", argc, argv))
+#ifdef HAVE_SMP
+    case SMP:
+        if (!platform_init_simple("smp", argc, argv))
             return false;
-        if (!platform_check_simple("gst"))
+        if (!platform_check_simple("smp"))
         {
             platform_finalize(system);
             return false;
@@ -254,9 +258,9 @@ void platform_finalize(enum platform system)
         platform_finalize_simple("lgnc");
         break;
 #endif
-#ifdef HAVE_GST
-    case GST:
-        platform_finalize_simple("gst");
+#ifdef HAVE_SMP
+    case SMP:
+        platform_finalize_simple("smp");
         break;
 #endif
     }
