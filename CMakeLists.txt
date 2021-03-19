@@ -99,6 +99,8 @@ elseif (TARGET_DESKTOP)
     pkg_check_modules(OPUS REQUIRED opus)
 endif()
 
+set(ENABLE_PROGRAMS OFF)
+set(ENABLE_TESTING OFF)
 add_subdirectory(third_party/mbedtls)
 
 add_subdirectory(core/moonlight-common-c)
