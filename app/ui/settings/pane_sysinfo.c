@@ -12,6 +12,8 @@
 static char webos_release[32];
 #endif
 
+static void load_webos_info();
+
 static bool _render(struct nk_context *ctx, bool *showing_combo)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
@@ -39,6 +41,14 @@ static int _itemcount()
 
 static void _onselect()
 {
+#if OS_WEBOS
+    load_webos_info();
+#endif
+}
+
+#if OS_WEBOS
+void load_webos_info()
+{
     JSchemaInfo schemaInfo;
     jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
     jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
@@ -59,7 +69,7 @@ static void _onselect()
     snprintf(webos_release, sizeof(webos_release), "%.*s", webos_release_buf.m_len, webos_release_buf.m_str);
     jstring_free_buffer(webos_release_buf);
 }
-
+#endif
 struct settings_pane settings_pane_sysinfo = {
     .title = "System Info",
     .render = _render,

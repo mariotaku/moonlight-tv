@@ -22,7 +22,6 @@
 #include "mkcert.h"
 #include "client.h"
 #include "errors.h"
-#include <linux/limits.h>
 #include <errno.h>
 
 #include <Limelight.h>
@@ -32,6 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
 #include <uuid/uuid.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
