@@ -50,9 +50,6 @@ int _settings_pane_host_itemcount()
     return 3;
 }
 
-void _pane_host_open()
-{
-}
 struct settings_pane settings_pane_host = {
     .title = "Host Settings",
     .render = _settings_pane_host,

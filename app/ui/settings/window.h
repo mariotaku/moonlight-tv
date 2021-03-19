@@ -23,7 +23,7 @@
 typedef bool (*settings_panel_render)(struct nk_context *, bool *showing_combo);
 typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 typedef int (*settings_panel_itemcount)();
-typedef void (*settings_panel_onselect)();
+typedef void (*settings_panel_voidfn)();
 
 extern struct settings_pane settings_pane_basic;
 extern struct settings_pane settings_pane_host;
@@ -36,7 +36,9 @@ struct settings_pane
     settings_panel_render render;
     settings_panel_navkey navkey;
     settings_panel_itemcount itemcount;
-    settings_panel_onselect onselect;
+    settings_panel_voidfn onselect;
+    settings_panel_voidfn onwindowopen;
+    settings_panel_voidfn onwindowclose;
 };
 
 extern bool settings_pane_focused;

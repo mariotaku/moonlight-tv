@@ -38,9 +38,6 @@ void _settings_nav(struct nk_context *ctx);
 void settings_statbar(struct nk_context *ctx);
 void settings_set_pane_focused(bool focused);
 
-void _pane_basic_open();
-void _pane_host_open();
-
 const struct settings_pane *settings_panes[] = {
     &settings_pane_basic,
     &settings_pane_host,
@@ -68,8 +65,13 @@ bool settings_window_open()
         return false;
     }
     ui_settings_showing = true;
-    _pane_basic_open();
-    _pane_host_open();
+    for (int i = 0; i < settings_panes_size; i++)
+    {
+        if (settings_panes[i]->onwindowopen)
+        {
+            settings_panes[i]->onwindowopen();
+        }
+    }
     return true;
 }
 

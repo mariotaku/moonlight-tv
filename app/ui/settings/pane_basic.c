@@ -40,7 +40,7 @@ static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
 
-bool _settings_pane_basic(struct nk_context *ctx, bool *showing_combo)
+static bool _render(struct nk_context *ctx, bool *showing_combo)
 {
     static struct nk_rect item_bounds = {0, 0, 0, 0};
     int item_index = 0;
@@ -97,18 +97,18 @@ bool _settings_pane_basic(struct nk_context *ctx, bool *showing_combo)
     return true;
 }
 
-int _settings_pane_basic_itemcount()
+static int _itemcount()
 {
     return 3;
 }
 
-void _pane_basic_open()
+static void _windowopen()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
 }
 
-bool _settings_pane_basic_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
+static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
 {
     switch (navkey)
     {
@@ -216,8 +216,10 @@ void _update_bitrate()
 
 struct settings_pane settings_pane_basic = {
     .title = "Basic Settings",
-    .render = _settings_pane_basic,
-    .navkey = _settings_pane_basic_navkey,
-    .itemcount = _settings_pane_basic_itemcount,
+    .render = _render,
+    .navkey = _navkey,
+    .itemcount = _itemcount,
     .onselect = NULL,
+    .onwindowopen = _windowopen,
+    .onwindowclose = NULL,
 };
