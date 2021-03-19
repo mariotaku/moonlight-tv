@@ -3,6 +3,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#include "util/bus.h"
+#include "util/user_event.h"
+
 struct _resolution_option
 {
     int w, h;
@@ -30,6 +33,15 @@ static const struct _fps_option _supported_fps[] = {
 };
 #define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
 
+static struct
+{
+    int combo;
+    int item, count;
+    int request;
+} combo_hovered_item;
+
+static struct nk_vec2 combo_focused_center;
+
 #define BITRATE_MIN 5000
 #define BITRATE_MAX 120000
 #define BITRATE_STEP 500
@@ -39,6 +51,7 @@ static char _res_label[8], _fps_label[8];
 static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
+static bool combo_item_select(int offset);
 
 static bool _render(struct nk_context *ctx, bool *showing_combo)
 {
@@ -53,9 +66,23 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         *showing_combo = true;
+        if (combo_hovered_item.combo != 1)
+        {
+            combo_hovered_item.combo = 1;
+            combo_hovered_item.count = _supported_resolutions_len;
+            combo_hovered_item.request = -1;
+            combo_hovered_item.item = -1;
+        }
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < _supported_resolutions_len; i++)
         {
+            if (combo_hovered_item.request == i)
+            {
+                // Send mouse pointer to the item
+                combo_focused_center = nk_rect_center(item_bounds);
+                bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
+                combo_hovered_item.request = -1;
+            }
             struct _resolution_option o = _supported_resolutions[i];
             if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
             {
@@ -69,9 +96,23 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         *showing_combo = true;
+        if (combo_hovered_item.combo != 2)
+        {
+            combo_hovered_item.combo = 2;
+            combo_hovered_item.count = _supported_fps_len;
+            combo_hovered_item.request = -1;
+            combo_hovered_item.item = -1;
+        }
         nk_layout_row_dynamic_s(ctx, 25, 1);
         for (int i = 0; i < _supported_fps_len; i++)
         {
+            if (combo_hovered_item.request == i)
+            {
+                // Send mouse pointer to the item
+                combo_focused_center = nk_rect_center(item_bounds);
+                bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
+                combo_hovered_item.request = -1;
+            }
             struct _fps_option o = _supported_fps[i];
             if (nk_combo_item_label(ctx, o.name, NK_TEXT_LEFT))
             {
@@ -153,7 +194,7 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
     case NAVKEY_UP:
         if (settings_showing_combo)
         {
-            return true;
+            return navkey_intercept_repeat(state, timestamp) || combo_item_select(-1);
         }
         else if (settings_hovered_item >= 2)
         {
@@ -164,7 +205,7 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
     case NAVKEY_DOWN:
         if (settings_showing_combo)
         {
-            return true;
+            return navkey_intercept_repeat(state, timestamp) || combo_item_select(1);
         }
         else if (settings_hovered_item < 2)
         {
@@ -212,6 +253,24 @@ void _set_res(int w, int h)
 void _update_bitrate()
 {
     app_configuration->stream.bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
+}
+
+bool combo_item_select(int offset)
+{
+    if (combo_hovered_item.item < 0)
+    {
+        // No item focused before, select first one
+        combo_hovered_item.request = 0;
+    }
+    else
+    {
+        int item = combo_hovered_item.item + offset;
+        if (item >= 0 && item < combo_hovered_item.count)
+        {
+            combo_hovered_item.request = item;
+        }
+    }
+    return true;
 }
 
 struct settings_pane settings_pane_basic = {
