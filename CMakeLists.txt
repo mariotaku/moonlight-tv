@@ -315,7 +315,6 @@ if (TARGET_WEBOS)
         WEBOS_APPINFO_TITLE "Moonlight"
         WEBOS_APPINFO_VENDOR "Mariotaku Lee"
         WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-        WEBOS_APPINFO_EXTRA "trustLevel=netcast;privilegedJail=true;nativeLifeCycleInterfaceVersion=2"
         WEBOS_PACKAGE_ASSETS "assets;${CMAKE_BINARY_DIR}/assets/lib"
     )
 

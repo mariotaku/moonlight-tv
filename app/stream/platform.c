@@ -266,6 +266,17 @@ void platform_finalize(enum platform system)
     }
 }
 
+bool platform_is_software(enum platform system)
+{
+    switch (system)
+    {
+    case SDL:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void dlerror_log()
 {
     fprintf(stderr, "Unable to load platform library: %s\n", dlerror());

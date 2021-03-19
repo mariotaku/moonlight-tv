@@ -60,3 +60,5 @@ void platform_start(enum platform system);
 void platform_stop(enum platform system);
 
 void platform_finalize(enum platform system);
+
+bool platform_is_software(enum platform system);

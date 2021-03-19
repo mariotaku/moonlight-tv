@@ -20,6 +20,7 @@
 #endif
 
 #include "stream/input/absinput.h"
+#include "stream/platform.h"
 #include "util/bus.h"
 #include "util/user_event.h"
 
@@ -43,7 +44,7 @@ void _pairing_error_popup(struct nk_context *ctx);
 void _server_error_popup(struct nk_context *ctx);
 void _quitapp_window(struct nk_context *ctx);
 void _quitapp_error_popup(struct nk_context *ctx);
-void _webos_decoder_error_popup(struct nk_context *ctx);
+void _decoder_warning_popup(struct nk_context *ctx);
 
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
@@ -451,12 +452,10 @@ void _launcher_modal_flags_update()
     {
         _launcher_modals |= LAUNCHER_MODAL_MANUAL_ADD;
     }
-#if OS_WEBOS
-    // if (!app_webos_ndl && !app_webos_lgnc && !_webos_decoder_error_dismissed)
-    // {
-    //     _launcher_modals |= LAUNCHER_MODAL_WDECERR;
-    // }
-#endif
+    if (!_decoder_error_dismissed && platform_is_software(platform_current))
+    {
+        _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;
+    }
 }
 
 void launcher_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds)

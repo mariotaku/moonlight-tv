@@ -7,7 +7,7 @@
 #include "ui/fonts.h"
 #include "backend/computer_manager.h"
 
-bool _webos_decoder_error_dismissed;
+bool _decoder_error_dismissed;
 
 void _manual_add_window(struct nk_context *ctx);
 bool manual_add_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
@@ -79,17 +79,16 @@ void _quitapp_error_popup(struct nk_context *ctx)
     }
 }
 
-void _webos_decoder_error_popup(struct nk_context *ctx)
+void _decoder_warning_popup(struct nk_context *ctx)
 {
-    const char *message = "Unable to initialize system video decoder. "
-                          "Audio and video will not work during streaming. "
-                          "You may need to restart your TV.";
+    const char *message = "No functioning hardware accelerated video decoder was detected. "
+                          "Your streaming performance may be severely degraded in this configuration. ";
     enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Decoder Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "No Hardware Decoder", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
-            _webos_decoder_error_dismissed = true;
+            _decoder_error_dismissed = true;
             nk_popup_close(ctx);
         }
         nk_popup_end(ctx);
@@ -98,9 +97,9 @@ void _webos_decoder_error_popup(struct nk_context *ctx)
 
 void _launcher_modal_popups_show(struct nk_context *ctx)
 {
-    if (_launcher_modals & LAUNCHER_MODAL_WDECERR)
+    if (_launcher_modals & LAUNCHER_MODAL_NOHWCODEC)
     {
-        _webos_decoder_error_popup(ctx);
+        _decoder_warning_popup(ctx);
     }
     else if (_launcher_modals & LAUNCHER_MODAL_SERVERR)
     {
