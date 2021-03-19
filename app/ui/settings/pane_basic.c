@@ -74,12 +74,20 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
             combo_hovered_item.item = -1;
         }
         nk_layout_row_dynamic_s(ctx, 25, 1);
+        bool ever_hovered = false;
         for (int i = 0; i < _supported_resolutions_len; i++)
         {
+            struct nk_rect ci_bounds = nk_widget_bounds(ctx);
+            nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, ci_bounds);
+            if (hovered)
+            {
+                combo_hovered_item.item = i;
+                ever_hovered = true;
+            }
             if (combo_hovered_item.request == i)
             {
                 // Send mouse pointer to the item
-                combo_focused_center = nk_rect_center(item_bounds);
+                combo_focused_center = nk_rect_center(ci_bounds);
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
                 combo_hovered_item.request = -1;
             }
@@ -91,6 +99,10 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
             }
         }
         nk_combo_end(ctx);
+        if (!ever_hovered)
+        {
+            combo_hovered_item.item = -1;
+        }
     }
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
@@ -104,12 +116,20 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
             combo_hovered_item.item = -1;
         }
         nk_layout_row_dynamic_s(ctx, 25, 1);
+        bool ever_hovered = false;
         for (int i = 0; i < _supported_fps_len; i++)
         {
+            struct nk_rect ci_bounds = nk_widget_bounds(ctx);
+            nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, ci_bounds);
+            if (hovered)
+            {
+                combo_hovered_item.item = i;
+                ever_hovered = true;
+            }
             if (combo_hovered_item.request == i)
             {
                 // Send mouse pointer to the item
-                combo_focused_center = nk_rect_center(item_bounds);
+                combo_focused_center = nk_rect_center(ci_bounds);
                 bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
                 combo_hovered_item.request = -1;
             }
@@ -121,6 +141,10 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
             }
         }
         nk_combo_end(ctx);
+        if (!ever_hovered)
+        {
+            combo_hovered_item.item = -1;
+        }
     }
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
