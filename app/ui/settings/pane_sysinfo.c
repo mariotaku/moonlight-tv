@@ -8,6 +8,8 @@
 #include <pbnjson.h>
 #endif
 
+#include "stream/platform.h"
+
 #if OS_WEBOS
 static char webos_release[32];
 #endif
@@ -20,13 +22,15 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     int item_index = 0;
 
     nk_layout_row_template_begin_s(ctx, 25);
-    nk_layout_row_template_push_static_s(ctx, 100);
+    nk_layout_row_template_push_static_s(ctx, 120);
     nk_layout_row_template_push_variable_s(ctx, 1);
     nk_layout_row_template_end(ctx);
 #if OS_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
     nk_label(ctx, webos_release, NK_TEXT_RIGHT);
 #endif
+    nk_label(ctx, "Decoder", NK_TEXT_LEFT);
+    nk_label(ctx, platform_name(platform_current), NK_TEXT_RIGHT);
     return true;
 }
 

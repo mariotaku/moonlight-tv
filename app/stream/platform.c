@@ -263,8 +263,50 @@ void platform_finalize(enum platform system)
         platform_finalize_simple("smp");
         break;
 #endif
+    default:
+        break;
     }
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic error "-Wswitch-enum"
+const char *platform_name(enum platform system)
+{
+    switch (system)
+    {
+    case NONE:
+        return "NONE";
+    case SDL:
+        return "SDL (SW codec)";
+    case X11:
+        return "X11";
+    case X11_VDPAU:
+        return "X11_VDPAU";
+    case X11_VAAPI:
+        return "X11_VAAPI";
+    case PI:
+        return "Raspberry Pi";
+    case MMAL:
+        return "Raspberry Pi MMAL";
+    case IMX:
+        return "IMX";
+    case AML:
+        return "AML";
+    case RK:
+        return "RK";
+    case NDL:
+        return "webOS NDL";
+    case LGNC:
+        return "NetCast Legacy";
+    case SMP:
+        return "webOS SMP";
+    case FAKE:
+        return "Dummy Output";
+    default:
+        return "";
+    }
+}
+#pragma GCC diagnostic pop
 
 bool platform_is_software(enum platform system)
 {
