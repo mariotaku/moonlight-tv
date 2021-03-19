@@ -25,12 +25,15 @@ jobs:
       with:
         submodules: recursive
 
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+
     - name: Update packages
       run: sudo apt-get -qq update || true
 
     - name: Install Dependencies
-      # To install NPM, this fix needed: https://askubuntu.com/a/1092849
-      run: sudo apt-get -y install jo nodejs nodejs-dev node-gyp libssl1.0-dev npm
+      run: sudo apt-get -y install jo
 
     - name: Install webOS CLI
       run: sudo npm install -g @webosose/ares-cli
