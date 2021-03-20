@@ -4,11 +4,19 @@
 
 #include <lgnc_system.h>
 #include <lgnc_directvideo.h>
+#include "platform/webos/os_info.h"
 
 static bool lgnc_initialized = false;
 
 bool platform_init_lgnc(int argc, char *argv[])
 {
+    char webos_release[16];
+    webos_os_info_get_release(webos_release, sizeof(webos_release));
+    if (atoi(webos_release) > 4)
+    {
+        fprintf(stdout, "This webOS version doesn't support LGNC, skipping\n");
+        return false;
+    }
     LGNC_SYSTEM_CALLBACKS_T callbacks = {
         .pfnJoystickEventCallback = NULL,
         .pfnMsgHandler = NULL,

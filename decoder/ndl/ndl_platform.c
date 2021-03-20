@@ -3,11 +3,19 @@
 #include <stdbool.h>
 
 #include <NDL_directmedia.h>
+#include "platform/webos/os_info.h"
 
 static bool ndl_initialized = false;
 
 bool platform_init_ndl(int argc, char *argv[])
 {
+    char webos_release[16];
+    webos_os_info_get_release(webos_release, sizeof(webos_release));
+    if (atoi(webos_release) != 4)
+    {
+        fprintf(stdout, "This webOS version doesn't support NDL, skipping\n");
+        return false;
+    }
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0)
     {
         ndl_initialized = true;

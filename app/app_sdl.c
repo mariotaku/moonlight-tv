@@ -64,7 +64,7 @@ int app_init(int argc, char *argv[])
 {
     app_configuration = settings_load();
     platform_current = platform_init(app_configuration->platform, argc, argv);
-    printf("Decoder platform: %d\n", platform_current);
+    printf("Decoder platform: %d\n", platform_name(platform_current));
 #if OS_WEBOS
     return app_webos_init(argc, argv);
 #else
