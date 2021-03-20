@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 
     ui_root_init(ctx);
 
-    streaming_display_size(WINDOW_WIDTH, WINDOW_HEIGHT);
-    ui_display_size(ctx, WINDOW_WIDTH, WINDOW_HEIGHT);
+    streaming_display_size(app_window_width, app_window_height);
+    ui_display_size(ctx, app_window_width, app_window_height);
 
     while (running)
     {

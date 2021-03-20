@@ -6,12 +6,20 @@
 
 #if OS_WEBOS
 #include <pbnjson.h>
+#if HAVE_SDL
+#include "platform/webos/SDL_webOS.h"
+#endif
 #endif
 
 #include "stream/platform.h"
 
 #if OS_WEBOS
 static char webos_release[32];
+static struct
+{
+    int w, h;
+    int rate;
+} webos_panel_info;
 #endif
 
 static void load_webos_info();
@@ -28,6 +36,12 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
 #if OS_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
     nk_label(ctx, webos_release, NK_TEXT_RIGHT);
+#if HAVE_SDL
+    nk_label(ctx, "Panel resolution", NK_TEXT_LEFT);
+    nk_labelf(ctx, NK_TEXT_RIGHT, "%d * %d", webos_panel_info.w, webos_panel_info.h);
+    nk_label(ctx, "Refresh rate", NK_TEXT_LEFT);
+    nk_labelf(ctx, NK_TEXT_RIGHT, "%d", webos_panel_info.rate);
+#endif
 #endif
     nk_label(ctx, "Decoder", NK_TEXT_LEFT);
     nk_label(ctx, platform_name(platform_current), NK_TEXT_RIGHT);
@@ -72,6 +86,10 @@ void load_webos_info()
     raw_buffer webos_release_buf = jstring_get(jobject_get(os_info, J_CSTR_TO_BUF("webos_release")));
     snprintf(webos_release, sizeof(webos_release), "%.*s", webos_release_buf.m_len, webos_release_buf.m_str);
     jstring_free_buffer(webos_release_buf);
+#if HAVE_SDL
+    SDL_webOSGetPanelResolution(&webos_panel_info.w, &webos_panel_info.h);
+    SDL_webOSGetRefreshRate(&webos_panel_info.rate);
+#endif
 }
 #endif
 struct settings_pane settings_pane_sysinfo = {

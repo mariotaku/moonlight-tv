@@ -36,9 +36,11 @@
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
 #include "platform/webos/SDL_webOS.h"
+#define FORCE_FULLSCREEN
 #endif
 #if TARGET_RASPI
 #include "platform/raspi/app_init.h"
+#define FORCE_FULLSCREEN
 #endif
 
 #define MAX_VERTEX_MEMORY 512 * 1024
@@ -50,6 +52,8 @@ int sdlCurrentFrame, sdlNextFrame;
 /* Platform */
 SDL_Window *win;
 SDL_GLContext gl;
+int app_window_width, app_window_height;
+
 static char wintitle[32];
 
 static bool window_focus_gained;
@@ -71,8 +75,20 @@ int app_init(int argc, char *argv[])
 APP_WINDOW_CONTEXT app_window_create()
 {
     nk_platform_preinit();
-    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT,
-                           SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE);
+    Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
+#ifdef FORCE_FULLSCREEN
+    SDL_DisplayMode dm;
+    SDL_GetCurrentDisplayMode(0, &dm);
+    app_window_width = dm.w;
+    app_window_height = dm.h;
+    window_flags |= SDL_WINDOW_FULLSCREEN;
+#else
+    app_window_width = WINDOW_WIDTH;
+    app_window_height = WINDOW_HEIGHT;
+    window_flags |= SDL_WINDOW_RESIZABLE;
+#endif
+    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                           app_window_width, app_window_height, window_flags);
 #if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
@@ -92,7 +108,7 @@ APP_WINDOW_CONTEXT app_window_create()
     gl = SDL_GL_CreateContext(win);
 
     /* OpenGL setup */
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, app_window_width, app_window_height);
     return win;
 }
 

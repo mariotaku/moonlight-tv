@@ -6,6 +6,8 @@ typedef void *APP_WINDOW_CONTEXT;
 
 PCONFIGURATION app_configuration;
 
+int app_window_width, app_window_height;
+
 int app_init(int argc, char *argv[]);
 
 APP_WINDOW_CONTEXT app_window_create();
