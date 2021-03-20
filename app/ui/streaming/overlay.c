@@ -118,7 +118,7 @@ bool streaming_overlay_show()
     if (stream_overlay_showing)
         return false;
     stream_overlay_showing = true;
-    static struct nk_vec2 wndpos = nk_vec2_s_const(10, 10);
+    struct nk_vec2 wndpos = nk_vec2_s(10, 10);
 
     streaming_enter_overlay(ui_display_width / 2 - wndpos.x, wndpos.y, ui_display_width / 2, ui_display_height / 2);
     return true;
@@ -174,8 +174,8 @@ void _overlay_backdrop(struct nk_context *ctx)
 void _streaming_perf_stat(struct nk_context *ctx)
 {
     _overlay_windows_push_style(ctx);
-    static struct nk_vec2 wndpos = nk_vec2_s_const(10, 10);
-    static const struct nk_vec2 wndsize = nk_vec2_s_const(240, 150);
+    struct nk_vec2 wndpos = nk_vec2_s(10, 10);
+    struct nk_vec2 wndsize = nk_vec2_s(240, 150);
     if (nk_begin(ctx, "Performance Stats", nk_recta(wndpos, wndsize), OVERLAY_WINDOW_FLAGS))
     {
         struct VIDEO_STATS *dst = &vdec_summary_stats;

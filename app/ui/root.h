@@ -50,7 +50,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
  */
 bool ui_should_block_input();
 
-void ui_display_size(struct nk_context *ctx, short width, short height);
+void ui_display_size(short width, short height);
 
 bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 

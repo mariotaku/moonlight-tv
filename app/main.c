@@ -47,6 +47,8 @@ int main(int argc, char *argv[])
     backend_init();
 
     ctx = nk_platform_init(win);
+    ui_display_size(app_window_width, app_window_height);
+    streaming_display_size(app_window_width, app_window_height);
     {
         struct nk_font_atlas *atlas;
         nk_platform_font_stash_begin(&atlas);
@@ -62,9 +64,6 @@ int main(int argc, char *argv[])
     nk_ext_apply_style(ctx);
 
     ui_root_init(ctx);
-
-    streaming_display_size(app_window_width, app_window_height);
-    ui_display_size(ctx, app_window_width, app_window_height);
 
     while (running)
     {

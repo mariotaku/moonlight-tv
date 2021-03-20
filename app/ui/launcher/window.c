@@ -324,6 +324,7 @@ bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_
         {
             _launcher_popup_request_dismiss = true;
         }
+        return true;
     }
     else if (_launcher_showing_combo)
     {

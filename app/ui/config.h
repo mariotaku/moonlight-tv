@@ -1,9 +1,11 @@
 #pragma once
 
+unsigned int ui_scale;
+
 #if OS_WEBOS || TARGET_RASPI
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
-#define NK_UI_SCALE 3
+#define NK_UI_SCALE ui_scale
 #else
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540

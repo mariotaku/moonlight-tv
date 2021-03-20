@@ -26,6 +26,7 @@
 
 short ui_display_width, ui_display_height;
 short ui_logic_width, ui_logic_height;
+unsigned int ui_scale;
 
 bool ui_settings_showing;
 bool ui_fake_mouse_click_started;
@@ -183,12 +184,13 @@ bool ui_should_block_input()
     return ret;
 }
 
-void ui_display_size(struct nk_context *ctx, short width, short height)
+void ui_display_size(short width, short height)
 {
     ui_display_width = width;
     ui_display_height = height;
-    ui_logic_width = width / NK_UI_SCALE;
-    ui_logic_height = height / NK_UI_SCALE;
+    ui_scale = width / 640;
+    ui_logic_width = width / ui_scale;
+    ui_logic_height = height / ui_scale;
 }
 
 bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)

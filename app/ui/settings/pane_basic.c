@@ -237,6 +237,13 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
                 settings_pane_item_offset(2 - settings_hovered_item);
         }
         return true;
+    case NAVKEY_CONFIRM:
+        if (settings_showing_combo)
+        {
+            // Fake click on the item
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &combo_focused_center, (void *)state);
+            return true;
+        }
     default:
         break;
     }
