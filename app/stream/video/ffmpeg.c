@@ -139,6 +139,7 @@ void ffmpeg_destroy(void) {
       if (dec_frames[i])
         av_frame_free(&dec_frames[i]);
     }
+    free(dec_frames);
   }
 }
 

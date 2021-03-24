@@ -133,7 +133,7 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
         mdns_record_parse_a(data, size, record_offset, record_length, &addr);
         mdns_string_t addrstr =
             ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
-        char *srvaddr = calloc(addrstr.length + 1, sizeof(char)), *srvname = parse_server_name(entrystr);
+        char *srvaddr = calloc(addrstr.length + 1, sizeof(char));
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
         pcmanager_insert_by_address(srvaddr, false);
     }
