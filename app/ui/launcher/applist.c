@@ -240,6 +240,8 @@ bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY 
         if (!navkey_intercept_repeat(state, timestamp))
             _applist_item_select(node, _applist_colcount);
         return true;
+    case NAVKEY_FOCUS:
+        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, 0);
     case NAVKEY_NEGATIVE:
         if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
         {
@@ -274,7 +276,7 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
         return false;
 
     PAPP_DLIST item;
-    if (!applist_hovered_item)
+    if (!offset || !applist_hovered_item)
         item = _applist_visible_start;
     else
     {
