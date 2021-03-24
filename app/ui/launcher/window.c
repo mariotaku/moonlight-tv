@@ -67,6 +67,7 @@ uint32_t _launcher_modals;
 bool _launcher_showing_combo;
 bool _launcher_popup_request_dismiss;
 bool _launcher_show_manual_pair;
+bool _launcher_show_host_info;
 bool _quitapp_errno = false;
 
 void launcher_window_init(struct nk_context *ctx)
@@ -114,6 +115,7 @@ bool launcher_window(struct nk_context *ctx)
         bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 200);
+        nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 25);
@@ -132,9 +134,15 @@ bool launcher_window(struct nk_context *ctx)
         topbar_showing_combo = (event_emitted |= pclist_dropdown(ctx, event_emitted));
         if (dropdown_highlight)
             nk_style_pop_color(ctx);
+        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
+        
+        launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
+        if (nk_button_image(ctx, sprites_ui.ic_info))
+        {
+            _launcher_show_host_info = true;
+        }
         nk_spacing(ctx, 1);
 
-        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
 
         launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_add_to_queue))
@@ -456,6 +464,10 @@ void _launcher_modal_flags_update()
     if (!_decoder_error_dismissed && platform_is_software(platform_current))
     {
         _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;
+    }
+    if (_launcher_show_host_info)
+    {
+        _launcher_modals |= LAUNCHER_MODAL_HOSTINFO;
     }
 }
 

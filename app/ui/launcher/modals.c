@@ -81,14 +81,44 @@ void _quitapp_error_popup(struct nk_context *ctx)
 
 void _decoder_warning_popup(struct nk_context *ctx)
 {
-    const char *message = "No functioning hardware accelerated video decoder was detected. "
-                          "Your streaming performance may be severely degraded in this configuration. ";
+    const char *message = "No functioning hardware accelerated video decoder was detected.\n"
+                          "Your streaming performance may be severely degraded in this configuration.";
     enum nk_dialog_result result;
     if ((result = nk_dialog_popup_begin(ctx, "No Hardware Decoder", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
             _decoder_error_dismissed = true;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
+    }
+}
+
+void _hostinfo_popup(struct nk_context *ctx)
+{
+    enum nk_dialog_result result;
+    char message[1024];
+    if (selected_server_node)
+    {
+        int index = snprintf(message, sizeof(message), "Name: %s", selected_server_node->hostname);
+        if (selected_server_node->server)
+        {
+            index += snprintf(&message[index], sizeof(message) - index, "\nIP Address: %s", selected_server_node->server->serverInfo.address);
+        }
+        index += snprintf(&message[index], sizeof(message) - index, "\nUUID: %s", selected_server_node->uuid);
+        index += snprintf(&message[index], sizeof(message) - index, "\nMAC Address: %s", selected_server_node->mac);
+    }
+    else
+    {
+        snprintf(message, sizeof(message), "Unknown host");
+    }
+    //selected_server_node
+    if ((result = nk_dialog_popup_begin(ctx, "Host Details", message, "OK", NULL, "Unbind")) != NK_DIALOG_NONE)
+    {
+        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        {
+            _launcher_show_host_info = false;
             nk_popup_close(ctx);
         }
         nk_popup_end(ctx);
@@ -112,6 +142,10 @@ void _launcher_modal_popups_show(struct nk_context *ctx)
     else if (_launcher_modals & LAUNCHER_MODAL_QUITERR)
     {
         _quitapp_error_popup(ctx);
+    }
+    else if (_launcher_modals & LAUNCHER_MODAL_HOSTINFO)
+    {
+        _hostinfo_popup(ctx);
     }
 }
 

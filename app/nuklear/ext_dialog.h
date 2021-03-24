@@ -3,6 +3,7 @@
 #include "nuklear.h"
 #include "ext_functions.h"
 #include "ext_text.h"
+#include "ext_text_multiline.h"
 #endif
 
 #ifndef NK_UI_SCALE
@@ -32,7 +33,7 @@ inline static enum nk_dialog_result _nk_dialog_content(struct nk_context *ctx, c
                                                        const char *positive, const char *negative, const char *neutral)
 {
     nk_layout_row_dynamic(ctx, message_height, 1);
-    nk_label_wrap(ctx, message);
+    nk_label_multiline(ctx, message);
 
     nk_layout_row_template_begin_s(ctx, 30);
     nk_layout_row_template_push_static_s(ctx, 5);
@@ -79,7 +80,7 @@ enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_widt
     int dialog_width = 350 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
     // 10 extra dp is to preserve last line, as Nuklear will stop if total line height >= available height
     // Also extra padding can make UI looks better
-    int message_height = nk_text_wrap_measure_height(ctx, message_width, message, strlen(message)) + 10 * NK_UI_SCALE;
+    int message_height = nk_text_multiline_measure_height(ctx, message_width, message, strlen(message)) + 10 * NK_UI_SCALE;
     int dialog_height = dec_size.t + message_height +
                         ctx->style.window.spacing.y + 30 * NK_UI_SCALE +
                         ctx->style.window.spacing.y + 5 * NK_UI_SCALE +
@@ -101,7 +102,7 @@ enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *
     int dialog_width = 350 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
     // 10 extra dp is to preserve last line, as Nuklear will stop if total line height >= available height
     // Also extra padding can make UI looks better
-    int message_height = nk_text_wrap_measure_height(ctx, message_width, message, strlen(message)) + 10 * NK_UI_SCALE;
+    int message_height = nk_text_multiline_measure_height(ctx, message_width, message, strlen(message)) + 10 * NK_UI_SCALE;
     int dialog_height = dec_size.t + message_height +
                         ctx->style.window.spacing.y + 30 * NK_UI_SCALE +
                         ctx->style.window.spacing.y + 5 * NK_UI_SCALE +

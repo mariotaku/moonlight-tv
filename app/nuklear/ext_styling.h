@@ -147,6 +147,7 @@ void nk_ext_apply_style(struct nk_context *ctx)
     combo->content_padding = nk_vec2_s(4, 4);
     combo->button_padding = nk_vec2_s(0, 6);
     combo->spacing = nk_vec2_s(4, 0);
+    combo->rounding = 4 * NK_UI_SCALE;
     combo->border = 1 * NK_UI_SCALE;
 
     /* combo button */

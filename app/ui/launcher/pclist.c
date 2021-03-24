@@ -20,10 +20,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
     if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
         nk_style_push_float(ctx, &ctx->style.window.spacing.x, 0);
-        nk_layout_row_template_begin_s(ctx, 25);
-        nk_layout_row_template_push_variable_s(ctx, 10);
-        nk_layout_row_template_push_static_s(ctx, 25);
-        nk_layout_row_template_end(ctx);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
         int i = 0;
         bool ever_hovered = false;
         for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next, i++)
@@ -61,10 +58,6 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                     }
                     event_emitted = true;
                 }
-            }
-            if (nk_button_image(ctx, sprites_ui.ic_close))
-            {
-                _open_unpair(cur);
             }
         }
         nk_style_pop_float(ctx);

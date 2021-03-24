@@ -29,15 +29,17 @@ struct pairing_computer_state
 #define LAUNCHER_MODAL_MASK_POPUP 0xFF00
 #define LAUNCHER_MODAL_SERVERR 0x0100
 #define LAUNCHER_MODAL_PAIRERR 0x0200
-#define LAUNCHER_MODAL_QUITERR 0x0300
-#define LAUNCHER_MODAL_NOHWCODEC 0x0400
+#define LAUNCHER_MODAL_QUITERR 0x0400
+#define LAUNCHER_MODAL_NOHWCODEC 0x0800
+#define LAUNCHER_MODAL_HOSTINFO 0x1000
 
-extern uint32_t _launcher_modals;
-extern bool _launcher_popup_request_dismiss;
-extern struct pairing_computer_state pairing_computer_state;
-extern bool _decoder_error_dismissed;
-extern bool _quitapp_errno;
-extern bool _launcher_show_manual_pair;
+uint32_t _launcher_modals;
+bool _launcher_popup_request_dismiss;
+struct pairing_computer_state pairing_computer_state;
+bool _decoder_error_dismissed;
+bool _quitapp_errno;
+bool _launcher_show_manual_pair;
+bool _launcher_show_host_info;
 
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
