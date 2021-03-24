@@ -14,6 +14,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "util/memlog.h"
+
 static nk_bool nk_filter_ip(const struct nk_text_edit *box, nk_rune unicode);
 
 static void manual_add_dismiss();

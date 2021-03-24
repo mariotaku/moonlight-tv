@@ -173,4 +173,5 @@ void renderer_cleanup()
     glDeleteShader(vertex_shader);
     glDeleteBuffers(1, &ebo);
     glDeleteBuffers(1, &vbo);
+    glDeleteTextures(3, texture_id);
 }

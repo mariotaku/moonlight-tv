@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "util/memlog.h"
+
 char *path_join(const char *parent, const char *basename)
 {
     int parentlen = strlen(parent);

@@ -12,6 +12,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "util/memlog.h"
+
 static void *_computer_manager_pairing_action(void *data);
 static void *_computer_manager_unpairing_action(void *data);
 static void *_manual_adding_action(void *data);

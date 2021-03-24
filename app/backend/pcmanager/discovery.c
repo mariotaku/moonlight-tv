@@ -19,6 +19,8 @@
 #include "app.h"
 #include "priv.h"
 
+#include "util/memlog.h"
+
 static char addrbuffer[64];
 static char entrybuffer[256];
 static char namebuffer[256];

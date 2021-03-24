@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <err.h>
 
+#include "util/memlog.h"
+
 // ------------------------------------------
 // private functions
 // ------------------------------------------

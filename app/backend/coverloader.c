@@ -25,6 +25,8 @@
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
+#include "util/memlog.h"
+
 enum IMAGE_STATE_T
 {
     IMAGE_STATE_QUEUED,

@@ -30,6 +30,8 @@
 
 #include "util/user_event.h"
 
+#include "util/memlog.h"
+
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
 static unsigned char *ffmpeg_buffer;

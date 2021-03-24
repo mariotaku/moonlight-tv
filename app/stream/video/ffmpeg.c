@@ -31,6 +31,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "util/memlog.h"
+
 // General decoder and renderer state
 static AVPacket pkt;
 static AVCodec* decoder;

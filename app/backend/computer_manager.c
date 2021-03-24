@@ -18,6 +18,8 @@
 #include "stream/settings.h"
 #include "app.h"
 
+#include "util/memlog.h"
+
 static pthread_t computer_manager_polling_thread;
 bool computer_manager_executing_quitapp;
 
@@ -198,6 +200,7 @@ void pcmanager_load_known_hosts()
 {
     char *confdir = path_pref(), *conffile = path_join(confdir, "known_hosts");
     FILE *fd = fopen(conffile, "r");
+    free(confdir);
     free(conffile);
     if (fd == NULL)
     {
@@ -232,6 +235,7 @@ void pcmanager_save_known_hosts()
 {
     char *confdir = path_pref(), *conffile = path_join(confdir, "known_hosts");
     FILE *fd = fopen(conffile, "w");
+    free(confdir);
     free(conffile);
     if (fd == NULL)
     {

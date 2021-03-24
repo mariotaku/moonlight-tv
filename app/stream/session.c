@@ -18,6 +18,8 @@
 
 #include "backend/computer_manager.h"
 
+#include "util/memlog.h"
+
 STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
