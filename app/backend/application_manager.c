@@ -97,3 +97,12 @@ void *_application_manager_applist_action(void *data)
     bus_pushevent(USER_AM_APPLIST_LOADED, data, dlist);
     return NULL;
 }
+
+void applist_nodefree(PAPP_DLIST node)
+{
+    if (node->name)
+    {
+        free(node->name);
+    }
+    free(node);
+}

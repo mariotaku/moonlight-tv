@@ -80,6 +80,10 @@ int main(int argc, char *argv[])
     backend_destroy();
     app_destroy();
     bus_destroy();
+
+#if DEBUG
+    printf("Quitted gracefully :)\n");
+#endif
     return 0;
 }
 

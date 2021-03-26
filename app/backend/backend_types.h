@@ -9,6 +9,8 @@ typedef struct _APP_DLIST
   struct _APP_DLIST *next;
 } APP_DLIST, *PAPP_DLIST;
 
+void applist_nodefree(PAPP_DLIST node);
+
 #ifndef BACKEND_TYPES_IMPL
 #define LINKEDLIST_TYPE APP_DLIST
 #define LINKEDLIST_PREFIX applist

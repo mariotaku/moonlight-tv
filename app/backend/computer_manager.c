@@ -263,8 +263,13 @@ void serverdata_free(PSERVER_DATA data)
 
 void serverlist_nodefree(PSERVER_LIST node)
 {
+    if (node->apps)
+    {
+        applist_free(node->apps, applist_nodefree);
+    }
     if (node->server)
     {
+        free((void *)node->server->serverInfo.address);
         serverdata_free((PSERVER_DATA)node->server);
     }
     free(node);

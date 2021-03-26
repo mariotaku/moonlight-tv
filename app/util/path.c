@@ -15,5 +15,8 @@ char *path_join(const char *parent, const char *basename)
     }
     char *joined = calloc(parentlen + 1 + strlen(basename) + 1, sizeof(char));
     sprintf(joined, "%.*s/%s", parentlen, parent, basename);
+#if DEBUG
+    printf("joined string %p: %s\n", joined, joined);
+#endif
     return joined;
 }

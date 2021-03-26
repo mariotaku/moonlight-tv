@@ -316,6 +316,7 @@ void coverloader_cache_item_free(void *p)
     if (item->data)
     {
         nk_imagetexturefree(item->data);
+        free(item->data);
     }
     free(item);
 }

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 typedef void *(*malloc_func)(size_t);
@@ -27,28 +28,30 @@ static FILE *logfile()
     return f;
 }
 
-static void *malloc_logged(size_t size, const char *file, int line)
+static void *malloc_logged(size_t size, const char *file, const char *func, int line)
 {
     void *ret = _malloc_orig(size);
-    fprintf(logfile(), "%s:%d malloc %p %d\n", file, line, ret, size);
+    fprintf(logfile(), "%s:%d(%s) malloc %p %d\n", file, line, func, ret, size);
     return ret;
 }
 
-static void *calloc_logged(size_t n, size_t blksize, const char *file, int line)
+static void *calloc_logged(size_t n, size_t blksize, const char *file, const char *func, int line)
 {
     void *ret = _calloc_orig(n, blksize);
-    fprintf(logfile(), "%s:%d calloc %p %d\n", file, line, ret, n * blksize);
+    fprintf(logfile(), "%s:%d(%s) calloc %p %d\n", file, line, func, ret, n * blksize);
     return ret;
 }
 
-static void free_logged(void *p, const char *file, int line)
+static void free_logged(void *p, const char *file, const char *func, int line)
 {
     _free_orig(p);
-    fprintf(logfile(), "%s:%d free %p\n", file, line, p);
+    fprintf(logfile(), "%s:%d(%s) free %p\n", file, line, func, p);
 }
 
-#define malloc(size) malloc_logged(size, __FILE__, __LINE__)
-#define calloc(n, blksize) calloc_logged(n, blksize, __FILE__, __LINE__)
-#define free(p) free_logged(p, __FILE__, __LINE__)
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define malloc(size) malloc_logged(size, __FILENAME__, __FUNCTION__, __LINE__)
+#define calloc(n, blksize) calloc_logged(n, blksize, __FILENAME__, __FUNCTION__, __LINE__)
+#define free(p) free_logged(p, __FILENAME__, __FUNCTION__, __LINE__)
 
 #endif
