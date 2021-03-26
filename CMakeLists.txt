@@ -214,6 +214,8 @@ set_target_properties(moonlight PROPERTIES
 )
 
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
+target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)

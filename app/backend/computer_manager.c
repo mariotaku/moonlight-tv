@@ -104,6 +104,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
             {
                 serverdata_free((PSERVER_DATA)node->server);
             }
+            node->uuid = discovered->uuid;
             node->mac = discovered->mac;
             node->hostname = discovered->hostname;
             node->err = discovered->err;
@@ -252,12 +253,24 @@ void pcmanager_save_known_hosts()
     fclose(fd);
 }
 
+#define free_nullable(p) \
+    if (p)               \
+    free((void *)p)
+
 void serverdata_free(PSERVER_DATA data)
 {
     if (data->modes)
     {
         free(data->modes);
     }
+    free(data->uuid);
+    free(data->mac);
+    free(data->hostname);
+    free(data->gpuType);
+    free(data->gsVersion);
+    free((void*) data->serverInfo.serverInfoAppVersion);
+    free((void*) data->serverInfo.serverInfoGfeVersion);
+    free((void*) data->serverInfo.address);
     free(data);
 }
 
@@ -269,7 +282,6 @@ void serverlist_nodefree(PSERVER_LIST node)
     }
     if (node->server)
     {
-        free((void *)node->server->serverInfo.address);
         serverdata_free((PSERVER_DATA)node->server);
     }
     free(node);

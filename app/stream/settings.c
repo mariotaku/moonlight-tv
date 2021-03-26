@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 
 #include "util/path.h"
+#include "util/memlog.h"
 
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);

@@ -48,7 +48,7 @@ static void free_logged(void *p, const char *file, const char *func, int line)
     fprintf(logfile(), "%s:%d(%s) free %p\n", file, line, func, p);
 }
 
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __FILENAME__ (&(__FILE__)[SOURCE_DIR_LENGTH + 1])
 
 #define malloc(size) malloc_logged(size, __FILENAME__, __FUNCTION__, __LINE__)
 #define calloc(n, blksize) calloc_logged(n, blksize, __FILENAME__, __FUNCTION__, __LINE__)

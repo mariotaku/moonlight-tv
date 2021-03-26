@@ -25,9 +25,9 @@ void applist_nodefree(PAPP_DLIST node);
 typedef struct SERVER_LIST_T
 {
   bool known;
-  char *uuid;
-  char *mac;
-  char *hostname;
+  const char *uuid;
+  const char *mac;
+  const char *hostname;
   const SERVER_DATA *server;
   int err;
   const char *errmsg;
