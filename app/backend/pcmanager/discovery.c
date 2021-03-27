@@ -21,6 +21,8 @@
 
 #include "util/memlog.h"
 
+#define SERVICE_NAME "_nvstream._tcp.local"
+
 static char addrbuffer[64];
 static char entrybuffer[256];
 static char namebuffer[256];
@@ -236,7 +238,6 @@ void *_computer_manager_polling_action(void *data)
 #if _GNU_SOURCE
     pthread_setname_np(pthread_self(), "hostscan");
 #endif
-    const char *service = "_nvstream._tcp.local";
     int sockets[32];
     int query_id[32];
     int num_sockets = open_client_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]), 0);
@@ -254,8 +255,8 @@ void *_computer_manager_polling_action(void *data)
 
     for (int isock = 0; isock < num_sockets; ++isock)
     {
-        query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, service,
-                                          strlen(service), buffer, capacity, 0);
+        query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, SERVICE_NAME,
+                                          sizeof(SERVICE_NAME) - 1, buffer, capacity, 0);
         if (query_id[isock] < 0)
             fprintf(stderr, "Failed to send mDNS query: %s\n", strerror(errno));
     }
@@ -312,9 +313,6 @@ int pcmanager_insert_by_address(char *srvaddr, bool pair)
     node->err = ret;
     if (ret == GS_OK)
     {
-        node->uuid = server->uuid;
-        node->mac = server->mac;
-        node->hostname = server->hostname;
         if (server->paired)
         {
             node->known = true;

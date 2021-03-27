@@ -30,21 +30,21 @@
 
 typedef struct _SERVER_DATA
 {
-  char *uuid;
-  char *mac;
-  char *hostname;
-  char *gpuType;
+  const char *uuid;
+  const char *mac;
+  const char *hostname;
+  const char *gpuType;
   bool paired;
   bool supports4K;
   bool unsupported;
   int currentGame;
   int serverMajorVersion;
-  char *gsVersion;
+  const char *gsVersion;
   PDISPLAY_MODE modes;
   SERVER_INFORMATION serverInfo;
 } SERVER_DATA, *PSERVER_DATA;
 
-int gs_init(PSERVER_DATA server, char *address, const char *keyDirectory, int logLevel, bool unsupported);
+int gs_init(PSERVER_DATA server, const char *address, const char *keyDirectory, int logLevel, bool unsupported);
 int gs_start_app(PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio, int gamepad_mask);
 int gs_applist(PSERVER_DATA server, PAPP_LIST *app_list);
 int gs_unpair(PSERVER_DATA server);

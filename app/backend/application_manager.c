@@ -69,6 +69,9 @@ static int _applist_name_comparator(PAPP_DLIST p1, PAPP_DLIST p2)
 
 void *_application_manager_applist_action(void *data)
 {
+#if _GNU_SOURCE
+    pthread_setname_np(pthread_self(), "applist");
+#endif
     PSERVER_LIST node = (PSERVER_LIST)data;
     PAPP_LIST list = NULL, tmp;
     int ret;

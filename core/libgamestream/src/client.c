@@ -858,7 +858,7 @@ cleanup:
   return ret;
 }
 
-int gs_init(PSERVER_DATA server, char *address, const char *keyDirectory, int log_level, bool unsupported)
+int gs_init(PSERVER_DATA server, const char *address, const char *keyDirectory, int log_level, bool unsupported)
 {
   mkdirtree(keyDirectory);
   if (load_unique_id(keyDirectory) != GS_OK)

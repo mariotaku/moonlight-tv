@@ -34,7 +34,6 @@ static void pcmanager_save_known_hosts();
 void computer_manager_init()
 {
     computer_list = NULL;
-    pcmanager_load_known_hosts();
     computer_manager_run_scan();
     computer_manager_auto_discovery_start();
 }
@@ -97,16 +96,13 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
             }
             return true;
         }
-        PSERVER_LIST node = serverlist_find_by(computer_list, discovered->uuid, _server_list_compare_uuid);
+        PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, _server_list_compare_uuid);
         if (node)
         {
             if (node->server)
             {
                 serverdata_free((PSERVER_DATA)node->server);
             }
-            node->uuid = discovered->uuid;
-            node->mac = discovered->mac;
-            node->hostname = discovered->hostname;
             node->err = discovered->err;
             node->errmsg = discovered->errmsg;
             node->server = discovered->server;
@@ -182,7 +178,7 @@ void *_computer_manager_server_update_action(void *data)
     PSERVER_LIST node = data;
     PSERVER_LIST update = serverlist_new();
     update->server = malloc(sizeof(SERVER_DATA));
-    update->err = gs_init((PSERVER_DATA)update->server, (char *)node->server->serverInfo.address, app_configuration->key_dir,
+    update->err = gs_init((PSERVER_DATA)update->server, strdup(node->server->serverInfo.address), app_configuration->key_dir,
                           app_configuration->debug_level, app_configuration->unsupported);
     if (update->err)
     {
@@ -194,7 +190,7 @@ void *_computer_manager_server_update_action(void *data)
 
 int _server_list_compare_uuid(PSERVER_LIST other, const void *v)
 {
-    return strcmp(v, other->uuid);
+    return strcmp(v, other->server->uuid);
 }
 
 void pcmanager_load_known_hosts()
@@ -213,21 +209,15 @@ void pcmanager_load_known_hosts()
 
     while (getline(&line, &len, fd) != -1)
     {
-        if (strlen(line) > 100)
+        if (strlen(line) > 150)
         {
             continue;
         }
-        char uuid[40], mac[20], hostname[40];
-        if (sscanf(line, "%s %s %s", uuid, mac, hostname) != 3)
+        char uuid[40], mac[20], hostname[40], address[50];
+        if (sscanf(line, "%s %s %s %s", uuid, mac, hostname, address) != 4)
         {
             continue;
         }
-        PSERVER_LIST node = serverlist_new();
-        node->uuid = strdup(uuid);
-        node->mac = strdup(mac);
-        node->hostname = strdup(hostname);
-        node->known = true;
-        computer_list = serverlist_append(computer_list, node);
     }
     fclose(fd);
 }
@@ -244,11 +234,12 @@ void pcmanager_save_known_hosts()
     }
     for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
     {
-        if (!cur->known || !cur->uuid || !cur->mac || !cur->hostname)
+        if (!cur->known || !cur->server)
         {
             continue;
         }
-        fprintf(fd, "%s %s %s\n", cur->uuid, cur->mac, cur->hostname);
+        const SERVER_DATA *server = cur->server;
+        fprintf(fd, "%s %s %s %s\n", server->uuid, server->mac, server->hostname, server->serverInfo.address);
     }
     fclose(fd);
 }
@@ -263,14 +254,14 @@ void serverdata_free(PSERVER_DATA data)
     {
         free(data->modes);
     }
-    free(data->uuid);
-    free(data->mac);
-    free(data->hostname);
-    free(data->gpuType);
-    free(data->gsVersion);
-    free((void*) data->serverInfo.serverInfoAppVersion);
-    free((void*) data->serverInfo.serverInfoGfeVersion);
-    free((void*) data->serverInfo.address);
+    free((void *)data->uuid);
+    free((void *)data->mac);
+    free((void *)data->hostname);
+    free((void *)data->gpuType);
+    free((void *)data->gsVersion);
+    free((void *)data->serverInfo.serverInfoAppVersion);
+    free((void *)data->serverInfo.serverInfoGfeVersion);
+    free((void *)data->serverInfo.address);
     free(data);
 }
 

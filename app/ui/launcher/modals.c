@@ -101,13 +101,14 @@ void _hostinfo_popup(struct nk_context *ctx)
     char message[1024];
     if (selected_server_node)
     {
-        int index = snprintf(message, sizeof(message), "Name: %s", selected_server_node->hostname);
+        const SERVER_DATA *server = selected_server_node->server;
+        int index = snprintf(message, sizeof(message), "Name: %s", server->hostname);
         if (selected_server_node->server)
         {
-            index += snprintf(&message[index], sizeof(message) - index, "\nIP Address: %s", selected_server_node->server->serverInfo.address);
+            index += snprintf(&message[index], sizeof(message) - index, "\nIP Address: %s", server->serverInfo.address);
         }
-        index += snprintf(&message[index], sizeof(message) - index, "\nUUID: %s", selected_server_node->uuid);
-        index += snprintf(&message[index], sizeof(message) - index, "\nMAC Address: %s", selected_server_node->mac);
+        index += snprintf(&message[index], sizeof(message) - index, "\nUUID: %s", server->uuid);
+        index += snprintf(&message[index], sizeof(message) - index, "\nMAC Address: %s", server->mac);
     }
     else
     {

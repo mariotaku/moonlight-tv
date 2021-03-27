@@ -62,7 +62,7 @@ void renderer_setup(int w, int h)
     if (status != GL_TRUE)
     {
         char buf[1024];
-        size_t len;
+        GLsizei len;
         glGetShaderInfoLog(vertex_shader, 1024, &len, buf);
         SDL_Log("Vertex shader compile error:%.*s", len, buf);
     }
@@ -75,7 +75,7 @@ void renderer_setup(int w, int h)
     if (status != GL_TRUE)
     {
         char buf[1024];
-        size_t len;
+        GLsizei len;
         glGetShaderInfoLog(fragment_shader, 1024, &len, buf);
         SDL_Log("Fragment shader compile error:%.*s", len, buf);
     }
