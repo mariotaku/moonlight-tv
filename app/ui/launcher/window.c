@@ -401,12 +401,12 @@ void _open_pair(PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_PAIRING;
-    computer_manager_pair(node->server, &pairing_computer_state.pin[0], handle_pairing_done);
+    pcmanager_pair(node->server, &pairing_computer_state.pin[0], handle_pairing_done);
 }
 
 void _open_unpair(PSERVER_LIST node)
 {
-    if (computer_manager_unpair(node->server, handle_unpairing_done))
+    if (pcmanager_unpair(node->server, handle_unpairing_done))
     {
         selected_server_node = NULL;
         pairing_computer_state.state = PS_UNPAIRING;

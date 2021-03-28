@@ -24,7 +24,7 @@ static pthread_t computer_manager_polling_thread;
 
 PSERVER_LIST computer_list;
 
-static void *_computer_manager_quitapp_action(void *data);
+static void *_pcmanager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(PSERVER_DATA data);
 static int _server_list_compare_uuid(PSERVER_LIST other, const void *v);
 static void pcmanager_load_known_hosts();
@@ -110,12 +110,7 @@ static int server_list_namecmp(PSERVER_LIST item, const void *address)
     return strcmp(item->server->serverInfo.address, address);
 }
 
-PSERVER_LIST computer_manager_server_of(const char *address)
-{
-    return serverlist_find_by(computer_list, address, server_list_namecmp);
-}
-
-bool computer_manager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
+bool pcmanager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
 {
     if (server->currentGame == 0)
     {
@@ -125,11 +120,11 @@ bool computer_manager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVE
     req->server = server;
     req->callback = callback;
     pthread_t quitapp_thread;
-    pthread_create(&quitapp_thread, NULL, _computer_manager_quitapp_action, req);
+    pthread_create(&quitapp_thread, NULL, _pcmanager_quitapp_action, req);
     return true;
 }
 
-void *_computer_manager_quitapp_action(void *data)
+void *_pcmanager_quitapp_action(void *data)
 {
     cm_pin_request *req = (cm_pin_request *)data;
     PSERVER_INFO_RESP resp = serverinfo_resp_new();

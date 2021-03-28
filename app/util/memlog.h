@@ -52,6 +52,6 @@ static void free_logged(void *p, const char *file, const char *func, int line)
 
 #define malloc(size) malloc_logged(size, __FILENAME__, __FUNCTION__, __LINE__)
 #define calloc(n, blksize) calloc_logged(n, blksize, __FILENAME__, __FUNCTION__, __LINE__)
-#define free(p) free_logged(p, __FILENAME__, __FUNCTION__, __LINE__)
+#define free(p) free_logged((void*) p, __FILENAME__, __FUNCTION__, __LINE__)
 
 #endif

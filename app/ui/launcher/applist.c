@@ -220,7 +220,7 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     }
     else
     {
-        if (computer_manager_quitapp(node->server, launcher_handle_quitapp))
+        if (pcmanager_quitapp(node->server, launcher_handle_quitapp))
         {
             computer_manager_executing_quitapp = true;
         }

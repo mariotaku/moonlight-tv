@@ -14,12 +14,12 @@
 
 #include "util/memlog.h"
 
-static void *_computer_manager_pairing_action(cm_pin_request *req);
-static void *_computer_manager_unpairing_action(cm_pin_request *req);
+static void *_pcmanager_pairing_action(cm_pin_request *req);
+static void *_pcmanager_unpairing_action(cm_pin_request *req);
 static void *_manual_adding_action(void *data);
 static int pin_random(int min, int max);
 
-bool computer_manager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PSERVER_INFO_RESP))
+bool pcmanager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PSERVER_INFO_RESP))
 {
     int pin_int = pin_random(0, 9999);
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
@@ -28,17 +28,17 @@ bool computer_manager_pair(const SERVER_DATA *server, char *pin, void (*callback
     req->server = server;
     req->callback = callback;
     pthread_t pair_thread;
-    pthread_create(&pair_thread, NULL, (void *(*)(void *))_computer_manager_pairing_action, req);
+    pthread_create(&pair_thread, NULL, (void *(*)(void *))_pcmanager_pairing_action, req);
     return true;
 }
 
-bool computer_manager_unpair(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
+bool pcmanager_unpair(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
 {
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     req->server = server;
     req->callback = callback;
     pthread_t pair_thread;
-    pthread_create(&pair_thread, NULL, (void *(*)(void *))_computer_manager_unpairing_action, req);
+    pthread_create(&pair_thread, NULL, (void *(*)(void *))_pcmanager_unpairing_action, req);
     return true;
 }
 
@@ -49,7 +49,7 @@ bool pcmanager_manual_add(const char *address)
     return true;
 }
 
-void *_computer_manager_pairing_action(cm_pin_request *req)
+void *_pcmanager_pairing_action(cm_pin_request *req)
 {
     PSERVER_INFO_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
@@ -63,7 +63,7 @@ void *_computer_manager_pairing_action(cm_pin_request *req)
     return NULL;
 }
 
-void *_computer_manager_unpairing_action(cm_pin_request *req)
+void *_pcmanager_unpairing_action(cm_pin_request *req)
 {
     PSERVER_INFO_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();

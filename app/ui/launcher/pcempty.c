@@ -39,7 +39,7 @@ bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
       nk_spacing(ctx, 1);
       if (nk_button_label(ctx, "Send wake signal"))
       {
-        pcmanager_send_wol(node);
+        pcmanager_send_wol(node->server);
       }
       nk_spacing(ctx, 1);
       nk_group_end(ctx);

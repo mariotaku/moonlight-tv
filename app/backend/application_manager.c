@@ -44,16 +44,6 @@ bool application_manager_dispatch_userevent(int which, void *data1, void *data2)
     return false;
 }
 
-PAPP_DLIST application_manager_list_of(const char *address)
-{
-    PSERVER_LIST node = computer_manager_server_of(address);
-    if (node == NULL)
-    {
-        return NULL;
-    }
-    return node->apps;
-}
-
 bool _application_manager_applist_result(PSERVER_LIST node, PAPP_DLIST list)
 {
     node->apps = list;
