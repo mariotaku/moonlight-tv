@@ -15,7 +15,7 @@ bool pclist_showing;
 
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
 {
-    char *selected = selected_server_node != NULL ? selected_server_node->server->hostname : "Computer";
+    const char *selected = selected_server_node != NULL ? selected_server_node->server->hostname : "Computer";
     nk_style_push_vec2(ctx, &ctx->style.window.popup_padding, nk_vec2_s(0, 5));
     if ((pclist_showing = nk_combo_begin_label(ctx, selected, nk_vec2_s(200, 200))))
     {
@@ -44,7 +44,7 @@ bool pclist_dropdown(struct nk_context *ctx, bool event_emitted)
                 if (!event_emitted)
                 {
                     SERVER_DATA *server = (SERVER_DATA *)cur->server;
-                    if (server == NULL)
+                    if (cur->state.code != SERVER_STATE_ONLINE)
                     {
                         _select_computer(cur, false);
                     }

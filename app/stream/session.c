@@ -200,6 +200,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     _streaming_set_status(STREAMING_NONE);
 thread_cleanup:
     platform_stop(system);
+    free(req->config);
     free(req);
     return NULL;
 }

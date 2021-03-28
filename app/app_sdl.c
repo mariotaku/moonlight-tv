@@ -32,6 +32,7 @@
 #include "platform/sdl/events.h"
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/root.h"
+#include "util/bus.h"
 #include "util/user_event.h"
 
 #if OS_WEBOS
@@ -218,11 +219,19 @@ static void app_process_events(struct nk_context *ctx)
         }
         else if (evt.type == SDL_USEREVENT)
         {
-            bool handled = backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-            handled = handled || ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
-            if (!handled)
+            if (evt.user.code == BUS_INT_EVENT_ACTION)
             {
-                fprintf(stderr, "Nobody handles event %d\n", evt.user.code);
+                bus_actionfunc actionfn = evt.user.data1;
+                actionfn(evt.user.data2);
+            }
+            else
+            {
+                bool handled = backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
+                handled = handled || ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
+                if (!handled)
+                {
+                    fprintf(stderr, "Nobody handles event %d\n", evt.user.code);
+                }
             }
         }
         else if (evt.type == SDL_QUIT)

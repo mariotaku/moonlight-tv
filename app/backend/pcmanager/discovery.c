@@ -46,6 +46,8 @@ typedef struct
 
 bool computer_discovery_running = false;
 
+void handle_server_discovered(PSERVER_INFO_RESP discovered);
+
 static mdns_string_t
 ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
                        size_t addrlen)
@@ -303,29 +305,30 @@ void *_computer_manager_polling_action(void *data)
     return NULL;
 }
 
-int pcmanager_insert_by_address(char *srvaddr, bool pair)
+int pcmanager_insert_by_address(const char *srvaddr, bool pair)
 {
-    PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
-    memset(server, 0, sizeof(SERVER_DATA));
+    PSERVER_DATA server = serverdata_new();
     int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
 
-    PSERVER_LIST node = serverlist_new();
-    node->err = ret;
+    PSERVER_INFO_RESP resp = serverinfo_resp_new();
     if (ret == GS_OK)
     {
+        resp->state.code = SERVER_STATE_ONLINE;
+        resp->server = server;
         if (server->paired)
         {
-            node->known = true;
+            resp->known = true;
         }
-        node->server = server;
-        node->errmsg = NULL;
+        resp->server = server;
     }
     else
     {
-        node->server = NULL;
-        node->errmsg = gs_error;
+        resp->state.code = SERVER_STATE_ERROR;
+        resp->state.error.errcode = ret;
+        resp->state.error.errmsg = gs_error;
         free(server);
+        resp->server = NULL;
     }
-    bus_pushevent(USER_CM_SERVER_DISCOVERED, node, (void *)pair);
+    bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     return ret;
 }

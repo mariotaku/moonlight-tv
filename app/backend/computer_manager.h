@@ -6,10 +6,17 @@
 
 #include "libgamestream/client.h"
 
-extern PSERVER_LIST computer_list;
+PSERVER_LIST computer_list;
 
-extern bool computer_manager_executing_quitapp;
-extern bool computer_discovery_running;
+bool computer_manager_executing_quitapp;
+bool computer_discovery_running;
+
+typedef struct SERVER_INFO_RESP_T
+{
+  bool known;
+  SERVER_STATE state;
+  const SERVER_DATA *server;
+} SERVER_INFO_RESP, *PSERVER_INFO_RESP;
 
 /**
  * @brief Initialize computer manager context
@@ -48,14 +55,18 @@ PSERVER_LIST computer_manager_server_at(int index);
  * @param p 
  * @param pin 
  */
-bool computer_manager_pair(PSERVER_LIST node, char *pin);
+bool computer_manager_pair(PSERVER_LIST node, char *pin, void (*callback)(PSERVER_LIST));
 
-bool computer_manager_unpair(PSERVER_LIST node);
+bool computer_manager_unpair(PSERVER_LIST node, void (*callback)(PSERVER_LIST));
 
 bool computer_manager_quitapp(PSERVER_LIST node);
 
 bool pcmanager_send_wol(PSERVER_LIST node);
 
-bool pcmanager_manual_add(char *address);
+bool pcmanager_manual_add(const char *address);
 
 void *_computer_manager_polling_action(void *data);
+
+PSERVER_DATA serverdata_new();
+
+PSERVER_INFO_RESP serverinfo_resp_new();

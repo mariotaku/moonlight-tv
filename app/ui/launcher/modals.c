@@ -47,8 +47,8 @@ void _pairing_error_popup(struct nk_context *ctx)
 void _server_error_popup(struct nk_context *ctx)
 {
     const char *message;
-    if (selected_server_node && selected_server_node->errmsg)
-        message = selected_server_node->errmsg;
+    if (selected_server_node && selected_server_node->state.code == SERVER_STATE_ERROR && selected_server_node->state.error.errmsg)
+        message = selected_server_node->state.error.errmsg;
     else
         message = "";
 

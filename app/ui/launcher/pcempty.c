@@ -23,7 +23,7 @@ bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
       nk_layout_space_end(ctx);
       nk_group_end(ctx);
     }
-    if (nk_group_begin(ctx, "launcher_empty_icon", NK_WINDOW_NO_SCROLLBAR))
+    if (nk_group_begin(ctx, "launcher_empty_message", NK_WINDOW_NO_SCROLLBAR))
     {
       nk_layout_row_dynamic(ctx, (group_height) / 2 - 25 * NK_UI_SCALE, 1);
       // nk_layout_row(ctx, NK_DYNAMIC, );

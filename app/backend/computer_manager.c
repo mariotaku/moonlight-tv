@@ -31,9 +31,12 @@ static int _server_list_compare_uuid(PSERVER_LIST other, const void *v);
 static void pcmanager_load_known_hosts();
 static void pcmanager_save_known_hosts();
 
+static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp);
+
 void computer_manager_init()
 {
     computer_list = NULL;
+    pcmanager_load_known_hosts();
     computer_manager_run_scan();
     computer_manager_auto_discovery_start();
 }
@@ -60,67 +63,43 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
         pthread_create(&update_thread, NULL, _computer_manager_server_update_action, data1);
         return true;
     }
-    case USER_CM_RESP_SERVER_UPDATED:
-    {
-        PSERVER_LIST orig = data1, update = data2;
-        orig->err = update->err;
-        if (update->err == GS_OK)
-        {
-            if (orig->server)
-            {
-                serverdata_free((PSERVER_DATA)orig->server);
-            }
-            orig->server = update->server;
-        }
-        else
-        {
-            orig->errmsg = update->errmsg;
-            orig->server = NULL;
-            if (update->server)
-            {
-                serverdata_free((PSERVER_DATA)update->server);
-            }
-        }
-        free(update);
-        return true;
-    }
-    case USER_CM_SERVER_DISCOVERED:
-    {
-        PSERVER_LIST discovered = data1;
-        bool manual_pair = data2;
-        if (discovered->err)
-        {
-            if (manual_pair)
-            {
-                bus_pushevent(USER_CM_PAIRING_DONE, discovered, data2);
-            }
-            return true;
-        }
-        PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, _server_list_compare_uuid);
-        if (node)
-        {
-            if (node->server)
-            {
-                serverdata_free((PSERVER_DATA)node->server);
-            }
-            node->err = discovered->err;
-            node->errmsg = discovered->errmsg;
-            node->server = discovered->server;
-
-            free(discovered);
-            bus_pushevent(USER_CM_SERVER_UPDATED, node, data2);
-        }
-        else
-        {
-            computer_list = serverlist_append(computer_list, discovered);
-            bus_pushevent(USER_CM_SERVER_ADDED, discovered, data2);
-        }
-        return true;
-    }
     default:
         break;
     }
     return false;
+}
+
+void handle_server_updated(PSERVER_INFO_RESP update)
+{
+    PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, _server_list_compare_uuid);
+    serverdata_free((PSERVER_DATA)node->server);
+    serverlist_set_from_resp(node, update);
+    node->server = update->server;
+    free(update);
+}
+
+void handle_server_discovered(PSERVER_INFO_RESP discovered)
+{
+    PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, _server_list_compare_uuid);
+    if (node)
+    {
+        if (node->server)
+        {
+            serverdata_free((PSERVER_DATA)node->server);
+        }
+        serverlist_set_from_resp(node, discovered);
+
+        free(discovered);
+        bus_pushevent(USER_CM_SERVER_UPDATED, node, NULL);
+    }
+    else
+    {
+        node = serverlist_new();
+        serverlist_set_from_resp(node, discovered);
+
+        computer_list = serverlist_append(computer_list, node);
+        bus_pushevent(USER_CM_SERVER_ADDED, discovered, NULL);
+    }
 }
 
 bool computer_manager_run_scan()
@@ -176,15 +155,17 @@ void *_computer_manager_quitapp_action(void *data)
 void *_computer_manager_server_update_action(void *data)
 {
     PSERVER_LIST node = data;
-    PSERVER_LIST update = serverlist_new();
-    update->server = malloc(sizeof(SERVER_DATA));
-    update->err = gs_init((PSERVER_DATA)update->server, strdup(node->server->serverInfo.address), app_configuration->key_dir,
-                          app_configuration->debug_level, app_configuration->unsupported);
-    if (update->err)
-    {
-        update->errmsg = gs_error;
-    }
-    bus_pushevent(USER_CM_RESP_SERVER_UPDATED, node, update);
+    PSERVER_DATA server = serverdata_new();
+    PSERVER_INFO_RESP update = serverinfo_resp_new();
+    int ret = gs_init(server, strdup(node->server->serverInfo.address), app_configuration->key_dir,
+                      app_configuration->debug_level, app_configuration->unsupported);
+    update->server = server;
+    if (ret == GS_OK)
+        update->state.code = SERVER_STATE_ONLINE;
+    else
+        serverstate_setgserror(&update->state, ret, gs_error);
+
+    bus_pushaction((bus_actionfunc)handle_server_updated, update);
     return NULL;
 }
 
@@ -209,15 +190,30 @@ void pcmanager_load_known_hosts()
 
     while (getline(&line, &len, fd) != -1)
     {
-        if (strlen(line) > 150)
+        if (strlen(line) >= 150)
         {
             continue;
         }
-        char uuid[40], mac[20], hostname[40], address[50];
+        // UUID: 37 including NUL
+        // MAC: 17 including NUL
+        // HOSTNAME: 17 including NUL
+        // ADDRESS: 57 including NUL
+        char uuid[150], mac[150], hostname[150], address[150];
         if (sscanf(line, "%s %s %s %s", uuid, mac, hostname, address) != 4)
         {
             continue;
         }
+        PSERVER_DATA server = serverdata_new();
+        server->uuid = strdup(uuid);
+        server->mac = strdup(mac);
+        server->hostname = strdup(hostname);
+        server->serverInfo.address = strdup(address);
+
+        PSERVER_LIST node = serverlist_new();
+        node->state.code = SERVER_STATE_OFFLINE;
+        node->server = server;
+        node->known = true;
+        computer_list = serverlist_append(computer_list, node);
     }
     fclose(fd);
 }
@@ -234,7 +230,7 @@ void pcmanager_save_known_hosts()
     }
     for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
     {
-        if (!cur->known || !cur->server)
+        if (!cur->server)
         {
             continue;
         }
@@ -244,24 +240,42 @@ void pcmanager_save_known_hosts()
     fclose(fd);
 }
 
+PSERVER_DATA serverdata_new()
+{
+    PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
+    memset(server, 0, sizeof(SERVER_DATA));
+    return server;
+}
+
+PSERVER_INFO_RESP serverinfo_resp_new()
+{
+    PSERVER_INFO_RESP resp = malloc(sizeof(SERVER_INFO_RESP));
+    memset(resp, 0, sizeof(SERVER_INFO_RESP));
+    return resp;
+}
+
+void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg)
+{
+    state->code = SERVER_STATE_ERROR;
+    state->error.errcode = code;
+    state->error.errmsg = msg;
+}
+
 #define free_nullable(p) \
     if (p)               \
     free((void *)p)
 
 void serverdata_free(PSERVER_DATA data)
 {
-    if (data->modes)
-    {
-        free(data->modes);
-    }
-    free((void *)data->uuid);
-    free((void *)data->mac);
-    free((void *)data->hostname);
-    free((void *)data->gpuType);
-    free((void *)data->gsVersion);
-    free((void *)data->serverInfo.serverInfoAppVersion);
-    free((void *)data->serverInfo.serverInfoGfeVersion);
-    free((void *)data->serverInfo.address);
+    free_nullable(data->modes);
+    free_nullable(data->uuid);
+    free_nullable(data->mac);
+    free_nullable(data->hostname);
+    free_nullable(data->gpuType);
+    free_nullable(data->gsVersion);
+    free_nullable(data->serverInfo.serverInfoAppVersion);
+    free_nullable(data->serverInfo.serverInfoGfeVersion);
+    free_nullable(data->serverInfo.address);
     free(data);
 }
 
@@ -276,4 +290,10 @@ void serverlist_nodefree(PSERVER_LIST node)
         serverdata_free((PSERVER_DATA)node->server);
     }
     free(node);
+}
+
+static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp)
+{
+    memcpy(&node->state, &resp->state, sizeof(resp->state));
+    node->server = resp->server;
 }

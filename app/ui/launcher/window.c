@@ -135,14 +135,13 @@ bool launcher_window(struct nk_context *ctx)
         if (dropdown_highlight)
             nk_style_pop_color(ctx);
         nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
-        
+
         launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_info))
         {
             _launcher_show_host_info = true;
         }
         nk_spacing(ctx, 1);
-
 
         launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_add_to_queue))
@@ -176,18 +175,9 @@ bool launcher_window(struct nk_context *ctx)
         nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2_s(5, 5));
         if (selected != NULL)
         {
-            if (selected->server != NULL)
+            if (selected->state.code == SERVER_STATE_ONLINE)
             {
                 event_emitted |= launcher_applist(ctx, selected, event_emitted);
-            }
-            else if (selected->err)
-            {
-                if (nk_group_begin(ctx, "launcher_err", 0))
-                {
-                    nk_layout_row_dynamic_s(ctx, 50, 1);
-                    nk_label(ctx, "Error", NK_TEXT_ALIGN_LEFT);
-                    nk_group_end(ctx);
-                }
             }
             else
             {
@@ -270,40 +260,6 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
             {
                 application_manager_load(node);
             }
-        }
-        return true;
-    }
-    case USER_CM_PAIRING_DONE:
-    {
-        PSERVER_LIST node = data1;
-        if (node->err == GS_OK)
-        {
-            // Close pairing window
-            pairing_computer_state.state = PS_NONE;
-            _select_computer(node, node->apps == NULL);
-        }
-        else
-        {
-            // Show pairing error instead
-            pairing_computer_state.state = PS_FAIL;
-            pairing_computer_state.error = node->errmsg;
-        }
-        return true;
-    }
-    case USER_CM_UNPAIRING_DONE:
-    {
-        PSERVER_LIST node = data1;
-        if (node->err == GS_OK)
-        {
-            // Close pairing window
-            pairing_computer_state.state = PS_NONE;
-            node->known = false;
-        }
-        else
-        {
-            // Show pairing error instead
-            pairing_computer_state.state = PS_FAIL;
-            pairing_computer_state.error = node->errmsg;
         }
         return true;
     }
@@ -408,18 +364,50 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
     }
 }
 
+void handle_pairing_done(PSERVER_LIST node)
+{
+    if (node->state.code == SERVER_STATE_ONLINE)
+    {
+        // Close pairing window
+        pairing_computer_state.state = PS_NONE;
+        _select_computer(node, node->apps == NULL);
+    }
+    else
+    {
+        // Show pairing error instead
+        pairing_computer_state.state = PS_FAIL;
+        pairing_computer_state.error = node->state.error.errmsg;
+    }
+}
+
 void _open_pair(PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_PAIRING;
-    computer_manager_pair(node, &pairing_computer_state.pin[0]);
+    computer_manager_pair(node, &pairing_computer_state.pin[0], handle_pairing_done);
+}
+
+void handle_unpairing_done(PSERVER_LIST node)
+{
+    if (node->state.code == SERVER_STATE_ONLINE)
+    {
+        // Close pairing window
+        pairing_computer_state.state = PS_NONE;
+        node->known = false;
+    }
+    else
+    {
+        // Show pairing error instead
+        pairing_computer_state.state = PS_FAIL;
+        pairing_computer_state.error = node->state.error.errmsg;
+    }
 }
 
 void _open_unpair(PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_UNPAIRING;
-    computer_manager_unpair(node);
+    computer_manager_unpair(node, handle_unpairing_done);
 }
 
 void _launcher_modal_flags_update()
@@ -449,13 +437,6 @@ void _launcher_modal_flags_update()
     if (_quitapp_errno)
     {
         _launcher_modals |= LAUNCHER_MODAL_QUITERR;
-    }
-    if (selected_server_node != NULL)
-    {
-        if (selected_server_node->err)
-        {
-            _launcher_modals |= LAUNCHER_MODAL_SERVERR;
-        }
     }
     if (_launcher_show_manual_pair)
     {
