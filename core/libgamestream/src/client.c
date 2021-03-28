@@ -823,6 +823,10 @@ int gs_quit_app(PSERVER_DATA server)
     ret = GS_FAILED;
     goto cleanup;
   }
+  if (ret == GS_OK)
+  {
+    server->currentGame = 0;
+  }
 
 cleanup:
   if (result != NULL)

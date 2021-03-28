@@ -204,7 +204,6 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     return event_emitted;
 }
 
-
 void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
 {
     if (clicked == 1)
@@ -330,5 +329,4 @@ bool _cover_use_default(struct nk_image *img)
 void launcher_handle_quitapp(PSERVER_INFO_RESP resp)
 {
     computer_manager_executing_quitapp = false;
-    free(resp->server);
 }

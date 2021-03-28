@@ -28,7 +28,6 @@ def main():
         for idx, (src, occurences) in enumerate(counter.most_common(curses.LINES - 1)):
             allocsize = sum(map(lambda x:x['size'], filter(lambda x: x['src'] == src, ptr_map.values())))
             stdscr.addstr(idx + 1, 0, f'{src} => {occurences} allocation(s), {allocsize} bytes')
-        stdscr.addch('\n')
         stdscr.refresh()
 
 try:

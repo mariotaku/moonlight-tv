@@ -324,7 +324,7 @@ void parse_argument(int c, char *value, PCONFIGURATION config)
             free_value = false;
         }
     }
-    if (free_value)
+    if (free_value && value)
     {
         free(value);
     }

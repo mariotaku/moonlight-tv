@@ -2,6 +2,7 @@
 
 #ifdef DEBUG
 
+#include <assert.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -44,6 +45,7 @@ static void *calloc_logged(size_t n, size_t blksize, const char *file, const cha
 
 static void free_logged(void *p, const char *file, const char *func, int line)
 {
+    assert(p);
     _free_orig(p);
     fprintf(logfile(), "%s:%d(%s) free %p\n", file, line, func, p);
 }

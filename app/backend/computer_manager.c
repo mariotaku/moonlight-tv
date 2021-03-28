@@ -130,7 +130,8 @@ void *_pcmanager_quitapp_action(void *data)
         serverstate_setgserror(&resp->state, ret, gs_error);
     resp->server = server;
     bus_pushaction((bus_actionfunc)req->callback, resp);
-    pcmanager_request_update(server);
+    bus_pushaction((bus_actionfunc)handle_server_updated, resp);
+    bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);
     free(req);
     return NULL;
 }
