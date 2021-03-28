@@ -47,6 +47,7 @@ typedef struct
 bool computer_discovery_running = false;
 
 void handle_server_discovered(PSERVER_INFO_RESP discovered);
+bool pcmanager_is_known_host(const char *srvaddr);
 
 static mdns_string_t
 ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
@@ -139,6 +140,11 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
             ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
         char *srvaddr = calloc(addrstr.length + 1, sizeof(char));
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
+        if (pcmanager_is_known_host(srvaddr))
+        {
+            free(srvaddr);
+            return 0;
+        }
         pcmanager_insert_by_address(srvaddr, false);
     }
     return 0;
@@ -240,6 +246,13 @@ void *_computer_manager_polling_action(void *data)
 #if _GNU_SOURCE
     pthread_setname_np(pthread_self(), "hostscan");
 #endif
+    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
+    {
+        if (!cur->known)
+            continue;
+        const char *srvaddr = strdup(cur->server->serverInfo.address);
+        pcmanager_insert_by_address(srvaddr, false);
+    }
     int sockets[32];
     int query_id[32];
     int num_sockets = open_client_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]), 0);
@@ -331,4 +344,15 @@ int pcmanager_insert_by_address(const char *srvaddr, bool pair)
     }
     bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     return ret;
+}
+
+static int serverlist_find_address(PSERVER_LIST other, const void *v)
+{
+    return strcmp(other->server->serverInfo.address, (char *)v);
+}
+
+bool pcmanager_is_known_host(const char *srvaddr)
+{
+    PSERVER_LIST find = serverlist_find_by(computer_list, srvaddr, serverlist_find_address);
+    return find != NULL && find->known;
 }

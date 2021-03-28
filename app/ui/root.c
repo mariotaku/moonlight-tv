@@ -26,7 +26,7 @@
 
 short ui_display_width, ui_display_height;
 short ui_logic_width, ui_logic_height;
-unsigned int ui_scale;
+float ui_scale;
 
 bool ui_settings_showing;
 bool ui_fake_mouse_click_started;
@@ -188,7 +188,7 @@ void ui_display_size(short width, short height)
 {
     ui_display_width = width;
     ui_display_height = height;
-    ui_scale = width / 640;
+    ui_scale = width / 640.0;
     ui_logic_width = width / ui_scale;
     ui_logic_height = height / ui_scale;
 }
