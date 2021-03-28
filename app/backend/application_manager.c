@@ -13,7 +13,7 @@
 
 static pthread_t _application_manager_load_thread;
 
-static void *_application_manager_applist_action(void *data);
+static void *_application_manager_applist_action(PSERVER_LIST node);
 static bool _application_manager_applist_result(PSERVER_LIST node, PAPP_DLIST list);
 
 void application_manager_init()
@@ -31,7 +31,7 @@ void application_manager_load(PSERVER_LIST node)
         return;
     }
     node->appload = true;
-    pthread_create(&_application_manager_load_thread, NULL, _application_manager_applist_action, node);
+    pthread_create(&_application_manager_load_thread, NULL, (void *(*)(void *))_application_manager_applist_action, node);
 }
 
 bool application_manager_dispatch_userevent(int which, void *data1, void *data2)
@@ -57,18 +57,17 @@ static int _applist_name_comparator(PAPP_DLIST p1, PAPP_DLIST p2)
     return strcmp(p1->name, p2->name);
 }
 
-void *_application_manager_applist_action(void *data)
+void *_application_manager_applist_action(PSERVER_LIST node)
 {
 #if _GNU_SOURCE
     pthread_setname_np(pthread_self(), "applist");
 #endif
-    PSERVER_LIST node = (PSERVER_LIST)data;
     PAPP_LIST list = NULL, tmp;
     int ret;
     if ((ret = gs_applist((PSERVER_DATA)node->server, &list)) != GS_OK)
     {
         fprintf(stderr, "Can't get app list: %d\n", ret);
-        bus_pushevent(USER_AM_APPLIST_LOADED, data, NULL);
+        bus_pushevent(USER_AM_APPLIST_LOADED, node, NULL);
         return NULL;
     }
     PAPP_DLIST dlist = NULL;
@@ -87,7 +86,7 @@ void *_application_manager_applist_action(void *data)
         free(tmp);
     }
 
-    bus_pushevent(USER_AM_APPLIST_LOADED, data, dlist);
+    bus_pushevent(USER_AM_APPLIST_LOADED, node, dlist);
     return NULL;
 }
 

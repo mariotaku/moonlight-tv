@@ -59,6 +59,8 @@ void *_pcmanager_pairing_action(cm_pin_request *req)
         serverstate_setgserror(&resp->state, ret, gs_error);
     resp->server = server;
     bus_pushaction((bus_actionfunc)req->callback, resp);
+    bus_pushaction((bus_actionfunc)handle_server_updated, resp);
+    bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);
     free(req);
     return NULL;
 }
@@ -73,6 +75,8 @@ void *_pcmanager_unpairing_action(cm_pin_request *req)
         serverstate_setgserror(&resp->state, ret, gs_error);
     resp->server = server;
     bus_pushaction((bus_actionfunc)req->callback, resp);
+    bus_pushaction((bus_actionfunc)handle_server_updated, resp);
+    bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);
     free(req);
     return NULL;
 }

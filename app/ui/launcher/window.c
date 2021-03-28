@@ -237,11 +237,14 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     case USER_CM_SERVER_ADDED:
     case USER_CM_SERVER_UPDATED:
     {
+        PSERVER_INFO_RESP resp = data1;
+        PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
+        if (!node)
+            return true;
         // Select saved paired server if not selected before
-        PSERVER_LIST node = data1;
         if (data2)
         {
-            if (node->server->paired)
+            if (resp->server->paired)
             {
                 _select_computer(node, node->apps == NULL);
             }
@@ -251,9 +254,9 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
             }
             return true;
         }
-        else if (node->server && node->server->paired && app_configuration->address)
+        else if (resp->server && resp->server->paired && app_configuration->address)
         {
-            if (selected_server_node == NULL && strcmp(app_configuration->address, node->server->serverInfo.address) == 0)
+            if (selected_server_node == NULL && strcmp(app_configuration->address, resp->server->serverInfo.address) == 0)
             {
                 _select_computer(node, node->apps == NULL);
             }
@@ -383,6 +386,7 @@ void handle_pairing_done(PSERVER_INFO_RESP resp)
 
 void handle_unpairing_done(PSERVER_INFO_RESP resp)
 {
+    selected_server_node = NULL;
     if (resp->state.code == SERVER_STATE_ONLINE)
     {
         // Close pairing window
@@ -408,7 +412,6 @@ void _open_unpair(PSERVER_LIST node)
 {
     if (pcmanager_unpair(node->server, handle_unpairing_done))
     {
-        selected_server_node = NULL;
         pairing_computer_state.state = PS_UNPAIRING;
     }
 }

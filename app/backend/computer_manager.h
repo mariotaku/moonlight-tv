@@ -15,6 +15,7 @@ typedef struct SERVER_INFO_RESP_T
   bool known;
   SERVER_STATE state;
   const SERVER_DATA *server;
+  bool server_referenced;
 } SERVER_INFO_RESP, *PSERVER_INFO_RESP;
 
 /**

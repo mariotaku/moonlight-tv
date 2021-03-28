@@ -26,7 +26,6 @@ PSERVER_LIST computer_list;
 
 static void *_pcmanager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(PSERVER_DATA data);
-static int _server_list_compare_uuid(PSERVER_LIST other, const void *v);
 static void pcmanager_load_known_hosts();
 static void pcmanager_save_known_hosts();
 
@@ -58,22 +57,16 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
 
 void handle_server_updated(PSERVER_INFO_RESP update)
 {
-    PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, _server_list_compare_uuid);
+    PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, serverlist_compare_uuid);
     if (!node)
-    {
-        free((void *)update->server);
-        free(update);
         return;
-    }
     serverdata_free((PSERVER_DATA)node->server);
     serverlist_set_from_resp(node, update);
-    node->server = update->server;
-    free(update);
 }
 
 void handle_server_discovered(PSERVER_INFO_RESP discovered)
 {
-    PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, _server_list_compare_uuid);
+    PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, serverlist_compare_uuid);
     if (node)
     {
         if (node->server)
@@ -81,8 +74,6 @@ void handle_server_discovered(PSERVER_INFO_RESP discovered)
             serverdata_free((PSERVER_DATA)node->server);
         }
         serverlist_set_from_resp(node, discovered);
-
-        free(discovered);
         bus_pushevent(USER_CM_SERVER_UPDATED, node, NULL);
     }
     else
@@ -152,11 +143,12 @@ void *_computer_manager_server_update_action(PSERVER_DATA data)
     else
         serverstate_setgserror(&update->state, ret, gs_error);
     bus_pushaction((bus_actionfunc)handle_server_updated, update);
+    bus_pushaction((bus_actionfunc)serverinfo_resp_free, update);
     free(data);
     return NULL;
 }
 
-int _server_list_compare_uuid(PSERVER_LIST other, const void *v)
+int serverlist_compare_uuid(PSERVER_LIST other, const void *v)
 {
     return strcmp(v, other->server->uuid);
 }
@@ -241,6 +233,15 @@ PSERVER_INFO_RESP serverinfo_resp_new()
     return resp;
 }
 
+void serverinfo_resp_free(PSERVER_INFO_RESP resp)
+{
+    if (!resp->server_referenced)
+    {
+        free(resp->server);
+    }
+    free(resp);
+}
+
 void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg)
 {
     state->code = SERVER_STATE_ERROR;
@@ -291,4 +292,5 @@ static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp)
 {
     memcpy(&node->state, &resp->state, sizeof(resp->state));
     node->server = resp->server;
+    resp->server_referenced = true;
 }

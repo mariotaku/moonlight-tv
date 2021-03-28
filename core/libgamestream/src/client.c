@@ -339,6 +339,10 @@ int gs_unpair(PSERVER_DATA server)
   ret = http_request(url, data);
 
   http_free_data(data);
+  if (ret == GS_OK)
+  {
+    server->paired = false;
+  }
   return ret;
 }
 

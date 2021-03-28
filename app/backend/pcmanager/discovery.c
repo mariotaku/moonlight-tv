@@ -343,6 +343,7 @@ int pcmanager_insert_by_address(const char *srvaddr, bool pair)
         resp->server = NULL;
     }
     bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
+    bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);
     return ret;
 }
 
