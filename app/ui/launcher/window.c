@@ -39,6 +39,7 @@ struct nk_rect topbar_hovering_item_bounds = {0, 0, 0, 0};
 struct nk_vec2 topbar_focused_item_center = {0, 0};
 static int topbar_item_count = 0;
 bool topbar_showing_combo = false;
+bool computer_manager_executing_quitapp = false;
 
 void _pairing_error_popup(struct nk_context *ctx);
 void _server_error_popup(struct nk_context *ctx);
@@ -364,19 +365,35 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
     }
 }
 
-void handle_pairing_done(PSERVER_LIST node)
+void handle_pairing_done(PSERVER_INFO_RESP resp)
 {
-    if (node->state.code == SERVER_STATE_ONLINE)
+    if (resp->state.code == SERVER_STATE_ONLINE)
     {
         // Close pairing window
         pairing_computer_state.state = PS_NONE;
-        _select_computer(node, node->apps == NULL);
+        // _select_computer(node, node->apps == NULL);
     }
     else
     {
         // Show pairing error instead
         pairing_computer_state.state = PS_FAIL;
-        pairing_computer_state.error = node->state.error.errmsg;
+        pairing_computer_state.error = resp->state.error.errmsg;
+    }
+}
+
+void handle_unpairing_done(PSERVER_INFO_RESP resp)
+{
+    if (resp->state.code == SERVER_STATE_ONLINE)
+    {
+        // Close pairing window
+        pairing_computer_state.state = PS_NONE;
+        // _select_computer(node, node->apps == NULL);
+    }
+    else
+    {
+        // Show pairing error instead
+        pairing_computer_state.state = PS_FAIL;
+        pairing_computer_state.error = resp->state.error.errmsg;
     }
 }
 
@@ -384,30 +401,16 @@ void _open_pair(PSERVER_LIST node)
 {
     selected_server_node = NULL;
     pairing_computer_state.state = PS_PAIRING;
-    computer_manager_pair(node, &pairing_computer_state.pin[0], handle_pairing_done);
-}
-
-void handle_unpairing_done(PSERVER_LIST node)
-{
-    if (node->state.code == SERVER_STATE_ONLINE)
-    {
-        // Close pairing window
-        pairing_computer_state.state = PS_NONE;
-        node->known = false;
-    }
-    else
-    {
-        // Show pairing error instead
-        pairing_computer_state.state = PS_FAIL;
-        pairing_computer_state.error = node->state.error.errmsg;
-    }
+    computer_manager_pair(node->server, &pairing_computer_state.pin[0], handle_pairing_done);
 }
 
 void _open_unpair(PSERVER_LIST node)
 {
-    selected_server_node = NULL;
-    pairing_computer_state.state = PS_UNPAIRING;
-    computer_manager_unpair(node, handle_unpairing_done);
+    if (computer_manager_unpair(node->server, handle_unpairing_done))
+    {
+        selected_server_node = NULL;
+        pairing_computer_state.state = PS_UNPAIRING;
+    }
 }
 
 void _launcher_modal_flags_update()
@@ -444,7 +447,9 @@ void _launcher_modal_flags_update()
     }
     if (!_decoder_error_dismissed && platform_is_software(platform_current))
     {
+#ifndef TARGET_DESKTOP
         _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;
+#endif
     }
     if (_launcher_show_host_info)
     {

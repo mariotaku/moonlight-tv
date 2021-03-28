@@ -14,31 +14,31 @@
 
 #include "util/memlog.h"
 
-static void *_computer_manager_pairing_action(void *data);
-static void *_computer_manager_unpairing_action(void *data);
+static void *_computer_manager_pairing_action(cm_pin_request *req);
+static void *_computer_manager_unpairing_action(cm_pin_request *req);
 static void *_manual_adding_action(void *data);
 static int pin_random(int min, int max);
 
-bool computer_manager_pair(PSERVER_LIST node, char *pin, void (*callback)(PSERVER_LIST))
+bool computer_manager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PSERVER_INFO_RESP))
 {
     int pin_int = pin_random(0, 9999);
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     snprintf(pin, 5, "%04u", pin_int);
     req->pin = strdup(pin);
-    req->node = node;
+    req->server = server;
     req->callback = callback;
     pthread_t pair_thread;
-    pthread_create(&pair_thread, NULL, _computer_manager_pairing_action, req);
+    pthread_create(&pair_thread, NULL, (void *(*)(void *))_computer_manager_pairing_action, req);
     return true;
 }
 
-bool computer_manager_unpair(PSERVER_LIST node, void (*callback)(PSERVER_LIST))
+bool computer_manager_unpair(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
 {
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
-    req->node = node;
+    req->server = server;
     req->callback = callback;
     pthread_t pair_thread;
-    pthread_create(&pair_thread, NULL, _computer_manager_unpairing_action, req);
+    pthread_create(&pair_thread, NULL, (void *(*)(void *))_computer_manager_unpairing_action, req);
     return true;
 }
 
@@ -49,30 +49,30 @@ bool pcmanager_manual_add(const char *address)
     return true;
 }
 
-void *_computer_manager_pairing_action(void *data)
+void *_computer_manager_pairing_action(cm_pin_request *req)
 {
-    cm_pin_request *req = (cm_pin_request *)data;
-    PSERVER_LIST node = req->node;
-    // Pairing will change server pointer
-    PSERVER_DATA server = (PSERVER_DATA)node->server;
+    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PSERVER_DATA server = serverdata_new();
+    memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_pair(server, (char *)req->pin);
     if (ret != GS_OK)
-        serverstate_setgserror(&node->state, ret, gs_error);
-    bus_pushaction((bus_actionfunc)req->callback, node);
+        serverstate_setgserror(&resp->state, ret, gs_error);
+    resp->server = server;
+    bus_pushaction((bus_actionfunc)req->callback, resp);
     free(req);
     return NULL;
 }
 
-void *_computer_manager_unpairing_action(void *data)
+void *_computer_manager_unpairing_action(cm_pin_request *req)
 {
-    cm_pin_request *req = (cm_pin_request *)data;
-    PSERVER_LIST node = req->node;
-    // Pairing will change server pointer
-    PSERVER_DATA server = (PSERVER_DATA)node->server;
+    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PSERVER_DATA server = serverdata_new();
+    memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_unpair(server);
     if (ret != GS_OK)
-        serverstate_setgserror(&node->state, ret, gs_error);
-    bus_pushaction((bus_actionfunc)req->callback, node);
+        serverstate_setgserror(&resp->state, ret, gs_error);
+    resp->server = server;
+    bus_pushaction((bus_actionfunc)req->callback, resp);
     free(req);
     return NULL;
 }

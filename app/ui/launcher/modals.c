@@ -120,6 +120,10 @@ void _hostinfo_popup(struct nk_context *ctx)
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
             _launcher_show_host_info = false;
+            if (result == NK_DIALOG_NEUTRAL)
+            {
+                _open_unpair(selected_server_node);
+            }
             nk_popup_close(ctx);
         }
         nk_popup_end(ctx);

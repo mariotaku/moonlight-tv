@@ -9,6 +9,7 @@
 #include "util/user_event.h"
 #include "input/absinput.h"
 #include "video/delegate.h"
+#include "backend/pcmanager/priv.h"
 
 #include <Limelight.h>
 #include <pthread.h>
@@ -37,7 +38,7 @@ static PVIDEO_PRESENTER_CALLBACKS video_presenter_cb = NULL;
 
 typedef struct
 {
-    SERVER_LIST *node;
+    SERVER_DATA *server;
     CONFIGURATION *config;
     int appId;
 } STREAMING_REQUEST;
@@ -67,7 +68,7 @@ void streaming_destroy()
     pthread_mutex_destroy(&streaming_errmsg_lock);
 }
 
-int streaming_begin(PSERVER_LIST node, int app_id)
+int streaming_begin(const SERVER_DATA *server, int app_id)
 {
     if (streaming_status != STREAMING_NONE)
     {
@@ -82,7 +83,8 @@ int streaming_begin(PSERVER_LIST node, int app_id)
     config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
-    req->node = node;
+    req->server = serverdata_new();
+    memcpy(req->server, server, sizeof(SERVER_DATA));
     req->config = config;
     req->appId = app_id;
     return pthread_create(&streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
@@ -124,8 +126,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     streaming_errno = GS_OK;
 
     _streaming_errmsg_write("");
-    PSERVER_LIST node = req->node;
-    PSERVER_DATA server = (PSERVER_DATA)node->server;
+    PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
     enum platform system = platform_current;
     absinput_no_control = config->viewonly;
@@ -194,12 +195,13 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
             printf("Sending app quit request ...\n");
         gs_quit_app(server);
     }
-    bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
+    pcmanager_request_update(server);
 
     // Don't always reset status as error state should be kept
     _streaming_set_status(STREAMING_NONE);
 thread_cleanup:
     platform_stop(system);
+    free(req->server);
     free(req->config);
     free(req);
     return NULL;

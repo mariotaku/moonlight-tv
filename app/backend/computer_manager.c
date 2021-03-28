@@ -21,12 +21,11 @@
 #include "util/memlog.h"
 
 static pthread_t computer_manager_polling_thread;
-bool computer_manager_executing_quitapp;
 
 PSERVER_LIST computer_list;
 
 static void *_computer_manager_quitapp_action(void *data);
-static void *_computer_manager_server_update_action(void *data);
+static void *_computer_manager_server_update_action(PSERVER_DATA data);
 static int _server_list_compare_uuid(PSERVER_LIST other, const void *v);
 static void pcmanager_load_known_hosts();
 static void pcmanager_save_known_hosts();
@@ -54,24 +53,18 @@ void computer_manager_destroy()
 
 bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
 {
-    switch (which)
-    {
-    case USER_CM_REQ_SERVER_UPDATE:
-    {
-        /* code */
-        pthread_t update_thread;
-        pthread_create(&update_thread, NULL, _computer_manager_server_update_action, data1);
-        return true;
-    }
-    default:
-        break;
-    }
     return false;
 }
 
 void handle_server_updated(PSERVER_INFO_RESP update)
 {
     PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, _server_list_compare_uuid);
+    if (!node)
+    {
+        free((void *)update->server);
+        free(update);
+        return;
+    }
     serverdata_free((PSERVER_DATA)node->server);
     serverlist_set_from_resp(node, update);
     node->server = update->server;
@@ -122,50 +115,49 @@ PSERVER_LIST computer_manager_server_of(const char *address)
     return serverlist_find_by(computer_list, address, server_list_namecmp);
 }
 
-PSERVER_LIST computer_manager_server_at(int index)
+bool computer_manager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
 {
-    return serverlist_nth(computer_list, index);
-}
-
-bool computer_manager_quitapp(PSERVER_LIST node)
-{
-    if (node->server->currentGame == 0)
+    if (server->currentGame == 0)
     {
         return false;
     }
+    cm_pin_request *req = malloc(sizeof(cm_pin_request));
+    req->server = server;
+    req->callback = callback;
     pthread_t quitapp_thread;
-    pthread_create(&quitapp_thread, NULL, _computer_manager_quitapp_action, node);
+    pthread_create(&quitapp_thread, NULL, _computer_manager_quitapp_action, req);
     return true;
 }
 
 void *_computer_manager_quitapp_action(void *data)
 {
-    computer_manager_executing_quitapp = true;
-    PSERVER_LIST node = data;
-    int quitret = gs_quit_app((PSERVER_DATA)node->server);
-    computer_manager_executing_quitapp = false;
-    bus_pushevent(USER_CM_REQ_SERVER_UPDATE, node, NULL);
-    if (quitret != GS_OK)
-    {
-        bus_pushevent(USER_CM_QUITAPP_FAILED, node, NULL);
-    }
+    cm_pin_request *req = (cm_pin_request *)data;
+    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PSERVER_DATA server = serverdata_new();
+    memcpy(server, req->server, sizeof(SERVER_DATA));
+    int ret = gs_quit_app(server);
+    if (ret != GS_OK)
+        serverstate_setgserror(&resp->state, ret, gs_error);
+    resp->server = server;
+    bus_pushaction((bus_actionfunc)req->callback, resp);
+    pcmanager_request_update(server);
+    free(req);
     return NULL;
 }
 
-void *_computer_manager_server_update_action(void *data)
+void *_computer_manager_server_update_action(PSERVER_DATA data)
 {
-    PSERVER_LIST node = data;
     PSERVER_DATA server = serverdata_new();
     PSERVER_INFO_RESP update = serverinfo_resp_new();
-    int ret = gs_init(server, strdup(node->server->serverInfo.address), app_configuration->key_dir,
+    int ret = gs_init(server, strdup(data->serverInfo.address), app_configuration->key_dir,
                       app_configuration->debug_level, app_configuration->unsupported);
     update->server = server;
     if (ret == GS_OK)
         update->state.code = SERVER_STATE_ONLINE;
     else
         serverstate_setgserror(&update->state, ret, gs_error);
-
     bus_pushaction((bus_actionfunc)handle_server_updated, update);
+    free(data);
     return NULL;
 }
 
@@ -290,6 +282,14 @@ void serverlist_nodefree(PSERVER_LIST node)
         serverdata_free((PSERVER_DATA)node->server);
     }
     free(node);
+}
+
+void pcmanager_request_update(const SERVER_DATA *server)
+{
+    pthread_t update_thread;
+    PSERVER_DATA arg = serverdata_new();
+    memcpy(arg, server, sizeof(SERVER_DATA));
+    pthread_create(&update_thread, NULL, (void *(*)(void *))_computer_manager_server_update_action, arg);
 }
 
 static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp)

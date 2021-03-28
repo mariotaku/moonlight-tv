@@ -13,10 +13,10 @@
 static void *pcmanager_send_wol_action(void *arg);
 static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
-bool pcmanager_send_wol(PSERVER_LIST node)
+bool pcmanager_send_wol(const SERVER_DATA *server)
 {
   pthread_t t;
-  pthread_create(&t, NULL, pcmanager_send_wol_action, (void *)node->server->mac);
+  pthread_create(&t, NULL, pcmanager_send_wol_action, (void *)server->mac);
   return true;
 }
 

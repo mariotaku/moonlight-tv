@@ -38,14 +38,13 @@ void streaming_init();
 
 void streaming_destroy();
 
-int streaming_begin(PSERVER_LIST node, int app_id);
+int streaming_begin(const SERVER_DATA *server, int app_id);
 
 void streaming_interrupt(bool quitapp);
 
 void streaming_wait_for_stop();
 
 void streaming_display_size(short width, short height);
-
 
 void streaming_enter_fullscreen();
 

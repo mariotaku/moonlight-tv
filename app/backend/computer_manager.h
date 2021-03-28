@@ -8,7 +8,6 @@
 
 PSERVER_LIST computer_list;
 
-bool computer_manager_executing_quitapp;
 bool computer_discovery_running;
 
 typedef struct SERVER_INFO_RESP_T
@@ -46,8 +45,6 @@ void computer_manager_auto_discovery_stop();
 
 PSERVER_LIST computer_manager_server_of(const char *address);
 
-PSERVER_LIST computer_manager_server_at(int index);
-
 /**
  * @brief Generates a PIN code, and start pairing process.
  * Generated PIN code will be written into `pin` pointer.
@@ -55,18 +52,14 @@ PSERVER_LIST computer_manager_server_at(int index);
  * @param p 
  * @param pin 
  */
-bool computer_manager_pair(PSERVER_LIST node, char *pin, void (*callback)(PSERVER_LIST));
+bool computer_manager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PSERVER_INFO_RESP));
 
-bool computer_manager_unpair(PSERVER_LIST node, void (*callback)(PSERVER_LIST));
+bool computer_manager_unpair(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP));
 
-bool computer_manager_quitapp(PSERVER_LIST node);
+bool computer_manager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP));
 
-bool pcmanager_send_wol(PSERVER_LIST node);
+bool pcmanager_send_wol(const SERVER_DATA *server);
+
+void pcmanager_request_update(const SERVER_DATA *server);
 
 bool pcmanager_manual_add(const char *address);
-
-void *_computer_manager_polling_action(void *data);
-
-PSERVER_DATA serverdata_new();
-
-PSERVER_INFO_RESP serverinfo_resp_new();

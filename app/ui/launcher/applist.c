@@ -3,6 +3,7 @@
 #include "backend/coverloader.h"
 #include "stream/session.h"
 #include "ui/root.h"
+#include "priv.h"
 
 #include "res.h"
 #include "util/bus.h"
@@ -203,6 +204,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     return event_emitted;
 }
 
+
 void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
 {
     if (clicked == 1)
@@ -213,12 +215,15 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
         }
         else
         {
-            streaming_begin(node, cur->id);
+            streaming_begin(node->server, cur->id);
         }
     }
     else
     {
-        computer_manager_quitapp(node);
+        if (computer_manager_quitapp(node->server, launcher_handle_quitapp))
+        {
+            computer_manager_executing_quitapp = true;
+        }
     }
 }
 
@@ -320,4 +325,10 @@ bool _applist_item_select(PSERVER_LIST node, int offset)
 bool _cover_use_default(struct nk_image *img)
 {
     return img == NULL || img->w == 0 || img->h == 0;
+}
+
+void launcher_handle_quitapp(PSERVER_INFO_RESP resp)
+{
+    computer_manager_executing_quitapp = false;
+    free(resp->server);
 }
