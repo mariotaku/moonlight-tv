@@ -60,7 +60,11 @@ void handle_server_updated(PSERVER_INFO_RESP update)
     PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, serverlist_compare_uuid);
     if (!node)
         return;
-    serverdata_free((PSERVER_DATA)node->server);
+    if (update->server_shallow)
+        free((PSERVER_DATA)node->server);
+    else
+        serverdata_free((PSERVER_DATA)node->server);
+
     serverlist_set_from_resp(node, update);
 }
 
@@ -138,6 +142,7 @@ void *_computer_manager_server_update_action(PSERVER_DATA data)
     int ret = gs_init(server, strdup(data->serverInfo.address), app_configuration->key_dir,
                       app_configuration->debug_level, app_configuration->unsupported);
     update->server = server;
+    update->server_shallow = false;
     if (ret == GS_OK)
         update->state.code = SERVER_STATE_ONLINE;
     else
@@ -209,7 +214,7 @@ void pcmanager_save_known_hosts()
     }
     for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
     {
-        if (!cur->server)
+        if (!cur->server || !cur->known)
         {
             continue;
         }
@@ -291,6 +296,7 @@ void pcmanager_request_update(const SERVER_DATA *server)
 static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp)
 {
     memcpy(&node->state, &resp->state, sizeof(resp->state));
+    node->known = resp->known;
     node->server = resp->server;
     resp->server_referenced = true;
 }

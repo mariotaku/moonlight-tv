@@ -374,7 +374,10 @@ void handle_pairing_done(PSERVER_INFO_RESP resp)
     {
         // Close pairing window
         pairing_computer_state.state = PS_NONE;
-        // _select_computer(node, node->apps == NULL);
+        PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
+        if (!node)
+            return true;
+        _select_computer(node, node->apps == NULL);
     }
     else
     {
