@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include "backend_types.h"
+#include "backend/types.h"
 
 #include "libgamestream/client.h"
 

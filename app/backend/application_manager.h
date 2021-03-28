@@ -2,7 +2,7 @@
 
 #include "libgamestream/client.h"
 
-#include "backend_types.h"
+#include "backend/types.h"
 
 /**
  * @brief Initialize application manager context
