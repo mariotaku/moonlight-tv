@@ -51,6 +51,7 @@ if (TARGET_WEBOS)
         smp/smp_audio.c
         smp/smp_video.c
         smp/stub/sample/src/StarfishDirectMediaPlayer.cpp
+        smp/stub/sample/src/StarfishDirectMediaPlayer_API.cpp
         ${CMAKE_SOURCE_DIR}/app/platform/webos/SDL_webOS.c
     )
     target_include_directories(moonlight-smp PRIVATE 

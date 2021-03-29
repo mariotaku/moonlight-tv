@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StarfishDirectMediaPlayer.h"
+#include "StarfishDirectMediaPlayer_C.h"
 
 extern StarfishDirectMediaPlayer *playerctx;
 extern DirectMediaVideoConfig videoConfig;
