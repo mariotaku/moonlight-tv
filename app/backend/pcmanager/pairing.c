@@ -59,10 +59,7 @@ void *_pcmanager_pairing_action(cm_pin_request *req)
     memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_pair(server, (char *)req->arg1);
     if (ret != GS_OK)
-    {
         pcmanager_resp_setgserror(resp, ret, gs_error);
-        serverstate_setgserror(&resp->state, ret, gs_error);
-    }
     resp->server = server;
     resp->server_shallow = true;
     bus_pushaction((bus_actionfunc)req->callback, resp);

@@ -221,6 +221,7 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     {
         if (pcmanager_quitapp(node->server, launcher_handle_quitapp))
         {
+            _quitapp_errno = false;
             computer_manager_executing_quitapp = true;
         }
     }
@@ -329,4 +330,8 @@ bool _cover_use_default(struct nk_image *img)
 void launcher_handle_quitapp(PPCMANAGER_RESP resp)
 {
     computer_manager_executing_quitapp = false;
+    if (resp->result.code != GS_OK)
+    {
+        _quitapp_errno = true;
+    }
 }

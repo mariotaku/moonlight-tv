@@ -127,8 +127,9 @@ void *_pcmanager_quitapp_action(void *data)
     memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_quit_app(server);
     if (ret != GS_OK)
-        serverstate_setgserror(&resp->state, ret, gs_error);
+        pcmanager_resp_setgserror(resp, ret, gs_error);
     resp->server = server;
+    resp->server_shallow = true;
     bus_pushaction((bus_actionfunc)req->callback, resp);
     bus_pushaction((bus_actionfunc)handle_server_updated, resp);
     bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);

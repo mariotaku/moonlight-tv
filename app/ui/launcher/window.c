@@ -243,11 +243,6 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
         launcher_handle_server_updated((PPCMANAGER_RESP)data1);
         return true;
     }
-    case USER_CM_QUITAPP_FAILED:
-    {
-        _quitapp_errno = true;
-        return true;
-    }
     default:
         break;
     }
