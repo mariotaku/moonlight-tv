@@ -212,15 +212,15 @@ static int load_server_status(PSERVER_DATA server)
       goto cleanup;
     }
 
-    if (xml_search(data->memory, data->size, "uniqueid", &server->uuid) != GS_OK)
+    if (xml_search(data->memory, data->size, "uniqueid", (char **)&server->uuid) != GS_OK)
     {
       goto cleanup;
     }
-    if (xml_search(data->memory, data->size, "mac", &server->mac) != GS_OK)
+    if (xml_search(data->memory, data->size, "mac", (char **)&server->mac) != GS_OK)
     {
       goto cleanup;
     }
-    if (xml_search(data->memory, data->size, "hostname", &server->hostname) != GS_OK)
+    if (xml_search(data->memory, data->size, "hostname", (char **)&server->hostname) != GS_OK)
     {
       server->hostname = strdup(server->serverInfo.address);
     }
@@ -242,10 +242,10 @@ static int load_server_status(PSERVER_DATA server)
     if (xml_search(data->memory, data->size, "ServerCodecModeSupport", &serverCodecModeSupportText) != GS_OK)
       goto cleanup;
 
-    if (xml_search(data->memory, data->size, "gputype", &server->gpuType) != GS_OK)
+    if (xml_search(data->memory, data->size, "gputype", (char **)&server->gpuType) != GS_OK)
       goto cleanup;
 
-    if (xml_search(data->memory, data->size, "GsVersion", &server->gsVersion) != GS_OK)
+    if (xml_search(data->memory, data->size, "GsVersion", (char **)&server->gsVersion) != GS_OK)
       goto cleanup;
 
     if (xml_search(data->memory, data->size, "GfeVersion", (char **)&server->serverInfo.serverInfoGfeVersion) != GS_OK)
@@ -338,11 +338,19 @@ int gs_unpair(PSERVER_DATA server)
   construct_url(url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
   ret = http_request(url, data);
 
-  http_free_data(data);
-  if (ret == GS_OK)
+  if (xml_status(data->memory, data->size) == GS_ERROR)
   {
-    server->paired = false;
+    ret = GS_ERROR;
+    goto cleanup;
   }
+  
+  ret = GS_OK;
+  server->paired = false;
+
+cleanup:
+  if (data != NULL)
+    http_free_data(data);
+
   return ret;
 }
 
@@ -359,7 +367,7 @@ struct pairing_secret_t
   unsigned char signature[256];
 };
 
-int gs_pair(PSERVER_DATA server, char *pin)
+int gs_pair(PSERVER_DATA server, const char *pin)
 {
   mbedtls_md_type_t hash_algo;
   size_t hash_length;

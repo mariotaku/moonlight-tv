@@ -47,5 +47,5 @@ void _select_computer(PSERVER_LIST node, bool load_apps);
 void _open_pair(PSERVER_LIST node);
 void _open_unpair(PSERVER_LIST node);
 
-void launcher_handle_quitapp(PSERVER_INFO_RESP resp);
-void handle_unpairing_done(PSERVER_INFO_RESP resp);
+void launcher_handle_quitapp(PPCMANAGER_RESP resp);
+void handle_unpairing_done(PPCMANAGER_RESP resp);

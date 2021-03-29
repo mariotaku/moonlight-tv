@@ -86,7 +86,7 @@ void _manual_add_window(struct nk_context *ctx)
             char *addr = malloc(text_len + 1);
             strncpy(addr, text, text_len);
             addr[text_len] = '\0';
-            pcmanager_manual_add(addr);
+            pcmanager_manual_add(addr, NULL);
             // Clear input text
             text_len = 0;
             _launcher_show_manual_pair = false;

@@ -38,6 +38,7 @@ int topbar_hovered_item = -1;
 struct nk_rect topbar_hovering_item_bounds = {0, 0, 0, 0};
 struct nk_vec2 topbar_focused_item_center = {0, 0};
 static int topbar_item_count = 0;
+static bool initial_server_selected = false;
 bool topbar_showing_combo = false;
 bool computer_manager_executing_quitapp = false;
 
@@ -61,6 +62,8 @@ bool _launcher_modal_windows_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_S
 
 void launcher_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds);
 void topbar_item_offset(int offset);
+
+static void launcher_handle_server_updated(PPCMANAGER_RESP resp);
 
 #define launcher_blocked() ((_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW) || ui_settings_showing)
 
@@ -237,34 +240,7 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
     case USER_CM_SERVER_ADDED:
     case USER_CM_SERVER_UPDATED:
     {
-        PSERVER_INFO_RESP resp = data1;
-        PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
-        if (!node)
-            return true;
-        // Select saved paired server if not selected before
-        if (data2)
-        {
-            if (resp->server->paired)
-            {
-                _select_computer(node, node->apps == NULL);
-            }
-            else
-            {
-                _open_pair(node);
-            }
-            return true;
-        }
-        else if (resp->server && resp->server->paired && app_configuration->address)
-        {
-            if (selected_server_node == NULL && strcmp(app_configuration->address, resp->server->serverInfo.address) == 0)
-            {
-                _select_computer(node, node->apps == NULL);
-            }
-            else if (selected_server_node == node && !node->apps)
-            {
-                application_manager_load(node);
-            }
-        }
+        launcher_handle_server_updated((PPCMANAGER_RESP)data1);
         return true;
     }
     case USER_CM_QUITAPP_FAILED:
@@ -368,7 +344,7 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
     }
 }
 
-void handle_pairing_done(PSERVER_INFO_RESP resp)
+void handle_pairing_done(PPCMANAGER_RESP resp)
 {
     if (resp->state.code == SERVER_STATE_ONLINE)
     {
@@ -376,7 +352,7 @@ void handle_pairing_done(PSERVER_INFO_RESP resp)
         pairing_computer_state.state = PS_NONE;
         PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
         if (!node)
-            return true;
+            return;
         _select_computer(node, node->apps == NULL);
     }
     else
@@ -387,20 +363,40 @@ void handle_pairing_done(PSERVER_INFO_RESP resp)
     }
 }
 
-void handle_unpairing_done(PSERVER_INFO_RESP resp)
+void handle_unpairing_done(PPCMANAGER_RESP resp)
 {
-    selected_server_node = NULL;
-    if (resp->state.code == SERVER_STATE_ONLINE)
+    if (resp->result.code == GS_OK)
     {
         // Close pairing window
         pairing_computer_state.state = PS_NONE;
-        // _select_computer(node, node->apps == NULL);
+        selected_server_node = NULL;
     }
     else
     {
         // Show pairing error instead
         pairing_computer_state.state = PS_FAIL;
-        pairing_computer_state.error = resp->state.error.errmsg;
+        pairing_computer_state.error = resp->result.error.message;
+    }
+}
+
+void launcher_handle_server_updated(PPCMANAGER_RESP resp)
+{
+    PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
+    if (!node)
+        return;
+    // Select saved paired server if not selected before
+    if (resp->server && resp->server->paired && app_configuration->address)
+    {
+        if (selected_server_node == NULL && !initial_server_selected &&
+            strcmp(app_configuration->address, resp->server->serverInfo.address) == 0)
+        {
+            _select_computer(node, node->apps == NULL);
+            initial_server_selected = true;
+        }
+        else if (selected_server_node == node && !node->apps)
+        {
+            application_manager_load(node);
+        }
     }
 }
 

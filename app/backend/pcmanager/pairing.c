@@ -16,15 +16,15 @@
 
 static void *_pcmanager_pairing_action(cm_pin_request *req);
 static void *_pcmanager_unpairing_action(cm_pin_request *req);
-static void *_manual_adding_action(void *data);
+static void *_manual_adding_action(cm_pin_request *req);
 static int pin_random(int min, int max);
 
-bool pcmanager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PSERVER_INFO_RESP))
+bool pcmanager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PPCMANAGER_RESP))
 {
     int pin_int = pin_random(0, 9999);
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     snprintf(pin, 5, "%04u", pin_int);
-    req->pin = strdup(pin);
+    req->arg1 = strdup(pin);
     req->server = server;
     req->callback = callback;
     pthread_t pair_thread;
@@ -32,7 +32,7 @@ bool pcmanager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PSERV
     return true;
 }
 
-bool pcmanager_unpair(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
+bool pcmanager_unpair(const SERVER_DATA *server, void (*callback)(PPCMANAGER_RESP))
 {
     cm_pin_request *req = malloc(sizeof(cm_pin_request));
     req->server = server;
@@ -42,21 +42,27 @@ bool pcmanager_unpair(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_R
     return true;
 }
 
-bool pcmanager_manual_add(const char *address)
+bool pcmanager_manual_add(const char *address, void (*callback)(PPCMANAGER_RESP))
 {
+    cm_pin_request *req = malloc(sizeof(cm_pin_request));
+    req->arg1 = address;
+    req->callback = callback;
     pthread_t add_thread;
-    pthread_create(&add_thread, NULL, _manual_adding_action, (void *)address);
+    pthread_create(&add_thread, NULL, (void *(*)(void *))_manual_adding_action, (void *)req);
     return true;
 }
 
 void *_pcmanager_pairing_action(cm_pin_request *req)
 {
-    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
-    int ret = gs_pair(server, (char *)req->pin);
+    int ret = gs_pair(server, (char *)req->arg1);
     if (ret != GS_OK)
+    {
+        pcmanager_resp_setgserror(resp, ret, gs_error);
         serverstate_setgserror(&resp->state, ret, gs_error);
+    }
     resp->server = server;
     resp->server_shallow = true;
     bus_pushaction((bus_actionfunc)req->callback, resp);
@@ -68,12 +74,12 @@ void *_pcmanager_pairing_action(cm_pin_request *req)
 
 void *_pcmanager_unpairing_action(cm_pin_request *req)
 {
-    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_unpair(server);
     if (ret != GS_OK)
-        serverstate_setgserror(&resp->state, ret, gs_error);
+        pcmanager_resp_setgserror(resp, ret, gs_error);
     resp->server = server;
     resp->server_shallow = true;
     bus_pushaction((bus_actionfunc)req->callback, resp);
@@ -83,10 +89,10 @@ void *_pcmanager_unpairing_action(cm_pin_request *req)
     return NULL;
 }
 
-void *_manual_adding_action(void *data)
+void *_manual_adding_action(cm_pin_request *req)
 {
-    char *address = data;
-    pcmanager_insert_by_address(address, true);
+    pcmanager_insert_by_address((const char *)req->arg1, true, req->callback);
+    free(req);
     return NULL;
 }
 

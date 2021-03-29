@@ -46,7 +46,7 @@ typedef struct
 
 bool computer_discovery_running = false;
 
-void handle_server_discovered(PSERVER_INFO_RESP discovered);
+void handle_server_discovered(PPCMANAGER_RESP discovered);
 bool pcmanager_is_known_host(const char *srvaddr);
 
 static mdns_string_t
@@ -145,7 +145,7 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
             free(srvaddr);
             return 0;
         }
-        pcmanager_insert_by_address(srvaddr, false);
+        pcmanager_insert_by_address(srvaddr, false, NULL);
     }
     return 0;
 }
@@ -251,7 +251,7 @@ void *_computer_manager_polling_action(void *data)
         if (!cur->known)
             continue;
         const char *srvaddr = strdup(cur->server->serverInfo.address);
-        pcmanager_insert_by_address(srvaddr, false);
+        pcmanager_insert_by_address(srvaddr, false, NULL);
     }
     int sockets[32];
     int query_id[32];
@@ -318,12 +318,12 @@ void *_computer_manager_polling_action(void *data)
     return NULL;
 }
 
-int pcmanager_insert_by_address(const char *srvaddr, bool pair)
+int pcmanager_insert_by_address(const char *srvaddr, bool pair, void (*callback)(PPCMANAGER_RESP))
 {
     PSERVER_DATA server = serverdata_new();
     int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
 
-    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PPCMANAGER_RESP resp = serverinfo_resp_new();
     if (ret == GS_OK)
     {
         resp->state.code = SERVER_STATE_ONLINE;
@@ -342,6 +342,8 @@ int pcmanager_insert_by_address(const char *srvaddr, bool pair)
         free(server);
         resp->server = NULL;
     }
+    if (callback)
+        bus_pushaction((bus_actionfunc)callback, resp);
     bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);
     return ret;

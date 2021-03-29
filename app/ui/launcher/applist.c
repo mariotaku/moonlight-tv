@@ -326,7 +326,7 @@ bool _cover_use_default(struct nk_image *img)
     return img == NULL || img->w == 0 || img->h == 0;
 }
 
-void launcher_handle_quitapp(PSERVER_INFO_RESP resp)
+void launcher_handle_quitapp(PPCMANAGER_RESP resp)
 {
     computer_manager_executing_quitapp = false;
 }

@@ -25,22 +25,36 @@ bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     }
     if (nk_group_begin(ctx, "launcher_empty_message", NK_WINDOW_NO_SCROLLBAR))
     {
-      nk_layout_row_dynamic(ctx, (group_height) / 2 - 25 * NK_UI_SCALE, 1);
+      const int actions_count = 2;
+      int actions_height = 25 * NK_UI_SCALE * actions_count + ctx->style.window.spacing.y * (actions_count - 1);
+      nk_layout_row_dynamic(ctx, (group_height) / 2 - actions_height, 1);
       // nk_layout_row(ctx, NK_DYNAMIC, );
       nk_label(ctx, "PC is not responding", NK_TEXT_ALIGN_CENTERED | NK_TEXT_ALIGN_BOTTOM);
       nk_layout_row_dynamic_s(ctx, 10, 1);
       nk_spacing(ctx, 1);
-      nk_layout_row_template_begin_s(ctx, 25);
+
+      nk_layout_row_template_begin_s(ctx, actions_height);
       nk_layout_row_template_push_variable(ctx, 1);
       nk_layout_row_template_push_static_s(ctx, 150);
       nk_layout_row_template_push_variable(ctx, 1);
       nk_layout_row_template_end(ctx);
 
       nk_spacing(ctx, 1);
-      if (nk_button_label(ctx, "Send wake signal"))
+
+      if (nk_group_begin(ctx, "launcher_empty_actions", NK_WINDOW_NO_SCROLLBAR))
       {
-        pcmanager_send_wol(node->server);
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        if (nk_button_label(ctx, "Send wake signal"))
+        {
+          pcmanager_send_wol(node->server);
+        }
+        if (nk_button_label(ctx, "Retry loading"))
+        {
+          pcmanager_request_update(node->server);
+        }
+        nk_group_end(ctx);
       }
+
       nk_spacing(ctx, 1);
       nk_group_end(ctx);
     }

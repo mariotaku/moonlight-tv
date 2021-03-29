@@ -48,6 +48,6 @@ int gs_init(PSERVER_DATA server, const char *address, const char *keyDirectory, 
 int gs_start_app(PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio, int gamepad_mask);
 int gs_applist(PSERVER_DATA server, PAPP_LIST *app_list);
 int gs_unpair(PSERVER_DATA server);
-int gs_pair(PSERVER_DATA server, char *pin);
+int gs_pair(PSERVER_DATA server, const char *pin);
 int gs_quit_app(PSERVER_DATA server);
 int gs_download_cover(PSERVER_DATA server, int appId, const char *path);

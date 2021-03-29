@@ -29,7 +29,7 @@ static void *_computer_manager_server_update_action(PSERVER_DATA data);
 static void pcmanager_load_known_hosts();
 static void pcmanager_save_known_hosts();
 
-static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp);
+static void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp);
 
 void computer_manager_init()
 {
@@ -55,7 +55,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
     return false;
 }
 
-void handle_server_updated(PSERVER_INFO_RESP update)
+void handle_server_updated(PPCMANAGER_RESP update)
 {
     PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, serverlist_compare_uuid);
     if (!node)
@@ -68,7 +68,7 @@ void handle_server_updated(PSERVER_INFO_RESP update)
     serverlist_set_from_resp(node, update);
 }
 
-void handle_server_discovered(PSERVER_INFO_RESP discovered)
+void handle_server_discovered(PPCMANAGER_RESP discovered)
 {
     PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, serverlist_compare_uuid);
     if (node)
@@ -78,7 +78,7 @@ void handle_server_discovered(PSERVER_INFO_RESP discovered)
             serverdata_free((PSERVER_DATA)node->server);
         }
         serverlist_set_from_resp(node, discovered);
-        bus_pushevent(USER_CM_SERVER_UPDATED, node, NULL);
+        bus_pushevent(USER_CM_SERVER_UPDATED, discovered, NULL);
     }
     else
     {
@@ -105,7 +105,7 @@ static int server_list_namecmp(PSERVER_LIST item, const void *address)
     return strcmp(item->server->serverInfo.address, address);
 }
 
-bool pcmanager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_RESP))
+bool pcmanager_quitapp(const SERVER_DATA *server, void (*callback)(PPCMANAGER_RESP))
 {
     if (server->currentGame == 0)
     {
@@ -122,7 +122,7 @@ bool pcmanager_quitapp(const SERVER_DATA *server, void (*callback)(PSERVER_INFO_
 void *_pcmanager_quitapp_action(void *data)
 {
     cm_pin_request *req = (cm_pin_request *)data;
-    PSERVER_INFO_RESP resp = serverinfo_resp_new();
+    PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_quit_app(server);
@@ -139,7 +139,7 @@ void *_pcmanager_quitapp_action(void *data)
 void *_computer_manager_server_update_action(PSERVER_DATA data)
 {
     PSERVER_DATA server = serverdata_new();
-    PSERVER_INFO_RESP update = serverinfo_resp_new();
+    PPCMANAGER_RESP update = serverinfo_resp_new();
     int ret = gs_init(server, strdup(data->serverInfo.address), app_configuration->key_dir,
                       app_configuration->debug_level, app_configuration->unsupported);
     update->server = server;
@@ -232,14 +232,14 @@ PSERVER_DATA serverdata_new()
     return server;
 }
 
-PSERVER_INFO_RESP serverinfo_resp_new()
+PPCMANAGER_RESP serverinfo_resp_new()
 {
-    PSERVER_INFO_RESP resp = malloc(sizeof(SERVER_INFO_RESP));
-    memset(resp, 0, sizeof(SERVER_INFO_RESP));
+    PPCMANAGER_RESP resp = malloc(sizeof(PCMANAGER_RESP));
+    memset(resp, 0, sizeof(PCMANAGER_RESP));
     return resp;
 }
 
-void serverinfo_resp_free(PSERVER_INFO_RESP resp)
+void serverinfo_resp_free(PPCMANAGER_RESP resp)
 {
     if (!resp->server_referenced)
     {
@@ -253,6 +253,12 @@ void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg)
     state->code = SERVER_STATE_ERROR;
     state->error.errcode = code;
     state->error.errmsg = msg;
+}
+
+void pcmanager_resp_setgserror(PPCMANAGER_RESP resp, int code, const char *msg)
+{
+    resp->result.code = code;
+    resp->result.error.message = msg;
 }
 
 #define free_nullable(p) \
@@ -294,9 +300,12 @@ void pcmanager_request_update(const SERVER_DATA *server)
     pthread_create(&update_thread, NULL, (void *(*)(void *))_computer_manager_server_update_action, arg);
 }
 
-static void serverlist_set_from_resp(PSERVER_LIST node, PSERVER_INFO_RESP resp)
+static void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp)
 {
-    memcpy(&node->state, &resp->state, sizeof(resp->state));
+    if (resp->state.code != SERVER_STATE_NONE)
+    {
+        memcpy(&node->state, &resp->state, sizeof(resp->state));
+    }
     node->known = resp->known;
     node->server = resp->server;
     resp->server_referenced = true;
