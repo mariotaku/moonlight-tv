@@ -2,6 +2,7 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "C_Cpp.autoAddFileAssociations": false,
     "cmake.configureArgs": [
-        "-DWEBOS_SDL_STATIC=OFF"
+        "-DWEBOS_SDL_STATIC=OFF",
+        "-DWEBOS_INSTALL_DEVICES_LIST=ON"
     ]
 }

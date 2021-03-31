@@ -18,6 +18,7 @@ add_library(moonlight-dile SHARED
     dile_video.c
     lunasynccall.c
     VideoOutputService.c
+    VideoSinkManagerService.c
     ${CMAKE_SOURCE_DIR}/app/platform/webos/os_info.c
     ${CMAKE_SOURCE_DIR}/core/libgamestream/src/sps.c
 )

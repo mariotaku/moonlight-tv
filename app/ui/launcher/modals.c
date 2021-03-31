@@ -33,7 +33,7 @@ void _pairing_error_popup(struct nk_context *ctx)
 {
     const char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
     enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Pairing Failed", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "Pairing Failed", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
@@ -53,7 +53,7 @@ void _server_error_popup(struct nk_context *ctx)
         message = "";
 
     enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Connection Error", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "Connection Error", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
@@ -68,7 +68,7 @@ void _quitapp_error_popup(struct nk_context *ctx)
 {
     const char *message = "Unable to quit game. Please quit the game on the device you started the session.";
     enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "Quit Game", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "Quit Game", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
@@ -84,7 +84,7 @@ void _decoder_warning_popup(struct nk_context *ctx)
     const char *message = "No functioning hardware accelerated video decoder was detected.\n"
                           "Your streaming performance may be severely degraded in this configuration.";
     enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "No Hardware Decoder", message, "OK", NULL, NULL)) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "No Hardware Decoder", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
@@ -115,7 +115,7 @@ void _hostinfo_popup(struct nk_context *ctx)
         snprintf(message, sizeof(message), "Unknown host");
     }
     //selected_server_node
-    if ((result = nk_dialog_popup_begin(ctx, "Host Details", message, "OK", NULL, "Unbind")) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "Host Details", message, "OK", NULL, "Unbind", NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {

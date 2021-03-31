@@ -14,13 +14,9 @@ static void _hcontext_reset(HContext *hcontext)
     hcontext->multiple = false;
 }
 
-bool VideoOutputInit()
-{
-    return LSSyncCallInit();
-}
-
 bool VideoOutputRegister(const char *contextId, const char *appId)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
@@ -42,6 +38,7 @@ bool VideoOutputRegister(const char *contextId, const char *appId)
 
 bool VideoOutputConnect(const char *contextId, const char *appId)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
@@ -65,6 +62,7 @@ bool VideoOutputConnect(const char *contextId, const char *appId)
 
 bool VideoOutputSetVideoData(const char *contextId, float framerate, int width, int height)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
@@ -88,6 +86,7 @@ bool VideoOutputSetVideoData(const char *contextId, float framerate, int width, 
 
 bool VideoOutputSetDisplayWindow(const char *contextId, bool fullscreen, int x, int y, int width, int height)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
@@ -111,6 +110,7 @@ bool VideoOutputSetDisplayWindow(const char *contextId, bool fullscreen, int x, 
 
 bool VideoOutputBlankVideo(const char *contextId, bool blank)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
@@ -130,6 +130,7 @@ bool VideoOutputBlankVideo(const char *contextId, bool blank)
 
 bool VideoOutputDisconnect(const char *contextId)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
@@ -149,6 +150,7 @@ bool VideoOutputDisconnect(const char *contextId)
 
 bool VideoOutputUnregister(const char *contextId)
 {
+    LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 

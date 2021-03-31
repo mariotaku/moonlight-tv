@@ -9,7 +9,9 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
-struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0};
+struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0},
+               _btn_confirm_center = {0, 0};
+struct nk_dialog_widget_bounds _dialog_bounds;
 
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
 static void _streaming_error_window(struct nk_context *ctx);
@@ -96,6 +98,20 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NA
         }
         return true;
     }
+    else if (streaming_status == STREAMING_ERROR)
+    {
+        switch (navkey)
+        {
+        case NAVKEY_CANCEL:
+        case NAVKEY_NEGATIVE:
+        case NAVKEY_CONFIRM:
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_confirm_center, (void *)state);
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
     return false;
 }
 
@@ -152,7 +168,8 @@ void _streaming_error_window(struct nk_context *ctx)
 {
     char *message = streaming_errmsg[0] ? streaming_errmsg : (char *)MSG_GS_ERRNO[-streaming_errno];
     enum nk_dialog_result result = nk_dialog_begin(ctx, ui_display_width, ui_display_height, "Streaming Error",
-                                                   message, "OK", NULL, NULL);
+                                                   message, "OK", NULL, NULL, &_dialog_bounds);
+    _btn_confirm_center = nk_rect_center(_dialog_bounds.positive);
     if (result != NK_DIALOG_RUNNING)
     {
         streaming_status = STREAMING_NONE;

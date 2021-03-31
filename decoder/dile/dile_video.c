@@ -18,6 +18,7 @@
  */
 
 #include "video.h"
+#include "dile_platform.h"
 
 #include <unistd.h>
 #include <stdbool.h>
@@ -33,6 +34,7 @@
 #include <ResourceManagerClient_c.h>
 #include <resource_calculator_c.h>
 #include "VideoOutputService.h"
+#include "VideoSinkManagerService.h"
 #include <dile_vdec_direct.h>
 
 #include "sps.h"
@@ -94,16 +96,25 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
   j_release(&resreq);
   free(resresp);
 
-  VideoOutputRegister(connId, appId);
+  if (dile_webos_version >= 5)
+  {
+    VideoOutputRegister(connId, appId);
 
-  VideoOutputConnect(connId, appId);
+    VideoOutputConnect(connId, appId);
+  }
+  else
+  {
+    VideoSinkManagerRegister(connId);
+  }
 
   ResourceManagerClientNotifyForeground(rmhandle);
 
-  VideoOutputSetVideoData(connId, redrawRate, width, 720);
+  if (dile_webos_version >= 5)
+  {
+    VideoOutputSetVideoData(connId, redrawRate, width, 720);
 
-  VideoOutputSetDisplayWindow(connId, true, 0, 0, width, height);
-
+    VideoOutputSetDisplayWindow(connId, true, 0, 0, width, height);
+  }
   // VideoOutputBlankVideo(connId, true);
 
   if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
@@ -120,6 +131,7 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
     return -1;
   }
 
+  printf("[DILE] Video opened\n");
   return 0;
 }
 
@@ -134,10 +146,16 @@ static void dile_cleanup()
     const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
     const char *appId = getenv("APPID");
 
-    VideoOutputDisconnect(connId);
+    if (dile_webos_version >= 5)
+    {
+      VideoOutputDisconnect(connId);
 
-    VideoOutputUnregister(connId);
-
+      VideoOutputUnregister(connId);
+    }
+    else
+    {
+      VideoSinkManagerUnregister(connId);
+    }
     if (acquired_resources)
     {
       ResourceManagerClientRelease(rmhandle, acquired_resources);
@@ -168,21 +186,21 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
     int length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
     {
-      if (video_fourcc == FOURCC_H264 && entry->bufferType == BUFFER_TYPE_SPS)
-      {
-        gs_sps_fix(entry, GS_SPS_BITSTREAM_FIXUP, dile_buffer, &length);
-      }
-      else
+      // if (video_fourcc == FOURCC_H264 && entry->bufferType == BUFFER_TYPE_SPS)
+      // {
+      //   gs_sps_fix(entry, GS_SPS_BITSTREAM_FIXUP, dile_buffer, &length);
+      // }
+      // else
       {
         memcpy(&dile_buffer[length], entry->data, entry->length);
         length += entry->length;
       }
     }
-    if (video_fourcc == FOURCC_H264 && length % 4)
-      length += (4 - (length % 4));
-    // if (DILE_VDEC_DIRECT_Play(dile_buffer, length) == -1)
+    // if (video_fourcc == FOURCC_H264 && length % 4)
+    //   length += (4 - (length % 4));
+    if (DILE_VDEC_DIRECT_Play(dile_buffer, length) == -1)
     {
-      // fprintf(stderr, "DILE_DirectVideoPlay returned -1\n");
+      fprintf(stderr, "DILE_VDEC_DIRECT_Play returned -1\n");
       return DR_OK;
     }
   }

@@ -1,8 +1,6 @@
 #pragma once
 #include <stdbool.h>
 
-bool VideoOutputInit();
-
 bool VideoOutputRegister(const char *contextId, const char *appId);
 
 bool VideoOutputConnect(const char *contextId, const char *appId);

@@ -1,3 +1,5 @@
+#include "dile_platform.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -7,6 +9,7 @@
 #include "platform/webos/os_info.h"
 
 static bool dile_initialized = false;
+int dile_webos_version = 0;
 
 void RTD_Log(int level, int b, char *fmt, ...)
 {
@@ -21,11 +24,12 @@ bool platform_init_dile(int argc, char *argv[])
 {
     char webos_release[16];
     webos_os_info_get_release(webos_release, sizeof(webos_release));
-    if (atoi(webos_release) != 5)
-    {
-        fprintf(stdout, "This webOS version doesn't support DILE, skipping\n");
-        return false;
-    }
+    dile_webos_version = atoi(webos_release);
+    // if (dile_webos_version != 5)
+    // {
+    //     fprintf(stdout, "This webOS version doesn't support DILE, skipping\n");
+    //     return false;
+    // }
 
     if (true)
     {

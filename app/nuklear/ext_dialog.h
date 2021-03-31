@@ -21,16 +21,26 @@ enum nk_dialog_result
     NK_DIALOG_NEUTRAL
 };
 
+struct nk_dialog_widget_bounds
+{
+    struct nk_rect positive;
+    struct nk_rect negative;
+    struct nk_rect neutral;
+};
+
 enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_width, int container_height, const char *title,
-                                      const char *message, const char *positive, const char *negative, const char *neutral);
+                                      const char *message, const char *positive, const char *negative, const char *neutral,
+                                      struct nk_dialog_widget_bounds *bounds);
 
 enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *title, const char *message,
-                                            const char *positive, const char *negative, const char *neutral);
+                                            const char *positive, const char *negative, const char *neutral,
+                                            struct nk_dialog_widget_bounds *bounds);
 
 #ifdef NK_IMPLEMENTATION
 
 inline static enum nk_dialog_result _nk_dialog_content(struct nk_context *ctx, const char *message, int message_height,
-                                                       const char *positive, const char *negative, const char *neutral)
+                                                       const char *positive, const char *negative, const char *neutral,
+                                                       struct nk_dialog_widget_bounds *bounds)
 {
     nk_layout_row_dynamic(ctx, message_height, 1);
     nk_label_multiline(ctx, message);
@@ -55,18 +65,33 @@ inline static enum nk_dialog_result _nk_dialog_content(struct nk_context *ctx, c
 
     nk_spacing(ctx, 1);
     enum nk_dialog_result result = NK_DIALOG_RUNNING;
-    if (neutral && nk_button_label(ctx, neutral))
+    if (neutral)
     {
-        result = NK_DIALOG_NEUTRAL;
+        if (bounds)
+            bounds->neutral = nk_widget_bounds(ctx);
+        if (nk_button_label(ctx, neutral))
+        {
+            result = NK_DIALOG_NEUTRAL;
+        }
     }
     nk_spacing(ctx, 1);
-    if (negative && nk_button_label(ctx, negative))
+    if (negative)
     {
-        result = NK_DIALOG_NEGATIVE;
+        if (bounds)
+            bounds->negative = nk_widget_bounds(ctx);
+        if (nk_button_label(ctx, negative))
+        {
+            result = NK_DIALOG_NEGATIVE;
+        }
     }
-    if (positive && nk_button_label(ctx, positive))
+    if (positive)
     {
-        result = NK_DIALOG_POSITIVE;
+        if (bounds)
+            bounds->positive = nk_widget_bounds(ctx);
+        if (nk_button_label(ctx, positive))
+        {
+            result = NK_DIALOG_POSITIVE;
+        }
     }
     nk_spacing(ctx, 1);
     nk_layout_row_dynamic_s(ctx, 5, 0);
@@ -74,7 +99,8 @@ inline static enum nk_dialog_result _nk_dialog_content(struct nk_context *ctx, c
 }
 
 enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_width, int container_height, const char *title,
-                                      const char *message, const char *positive, const char *negative, const char *neutral)
+                                      const char *message, const char *positive, const char *negative, const char *neutral,
+                                      struct nk_dialog_widget_bounds *bounds)
 {
     struct nk_borders dec_size = nk_style_window_get_decoration_size(&ctx->style, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR);
     int dialog_width = 350 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
@@ -90,13 +116,14 @@ enum nk_dialog_result nk_dialog_begin(struct nk_context *ctx, int container_widt
     enum nk_dialog_result result = NK_DIALOG_NONE;
     if (nk_begin(ctx, title, s, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
     {
-        result = _nk_dialog_content(ctx, message, message_height, positive, negative, neutral);
+        result = _nk_dialog_content(ctx, message, message_height, positive, negative, neutral, bounds);
     }
     return result;
 }
 
 enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *title,
-                                            const char *message, const char *positive, const char *negative, const char *neutral)
+                                            const char *message, const char *positive, const char *negative, const char *neutral,
+                                            struct nk_dialog_widget_bounds *bounds)
 {
     struct nk_borders dec_size = nk_style_popup_get_decoration_size(&ctx->style, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR);
     int dialog_width = 350 * NK_UI_SCALE, message_width = dialog_width - dec_size.l - dec_size.r;
@@ -113,7 +140,7 @@ enum nk_dialog_result nk_dialog_popup_begin(struct nk_context *ctx, const char *
     enum nk_dialog_result result = NK_DIALOG_NONE;
     if (nk_popup_begin(ctx, NK_POPUP_STATIC, title, NK_WINDOW_TITLE | NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR, s))
     {
-        result = _nk_dialog_content(ctx, message, message_height, positive, negative, neutral);
+        result = _nk_dialog_content(ctx, message, message_height, positive, negative, neutral, bounds);
     }
     return result;
 }
