@@ -45,7 +45,11 @@ static void *calloc_logged(size_t n, size_t blksize, const char *file, const cha
 
 static void free_logged(void *p, const char *file, const char *func, int line)
 {
-    assert(p);
+    if (!p)
+    {
+        fprintf(stderr, "%s:%d(%s) free() on a null pointer\n", file, line, func);
+        abort();
+    }
     _free_orig(p);
     fprintf(logfile(), "%s:%d(%s) free %p\n", file, line, func, p);
 }
@@ -54,6 +58,6 @@ static void free_logged(void *p, const char *file, const char *func, int line)
 
 #define malloc(size) malloc_logged(size, __FILENAME__, __FUNCTION__, __LINE__)
 #define calloc(n, blksize) calloc_logged(n, blksize, __FILENAME__, __FUNCTION__, __LINE__)
-#define free(p) free_logged((void*) p, __FILENAME__, __FUNCTION__, __LINE__)
+#define free(p) free_logged((void *)p, __FILENAME__, __FUNCTION__, __LINE__)
 
 #endif

@@ -9,13 +9,12 @@
 
 #include "platform/webos/SDL_webOS.h"
 
-int app_webos_init(int argc, char *argv[])
+void app_webos_init(int argc, char *argv[])
 {
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
-    SDL_SetHint(SDL_HINT_WEBOS_REGISTER_APP, "1");
-    return 0;
+    // SDL_SetHint(SDL_HINT_WEBOS_REGISTER_APP, "1");
 }
 
 void app_webos_destroy()

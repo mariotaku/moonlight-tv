@@ -70,6 +70,10 @@ void handle_server_updated(PPCMANAGER_RESP update)
 
 void handle_server_discovered(PPCMANAGER_RESP discovered)
 {
+    if (discovered->state.code != SERVER_STATE_ONLINE)
+    {
+        return;
+    }
     PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, serverlist_compare_uuid);
     if (node)
     {

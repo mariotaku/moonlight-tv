@@ -64,14 +64,13 @@ static void fps_cap(int diff);
 
 int app_init(int argc, char *argv[])
 {
+#if OS_WEBOS
+    app_webos_init(argc, argv);
+#endif
     app_configuration = settings_load();
     platform_current = platform_init(app_configuration->platform, argc, argv);
     printf("Decoder platform: %s\n", platform_name(platform_current));
-#if OS_WEBOS
-    return app_webos_init(argc, argv);
-#else
     return 0;
-#endif
 }
 
 APP_WINDOW_CONTEXT app_window_create()

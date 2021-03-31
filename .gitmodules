@@ -34,3 +34,6 @@
 [submodule "decoder/smp/stub"]
 	path = decoder/smp/stub
 	url = https://github.com/webosbrew/starfish-media-pipeline-api.git
+[submodule "decoder/dile/stub"]
+	path = decoder/dile/stub
+	url = https://github.com/webosbrew/dile-directmedia.git

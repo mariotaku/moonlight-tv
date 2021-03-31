@@ -4,6 +4,7 @@ if (TARGET_WEBOS)
     add_subdirectory(ndl/stub)
     add_subdirectory(lgnc/stub)
     add_subdirectory(smp/stub)
+    add_subdirectory(dile)
 
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/assets/lib)
 
@@ -25,7 +26,6 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight-ndl moonlight-common-c opus NDL_directmedia ${PBNJSON_LIBRARIES})
     target_compile_options(moonlight-ndl PRIVATE -fPIC)
     target_compile_definitions(moonlight-ndl PUBLIC HAVE_NDL)
-
 
     add_library(moonlight-lgnc SHARED
         lgnc/lgnc_platform.c

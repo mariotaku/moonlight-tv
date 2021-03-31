@@ -39,6 +39,8 @@ if (TARGET_WEBOS)
     endif()
     set(THREADS_PTHREAD_ARG "2" CACHE STRING "Result from TRY_RUN" FORCE)
     set(HAVE_SDL TRUE)
+    
+    add_subdirectory(third_party/h264bitstream)
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
     set(TARGET_LINUX TRUE)
@@ -242,9 +244,9 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
+    target_link_libraries(moonlight PRIVATE debug moonlight-dile)
+    
     target_link_libraries(moonlight PRIVATE libavcodec libavutil)
-
-    target_link_libraries(moonlight PRIVATE debug moonlight-smp)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

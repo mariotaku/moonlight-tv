@@ -64,7 +64,6 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
 {
   if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
   {
-    PLENTRY entry = decodeUnit->bufferList;
     int length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
     {

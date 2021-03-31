@@ -23,3 +23,4 @@
 
 void gs_sps_init(int width, int height);
 void gs_sps_fix(PLENTRY sps, int flags, uint8_t* out_buf, uint32_t* out_offset);
+void gs_sps_finalize();

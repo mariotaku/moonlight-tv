@@ -41,6 +41,18 @@ enum platform platform_init(const char *name, int argc, char *argv[])
             return NDL;
     }
 #endif
+#ifdef HAVE_DILE
+    if (std || strcmp(name, "dile") == 0)
+    {
+        void *handle = dlopen("libmoonlight-dile.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle == NULL)
+            dlerror_log();
+        else if (!checkinit(DILE, argc, argv))
+            fprintf(stderr, "DILE check failed\n");
+        else
+            return DILE;
+    }
+#endif
 #ifdef HAVE_LGNC
     if (std || strcmp(name, "lgnc") == 0)
     {
@@ -115,6 +127,10 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #if HAVE_NDL
     case NDL:
         return get_decoder_callbacks_simple("ndl");
+#endif
+#if HAVE_DILE
+    case DILE:
+        return get_decoder_callbacks_simple("dile");
 #endif
 #if HAVE_LGNC
     case LGNC:
@@ -218,6 +234,17 @@ bool checkinit(enum platform system, int argc, char *argv[])
         }
         return true;
 #endif
+#ifdef HAVE_DILE
+    case DILE:
+        if (!platform_init_simple("dile", argc, argv))
+            return false;
+        if (!platform_check_simple("dile"))
+        {
+            platform_finalize(system);
+            return false;
+        }
+        return true;
+#endif
 #ifdef HAVE_LGNC
     case LGNC:
         if (!platform_init_simple("lgnc", argc, argv))
@@ -251,6 +278,11 @@ void platform_finalize(enum platform system)
 #ifdef HAVE_NDL
     case NDL:
         platform_finalize_simple("ndl");
+        break;
+#endif
+#ifdef HAVE_DILE
+    case DILE:
+        platform_finalize_simple("dile");
         break;
 #endif
 #ifdef HAVE_LGNC
@@ -300,6 +332,8 @@ const char *platform_name(enum platform system)
         return "NetCast Legacy";
     case SMP:
         return "webOS SMP";
+    case DILE:
+        return "webOS DILE";
     case FAKE:
         return "Dummy Output";
     default:
@@ -314,6 +348,17 @@ bool platform_is_software(enum platform system)
     {
     case SDL:
         return true;
+    default:
+        return false;
+    }
+}
+
+bool platform_supports_hevc(enum platform system)
+{
+    switch (system)
+    {
+    // case DILE:
+    //     return true;
     default:
         return false;
     }

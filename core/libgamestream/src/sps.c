@@ -80,3 +80,8 @@ void gs_sps_fix(PLENTRY sps, int flags, uint8_t* out_buf, uint32_t* out_offset) 
 
   *out_offset += write_nal_unit(h264_stream, out_buf+*out_offset, 128);
 }
+
+void gs_sps_finalize()
+{
+  h264_free(h264_stream);
+}
