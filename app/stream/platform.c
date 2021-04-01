@@ -357,8 +357,8 @@ bool platform_supports_hevc(enum platform system)
 {
     switch (system)
     {
-    // case DILE:
-    //     return true;
+    case DILE:
+        return true;
     default:
         return false;
     }

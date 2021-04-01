@@ -3,6 +3,10 @@
     "C_Cpp.autoAddFileAssociations": false,
     "cmake.configureArgs": [
         "-DWEBOS_SDL_STATIC=OFF",
-        "-DWEBOS_INSTALL_DEVICES_LIST=ON"
+        "-DWEBOS_INSTALL_DEVICES_LIST=ON",
+        // "-DCMAKE_CXX_FLAGS= -fsanitize=address  -fsanitize=leak -g",
+        // "-DCMAKE_C_FLAGS=-fsanitize=address  -fsanitize=leak -g",
+        // "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address  -fsanitize=leak",
+        // "-DCMAKE_MODULE_LINKER_FLAGS=-fsanitize=address  -fsanitize=leak"
     ]
 }

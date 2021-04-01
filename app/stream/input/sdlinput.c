@@ -82,17 +82,6 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
-void print_bytes(void *ptr, int size)
-{
-    unsigned char *p = ptr;
-    int i;
-    for (i = 0; i < size; i++)
-    {
-        printf("%02hhX ", p[i]);
-    }
-    printf("\n");
-}
-
 bool absinput_dispatch_event(SDL_Event ev)
 {
     if (streaming_status != STREAMING_STREAMING)

@@ -46,15 +46,18 @@
 
 static unsigned char *dile_buffer = NULL;
 static ResourceManagerClientHandle *rmhandle = NULL;
-static const char *acquired_resources = NULL;
+static jvalue_ref acquired_resources = NULL;
 static uint32_t video_fourcc = 0;
 
 static bool policyActionHandler(const char *action, const char *resources,
                                 const char *requestor_type, const char *requestor_name,
                                 const char *connection_id);
 
+static void playCallback(unsigned long long buffID);
+
 static jvalue_ref serialize_resource_aquire_req(MRCResourceList list);
-static const char *parse_resource_aquire_resp(const char *json);
+static jvalue_ref parse_resource_aquire_resp(const char *json);
+static int find_source_port(jvalue_ref res);
 
 static int dile_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
@@ -79,7 +82,7 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
   {
     return -1;
   }
-  if (!ResourceManagerClientRegisterPipeline(rmhandle, "media"))
+  if (!ResourceManagerClientRegisterPipeline(rmhandle, "direct_av"))
   {
     return false;
   }
@@ -100,21 +103,26 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
   {
     VideoOutputRegister(connId, appId);
 
-    VideoOutputConnect(connId, appId);
+    jvalue_ref reslist = jobject_get(acquired_resources, J_CSTR_TO_BUF("resources"));
+    VideoOutputConnect(connId, find_source_port(reslist));
   }
   else
   {
     VideoSinkManagerRegister(connId);
   }
 
-  ResourceManagerClientNotifyForeground(rmhandle);
-
   if (dile_webos_version >= 5)
   {
-    VideoOutputSetVideoData(connId, redrawRate, width, 720);
+    VideoOutputSetVideoData(connId, redrawRate, width, height);
 
     VideoOutputSetDisplayWindow(connId, true, 0, 0, width, height);
   }
+  else
+  {
+    AcbSetMediaVideoData(connId, redrawRate, width, height);
+  }
+
+  ResourceManagerClientNotifyForeground(rmhandle);
   // VideoOutputBlankVideo(connId, true);
 
   if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
@@ -122,6 +130,7 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
     fprintf(stderr, "Couldn't initialize video decoding %08x (%d)\n", video_fourcc, video_fourcc);
     return -1;
   }
+  DILE_VDEC_DIRECT_SetCallback(playCallback);
   dile_buffer = malloc(DECODER_BUFFER_SIZE);
   memset(dile_buffer, 0, DECODER_BUFFER_SIZE);
   if (dile_buffer == NULL)
@@ -158,8 +167,8 @@ static void dile_cleanup()
     }
     if (acquired_resources)
     {
-      ResourceManagerClientRelease(rmhandle, acquired_resources);
-      free((void *)acquired_resources);
+      ResourceManagerClientRelease(rmhandle, jvalue_stringify(jobject_get(acquired_resources, J_CSTR_TO_BUF("resources"))));
+      j_release(&acquired_resources);
       acquired_resources = NULL;
     }
 
@@ -186,18 +195,18 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
     int length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
     {
-      // if (video_fourcc == FOURCC_H264 && entry->bufferType == BUFFER_TYPE_SPS)
-      // {
-      //   gs_sps_fix(entry, GS_SPS_BITSTREAM_FIXUP, dile_buffer, &length);
-      // }
-      // else
+      if (video_fourcc == FOURCC_H264 && entry->bufferType == BUFFER_TYPE_SPS)
+      {
+        gs_sps_fix(entry, GS_SPS_BITSTREAM_FIXUP, dile_buffer, &length);
+      }
+      else
       {
         memcpy(&dile_buffer[length], entry->data, entry->length);
         length += entry->length;
       }
     }
-    // if (video_fourcc == FOURCC_H264 && length % 4)
-    //   length += (4 - (length % 4));
+    if (video_fourcc == FOURCC_H264 && length % 4)
+      length += (4 - (length % 4));
     if (DILE_VDEC_DIRECT_Play(dile_buffer, length) == -1)
     {
       fprintf(stderr, "DILE_VDEC_DIRECT_Play returned -1\n");
@@ -224,7 +233,7 @@ jvalue_ref serialize_resource_aquire_req(MRCResourceList list)
   return root;
 }
 
-const char *parse_resource_aquire_resp(const char *json)
+jvalue_ref parse_resource_aquire_resp(const char *json)
 {
 
   JSchemaInfo schemaInfo;
@@ -233,12 +242,25 @@ const char *parse_resource_aquire_resp(const char *json)
   jdomparser_feed(parser, json, strlen(json));
 
   jdomparser_end(parser);
-  jvalue_ref resp = jdomparser_get_result(parser);
-
-  const char *result = strdup(jvalue_stringify(jobject_get(resp, J_CSTR_TO_BUF("resources"))));
-
-  j_release(&resp);
+  jvalue_ref result = jdomparser_get_result(parser);
   jdomparser_release(&parser);
+  return result;
+}
+
+int find_source_port(jvalue_ref res)
+{
+  int result = 0;
+  for (int i = 0; i < jarray_size(res); i++)
+  {
+    jvalue_ref item = jarray_get(res, i);
+    int index = 0;
+    if (jstring_equal2(jobject_get(item, J_CSTR_TO_BUF("resource")), J_CSTR_TO_BUF("VDEC")) &&
+        jnumber_get_i32(jobject_get(item, J_CSTR_TO_BUF("index")), &index) == 0)
+    {
+      if (result == 0 || index < result)
+        result = index;
+    }
+  }
   return result;
 }
 
@@ -257,4 +279,9 @@ bool policyActionHandler(const char *action, const char *resources,
          "requestor_name=%s, connection_id=%s\n",
          action, resources, requestor_type, requestor_name, connection_id);
   return true;
+}
+
+void playCallback(unsigned long long buffID)
+{
+  printf("playCallback: %lld\n", buffID);
 }

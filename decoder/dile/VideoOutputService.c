@@ -21,9 +21,7 @@ bool VideoOutputRegister(const char *contextId, const char *appId)
     _hcontext_reset(&hcontext);
 
     char buf[1024];
-    snprintf(buf, sizeof(buf),
-             "{\"context\":\"%s\",\"appId\":\"%s\"}",
-             contextId, appId);
+    snprintf(buf, sizeof(buf), "{\"context\":\"%s\",\"appId\":\"%s\"}", contextId, appId);
     if (HLunaServiceCall("luna://com.webos.service.videooutput/register", buf, &hcontext) != 0)
     {
         LSSyncCallbackUnlock();
@@ -36,7 +34,7 @@ bool VideoOutputRegister(const char *contextId, const char *appId)
     return true;
 }
 
-bool VideoOutputConnect(const char *contextId, const char *appId)
+bool VideoOutputConnect(const char *contextId, int sourcePort)
 {
     LSSyncCallInit();
     HContext hcontext;
@@ -44,10 +42,8 @@ bool VideoOutputConnect(const char *contextId, const char *appId)
 
     char buf[1024];
     snprintf(buf, sizeof(buf),
-             "{\"context\":\"%s\",\"appId\":\"%s\","
-             "\"source\":\"VDEC\",\"sourcePort\":0,"
-             "\"sink\":\"MAIN\",\"outputMode\":\"DISPLAY\"}",
-             contextId, appId);
+             "{\"context\":\"%s\",\"source\":\"VDEC\",\"sink\":\"MAIN\",\"sourcePort\":%d}",
+             contextId, sourcePort);
     if (HLunaServiceCall("luna://com.webos.service.videooutput/connect", buf, &hcontext) != 0)
     {
         LSSyncCallbackUnlock();
@@ -60,7 +56,7 @@ bool VideoOutputConnect(const char *contextId, const char *appId)
     return true;
 }
 
-bool VideoOutputSetVideoData(const char *contextId, float framerate, int width, int height)
+bool VideoOutputSetVideoData(const char *contextId, int framerate, int width, int height)
 {
     LSSyncCallInit();
     HContext hcontext;
@@ -68,9 +64,9 @@ bool VideoOutputSetVideoData(const char *contextId, float framerate, int width, 
 
     char buf[1024];
     snprintf(buf, sizeof(buf),
-             "{\"context\":\"%s\",\"sink\":\"MAIN\","
-             "\"contentType\":\"media\",\"scanType\":\"progressive\","
-             "\"frameRate\":%.2f,\"width\":%d,\"height\":%d}",
+             "{\"context\":\"%s\",\"contentType\":\"movie\","
+             "\"scanType\":\"progressive\",\"frameRate\":%d,\"width\":%d,\"height\":%d,"
+             "\"videoInfo\":{\"adaptive\":true,\"path\":\"network\",\"lowDelayMode\":true}}",
              contextId, framerate, width, height);
     if (HLunaServiceCall("luna://com.webos.service.videooutput/setVideoData", buf, &hcontext) != 0)
     {
@@ -92,8 +88,7 @@ bool VideoOutputSetDisplayWindow(const char *contextId, bool fullscreen, int x, 
 
     char buf[1024];
     snprintf(buf, sizeof(buf),
-             "{\"context\":\"%s\",\"sink\":\"MAIN\","
-             "\"fullScreen\": %s,\"displayOutput\":"
+             "{\"context\":\"%s\",\"fullScreen\": %s,\"displayOutput\":"
              "{\"x\":%d,\"y\":%d,\"width\":%d,\"height\":%d}}",
              contextId, fullscreen ? "true" : "false", x, y, width, height);
     if (HLunaServiceCall("luna://com.webos.service.videooutput/display/setDisplayWindow", buf, &hcontext) != 0)

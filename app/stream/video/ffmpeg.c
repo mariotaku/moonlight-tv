@@ -32,6 +32,7 @@
 #include <stdbool.h>
 
 #include "util/memlog.h"
+#include "util/debugprint.h"
 
 // General decoder and renderer state
 static AVPacket pkt;

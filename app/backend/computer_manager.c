@@ -246,7 +246,7 @@ PPCMANAGER_RESP serverinfo_resp_new()
 
 void serverinfo_resp_free(PPCMANAGER_RESP resp)
 {
-    if (!resp->server_referenced)
+    if (!resp->server_referenced && resp->server)
     {
         free(resp->server);
     }

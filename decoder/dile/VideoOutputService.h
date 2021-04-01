@@ -3,9 +3,9 @@
 
 bool VideoOutputRegister(const char *contextId, const char *appId);
 
-bool VideoOutputConnect(const char *contextId, const char *appId);
+bool VideoOutputConnect(const char *contextId, int sourcePort);
 
-bool VideoOutputSetVideoData(const char *contextId, float framerate, int width, int height);
+bool VideoOutputSetVideoData(const char *contextId, int framerate, int width, int height);
 
 bool VideoOutputSetDisplayWindow(const char *contextId, bool fullscreen, int x, int y, int width, int height);
 

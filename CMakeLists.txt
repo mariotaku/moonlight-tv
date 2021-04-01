@@ -146,6 +146,7 @@ set(SOURCES
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
+    app/util/debugprint.c
 )
 
 if (SDL2_IMAGE_FOUND)
