@@ -44,6 +44,7 @@ enum platform
     LGNC,
     SMP,
     DILE,
+    DILE_LEGACY,
     FAKE
 };
 

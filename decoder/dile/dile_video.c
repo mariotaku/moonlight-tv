@@ -33,11 +33,9 @@
 
 #include <ResourceManagerClient_c.h>
 #include <resource_calculator_c.h>
-#include "VideoOutputService.h"
-#include "VideoSinkManagerService.h"
 #include <dile_vdec_direct.h>
 
-#include "sps.h"
+#include "vdec_services.h"
 
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024
@@ -48,6 +46,7 @@ static unsigned char *dile_buffer = NULL;
 static ResourceManagerClientHandle *rmhandle = NULL;
 static jvalue_ref acquired_resources = NULL;
 static uint32_t video_fourcc = 0;
+static bool first_frame_arrived = false;
 
 static bool policyActionHandler(const char *action, const char *resources,
                                 const char *requestor_type, const char *requestor_name,
@@ -61,13 +60,13 @@ static int find_source_port(jvalue_ref res);
 
 static int dile_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
+  first_frame_arrived = false;
   int mrcCodec;
   switch (videoFormat)
   {
   case VIDEO_FORMAT_H264:
     video_fourcc = FOURCC_H264;
     mrcCodec = kVideoH264;
-    gs_sps_init(width, height);
     printf("[DILE] Setup H264 encoding\n");
     break;
   case VIDEO_FORMAT_H265:
@@ -89,6 +88,8 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
   const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
   const char *appId = getenv("APPID");
 
+  ResourceManagerClientNotifyForeground(rmhandle);
+
   jvalue_ref resreq = NULL;
   char *resresp = NULL;
   MRCResourceList resList = MRCCalcVdecResources(mrcCodec, width, height, redrawRate, kScanProgressive, k3DNone);
@@ -99,30 +100,12 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
   j_release(&resreq);
   free(resresp);
 
-  if (dile_webos_version >= 5)
-  {
-    VideoOutputRegister(connId, appId);
+  DECODER_SYMBOL_NAME(vdec_services_connect)
+  (connId, appId, acquired_resources);
 
-    jvalue_ref reslist = jobject_get(acquired_resources, J_CSTR_TO_BUF("resources"));
-    VideoOutputConnect(connId, find_source_port(reslist));
-  }
-  else
-  {
-    VideoSinkManagerRegister(connId);
-  }
+  DECODER_SYMBOL_NAME(vdec_services_set_data)
+  (connId, redrawRate, width, height);
 
-  if (dile_webos_version >= 5)
-  {
-    VideoOutputSetVideoData(connId, redrawRate, width, height);
-
-    VideoOutputSetDisplayWindow(connId, true, 0, 0, width, height);
-  }
-  else
-  {
-    AcbSetMediaVideoData(connId, redrawRate, width, height);
-  }
-
-  ResourceManagerClientNotifyForeground(rmhandle);
   // VideoOutputBlankVideo(connId, true);
 
   if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
@@ -153,18 +136,10 @@ static void dile_cleanup()
   if (rmhandle)
   {
     const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
-    const char *appId = getenv("APPID");
 
-    if (dile_webos_version >= 5)
-    {
-      VideoOutputDisconnect(connId);
+    DECODER_SYMBOL_NAME(vdec_services_disconnect)
+    (connId);
 
-      VideoOutputUnregister(connId);
-    }
-    else
-    {
-      VideoSinkManagerUnregister(connId);
-    }
     if (acquired_resources)
     {
       ResourceManagerClientRelease(rmhandle, jvalue_stringify(jobject_get(acquired_resources, J_CSTR_TO_BUF("resources"))));
@@ -181,11 +156,6 @@ static void dile_cleanup()
   {
     free(dile_buffer);
   }
-
-  if (video_fourcc == FOURCC_H264)
-  {
-    gs_sps_finalize();
-  }
 }
 
 static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
@@ -195,22 +165,21 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
     int length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
     {
-      if (video_fourcc == FOURCC_H264 && entry->bufferType == BUFFER_TYPE_SPS)
-      {
-        gs_sps_fix(entry, GS_SPS_BITSTREAM_FIXUP, dile_buffer, &length);
-      }
-      else
-      {
-        memcpy(&dile_buffer[length], entry->data, entry->length);
-        length += entry->length;
-      }
+      memcpy(&dile_buffer[length], entry->data, entry->length);
+      length += entry->length;
     }
     if (video_fourcc == FOURCC_H264 && length % 4)
       length += (4 - (length % 4));
-    if (DILE_VDEC_DIRECT_Play(dile_buffer, length) == -1)
+    if (DILE_VDEC_DIRECT_Play(dile_buffer, length) != 0)
     {
-      fprintf(stderr, "DILE_VDEC_DIRECT_Play returned -1\n");
+      fprintf(stderr, "DILE_VDEC_DIRECT_Play failed\n");
       return DR_OK;
+    }
+    else if (!first_frame_arrived)
+    {
+      DECODER_SYMBOL_NAME(vdec_services_video_arrived)
+      ();
+      first_frame_arrived = true;
     }
   }
   else
@@ -247,24 +216,7 @@ jvalue_ref parse_resource_aquire_resp(const char *json)
   return result;
 }
 
-int find_source_port(jvalue_ref res)
-{
-  int result = 0;
-  for (int i = 0; i < jarray_size(res); i++)
-  {
-    jvalue_ref item = jarray_get(res, i);
-    int index = 0;
-    if (jstring_equal2(jobject_get(item, J_CSTR_TO_BUF("resource")), J_CSTR_TO_BUF("VDEC")) &&
-        jnumber_get_i32(jobject_get(item, J_CSTR_TO_BUF("index")), &index) == 0)
-    {
-      if (result == 0 || index < result)
-        result = index;
-    }
-  }
-  return result;
-}
-
-DECODER_RENDERER_CALLBACKS decoder_callbacks_dile = {
+DECODER_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(decoder_callbacks) = {
     .setup = dile_setup,
     .cleanup = dile_cleanup,
     .submitDecodeUnit = dile_submit_decode_unit,

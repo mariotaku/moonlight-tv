@@ -4,6 +4,8 @@
 
 #include <libhelpers.h>
 
+#include <pbnjson.h>
+
 #include "lunasynccall.h"
 
 static void _hcontext_reset(HContext *hcontext)
@@ -163,4 +165,39 @@ bool VideoOutputUnregister(const char *contextId)
     printf("[LSResp] %s => %s\n", LSMessageGetSenderServiceName(resp), LSMessageGetPayload(resp));
     LSMessageUnref(resp);
     return true;
+}
+
+bool VideoOutputGetStatus()
+{
+    LSSyncCallInit();
+    HContext hcontext;
+    _hcontext_reset(&hcontext);
+
+    if (HLunaServiceCall("luna://com.webos.service.videooutput/getStatus", "{}", &hcontext) != 0)
+    {
+        LSSyncCallbackUnlock();
+        return false;
+    }
+    printf("[LSCall] %s <= %s\n", "luna://com.webos.service.videooutput/getStatus", "{}");
+    LSMessage *resp = LSWaitForMessage();
+
+    const char *payload = LSMessageGetPayload(resp);
+    printf("[LSResp] %s => %s\n", LSMessageGetSenderServiceName(resp), LSMessageGetPayload(resp));
+
+    JSchemaInfo schemaInfo;
+    jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
+    jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
+    jdomparser_feed(parser, payload, strlen(payload));
+
+    jdomparser_end(parser);
+    jvalue_ref result = jdomparser_get_result(parser);
+    jdomparser_release(&parser);
+    bool ret = false;
+    if (jboolean_get(jobject_get(result, J_CSTR_TO_BUF("returnValue")), &ret) == 0 && ret)
+    {
+        // Do something with response body
+    }
+    j_release(&result);
+    LSMessageUnref(resp);
+    return ret;
 }

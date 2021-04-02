@@ -189,11 +189,11 @@ if (HAVE_SDL)
     endif()
 
     if (FFMPEG_FOUND)
-    list(APPEND SOURCES
-        app/ui/sdl_renderer.c
-        app/stream/video/sdl.c
-        app/stream/video/ffmpeg.c
-    )
+        list(APPEND SOURCES
+            app/ui/sdl_renderer.c
+            app/stream/video/sdl.c
+            app/stream/video/ffmpeg.c
+        )
     endif()
 endif()
 
@@ -246,9 +246,10 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
     target_link_libraries(moonlight PRIVATE debug moonlight-dile)
+    target_link_libraries(moonlight PRIVATE debug moonlight-dile-legacy)
     # target_link_libraries(moonlight PRIVATE debug moonlight-smp)
     
-    target_link_libraries(moonlight PRIVATE libavcodec libavutil)
+    target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

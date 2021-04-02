@@ -14,3 +14,5 @@ bool VideoOutputBlankVideo(const char *contextId, bool blank);
 bool VideoOutputDisconnect(const char *contextId);
 
 bool VideoOutputUnregister(const char *contextId);
+
+bool VideoOutputGetStatus();
