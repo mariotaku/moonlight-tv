@@ -15,37 +15,6 @@ static long acbId;
 
 static void AcbAPICallback(long acbId, long taskId, long eventType, long appState, long playState, const char *reply);
 
-int AcbAPI_setMediaVideoData(long acbId, const char *payload)
-{
-    bool (*hnd)(long, const char *) = dlsym(RTLD_NEXT, "AcbAPI_setMediaVideoData");
-    printf("%p: AcbAPI_setMediaVideoData(%ld,%s)\n", hnd, acbId, payload);
-    return hnd(acbId, payload);
-}
-
-int AcbAPI_setState(long acbId, long appState, long playState, long *taskId)
-{
-    int (*hnd)(long, long, long, long *) = dlsym(RTLD_NEXT, "AcbAPI_setState");
-    int ret = hnd(acbId, appState, playState, taskId);
-    printf("AcbAPI_setState(%ld,%ld,%ld,%p) = %d\n", acbId, appState, playState, taskId, ret);
-    return ret;
-}
-
-bool AcbAPI_setMediaId(long acbId, const char *connId)
-{
-    bool (*hnd)(long, const char *) = dlsym(RTLD_NEXT, "AcbAPI_setMediaId");
-    printf("%p: AcbAPI_setMediaId(%ld,%s)\n", hnd, acbId, connId);
-    return hnd(acbId, connId);
-}
-
-// bool AcbAPI_setSinkType(long acbId, long sinkType) { return false; }
-
-int AcbAPI_setDisplayWindow(long acbId, long x, long y, long w, long h, bool fullScreen, long *taskId)
-{
-    int (*hnd)(long, long, long, long, long, bool, long *) = dlsym(RTLD_NEXT, "AcbAPI_setDisplayWindow");
-    printf("AcbAPI_setDisplayWindow(%ld,%ld,%ld,%ld,%ld,%d,%p)\n", acbId, x, y, w, h, fullScreen, taskId);
-    return hnd(acbId, x, y, w, h, fullScreen, taskId);
-}
-
 bool DECODER_SYMBOL_NAME(vdec_services_connect)(const char *connId, const char *appId, jvalue_ref resources)
 {
     VideoSinkManagerRegister(connId);
