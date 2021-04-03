@@ -15,7 +15,7 @@ static long acbId;
 
 static void AcbAPICallback(long acbId, long taskId, long eventType, long appState, long playState, const char *reply);
 
-bool DECODER_SYMBOL_NAME(vdec_services_connect)(const char *connId, const char *appId, jvalue_ref resources)
+bool vdec_services_connect(const char *connId, const char *appId, jvalue_ref resources)
 {
     VideoSinkManagerRegister(connId);
 
@@ -48,7 +48,7 @@ bool DECODER_SYMBOL_NAME(vdec_services_connect)(const char *connId, const char *
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_disconnect)(const char *connId)
+bool vdec_services_disconnect(const char *connId)
 {
     AcbAPI_setState(acbId, APPSTATE_FOREGROUND, PLAYSTATE_UNLOADED, NULL);
 
@@ -60,7 +60,7 @@ bool DECODER_SYMBOL_NAME(vdec_services_disconnect)(const char *connId)
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_set_data)(const char *contextId, int framerate, int width, int height)
+bool vdec_services_set_data(const char *contextId, int framerate, int width, int height)
 {
     char buf[1024];
     snprintf(buf, sizeof(buf),
@@ -90,7 +90,7 @@ bool DECODER_SYMBOL_NAME(vdec_services_set_data)(const char *contextId, int fram
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_video_arrived)()
+bool vdec_services_video_arrived()
 {
     if (AcbAPI_setState(acbId, APPSTATE_FOREGROUND, PLAYSTATE_SEAMLESS_LOADED, NULL) < 0)
     {
@@ -100,7 +100,7 @@ bool DECODER_SYMBOL_NAME(vdec_services_video_arrived)()
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_supported)()
+bool vdec_services_supported()
 {
     // True if you you can link to libAcbAPI
     return true;

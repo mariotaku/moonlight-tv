@@ -3,7 +3,7 @@
 
 #include "VideoOutputService.h"
 
-bool DECODER_SYMBOL_NAME(vdec_services_connect)(const char *connId, const char *appId, jvalue_ref resources)
+bool vdec_services_connect(const char *connId, const char *appId, jvalue_ref resources)
 {
     VideoOutputRegister(connId, appId);
     jvalue_ref reslist = jobject_get(resources, J_CSTR_TO_BUF("resources"));
@@ -11,7 +11,7 @@ bool DECODER_SYMBOL_NAME(vdec_services_connect)(const char *connId, const char *
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_disconnect)(const char *connId)
+bool vdec_services_disconnect(const char *connId)
 {
     VideoOutputDisconnect(connId);
 
@@ -19,7 +19,7 @@ bool DECODER_SYMBOL_NAME(vdec_services_disconnect)(const char *connId)
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_set_data)(const char *connId, int framerate, int width, int height)
+bool vdec_services_set_data(const char *connId, int framerate, int width, int height)
 {
     VideoOutputSetVideoData(connId, framerate, width, height);
 
@@ -27,7 +27,12 @@ bool DECODER_SYMBOL_NAME(vdec_services_set_data)(const char *connId, int framera
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(vdec_services_supported)()
+bool vdec_services_video_arrived()
+{
+    return true;
+}
+
+bool vdec_services_supported()
 {
     return VideoOutputGetStatus();
 }

@@ -60,160 +60,152 @@ static int find_source_port(jvalue_ref res);
 
 static int dile_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
-  first_frame_arrived = false;
-  int mrcCodec;
-  switch (videoFormat)
-  {
-  case VIDEO_FORMAT_H264:
-    video_fourcc = FOURCC_H264;
-    mrcCodec = kVideoH264;
-    printf("[DILE] Setup H264 encoding\n");
-    break;
-  case VIDEO_FORMAT_H265:
-    video_fourcc = FOURCC_HEVC;
-    mrcCodec = kVideoH265;
-    printf("[DILE] Setup HEVC encoding\n");
-    break;
-  default:
-    return -1;
-  }
-  if (!(rmhandle = ResourceManagerClientCreate(NULL, policyActionHandler)))
-  {
-    return -1;
-  }
-  if (!ResourceManagerClientRegisterPipeline(rmhandle, "direct_av"))
-  {
-    return false;
-  }
-  const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
-  const char *appId = getenv("APPID");
+    first_frame_arrived = false;
+    int mrcCodec;
+    switch (videoFormat)
+    {
+    case VIDEO_FORMAT_H264:
+        video_fourcc = FOURCC_H264;
+        mrcCodec = kVideoH264;
+        printf("[DILE] Setup H264 encoding\n");
+        break;
+    case VIDEO_FORMAT_H265:
+        video_fourcc = FOURCC_HEVC;
+        mrcCodec = kVideoH265;
+        printf("[DILE] Setup HEVC encoding\n");
+        break;
+    default:
+        return -1;
+    }
+    if (!(rmhandle = ResourceManagerClientCreate(NULL, policyActionHandler)))
+    {
+        return -1;
+    }
+    if (!ResourceManagerClientRegisterPipeline(rmhandle, "direct_av"))
+    {
+        return false;
+    }
+    const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
+    const char *appId = getenv("APPID");
 
-  ResourceManagerClientNotifyForeground(rmhandle);
+    ResourceManagerClientNotifyForeground(rmhandle);
 
-  jvalue_ref resreq = NULL;
-  char *resresp = NULL;
-  MRCResourceList resList = MRCCalcVdecResources(mrcCodec, width, height, redrawRate, kScanProgressive, k3DNone);
-  resreq = serialize_resource_aquire_req(resList);
-  ResourceManagerClientAcquire(rmhandle, jvalue_stringify(resreq), &resresp);
-  MRCDeleteResourceList(resList);
-  acquired_resources = parse_resource_aquire_resp(resresp);
-  j_release(&resreq);
-  free(resresp);
+    jvalue_ref resreq = NULL;
+    char *resresp = NULL;
+    MRCResourceList resList = MRCCalcVdecResources(mrcCodec, width, height, redrawRate, kScanProgressive, k3DNone);
+    resreq = serialize_resource_aquire_req(resList);
+    ResourceManagerClientAcquire(rmhandle, jvalue_stringify(resreq), &resresp);
+    MRCDeleteResourceList(resList);
+    acquired_resources = parse_resource_aquire_resp(resresp);
+    j_release(&resreq);
+    free(resresp);
 
-  DECODER_SYMBOL_NAME(vdec_services_connect)
-  (connId, appId, acquired_resources);
+    vdec_services_connect(connId, appId, acquired_resources);
 
-  DECODER_SYMBOL_NAME(vdec_services_set_data)
-  (connId, redrawRate, width, height);
+    vdec_services_set_data(connId, redrawRate, width, height);
 
-  // VideoOutputBlankVideo(connId, true);
+    // VideoOutputBlankVideo(connId, true);
+    DILE_VDEC_DIRECT_SetCallback(playCallback);
+    if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
+    {
+        fprintf(stderr, "Couldn't initialize video decoding %08x (%d)\n", video_fourcc, video_fourcc);
+        return -1;
+    }
+    dile_buffer = malloc(DECODER_BUFFER_SIZE);
+    if (dile_buffer == NULL)
+    {
+        fprintf(stderr, "Not enough memory\n");
+        DILE_VDEC_DIRECT_Close();
+        return -1;
+    }
 
-  if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
-  {
-    fprintf(stderr, "Couldn't initialize video decoding %08x (%d)\n", video_fourcc, video_fourcc);
-    return -1;
-  }
-  DILE_VDEC_DIRECT_SetCallback(playCallback);
-  dile_buffer = malloc(DECODER_BUFFER_SIZE);
-  memset(dile_buffer, 0, DECODER_BUFFER_SIZE);
-  if (dile_buffer == NULL)
-  {
-    fprintf(stderr, "Not enough memory\n");
-    DILE_VDEC_DIRECT_Close();
-    return -1;
-  }
-
-  printf("[DILE] Video opened\n");
-  return 0;
+    printf("[DILE] Video opened\n");
+    return 0;
 }
 
 static void dile_cleanup()
 {
-  DILE_VDEC_DIRECT_Stop();
+    DILE_VDEC_DIRECT_Stop();
 
-  DILE_VDEC_DIRECT_Close();
+    DILE_VDEC_DIRECT_Close();
 
-  if (rmhandle)
-  {
-    const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
-
-    DECODER_SYMBOL_NAME(vdec_services_disconnect)
-    (connId);
-
-    if (acquired_resources)
+    if (rmhandle)
     {
-      ResourceManagerClientRelease(rmhandle, jvalue_stringify(jobject_get(acquired_resources, J_CSTR_TO_BUF("resources"))));
-      j_release(&acquired_resources);
-      acquired_resources = NULL;
+        const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
+
+        vdec_services_disconnect(connId);
+
+        if (acquired_resources)
+        {
+            ResourceManagerClientRelease(rmhandle, jvalue_stringify(jobject_get(acquired_resources, J_CSTR_TO_BUF("resources"))));
+            j_release(&acquired_resources);
+            acquired_resources = NULL;
+        }
+
+        ResourceManagerClientUnregisterPipeline(rmhandle);
+
+        ResourceManagerClientDestroy(rmhandle);
     }
 
-    ResourceManagerClientUnregisterPipeline(rmhandle);
-
-    ResourceManagerClientDestroy(rmhandle);
-  }
-
-  if (dile_buffer)
-  {
-    free(dile_buffer);
-  }
+    if (dile_buffer)
+    {
+        free(dile_buffer);
+    }
 }
 
 static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
 {
-  if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
-  {
-    int length = 0;
-    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
+    if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
     {
-      memcpy(&dile_buffer[length], entry->data, entry->length);
-      length += entry->length;
+        int length = 0;
+        for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
+        {
+            memcpy(&dile_buffer[length], entry->data, entry->length);
+            length += entry->length;
+        }
+        if (DILE_VDEC_DIRECT_Play(dile_buffer, length) != 0)
+        {
+            fprintf(stderr, "DILE_VDEC_DIRECT_Play failed\n");
+            return DR_OK;
+        }
+        else if (!first_frame_arrived && rmhandle)
+        {
+            ResourceManagerClientNotifyActivity(rmhandle);
+            vdec_services_video_arrived();
+            first_frame_arrived = true;
+        }
     }
-    if (video_fourcc == FOURCC_H264 && length % 4)
-      length += (4 - (length % 4));
-    if (DILE_VDEC_DIRECT_Play(dile_buffer, length) != 0)
+    else
     {
-      fprintf(stderr, "DILE_VDEC_DIRECT_Play failed\n");
-      return DR_OK;
+        fprintf(stderr, "Video decode buffer too small, skip this frame");
+        return DR_NEED_IDR;
     }
-    else if (!first_frame_arrived)
-    {
-      DECODER_SYMBOL_NAME(vdec_services_video_arrived)
-      ();
-      first_frame_arrived = true;
-    }
-  }
-  else
-  {
-    fprintf(stderr, "Video decode buffer too small, skip this frame");
-    return DR_NEED_IDR;
-  }
 
-  return DR_OK;
+    return DR_OK;
 }
 
 jvalue_ref serialize_resource_aquire_req(MRCResourceList list)
 {
-  jvalue_ref root = jarray_create(0);
-  for (int i = 0; list[i]; i++)
-  {
-    jarray_append(root, jobject_create_var(jkeyval(J_CSTR_TO_JVAL("resource"), j_cstr_to_jval(list[i]->type)),
-                                           jkeyval(J_CSTR_TO_JVAL("qty"), jnumber_create_i32(list[i]->quantity))));
-  }
-  return root;
+    jvalue_ref root = jarray_create(0);
+    for (int i = 0; list[i]; i++)
+    {
+        jarray_append(root, jobject_create_var(jkeyval(J_CSTR_TO_JVAL("resource"), j_cstr_to_jval(list[i]->type)),
+                                               jkeyval(J_CSTR_TO_JVAL("qty"), jnumber_create_i32(list[i]->quantity))));
+    }
+    return root;
 }
 
 jvalue_ref parse_resource_aquire_resp(const char *json)
 {
+    JSchemaInfo schemaInfo;
+    jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
+    jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
+    jdomparser_feed(parser, json, strlen(json));
 
-  JSchemaInfo schemaInfo;
-  jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
-  jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
-  jdomparser_feed(parser, json, strlen(json));
-
-  jdomparser_end(parser);
-  jvalue_ref result = jdomparser_get_result(parser);
-  jdomparser_release(&parser);
-  return result;
+    jdomparser_end(parser);
+    jvalue_ref result = jdomparser_get_result(parser);
+    jdomparser_release(&parser);
+    return result;
 }
 
 DECODER_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(decoder_callbacks) = {
@@ -227,13 +219,13 @@ bool policyActionHandler(const char *action, const char *resources,
                          const char *requestor_type, const char *requestor_name,
                          const char *connection_id)
 {
-  printf("POLICY_ACTION: action=%s, resources=%s, requestor_type=%s,"
-         "requestor_name=%s, connection_id=%s\n",
-         action, resources, requestor_type, requestor_name, connection_id);
-  return true;
+    printf("POLICY_ACTION: action=%s, resources=%s, requestor_type=%s,"
+           "requestor_name=%s, connection_id=%s\n",
+           action, resources, requestor_type, requestor_name, connection_id);
+    return true;
 }
 
 void playCallback(unsigned long long buffID)
 {
-  printf("playCallback: %lld\n", buffID);
+    printf("playCallback: %lld\n", buffID);
 }
