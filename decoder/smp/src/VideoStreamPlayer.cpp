@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <sys/syscall.h>
 
-#include <glib.h>
 #include <pbnjson.hpp>
 
 #include "SDL_webOS.h"
