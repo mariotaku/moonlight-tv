@@ -26,7 +26,6 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
     starfish_media_apis_.reset(new StarfishMediaAPIs());
     starfish_media_apis_->notifyForeground();
     window_id_ = SDL_webOSCreateExportedWindow(0);
-    smp_buffer = malloc(DECODER_BUFFER_SIZE);
 
     std::string payload = makeLoadPayload(videoFormat, width, height, redrawRate, 0, window_id_);
     if (!starfish_media_apis_->Load(payload.c_str(), StarfishDirectMediaPlayerLoadCallback, starfish_media_apis_.get()))
@@ -34,7 +33,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
         std::cout << "Load() failed!" << std::endl;
         return;
     }
-    
+
     SDL_Rect src = {0, 0, width, height};
     SDL_Rect dst = {0, 0, 1920, 1080};
     SDL_webOSSetExportedWindow(window_id_, &src, &dst);
@@ -45,7 +44,6 @@ VideoStreamPlayer::~VideoStreamPlayer()
     std::cout << "VideoStreamPlayer::dtor" << std::endl;
     starfish_media_apis_.reset(nullptr);
     SDL_webOSDestroyExportedWindow(window_id_);
-    free(smp_buffer);
 }
 
 void VideoStreamPlayer::start()
@@ -55,30 +53,17 @@ void VideoStreamPlayer::start()
 
 int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
 {
-
     unsigned long long ms = decodeUnit->presentationTimeMs;
     unsigned long long pts = ms * 1000000ULL;
-
     if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
     {
-        PLENTRY entry = decodeUnit->bufferList;
-        int length = 0;
+        char payload[256];
         for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
         {
-            memcpy(smp_buffer + length, entry->data, entry->length);
-            length += entry->length;
+            snprintf(payload, sizeof(payload), "{\"bufferAddr\":\"%x\",\"bufferSize\":%d,\"pts\":%llu,\"esData\":1}",
+                     entry->data, entry->length, pts);
+            starfish_media_apis_->Feed(payload);
         }
-        pj::JValue payload = pj::Object();
-
-        std::stringstream convert_invert;
-        convert_invert << std::hex << smp_buffer;
-        payload.put("bufferAddr", convert_invert.str());
-        payload.put("bufferSize", static_cast<int64_t>(length));
-        payload.put("pts", static_cast<int64_t>(pts));
-        payload.put("esData", 1 /* 1 for video */);
-        std::string json = pbnjson::JGenerator::serialize(payload, pbnjson::JSchemaFragment("{}"));
-        std::string result = starfish_media_apis_->Feed(json.c_str());
-        return result.find(std::string("Ok")) ? DR_OK : DR_NEED_IDR;
         return DR_OK;
     }
     else

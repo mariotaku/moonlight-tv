@@ -20,6 +20,5 @@ namespace MoonlightStarfish
         std::string makeLoadPayload(int videoFormat, int width, int height, int fps, uint64_t time, const char *windowId);
         std::unique_ptr<StarfishMediaAPIs> starfish_media_apis_;
         const char *window_id_;
-        void *smp_buffer;
     };
 }
