@@ -187,10 +187,10 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
     case LGNC:
         return get_audio_callbacks_simple("lgnc");
 #endif
-#if HAVE_SMP
-    case SMP:
-        return get_audio_callbacks_simple("smp");
-#endif
+// #if HAVE_SMP
+//     case SMP:
+//         return get_audio_callbacks_simple("smp");
+// #endif
 #if HAVE_SDL
     case SDL:
         return &audio_callbacks_sdl;
@@ -393,6 +393,7 @@ bool platform_supports_hevc(enum platform system)
     {
     case DILE:
     case DILE_LEGACY:
+    // case SMP:
         return true;
     default:
         return false;
