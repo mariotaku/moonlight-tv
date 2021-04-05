@@ -393,7 +393,7 @@ bool platform_supports_hevc(enum platform system)
     {
     case DILE:
     case DILE_LEGACY:
-    // case SMP:
+    case SMP:
         return true;
     default:
         return false;

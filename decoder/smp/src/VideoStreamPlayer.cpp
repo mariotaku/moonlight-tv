@@ -105,7 +105,7 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
     }
     else if (videoFormat & VIDEO_FORMAT_MASK_H265)
     {
-        codec.put("video", "HEVC");
+        codec.put("video", "H265");
     }
 
     contents.put("codec", codec);
