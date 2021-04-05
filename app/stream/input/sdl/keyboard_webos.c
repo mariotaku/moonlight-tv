@@ -5,8 +5,6 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-#include "platform/webos/SDL_webOS.h"
-
 #include "util/bus.h"
 #include "util/user_event.h"
 

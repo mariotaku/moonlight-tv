@@ -1,6 +1,6 @@
 #include "AudioStreamPlayer.h"
 
-using MoonlightStarfish::AudioStreamPlayer;
+using SMP_DECODER_NS::AudioStreamPlayer;
 
 AUDIO_RENDERER_CALLBACKS audio_callbacks_smp = {
     .init = AudioStreamPlayer::setup,

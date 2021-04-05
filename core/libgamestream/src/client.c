@@ -258,9 +258,12 @@ static int load_server_status(PSERVER_DATA server)
     if (!strlen(currentGameText) || !strlen(pairedText) || !strlen(server->serverInfo.serverInfoAppVersion) || !strlen(stateText))
       goto cleanup;
 
+    int serverCodecModeSupport = serverCodecModeSupportText == NULL ? 0 : atoi(serverCodecModeSupportText);
+
     server->paired = pairedText != NULL && strcmp(pairedText, "1") == 0;
     server->currentGame = currentGameText == NULL ? 0 : atoi(currentGameText);
-    server->supports4K = serverCodecModeSupportText != NULL;
+    server->supports4K = serverCodecModeSupport != 0;
+    server->supportsHdr = serverCodecModeSupport & 0x200;
     server->serverMajorVersion = atoi(server->serverInfo.serverInfoAppVersion);
 
     if (strstr(stateText, "_SERVER_BUSY") == NULL)

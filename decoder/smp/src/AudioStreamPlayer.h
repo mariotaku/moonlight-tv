@@ -4,7 +4,7 @@
 
 extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks_smp;
 
-namespace MoonlightStarfish
+namespace SMP_DECODER_NS
 {
     class AudioStreamPlayer
     {

@@ -132,7 +132,8 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         struct nk_image *cover = coverloader_get(node, cur->id, cover_width, cover_height);
         bool defcover = _cover_use_default(cover);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : (defcover ? 2 : 1));
-        nk_layout_space_push(ctx, nk_rect(0, 0, cover_width, cover_height));
+        struct nk_rect cover_bounds = nk_rect(0, 0, cover_width, cover_height);
+        nk_layout_space_push(ctx, cover_bounds);
 
         nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
         if (ui_input_mode != UI_INPUT_MODE_POINTER)
@@ -152,6 +153,13 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
             int insetx = 8 * NK_UI_SCALE, insety = 6 * NK_UI_SCALE;
             nk_layout_space_push(ctx, nk_rect(insetx, insety, cover_width - insetx * 2, cover_height - insety * 2));
             nk_label(ctx, cur->name, NK_TEXT_CENTERED);
+        }
+
+        if (node->server->supportsHdr && cur->hdr)
+        {
+            struct nk_vec2 hdr_pos = nk_vec2_add(tmp_bounds, nk_vec2_s(10, 10));
+            struct nk_rect hdr_bounds = nk_recta(hdr_pos, nk_vec2(sprites_ui.ic_indicator_hdr.region[2], sprites_ui.ic_indicator_hdr.region[3]));
+            nk_draw_image(&ctx->current->buffer, hdr_bounds, &sprites_ui.ic_indicator_hdr, nk_rgb(255, 255, 255));
         }
 
         if (running)
@@ -214,7 +222,7 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
         }
         else
         {
-            streaming_begin(node->server, cur->id);
+            streaming_begin(node->server, cur);
         }
     }
     else

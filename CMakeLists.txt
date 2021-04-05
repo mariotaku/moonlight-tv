@@ -180,7 +180,6 @@ if (HAVE_SDL)
             app/platform/webos/app_init.c
             app/stream/input/sdl/keyboard_webos.c
             app/platform/webos/navkey_sdl_webos.c
-            app/platform/webos/SDL_webOS.c
             app/platform/webos/path_webos.c
             app/platform/webos/os_info.c
         )
@@ -246,6 +245,7 @@ if (TARGET_WEBOS)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-smp)
+    target_link_libraries(moonlight PRIVATE moonlight-smp-acb)
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
     target_link_libraries(moonlight PRIVATE debug moonlight-dile)

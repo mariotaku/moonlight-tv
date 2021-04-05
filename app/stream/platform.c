@@ -9,6 +9,26 @@
 #include "video/video.h"
 #include "util.h"
 
+static const char *platform_names[FAKE + 1] = {
+    "",
+    "sdl",
+    "x11",
+    "x11_vdpau",
+    "x11_vaapi",
+    "pi",
+    "mmal",
+    "imx",
+    "aml",
+    "rk",
+    "ndl",
+    "lgnc",
+    "smp",
+    "smp_acb",
+    "dile",
+    "dile_legacy",
+    NULL,
+};
+
 static void dlerror_log();
 static bool checkinit(enum platform system, int argc, char *argv[]);
 
@@ -27,6 +47,18 @@ enum platform platform_init(const char *name, int argc, char *argv[])
             fprintf(stderr, "SMP check failed\n");
         else
             return SMP;
+    }
+#endif
+#ifdef HAVE_SMP_ACB
+    if (std || strcmp(name, "smp-acb") == 0)
+    {
+        void *handle = dlopen("libmoonlight-smp-acb.so", RTLD_NOW | RTLD_GLOBAL);
+        if (handle == NULL)
+            dlerror_log();
+        else if (!checkinit(SMP_ACB, argc, argv))
+            fprintf(stderr, "SMP check failed\n");
+        else
+            return SMP_ACB;
     }
 #endif
 #ifdef HAVE_DILE
@@ -130,67 +162,43 @@ void platform_stop(enum platform system)
     }
 }
 
-#define get_decoder_callbacks_simple(name) (PDECODER_RENDERER_CALLBACKS) dlsym(RTLD_DEFAULT, "decoder_callbacks_" name)
+static PDECODER_RENDERER_CALLBACKS get_decoder_callbacks_simple(const char *name)
+{
+    char symbol[128];
+    snprintf(symbol, sizeof(symbol), "decoder_callbacks_%s", name);
+    return dlsym(RTLD_DEFAULT, symbol);
+}
 
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 {
     switch (system)
     {
-#if HAVE_SMP
-    case SMP:
-        return get_decoder_callbacks_simple("smp");
-#endif
-#if HAVE_NDL
-    case NDL:
-        return get_decoder_callbacks_simple("ndl");
-#endif
-#if HAVE_DILE
-    case DILE:
-        return get_decoder_callbacks_simple("dile");
-#endif
-#if HAVE_DILE_LEGACY
-    case DILE_LEGACY:
-        return get_decoder_callbacks_simple("dile_legacy");
-#endif
-#if HAVE_LGNC
-    case LGNC:
-        return get_decoder_callbacks_simple("lgnc");
-#endif
-#if HAVE_PI
-    case PI:
-        return &decoder_callbacks_pi;
-#endif
-#if HAVE_MMAL
-    case MMAL:
-        return &decoder_callbacks_mmal;
-#endif
-    default:
+    SDL:
 #if HAVE_SDL && HAVE_FFMPEG
         return &decoder_callbacks_sdl;
-#else
-        return &decoder_callbacks_dummy;
+        // If no FFMPEG, fall through
 #endif
+    FAKE:
+        return &decoder_callbacks_dummy;
+    default:
+        return get_decoder_callbacks_simple(platform_names[system]);
     }
 }
 
-#define get_audio_callbacks_simple(name) (PAUDIO_RENDERER_CALLBACKS) dlsym(RTLD_DEFAULT, "audio_callbacks_" name)
+static PAUDIO_RENDERER_CALLBACKS get_audio_callbacks_simple(const char *name)
+{
+    char symbol[128];
+    snprintf(symbol, sizeof(symbol), "audio_callbacks_%s", name);
+    return dlsym(RTLD_DEFAULT, symbol);
+}
 
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device)
 {
     switch (system)
     {
-// #if HAVE_SMP
-//     case SMP:
-//         return get_audio_callbacks_simple("smp");
-// #endif
-#if HAVE_NDL
     case NDL:
-        return get_audio_callbacks_simple("ndl");
-#endif
-#if HAVE_LGNC
     case LGNC:
-        return get_audio_callbacks_simple("lgnc");
-#endif
+        return get_audio_callbacks_simple(platform_names[system]);
 #if HAVE_SDL
     case SDL:
         return &audio_callbacks_sdl;
@@ -225,8 +233,20 @@ typedef bool (*platform_init_fn)(int argc, char *argv[]);
 typedef bool (*platform_check_fn)();
 typedef void (*platform_finalize_fn)();
 
-#define platform_init_simple(name, argc, argv) ((platform_init_fn)dlsym(RTLD_DEFAULT, "platform_init_" name))(argc, argv)
-#define platform_finalize_simple(name) ((platform_finalize_fn)dlsym(RTLD_DEFAULT, "platform_finalize_" name))()
+static bool platform_init_simple(const char *name, int argc, char *argv[])
+{
+    char symbol[128];
+    snprintf(symbol, sizeof(symbol), "platform_init_%s", name);
+    return ((platform_init_fn)dlsym(RTLD_DEFAULT, symbol))(argc, argv);
+}
+
+static void platform_finalize_simple(const char *name)
+{
+    char symbol[128];
+    snprintf(symbol, sizeof(symbol), "platform_finalize_%s", name);
+    ((platform_finalize_fn)dlsym(RTLD_DEFAULT, symbol))();
+}
+
 static bool platform_check_simple(const char *name)
 {
     char fname[32];
@@ -294,6 +314,17 @@ bool checkinit(enum platform system, int argc, char *argv[])
         }
         return true;
 #endif
+#ifdef HAVE_SMP_ACB
+    case SMP_ACB:
+        if (!platform_init_simple("smp_acb", argc, argv))
+            return false;
+        if (!platform_check_simple("smp_acb"))
+        {
+            platform_finalize(system);
+            return false;
+        }
+        return true;
+#endif
     }
     return false;
 }
@@ -302,32 +333,8 @@ void platform_finalize(enum platform system)
 {
     switch (system)
     {
-#ifdef HAVE_NDL
-    case NDL:
-        platform_finalize_simple("ndl");
-        break;
-#endif
-#ifdef HAVE_DILE
-    case DILE:
-        platform_finalize_simple("dile");
-        break;
-#endif
-#ifdef HAVE_DILE
-    case DILE_LEGACY:
-        platform_finalize_simple("dile_legacy");
-        break;
-#endif
-#ifdef HAVE_LGNC
-    case LGNC:
-        platform_finalize_simple("lgnc");
-        break;
-#endif
-#ifdef HAVE_SMP
-    case SMP:
-        platform_finalize_simple("smp");
-        break;
-#endif
     default:
+        platform_finalize_simple(platform_names[system]);
         break;
     }
 }
@@ -363,11 +370,11 @@ const char *platform_name(enum platform system)
     case LGNC:
         return "NetCast Legacy";
     case SMP:
+    case SMP_ACB:
         return "webOS SMP";
     case DILE:
-        return "webOS DILE";
     case DILE_LEGACY:
-        return "webOS DILE Legacy";
+        return "webOS DILE";
     case FAKE:
         return "Dummy Output";
     default:
@@ -394,6 +401,7 @@ bool platform_supports_hevc(enum platform system)
     case DILE:
     case DILE_LEGACY:
     case SMP:
+    case SMP_ACB:
         return true;
     default:
         return false;

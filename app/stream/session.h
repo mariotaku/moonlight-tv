@@ -38,7 +38,7 @@ void streaming_init();
 
 void streaming_destroy();
 
-int streaming_begin(const SERVER_DATA *server, int app_id);
+int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app);
 
 void streaming_interrupt(bool quitapp);
 

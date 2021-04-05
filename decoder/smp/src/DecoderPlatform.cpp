@@ -3,25 +3,39 @@
 #include <cassert>
 #include <iostream>
 
+#ifndef DECODER_PLATFORM_NAME
+#error "DECODER_PLATFORM_NAME Not defined"
+#endif
+
+// Coming from https://stackoverflow.com/a/1489985/859190
+#define DECODER_DECL_PASTER(x, y) x##_##y
+#define DECODER_DECL_EVALUATOR(x, y) DECODER_DECL_PASTER(x, y)
+#define DECODER_SYMBOL_NAME(name) DECODER_DECL_EVALUATOR(name, DECODER_PLATFORM_NAME)
+
+#define platform_init DECODER_SYMBOL_NAME(platform_init)
+#define platform_check DECODER_SYMBOL_NAME(platform_check)
+#define platform_finalize DECODER_SYMBOL_NAME(platform_finalize)
+#define decoder_callbacks DECODER_SYMBOL_NAME(decoder_callbacks)
+
 static bool smp_initialized = false;
 
-using MoonlightStarfish::VideoStreamPlayer;
+using SMP_DECODER_NS::VideoStreamPlayer;
 static VideoStreamPlayer *videoPlayer = nullptr;
 
-extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks_smp;
+extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
 
-extern "C" bool platform_init_smp(int argc, char *argv[])
+extern "C" bool platform_init(int argc, char *argv[])
 {
     smp_initialized = true;
     return smp_initialized;
 }
 
-extern "C" bool platform_check_smp()
+extern "C" bool platform_check()
 {
     return true;
 }
 
-extern "C" void platform_finalize_smp()
+extern "C" void platform_finalize()
 {
 }
 
@@ -57,7 +71,7 @@ static void _videoCleanup()
     videoPlayer = nullptr;
 }
 
-DECODER_RENDERER_CALLBACKS decoder_callbacks_smp = {
+DECODER_RENDERER_CALLBACKS decoder_callbacks = {
     .setup = _videoSetup,
     .start = _videoStart,
     .stop = _videoStop,

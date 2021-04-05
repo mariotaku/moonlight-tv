@@ -37,7 +37,6 @@
 
 #if OS_WEBOS
 #include "platform/webos/app_init.h"
-#include "platform/webos/SDL_webOS.h"
 #define FORCE_FULLSCREEN
 #endif
 #if TARGET_RASPI

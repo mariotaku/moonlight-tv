@@ -68,7 +68,7 @@ void streaming_destroy()
     pthread_mutex_destroy(&streaming_errmsg_lock);
 }
 
-int streaming_begin(const SERVER_DATA *server, int app_id)
+int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
 {
     if (streaming_status != STREAMING_NONE)
     {
@@ -82,12 +82,13 @@ int streaming_begin(const SERVER_DATA *server, int app_id)
     }
     config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
     config->stream.supportsHevc = platform_supports_hevc(platform_current);
+    config->stream.enableHdr = server->supportsHdr && config->stream.supportsHevc && app->hdr;
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = serverdata_new();
     memcpy(req->server, server, sizeof(SERVER_DATA));
     req->config = config;
-    req->appId = app_id;
+    req->appId = app->id;
     return pthread_create(&streaming_thread, NULL, (void *(*)(void *))_streaming_thread_action, req);
 }
 

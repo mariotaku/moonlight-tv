@@ -36,6 +36,7 @@ typedef struct _SERVER_DATA
   const char *gpuType;
   bool paired;
   bool supports4K;
+  bool supportsHdr;
   bool unsupported;
   int currentGame;
   int serverMajorVersion;

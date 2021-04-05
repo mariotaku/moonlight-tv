@@ -7,7 +7,7 @@
 #if OS_WEBOS
 #include "platform/webos/os_info.h"
 #if HAVE_SDL
-#include "platform/webos/SDL_webOS.h"
+#include <SDL_webOS.h>
 #endif
 #endif
 

@@ -7,7 +7,7 @@
 #include "util/user_event.h"
 
 #if OS_WEBOS
-#include "platform/webos/SDL_webOS.h"
+#include <SDL_webOS.h>
 #endif
 
 static void release_gamecontroller_buttons(int which);

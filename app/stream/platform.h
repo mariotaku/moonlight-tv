@@ -43,6 +43,7 @@ enum platform
     NDL,
     LGNC,
     SMP,
+    SMP_ACB,
     DILE,
     DILE_LEGACY,
     FAKE

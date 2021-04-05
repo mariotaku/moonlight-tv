@@ -86,7 +86,7 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
     config->stream.supportsHevc = false;
 
-    config->debug_level = 1;
+    config->debug_level = 0;
     config->platform = "auto";
     config->address = NULL;
     config->config_file = NULL;
