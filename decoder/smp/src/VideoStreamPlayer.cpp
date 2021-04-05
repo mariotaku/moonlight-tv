@@ -75,6 +75,7 @@ int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
 void VideoStreamPlayer::stop()
 {
     std::cout << "VideoStreamPlayer::stop" << std::endl;
+    starfish_media_apis_->pushEOS();
 }
 
 std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int height, int fps, uint64_t time, const char *windowId)

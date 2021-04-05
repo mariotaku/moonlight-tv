@@ -3,7 +3,12 @@
 #include <Limelight.h>
 #include <SDL.h>
 
+#include "util/bus.h"
+#include "util/user_event.h"
+
 #define QUIT_BUTTONS (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG)
+
+static bool quit_combo_pressed = false;
 
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event)
 {
@@ -65,7 +70,19 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event)
         gamepad->buttons &= ~button;
 
     if ((gamepad->buttons & QUIT_BUTTONS) == QUIT_BUTTONS)
+    {
+        quit_combo_pressed = true;
         return;
+    }
+    if (quit_combo_pressed)
+    {
+        if (gamepad->buttons == 0)
+        {
+            quit_combo_pressed = false;
+            bus_pushevent(USER_ST_QUITAPP_CONFIRM, NULL, NULL);
+        }
+        return;
+    }
 
     LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
                                gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);

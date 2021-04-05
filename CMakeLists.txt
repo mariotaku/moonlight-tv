@@ -245,11 +245,11 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE moonlight-smp)
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
     target_link_libraries(moonlight PRIVATE debug moonlight-dile)
     target_link_libraries(moonlight PRIVATE debug moonlight-dile-legacy)
-    target_link_libraries(moonlight PRIVATE debug moonlight-smp)
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 

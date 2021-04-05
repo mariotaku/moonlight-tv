@@ -136,6 +136,10 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 {
     switch (system)
     {
+#if HAVE_SMP
+    case SMP:
+        return get_decoder_callbacks_simple("smp");
+#endif
 #if HAVE_NDL
     case NDL:
         return get_decoder_callbacks_simple("ndl");
@@ -151,10 +155,6 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system)
 #if HAVE_LGNC
     case LGNC:
         return get_decoder_callbacks_simple("lgnc");
-#endif
-#if HAVE_SMP
-    case SMP:
-        return get_decoder_callbacks_simple("smp");
 #endif
 #if HAVE_PI
     case PI:
@@ -179,6 +179,10 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 {
     switch (system)
     {
+// #if HAVE_SMP
+//     case SMP:
+//         return get_audio_callbacks_simple("smp");
+// #endif
 #if HAVE_NDL
     case NDL:
         return get_audio_callbacks_simple("ndl");
@@ -187,10 +191,6 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
     case LGNC:
         return get_audio_callbacks_simple("lgnc");
 #endif
-// #if HAVE_SMP
-//     case SMP:
-//         return get_audio_callbacks_simple("smp");
-// #endif
 #if HAVE_SDL
     case SDL:
         return &audio_callbacks_sdl;
