@@ -5,6 +5,7 @@ typedef struct _APP_DLIST
 {
   char *name;
   int id;
+  int hdr;
   struct _APP_DLIST *prev;
   struct _APP_DLIST *next;
 } APP_DLIST, *PAPP_DLIST;

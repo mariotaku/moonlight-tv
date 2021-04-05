@@ -23,6 +23,7 @@
 typedef struct _APP_LIST {
   char* name;
   int id;
+  int hdr;
   struct _APP_LIST *next;
 } APP_LIST, *PAPP_LIST;
 

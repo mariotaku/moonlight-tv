@@ -57,7 +57,7 @@ static void XMLCALL _xml_start_applist_element(void *userData, const char *name,
     app->name = NULL;
     app->next = (PAPP_LIST) search->data;
     search->data = app;
-  } else if (strcmp("ID", name) == 0 || strcmp("AppTitle", name) == 0) {
+  } else if (strcmp("ID", name) == 0 || strcmp("AppTitle", name) == 0 || strcmp("IsHdrSupported", name) == 0) {
     search->memory = malloc(1);
     search->size = 0;
     search->start = 1;
@@ -76,6 +76,9 @@ static void XMLCALL _xml_end_applist_element(void *userData, const char *name) {
         free(search->memory);
     } else if (strcmp("AppTitle", name) == 0) {
         list->name = search->memory;
+    } else if (strcmp("IsHdrSupported", name) == 0) {
+        list->hdr = atoi(search->memory);
+        free(search->memory);
     }
     search->start = 0;
   }

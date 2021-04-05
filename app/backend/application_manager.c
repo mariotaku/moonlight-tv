@@ -76,6 +76,7 @@ void *_application_manager_applist_action(PSERVER_LIST node)
         PAPP_DLIST item = applist_new();
         item->id = cur->id;
         item->name = cur->name;
+        item->hdr = cur->hdr;
         dlist = applist_sortedinsert(dlist, item, _applist_name_comparator);
     }
     // Free the single linked list
