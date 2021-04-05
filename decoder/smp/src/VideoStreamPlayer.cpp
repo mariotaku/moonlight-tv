@@ -166,6 +166,7 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
 
 static void StarfishDirectMediaPlayerLoadCallback(gint type, gint64 numValue, const gchar *strValue, void *data)
 {
+    StarfishMediaAPIs *player = static_cast<StarfishMediaAPIs *>(data);
     switch (type)
     {
     case 0:
@@ -180,7 +181,7 @@ static void StarfishDirectMediaPlayerLoadCallback(gint type, gint64 numValue, co
         printf("PF_EVENT_TYPE_STR_BUFFERFULL\n");
         break;
     case PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED:
-        static_cast<StarfishMediaAPIs *>(data)->Play();
+        player->Play();
         break;
     default:
         printf("LoadCallback type: 0x%02x, numValue: %d, strValue: %p\n", type, numValue, strValue);

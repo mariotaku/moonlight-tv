@@ -9,6 +9,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/utils/cmake
     ${CMAKE_SOURCE_DIR}/cmake
 )
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
@@ -41,6 +42,7 @@ if (TARGET_WEBOS)
     set(HAVE_SDL TRUE)
     
     add_subdirectory(third_party/h264bitstream)
+    add_subdirectory(system/webos/tv-native-apis)
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
     set(TARGET_LINUX TRUE)
@@ -245,7 +247,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE moonlight-ndl)
     target_link_libraries(moonlight PRIVATE moonlight-lgnc)
-    # target_link_libraries(moonlight PRIVATE debug moonlight-dile)
+    target_link_libraries(moonlight PRIVATE debug moonlight-dile)
     target_link_libraries(moonlight PRIVATE debug moonlight-dile-legacy)
     target_link_libraries(moonlight PRIVATE debug moonlight-smp)
     

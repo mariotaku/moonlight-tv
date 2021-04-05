@@ -37,3 +37,6 @@
 [submodule "decoder/dile/stub"]
 	path = decoder/dile/stub
 	url = https://github.com/webosbrew/dile-directmedia.git
+[submodule "system/webos/tv-native-apis"]
+	path = system/webos/tv-native-apis
+	url = https://github.com/webosbrew/tv-native-apis.git
