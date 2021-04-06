@@ -3,9 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdio>
-#include <unistd.h>
 #include <stdlib.h>
-#include <sys/syscall.h>
 
 #include <pbnjson.hpp>
 
@@ -22,7 +20,6 @@ namespace pj = pbnjson;
 VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int redrawRate)
     : player_state_(PlayerState::UNINITIALIZED)
 {
-    printf("[thread:%d] StarfishMediaAPIs::ctor\n", syscall(__NR_gettid));
     app_id_ = getenv("APPID");
     starfish_media_apis_.reset(new StarfishMediaAPIs());
 #ifdef USE_ACB
@@ -214,6 +211,7 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
 
 void VideoStreamPlayer::SetMediaVideoData(const char *data)
 {
+    std::cout << "VideoStreamPlayer::SetMediaVideoData" << data << std::endl;
 #ifdef USE_ACB
     acb_client_->setMediaVideoData(data);
 #endif

@@ -28,12 +28,16 @@
 
 #define IS_EMBEDDED(SYSTEM) SYSTEM != SDL
 
+#define PLATFORM_HDR_NONE 0
+#define PLATFORM_HDR_SUPPORTED 1
+#define PLATFORM_HDR_ALWAYS 2
+
 typedef struct PLATFORM_INFO
 {
     bool valid;
     bool audio;
     bool hevc;
-    bool hdr;
+    int hdr;
     int colorSpace;
     int colorRange;
 } * PPLATFORM_INFO, PLATFORM_INFO;
