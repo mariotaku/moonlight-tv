@@ -5,6 +5,7 @@
 #include <lgnc_system.h>
 #include <lgnc_directvideo.h>
 #include "platform/webos/os_info.h"
+#include "stream/platform.h"
 
 static bool lgnc_initialized = false;
 
@@ -35,12 +36,13 @@ bool platform_init_lgnc(int argc, char *argv[])
     return lgnc_initialized;
 }
 
-bool platform_check_lgnc()
+bool platform_check_lgnc(PPLATFORM_INFO platform_info)
 {
     LGNC_VDEC_DATA_INFO_T info = {.width = 1270, .height = 720, .vdecFmt = LGNC_VDEC_FMT_H264, .trid_type = LGNC_VDEC_3D_TYPE_NONE};
     if (LGNC_DIRECTVIDEO_Open(&info) != 0)
         return false;
     LGNC_DIRECTVIDEO_Close();
+    platform_info->valid = true;
     return true;
 }
 void platform_finalize_lgnc()

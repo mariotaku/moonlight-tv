@@ -9,6 +9,7 @@
 #include <dlfcn.h>
 
 #include "platform/webos/os_info.h"
+#include "stream/platform.h"
 #include "vdec_services.h"
 
 static bool dile_initialized = false;
@@ -40,9 +41,9 @@ bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
     return dile_initialized;
 }
 
-bool DECODER_SYMBOL_NAME(platform_check)()
+bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO platform_info)
 {
-    return vdec_services_supported();
+    return platform_info->valid = vdec_services_supported();
 }
 
 void DECODER_SYMBOL_NAME(platform_finalize)()

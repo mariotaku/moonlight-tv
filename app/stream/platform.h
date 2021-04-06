@@ -28,6 +28,16 @@
 
 #define IS_EMBEDDED(SYSTEM) SYSTEM != SDL
 
+typedef struct PLATFORM_INFO
+{
+    bool valid;
+    bool audio;
+    bool hevc;
+    bool hdr;
+    int colorSpace;
+    int colorRange;
+} * PPLATFORM_INFO, PLATFORM_INFO;
+
 enum platform
 {
     NONE = 0,
@@ -50,13 +60,13 @@ enum platform
 };
 
 extern enum platform platform_current;
+extern PLATFORM_INFO platform_info;
 
 enum platform platform_init(const char *name, int argc, char *argv[]);
 PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system);
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device);
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system);
 
-bool platform_supports_hevc(enum platform system);
 const char *platform_name(enum platform system);
 
 void platform_start(enum platform system);

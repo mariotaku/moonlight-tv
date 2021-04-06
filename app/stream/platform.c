@@ -33,6 +33,7 @@ static void dlerror_log();
 static bool checkinit(enum platform system, int argc, char *argv[]);
 
 enum platform platform_current;
+PLATFORM_INFO platform_info;
 
 enum platform platform_init(const char *name, int argc, char *argv[])
 {
@@ -249,10 +250,22 @@ static void platform_finalize_simple(const char *name)
 
 static bool platform_check_simple(const char *name)
 {
+    memset(&platform_info, 0, sizeof(PLATFORM_INFO));
     char fname[32];
     snprintf(fname, sizeof(fname), "platform_check_%s", name);
     platform_check_fn hnd = dlsym(RTLD_DEFAULT, fname);
-    return hnd == NULL || hnd();
+    if (hnd == NULL)
+    {
+        platform_info.valid = true;
+        return true;
+    }
+    bool good = hnd(&platform_info) && platform_info.valid;
+    if (good)
+    {
+        printf("Platform %s check OK. audio=%d hevc=%d hdr=%d\n", name, platform_info.audio, platform_info.hevc,
+               platform_info.hdr);
+    }
+    return good;
 }
 
 bool checkinit(enum platform system, int argc, char *argv[])
@@ -388,20 +401,6 @@ bool platform_is_software(enum platform system)
     switch (system)
     {
     case SDL:
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool platform_supports_hevc(enum platform system)
-{
-    switch (system)
-    {
-    case DILE:
-    case DILE_LEGACY:
-    case SMP:
-    case SMP_ACB:
         return true;
     default:
         return false;

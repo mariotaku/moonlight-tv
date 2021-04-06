@@ -4,6 +4,7 @@
 
 #include <NDL_directmedia.h>
 #include "platform/webos/os_info.h"
+#include "stream/platform.h"
 
 static bool ndl_initialized = false;
 
@@ -28,12 +29,13 @@ bool platform_init_ndl(int argc, char *argv[])
     return ndl_initialized;
 }
 
-bool platform_check_ndl()
+bool platform_check_ndl(PPLATFORM_INFO platform_info)
 {
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
     NDL_DirectVideoClose();
+    platform_info->valid = true;
     return true;
 }
 

@@ -34,7 +34,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
                                 std::placeholders::_4, std::placeholders::_5);
     if (!acb_client_->initialize(ACB::PlayerType::MSE, app_id_, acbHandler))
     {
-        std::cout << "Acb::initialize() failed!" << std::endl;
+        std::cerr << "Acb::initialize() failed!" << std::endl;
         return;
     }
 #endif
@@ -48,7 +48,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
     std::string payload = makeLoadPayload(videoFormat, width, height, redrawRate, 0);
     if (!starfish_media_apis_->Load(payload.c_str(), &LoadCallback, this))
     {
-        std::cout << "StarfishMediaAPIs::Load() failed!" << std::endl;
+        std::cerr << "StarfishMediaAPIs::Load() failed!" << std::endl;
         return;
     }
     player_state_ = PlayerState::LOADED;
@@ -56,7 +56,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
 #ifdef USE_ACB
     if (!acb_client_->setDisplayWindow(0, 0, width, height, true))
     {
-        std::cout << "Acb::setDisplayWindow() failed!" << std::endl;
+        std::cerr << "Acb::setDisplayWindow() failed!" << std::endl;
         return;
     }
 #endif
@@ -70,7 +70,6 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
 
 VideoStreamPlayer::~VideoStreamPlayer()
 {
-    std::cout << "VideoStreamPlayer::dtor" << std::endl;
 #ifdef USE_ACB
     acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::UNLOADED);
     acb_client_->finalize();
@@ -84,14 +83,13 @@ VideoStreamPlayer::~VideoStreamPlayer()
 
 void VideoStreamPlayer::start()
 {
-    std::cout << "VideoStreamPlayer::start" << std::endl;
 }
 
 int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
 {
     if (player_state_ != LOADED && player_state_ != PLAYING)
     {
-        std::cout << "Player not ready to feed" << std::endl;
+        std::cerr << "Player not ready to feed" << std::endl;
         return DR_NEED_IDR;
     }
     unsigned long long ms = decodeUnit->presentationTimeMs;
@@ -109,7 +107,7 @@ int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
         {
 #ifdef USE_ACB
             if (!acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::SEAMLESS_LOADED))
-                std::cout << "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!" << std::endl;
+                std::cerr << "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!" << std::endl;
 #endif
             player_state_ = PLAYING;
         }
@@ -124,7 +122,6 @@ int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
 
 void VideoStreamPlayer::stop()
 {
-    std::cout << "VideoStreamPlayer::stop" << std::endl;
     player_state_ = PlayerState::UNLOADED;
     starfish_media_apis_->pushEOS();
 }
@@ -217,7 +214,6 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
 
 void VideoStreamPlayer::SetMediaVideoData(const char *data)
 {
-    std::cout << "VideoStreamPlayer::SetMediaVideoData" << data << std::endl;
 #ifdef USE_ACB
     acb_client_->setMediaVideoData(data);
 #endif
@@ -230,16 +226,15 @@ void VideoStreamPlayer::LoadCallback(int type, int64_t numValue, const char *str
     case 0:
         break;
     case PF_EVENT_TYPE_STR_ERROR:
-        printf("LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
+        fprintf(stderr, "LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
         break;
     case PF_EVENT_TYPE_INT_ERROR:
-        printf("LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %s, strValue: %p\n", numValue, strValue);
+        fprintf(stderr, "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %s, strValue: %p\n", numValue, strValue);
         break;
     case PF_EVENT_TYPE_STR_BUFFERFULL:
-        printf("PF_EVENT_TYPE_STR_BUFFERFULL\n");
+        fprintf(stderr, "PF_EVENT_TYPE_STR_BUFFERFULL\n");
         break;
     case PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED:
-        std::cout << "PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED" << std::endl;
 #ifdef USE_ACB
         acb_client_->setSinkType(ACB::StateSinkType::SINK_AUTO);
         acb_client_->setMediaId(starfish_media_apis_->getMediaID());
@@ -248,11 +243,9 @@ void VideoStreamPlayer::LoadCallback(int type, int64_t numValue, const char *str
         starfish_media_apis_->Play();
         break;
     case PF_EVENT_TYPE_STR_VIDEO_INFO:
-        std::cout << "PF_EVENT_TYPE_STR_VIDEO_INFO" << std::endl;
         SetMediaVideoData(strValue);
         break;
     default:
-        printf("LoadCallback type: 0x%02x, numValue: %d, strValue: %p\n", type, numValue, strValue);
         break;
     }
 }

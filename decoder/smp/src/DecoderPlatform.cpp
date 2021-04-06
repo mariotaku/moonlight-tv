@@ -3,6 +3,8 @@
 #include <cassert>
 #include <iostream>
 
+#include "stream/platform.h"
+
 #ifndef DECODER_PLATFORM_NAME
 #error "DECODER_PLATFORM_NAME Not defined"
 #endif
@@ -30,8 +32,13 @@ extern "C" bool platform_init(int argc, char *argv[])
     return smp_initialized;
 }
 
-extern "C" bool platform_check()
+extern "C" bool platform_check(PPLATFORM_INFO platform_info)
 {
+    platform_info->valid = true;
+    platform_info->hevc = true;
+    platform_info->hdr = true;
+    platform_info->colorSpace = COLORSPACE_REC_709;
+    platform_info->colorRange = COLOR_RANGE_FULL;
     return true;
 }
 
