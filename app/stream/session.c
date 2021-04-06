@@ -84,7 +84,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
     config->stream.supportsHevc = platform_info.hevc;
     if (platform_info.hevc && platform_info.hdr)
     {
-        bool sessionHdr = platform_info.hdr == PLATFORM_HDR_ALWAYS ? true : app->hdr != 0;
+        bool sessionHdr = platform_info.hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0;
         config->stream.enableHdr = server->supportsHdr && sessionHdr;
     }
     config->stream.colorSpace = platform_info.colorSpace;

@@ -55,6 +55,7 @@ static void XMLCALL _xml_start_applist_element(void *userData, const char *name,
 
     app->id = 0;
     app->name = NULL;
+    app->hdr = 0;
     app->next = (PAPP_LIST) search->data;
     search->data = app;
   } else if (strcmp("ID", name) == 0 || strcmp("AppTitle", name) == 0 || strcmp("IsHdrSupported", name) == 0) {
