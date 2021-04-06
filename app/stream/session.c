@@ -82,11 +82,8 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
     }
     config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
     config->stream.supportsHevc = platform_info.hevc;
-    if (platform_info.hevc && platform_info.hdr)
-    {
-        bool sessionHdr = platform_info.hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0;
-        config->stream.enableHdr = server->supportsHdr && sessionHdr;
-    }
+    config->stream.enableHdr &= platform_info.hevc && platform_info.hdr && server->supportsHdr &&
+                                (platform_info.hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0);
     config->stream.colorSpace = platform_info.colorSpace;
     config->stream.colorRange = platform_info.colorRange;
 

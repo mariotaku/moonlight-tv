@@ -33,6 +33,11 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_layout_row_template_push_static_s(ctx, 120);
     nk_layout_row_template_push_variable_s(ctx, 1);
     nk_layout_row_template_end(ctx);
+    nk_label(ctx, "Version", NK_TEXT_LEFT);
+    nk_label(ctx, APP_VERSION, NK_TEXT_RIGHT);
+    nk_label(ctx, "Decoder", NK_TEXT_LEFT);
+    nk_label(ctx, platform_name(platform_current), NK_TEXT_RIGHT);
+    
 #if OS_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
     nk_label(ctx, webos_release, NK_TEXT_RIGHT);
@@ -43,18 +48,12 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_labelf(ctx, NK_TEXT_RIGHT, "%d", webos_panel_info.rate);
 #endif
 #endif
-    nk_label(ctx, "Decoder", NK_TEXT_LEFT);
-    nk_label(ctx, platform_name(platform_current), NK_TEXT_RIGHT);
     return true;
 }
 
 static int _itemcount()
 {
-    int count = 0;
-#if HAS_WEBOS_SETTINGS
-    count += 1;
-#endif
-    return count;
+    return 0;
 }
 
 static void _onselect()
@@ -74,8 +73,8 @@ void load_webos_info()
 #endif
 }
 #endif
-struct settings_pane settings_pane_sysinfo = {
-    .title = "System Info",
+struct settings_pane settings_pane_about = {
+    .title = "About",
     .render = _render,
     .navkey = NULL,
     .itemcount = _itemcount,

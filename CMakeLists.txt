@@ -142,7 +142,7 @@ set(SOURCES
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
     app/ui/settings/pane_mouse.c
-    app/ui/settings/pane_sysinfo.c
+    app/ui/settings/pane_about.c
     app/ui/settings/statbar.c
     app/platform/webos/sprites_webos.c
     app/util/lruc.c
@@ -220,6 +220,7 @@ set_target_properties(moonlight PROPERTIES
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
 target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
+target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}")
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)

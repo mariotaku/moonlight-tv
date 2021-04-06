@@ -42,12 +42,14 @@ bool _settings_pane_host(struct nk_context *ctx, bool *showing_combo)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
 
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    nk_checkbox_label(ctx, "HDR (Experimental)", &app_configuration->stream.enableHdr);
     return true;
 }
 
 int _settings_pane_host_itemcount()
 {
-    return 3;
+    return 4;
 }
 
 struct settings_pane settings_pane_host = {

@@ -29,7 +29,8 @@ static struct option long_options[] = {
     {"height", required_argument, NULL, 'd'},
     {"absmouse_mapping", required_argument, NULL, 'e'},
     {"bitrate", required_argument, NULL, 'g'},
-    {"packetsize", required_argument, NULL, 'h'},
+    {"hdr", no_argument, NULL, 'h'},
+    {"packetsize", required_argument, NULL, 'i'},
     {"input", required_argument, NULL, 'j'},
     {"mapping", required_argument, NULL, 'k'},
     {"nosops", no_argument, NULL, 'l'},
@@ -227,9 +228,11 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_string(fd, "audio", config->audio_device);
     if (config->address != NULL)
         write_config_string(fd, "address", config->address);
+    if (config->stream.enableHdr)
+        write_config_bool(fd, "hdr", true);
     if (config->debug_level == 1)
         write_config_bool(fd, "verbose", true);
-    if (config->debug_level == 2)
+    else if (config->debug_level == 2)
         write_config_bool(fd, "debug", true);
     if (absmouse_mapping_valid(config->absmouse_mapping))
         write_config_absmouse_mapping(fd, "absmouse_mapping", config->absmouse_mapping);
@@ -255,8 +258,10 @@ void parse_argument(int c, char *value, PCONFIGURATION config)
         config->stream.bitrate = atoi(value);
         break;
     case 'h':
-        config->stream.packetSize = atoi(value);
+        config->stream.enableHdr = true;
         break;
+    case 'i':
+        config->stream.packetSize = atoi(value);
         break;
     case 'l':
         config->sops = false;

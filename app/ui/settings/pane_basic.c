@@ -21,7 +21,7 @@ struct _fps_option
 static const struct _resolution_option _supported_resolutions[] = {
     {1280, 720, "720P\0"},
     {1920, 1080, "1080P\0"},
-    {2560, 1440, "2K\0"},
+    {2560, 1440, "1440P\0"},
     {3840, 2160, "4K\0"},
 };
 #define _supported_resolutions_len sizeof(_supported_resolutions) / sizeof(struct _resolution_option)

@@ -28,7 +28,7 @@ typedef void (*settings_panel_voidfn)();
 extern struct settings_pane settings_pane_basic;
 extern struct settings_pane settings_pane_host;
 extern struct settings_pane settings_pane_mouse;
-extern struct settings_pane settings_pane_sysinfo;
+extern struct settings_pane settings_pane_about;
 
 struct settings_pane
 {
