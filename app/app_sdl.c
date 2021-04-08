@@ -52,8 +52,9 @@ int sdlCurrentFrame, sdlNextFrame;
 
 /* Platform */
 SDL_Window *win;
-SDL_GLContext gl;
+static SDL_GLContext gl;
 int app_window_width, app_window_height;
+bool app_has_nk_call = false;
 
 static char wintitle[32];
 
@@ -130,7 +131,8 @@ static void app_process_events(struct nk_context *ctx)
 {
     /* Input */
     SDL_Event evt;
-    nk_input_begin(ctx);
+    if (app_has_nk_call)
+        nk_input_begin(ctx);
     while (SDL_PollEvent(&evt))
     {
         bool block_steam_inputevent = false;
@@ -240,9 +242,11 @@ static void app_process_events(struct nk_context *ctx)
         {
             absinput_dispatch_event(evt);
         }
-        nk_sdl_handle_event(&evt);
+        if (app_has_nk_call)
+            nk_sdl_handle_event(&evt);
     }
-    nk_input_end(ctx);
+    if (app_has_nk_call)
+        nk_input_end(ctx);
 }
 
 void app_main_loop(void *data)
@@ -253,26 +257,23 @@ void app_main_loop(void *data)
 
     app_process_events(ctx);
 
-    bool cont = ui_root(ctx);
+    app_has_nk_call = ui_root(ctx);
 
     /* Draw */
+
+    if (app_has_nk_call)
     {
         ui_render_background();
         nk_platform_render();
         SDL_GL_SwapWindow(win);
+        SDL_Delay(100);
     }
 #if OS_LINUX
     fps_cap(start_ticks);
 #elif OS_DARWIN
     if (!window_focus_gained)
-    {
         fps_cap(start_ticks);
-    }
 #endif
-    if (!cont)
-    {
-        app_request_exit();
-    }
     Uint32 end_ticks = SDL_GetTicks();
     Sint32 deltams = end_ticks - start_ticks;
     if (deltams < 0)
@@ -283,6 +284,7 @@ void app_main_loop(void *data)
     if ((end_ticks - fps_ticks) >= 1000)
     {
         sprintf(wintitle, "Moonlight | %d FPS", (int)(framecount * 1000.0 / (end_ticks - fps_ticks)));
+        printf("%s\n", wintitle);
         SDL_SetWindowTitle(win, wintitle);
         fps_ticks = end_ticks;
         framecount = 0;

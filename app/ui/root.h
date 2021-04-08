@@ -39,6 +39,9 @@ void ui_root_init(struct nk_context *ctx);
 
 void ui_root_destroy();
 
+/**
+ * @return false if this call didn't involve with any Nuklear calls, so redraw can be ignored
+ */
 bool ui_root(struct nk_context *ctx);
 
 void ui_render_background();

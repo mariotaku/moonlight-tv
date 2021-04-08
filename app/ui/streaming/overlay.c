@@ -49,12 +49,12 @@ bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat)
         _streaming_error_window(ctx);
         break;
     case STREAMING_STREAMING:
-        if (stream_overlay_showing)
-        {
-            _overlay_backdrop(ctx);
-            _streaming_bottom_bar(ctx);
-            _streaming_perf_stat(ctx);
-        }
+        if (!stream_overlay_showing)
+            // Nothing Nuklear is showing on screen
+            return false;
+        _overlay_backdrop(ctx);
+        _streaming_bottom_bar(ctx);
+        _streaming_perf_stat(ctx);
         break;
     default:
         break;

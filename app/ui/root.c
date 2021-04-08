@@ -75,7 +75,8 @@ bool ui_root(struct nk_context *ctx)
     {
         if (!launcher_window(ctx))
         {
-            return false;
+            app_request_exit();
+            return true;
         }
 
         if (ui_settings_showing)
@@ -124,7 +125,8 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
         case USER_FAKEINPUT_MOUSE_MOTION:
         {
             struct nk_vec2 *center = data1;
-            nk_input_motion(ctx, center->x, center->y);
+            if (app_has_nk_call)
+                nk_input_motion(ctx, center->x, center->y);
             handled = true;
             break;
         }
@@ -141,8 +143,11 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
             }
             ui_fake_mouse_event_received = true;
             ui_fake_mouse_click_started = true;
-            nk_input_motion(ctx, center->x, center->y);
-            nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, (state & NAVKEY_STATE_DOWN) ? nk_true : nk_false);
+            if (app_has_nk_call)
+            {
+                nk_input_motion(ctx, center->x, center->y);
+                nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, (state & NAVKEY_STATE_DOWN) ? nk_true : nk_false);
+            }
             // Reset to (0,0) if only UP flag is present, and no NO_RESET flag
             if (state == NAVKEY_STATE_UP)
             {
@@ -153,7 +158,8 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
         }
         case USER_FAKEINPUT_MOUSE_CANCEL:
         {
-            nk_input_motion(ctx, 0, 0);
+            if (app_has_nk_call)
+                nk_input_motion(ctx, 0, 0);
             return true;
         }
 #if HAVE_FFMPEG
