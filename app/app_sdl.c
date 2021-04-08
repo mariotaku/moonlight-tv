@@ -295,7 +295,6 @@ void app_main_loop(void *data)
     if ((end_ticks - fps_ticks) >= 1000)
     {
         sprintf(wintitle, "Moonlight | %d FPS", (int)(framecount * 1000.0 / (end_ticks - fps_ticks)));
-        printf("%s\n", wintitle);
         SDL_SetWindowTitle(win, wintitle);
         fps_ticks = end_ticks;
         framecount = 0;
