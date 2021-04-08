@@ -78,8 +78,8 @@ bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE sta
     {
     case NAVKEY_CANCEL:
     case NAVKEY_MENU:
-        // Fake touch on blank and cancel the combo
-        bus_pushevent(USER_FAKEINPUT_MOUSE_CANCEL, NULL, NULL);
+        // Fake touch to cancel the combo
+        bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_computer_picker_center, (void *)state);
         return true;
     case NAVKEY_UP:
         return navkey_intercept_repeat(state, timestamp) || pclist_item_select(computer_list, -1);

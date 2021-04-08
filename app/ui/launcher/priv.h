@@ -41,6 +41,7 @@ bool _quitapp_errno;
 bool _launcher_show_manual_pair;
 bool _launcher_show_host_info;
 bool computer_manager_executing_quitapp;
+struct nk_vec2 _computer_picker_center;
 
 void _select_computer(PSERVER_LIST node, bool load_apps);
 

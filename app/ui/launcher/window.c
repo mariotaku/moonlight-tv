@@ -31,7 +31,6 @@ struct nk_image launcher_default_cover;
 struct pairing_computer_state pairing_computer_state;
 
 static struct nk_style_button cm_list_button_style;
-static struct nk_vec2 _computer_picker_center = {0, 0};
 
 int topbar_item_hover_request = -1;
 int topbar_hovered_item = -1;
@@ -41,6 +40,7 @@ static int topbar_item_count = 0;
 static bool initial_server_selected = false;
 bool topbar_showing_combo = false;
 bool computer_manager_executing_quitapp = false;
+struct nk_vec2 _computer_picker_center = {0, 0};
 
 void _pairing_error_popup(struct nk_context *ctx);
 void _server_error_popup(struct nk_context *ctx);
