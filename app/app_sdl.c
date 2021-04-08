@@ -54,7 +54,7 @@ int sdlCurrentFrame, sdlNextFrame;
 SDL_Window *win;
 static SDL_GLContext gl;
 int app_window_width, app_window_height;
-bool app_has_nk_call = false;
+bool app_has_nk_call = false, app_should_redraw_background = false;
 
 static char wintitle[32];
 
@@ -266,14 +266,25 @@ void app_main_loop(void *data)
         ui_render_background();
         nk_platform_render();
         SDL_GL_SwapWindow(win);
-        SDL_Delay(100);
-    }
+        app_should_redraw_background = true;
 #if OS_LINUX
-    fps_cap(start_ticks);
-#elif OS_DARWIN
-    if (!window_focus_gained)
         fps_cap(start_ticks);
+#elif OS_DARWIN
+        if (!window_focus_gained)
+            fps_cap(start_ticks);
 #endif
+    }
+    else if (app_should_redraw_background)
+    {
+        ui_render_background();
+        SDL_GL_SwapWindow(win);
+        app_should_redraw_background = false;
+    }
+    else
+    {
+        // Just delay for 1ms so we can get ~1000 loops per second for input events
+        SDL_Delay(1);
+    }
     Uint32 end_ticks = SDL_GetTicks();
     Sint32 deltams = end_ticks - start_ticks;
     if (deltams < 0)

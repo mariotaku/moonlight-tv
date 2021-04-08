@@ -9,6 +9,7 @@
 #include "root.h"
 #include "config.h"
 
+#include "stream/platform.h"
 #include "stream/session.h"
 
 #include "launcher/window.h"
@@ -97,20 +98,23 @@ bool ui_root(struct nk_context *ctx)
 
 void ui_render_background()
 {
-#if HAVE_FFMPEG
-    if (streaming_status == STREAMING_STREAMING)
+    if (platform_current == SDL)
     {
-        renderer_draw();
+        if (streaming_status == STREAMING_STREAMING)
+        {
+            renderer_draw();
+        }
+        else
+        {
+            glClearColor(0, 0, 0, 1);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
     }
     else
     {
-        glClearColor(0, 0, 0, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
-#else
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#endif
 }
 
 bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2)
