@@ -41,7 +41,6 @@ if (TARGET_WEBOS)
     set(THREADS_PTHREAD_ARG "2" CACHE STRING "Result from TRY_RUN" FORCE)
     set(HAVE_SDL TRUE)
     
-    add_subdirectory(third_party/h264bitstream)
     add_subdirectory(system/webos/tv-native-apis)
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
@@ -199,16 +198,6 @@ if (HAVE_SDL)
     endif()
 endif()
 
-if(BROADCOM_FOUND)
-    list(APPEND SOURCES
-        app/platform/raspi/app_init.c
-        app/stream/audio/omx.c
-        app/stream/video/mmal.c
-        app/stream/video/pi.c
-        app/stream/util.c
-    )
-endif()
-
 add_executable(moonlight ${SOURCES})
 
 target_compile_lint(moonlight)
@@ -270,6 +259,8 @@ elseif(TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
+    target_link_libraries(moonlight PRIVATE moonlight-pi)
+
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
@@ -279,11 +270,6 @@ elseif(TARGET_RASPI)
     target_include_directories(moonlight SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
 
-    target_link_libraries(moonlight PRIVATE ilclient ${BROADCOM_MMAL_LIBRARIES})
-
-    target_include_directories(moonlight PRIVATE ${BROADCOM_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${BROADCOM_OMX_LIBRARIES})
-    target_compile_definitions(moonlight PUBLIC ${BROADCOM_OMX_DEFINITIONS})
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GL2)

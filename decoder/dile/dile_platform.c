@@ -43,7 +43,12 @@ bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
 
 bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO platform_info)
 {
-    return platform_info->valid = vdec_services_supported();
+    bool supported = vdec_services_supported();
+    if (!supported)
+        return false;
+    platform_info->valid = true;
+    platform_info->hwaccel = true;
+    return true;
 }
 
 void DECODER_SYMBOL_NAME(platform_finalize)()

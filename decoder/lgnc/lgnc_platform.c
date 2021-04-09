@@ -38,6 +38,7 @@ bool platform_check_lgnc(PPLATFORM_INFO platform_info)
         return false;
     LGNC_DIRECTVIDEO_Close();
     platform_info->valid = true;
+    platform_info->hwaccel = true;
     return true;
 }
 void platform_finalize_lgnc()

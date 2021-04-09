@@ -31,6 +31,7 @@ bool platform_check_ndl(PPLATFORM_INFO platform_info)
         return false;
     NDL_DirectVideoClose();
     platform_info->valid = true;
+    platform_info->hwaccel = true;
     return true;
 }
 

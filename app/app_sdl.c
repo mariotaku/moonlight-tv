@@ -99,9 +99,6 @@ APP_WINDOW_CONTEXT app_window_create()
 #if OS_WEBOS
     app_webos_window_setup(win);
 #endif
-#if TARGET_RASPI
-    app_rpi_window_setup(win);
-#endif
     SDL_Log("Video Driver: %s\n", SDL_GetCurrentVideoDriver());
     sdlCurrentFrame = sdlNextFrame = 0;
     mutex = SDL_CreateMutex();
