@@ -442,7 +442,7 @@ void _launcher_modal_flags_update()
     {
         _launcher_modals |= LAUNCHER_MODAL_MANUAL_ADD;
     }
-    if (!_decoder_error_dismissed && platform_is_software(platform_current))
+    if (!_decoder_error_dismissed && !platform_info.hwaccel)
     {
 #ifndef TARGET_DESKTOP
         _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;

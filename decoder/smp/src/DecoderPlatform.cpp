@@ -35,6 +35,7 @@ extern "C" bool platform_init(int argc, char *argv[])
 extern "C" bool platform_check(PPLATFORM_INFO platform_info)
 {
     platform_info->valid = true;
+    platform_info->hwaccel = true;
     platform_info->hevc = true;
     platform_info->hdr = PLATFORM_HDR_ALWAYS;
     platform_info->colorSpace = COLORSPACE_REC_709;

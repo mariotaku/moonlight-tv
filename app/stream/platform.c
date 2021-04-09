@@ -43,17 +43,19 @@ enum platform platform_init(const char *name, int argc, char *argv[])
     char libname[64];
     for (int i = 0; i < platform_orders_len; i++)
     {
-        struct platform_definition p = platform_definitions[i];
-        if (std || strcmp(name, p.library) == 0)
+        enum platform ptype = platform_orders[i];
+        struct platform_definition pdef = platform_definitions[platform_orders[i]];
+        printf("trying %s\n", pdef.library);
+        if (std || strcmp(name, pdef.library) == 0)
         {
-            snprintf(libname, sizeof(libname), "libmoonlight-%s.so", p.library);
+            snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.library);
             void *handle = dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
             if (handle == NULL)
                 dlerror_log();
-            else if (!checkinit(i, argc, argv))
-                fprintf(stderr, "%s check failed\n", p.name);
+            else if (!checkinit(ptype, argc, argv))
+                fprintf(stderr, "%s check failed\n", pdef.name);
             else
-                return i;
+                return ptype;
         }
     }
     return NONE;
@@ -149,17 +151,6 @@ void platform_finalize(enum platform system)
 const char *platform_name(enum platform system)
 {
     return platform_definitions[system].name;
-}
-
-bool platform_is_software(enum platform system)
-{
-    switch (system)
-    {
-    case SDL:
-        return true;
-    default:
-        return false;
-    }
 }
 
 void dlerror_log()

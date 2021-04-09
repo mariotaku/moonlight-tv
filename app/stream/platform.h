@@ -35,6 +35,7 @@
 typedef struct PLATFORM_INFO
 {
     bool valid;
+    bool hwaccel;
     bool audio;
     bool hevc;
     int hdr;
@@ -66,5 +67,3 @@ PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system);
 const char *platform_name(enum platform system);
 
 void platform_finalize(enum platform system);
-
-bool platform_is_software(enum platform system);
