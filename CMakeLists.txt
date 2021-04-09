@@ -182,6 +182,7 @@ if (HAVE_SDL)
             app/platform/webos/navkey_sdl_webos.c
             app/platform/webos/path_webos.c
             app/platform/webos/os_info.c
+            app/platform/webos/SDL_webOS_compat.c
         )
     else()
         list(APPEND SOURCES

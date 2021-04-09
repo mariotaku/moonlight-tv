@@ -37,15 +37,21 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, APP_VERSION, NK_TEXT_RIGHT);
     nk_label(ctx, "Decoder", NK_TEXT_LEFT);
     nk_label(ctx, platform_name(platform_current), NK_TEXT_RIGHT);
-    
+
 #if OS_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
     nk_label(ctx, webos_release, NK_TEXT_RIGHT);
 #if HAVE_SDL
-    nk_label(ctx, "Panel resolution", NK_TEXT_LEFT);
-    nk_labelf(ctx, NK_TEXT_RIGHT, "%d * %d", webos_panel_info.w, webos_panel_info.h);
-    nk_label(ctx, "Refresh rate", NK_TEXT_LEFT);
-    nk_labelf(ctx, NK_TEXT_RIGHT, "%d", webos_panel_info.rate);
+    if (webos_panel_info.w && webos_panel_info.h)
+    {
+        nk_label(ctx, "Panel resolution", NK_TEXT_LEFT);
+        nk_labelf(ctx, NK_TEXT_RIGHT, "%d * %d", webos_panel_info.w, webos_panel_info.h);
+    }
+    if (webos_panel_info.rate)
+    {
+        nk_label(ctx, "Refresh rate", NK_TEXT_LEFT);
+        nk_labelf(ctx, NK_TEXT_RIGHT, "%d", webos_panel_info.rate);
+    }
 #endif
 #endif
     return true;
