@@ -46,14 +46,6 @@ enum platform
 {
     NONE = 0,
     SDL,
-    X11,
-    X11_VDPAU,
-    X11_VAAPI,
-    PI,
-    MMAL,
-    IMX,
-    AML,
-    RK,
     NDL,
     LGNC,
     SMP,
@@ -72,9 +64,6 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_d
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system);
 
 const char *platform_name(enum platform system);
-
-void platform_start(enum platform system);
-void platform_stop(enum platform system);
 
 void platform_finalize(enum platform system);
 

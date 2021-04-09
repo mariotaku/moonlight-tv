@@ -166,7 +166,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter(system);
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
 
-    platform_start(system);
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &vdec_delegate, adec, vdec, drFlags, config->audio_device, 0);
     if (startResult != 0 || session_interrupted)
@@ -205,7 +204,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     // Don't always reset status as error state should be kept
     _streaming_set_status(STREAMING_NONE);
 thread_cleanup:
-    platform_stop(system);
     free(req->server);
     free(req->config);
     free(req);
