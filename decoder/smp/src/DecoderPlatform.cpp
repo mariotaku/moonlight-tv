@@ -5,23 +5,16 @@
 
 #include "stream/platform.h"
 
-#ifndef DECODER_PLATFORM_NAME
-#error "DECODER_PLATFORM_NAME Not defined"
-#endif
-
-// Coming from https://stackoverflow.com/a/1489985/859190
-#define DECODER_DECL_PASTER(x, y) x##_##y
-#define DECODER_DECL_EVALUATOR(x, y) DECODER_DECL_PASTER(x, y)
-#define DECODER_SYMBOL_NAME(name) DECODER_DECL_EVALUATOR(name, DECODER_PLATFORM_NAME)
-
 #define platform_init DECODER_SYMBOL_NAME(platform_init)
 #define platform_check DECODER_SYMBOL_NAME(platform_check)
 #define platform_finalize DECODER_SYMBOL_NAME(platform_finalize)
 #define decoder_callbacks DECODER_SYMBOL_NAME(decoder_callbacks)
+#define audio_callbacks DECODER_SYMBOL_NAME(audio_callbacks)
 
 static bool smp_initialized = false;
 
 using SMP_DECODER_NS::VideoStreamPlayer;
+
 static VideoStreamPlayer *videoPlayer = nullptr;
 
 extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
@@ -87,3 +80,12 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks = {
     .submitDecodeUnit = _videoSubmit,
     .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
 };
+
+// AUDIO_RENDERER_CALLBACKS audio_callbacks = {
+//     .init = AudioStreamPlayer::setup,
+//     .start = AudioStreamPlayer::start,
+//     .stop = AudioStreamPlayer::stop,
+//     .cleanup = AudioStreamPlayer::cleanup,
+//     .decodeAndPlaySample = AudioStreamPlayer::submit,
+//     .capabilities = CAPABILITY_DIRECT_SUBMIT,
+// };

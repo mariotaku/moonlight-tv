@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
 #include <Limelight.h>
 
@@ -31,6 +32,13 @@
 #define PLATFORM_HDR_NONE 0
 #define PLATFORM_HDR_SUPPORTED 1
 #define PLATFORM_HDR_ALWAYS 2
+
+#ifdef DECODER_PLATFORM_NAME
+// Coming from https://stackoverflow.com/a/1489985/859190
+#define DECODER_DECL_PASTER(x, y) x##_##y
+#define DECODER_DECL_EVALUATOR(x, y) DECODER_DECL_PASTER(x, y)
+#define DECODER_SYMBOL_NAME(name) DECODER_DECL_EVALUATOR(name, DECODER_PLATFORM_NAME)
+#endif
 
 typedef struct PLATFORM_INFO
 {
