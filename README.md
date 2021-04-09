@@ -1,7 +1,7 @@
 # Moonlight TV
 
 Moonlight TV is a GUI front end for [Moonlight GameStream Client](https://moonlight-stream.org/). With some components from [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
-It was originally designed for LG webOS TVs, but may support running in more devices in the future.
+It was originally designed for LG webOS TVs, but may support running on more devices in the future.
 
 ## Features
 
