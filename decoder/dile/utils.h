@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pbnjson.h>
+#include <resource_calculator_c.h>
 
 int find_source_port(jvalue_ref res);
 jvalue_ref serialize_resource_aquire_req(MRCResourceList list);

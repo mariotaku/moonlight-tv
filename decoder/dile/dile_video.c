@@ -31,10 +31,10 @@
 #include <pbnjson.h>
 
 #include <ResourceManagerClient_c.h>
-#include <resource_calculator_c.h>
 #include <dile_vdec_direct.h>
 
 #include "vdec_services.h"
+#include "utils.h"
 
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024

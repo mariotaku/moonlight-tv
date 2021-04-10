@@ -14,12 +14,14 @@ INCBIN(spritesheet_ui_3x, "../res/spritesheet_ui@3x.png");
 INCBIN(window_icon_32, "../res/moonlight_32.png");
 #endif
 #if HAVE_FFMPEG
-#if TARGET_DESKTOP
+#if HAVE_GL2
 INCBIN(vertex_source, "../res/shaders/vertex_source_gl2.glsl");
 INCBIN(fragment_source, "../res/shaders/fragment_source_gl2.glsl");
-#else
+#elif HAVE_GLES2
 INCBIN(vertex_source, "../res/shaders/vertex_source_gles2.glsl");
 INCBIN(fragment_source, "../res/shaders/fragment_source_gles2.glsl");
+#else
+#error "No GL version found"
 #endif
 #endif
 #else

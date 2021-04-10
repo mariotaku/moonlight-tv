@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <opus_multistream.h>
 
+#include "utils.h"
+
 static OpusMSDecoder *decoder;
 static short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];
 static int channelCount;

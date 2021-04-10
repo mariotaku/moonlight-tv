@@ -231,7 +231,7 @@ target_link_libraries(moonlight PRIVATE mbedtls)
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
@@ -250,7 +250,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${LUNA_SERVICE_LIBRARIES})
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_RASPI)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
 
@@ -272,7 +272,7 @@ elseif(TARGET_RASPI)
 
 else()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GL2)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GL2 HAVE_GL2)
     
     if(TARGET_DARWIN)
         target_compile_definitions(moonlight PUBLIC OS_DARWIN GL_SILENCE_DEPRECATION)
