@@ -1,5 +1,4 @@
 #include "stream/api.h"
-#include <stdbool.h>
 
 bool platform_check_pi(PPLATFORM_INFO platform_info)
 {

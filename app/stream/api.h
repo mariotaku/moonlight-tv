@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #define PLATFORM_HDR_NONE 0
 #define PLATFORM_HDR_SUPPORTED 1
 #define PLATFORM_HDR_ALWAYS 2
