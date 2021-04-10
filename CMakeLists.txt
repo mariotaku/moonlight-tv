@@ -173,6 +173,7 @@ if (HAVE_SDL)
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdl.c
         app/stream/video/delegate.c
+        app/stream/sdl_platform.c
     )
     if (TARGET_WEBOS)
         list(APPEND SOURCES
