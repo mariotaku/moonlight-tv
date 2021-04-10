@@ -113,7 +113,7 @@ static void _audioCleanup()
 DECODER_RENDERER_CALLBACKS decoder_callbacks = {
     .setup = _videoSetup,
     .start = nullptr,
-    .stop = _audioStop,
+    .stop = _videoStop,
     .cleanup = _videoCleanup,
     .submitDecodeUnit = _videoSubmit,
     .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
@@ -122,7 +122,7 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks = {
 AUDIO_RENDERER_CALLBACKS audio_callbacks = {
     .init = _audioSetup,
     .start = nullptr,
-    .stop = _videoStop,
+    .stop = _audioStop,
     .cleanup = _audioCleanup,
     .decodeAndPlaySample = _audioSubmit,
     .capabilities = CAPABILITY_DIRECT_SUBMIT,
