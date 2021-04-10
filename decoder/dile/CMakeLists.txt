@@ -10,7 +10,7 @@ pkg_check_modules(MEDIARESCALC REQUIRED media-resource-calculator)
 
 set(COMMON_SRC
     dile_platform.c
-    # dile_audio.c
+    dile_audio.c
     dile_video.c
     lunasynccall.c
     utils.c
@@ -29,7 +29,7 @@ target_link_libraries(moonlight-dile moonlight-common-c opus dile_audio_direct d
 target_include_directories(moonlight-dile SYSTEM PRIVATE
     ${GLIB_INCLUDE_DIRS} ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS} ${UMEDIA_API_INCLUDE_DIRS} ${MEDIARESCALC_INCLUDE_DIRS})
 
-target_compile_definitions(moonlight-dile PUBLIC HAVE_DILE PRIVATE DECODER_PLATFORM_NAME=dile)
+target_compile_definitions(moonlight-dile PRIVATE DECODER_PLATFORM_NAME=dile)
 
 # DILE for webOS 4.x and below
 
@@ -52,4 +52,4 @@ target_link_libraries(moonlight-dile-legacy moonlight-common-c opus dile_audio_d
 target_include_directories(moonlight-dile-legacy SYSTEM PRIVATE
     ${GLIB_INCLUDE_DIRS} ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS} ${UMEDIA_API_INCLUDE_DIRS} ${MEDIARESCALC_INCLUDE_DIRS})
 
-target_compile_definitions(moonlight-dile-legacy PUBLIC HAVE_DILE_LEGACY PRIVATE DECODER_PLATFORM_NAME=dile_legacy)
+target_compile_definitions(moonlight-dile-legacy PRIVATE DECODER_PLATFORM_NAME=dile_legacy)

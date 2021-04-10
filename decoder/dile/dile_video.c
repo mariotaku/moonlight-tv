@@ -51,11 +51,6 @@ static bool policyActionHandler(const char *action, const char *resources,
                                 const char *requestor_type, const char *requestor_name,
                                 const char *connection_id);
 
-static void playCallback(unsigned long long buffID);
-
-static jvalue_ref serialize_resource_aquire_req(MRCResourceList list);
-static jvalue_ref parse_resource_aquire_resp(const char *json);
-static int find_source_port(jvalue_ref res);
 
 static int dile_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
@@ -104,7 +99,6 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
     vdec_services_set_data(connId, redrawRate, width, height);
 
     // VideoOutputBlankVideo(connId, true);
-    DILE_VDEC_DIRECT_SetCallback(playCallback);
     if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
     {
         fprintf(stderr, "Couldn't initialize video decoding %08x (%d)\n", video_fourcc, video_fourcc);
@@ -183,29 +177,6 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
     return DR_OK;
 }
 
-jvalue_ref serialize_resource_aquire_req(MRCResourceList list)
-{
-    jvalue_ref root = jarray_create(0);
-    for (int i = 0; list[i]; i++)
-    {
-        jarray_append(root, jobject_create_var(jkeyval(J_CSTR_TO_JVAL("resource"), j_cstr_to_jval(list[i]->type)),
-                                               jkeyval(J_CSTR_TO_JVAL("qty"), jnumber_create_i32(list[i]->quantity))));
-    }
-    return root;
-}
-
-jvalue_ref parse_resource_aquire_resp(const char *json)
-{
-    JSchemaInfo schemaInfo;
-    jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
-    jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
-    jdomparser_feed(parser, json, strlen(json));
-
-    jdomparser_end(parser);
-    jvalue_ref result = jdomparser_get_result(parser);
-    jdomparser_release(&parser);
-    return result;
-}
 
 DECODER_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(decoder_callbacks) = {
     .setup = dile_setup,
@@ -222,9 +193,4 @@ bool policyActionHandler(const char *action, const char *resources,
            "requestor_name=%s, connection_id=%s\n",
            action, resources, requestor_type, requestor_name, connection_id);
     return true;
-}
-
-void playCallback(unsigned long long buffID)
-{
-    printf("playCallback: %lld\n", buffID);
 }
