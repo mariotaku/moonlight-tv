@@ -43,15 +43,16 @@
 typedef struct PLATFORM_INFO
 {
     bool valid;
-    bool hwaccel;
-    bool audio;
+    unsigned int vrank;
+    unsigned int arank;
     bool hevc;
     int hdr;
     int colorSpace;
     int colorRange;
+    int maxBitrate;
 } * PPLATFORM_INFO, PLATFORM_INFO;
 
-enum platform
+enum PLATFORM_T
 {
     NONE = 0,
     SDL,
@@ -63,15 +64,16 @@ enum platform
     DILE_LEGACY,
     FAKE
 };
+typedef enum PLATFORM_T PLATFORM;
 
-extern enum platform platform_current;
-extern PLATFORM_INFO platform_info;
+PLATFORM platform_current;
+PLATFORM_INFO platform_states[FAKE + 1];
 
-enum platform platform_init(const char *name, int argc, char *argv[]);
-PDECODER_RENDERER_CALLBACKS platform_get_video(enum platform system);
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(enum platform system, char *audio_device);
-PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(enum platform system);
+PLATFORM platform_init(const char *name, int argc, char *argv[]);
+PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM system);
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM system, char *audio_device);
+PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM system);
 
-const char *platform_name(enum platform system);
+const char *platform_name(enum PLATFORM_T system);
 
-void platform_finalize(enum platform system);
+void platform_finalize(enum PLATFORM_T system);

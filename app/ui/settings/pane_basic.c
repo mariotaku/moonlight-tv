@@ -6,6 +6,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include "stream/platform.h"
+
 struct _resolution_option
 {
     int w, h;
@@ -47,6 +49,7 @@ static struct nk_vec2 combo_focused_center;
 #define BITRATE_STEP 500
 
 static char _res_label[8], _fps_label[8];
+static int _max_bitrate = BITRATE_MAX;
 
 static void _set_fps(int fps);
 static void _set_res(int w, int h);
@@ -149,16 +152,8 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_layout_row_dynamic_s(ctx, 25, 1);
     nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, BITRATE_MAX, BITRATE_STEP, 50);
-    if (app_configuration->stream.bitrate > 50000)
-    {
-        nk_layout_row_dynamic_s(ctx, 50, 1);
-        nk_label_wrap(ctx, "[!] Too high resolution/fps/bitrate may cause blank screen or crash.");
-    }
-    else
-    {
-        nk_layout_row_dynamic_s(ctx, 4, 1);
-    }
+    nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, _max_bitrate, BITRATE_STEP, 50);
+    nk_layout_row_dynamic_s(ctx, 4, 1);
     return true;
 }
 
@@ -171,6 +166,8 @@ static void _windowopen()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
+    PPLATFORM_INFO platform_info = &platform_states[platform_current];
+    _max_bitrate = platform_info->maxBitrate ? platform_info->maxBitrate : BITRATE_MAX;
 }
 
 static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
@@ -192,7 +189,7 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
         {
             if (!navkey_intercept_repeat(state, timestamp))
                 app_configuration->stream.bitrate = NK_CLAMP(BITRATE_MIN, app_configuration->stream.bitrate - BITRATE_STEP,
-                                                             BITRATE_MAX);
+                                                             _max_bitrate);
             return true;
         }
         return false;
@@ -211,7 +208,7 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
         {
             if (!navkey_intercept_repeat(state, timestamp))
                 app_configuration->stream.bitrate = NK_CLAMP(BITRATE_MIN, app_configuration->stream.bitrate + BITRATE_STEP,
-                                                             BITRATE_MAX);
+                                                             _max_bitrate);
             return true;
         }
         return true;

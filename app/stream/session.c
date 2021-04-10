@@ -75,17 +75,19 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
         return -1;
     }
     PCONFIGURATION config = settings_load();
+    PPLATFORM_INFO pinfo = &platform_states[platform_current];
 
     if (config->stream.bitrate < 0)
-    {
         config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height, config->stream.fps);
-    }
+    // Cap framerate to platform request
+    if (pinfo->maxBitrate && config->stream.bitrate > pinfo->maxBitrate)
+        config->stream.bitrate = pinfo->maxBitrate;
     config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
-    config->stream.supportsHevc = platform_info.hevc;
-    config->stream.enableHdr &= platform_info.hevc && platform_info.hdr && server->supportsHdr &&
-                                (platform_info.hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0);
-    config->stream.colorSpace = platform_info.colorSpace;
-    config->stream.colorRange = platform_info.colorRange;
+    config->stream.supportsHevc = pinfo->hevc;
+    config->stream.enableHdr &= pinfo->hevc && pinfo->hdr && server->supportsHdr &&
+                                (pinfo->hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0);
+    config->stream.colorSpace = pinfo->colorSpace;
+    config->stream.colorRange = pinfo->colorRange;
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = serverdata_new();
@@ -133,7 +135,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     _streaming_errmsg_write("");
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
-    enum platform system = platform_current;
+    enum PLATFORM_T system = platform_current;
     absinput_no_control = config->viewonly;
     int appId = req->appId;
 

@@ -35,8 +35,8 @@ bool platform_check_lgnc(PPLATFORM_INFO platform_info)
         return false;
     LGNC_DIRECTVIDEO_Close();
     platform_info->valid = true;
-    platform_info->hwaccel = true;
-    platform_info->audio = true;
+    platform_info->vrank = 9;
+    platform_info->arank = 29;
     platform_info->maxBitrate = 40000;
     return true;
 }

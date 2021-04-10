@@ -28,8 +28,8 @@ bool platform_check_ndl(PPLATFORM_INFO platform_info)
         return false;
     NDL_DirectVideoClose();
     platform_info->valid = true;
-    platform_info->hwaccel = true;
-    platform_info->audio = true;
+    platform_info->vrank = 10;
+    platform_info->arank = 30;
     platform_info->maxBitrate = 50000;
     return true;
 }

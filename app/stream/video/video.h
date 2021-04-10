@@ -35,11 +35,6 @@
 #define INIT_VDPAU 2
 #define INIT_VAAPI 3
 
-#ifdef OS_WEBOS
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_ndl;
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_lgnc;
-#endif
-
 #ifdef HAVE_SDL
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl;
 #endif

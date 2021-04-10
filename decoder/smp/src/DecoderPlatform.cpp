@@ -1,4 +1,6 @@
-#include "AVStreamPlayer.h"
+#include "AbsStreamPlayer.h"
+#include "AudioStreamPlayer.h"
+#include "VideoStreamPlayer.h"
 
 #include <cassert>
 #include <iostream>
@@ -17,10 +19,12 @@
 static bool smp_initialized = false;
 
 using SMP_DECODER_NS::AudioConfig;
-using SMP_DECODER_NS::AVStreamPlayer;
+using SMP_DECODER_NS::AudioStreamPlayer;
 using SMP_DECODER_NS::VideoConfig;
+using SMP_DECODER_NS::VideoStreamPlayer;
 
-static std::unique_ptr<AVStreamPlayer> streamPlayer;
+static std::unique_ptr<AudioStreamPlayer> audioPlayer;
+static std::unique_ptr<VideoStreamPlayer> videoPlayer;
 
 static AudioConfig audioConfig;
 static VideoConfig videoConfig;
@@ -37,8 +41,8 @@ extern "C" bool platform_init(int argc, char *argv[])
 extern "C" bool platform_check(PPLATFORM_INFO platform_info)
 {
     platform_info->valid = true;
-    platform_info->hwaccel = true;
-    platform_info->audio = true;
+    platform_info->vrank = 40;
+    platform_info->arank = 5;
     platform_info->hevc = true;
     platform_info->hdr = PLATFORM_HDR_ALWAYS;
     platform_info->colorSpace = COLORSPACE_REC_709;
@@ -51,19 +55,6 @@ extern "C" void platform_finalize()
 {
 }
 
-static int _initPlayerWhenReady()
-{
-    if (!audioConfig.type || !videoConfig.format)
-        return 0;
-    streamPlayer.reset(new AVStreamPlayer(audioConfig, videoConfig));
-    return 0;
-}
-
-static void _destroyPlayer()
-{
-    streamPlayer.reset(nullptr);
-}
-
 static int _videoSetup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
     assert(!videoConfig.format);
@@ -71,7 +62,8 @@ static int _videoSetup(int videoFormat, int width, int height, int redrawRate, v
     videoConfig.width = width;
     videoConfig.height = height;
     videoConfig.fps = redrawRate;
-    return _initPlayerWhenReady();
+    videoPlayer.reset(new VideoStreamPlayer(videoConfig));
+    return 0;
 }
 
 static int _audioSetup(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
@@ -79,46 +71,49 @@ static int _audioSetup(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURA
     assert(!audioConfig.type);
     audioConfig.type = audioConfiguration;
     memcpy(&audioConfig.opusConfig, opusConfig, sizeof(OPUS_MULTISTREAM_CONFIGURATION));
-    return _initPlayerWhenReady();
+    audioPlayer.reset(new AudioStreamPlayer(audioConfig));
+    return 0;
 }
 
 static int _videoSubmit(PDECODE_UNIT decodeUnit)
 {
-    if (!streamPlayer)
-        return DR_OK;
-    return streamPlayer->submitVideo(decodeUnit);
+    assert(videoPlayer);
+    return videoPlayer->submit(decodeUnit);
 }
 
 static void _audioSubmit(char *sampleData, int sampleLength)
 {
-    if (!streamPlayer)
-        return;
-    streamPlayer->submitAudio(sampleData, sampleLength);
+    assert(audioPlayer);
+    audioPlayer->submit(sampleData, sampleLength);
 }
 
-static void _avStop()
+static void _audioStop()
 {
-    if (!streamPlayer)
-        return;
-    streamPlayer->sendEOS();
+    assert(audioPlayer);
+    audioPlayer->sendEOS();
+}
+static void _videoStop()
+{
+    assert(videoPlayer);
+    videoPlayer->sendEOS();
 }
 
 static void _videoCleanup()
 {
     videoConfig.format = 0;
-    _destroyPlayer();
+    videoPlayer.reset(nullptr);
 }
 
 static void _audioCleanup()
 {
     audioConfig.type = 0;
-    _destroyPlayer();
+    audioPlayer.reset(nullptr);
 }
 
 DECODER_RENDERER_CALLBACKS decoder_callbacks = {
     .setup = _videoSetup,
     .start = nullptr,
-    .stop = _avStop,
+    .stop = _audioStop,
     .cleanup = _videoCleanup,
     .submitDecodeUnit = _videoSubmit,
     .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
@@ -127,7 +122,7 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks = {
 AUDIO_RENDERER_CALLBACKS audio_callbacks = {
     .init = _audioSetup,
     .start = nullptr,
-    .stop = _avStop,
+    .stop = _videoStop,
     .cleanup = _audioCleanup,
     .decodeAndPlaySample = _audioSubmit,
     .capabilities = CAPABILITY_DIRECT_SUBMIT,

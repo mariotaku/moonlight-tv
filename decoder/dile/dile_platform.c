@@ -22,8 +22,8 @@ bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO platform_info)
     if (!supported)
         return false;
     platform_info->valid = true;
-    platform_info->audio = true;
-    platform_info->hwaccel = true;
+    platform_info->vrank = 35;
+    platform_info->arank = 0;
     platform_info->hevc = true;
     platform_info->maxBitrate = 50000;
     return true;
