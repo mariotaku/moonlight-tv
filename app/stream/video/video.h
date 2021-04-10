@@ -35,10 +35,6 @@
 #define INIT_VDPAU 2
 #define INIT_VAAPI 3
 
-#ifdef HAVE_SDL
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl;
-#endif
-
 #ifdef HAVE_PI
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_pi;
 extern VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi;

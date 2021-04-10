@@ -26,31 +26,7 @@
 #include <stdio.h>
 
 #include "video/presenter.h"
-
-#define IS_EMBEDDED(SYSTEM) SYSTEM != SDL
-
-#define PLATFORM_HDR_NONE 0
-#define PLATFORM_HDR_SUPPORTED 1
-#define PLATFORM_HDR_ALWAYS 2
-
-#ifdef DECODER_PLATFORM_NAME
-// Coming from https://stackoverflow.com/a/1489985/859190
-#define DECODER_DECL_PASTER(x, y) x##_##y
-#define DECODER_DECL_EVALUATOR(x, y) DECODER_DECL_PASTER(x, y)
-#define DECODER_SYMBOL_NAME(name) DECODER_DECL_EVALUATOR(name, DECODER_PLATFORM_NAME)
-#endif
-
-typedef struct PLATFORM_INFO
-{
-    bool valid;
-    unsigned int vrank;
-    unsigned int arank;
-    bool hevc;
-    int hdr;
-    int colorSpace;
-    int colorRange;
-    int maxBitrate;
-} * PPLATFORM_INFO, PLATFORM_INFO;
+#include "api.h"
 
 enum PLATFORM_T
 {
@@ -66,14 +42,30 @@ enum PLATFORM_T
 };
 typedef enum PLATFORM_T PLATFORM;
 
+typedef bool (*PLATFORM_INIT_FN)(int argc, char *argv[]);
+typedef bool (*PLATFORM_CHECK_FN)(PPLATFORM_INFO);
+typedef void (*PLATFORM_FINALIZE_FN)();
+
+typedef struct PLATFORM_SYMBOLS_T
+{
+    PLATFORM_INIT_FN init;
+    PLATFORM_CHECK_FN check;
+    PLATFORM_FINALIZE_FN finalize;
+    PAUDIO_RENDERER_CALLBACKS adec;
+    PDECODER_RENDERER_CALLBACKS vdec;
+    PVIDEO_PRESENTER_CALLBACKS pres;
+} PLATFORM_SYMBOLS, PPLATFORM_SYMBOLS;
+
 PLATFORM platform_current;
 PLATFORM_INFO platform_states[FAKE + 1];
 
+PLATFORM_SYMBOLS platform_sdl;
+
 PLATFORM platform_init(const char *name, int argc, char *argv[]);
-PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM system);
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM system, char *audio_device);
-PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM system);
+PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform);
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device);
+PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform);
 
-const char *platform_name(enum PLATFORM_T system);
+const char *platform_name(enum PLATFORM_T platform);
 
-void platform_finalize(enum PLATFORM_T system);
+void platform_finalize(enum PLATFORM_T platform);

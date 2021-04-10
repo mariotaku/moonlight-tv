@@ -115,11 +115,3 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl = {
     .submitDecodeUnit = sdl_submit_decode_unit,
     .capabilities = CAPABILITY_SLICES_PER_FRAME(4),
 };
-
-extern bool platform_check_sdl(PPLATFORM_INFO info)
-{
-  info->valid = true;
-  info->vrank = 0;
-  info->arank = 0;
-  return true;
-}

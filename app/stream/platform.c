@@ -14,18 +14,19 @@ typedef struct PLATFORM_DEFINITION
     const char *name;
     const char *id;
     const char *library;
+    const PLATFORM_SYMBOLS *symbols;
 } PLATFORM_DEFINITION;
 
 static const PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
-    {"No codec", NULL, NULL},
-    {"SDL (SW codec)", "sdl", NULL},
-    {"webOS NDL", "ndl", "ndl"},
-    {"NetCast Legacy", "lgnc", "lgnc"},
-    {"webOS SMP", "smp", "smp"},
-    {"webOS SMP", "smp_acb", "smp-acb"},
-    {"webOS DILE", "dile", "dile"},
-    {"webOS DILE", "dile_legacy", "dile-legacy"},
-    {"Fake codec", NULL, NULL},
+    {"No codec", NULL, NULL, NULL},
+    {"SDL (SW codec)", "sdl", NULL, &platform_sdl},
+    {"webOS NDL", "ndl", "ndl", NULL},
+    {"NetCast Legacy", "lgnc", "lgnc", NULL},
+    {"webOS SMP", "smp", "smp", NULL},
+    {"webOS SMP", "smp_acb", "smp-acb", NULL},
+    {"webOS DILE", "dile", "dile", NULL},
+    {"webOS DILE", "dile_legacy", "dile-legacy", NULL},
+    {"Fake codec", NULL, NULL, NULL},
 };
 PLATFORM_INFO platform_states[FAKE + 1];
 
@@ -82,17 +83,20 @@ PLATFORM platform_init(const char *name, int argc, char *argv[])
     return NONE;
 }
 
-PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM system)
+PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform)
 {
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    if (pdef.symbols)
+        return pdef.symbols->vdec;
     char symbol[128];
-    snprintf(symbol, sizeof(symbol), "decoder_callbacks_%s", platform_definitions[system].id);
+    snprintf(symbol, sizeof(symbol), "decoder_callbacks_%s", platform_definitions[platform].id);
     PDECODER_RENDERER_CALLBACKS cb = dlsym(RTLD_DEFAULT, symbol);
     if (cb)
         return cb;
     return &decoder_callbacks_dummy;
 }
 
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM system, char *audio_device)
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device)
 {
     unsigned int arank = 0;
     PLATFORM aplat = NONE;
@@ -110,6 +114,9 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM system, char *audio_device
     }
     if (aplat != NONE)
     {
+        PLATFORM_DEFINITION pdef = platform_definitions[aplat];
+        if (pdef.symbols)
+            return pdef.symbols->adec;
         char symbol[128];
         printf("audio render %s is preferred\n", platform_definitions[aplat]);
         snprintf(symbol, sizeof(symbol), "audio_callbacks_%s", platform_definitions[aplat].id);
@@ -120,62 +127,87 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM system, char *audio_device
     return &audio_callbacks_sdl;
 }
 
-PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM system)
+PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform)
 {
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    if (pdef.symbols)
+        return pdef.symbols->pres;
     char symbol[128];
-    snprintf(symbol, sizeof(symbol), "presenter_callbacks_%s", platform_definitions[system].id);
+    snprintf(symbol, sizeof(symbol), "presenter_callbacks_%s", platform_definitions[platform].id);
     return dlsym(RTLD_DEFAULT, symbol);
 }
 
-typedef bool (*platform_init_fn)(int argc, char *argv[]);
-typedef bool (*platform_check_fn)();
-typedef void (*platform_finalize_fn)();
-
-static bool platform_init_simple(const char *suffix, int argc, char *argv[])
+static bool platform_init_simple(PLATFORM platform, int argc, char *argv[])
 {
-    char symbol[128];
-    snprintf(symbol, sizeof(symbol), "platform_init_%s", suffix);
-    platform_init_fn fn = dlsym(RTLD_DEFAULT, symbol);
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    PLATFORM_INIT_FN fn;
+    if (pdef.symbols)
+    {
+        fn = pdef.symbols->init;
+    }
+    else
+    {
+        char symbol[128];
+        snprintf(symbol, sizeof(symbol), "platform_init_%s", platform_definitions[platform].id);
+        fn = dlsym(RTLD_DEFAULT, symbol);
+    }
     return !fn || fn(argc, argv);
 }
 
-static void platform_finalize_simple(const char *suffix)
+static void platform_finalize_simple(PLATFORM platform)
 {
-    char symbol[128];
-    snprintf(symbol, sizeof(symbol), "platform_finalize_%s", suffix);
-    platform_finalize_fn fn = dlsym(RTLD_DEFAULT, symbol);
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    PLATFORM_FINALIZE_FN fn;
+    if (pdef.symbols)
+    {
+        fn = pdef.symbols->finalize;
+    }
+    else
+    {
+        char symbol[128];
+        snprintf(symbol, sizeof(symbol), "platform_finalize_%s", platform_definitions[platform].id);
+        fn = dlsym(RTLD_DEFAULT, symbol);
+    }
     if (fn)
         fn();
 }
 
 static bool platform_check_simple(PLATFORM platform)
 {
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    PLATFORM_CHECK_FN fn;
+    if (pdef.symbols)
+    {
+        fn = pdef.symbols->check;
+    }
+    else
+    {
+        char fname[128];
+        snprintf(fname, sizeof(fname), "platform_check_%s", platform_definitions[platform].id);
+        fn = dlsym(RTLD_DEFAULT, fname);
+    }
     PLATFORM_INFO *platform_info = &platform_states[platform];
-    char fname[32];
-    snprintf(fname, sizeof(fname), "platform_check_%s", platform_definitions[platform].id);
-    platform_check_fn hnd = dlsym(RTLD_DEFAULT, fname);
-    printf("%s => %p\n", fname, hnd);
-    if (hnd == NULL)
+    if (fn == NULL)
     {
         platform_info->valid = true;
         return true;
     }
-    return hnd(platform_info) && platform_info->valid;
+    return fn(platform_info) && platform_info->valid;
 }
 
 bool checkinit(PLATFORM system, int argc, char *argv[])
 {
-    if (!platform_init_simple(platform_definitions[system].id, argc, argv))
+    if (!platform_init_simple(system, argc, argv))
         return false;
     if (!platform_check_simple(system))
     {
-        platform_finalize_simple(platform_definitions[system].id);
+        platform_finalize_simple(system);
         return false;
     }
     return true;
 }
 
-void platform_finalize(PLATFORM system)
+void platform_finalize(PLATFORM platform)
 {
     printf("Supported decoders: \n");
     for (int i = 0; i < platform_orders_len; i++)
@@ -184,7 +216,7 @@ void platform_finalize(PLATFORM system)
         PLATFORM_INFO pinfo = platform_states[ptype];
         if (!pinfo.valid)
             continue;
-        platform_finalize_simple(platform_definitions[ptype].id);
+        platform_finalize_simple(ptype);
         printf("Finalized decoder %s\n", platform_definitions[ptype].id);
     }
 }
