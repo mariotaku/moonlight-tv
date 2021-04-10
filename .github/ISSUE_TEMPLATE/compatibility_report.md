@@ -1,11 +1,14 @@
 ---
 name: Device Compatibility Report
-about: How well does Moonlight run on your device?
+about: Do you encounter any problem on your device?
 title: "[COMPAT]"
 labels: compatibility
 assignees: ''
 
 ---
+
+** Since device support range becomes wider, please submit this issue only when you got problems **
+
 
 # Basic information
 
