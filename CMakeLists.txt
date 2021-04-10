@@ -46,7 +46,6 @@ elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
     set(TARGET_LINUX TRUE)
     set(HAVE_SDL TRUE)
-    option(GS_SPS "" ON)
     add_subdirectory(third_party/h264bitstream)
     add_subdirectory(third_party/ilclient)
 else()
@@ -225,7 +224,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES}
  m Threads::Threads
- moonlight-common-c gamestream
+ moonlight-common-c gamestream gamestream-sps
 )
 
 target_link_libraries(moonlight PRIVATE mbedtls)
