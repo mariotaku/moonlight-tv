@@ -251,7 +251,7 @@ if (TARGET_WEBOS)
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
-    target_compile_definitions(moonlight PUBLIC HAVE_SDL SDL_VIDEO_DRIVER_RASPI)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
 
     target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
