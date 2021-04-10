@@ -1,7 +1,6 @@
 add_library(moonlight-pi SHARED 
     pi_platform.c
     pivid.c
-    omxaud.c
 )
 
 target_include_directories(moonlight-pi PRIVATE 
