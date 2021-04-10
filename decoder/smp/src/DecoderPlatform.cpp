@@ -43,6 +43,7 @@ extern "C" bool platform_check(PPLATFORM_INFO platform_info)
     platform_info->hdr = PLATFORM_HDR_ALWAYS;
     platform_info->colorSpace = COLORSPACE_REC_709;
     platform_info->colorRange = COLOR_RANGE_FULL;
+    platform_info->maxBitrate = 60000;
     return true;
 }
 

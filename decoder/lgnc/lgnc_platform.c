@@ -4,15 +4,12 @@
 
 #include <lgnc_system.h>
 #include <lgnc_directvideo.h>
-#include "platform/webos/os_info.h"
 #include "stream/platform.h"
 
 static bool lgnc_initialized = false;
 
 bool platform_init_lgnc(int argc, char *argv[])
 {
-    char webos_release[16];
-    webos_os_info_get_release(webos_release, sizeof(webos_release));
     LGNC_SYSTEM_CALLBACKS_T callbacks = {
         .pfnJoystickEventCallback = NULL,
         .pfnMsgHandler = NULL,
@@ -39,6 +36,8 @@ bool platform_check_lgnc(PPLATFORM_INFO platform_info)
     LGNC_DIRECTVIDEO_Close();
     platform_info->valid = true;
     platform_info->hwaccel = true;
+    platform_info->audio = true;
+    platform_info->maxBitrate = 40000;
     return true;
 }
 void platform_finalize_lgnc()

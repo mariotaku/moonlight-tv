@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#include "dile_platform.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,33 +11,9 @@
 #include "stream/platform.h"
 #include "vdec_services.h"
 
-static bool dile_initialized = false;
-int dile_webos_version = 0;
-
-// void RTD_Log(int level, int b, char *fmt, ...)
-// {
-//     printf("[RTD_Log %d %08x] ", level, b);
-//     va_list arglist;
-//     va_start(arglist, fmt);
-//     vprintf(fmt, arglist);
-//     va_end(arglist);
-// }
-
 bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
 {
-    char webos_release[16];
-    webos_os_info_get_release(webos_release, sizeof(webos_release));
-    dile_webos_version = atoi(webos_release);
-    if (true)
-    {
-        dile_initialized = true;
-    }
-    else
-    {
-        dile_initialized = false;
-        fprintf(stderr, "Unable to initialize DILE, LSRegister error\n");
-    }
-    return dile_initialized;
+    return true;
 }
 
 bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO platform_info)
@@ -47,14 +22,13 @@ bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO platform_info)
     if (!supported)
         return false;
     platform_info->valid = true;
+    platform_info->audio = true;
     platform_info->hwaccel = true;
+    platform_info->hevc = true;
+    platform_info->maxBitrate = 50000;
     return true;
 }
 
 void DECODER_SYMBOL_NAME(platform_finalize)()
 {
-    if (dile_initialized)
-    {
-        dile_initialized = false;
-    }
 }

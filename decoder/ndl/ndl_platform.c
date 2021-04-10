@@ -3,15 +3,12 @@
 #include <stdbool.h>
 
 #include <NDL_directmedia.h>
-#include "platform/webos/os_info.h"
 #include "stream/platform.h"
 
 static bool ndl_initialized = false;
 
 bool platform_init_ndl(int argc, char *argv[])
 {
-    char webos_release[16];
-    webos_os_info_get_release(webos_release, sizeof(webos_release));
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0)
     {
         ndl_initialized = true;
@@ -32,6 +29,8 @@ bool platform_check_ndl(PPLATFORM_INFO platform_info)
     NDL_DirectVideoClose();
     platform_info->valid = true;
     platform_info->hwaccel = true;
+    platform_info->audio = true;
+    platform_info->maxBitrate = 50000;
     return true;
 }
 

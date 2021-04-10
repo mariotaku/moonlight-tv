@@ -18,7 +18,6 @@
  */
 
 #include "video.h"
-#include "dile_platform.h"
 
 #include <unistd.h>
 #include <stdbool.h>

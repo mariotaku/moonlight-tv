@@ -1,6 +1,5 @@
 #pragma once
 #include "stream/platform.h"
-#include "dile_platform.h"
 
 #include <stdbool.h>
 #include <pbnjson.h>
