@@ -1,4 +1,4 @@
-#include "VideoStreamPlayer.h"
+#include "AVStreamPlayer.h"
 
 #include <iostream>
 #include <sstream>
@@ -14,10 +14,10 @@
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
-using SMP_DECODER_NS::VideoStreamPlayer;
+using SMP_DECODER_NS::AVStreamPlayer;
 namespace pj = pbnjson;
 
-VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int redrawRate)
+AVStreamPlayer::AVStreamPlayer(AudioConfig &audioConfig, VideoConfig &videoConfig)
     : player_state_(PlayerState::UNINITIALIZED)
 {
     app_id_ = getenv("APPID");
@@ -26,7 +26,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
     acb_client_.reset(new Acb());
     if (!acb_client_)
         return;
-    auto acbHandler = std::bind(&VideoStreamPlayer::AcbHandler, this, acb_client_->getAcbId(),
+    auto acbHandler = std::bind(&AVStreamPlayer::AcbHandler, this, acb_client_->getAcbId(),
                                 std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                                 std::placeholders::_4, std::placeholders::_5);
     if (!acb_client_->initialize(ACB::PlayerType::MSE, app_id_, acbHandler))
@@ -42,7 +42,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
 #endif
     player_state_ = PlayerState::UNLOADED;
 
-    std::string payload = makeLoadPayload(videoFormat, width, height, redrawRate, 0);
+    std::string payload = makeLoadPayload(audioConfig, videoConfig, 0);
     if (!starfish_media_apis_->Load(payload.c_str(), &LoadCallback, this))
     {
         std::cerr << "StarfishMediaAPIs::Load() failed!" << std::endl;
@@ -51,7 +51,7 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
     player_state_ = PlayerState::LOADED;
 
 #ifdef USE_ACB
-    if (!acb_client_->setDisplayWindow(0, 0, width, height, true))
+    if (!acb_client_->setDisplayWindow(0, 0, videoConfig.width, videoConfig.height, true))
     {
         std::cerr << "Acb::setDisplayWindow() failed!" << std::endl;
         return;
@@ -59,13 +59,13 @@ VideoStreamPlayer::VideoStreamPlayer(int videoFormat, int width, int height, int
 #endif
 
 #ifdef USE_SDL_WEBOS
-    SDL_Rect src = {0, 0, width, height};
+    SDL_Rect src = {0, 0, videoConfig.width, videoConfig.height};
     SDL_Rect dst = {0, 0, 1920, 1080};
     SDL_webOSSetExportedWindow(window_id_, &src, &dst);
 #endif
 }
 
-VideoStreamPlayer::~VideoStreamPlayer()
+AVStreamPlayer::~AVStreamPlayer()
 {
 #ifdef USE_ACB
     acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::UNLOADED);
@@ -78,35 +78,15 @@ VideoStreamPlayer::~VideoStreamPlayer()
 #endif
 }
 
-void VideoStreamPlayer::start()
+int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
 {
-}
-
-int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
-{
-    if (player_state_ != LOADED && player_state_ != PLAYING)
-    {
-        std::cerr << "Player not ready to feed" << std::endl;
-        return DR_NEED_IDR;
-    }
     unsigned long long ms = decodeUnit->presentationTimeMs;
     unsigned long long pts = ms * 1000000ULL;
     if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
     {
-        char payload[256];
         for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
         {
-            snprintf(payload, sizeof(payload), "{\"bufferAddr\":\"%x\",\"bufferSize\":%d,\"pts\":%llu,\"esData\":1}",
-                     entry->data, entry->length, pts);
-            starfish_media_apis_->Feed(payload);
-        }
-        if (player_state_ == LOADED)
-        {
-#ifdef USE_ACB
-            if (!acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::SEAMLESS_LOADED))
-                std::cerr << "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!" << std::endl;
-#endif
-            player_state_ = PLAYING;
+            submitBuffer(entry->data, entry->length, pts, 1);
         }
         return DR_OK;
     }
@@ -117,13 +97,46 @@ int VideoStreamPlayer::submit(PDECODE_UNIT decodeUnit)
     }
 }
 
-void VideoStreamPlayer::stop()
+void AVStreamPlayer::submitAudio(char *sampleData, int sampleLength)
 {
-    player_state_ = PlayerState::UNLOADED;
+    submitBuffer(sampleData, sampleLength, 0, 2);
+}
+
+bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, int esData)
+{
+    if (player_state_ == EOS)
+    {
+        // Player has marked as end of stream, ignore all data
+        return DR_OK;
+    }
+    else if (player_state_ != LOADED && player_state_ != PLAYING)
+    {
+        std::cerr << "Player not ready to feed" << std::endl;
+        return DR_NEED_IDR;
+    }
+    char payload[256];
+    snprintf(payload, sizeof(payload), "{\"bufferAddr\":\"%x\",\"bufferSize\":%d,\"pts\":%llu,\"esData\":%d}",
+             data, size, pts, esData);
+    starfish_media_apis_->Feed(payload);
+    if (player_state_ == LOADED)
+    {
+#ifdef USE_ACB
+        if (!acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::SEAMLESS_LOADED))
+            std::cerr << "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!" << std::endl;
+#endif
+        player_state_ = PLAYING;
+    }
+}
+
+void AVStreamPlayer::sendEOS()
+{
+    if (player_state_ != PLAYING)
+        return;
+    player_state_ = PlayerState::EOS;
     starfish_media_apis_->pushEOS();
 }
 
-std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int height, int fps, uint64_t time)
+std::string AVStreamPlayer::makeLoadPayload(AudioConfig &audioConfig, VideoConfig &videoConfig, uint64_t time)
 {
     pj::JValue payload = pj::Object();
     pj::JValue args = pj::Array();
@@ -141,24 +154,29 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
 
     arg.put("mediaTransportType", "BUFFERSTREAM");
     pj::JValue adaptiveStreaming = pj::Object();
-    adaptiveStreaming.put("maxWidth", width);
-    adaptiveStreaming.put("maxHeight", height);
-    adaptiveStreaming.put("maxFrameRate", fps);
+    adaptiveStreaming.put("maxWidth", videoConfig.width);
+    adaptiveStreaming.put("maxHeight", videoConfig.height);
+    adaptiveStreaming.put("maxFrameRate", videoConfig.fps);
 
-    if (videoFormat & VIDEO_FORMAT_MASK_H264)
-    {
+    if (videoConfig.format & VIDEO_FORMAT_MASK_H264)
         codec.put("video", "H264");
-    }
-    else if (videoFormat & VIDEO_FORMAT_MASK_H265)
-    {
+    else if (videoConfig.format & VIDEO_FORMAT_MASK_H265)
         codec.put("video", "H265");
-    }
+
+    pj::JValue audioSink = pj::Object();
+    audioSink.put("type", "main_sound");
+    avSink.put("audioSink", audioSink);
+    codec.put("audio", "OPUS");
+    pj::JValue opusInfo = pj::Object();
+    opusInfo.put("channels", std::to_string(audioConfig.opusConfig.channelCount));
+    opusInfo.put("sampleRate", static_cast<double>(audioConfig.opusConfig.sampleRate / 1000.f));
+    contents.put("opusInfo", opusInfo);
 
     contents.put("codec", codec);
 
     pj::JValue esInfo = pj::Object();
     esInfo.put("ptsToDecode", static_cast<int64_t>(time));
-    esInfo.put("seperatedPTS", true);
+    esInfo.put("seperatedPTS", false);
     contents.put("esInfo", esInfo);
 
     contents.put("format", "RAW");
@@ -171,20 +189,16 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
     bufferingCtrInfo.put("qBufferLevelVideo", 0);
 
     pj::JValue srcBufferLevelAudio = pj::Object();
-    srcBufferLevelAudio.put("maximum", 2097152);
-    srcBufferLevelAudio.put("minimum", 1024);
+    srcBufferLevelAudio.put("maximum", 2048);
+    srcBufferLevelAudio.put("minimum", 1);
     bufferingCtrInfo.put("srcBufferLevelAudio", srcBufferLevelAudio);
 
     pj::JValue srcBufferLevelVideo = pj::Object();
-    srcBufferLevelVideo.put("maximum", 8388608);
+    srcBufferLevelVideo.put("maximum", DECODER_BUFFER_SIZE);
     srcBufferLevelVideo.put("minimum", 1);
     bufferingCtrInfo.put("srcBufferLevelVideo", srcBufferLevelVideo);
 
     externalStreamingInfo.put("contents", contents);
-    // externalStreamingInfo.put("restartStreaming", false);
-    // externalStreamingInfo.put("streamQualityInfo", true);
-    // externalStreamingInfo.put("streamQualityInfoCorruptedFrame", true);
-    // externalStreamingInfo.put("streamQualityInfoNonFlushable", true);
     externalStreamingInfo.put("bufferingCtrInfo", bufferingCtrInfo);
 
     pj::JValue transmission = pj::JObject();
@@ -197,7 +211,7 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
     option.put("externalStreamingInfo", externalStreamingInfo);
     option.put("lowDelayMode", true);
     option.put("transmission", transmission);
-    option.put("needAudio", false);
+    option.put("needAudio", true);
 #ifdef USE_SDL_WEBOS
     option.put("windowId", window_id_);
 #endif
@@ -209,15 +223,20 @@ std::string VideoStreamPlayer::makeLoadPayload(int videoFormat, int width, int h
     return pbnjson::JGenerator::serialize(payload, pbnjson::JSchemaFragment("{}"));
 }
 
-void VideoStreamPlayer::SetMediaVideoData(const char *data)
+void AVStreamPlayer::SetMediaAudioData(const char *data)
 {
-    std::cout << "VideoStreamPlayer::SetMediaVideoData" << data << std::endl;
+    std::cout << "AVStreamPlayer::SetMediaAudioData" << data << std::endl;
+}
+
+void AVStreamPlayer::SetMediaVideoData(const char *data)
+{
+    std::cout << "AVStreamPlayer::SetMediaVideoData" << data << std::endl;
 #ifdef USE_ACB
     acb_client_->setMediaVideoData(data);
 #endif
 }
 
-void VideoStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue)
+void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue)
 {
     switch (type)
     {
@@ -240,6 +259,9 @@ void VideoStreamPlayer::LoadCallback(int type, int64_t numValue, const char *str
 #endif
         starfish_media_apis_->Play();
         break;
+    case PF_EVENT_TYPE_STR_AUDIO_INFO:
+        SetMediaAudioData(strValue);
+        break;
     case PF_EVENT_TYPE_STR_VIDEO_INFO:
         SetMediaVideoData(strValue);
         break;
@@ -249,15 +271,15 @@ void VideoStreamPlayer::LoadCallback(int type, int64_t numValue, const char *str
 }
 
 #ifdef USE_ACB
-void VideoStreamPlayer::AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply)
+void AVStreamPlayer::AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply)
 {
     printf("AcbHandler acbId = %ld, taskId = %ld, eventType = %ld, appState = %ld,playState = %ld, reply = %s EOL\n",
            acb_id, task_id, event_type, app_state, play_state, reply);
 }
 #endif
 
-void VideoStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue, void *data)
+void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue, void *data)
 {
-    VideoStreamPlayer *player = static_cast<VideoStreamPlayer *>(data);
+    AVStreamPlayer *player = static_cast<AVStreamPlayer *>(data);
     player->LoadCallback(type, numValue, strValue);
 }

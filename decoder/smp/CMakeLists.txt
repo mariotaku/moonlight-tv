@@ -10,8 +10,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 
 add_library(moonlight-smp-acb SHARED
+    src/AVStreamPlayer.cpp
     src/DecoderPlatform.cpp
-    src/VideoStreamPlayer.cpp
 )
 target_include_directories(moonlight-smp-acb PRIVATE 
     ${CMAKE_SOURCE_DIR}/app/stream/audio 
@@ -25,8 +25,8 @@ target_compile_definitions(moonlight-smp-acb PUBLIC HAVE_SMP_ACB )
 target_compile_definitions(moonlight-smp-acb PRIVATE USE_ACB DECODER_PLATFORM_NAME=smp_acb SMP_DECODER_NS=MoonlightStarfishAcb)
 
 add_library(moonlight-smp SHARED
+    src/AVStreamPlayer.cpp
     src/DecoderPlatform.cpp
-    src/VideoStreamPlayer.cpp
 )
 target_include_directories(moonlight-smp PRIVATE 
     ${CMAKE_SOURCE_DIR}/app/platform/webos
