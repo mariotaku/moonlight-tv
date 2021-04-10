@@ -15,4 +15,4 @@ target_include_directories(moonlight-pi PRIVATE ${BROADCOM_INCLUDE_DIRS})
 target_link_libraries(moonlight-pi PRIVATE ${BROADCOM_OMX_LIBRARIES})
 target_compile_definitions(moonlight-pi PUBLIC ${BROADCOM_OMX_DEFINITIONS})
 
-target_link_libraries(moonlight-pi PRIVATE moonlight-common-c opus pi_directmedia ${PBNJSON_LIBRARIES})
+target_link_libraries(moonlight-pi PRIVATE moonlight-common-c opus ${PBNJSON_LIBRARIES})
