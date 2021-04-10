@@ -36,6 +36,8 @@ int mbed_EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr)
     {
     case EVP_CTRL_GCM_GET_TAG:
         return mbedtls_gcm_finish(&ctx->ctx.gcm, (unsigned char *)ptr, arg) == 0 ? 1 : 0;
+    case EVP_CTRL_GCM_SET_TAG:
+        return mbedtls_gcm_finish(&ctx->ctx.gcm, (unsigned char *)ptr, arg) == 0 ? 1 : 0;
     case EVP_CTRL_GCM_SET_IVLEN:
         ctx->ivlen = arg;
         return 1;
@@ -43,6 +45,36 @@ int mbed_EVP_CIPHER_CTX_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr)
         break;
     }
     return 0;
+}
+
+int mbed_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c)
+{
+    switch (c->cipher)
+    {
+    case MBEDTLS_CIPHER_AES_128_GCM:
+        mbedtls_gcm_free(&c->ctx.gcm);
+        mbedtls_gcm_init(&c->ctx.gcm);
+        break;
+    case MBEDTLS_CIPHER_AES_128_CBC:
+        mbedtls_aes_free(&c->ctx.aes);
+        mbedtls_aes_init(&c->ctx.aes);
+        break;
+    }
+    return 1;
+}
+
+void mbed_EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *c)
+{
+    switch (c->cipher)
+    {
+    case MBEDTLS_CIPHER_AES_128_GCM:
+        mbedtls_gcm_free(&c->ctx.gcm);
+        break;
+    case MBEDTLS_CIPHER_AES_128_CBC:
+        mbedtls_aes_free(&c->ctx.aes);
+        break;
+    }
+    free(c);
 }
 
 int mbed_EVP_EncryptInit_ex(EVP_CIPHER_CTX *ctx,
@@ -108,34 +140,67 @@ int mbed_EVP_EncryptFinal_ex(EVP_CIPHER_CTX *ctx, unsigned char *out,
     return 1;
 }
 
-int mbed_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c)
+int mbed_EVP_DecryptInit_ex(EVP_CIPHER_CTX *ctx,
+                            const EVP_CIPHER cipher, ENGINE *impl,
+                            const unsigned char *key,
+                            const unsigned char *iv)
 {
-    switch (c->cipher)
+    if (cipher)
+    {
+        ctx->cipher = cipher;
+    }
+    if (!key || !iv)
+    {
+        return 1;
+    }
+    int ret;
+
+    switch (ctx->cipher)
     {
     case MBEDTLS_CIPHER_AES_128_GCM:
-        mbedtls_gcm_free(&c->ctx.gcm);
-        mbedtls_gcm_init(&c->ctx.gcm);
+        mbedtls_gcm_init(&ctx->ctx.gcm);
+        if ((ret = mbedtls_gcm_setkey(&ctx->ctx.gcm, MBEDTLS_CIPHER_ID_AES, key, 128)) != 0)
+            return failed_logging(ret);
+        memcpy(ctx->iv, iv, ctx->ivlen);
+        if ((ret = mbedtls_gcm_starts(&ctx->ctx.gcm, MBEDTLS_GCM_DECRYPT, iv, ctx->ivlen, NULL, 0)) != 0)
+            return failed_logging(ret);
         break;
     case MBEDTLS_CIPHER_AES_128_CBC:
-        mbedtls_aes_free(&c->ctx.aes);
-        mbedtls_aes_init(&c->ctx.aes);
+        mbedtls_aes_init(&ctx->ctx.aes);
+        if ((ret = mbedtls_aes_setkey_dec(&ctx->ctx.aes, key, 128)) != 0)
+            return failed_logging(ret);
+        memcpy(ctx->iv, iv, 16);
         break;
     }
+
     return 1;
 }
 
-void mbed_EVP_CIPHER_CTX_free(EVP_CIPHER_CTX *c)
+int mbed_EVP_DecryptUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out,
+                           int *outl, const unsigned char *in, int inl)
 {
-    switch (c->cipher)
+    int ret;
+
+    switch (ctx->cipher)
     {
     case MBEDTLS_CIPHER_AES_128_GCM:
-        mbedtls_gcm_free(&c->ctx.gcm);
+        if ((ret = mbedtls_gcm_update(&ctx->ctx.gcm, inl, in, out)) != 0)
+            return failed_logging(ret);
         break;
     case MBEDTLS_CIPHER_AES_128_CBC:
-        mbedtls_aes_free(&c->ctx.aes);
+        if ((ret = mbedtls_aes_crypt_cbc(&ctx->ctx.aes, MBEDTLS_AES_DECRYPT, inl, ctx->iv, in, out)) != 0)
+            return failed_logging(ret);
         break;
     }
-    free(c);
+    *outl = inl;
+    return 1;
+}
+
+int mbed_EVP_DecryptFinal_ex(EVP_CIPHER_CTX *ctx, unsigned char *outm,
+                             int *outl)
+{
+    *outl = 0;
+    return 1;
 }
 
 const EVP_CIPHER mbed_EVP_aes_128_gcm(void)
