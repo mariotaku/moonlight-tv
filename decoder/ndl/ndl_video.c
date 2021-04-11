@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Limelight.h>
 #include <NDL_directmedia.h>
 
 // 2MB decode size should be fairly enough for everything

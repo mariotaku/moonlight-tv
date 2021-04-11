@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Limelight.h>
 #include <lgnc_directvideo.h>
 
 // 2MB decode size should be fairly enough for everything
