@@ -146,6 +146,34 @@ PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform)
     return dlsym(RTLD_DEFAULT, symbol);
 }
 
+PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform)
+{
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    if (pdef.symbols)
+        return pdef.symbols->rend;
+    char symbol[128];
+    snprintf(symbol, sizeof(symbol), "render_callbacks_%s", platform_definitions[platform].id);
+    return dlsym(RTLD_DEFAULT, symbol);
+}
+
+void platform_render_cleanup(PLATFORM platform)
+{
+    PLATFORM_DEFINITION pdef = platform_definitions[platform];
+    PLATFORM_FINALIZE_FN fn;
+    if (pdef.symbols)
+    {
+        fn = pdef.symbols->finalize;
+    }
+    else
+    {
+        char symbol[128];
+        snprintf(symbol, sizeof(symbol), "render_cleanup_%s", platform_definitions[platform].id);
+        fn = dlsym(RTLD_DEFAULT, symbol);
+    }
+    if (fn)
+        fn();
+}
+
 static bool platform_init_simple(PLATFORM platform, int argc, char *argv[])
 {
     PLATFORM_DEFINITION pdef = platform_definitions[platform];

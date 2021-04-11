@@ -129,7 +129,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
         case USER_FAKEINPUT_MOUSE_MOTION:
         {
             struct nk_vec2 *center = data1;
-            if (app_has_nk_call)
+            if (app_has_redraw)
                 nk_input_motion(ctx, center->x, center->y);
             handled = true;
             break;
@@ -147,7 +147,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
             }
             ui_fake_mouse_event_received = true;
             ui_fake_mouse_click_started = true;
-            if (app_has_nk_call)
+            if (app_has_redraw)
             {
                 nk_input_motion(ctx, center->x, center->y);
                 nk_input_button(ctx, NK_BUTTON_LEFT, center->x, center->y, (state & NAVKEY_STATE_DOWN) ? nk_true : nk_false);
@@ -162,20 +162,25 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
         }
         case USER_FAKEINPUT_MOUSE_CANCEL:
         {
-            if (app_has_nk_call)
+            if (app_has_redraw)
                 nk_input_motion(ctx, 0, 0);
             return true;
         }
 #if HAVE_FFMPEG
         case USER_STREAM_OPEN:
         {
-            PSTREAM_CONFIGURATION conf = data1;
-            renderer_setup(conf->width, conf->height);
+            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_current);
+            if (rend)
+                rend->renderSetup((PSTREAM_CONFIGURATION)data1);
             return true;
         }
         case USER_STREAM_CLOSE:
-            renderer_cleanup();
-            break;
+        {
+            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_current);
+            if (rend)
+                rend->renderCleanup();
+            return true;
+        }
         case USER_SDL_FRAME:
             renderer_submit_frame(data1, data2);
             return true;

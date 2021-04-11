@@ -8,7 +8,7 @@ PCONFIGURATION app_configuration;
 
 int app_window_width, app_window_height;
 
-bool app_has_nk_call;
+bool app_has_redraw, app_force_redraw;
 
 int app_init(int argc, char *argv[]);
 

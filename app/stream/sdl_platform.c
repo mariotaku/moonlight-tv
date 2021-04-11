@@ -18,4 +18,5 @@ PLATFORM_SYMBOLS platform_sdl = {
     &audio_callbacks_sdl,
     &decoder_callbacks_sdl,
     NULL,
+    &render_callbacks_sdl,
 };

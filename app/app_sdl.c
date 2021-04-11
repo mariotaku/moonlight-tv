@@ -52,7 +52,7 @@ int sdlCurrentFrame, sdlNextFrame;
 SDL_Window *win;
 static SDL_GLContext gl;
 int app_window_width, app_window_height;
-bool app_has_nk_call = false, app_should_redraw_background = false;
+bool app_has_redraw = false, app_force_redraw = false, app_should_redraw_background = false;
 
 static char wintitle[32];
 
@@ -126,7 +126,7 @@ static void app_process_events(struct nk_context *ctx)
 {
     /* Input */
     SDL_Event evt;
-    if (app_has_nk_call)
+    if (app_has_redraw)
         nk_input_begin(ctx);
     while (SDL_PollEvent(&evt))
     {
@@ -237,10 +237,10 @@ static void app_process_events(struct nk_context *ctx)
         {
             absinput_dispatch_event(evt);
         }
-        if (app_has_nk_call)
+        if (app_has_redraw)
             nk_sdl_handle_event(&evt);
     }
-    if (app_has_nk_call)
+    if (app_has_redraw)
         nk_input_end(ctx);
 }
 
@@ -252,11 +252,11 @@ void app_main_loop(void *data)
 
     app_process_events(ctx);
 
-    app_has_nk_call = ui_root(ctx);
+    app_has_redraw = ui_root(ctx) || app_force_redraw;
 
     /* Draw */
 
-    if (app_has_nk_call)
+    if (app_has_redraw)
     {
         ui_render_background();
         nk_platform_render();
