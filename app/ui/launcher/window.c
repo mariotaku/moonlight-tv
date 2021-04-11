@@ -341,7 +341,7 @@ void _select_computer(PSERVER_LIST node, bool load_apps)
 
 void handle_pairing_done(PPCMANAGER_RESP resp)
 {
-    if (resp->state.code == SERVER_STATE_ONLINE)
+    if (resp->result.code == GS_OK)
     {
         // Close pairing window
         pairing_computer_state.state = PS_NONE;
@@ -354,7 +354,7 @@ void handle_pairing_done(PPCMANAGER_RESP resp)
     {
         // Show pairing error instead
         pairing_computer_state.state = PS_FAIL;
-        pairing_computer_state.error = resp->state.error.errmsg;
+        pairing_computer_state.error = resp->result.error.message;
     }
 }
 
