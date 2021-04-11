@@ -230,7 +230,7 @@ target_link_libraries(moonlight PRIVATE
 target_link_libraries(moonlight PRIVATE mbedtls)
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC OS_WEBOS _GNU_SOURCE)
+    target_compile_definitions(moonlight PUBLIC OS_WEBOS TARGET_WEBOS _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
