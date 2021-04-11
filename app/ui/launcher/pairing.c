@@ -19,6 +19,7 @@
 static nk_bool nk_filter_ip(const struct nk_text_edit *box, nk_rune unicode);
 
 static void manual_add_dismiss();
+static void manual_add_callback(PPCMANAGER_RESP resp);
 
 static struct nk_vec2 manual_add_cancel_center = {0, 0}, manual_add_confirm_center = {0, 0};
 
@@ -86,7 +87,7 @@ void _manual_add_window(struct nk_context *ctx)
             char *addr = malloc(text_len + 1);
             strncpy(addr, text, text_len);
             addr[text_len] = '\0';
-            pcmanager_manual_add(addr, NULL);
+            pcmanager_manual_add(addr, manual_add_callback);
             // Clear input text
             text_len = 0;
             _launcher_show_manual_pair = false;
@@ -160,4 +161,17 @@ void _unpairing_window(struct nk_context *ctx)
         nk_label(ctx, "Unpairing...", NK_TEXT_ALIGN_LEFT);
     }
     nk_end(ctx);
+}
+
+void manual_add_callback(PPCMANAGER_RESP resp)
+{
+    if (resp->result.code != GS_OK)
+        return;
+    PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
+    if (!node)
+        return;
+    if (node->server->paired)
+        _select_computer(node, node->apps == NULL);
+    else
+        _open_pair(node);
 }

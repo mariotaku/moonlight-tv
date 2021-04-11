@@ -1,10 +1,13 @@
 #include "res.h"
+#include "app.h"
 
 #include <stddef.h>
+#include <Limelight.h>
 
 #include "sdl_renderer.h"
 #include "root.h"
 #include "stream/video/sdlvid.h"
+#include "stream/video/presenter.h"
 
 #include <SDL.h>
 #if TARGET_DESKTOP
@@ -36,12 +39,13 @@ static GLuint vertex_shader, fragment_shader, shader_program;
 
 static bool renderer_ready = false, frame_arrived;
 
-void renderer_setup(int w, int h)
+static bool renderer_setup_sdl(PSTREAM_CONFIGURATION conf)
 {
+    app_force_redraw = true;
     renderer_ready = false;
     frame_arrived = false;
-    width = w;
-    height = h;
+    width = conf->width;
+    height = conf->height;
 
     SDL_Log("OpenGL version: %s\n", glGetString(GL_VERSION));
 
@@ -107,6 +111,7 @@ void renderer_setup(int w, int h)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     renderer_ready = true;
+    return true;
 }
 
 void renderer_submit_frame(void *data1, void *data2)
@@ -165,7 +170,7 @@ void renderer_draw()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void renderer_cleanup()
+static void renderer_cleanup_sdl()
 {
     renderer_ready = false;
     glDeleteProgram(shader_program);
@@ -174,4 +179,10 @@ void renderer_cleanup()
     glDeleteBuffers(1, &ebo);
     glDeleteBuffers(1, &vbo);
     glDeleteTextures(3, texture_id);
+    app_force_redraw = false;
 }
+
+VIDEO_RENDER_CALLBACKS render_callbacks_sdl = {
+    renderer_setup_sdl,
+    renderer_cleanup_sdl,
+};

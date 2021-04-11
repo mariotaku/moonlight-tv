@@ -55,17 +55,20 @@ typedef struct PLATFORM_SYMBOLS_T
     PAUDIO_RENDERER_CALLBACKS adec;
     PDECODER_RENDERER_CALLBACKS vdec;
     PVIDEO_PRESENTER_CALLBACKS pres;
+    PVIDEO_RENDER_CALLBACKS rend;
 } PLATFORM_SYMBOLS, PPLATFORM_SYMBOLS;
 
 PLATFORM platform_current;
 PLATFORM_INFO platforms_info[FAKE + 1];
 
 PLATFORM_SYMBOLS platform_sdl;
+VIDEO_RENDER_CALLBACKS render_callbacks_sdl;
 
 PLATFORM platform_init(const char *name, int argc, char *argv[]);
 PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform);
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device);
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform);
+PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform);
 
 const char *platform_name(enum PLATFORM_T platform);
 

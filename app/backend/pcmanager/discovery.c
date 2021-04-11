@@ -342,9 +342,9 @@ int pcmanager_insert_by_address(const char *srvaddr, bool pair, void (*callback)
         free(server);
         resp->server = NULL;
     }
+    bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     if (callback)
         bus_pushaction((bus_actionfunc)callback, resp);
-    bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);
     return ret;
 }
