@@ -127,7 +127,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_devi
         if (pdef.symbols)
             return pdef.symbols->adec;
         char symbol[128];
-        printf("audio render %s is preferred\n", platform_definitions[aplat]);
+        printf("audio render %s is preferred\n", platform_definitions[aplat].id);
         snprintf(symbol, sizeof(symbol), "audio_callbacks_%s", platform_definitions[aplat].id);
         PAUDIO_RENDERER_CALLBACKS cb = dlsym(RTLD_DEFAULT, symbol);
         if (cb)

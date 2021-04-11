@@ -48,7 +48,7 @@ static struct nk_vec2 combo_focused_center;
 #define BITRATE_MAX 120000
 #define BITRATE_STEP 500
 
-static char _res_label[8], _fps_label[8];
+static char _res_label[16], _fps_label[16];
 static int _max_bitrate = BITRATE_MAX;
 
 static void _set_fps(int fps);

@@ -2,6 +2,7 @@
 #include "settings.h"
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "connection.h"
 #include "platform.h"

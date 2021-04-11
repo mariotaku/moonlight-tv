@@ -248,7 +248,7 @@ void serverinfo_resp_free(PPCMANAGER_RESP resp)
 {
     if (!resp->server_referenced && resp->server)
     {
-        free(resp->server);
+        free((void *)resp->server);
     }
     free(resp);
 }
