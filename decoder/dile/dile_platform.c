@@ -16,16 +16,16 @@ bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO platform_info)
+bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO pinfo)
 {
     bool supported = vdec_services_supported();
     if (!supported)
         return false;
-    platform_info->valid = true;
-    platform_info->vrank = 35;
-    platform_info->arank = 0;
-    platform_info->hevc = true;
-    platform_info->maxBitrate = 50000;
+    pinfo->valid = true;
+    pinfo->vrank = 35;
+    pinfo->arank = 0;
+    pinfo->hevc = true;
+    pinfo->maxBitrate = 50000;
     return true;
 }
 

@@ -38,16 +38,16 @@ extern "C" bool platform_init(int argc, char *argv[])
     return smp_initialized;
 }
 
-extern "C" bool platform_check(PPLATFORM_INFO platform_info)
+extern "C" bool platform_check(PPLATFORM_INFO pinfo)
 {
-    platform_info->valid = true;
-    platform_info->vrank = 40;
-    platform_info->arank = 5;
-    platform_info->hevc = true;
-    platform_info->hdr = PLATFORM_HDR_ALWAYS;
-    platform_info->colorSpace = COLORSPACE_REC_709;
-    platform_info->colorRange = COLOR_RANGE_FULL;
-    platform_info->maxBitrate = 60000;
+    pinfo->valid = true;
+    pinfo->vrank = 40;
+    pinfo->arank = 5;
+    pinfo->hevc = true;
+    pinfo->hdr = PLATFORM_HDR_ALWAYS;
+    pinfo->colorSpace = COLORSPACE_REC_709;
+    pinfo->colorRange = COLOR_RANGE_FULL;
+    pinfo->maxBitrate = 60000;
     return true;
 }
 

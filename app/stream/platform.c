@@ -195,13 +195,13 @@ static bool platform_check_simple(PLATFORM platform)
         snprintf(fname, sizeof(fname), "platform_check_%s", platform_definitions[platform].id);
         fn = dlsym(RTLD_DEFAULT, fname);
     }
-    PLATFORM_INFO *platform_info = &platform_states[platform];
+    PLATFORM_INFO *pinfo = &platform_states[platform];
     if (fn == NULL)
     {
-        platform_info->valid = true;
+        pinfo->valid = true;
         return true;
     }
-    return fn(platform_info) && platform_info->valid;
+    return fn(pinfo) && pinfo->valid;
 }
 
 bool checkinit(PLATFORM system, int argc, char *argv[])

@@ -166,8 +166,8 @@ static void _windowopen()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
-    PPLATFORM_INFO platform_info = &platform_states[platform_current];
-    _max_bitrate = platform_info->maxBitrate ? platform_info->maxBitrate : BITRATE_MAX;
+    PPLATFORM_INFO pinfo = &platform_states[platform_current];
+    _max_bitrate = pinfo->maxBitrate ? pinfo->maxBitrate : BITRATE_MAX;
 }
 
 static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)

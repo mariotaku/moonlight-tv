@@ -21,16 +21,16 @@ bool platform_init_ndl(int argc, char *argv[])
     return ndl_initialized;
 }
 
-bool platform_check_ndl(PPLATFORM_INFO platform_info)
+bool platform_check_ndl(PPLATFORM_INFO pinfo)
 {
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
     NDL_DirectVideoClose();
-    platform_info->valid = true;
-    platform_info->vrank = 10;
-    platform_info->arank = 30;
-    platform_info->maxBitrate = 50000;
+    pinfo->valid = true;
+    pinfo->vrank = 10;
+    pinfo->arank = 30;
+    pinfo->maxBitrate = 50000;
     return true;
 }
 

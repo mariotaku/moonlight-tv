@@ -28,16 +28,16 @@ bool platform_init_lgnc(int argc, char *argv[])
     return lgnc_initialized;
 }
 
-bool platform_check_lgnc(PPLATFORM_INFO platform_info)
+bool platform_check_lgnc(PPLATFORM_INFO pinfo)
 {
     LGNC_VDEC_DATA_INFO_T info = {.width = 1270, .height = 720, .vdecFmt = LGNC_VDEC_FMT_H264, .trid_type = LGNC_VDEC_3D_TYPE_NONE};
     if (LGNC_DIRECTVIDEO_Open(&info) != 0)
         return false;
     LGNC_DIRECTVIDEO_Close();
-    platform_info->valid = true;
-    platform_info->vrank = 9;
-    platform_info->arank = 29;
-    platform_info->maxBitrate = 40000;
+    pinfo->valid = true;
+    pinfo->vrank = 9;
+    pinfo->arank = 29;
+    pinfo->maxBitrate = 40000;
     return true;
 }
 void platform_finalize_lgnc()
