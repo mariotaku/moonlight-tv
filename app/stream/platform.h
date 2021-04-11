@@ -58,7 +58,7 @@ typedef struct PLATFORM_SYMBOLS_T
 } PLATFORM_SYMBOLS, PPLATFORM_SYMBOLS;
 
 PLATFORM platform_current;
-PLATFORM_INFO platform_states[FAKE + 1];
+PLATFORM_INFO platforms_info[FAKE + 1];
 
 PLATFORM_SYMBOLS platform_sdl;
 

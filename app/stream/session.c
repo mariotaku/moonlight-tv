@@ -75,7 +75,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
         return -1;
     }
     PCONFIGURATION config = settings_load();
-    PPLATFORM_INFO pinfo = &platform_states[platform_current];
+    PPLATFORM_INFO pinfo = &platforms_info[platform_current];
 
     if (config->stream.bitrate < 0)
         config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height, config->stream.fps);

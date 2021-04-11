@@ -166,7 +166,7 @@ static void _windowopen()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
-    PPLATFORM_INFO pinfo = &platform_states[platform_current];
+    PPLATFORM_INFO pinfo = &platforms_info[platform_current];
     _max_bitrate = pinfo->maxBitrate ? pinfo->maxBitrate : BITRATE_MAX;
 }
 

@@ -156,7 +156,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
             nk_label(ctx, cur->name, NK_TEXT_CENTERED);
         }
 
-        PLATFORM_INFO pinfo = platform_states[platform_current];
+        PLATFORM_INFO pinfo = platforms_info[platform_current];
         if (pinfo.hevc && pinfo.hdr && node->server->supportsHdr && cur->hdr)
         {
             struct nk_vec2 hdr_pos = nk_vec2_add(tmp_bounds, nk_vec2_s(10, 10));

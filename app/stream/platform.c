@@ -29,7 +29,7 @@ static const PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
     {"Raspberry Pi", "pi", "pi", NULL},
     {"Fake codec", NULL, NULL, NULL},
 };
-PLATFORM_INFO platform_states[FAKE + 1];
+PLATFORM_INFO platforms_info[FAKE + 1];
 
 static const PLATFORM platform_orders[] = {
 #if TARGET_WEBOS
@@ -49,7 +49,7 @@ PLATFORM platform_current;
 
 PLATFORM platform_init(const char *name, int argc, char *argv[])
 {
-    memset(platform_states, 0, sizeof(platform_states));
+    memset(platforms_info, 0, sizeof(platforms_info));
     bool std = strcmp(name, "auto") == 0;
     char libname[64];
     for (int i = 0; i < platform_orders_len; i++)
@@ -74,7 +74,7 @@ PLATFORM platform_init(const char *name, int argc, char *argv[])
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
-        PLATFORM_INFO pinfo = platform_states[ptype];
+        PLATFORM_INFO pinfo = platforms_info[ptype];
         if (!pinfo.valid)
             continue;
         printf("%-10s\tvrank=%-2d\tarank=%-2d\thevc=%d\thdr=%d\tmaxbit=%d\n", platform_definitions[ptype].id,
@@ -84,7 +84,7 @@ PLATFORM platform_init(const char *name, int argc, char *argv[])
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
-        PLATFORM_INFO pinfo = platform_states[ptype];
+        PLATFORM_INFO pinfo = platforms_info[ptype];
         if (pinfo.valid)
             return ptype;
     }
@@ -112,7 +112,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_devi
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
-        PLATFORM_INFO pinfo = platform_states[ptype];
+        PLATFORM_INFO pinfo = platforms_info[ptype];
         if (!pinfo.valid)
             continue;
         if (pinfo.arank > arank)
@@ -195,7 +195,7 @@ static bool platform_check_simple(PLATFORM platform)
         snprintf(fname, sizeof(fname), "platform_check_%s", platform_definitions[platform].id);
         fn = dlsym(RTLD_DEFAULT, fname);
     }
-    PLATFORM_INFO *pinfo = &platform_states[platform];
+    PLATFORM_INFO *pinfo = &platforms_info[platform];
     if (fn == NULL)
     {
         pinfo->valid = true;
@@ -222,7 +222,7 @@ void platform_finalize(PLATFORM platform)
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
-        PLATFORM_INFO pinfo = platform_states[ptype];
+        PLATFORM_INFO pinfo = platforms_info[ptype];
         if (!pinfo.valid)
             continue;
         platform_finalize_simple(ptype);
