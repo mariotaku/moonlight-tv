@@ -26,11 +26,20 @@ static const PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
     {"webOS SMP", "smp_acb", "smp-acb", NULL},
     {"webOS DILE", "dile", "dile", NULL},
     {"webOS DILE", "dile_legacy", "dile-legacy", NULL},
+    {"Raspberry Pi", "pi", "pi", NULL},
     {"Fake codec", NULL, NULL, NULL},
 };
 PLATFORM_INFO platform_states[FAKE + 1];
 
-static const PLATFORM platform_orders[] = {SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, SDL};
+static const PLATFORM platform_orders[] = {
+#if TARGET_WEBOS
+    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, SDL
+#elif TARGET_RASPI
+    PI, SDL
+#else
+    SDL
+#endif
+};
 static const size_t platform_orders_len = sizeof(platform_orders) / sizeof(PLATFORM);
 
 static void dlerror_log();

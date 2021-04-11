@@ -38,6 +38,7 @@ enum PLATFORM_T
     SMP_ACB,
     DILE,
     DILE_LEGACY,
+    PI,
     FAKE
 };
 typedef enum PLATFORM_T PLATFORM;
