@@ -224,7 +224,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES}
  m Threads::Threads
- moonlight-common-c gamestream gamestream-sps
+ moonlight-common-c gamestream
 )
 
 target_link_libraries(moonlight PRIVATE mbedtls)
