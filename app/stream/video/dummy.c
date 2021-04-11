@@ -1,4 +1,4 @@
-#include "video.h"
+#include <Limelight.h>
 
 static int noop_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {

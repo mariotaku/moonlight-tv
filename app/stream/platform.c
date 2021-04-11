@@ -5,8 +5,6 @@
 
 #include <Limelight.h>
 
-#include "audio/audio.h"
-#include "video/video.h"
 #include "util.h"
 
 typedef struct PLATFORM_DEFINITION
@@ -133,7 +131,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_devi
         if (cb)
             return cb;
     }
-    return &audio_callbacks_sdl;
+    return platform_sdl.adec;
 }
 
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform)

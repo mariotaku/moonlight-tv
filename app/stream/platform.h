@@ -63,6 +63,7 @@ PLATFORM_INFO platforms_info[FAKE + 1];
 
 PLATFORM_SYMBOLS platform_sdl;
 VIDEO_RENDER_CALLBACKS render_callbacks_sdl;
+DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
 PLATFORM platform_init(const char *name, int argc, char *argv[]);
 PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform);

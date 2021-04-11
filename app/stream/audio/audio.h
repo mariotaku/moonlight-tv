@@ -23,17 +23,3 @@
 
 #define MAX_CHANNEL_COUNT 6
 #define FRAME_SIZE 240
-#define FRAME_BUFFER 12
-
-#ifdef OS_WEBOS
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl;
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_lgnc;
-#endif
-
-#ifdef HAVE_PI
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_omx;
-#endif
-
-#ifdef HAVE_SDL
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
-#endif

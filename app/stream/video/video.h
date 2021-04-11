@@ -23,25 +23,4 @@
 
 #include "presenter.h"
 
-#define DISPLAY_FULLSCREEN 1
-#define ENABLE_HARDWARE_ACCELERATION_1 2
-#define ENABLE_HARDWARE_ACCELERATION_2 4
-#define DISPLAY_ROTATE_MASK 24
-#define DISPLAY_ROTATE_90 8
-#define DISPLAY_ROTATE_180 16
-#define DISPLAY_ROTATE_270 24
-
-#define INIT_EGL 1
-#define INIT_VDPAU 2
-#define INIT_VAAPI 3
-
-#ifdef HAVE_PI
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_pi;
-extern VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi;
-#endif
-
-#ifdef HAVE_MMAL
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_mmal;
-#endif
-
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
+DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;

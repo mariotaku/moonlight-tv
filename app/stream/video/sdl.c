@@ -17,7 +17,6 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "video.h"
 #include "ffmpeg.h"
 
 #include "sdlvid.h"
