@@ -108,6 +108,7 @@ bool launcher_window(struct nk_context *ctx)
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(0, 0));
     if (nk_begin(ctx, "Moonlight", nk_rect(0, 0, ui_display_width, ui_display_height), window_flags))
     {
+        PSERVER_LIST selected = selected_server_node;
         static struct nk_rect item_bounds = {0, 0, 0, 0};
         topbar_item_count = 0;
         topbar_hovered_item = -1;
@@ -119,7 +120,10 @@ bool launcher_window(struct nk_context *ctx)
         bool event_emitted = false;
         nk_layout_row_template_begin_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 200);
-        nk_layout_row_template_push_static_s(ctx, 25);
+        if (selected)
+        {
+            nk_layout_row_template_push_static_s(ctx, 25);
+        }
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, 25);
         nk_layout_row_template_push_static_s(ctx, 25);
@@ -140,10 +144,13 @@ bool launcher_window(struct nk_context *ctx)
             nk_style_pop_color(ctx);
         nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
 
-        launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
-        if (nk_button_image(ctx, sprites_ui.ic_info))
+        if (selected)
         {
-            _launcher_show_host_info = true;
+            launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
+            if (nk_button_image(ctx, sprites_ui.ic_info))
+            {
+                _launcher_show_host_info = true;
+            }
         }
         nk_spacing(ctx, 1);
 
@@ -172,8 +179,6 @@ bool launcher_window(struct nk_context *ctx)
         list_height -= ctx->style.window.spacing.y;
 
         nk_layout_row_dynamic(ctx, list_height, 1);
-
-        PSERVER_LIST selected = selected_server_node;
 
         nk_style_push_vec2(ctx, &ctx->style.window.group_padding, nk_vec2(0, 0));
         nk_style_push_vec2(ctx, &ctx->style.window.spacing, nk_vec2_s(5, 5));
