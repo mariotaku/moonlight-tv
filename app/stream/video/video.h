@@ -21,6 +21,9 @@
 
 #include <stdbool.h>
 
-#include "presenter.h"
+#define DISPLAY_ROTATE_MASK 24
+#define DISPLAY_ROTATE_90 8
+#define DISPLAY_ROTATE_180 16
+#define DISPLAY_ROTATE_270 24
 
 DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
