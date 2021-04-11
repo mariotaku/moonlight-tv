@@ -32,21 +32,23 @@ target_link_libraries(gamestream moonlight-common-c)
 target_link_libraries(gamestream mbedtls)
 target_link_libraries(gamestream ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
-add_library(gamestream-sps SHARED libgamestream/sps.h src/sps.c)
+if (H264BITSTREAM_FOUND)
+    add_library(gamestream-sps SHARED libgamestream/sps.h src/sps.c)
 
-set_target_properties(gamestream-sps PROPERTIES
-    PUBLIC_HEADER         libgamestream/sps.h
-    VERSION               ${PROJECT_VERSION}
-    SOVERSION             ${PROJECT_VERSION_MAJOR}
-)
+    set_target_properties(gamestream-sps PROPERTIES
+        PUBLIC_HEADER         libgamestream/sps.h
+        VERSION               ${PROJECT_VERSION}
+        SOVERSION             ${PROJECT_VERSION_MAJOR}
+    )
 
-target_include_directories(gamestream-sps PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgamestream>"
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-    "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>"
-)
+    target_include_directories(gamestream-sps PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgamestream>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>"
+    )
 
-target_link_libraries(gamestream-sps PRIVATE h264bitstream moonlight-common-c)
+    target_link_libraries(gamestream-sps PRIVATE h264bitstream moonlight-common-c)
+endif()
 
 if (BUILD_TESTING)
     find_package(OpenSSL 1.0)

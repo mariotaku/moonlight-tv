@@ -20,6 +20,7 @@ set(SRC
 )
 
 add_library(h264bitstream ${HEADERS} ${SRC})
+set(H264BITSTREAM_FOUND 1 PARENT_SCOPE)
 
 set_target_properties(h264bitstream PROPERTIES
     PUBLIC_HEADER         h264_stream.h
