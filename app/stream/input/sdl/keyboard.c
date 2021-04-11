@@ -75,9 +75,9 @@ static struct KeysDown *_pressed_keys;
 bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode);
 #endif
 
-static int keys_find_by_code(struct KeysDown *p, const void *fv)
+static int keys_code_comparator(struct KeysDown *p, const void *fv)
 {
-    return p->keyCode == *((short *)fv);
+    return p->keyCode - *((short *)fv);
 }
 
 static bool isSystemKeyCaptureActive()
@@ -462,7 +462,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
     }
     else
     {
-        struct KeysDown *node = keys_find_by(_pressed_keys, &keyCode, &keys_find_by_code);
+        struct KeysDown *node = keys_find_by(_pressed_keys, &keyCode, &keys_code_comparator);
         if (node)
         {
             _pressed_keys = keys_remove(_pressed_keys, node);
