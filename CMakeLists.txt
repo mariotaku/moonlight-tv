@@ -103,6 +103,7 @@ endif()
 
 set(ENABLE_PROGRAMS OFF)
 set(ENABLE_TESTING OFF)
+set(MBEDTLS_FATAL_WARNINGS OFF)
 add_subdirectory(third_party/mbedtls)
 
 add_subdirectory(core/moonlight-common-c)
