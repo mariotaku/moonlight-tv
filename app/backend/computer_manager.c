@@ -1,3 +1,4 @@
+#define PCMANAGER_IMPL
 #include "computer_manager.h"
 #include "pcmanager/priv.h"
 
@@ -23,6 +24,7 @@
 static pthread_t computer_manager_polling_thread;
 
 PSERVER_LIST computer_list;
+PPCMANAGER_CALLBACKS callbacks_list;
 
 static void *_pcmanager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(PSERVER_DATA data);
@@ -82,7 +84,8 @@ void handle_server_discovered(PPCMANAGER_RESP discovered)
             serverdata_free((PSERVER_DATA)node->server);
         }
         serverlist_set_from_resp(node, discovered);
-        bus_pushevent(USER_CM_SERVER_UPDATED, discovered, NULL);
+        for (PPCMANAGER_CALLBACKS cur = callbacks_list; cur != NULL; cur = cur->next)
+            cur->onUpdated(discovered);
     }
     else
     {
@@ -90,7 +93,8 @@ void handle_server_discovered(PPCMANAGER_RESP discovered)
         serverlist_set_from_resp(node, discovered);
 
         computer_list = serverlist_append(computer_list, node);
-        bus_pushevent(USER_CM_SERVER_ADDED, discovered, NULL);
+        for (PPCMANAGER_CALLBACKS cur = callbacks_list; cur != NULL; cur = cur->next)
+            cur->onAdded(discovered);
     }
 }
 
@@ -305,7 +309,26 @@ void pcmanager_request_update(const SERVER_DATA *server)
     pthread_create(&update_thread, NULL, (void *(*)(void *))_computer_manager_server_update_action, arg);
 }
 
-static void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp)
+void pcmanager_register_callbacks(PPCMANAGER_CALLBACKS callbacks)
+{
+    callbacks_list = pcmanager_callbacks_append(callbacks_list, callbacks);
+}
+
+static int pcmanager_callbacks_comparator(PPCMANAGER_CALLBACKS p1, const void *p2)
+{
+    return p1 != p2;
+}
+
+void pcmanager_unregister_callbacks(PPCMANAGER_CALLBACKS callbacks)
+{
+    assert(callbacks);
+    PPCMANAGER_CALLBACKS find = pcmanager_callbacks_find_by(callbacks_list, callbacks, &pcmanager_callbacks_comparator);
+    if (!find)
+        return;
+    callbacks_list = pcmanager_callbacks_remove(callbacks_list, find);
+}
+
+void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp)
 {
     if (resp->state.code != SERVER_STATE_NONE)
     {

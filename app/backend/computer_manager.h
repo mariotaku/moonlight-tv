@@ -28,6 +28,27 @@ typedef struct PCMANAGER_RESP_T
   bool server_referenced;
 } PCMANAGER_RESP, *PPCMANAGER_RESP;
 
+typedef struct PCMANAGER_CALLBACKS
+{
+  void (*onAdded)(PPCMANAGER_RESP);
+  void (*onUpdated)(PPCMANAGER_RESP);
+  struct PCMANAGER_CALLBACKS *prev;
+  struct PCMANAGER_CALLBACKS *next;
+} PCMANAGER_CALLBACKS, *PPCMANAGER_CALLBACKS;
+
+#ifdef PCMANAGER_IMPL
+#define LINKEDLIST_IMPL
+#endif
+
+#define LINKEDLIST_TYPE PCMANAGER_CALLBACKS
+#define LINKEDLIST_PREFIX pcmanager_callbacks
+#define LINKEDLIST_DOUBLE 1
+#include "util/linked_list.h"
+
+#undef LINKEDLIST_DOUBLE
+#undef LINKEDLIST_TYPE
+#undef LINKEDLIST_PREFIX
+
 /**
  * @brief Initialize computer manager context
  * 
@@ -72,3 +93,6 @@ bool pcmanager_manual_add(const char *address, void (*callback)(PPCMANAGER_RESP)
 bool pcmanager_send_wol(const SERVER_DATA *server);
 
 void pcmanager_request_update(const SERVER_DATA *server);
+
+void pcmanager_register_callbacks(PPCMANAGER_CALLBACKS callbacks);
+void pcmanager_unregister_callbacks(PPCMANAGER_CALLBACKS callbacks);

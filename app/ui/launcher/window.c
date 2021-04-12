@@ -65,6 +65,13 @@ void topbar_item_offset(int offset);
 
 static void launcher_handle_server_updated(PPCMANAGER_RESP resp);
 
+static PCMANAGER_CALLBACKS _pcmanager_callbacks = {
+    .onAdded = launcher_handle_server_updated,
+    .onUpdated = launcher_handle_server_updated,
+    .prev = NULL,
+    .next = NULL,
+};
+
 #define launcher_blocked() ((_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW) || ui_settings_showing)
 
 uint32_t _launcher_modals;
@@ -87,10 +94,12 @@ void launcher_window_init(struct nk_context *ctx)
     pairing_computer_state.state = PS_NONE;
     memcpy(&cm_list_button_style, &(ctx->style.button), sizeof(struct nk_style_button));
     cm_list_button_style.text_alignment = NK_TEXT_ALIGN_LEFT;
+    pcmanager_register_callbacks(&_pcmanager_callbacks);
 }
 
 void launcher_window_destroy()
 {
+    pcmanager_unregister_callbacks(&_pcmanager_callbacks);
     nk_imagetexturefree(&launcher_default_cover);
 }
 
@@ -240,17 +249,6 @@ void launcher_display_size(struct nk_context *ctx, short width, short height)
 
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
 {
-    switch (which)
-    {
-    case USER_CM_SERVER_ADDED:
-    case USER_CM_SERVER_UPDATED:
-    {
-        launcher_handle_server_updated((PPCMANAGER_RESP)data1);
-        return true;
-    }
-    default:
-        break;
-    }
     return false;
 }
 
