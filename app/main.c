@@ -27,7 +27,8 @@ bool running = true;
 int main(int argc, char *argv[])
 {
 #ifdef OS_WEBOS
-    REDIR_STDOUT("moonlight");
+    if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
+        REDIR_STDOUT("moonlight");
 #endif
 #if TARGET_RASPI
     setenv("SDL_VIDEODRIVER", "rpi", 1);

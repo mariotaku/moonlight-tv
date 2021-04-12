@@ -333,16 +333,13 @@ int pcmanager_insert_by_address(const char *srvaddr, bool pair, void (*callback)
             resp->known = true;
         }
         resp->server = server;
+        bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     }
     else
     {
-        resp->state.code = SERVER_STATE_ERROR;
-        resp->state.error.errcode = ret;
-        resp->state.error.errmsg = gs_error;
+        pcmanager_resp_setgserror(resp, ret, gs_error);
         free(server);
-        resp->server = NULL;
     }
-    bus_pushaction((bus_actionfunc)handle_server_discovered, resp);
     if (callback)
         bus_pushaction((bus_actionfunc)callback, resp);
     bus_pushaction((bus_actionfunc)serverinfo_resp_free, resp);

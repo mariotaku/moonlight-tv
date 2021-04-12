@@ -381,6 +381,8 @@ void handle_unpairing_done(PPCMANAGER_RESP resp)
 
 void launcher_handle_server_updated(PPCMANAGER_RESP resp)
 {
+    if (resp->result.code != GS_OK)
+        return;
     PSERVER_LIST node = serverlist_find_by(computer_list, resp->server->uuid, serverlist_compare_uuid);
     if (!node)
         return;
