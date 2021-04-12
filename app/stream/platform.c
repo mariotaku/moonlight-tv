@@ -1,5 +1,6 @@
 #include "platform.h"
 
+#include <assert.h>
 #include <dlfcn.h>
 #include <string.h>
 
@@ -59,11 +60,15 @@ PLATFORM platform_init(const char *name, int argc, char *argv[])
             if (pdef.library)
             {
                 snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.library);
-                if (dlopen(libname, RTLD_NOW | RTLD_GLOBAL) == NULL)
+                // Lazy load to test if this library can be linked
+                void *plib = dlopen(libname, RTLD_NOW | RTLD_LOCAL);
+                if (!plib)
                 {
                     dlerror_log();
                     continue;
                 }
+                dlclose(plib);
+                dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
             }
             checkinit(ptype, argc, argv);
         }
