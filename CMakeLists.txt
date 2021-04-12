@@ -101,9 +101,9 @@ elseif (TARGET_DESKTOP)
     pkg_check_modules(OPUS REQUIRED opus)
 endif()
 
-set(ENABLE_PROGRAMS OFF)
-set(ENABLE_TESTING OFF)
-set(MBEDTLS_FATAL_WARNINGS OFF)
+option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
+option(ENABLE_TESTING "Skip mbedtls testing" OFF)
+option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 add_subdirectory(third_party/mbedtls)
 
 add_subdirectory(core/moonlight-common-c)
