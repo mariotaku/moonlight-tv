@@ -1,5 +1,6 @@
 #include "window.h"
 #include "priv.h"
+#include "ui/root.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -153,13 +154,66 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, _max_bitrate, BITRATE_STEP, 50);
+    nk_label(ctx, "Video decoder", NK_TEXT_LEFT);
+    struct nk_rect combo_bounds = nk_widget_bounds(ctx);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    PLATFORM curplat = app_configuration->platform ? platform_by_id(app_configuration->platform) : NONE;
+    int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
+    if (nk_combo_begin_label(ctx, curplat ? platform_definitions[curplat].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
+    {
+        *showing_combo = true;
+        if (combo_hovered_item.combo != 2)
+        {
+            combo_hovered_item.combo = 2;
+            combo_hovered_item.count = 1 + platform_available_count;
+            combo_hovered_item.request = -1;
+            combo_hovered_item.item = -1;
+        }
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        bool ever_hovered = false;
+        for (int i = 0; i < 1 + platform_orders_len; i++)
+        {
+            if (i > 0 && !platforms_info[platform_orders[i - 1]].valid)
+                continue;
+            struct nk_rect ci_bounds = nk_widget_bounds(ctx);
+            nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, ci_bounds);
+            if (hovered)
+            {
+                combo_hovered_item.item = i;
+                ever_hovered = true;
+            }
+            if (combo_hovered_item.request == i)
+            {
+                // Send mouse pointer to the item
+                combo_focused_center = nk_rect_center(ci_bounds);
+                bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
+                combo_hovered_item.request = -1;
+            }
+            if (i > 0)
+            {
+                PLATFORM_DEFINITION pdef = platform_definitions[platform_orders[i - 1]];
+                if (nk_combo_item_label(ctx, pdef.name, NK_TEXT_LEFT))
+                    app_configuration->platform = pdef.id;
+            }
+            else
+            {
+                if (nk_combo_item_label(ctx, "Automatic", NK_TEXT_LEFT))
+                    app_configuration->platform = "auto";
+            }
+        }
+        nk_combo_end(ctx);
+        if (!ever_hovered)
+        {
+            combo_hovered_item.item = -1;
+        }
+    }
     nk_layout_row_dynamic_s(ctx, 4, 1);
     return true;
 }
 
 static int _itemcount()
 {
-    return 3;
+    return 4;
 }
 
 static void _windowopen()
@@ -228,10 +282,15 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
         {
             return navkey_intercept_repeat(state, timestamp) || combo_item_select(1);
         }
-        else if (settings_hovered_item < 2)
+        else if (settings_hovered_item <= 1)
         {
             if (state == NAVKEY_STATE_UP)
                 settings_pane_item_offset(2 - settings_hovered_item);
+        }
+        else
+        {
+            if (state == NAVKEY_STATE_UP)
+                settings_pane_item_offset(1);
         }
         return true;
     case NAVKEY_CONFIRM:

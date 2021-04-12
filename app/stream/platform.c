@@ -8,7 +8,7 @@
 
 #include "util.h"
 
-PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
+PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT] = {
     {"No codec", NULL, NULL, NULL},
     {"SDL (SW codec)", "sdl", NULL, &platform_sdl},
     {"webOS NDL", "ndl", "ndl", NULL},
@@ -20,49 +20,38 @@ PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
     {"Raspberry Pi", "pi", "pi", NULL},
     {"Fake codec", NULL, NULL, NULL},
 };
-PLATFORM_INFO platforms_info[FAKE + 1];
-
-static const PLATFORM platform_orders[] = {
-#if TARGET_WEBOS
-    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, SDL
-#elif TARGET_RASPI
-    PI, SDL
-#else
-    SDL
-#endif
-};
-static const size_t platform_orders_len = sizeof(platform_orders) / sizeof(PLATFORM);
+PLATFORM_INFO platforms_info[PLATFORM_COUNT];
+int platform_available_count = 0;
 
 static void dlerror_log();
 static bool checkinit(PLATFORM system, int argc, char *argv[]);
 
 PLATFORM platform_current;
 
-PLATFORM platform_init(const char *name, int argc, char *argv[])
+PLATFORM platforms_init(const char *name, int argc, char *argv[])
 {
     memset(platforms_info, 0, sizeof(platforms_info));
-    bool std = strcmp(name, "auto") == 0;
     char libname[64];
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
         PLATFORM_DEFINITION pdef = platform_definitions[ptype];
-        if (std || strcmp(name, pdef.id) == 0)
+        if (pdef.library)
         {
-            if (pdef.library)
+            snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.library);
+            // Lazy load to test if this library can be linked
+            void *plib = dlopen(libname, RTLD_NOW | RTLD_LOCAL);
+            if (!plib)
             {
-                snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.library);
-                // Lazy load to test if this library can be linked
-                void *plib = dlopen(libname, RTLD_NOW | RTLD_LOCAL);
-                if (!plib)
-                {
-                    dlerror_log();
-                    continue;
-                }
-                dlclose(plib);
-                dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
+                dlerror_log();
+                continue;
             }
-            checkinit(ptype, argc, argv);
+            dlclose(plib);
+            dlopen(libname, RTLD_NOW | RTLD_GLOBAL);
+        }
+        if (checkinit(ptype, argc, argv))
+        {
+            platform_available_count++;
         }
     }
     printf("Supported decoders: \n");
@@ -76,6 +65,19 @@ PLATFORM platform_init(const char *name, int argc, char *argv[])
                pinfo.vrank, pinfo.arank, pinfo.hevc, pinfo.hdr, pinfo.maxBitrate);
     }
     // Now all decoders has been loaded.
+    // Load specified decoder
+    if (name && strcmp(name, "auto") != 0)
+    {
+        for (int i = 0; i < platform_orders_len; i++)
+        {
+            PLATFORM ptype = platform_orders[i];
+            PLATFORM_INFO pinfo = platforms_info[ptype];
+            PLATFORM_DEFINITION pdef = platform_definitions[ptype];
+            if (pinfo.valid && pdef.id && strcmp(name, pdef.id) == 0)
+                return ptype;
+        }
+    }
+    // Load first valid decoder
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
@@ -257,6 +259,19 @@ PLATFORM platform_preferred_audio()
         }
     }
     return aplat;
+}
+
+PLATFORM platform_by_id(const char *id)
+{
+    for (int i = 0; i < PLATFORM_COUNT; i++)
+    {
+        PLATFORM_DEFINITION pdef = platform_definitions[i];
+        if (!pdef.id)
+            continue;
+        if (strcmp(pdef.id, id) == 0)
+            return i;
+    }
+    return NONE;
 }
 
 void dlerror_log()

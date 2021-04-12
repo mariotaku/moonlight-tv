@@ -39,9 +39,21 @@ enum PLATFORM_T
     DILE,
     DILE_LEGACY,
     PI,
-    FAKE
+    FAKE,
+    PLATFORM_COUNT,
 };
 typedef enum PLATFORM_T PLATFORM;
+
+static const PLATFORM platform_orders[] = {
+#if TARGET_WEBOS
+    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, SDL
+#elif TARGET_RASPI
+    PI, SDL
+#else
+    SDL
+#endif
+};
+static const size_t platform_orders_len = sizeof(platform_orders) / sizeof(PLATFORM);
 
 typedef bool (*PLATFORM_INIT_FN)(int argc, char *argv[]);
 typedef bool (*PLATFORM_CHECK_FN)(PPLATFORM_INFO);
@@ -67,19 +79,21 @@ typedef struct PLATFORM_DEFINITION
 } PLATFORM_DEFINITION;
 
 PLATFORM platform_current;
-PLATFORM_INFO platforms_info[FAKE + 1];
-PLATFORM_DEFINITION platform_definitions[FAKE + 1];
+PLATFORM_INFO platforms_info[PLATFORM_COUNT];
+PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
+int platform_available_count;
 
 PLATFORM_SYMBOLS platform_sdl;
 VIDEO_RENDER_CALLBACKS render_callbacks_sdl;
 DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
-PLATFORM platform_init(const char *name, int argc, char *argv[]);
+PLATFORM platforms_init(const char *name, int argc, char *argv[]);
 PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform);
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device);
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform);
 PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform);
 
 PLATFORM platform_preferred_audio();
+PLATFORM platform_by_id(const char *id);
 
 void platform_finalize(enum PLATFORM_T platform);
