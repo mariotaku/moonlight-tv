@@ -1,4 +1,5 @@
 #include "window.h"
+#include "priv.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,6 +54,7 @@ int settings_item_hover_request = -1;
 struct nk_rect settings_hovering_item_bounds = {0, 0, 0, 0};
 struct nk_vec2 settings_focused_item_center = {0, 0};
 bool settings_showing_combo = false;
+char settings_res_label[16], settings_fps_label[16];
 
 void settings_window_init(struct nk_context *ctx)
 {

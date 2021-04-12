@@ -67,7 +67,6 @@ int app_init(int argc, char *argv[])
 #endif
     app_configuration = settings_load();
     platform_current = platform_init(app_configuration->platform, argc, argv);
-    printf("Decoder platform: %s\n", platform_name(platform_current));
     return 0;
 }
 

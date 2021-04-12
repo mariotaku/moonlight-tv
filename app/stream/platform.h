@@ -58,8 +58,17 @@ typedef struct PLATFORM_SYMBOLS_T
     PVIDEO_RENDER_CALLBACKS rend;
 } PLATFORM_SYMBOLS, PPLATFORM_SYMBOLS;
 
+typedef struct PLATFORM_DEFINITION
+{
+    const char *name;
+    const char *id;
+    const char *library;
+    const PLATFORM_SYMBOLS *symbols;
+} PLATFORM_DEFINITION;
+
 PLATFORM platform_current;
 PLATFORM_INFO platforms_info[FAKE + 1];
+PLATFORM_DEFINITION platform_definitions[FAKE + 1];
 
 PLATFORM_SYMBOLS platform_sdl;
 VIDEO_RENDER_CALLBACKS render_callbacks_sdl;
@@ -71,6 +80,6 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_devi
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform);
 PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform);
 
-const char *platform_name(enum PLATFORM_T platform);
+PLATFORM platform_preferred_audio();
 
 void platform_finalize(enum PLATFORM_T platform);

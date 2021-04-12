@@ -21,6 +21,7 @@ static struct
     int rate;
 } webos_panel_info;
 #endif
+static PLATFORM _audio_platform = NONE;
 
 static void load_webos_info();
 
@@ -35,8 +36,10 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_layout_row_template_end(ctx);
     nk_label(ctx, "Version", NK_TEXT_LEFT);
     nk_label(ctx, APP_VERSION, NK_TEXT_RIGHT);
-    nk_label(ctx, "Decoder", NK_TEXT_LEFT);
-    nk_label(ctx, platform_name(platform_current), NK_TEXT_RIGHT);
+    nk_label(ctx, "Video Decoder", NK_TEXT_LEFT);
+    nk_label(ctx, platform_definitions[platform_current].name, NK_TEXT_RIGHT);
+    nk_label(ctx, "Audio Decoder", NK_TEXT_LEFT);
+    nk_label(ctx, platform_definitions[_audio_platform].name, NK_TEXT_RIGHT);
 
 #if OS_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
@@ -64,6 +67,7 @@ static int _itemcount()
 
 static void _onselect()
 {
+    _audio_platform = platform_preferred_audio();
 #if OS_WEBOS
     load_webos_info();
 #endif

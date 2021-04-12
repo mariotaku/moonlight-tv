@@ -1,10 +1,9 @@
 #include "window.h"
+#include "priv.h"
 #include "ui/root.h"
 
 #include <stddef.h>
 #include <stdio.h>
-
-static char _res_label[8], _fps_label[8];
 
 bool _settings_pane_host(struct nk_context *ctx, bool *showing_combo)
 {
@@ -32,7 +31,7 @@ bool _settings_pane_host(struct nk_context *ctx, bool *showing_combo)
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_end(ctx);
         nk_spacing(ctx, 1);
-        nk_labelf_wrap(ctx, "(Not available under %s@%s)", _res_label, _fps_label);
+        nk_labelf_wrap(ctx, "(Not available under %s@%s)", settings_res_label, settings_fps_label);
         nk_layout_row_dynamic_s(ctx, 25, 1);
     }
 

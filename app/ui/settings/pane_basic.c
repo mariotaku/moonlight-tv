@@ -1,4 +1,5 @@
 #include "window.h"
+#include "priv.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -48,7 +49,6 @@ static struct nk_vec2 combo_focused_center;
 #define BITRATE_MAX 120000
 #define BITRATE_STEP 500
 
-static char _res_label[16], _fps_label[16];
 static int _max_bitrate = BITRATE_MAX;
 
 static void _set_fps(int fps);
@@ -66,7 +66,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     static const float ratio_resolution_fps[] = {0.6, 0.4};
     nk_layout_row_s(ctx, NK_DYNAMIC, 25, 2, ratio_resolution_fps);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    if (nk_combo_begin_label(ctx, _res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
+    if (nk_combo_begin_label(ctx, settings_res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         *showing_combo = true;
         if (combo_hovered_item.combo != 1)
@@ -108,7 +108,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
         }
     }
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    if (nk_combo_begin_label(ctx, _fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
+    if (nk_combo_begin_label(ctx, settings_fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         *showing_combo = true;
         if (combo_hovered_item.combo != 2)
@@ -250,7 +250,7 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
 void _set_fps(int fps)
 {
     // It is not possible to have overflow since fps is capped to 999
-    sprintf(_fps_label, "%d FPS", fps % 1000);
+    sprintf(settings_fps_label, "%d FPS", fps % 1000);
     app_configuration->stream.fps = fps;
 }
 
@@ -259,19 +259,19 @@ void _set_res(int w, int h)
     switch (RES_MERGE(w, h))
     {
     case RES_720P:
-        sprintf(_res_label, "720P");
+        sprintf(settings_res_label, "720P");
         break;
     case RES_1080P:
-        sprintf(_res_label, "1080P");
+        sprintf(settings_res_label, "1080P");
         break;
     case RES_1440P:
-        sprintf(_res_label, "1440P");
+        sprintf(settings_res_label, "1440P");
         break;
     case RES_4K:
-        sprintf(_res_label, "4K");
+        sprintf(settings_res_label, "4K");
         break;
     default:
-        sprintf(_res_label, "%3d*%3d", w, h);
+        sprintf(settings_res_label, "%3d*%3d", w, h);
         break;
     }
     app_configuration->stream.width = w;

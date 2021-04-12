@@ -8,15 +8,7 @@
 
 #include "util.h"
 
-typedef struct PLATFORM_DEFINITION
-{
-    const char *name;
-    const char *id;
-    const char *library;
-    const PLATFORM_SYMBOLS *symbols;
-} PLATFORM_DEFINITION;
-
-static const PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
+PLATFORM_DEFINITION platform_definitions[FAKE + 1] = {
     {"No codec", NULL, NULL, NULL},
     {"SDL (SW codec)", "sdl", NULL, &platform_sdl},
     {"webOS NDL", "ndl", "ndl", NULL},
@@ -110,20 +102,7 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform)
 
 PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device)
 {
-    unsigned int arank = 0;
-    PLATFORM aplat = NONE;
-    for (int i = 0; i < platform_orders_len; i++)
-    {
-        PLATFORM ptype = platform_orders[i];
-        PLATFORM_INFO pinfo = platforms_info[ptype];
-        if (!pinfo.valid)
-            continue;
-        if (pinfo.arank > arank)
-        {
-            arank = pinfo.arank;
-            aplat = ptype;
-        }
-    }
+    PLATFORM aplat = platform_preferred_audio();
     if (aplat != NONE)
     {
         PLATFORM_DEFINITION pdef = platform_definitions[aplat];
@@ -261,9 +240,23 @@ void platform_finalize(PLATFORM platform)
     }
 }
 
-const char *platform_name(PLATFORM system)
+PLATFORM platform_preferred_audio()
 {
-    return platform_definitions[system].name;
+    unsigned int arank = 0;
+    PLATFORM aplat = NONE;
+    for (int i = 0; i < platform_orders_len; i++)
+    {
+        PLATFORM ptype = platform_orders[i];
+        PLATFORM_INFO pinfo = platforms_info[ptype];
+        if (!pinfo.valid)
+            continue;
+        if (pinfo.arank > arank)
+        {
+            arank = pinfo.arank;
+            aplat = ptype;
+        }
+    }
+    return aplat;
 }
 
 void dlerror_log()
