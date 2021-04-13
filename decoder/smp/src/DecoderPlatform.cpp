@@ -16,8 +16,6 @@
 #define decoder_callbacks DECODER_SYMBOL_NAME(decoder_callbacks)
 #define audio_callbacks DECODER_SYMBOL_NAME(audio_callbacks)
 
-static bool smp_initialized = false;
-
 using SMP_DECODER_NS::AudioConfig;
 using SMP_DECODER_NS::AudioStreamPlayer;
 using SMP_DECODER_NS::VideoConfig;
@@ -34,8 +32,7 @@ extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks;
 
 extern "C" bool platform_init(int argc, char *argv[])
 {
-    smp_initialized = true;
-    return smp_initialized;
+    return true;
 }
 
 extern "C" bool platform_check(PPLATFORM_INFO pinfo)

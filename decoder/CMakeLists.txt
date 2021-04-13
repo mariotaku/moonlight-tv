@@ -1,10 +1,10 @@
 cmake_minimum_required (VERSION 3.6)
 
 if (TARGET_WEBOS)
-    add_subdirectory(dile)
     add_subdirectory(smp)
-    add_subdirectory(ndl)
-    add_subdirectory(lgnc)
+    add_subdirectory(dile)
+    # add_subdirectory(ndl)
+    # add_subdirectory(lgnc)
 endif(TARGET_WEBOS)
 if (TARGET_RASPI)
     add_subdirectory(pi)
