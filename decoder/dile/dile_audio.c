@@ -60,7 +60,7 @@ static int _init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusCon
 
   media_services_set_audio_data(adec_services, connId);
 
-  if (DILE_AUDIO_DIRECT_Open(0, 0) != 0)
+  if (DILE_AUDIO_DIRECT_Open(0, 11 /* Warning: magic number! */) != 0)
   {
     printf("Failed to open audio\n");
     return -1;
@@ -115,6 +115,7 @@ static void _feed(char *data, int length)
   {
     if (DILE_AUDIO_DIRECT_Write(0, pcmBuffer, decodeLen * channelCount * sizeof(short)) != 0)
     {
+      fprintf(stderr, "DILE_AUDIO_DIRECT_Write Failed\n");
     }
     else if (!first_sample_arrived && rmhandle)
     {

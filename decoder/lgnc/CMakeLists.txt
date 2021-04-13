@@ -13,4 +13,4 @@ target_include_directories(moonlight-lgnc PRIVATE
 )
 target_link_libraries(moonlight-lgnc PRIVATE moonlight-common-c opus lgncopenapi AcbAPI ${PBNJSON_LIBRARIES})
 
-install(TARGETS moonlight-lgnc LIBRARY)
+install(TARGETS moonlight-lgnc LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

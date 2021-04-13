@@ -28,7 +28,7 @@ target_include_directories(moonlight-dile SYSTEM PRIVATE
 target_compile_definitions(moonlight-dile PRIVATE DECODER_PLATFORM_NAME=dile)
 target_compile_options(moonlight-dile PRIVATE -Werror=implicit-function-declaration)
 
-install(TARGETS moonlight-dile LIBRARY)
+install(TARGETS moonlight-dile LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # DILE for webOS 4.x and below
 
@@ -52,4 +52,4 @@ target_include_directories(moonlight-dile-legacy SYSTEM PRIVATE
 
 target_compile_definitions(moonlight-dile-legacy PRIVATE DECODER_PLATFORM_NAME=dile_legacy)
 target_compile_options(moonlight-dile-legacy PRIVATE -Werror=implicit-function-declaration)
-install(TARGETS moonlight-dile-legacy LIBRARY)
+install(TARGETS moonlight-dile-legacy LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

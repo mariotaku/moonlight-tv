@@ -302,7 +302,7 @@ else()
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 endif()
 
-install(TARGETS moonlight)
+install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_custom_target(moonlight-spritegen
     COMMAND nk-spritegen -n ui -i res/sprites -o res/ -c app/nuklear/ -s 1 -s 2 -s 3
@@ -313,9 +313,9 @@ if (TARGET_WEBOS)
     set(WEBOS_APPINFO_ID "com.limelight.webos")
 
     # Copy asset dir to package root
-    install(DIRECTORY assets TYPE DATA PATTERN ".*" EXCLUDE)
+    install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR} PATTERN ".*" EXCLUDE)
     # Copy all files under deploy/webos/ to package root
-    install(DIRECTORY deploy/webos/ TYPE DATA PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
+    install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
     # Copy manifest
     configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
 

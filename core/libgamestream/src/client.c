@@ -56,7 +56,7 @@ static char unique_id[UNIQUEID_CHARS + 1];
 static mbedtls_pk_context privateKey;
 static mbedtls_x509_crt cert;
 static char cert_hex[8192];
-
+static HTTP http;
 const char *gs_error;
 
 static bool construct_url(char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...);
@@ -200,7 +200,7 @@ static int load_server_status(PSERVER_DATA server)
       ret = GS_OUT_OF_MEMORY;
       goto cleanup;
     }
-    if (http_request(url, data) != GS_OK)
+    if (http_request(http, url, data) != GS_OK)
     {
       ret = GS_IO_ERROR;
       goto cleanup;
@@ -339,7 +339,7 @@ int gs_unpair(PSERVER_DATA server)
     return GS_OUT_OF_MEMORY;
 
   construct_url(url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
-  ret = http_request(url, data);
+  ret = http_request(http, url, data);
 
   if (xml_status(data->memory, data->size) == GS_ERROR)
   {
@@ -445,7 +445,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
-  else if ((ret = http_request(url, data)) != GS_OK)
+  else if ((ret = http_request(http, url, data)) != GS_OK)
     goto cleanup;
 
   if ((ret = xml_status(data->memory, data->size) != GS_OK))
@@ -515,7 +515,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   // Send the encrypted challenge to the server
   construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
-  if ((ret = http_request(url, data)) != GS_OK)
+  if ((ret = http_request(http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -568,7 +568,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
 
   construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
-  if ((ret = http_request(url, data)) != GS_OK)
+  if ((ret = http_request(http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -639,7 +639,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
 
   construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
-  if ((ret = http_request(url, data)) != GS_OK)
+  if ((ret = http_request(http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -659,7 +659,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   // Do the initial challenge (seems neccessary for us to show as paired)
   construct_url(url, sizeof(url), true, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&phrase=pairchallenge");
-  if ((ret = http_request(url, data)) != GS_OK)
+  if ((ret = http_request(http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -705,7 +705,7 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
     return GS_OUT_OF_MEMORY;
 
   construct_url(url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
-  if (http_request(url, data) != GS_OK)
+  if (http_request(http, url, data) != GS_OK)
     ret = GS_IO_ERROR;
   else if (xml_status(data->memory, data->size) == GS_ERROR)
     ret = GS_ERROR;
@@ -785,7 +785,7 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
     construct_url(url, sizeof(url), true, server->serverInfo.address, "resume",
                   "rikey=%s&rikeyid=%d&surroundAudioInfo=%d", rikey_hex, rikeyid, surround_info);
   }
-  if ((ret = http_request(url, data)) == GS_OK)
+  if ((ret = http_request(http, url, data)) == GS_OK)
     server->currentGame = appId;
   else
     goto cleanup;
@@ -821,7 +821,7 @@ int gs_quit_app(PSERVER_DATA server)
     return GS_OUT_OF_MEMORY;
 
   construct_url(url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
-  if ((ret = http_request(url, data)) != GS_OK)
+  if ((ret = http_request(http, url, data)) != GS_OK)
     goto cleanup;
 
   if ((ret = xml_status(data->memory, data->size) != GS_OK))
@@ -857,7 +857,7 @@ int gs_download_cover(PSERVER_DATA server, int appid, const char *path)
 
   construct_url(url, sizeof(url), true, server->serverInfo.address, "appasset",
                 "appid=%d&AssetType=2&AssetIdx=0", appid);
-  ret = http_request(url, data);
+  ret = http_request(http, url, data);
   if (ret != GS_OK)
     goto cleanup;
 
@@ -886,7 +886,7 @@ int gs_init(PSERVER_DATA server, const char *address, const char *keyDirectory, 
   if (load_cert(keyDirectory))
     return GS_FAILED;
 
-  http_init(keyDirectory, log_level);
+  http = http_init(keyDirectory, log_level);
 
   LiInitializeServerInformation(&server->serverInfo);
   server->serverInfo.address = address;

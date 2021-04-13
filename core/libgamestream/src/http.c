@@ -24,8 +24,6 @@
 #include <string.h>
 #include <curl/curl.h>
 
-static CURL *curl;
-
 static bool debug;
 
 static size_t _write_curl(void *contents, size_t size, size_t nmemb, void *userp)
@@ -44,11 +42,11 @@ static size_t _write_curl(void *contents, size_t size, size_t nmemb, void *userp
   return realsize;
 }
 
-int http_init(const char* keyDirectory, int logLevel) {
-  curl = curl_easy_init();
+HTTP http_init(const char* keyDirectory, int logLevel) {
+  CURL *curl = curl_easy_init();
   debug = logLevel >= 2;
   if (!curl)
-    return GS_FAILED;
+    return NULL;
 
   char certificateFilePath[4096];
   sprintf(certificateFilePath, "%s/%s", keyDirectory, CERTIFICATE_FILE_NAME);
@@ -68,10 +66,11 @@ int http_init(const char* keyDirectory, int logLevel) {
   curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
   curl_easy_setopt(curl, CURLOPT_VERBOSE, debug ? 1L : 0L);
 
-  return GS_OK;
+  return (HTTP) curl;
 }
 
-int http_request(char* url, PHTTP_DATA data) {
+int http_request(HTTP http, char* url, PHTTP_DATA data) {
+  CURL *curl = (CURL*) http;
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
   curl_easy_setopt(curl, CURLOPT_URL, url);
 
@@ -101,8 +100,8 @@ int http_request(char* url, PHTTP_DATA data) {
   return GS_OK;
 }
 
-void http_cleanup() {
-  curl_easy_cleanup(curl);
+void http_cleanup(HTTP http) {
+  curl_easy_cleanup((CURL*) http);
 }
 
 PHTTP_DATA http_create_data() {

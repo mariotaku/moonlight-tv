@@ -24,12 +24,16 @@
 #define CERTIFICATE_FILE_NAME "client.pem"
 #define KEY_FILE_NAME "key.pem"
 
+typedef void* HTTP;
+
 typedef struct _HTTP_DATA {
   char *memory;
   size_t size;
 } HTTP_DATA, *PHTTP_DATA;
 
-int http_init(const char* keyDirectory, int logLevel);
+HTTP http_init(const char* keyDirectory, int logLevel);
+int http_request(HTTP, char* url, PHTTP_DATA data);
+void http_cleanup(HTTP);
+
 PHTTP_DATA http_create_data();
-int http_request(char* url, PHTTP_DATA data);
 void http_free_data(PHTTP_DATA data);

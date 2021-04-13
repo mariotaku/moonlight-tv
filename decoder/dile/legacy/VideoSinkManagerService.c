@@ -32,25 +32,25 @@ static bool VideoSinkManagerRegister(const char *contextId, const char *payload)
     return true;
 }
 
-bool VideoSinkManagerRegisterVDEC(const char *contextId)
+bool VideoSinkManagerRegisterVDEC(const char *contextId, int port)
 {
     char buf[1024];
     snprintf(buf, sizeof(buf),
              "{\"context\":\"%s\",\"resourceList\":[{\"type\":\"VDEC\",\"portNumber\":%d}]}",
-             contextId, 0);
+             contextId, port);
     return VideoSinkManagerRegister(contextId, buf);
 }
 
-bool VideoSinkManagerRegisterPCMMC(const char *contextId, const char *audioType)
+bool VideoSinkManagerRegisterPCMMC(const char *contextId, int port, const char *audioType)
 {
     char buf[1024], atyp[128];
     if (audioType)
-        snprintf(atyp, sizeof(atyp), "\"audioType\":\"%s\"", audioType);
+        snprintf(atyp, sizeof(atyp), ",\"audioType\":\"%s\"", audioType);
     else
         atyp[0] = '\0';
     snprintf(buf, sizeof(buf),
-             "{\"context\":\"%s\",\"resourceList\":[{\"type\":\"VDEC\",\"portNumber\":%d}]%s}",
-             contextId, 0, atyp);
+             "{\"context\":\"%s\",\"resourceList\":[{\"type\":\"PCMMC\",\"portNumber\":%d}]%s}",
+             contextId, port, atyp);
     return VideoSinkManagerRegister(contextId, buf);
 }
 

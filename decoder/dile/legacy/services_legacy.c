@@ -20,10 +20,12 @@ struct MEDIA_SERVICES_CONTEXT
 
 MEDIA_SERVICES_HANDLE media_services_connect(const char *connId, const char *appId, jvalue_ref resources, MEDIA_SERVICES_TYPE type)
 {
-    if (type == MEDIA_SERVICES_TYPE_AUDIO)
-        VideoSinkManagerRegisterPCMMC(connId, "game_directmedia");
+    jvalue_ref reslist = jobject_get(resources, J_CSTR_TO_BUF("resources"));
+    int port = find_source_port(reslist, type == MEDIA_SERVICES_TYPE_VIDEO ? "VDEC" : "PCMMC");
+    if (type == MEDIA_SERVICES_TYPE_VIDEO)
+        VideoSinkManagerRegisterVDEC(connId, port);
     else
-        VideoSinkManagerRegisterVDEC(connId);
+        VideoSinkManagerRegisterPCMMC(connId, port, "game_directmedia");
 
     long acbId = AcbAPI_create();
     if (acbId < 0)

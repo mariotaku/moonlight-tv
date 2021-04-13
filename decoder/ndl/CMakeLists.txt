@@ -13,4 +13,4 @@ target_include_directories(moonlight-ndl PRIVATE
 )
 target_link_libraries(moonlight-ndl PRIVATE moonlight-common-c opus NDL_directmedia ${PBNJSON_LIBRARIES})
 
-install(TARGETS moonlight-ndl LIBRARY)
+install(TARGETS moonlight-ndl LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
