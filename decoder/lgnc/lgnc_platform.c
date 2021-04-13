@@ -37,6 +37,8 @@ bool platform_check_lgnc(PPLATFORM_INFO pinfo)
     pinfo->valid = true;
     pinfo->vrank = 9;
     pinfo->arank = 29;
+    pinfo->vindependent = false;
+    pinfo->aindependent = false;
     pinfo->maxBitrate = 40000;
     return true;
 }

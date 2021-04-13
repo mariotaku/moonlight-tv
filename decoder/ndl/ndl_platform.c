@@ -30,6 +30,8 @@ bool platform_check_ndl(PPLATFORM_INFO pinfo)
     pinfo->valid = true;
     pinfo->vrank = 10;
     pinfo->arank = 30;
+    pinfo->vindependent = false;
+    pinfo->aindependent = true;
     pinfo->maxBitrate = 50000;
     return true;
 }

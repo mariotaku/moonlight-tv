@@ -24,6 +24,8 @@ bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO pinfo)
     pinfo->valid = true;
     pinfo->vrank = 35;
     pinfo->arank = 0;
+    pinfo->vindependent = true;
+    pinfo->aindependent = true;
     pinfo->hevc = true;
     pinfo->maxBitrate = 50000;
     return true;

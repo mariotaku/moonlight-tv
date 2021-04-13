@@ -72,11 +72,9 @@ pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
+    set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
-    target_compile_options(opus PRIVATE -fPIC)
-    set_target_properties(opus PROPERTIES 
-        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/assets/lib
-    )
+    unset(BUILD_SHARED_LIBS)
     add_subdirectory(prebuilt/webos)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -236,12 +234,13 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    target_link_libraries(moonlight INTERFACE moonlight-smp)
-    target_link_libraries(moonlight INTERFACE moonlight-smp-acb)
-    target_link_libraries(moonlight INTERFACE moonlight-ndl)
-    target_link_libraries(moonlight INTERFACE moonlight-lgnc)
-    target_link_libraries(moonlight INTERFACE debug moonlight-dile)
-    target_link_libraries(moonlight INTERFACE debug moonlight-dile-legacy)
+    install(TARGETS moonlight-smp LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    install(TARGETS moonlight-smp-acb LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    install(TARGETS moonlight-ndl LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    install(TARGETS moonlight-lgnc LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    install(TARGETS moonlight-dile LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    install(TARGETS moonlight-dile-legacy LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    install(TARGETS opus LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 

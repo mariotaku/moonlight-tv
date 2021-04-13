@@ -5,6 +5,8 @@ bool platform_check_sdl(PPLATFORM_INFO info)
     info->valid = true;
     info->vrank = 0;
     info->arank = 0;
+    info->vindependent = true;
+    info->aindependent = true;
     return true;
 }
 

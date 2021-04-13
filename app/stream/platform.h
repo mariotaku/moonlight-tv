@@ -89,11 +89,11 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
 PLATFORM platforms_init(const char *name, int argc, char *argv[]);
 PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform);
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device);
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device, PLATFORM vplatform);
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform);
 PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform);
 
-PLATFORM platform_preferred_audio();
+PLATFORM platform_preferred_audio(PLATFORM vplatform);
 PLATFORM platform_by_id(const char *id);
 
 void platform_finalize(enum PLATFORM_T platform);

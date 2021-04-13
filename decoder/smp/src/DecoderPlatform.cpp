@@ -43,6 +43,8 @@ extern "C" bool platform_check(PPLATFORM_INFO pinfo)
     pinfo->valid = true;
     pinfo->vrank = 40;
     pinfo->arank = 5;
+    pinfo->vindependent = true;
+    pinfo->aindependent = true;
     pinfo->hevc = true;
     pinfo->hdr = PLATFORM_HDR_ALWAYS;
     pinfo->colorSpace = COLORSPACE_REC_709;

@@ -67,7 +67,7 @@ static int _itemcount()
 
 static void _onselect()
 {
-    _audio_platform = platform_preferred_audio();
+    _audio_platform = platform_preferred_audio(platform_current);
 #if OS_WEBOS
     load_webos_info();
 #endif

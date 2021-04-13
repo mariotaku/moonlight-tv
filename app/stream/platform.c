@@ -102,9 +102,9 @@ PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform)
     return &decoder_callbacks_dummy;
 }
 
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device)
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device, PLATFORM vplatform)
 {
-    PLATFORM aplat = platform_preferred_audio();
+    PLATFORM aplat = platform_preferred_audio(vplatform);
     if (aplat != NONE)
     {
         PLATFORM_DEFINITION pdef = platform_definitions[aplat];
@@ -242,15 +242,17 @@ void platform_finalize(PLATFORM platform)
     }
 }
 
-PLATFORM platform_preferred_audio()
+PLATFORM platform_preferred_audio(PLATFORM vplatform)
 {
+    if (vplatform != NONE && !platforms_info[vplatform].vindependent)
+        return vplatform;
     unsigned int arank = 0;
     PLATFORM aplat = NONE;
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
         PLATFORM_INFO pinfo = platforms_info[ptype];
-        if (!pinfo.valid)
+        if (!pinfo.valid || !pinfo.aindependent)
             continue;
         if (pinfo.arank > arank)
         {

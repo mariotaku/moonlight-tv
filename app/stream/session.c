@@ -165,7 +165,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     }
 
     PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(system);
-    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(system, config->audio_device);
+    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(NONE, config->audio_device, system);
     PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter(system);
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
 
