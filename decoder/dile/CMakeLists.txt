@@ -35,7 +35,6 @@ install(TARGETS moonlight-dile LIBRARY)
 add_library(moonlight-dile-legacy SHARED ${COMMON_SRC}
     legacy/services_legacy.c
     legacy/VideoSinkManagerService.c
-    legacy/AcbService.c
     legacy/TVService.c
 )
 

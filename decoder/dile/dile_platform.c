@@ -8,7 +8,7 @@
 #include <dlfcn.h>
 
 #include "platform/webos/os_info.h"
-#include "stream/platform.h"
+#include "stream/api.h"
 #include "media_services.h"
 
 bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])

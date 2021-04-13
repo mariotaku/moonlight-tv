@@ -5,7 +5,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "stream/platform.h"
+#include "stream/api.h"
 
 #include <memory>
 #include <cstring>

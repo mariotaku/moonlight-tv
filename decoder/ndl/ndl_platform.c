@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include <NDL_directmedia.h>
-#include "stream/platform.h"
+#include "stream/api.h"
 
 static bool ndl_initialized = false;
 

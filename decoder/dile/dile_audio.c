@@ -129,7 +129,7 @@ static void _feed(char *data, int length)
   }
 }
 
-AUDIO_RENDERER_CALLBACKS audio_callbacks_dile = {
+AUDIO_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(audio_callbacks) = {
     .init = _init,
     .cleanup = _cleanup,
     .decodeAndPlaySample = _feed,

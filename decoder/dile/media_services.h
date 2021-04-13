@@ -1,5 +1,5 @@
 #pragma once
-#include "stream/platform.h"
+#include "stream/api.h"
 
 #include <stdbool.h>
 #include <pbnjson.h>
