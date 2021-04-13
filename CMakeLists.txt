@@ -19,6 +19,8 @@ option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 option(BUILD_CUSTOM_SDL "Include custom SDL" OFF)
 
 set(OPUS_BUILD_SHARED_LIBRARY ON)
+option(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF)
+option(OPUS_INSTALL_PKG_CONFIG_MODULE OFF)
 
 if (CC_BASENAME MATCHES "^arm-webos-linux")
     set(TARGET_WEBOS ON)
@@ -42,6 +44,11 @@ if (TARGET_WEBOS)
     set(HAVE_SDL TRUE)
     
     add_subdirectory(system/webos/tv-native-apis)
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos-unused-prefix)
+    set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/pkg_$ENV{ARCH})
+    set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
+    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
+    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
     set(TARGET_LINUX TRUE)
@@ -101,6 +108,7 @@ endif()
 
 option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
 option(ENABLE_TESTING "Skip mbedtls testing" OFF)
+option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
 option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 add_subdirectory(third_party/mbedtls)
 
@@ -234,13 +242,12 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    install(TARGETS moonlight-smp LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
-    install(TARGETS moonlight-smp-acb LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
-    install(TARGETS moonlight-ndl LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
-    install(TARGETS moonlight-lgnc LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
-    install(TARGETS moonlight-dile LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
-    install(TARGETS moonlight-dile-legacy LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
-    install(TARGETS opus LIBRARY DESTINATION ${PROJECT_BINARY_DIR}/assets/lib)
+    add_dependencies(moonlight 
+        moonlight-smp moonlight-smp-acb moonlight-ndl moonlight-lgnc
+    )
+    add_dependencies(moonlight
+        moonlight-dile moonlight-dile-legacy
+    )
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 
@@ -295,30 +302,42 @@ else()
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 endif()
 
+install(TARGETS moonlight)
+
 add_custom_target(moonlight-spritegen
     COMMAND nk-spritegen -n ui -i res/sprites -o res/ -c app/nuklear/ -s 1 -s 2 -s 3
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 if (TARGET_WEBOS)
-    include(WebOSPackage)
+    set(WEBOS_APPINFO_ID "com.limelight.webos")
+
+    # Copy asset dir to package root
+    install(DIRECTORY assets TYPE DATA PATTERN ".*" EXCLUDE)
+    # Copy all files under deploy/webos/ to package root
+    install(DIRECTORY deploy/webos/ TYPE DATA PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
+    # Copy manifest
+    configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
 
     add_custom_target(webos-generate-gamecontrollerdb
         COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     )
 
-    set_target_properties(moonlight PROPERTIES
-        WEBOS_APPINFO_ID com.limelight.webos
-        WEBOS_APPINFO_VERSION ${PROJECT_VERSION}
-        WEBOS_APPINFO_TITLE "Moonlight"
-        WEBOS_APPINFO_VENDOR "Mariotaku Lee"
-        WEBOS_APPINFO_ICON ${CMAKE_CURRENT_SOURCE_DIR}/deploy/webos/icon.png
-        WEBOS_PACKAGE_ASSETS "assets;${CMAKE_BINARY_DIR}/assets/lib"
+    set(WEBOS_PACKAGE_FILENAME ${WEBOS_APPINFO_ID}_${PROJECT_VERSION}_$ENV{ARCH}.ipk)
+
+    add_custom_target(webos-package-moonlight
+        COMMAND ${CMAKE_COMMAND} --build . --target install
+        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR}
     )
 
-    target_webos_package(moonlight)
-
+    set_target_properties(moonlight PROPERTIES
+        WEBOS_PACKAGE_TARGET webos-package-moonlight
+        WEBOS_PACKAGE_PATH ${CMAKE_BINARY_DIR}/${WEBOS_PACKAGE_FILENAME}
+        WEBOS_PACKAGE_FILENAME ${WEBOS_PACKAGE_FILENAME}
+        WEBOS_APPINFO_ID ${WEBOS_APPINFO_ID}
+    )
+    
     if ($ENV{CI})
         get_target_property(package_filename moonlight WEBOS_PACKAGE_FILENAME)
         get_target_property(package_target moonlight WEBOS_PACKAGE_TARGET)

@@ -27,6 +27,8 @@ target_include_directories(moonlight-dile SYSTEM PRIVATE
 
 target_compile_definitions(moonlight-dile PRIVATE DECODER_PLATFORM_NAME=dile)
 
+install(TARGETS moonlight-dile LIBRARY)
+
 # DILE for webOS 4.x and below
 
 add_library(moonlight-dile-legacy SHARED ${COMMON_SRC}
@@ -49,3 +51,4 @@ target_include_directories(moonlight-dile-legacy SYSTEM PRIVATE
     ${GLIB_INCLUDE_DIRS} ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS} ${UMEDIA_API_INCLUDE_DIRS} ${MEDIARESCALC_INCLUDE_DIRS})
 
 target_compile_definitions(moonlight-dile-legacy PRIVATE DECODER_PLATFORM_NAME=dile_legacy)
+install(TARGETS moonlight-dile-legacy LIBRARY)

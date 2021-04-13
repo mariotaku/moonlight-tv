@@ -12,3 +12,5 @@ target_include_directories(moonlight-ndl PRIVATE
     ${PBNJSON_INCLUDE_DIRS}
 )
 target_link_libraries(moonlight-ndl PRIVATE moonlight-common-c opus NDL_directmedia ${PBNJSON_LIBRARIES})
+
+install(TARGETS moonlight-ndl LIBRARY)

@@ -1,0 +1,10 @@
+{
+    "id": "@WEBOS_APPINFO_ID@",
+    "version": "@PROJECT_VERSION@",
+    "vendor": "Mariotaku Lee",
+    "type": "native",
+    "main": "moonlight",
+    "title": "Moonlight",
+    "icon": "icon.png",
+    "appDescription": "Open Source NVIDIA GameStream Client"
+}

@@ -21,6 +21,8 @@ target_include_directories(moonlight-smp-acb PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp-acb PRIVATE moonlight-common-c playerAPIs Acb)
 target_compile_definitions(moonlight-smp-acb PRIVATE USE_ACB DECODER_PLATFORM_NAME=smp_acb SMP_DECODER_NS=MoonlightStarfishAcb)
 
+install(TARGETS moonlight-smp-acb LIBRARY)
+
 add_library(moonlight-smp SHARED
     src/DecoderPlatform.cpp
     src/AbsStreamPlayer.cpp
@@ -37,3 +39,5 @@ target_include_directories(moonlight-smp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 target_include_directories(moonlight-smp PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp PRIVATE moonlight-common-c playerAPIs ${SDL2_LIBRARIES})
 target_compile_definitions(moonlight-smp PRIVATE USE_SDL_WEBOS DECODER_PLATFORM_NAME=smp SMP_DECODER_NS=MoonlightStarfish)
+
+install(TARGETS moonlight-smp LIBRARY)
