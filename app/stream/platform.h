@@ -78,7 +78,7 @@ typedef struct PLATFORM_DEFINITION
     const PLATFORM_SYMBOLS *symbols;
 } PLATFORM_DEFINITION;
 
-PLATFORM platform_current;
+PLATFORM platform_default;
 PLATFORM_INFO platforms_info[PLATFORM_COUNT];
 PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
 int platform_available_count;

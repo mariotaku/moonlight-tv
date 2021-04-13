@@ -9,7 +9,7 @@
 
 #include "platform/webos/os_info.h"
 #include "stream/platform.h"
-#include "vdec_services.h"
+#include "media_services.h"
 
 bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
 {
@@ -18,13 +18,13 @@ bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
 
 bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO pinfo)
 {
-    bool supported = vdec_services_supported();
+    bool supported = media_services_supported();
     if (!supported)
         return false;
     pinfo->valid = true;
     pinfo->vrank = 35;
-    pinfo->arank = 0;
-    pinfo->vindependent = true;
+    pinfo->arank = 20;
+    pinfo->vindependent = false;
     pinfo->aindependent = true;
     pinfo->hevc = true;
     pinfo->maxBitrate = 50000;

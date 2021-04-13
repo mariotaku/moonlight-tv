@@ -157,7 +157,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, "Video decoder", NK_TEXT_LEFT);
     struct nk_rect combo_bounds = nk_widget_bounds(ctx);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    PLATFORM curplat = app_configuration->platform ? platform_by_id(app_configuration->platform) : NONE;
+    PLATFORM curplat = platform_by_id(app_configuration->platform);
     int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
     if (nk_combo_begin_label(ctx, curplat ? platform_definitions[curplat].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
     {
@@ -220,7 +220,7 @@ static void _windowopen()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
-    PPLATFORM_INFO pinfo = &platforms_info[platform_current];
+    PPLATFORM_INFO pinfo = &platforms_info[platform_default];
     _max_bitrate = pinfo->maxBitrate ? pinfo->maxBitrate : BITRATE_MAX;
 }
 

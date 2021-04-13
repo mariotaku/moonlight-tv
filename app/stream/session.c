@@ -76,7 +76,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
         return -1;
     }
     PCONFIGURATION config = settings_load();
-    PPLATFORM_INFO pinfo = &platforms_info[platform_current];
+    PPLATFORM_INFO pinfo = &platforms_info[platform_default];
 
     if (config->stream.bitrate < 0)
         config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height, config->stream.fps);
@@ -136,7 +136,9 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     _streaming_errmsg_write("");
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
-    enum PLATFORM_T system = platform_current;
+    PLATFORM platform = platform_by_id(config->platform);
+    if (!platform)
+        platform = platform_default;
     absinput_no_control = config->viewonly;
     int appId = req->appId;
 
@@ -164,9 +166,9 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
         printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
     }
 
-    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(system);
-    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(NONE, config->audio_device, system);
-    PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter(system);
+    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(platform);
+    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(NONE, config->audio_device, platform);
+    PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter(platform);
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,

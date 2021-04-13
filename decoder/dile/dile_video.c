@@ -31,7 +31,7 @@
 #include <ResourceManagerClient_c.h>
 #include <dile_vdec_direct.h>
 
-#include "vdec_services.h"
+#include "media_services.h"
 #include "utils.h"
 
 // 2MB decode size should be fairly enough for everything
@@ -42,13 +42,14 @@
 static unsigned char *dile_buffer = NULL;
 static ResourceManagerClientHandle *rmhandle = NULL;
 static jvalue_ref acquired_resources = NULL;
+static MEDIA_SERVICES_HANDLE vdec_services;
+
 static uint32_t video_fourcc = 0;
 static bool first_frame_arrived = false;
 
 static bool policyActionHandler(const char *action, const char *resources,
                                 const char *requestor_type, const char *requestor_name,
                                 const char *connection_id);
-
 
 static int dile_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
@@ -92,9 +93,9 @@ static int dile_setup(int videoFormat, int width, int height, int redrawRate, vo
     j_release(&resreq);
     free(resresp);
 
-    vdec_services_connect(connId, appId, acquired_resources);
+    vdec_services = media_services_connect(connId, appId, acquired_resources, MEDIA_SERVICES_TYPE_VIDEO);
 
-    vdec_services_set_data(connId, redrawRate, width, height);
+    media_services_set_video_data(vdec_services, connId, redrawRate, width, height);
 
     // VideoOutputBlankVideo(connId, true);
     if (DILE_VDEC_DIRECT_Open(video_fourcc, width, height, 0, 0) < 0)
@@ -124,7 +125,7 @@ static void dile_cleanup()
     {
         const char *connId = ResourceManagerClientGetConnectionID(rmhandle);
 
-        vdec_services_disconnect(connId);
+        media_services_disconnect(vdec_services, connId);
 
         if (acquired_resources)
         {
@@ -162,7 +163,7 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
         else if (!first_frame_arrived && rmhandle)
         {
             ResourceManagerClientNotifyActivity(rmhandle);
-            vdec_services_video_arrived();
+            media_services_feed_arrived(vdec_services);
             first_frame_arrived = true;
         }
     }
@@ -174,7 +175,6 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
 
     return DR_OK;
 }
-
 
 DECODER_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(decoder_callbacks) = {
     .setup = dile_setup,

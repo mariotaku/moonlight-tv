@@ -98,7 +98,7 @@ bool ui_root(struct nk_context *ctx)
 
 void ui_render_background()
 {
-    if (platform_current == SDL)
+    if (platform_default == SDL)
     {
         if (streaming_status == STREAMING_STREAMING)
         {
@@ -169,14 +169,14 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
 #if HAVE_FFMPEG
         case USER_STREAM_OPEN:
         {
-            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_current);
+            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_default);
             if (rend)
                 rend->renderSetup((PSTREAM_CONFIGURATION)data1);
             return true;
         }
         case USER_STREAM_CLOSE:
         {
-            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_current);
+            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_default);
             if (rend)
                 rend->renderCleanup();
             return true;

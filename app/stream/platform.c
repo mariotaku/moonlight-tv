@@ -26,7 +26,7 @@ int platform_available_count = 0;
 static void dlerror_log();
 static bool checkinit(PLATFORM system, int argc, char *argv[]);
 
-PLATFORM platform_current;
+PLATFORM platform_default;
 
 PLATFORM platforms_init(const char *name, int argc, char *argv[])
 {
@@ -65,19 +65,7 @@ PLATFORM platforms_init(const char *name, int argc, char *argv[])
                pinfo.vrank, pinfo.arank, pinfo.hevc, pinfo.hdr, pinfo.maxBitrate);
     }
     // Now all decoders has been loaded.
-    // Load specified decoder
-    if (name && strcmp(name, "auto") != 0)
-    {
-        for (int i = 0; i < platform_orders_len; i++)
-        {
-            PLATFORM ptype = platform_orders[i];
-            PLATFORM_INFO pinfo = platforms_info[ptype];
-            PLATFORM_DEFINITION pdef = platform_definitions[ptype];
-            if (pinfo.valid && pdef.id && strcmp(name, pdef.id) == 0)
-                return ptype;
-        }
-    }
-    // Load first valid decoder
+    // Return default platform
     for (int i = 0; i < platform_orders_len; i++)
     {
         PLATFORM ptype = platform_orders[i];
@@ -265,6 +253,8 @@ PLATFORM platform_preferred_audio(PLATFORM vplatform)
 
 PLATFORM platform_by_id(const char *id)
 {
+    if (!id)
+        return NONE;
     for (int i = 0; i < PLATFORM_COUNT; i++)
     {
         PLATFORM_DEFINITION pdef = platform_definitions[i];

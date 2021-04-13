@@ -14,26 +14,44 @@ static void _hcontext_reset(HContext *hcontext)
     hcontext->multiple = false;
 }
 
-bool VideoSinkManagerRegister(const char *contextId)
+static bool VideoSinkManagerRegister(const char *contextId, const char *payload)
 {
     LSSyncCallInit();
     HContext hcontext;
     _hcontext_reset(&hcontext);
 
-    char buf[1024];
-    snprintf(buf, sizeof(buf),
-             "{\"context\":\"%s\",\"resourceList\":[{\"type\":\"VDEC\",\"portNumber\":%d}]}",
-             contextId, 0);
-    if (HLunaServiceCall("luna://com.webos.service.videosinkmanager/private/register", buf, &hcontext) != 0)
+    if (HLunaServiceCall("luna://com.webos.service.videosinkmanager/private/register", payload, &hcontext) != 0)
     {
         LSSyncCallbackUnlock();
         return false;
     }
-    printf("[LSCall] %s <= %s\n", "luna://com.webos.service.videosinkmanager/private/register", buf);
+    printf("[LSCall] %s <= %s\n", "luna://com.webos.service.videosinkmanager/private/register", payload);
     LSMessage *resp = LSWaitForMessage();
     printf("[LSResp] %s => %s\n", LSMessageGetSenderServiceName(resp), LSMessageGetPayload(resp));
     LSMessageUnref(resp);
     return true;
+}
+
+bool VideoSinkManagerRegisterVDEC(const char *contextId)
+{
+    char buf[1024];
+    snprintf(buf, sizeof(buf),
+             "{\"context\":\"%s\",\"resourceList\":[{\"type\":\"VDEC\",\"portNumber\":%d}]}",
+             contextId, 0);
+    return VideoSinkManagerRegister(contextId, buf);
+}
+
+bool VideoSinkManagerRegisterPCMMC(const char *contextId, const char *audioType)
+{
+    char buf[1024], atyp[128];
+    if (audioType)
+        snprintf(atyp, sizeof(atyp), "\"audioType\":\"%s\"", audioType);
+    else
+        atyp[0] = '\0';
+    snprintf(buf, sizeof(buf),
+             "{\"context\":\"%s\",\"resourceList\":[{\"type\":\"VDEC\",\"portNumber\":%d}]%s}",
+             contextId, 0, atyp);
+    return VideoSinkManagerRegister(contextId, buf);
 }
 
 bool VideoSinkManagerUnregister(const char *contextId)

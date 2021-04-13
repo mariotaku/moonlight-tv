@@ -26,6 +26,7 @@ target_include_directories(moonlight-dile SYSTEM PRIVATE
     ${GLIB_INCLUDE_DIRS} ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS} ${UMEDIA_API_INCLUDE_DIRS} ${MEDIARESCALC_INCLUDE_DIRS})
 
 target_compile_definitions(moonlight-dile PRIVATE DECODER_PLATFORM_NAME=dile)
+target_compile_options(moonlight-dile PRIVATE -Werror=implicit-function-declaration)
 
 install(TARGETS moonlight-dile LIBRARY)
 
@@ -51,4 +52,5 @@ target_include_directories(moonlight-dile-legacy SYSTEM PRIVATE
     ${GLIB_INCLUDE_DIRS} ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS} ${UMEDIA_API_INCLUDE_DIRS} ${MEDIARESCALC_INCLUDE_DIRS})
 
 target_compile_definitions(moonlight-dile-legacy PRIVATE DECODER_PLATFORM_NAME=dile_legacy)
+target_compile_options(moonlight-dile-legacy PRIVATE -Werror=implicit-function-declaration)
 install(TARGETS moonlight-dile-legacy LIBRARY)

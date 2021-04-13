@@ -66,7 +66,7 @@ int app_init(int argc, char *argv[])
     app_webos_init(argc, argv);
 #endif
     app_configuration = settings_load();
-    platform_current = platforms_init(app_configuration->platform, argc, argv);
+    platform_default = platforms_init(app_configuration->platform, argc, argv);
     return 0;
 }
 
@@ -110,7 +110,7 @@ APP_WINDOW_CONTEXT app_window_create()
 void app_destroy()
 {
     free(app_configuration);
-    platform_finalize(platform_current);
+    platform_finalize(platform_default);
 #ifdef OS_WEBOS
     app_webos_destroy();
 #endif

@@ -1,6 +1,8 @@
 #pragma once
 #include <stdbool.h>
 
-bool VideoSinkManagerRegister(const char *contextId);
+bool VideoSinkManagerRegisterVDEC(const char *contextId);
+
+bool VideoSinkManagerRegisterPCMMC(const char *contextId, const char *audioType);
 
 bool VideoSinkManagerUnregister(const char *contextId);
