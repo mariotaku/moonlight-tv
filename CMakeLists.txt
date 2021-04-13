@@ -223,8 +223,8 @@ target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_pa
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES}
- m Threads::Threads
+ ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES} 
+ m ${CMAKE_DL_LIBS} Threads::Threads
  moonlight-common-c gamestream
 )
 
@@ -236,12 +236,12 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    target_link_libraries(moonlight PRIVATE moonlight-smp)
-    target_link_libraries(moonlight PRIVATE moonlight-smp-acb)
-    target_link_libraries(moonlight PRIVATE moonlight-ndl)
-    target_link_libraries(moonlight PRIVATE moonlight-lgnc)
-    target_link_libraries(moonlight PRIVATE debug moonlight-dile)
-    target_link_libraries(moonlight PRIVATE debug moonlight-dile-legacy)
+    target_link_libraries(moonlight INTERFACE moonlight-smp)
+    target_link_libraries(moonlight INTERFACE moonlight-smp-acb)
+    target_link_libraries(moonlight INTERFACE moonlight-ndl)
+    target_link_libraries(moonlight INTERFACE moonlight-lgnc)
+    target_link_libraries(moonlight INTERFACE debug moonlight-dile)
+    target_link_libraries(moonlight INTERFACE debug moonlight-dile-legacy)
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 
@@ -260,7 +260,7 @@ elseif(TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
-    target_link_libraries(moonlight PRIVATE moonlight-pi)
+    target_link_libraries(moonlight INTERFACE moonlight-pi)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
