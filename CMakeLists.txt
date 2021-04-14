@@ -263,15 +263,13 @@ target_link_libraries(moonlight PRIVATE mbedtls)
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS TARGET_WEBOS _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
-    target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
+    target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     add_dependencies(moonlight moonlight-smp moonlight-smp-acb)
     add_dependencies(moonlight moonlight-dile-legacy)
-    add_dependencies(moonlight moonlight-ffmpeg)
-    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
     
-    target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
+    target_link_libraries(moonlight PRIVATE opus)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
