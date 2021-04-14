@@ -55,6 +55,7 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
 {
     if (key == 412 /* remote control back */ && keyCond == LGNC_KEY_RELEASE)
     {
+        bus_pushevent(USER_QUIT, NULL, NULL);
         return 1;
     }
     // if (keyCond != LGNC_KEY_COND_LAST)

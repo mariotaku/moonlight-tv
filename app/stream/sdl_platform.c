@@ -14,6 +14,7 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl;
 
 PLATFORM_SYMBOLS platform_sdl = {
+    true,
     NULL,
     &platform_check_sdl,
     NULL,

@@ -66,7 +66,6 @@ int app_init(int argc, char *argv[])
     app_webos_init(argc, argv);
 #endif
     app_configuration = settings_load();
-    platform_default = platforms_init(app_configuration->platform, argc, argv);
     return 0;
 }
 

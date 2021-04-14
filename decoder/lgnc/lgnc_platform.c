@@ -10,6 +10,9 @@ static bool lgnc_initialized = false;
 
 bool platform_init_lgnc(int argc, char *argv[])
 {
+#if DECODER_LGNC_NOINIT
+    lgnc_initialized = true;
+#else
     LGNC_SYSTEM_CALLBACKS_T callbacks = {
         .pfnJoystickEventCallback = NULL,
         .pfnMsgHandler = NULL,
@@ -25,6 +28,7 @@ bool platform_init_lgnc(int argc, char *argv[])
         lgnc_initialized = false;
         fprintf(stderr, "Unable to initialize LGNC\n");
     }
+#endif
     return lgnc_initialized;
 }
 
@@ -46,7 +50,9 @@ void platform_finalize_lgnc()
 {
     if (lgnc_initialized)
     {
+#if !DECODER_LGNC_NOINIT
         LGNC_SYSTEM_Finalize();
+#endif
         lgnc_initialized = false;
     }
 }

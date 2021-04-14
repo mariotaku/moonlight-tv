@@ -12,6 +12,10 @@ set(COMMON_SRC
     utils.c
 )
 
+option(DECODER_DILE_CURRENT_ENABLED "Enable DILE for webOS+ Above (Experimental)" OFF)
+
+if (DECODER_DILE_CURRENT_ENABLED)
+
 add_library(moonlight-dile SHARED ${COMMON_SRC} current/services_current.c current/VideoOutputService.c)
 
 target_include_directories(moonlight-dile PRIVATE 
@@ -29,6 +33,8 @@ target_compile_definitions(moonlight-dile PRIVATE DECODER_PLATFORM_NAME=dile)
 target_compile_options(moonlight-dile PRIVATE -Werror=implicit-function-declaration)
 
 install(TARGETS moonlight-dile LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+endif(DECODER_DILE_CURRENT_ENABLED)
 
 # DILE for webOS 4.x and below
 

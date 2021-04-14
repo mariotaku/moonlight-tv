@@ -40,7 +40,7 @@ if (TARGET_WEBOS)
     add_subdirectory(system/webos/tv-native-apis)
     set(WEBOS_APPINFO_ID "com.limelight.webos")
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos-unused-prefix)
-    set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/pkg_$ENV{ARCH})
+    set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/webos_pkg_$ENV{ARCH})
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
     set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
     set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
@@ -100,6 +100,8 @@ elseif (TARGET_LGNC)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
     unset(BUILD_SHARED_LIBS)
+    set(DECODER_LGNC_NOINIT TRUE)
+    set(DECODER_LGNC_STATIC TRUE)
 elseif (TARGET_RASPI)
     find_package(Broadcom REQUIRED)
 
@@ -222,6 +224,7 @@ elseif (HAVE_LGNC)
         app/app_lgnc.c
         app/backend/pcmanager/lgnc_impl.c
         app/stream/input/lgncinput.c
+        app/stream/lgnc_platform.c
         app/platform/lgnc/bus.c
         app/platform/lgnc/callbacks.c
         app/platform/lgnc/graphics.c
@@ -274,7 +277,7 @@ if (TARGET_WEBOS)
         moonlight-smp moonlight-smp-acb
     )
     add_dependencies(moonlight
-        moonlight-dile moonlight-dile-legacy
+        moonlight-dile-legacy
     )
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)

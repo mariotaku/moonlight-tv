@@ -37,6 +37,8 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
+bool app_has_redraw;
+
 int app_init(int argc, char *argv[])
 {
     app_configuration = settings_load();
@@ -103,6 +105,12 @@ static void app_process_events(struct nk_context *ctx)
                 app_request_exit();
                 break;
             }
+            case BUS_INT_EVENT_ACTION:
+            {
+                bus_actionfunc actionfn = data1;
+                actionfn(data2);
+                break;
+            }
             default:
                 backend_dispatch_userevent(which, data1, data2);
                 ui_dispatch_userevent(ctx, which, data1, data2);
@@ -119,7 +127,8 @@ void app_main_loop(void *data)
 
     app_process_events(ctx);
 
-    bool cont = ui_root(ctx);
+    app_has_redraw = ui_root(ctx);
+    app_has_redraw = true;
 
     /* Draw */
     {
@@ -134,14 +143,7 @@ void app_main_loop(void *data)
 
         nk_lgnc_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
         gfx_commit();
-    }
-    if (cont)
-    {
         usleep(16 * 1000);
-    }
-    else
-    {
-        app_request_exit();
     }
 }
 

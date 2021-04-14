@@ -12,7 +12,7 @@ PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT] = {
     {"No codec", NULL, NULL, NULL},
     {"SDL (SW codec)", "sdl", NULL, &platform_sdl},
     {"webOS NDL", "ndl", "ndl", NULL},
-    {"NetCast Legacy", "lgnc", "lgnc", NULL},
+    {"NetCast Legacy", "lgnc", "lgnc", &platform_lgnc},
     {"webOS SMP", "smp", "smp", NULL},
     {"webOS SMP", "smp_acb", "smp-acb", NULL},
     {"webOS DILE", "dile", "dile", NULL},
@@ -36,7 +36,7 @@ PLATFORM platforms_init(const char *name, int argc, char *argv[])
     {
         PLATFORM ptype = platform_orders[i];
         PLATFORM_DEFINITION pdef = platform_definitions[ptype];
-        if (pdef.library)
+        if (pdef.library && !(pdef.symbols && pdef.symbols->valid))
         {
             snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.library);
             // Lazy load to test if this library can be linked

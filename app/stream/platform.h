@@ -47,6 +47,8 @@ typedef enum PLATFORM_T PLATFORM;
 static const PLATFORM platform_orders[] = {
 #if TARGET_WEBOS
     SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, SDL
+#elif TARGET_LGNC
+    LGNC, SDL
 #elif TARGET_RASPI
     PI, SDL
 #else
@@ -61,6 +63,7 @@ typedef void (*PLATFORM_FINALIZE_FN)();
 
 typedef struct PLATFORM_SYMBOLS_T
 {
+    bool valid;
     PLATFORM_INIT_FN init;
     PLATFORM_CHECK_FN check;
     PLATFORM_FINALIZE_FN finalize;
@@ -84,6 +87,7 @@ PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
 int platform_available_count;
 
 PLATFORM_SYMBOLS platform_sdl;
+PLATFORM_SYMBOLS platform_lgnc;
 VIDEO_RENDER_CALLBACKS render_callbacks_sdl;
 DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 

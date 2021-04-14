@@ -207,6 +207,7 @@ void ui_display_size(short width, short height)
     ui_scale = width / 640.0;
     ui_logic_width = width / ui_scale;
     ui_logic_height = height / ui_scale;
+    nk_ext_sprites_init();
 }
 
 bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)

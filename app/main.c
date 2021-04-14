@@ -18,6 +18,7 @@
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
+#include "stream/platform.h"
 #include "ui/root.h"
 #include "ui/fonts.h"
 #include "util/bus.h"
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
     {
         return ret;
     }
+    platform_default = platforms_init(app_configuration->platform, argc, argv);
 
     /* GUI */
     struct nk_context *ctx;
