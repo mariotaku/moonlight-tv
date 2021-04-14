@@ -85,9 +85,7 @@ PLATFORM_INFO platforms_info[PLATFORM_COUNT];
 PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
 int platform_available_count;
 
-PLATFORM_SYMBOLS platform_sdl;
 PLATFORM_SYMBOLS platform_lgnc;
-VIDEO_RENDER_CALLBACKS render_callbacks_sdl;
 DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
 PLATFORM platforms_init(const char *name, int argc, char *argv[]);

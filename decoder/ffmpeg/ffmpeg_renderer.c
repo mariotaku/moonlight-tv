@@ -4,18 +4,18 @@
 
 #include <Limelight.h>
 #include <pthread.h>
-#include "sdl_renderer.h"
-#include "sdlvid.h"
-#include "stream/api.h"
+
+#include "common.h"
 
 #include <libavcodec/avcodec.h>
 
-#if TARGET_DESKTOP
+#if HAVE_GL2
 #define GL_GLEXT_PROTOTYPES
-#include <SDL_opengl.h>
-#include <SDL_opengl_glext.h>
-#else
+#include <GL/gl.h>
+#elif HAVE_GLES2
 #include <GLES2/gl2.h>
+#else
+#error "No GL version found"
 #endif
 
 #define INCBIN_PREFIX res_
@@ -24,6 +24,7 @@
 #include <incbin.h>
 
 #if HAVE_GL2
+#include <GL/gl.h>
 INCBIN(vertex_source, SOURCE_DIR "/shaders/vertex_source_gl2.glsl");
 INCBIN(fragment_source, SOURCE_DIR "/shaders/fragment_source_gl2.glsl");
 #elif HAVE_GLES2
@@ -53,15 +54,15 @@ static GLuint texture_id[3], texture_uniform[3];
 static GLuint vertex_shader, fragment_shader, shader_program;
 
 static bool renderer_ready = false, frame_arrived;
-RenderQueueSubmit render_queue_submit_sdl = NULL;
+RenderQueueSubmit render_queue_submit_ffmpeg = NULL;
 
-static bool renderer_setup_sdl(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSubmit)
+static bool renderer_setup(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSubmit)
 {
     renderer_ready = false;
     frame_arrived = false;
     width = conf->width;
     height = conf->height;
-    render_queue_submit_sdl = queueSubmit;
+    render_queue_submit_ffmpeg = queueSubmit;
 
     printf("OpenGL version: %s\n", glGetString(GL_VERSION));
 
@@ -130,7 +131,7 @@ static bool renderer_setup_sdl(PSTREAM_CONFIGURATION conf, RenderQueueSubmit que
     return true;
 }
 
-bool renderer_submit_frame(AVFrame *frame)
+static bool renderer_submit_frame(AVFrame *frame)
 {
     if (pthread_mutex_lock(&mutex_ffsw) == 0)
     {
@@ -152,7 +153,7 @@ bool renderer_submit_frame(AVFrame *frame)
     return true;
 }
 
-bool renderer_draw()
+static bool renderer_draw()
 {
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0, 0, 0, 0);
@@ -188,10 +189,10 @@ bool renderer_draw()
     return true;
 }
 
-static void renderer_cleanup_sdl()
+static void renderer_cleanup()
 {
     renderer_ready = false;
-    render_queue_submit_sdl = NULL;
+    render_queue_submit_ffmpeg = NULL;
     glDeleteProgram(shader_program);
     glDeleteShader(fragment_shader);
     glDeleteShader(vertex_shader);
@@ -200,9 +201,9 @@ static void renderer_cleanup_sdl()
     glDeleteTextures(3, texture_id);
 }
 
-VIDEO_RENDER_CALLBACKS render_callbacks_sdl = {
-    renderer_setup_sdl,
+VIDEO_RENDER_CALLBACKS render_callbacks_ffmpeg = {
+    renderer_setup,
     (RenderSubmit)renderer_submit_frame,
     renderer_draw,
-    renderer_cleanup_sdl,
+    renderer_cleanup,
 };

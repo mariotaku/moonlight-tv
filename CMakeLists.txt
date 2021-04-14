@@ -69,6 +69,10 @@ elseif (TARGET_DESKTOP)
     endif()
 
     set(HAVE_SDL TRUE)
+    
+    set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
+    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/share)
 else()
     message(FATAL_ERROR "Unknown build platform")
 endif()
@@ -192,7 +196,7 @@ if (HAVE_SDL)
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
-        app/stream/audio/sdl.c
+        app/stream/audio/sdlaud.c
     )
     if (TARGET_WEBOS)
         list(APPEND SOURCES
@@ -264,8 +268,8 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     add_dependencies(moonlight moonlight-smp moonlight-smp-acb)
     add_dependencies(moonlight moonlight-dile-legacy)
-    add_dependencies(moonlight moonlight-ffmpeg-sw)
-    target_compile_definitions(moonlight-ffmpeg-sw PRIVATE HAVE_GLES2)
+    add_dependencies(moonlight moonlight-ffmpeg)
+    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 
@@ -315,6 +319,9 @@ elseif (TARGET_DESKTOP)
 
     target_link_libraries(moonlight PRIVATE mbedtls)
     target_link_libraries(moonlight PRIVATE OpenGL::GL)
+    
+    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
+    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GL2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})

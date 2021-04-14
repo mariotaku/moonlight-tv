@@ -10,7 +10,7 @@
 
 PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT] = {
     {"No codec", NULL, NULL, NULL},
-    {"FFMPEG (SW codec)", "ffmpeg-sw", "ffmpeg-sw", NULL},
+    {"FFMPEG (SW codec)", "ffmpeg", "ffmpeg", NULL},
     {"webOS NDL", "ndl", "ndl", NULL},
     {"NetCast Legacy", "lgnc", "lgnc", &platform_lgnc},
     {"webOS SMP", "smp", "smp", NULL},
@@ -22,6 +22,8 @@ PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT] = {
 };
 PLATFORM_INFO platforms_info[PLATFORM_COUNT];
 int platform_available_count = 0;
+
+extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 
 static void dlerror_log();
 static bool checkinit(PLATFORM system, int argc, char *argv[]);
@@ -105,7 +107,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_devi
         if (cb)
             return cb;
     }
-    return platform_sdl.adec;
+    return &audio_callbacks_sdl;
 }
 
 PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform)

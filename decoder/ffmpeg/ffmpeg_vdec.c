@@ -17,14 +17,11 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common.h"
 #include "ffmpeg.h"
-
-#include "sdlvid.h"
 
 #include <unistd.h>
 #include <stdbool.h>
-
-#include "sdl_renderer.h"
 
 #include "util/memlog.h"
 #include "stream/platform.h"
@@ -36,7 +33,7 @@ static unsigned char *ffmpeg_buffer;
 pthread_mutex_t mutex_ffsw = PTHREAD_MUTEX_INITIALIZER;
 int sdlCurrentFrame, sdlNextFrame;
 
-static int sdl_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
+static int setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
   int avc_flags = SLICE_THREADING;
 
@@ -57,7 +54,7 @@ static int sdl_setup(int videoFormat, int width, int height, int redrawRate, voi
   return 0;
 }
 
-static void sdl_cleanup()
+static void cleanup()
 {
   ffmpeg_destroy();
   if (ffmpeg_buffer)
@@ -66,7 +63,7 @@ static void sdl_cleanup()
   }
 }
 
-static int sdl_submit_decode_unit(PDECODE_UNIT decodeUnit)
+static int decode_submit(PDECODE_UNIT decodeUnit)
 {
   if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
   {
@@ -79,13 +76,13 @@ static int sdl_submit_decode_unit(PDECODE_UNIT decodeUnit)
     }
     ffmpeg_decode(ffmpeg_buffer, length);
 
-    if (render_queue_submit_sdl && pthread_mutex_lock(&mutex_ffsw) == 0)
+    if (render_queue_submit_ffmpeg && pthread_mutex_lock(&mutex_ffsw) == 0)
     {
       AVFrame *frame = ffmpeg_get_frame(false);
       if (frame != NULL)
       {
         sdlNextFrame++;
-        render_queue_submit_sdl(frame);
+        render_queue_submit_ffmpeg(frame);
       }
 
       pthread_mutex_unlock(&mutex_ffsw);
@@ -103,9 +100,9 @@ static int sdl_submit_decode_unit(PDECODE_UNIT decodeUnit)
   return DR_OK;
 }
 
-DECODER_RENDERER_CALLBACKS decoder_callbacks_sdl = {
-    .setup = sdl_setup,
-    .cleanup = sdl_cleanup,
-    .submitDecodeUnit = sdl_submit_decode_unit,
+DECODER_RENDERER_CALLBACKS decoder_callbacks_ffmpeg = {
+    .setup = setup,
+    .cleanup = cleanup,
+    .submitDecodeUnit = decode_submit,
     .capabilities = CAPABILITY_SLICES_PER_FRAME(4),
 };
