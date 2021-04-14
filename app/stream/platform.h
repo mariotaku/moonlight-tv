@@ -45,9 +45,9 @@ typedef enum PLATFORM_T PLATFORM;
 
 static const PLATFORM platform_orders[] = {
 #if TARGET_WEBOS
-    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, FFMPEG
+    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC
 #elif TARGET_LGNC
-    LGNC, FFMPEG
+    LGNC
 #elif TARGET_RASPI
     PI, FFMPEG
 #else
