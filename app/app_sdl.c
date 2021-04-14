@@ -45,9 +45,6 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
-SDL_mutex *mutex;
-int sdlCurrentFrame, sdlNextFrame;
-
 /* Platform */
 SDL_Window *win;
 static SDL_GLContext gl;
@@ -101,8 +98,6 @@ APP_WINDOW_CONTEXT app_window_create()
     app_webos_window_setup(win);
 #endif
     SDL_Log("Video Driver: %s\n", SDL_GetCurrentVideoDriver());
-    sdlCurrentFrame = sdlNextFrame = 0;
-    mutex = SDL_CreateMutex();
 
     gl = SDL_GL_CreateContext(win);
 
@@ -317,6 +312,16 @@ void app_start_text_input(int x, int y, int w, int h)
 void app_stop_text_input()
 {
     SDL_StopTextInput();
+}
+
+bool app_render_queue_submit(void *data)
+{
+    SDL_Event event;
+    event.type = SDL_USEREVENT;
+    event.user.code = USER_SDL_FRAME;
+    event.user.data1 = data;
+    SDL_PushEvent(&event);
+    return true;
 }
 
 void fps_cap(int start)

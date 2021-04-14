@@ -6,6 +6,7 @@
 #include <GL/gl.h>
 #endif
 
+#include "app.h"
 #include "root.h"
 #include "config.h"
 
@@ -21,10 +22,6 @@
 
 #include "res.h"
 
-#if HAVE_FFMPEG
-#include "sdl_renderer.h"
-#endif
-
 short ui_display_width, ui_display_height;
 short ui_logic_width, ui_logic_height;
 float ui_scale = 1;
@@ -34,6 +31,7 @@ bool ui_fake_mouse_click_started;
 enum UI_INPUT_MODE ui_input_mode;
 struct nk_vec2 ui_statbar_icon_padding;
 
+static PVIDEO_RENDER_CALLBACKS ui_stream_render;
 static bool ui_send_faketouch_cancel;
 static bool ui_fake_mouse_event_received;
 static struct
@@ -98,18 +96,14 @@ bool ui_root(struct nk_context *ctx)
 
 void ui_render_background()
 {
-    if (platform_default == SDL)
+    if (streaming_status != STREAMING_STREAMING)
     {
-        if (streaming_status == STREAMING_STREAMING)
-        {
-            platform_render_video();
-            // renderer_draw();
-        }
-        else
-        {
-            glClearColor(0, 0, 0, 1);
-            glClear(GL_COLOR_BUFFER_BIT);
-        }
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+    else if (ui_stream_render && ui_stream_render->renderDraw)
+    {
+        ui_stream_render->renderDraw();
     }
     else
     {
@@ -167,25 +161,26 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
                 nk_input_motion(ctx, 0, 0);
             return true;
         }
-#if HAVE_FFMPEG
         case USER_STREAM_OPEN:
-        {
-            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_default);
-            if (rend)
-                rend->renderSetup((PSTREAM_CONFIGURATION)data1);
+            ui_stream_render = platform_get_render(platform_default);
+            if (ui_stream_render)
+            {
+                app_force_redraw = true;
+                ui_stream_render->renderSetup((PSTREAM_CONFIGURATION)data1, app_render_queue_submit);
+            }
             return true;
-        }
         case USER_STREAM_CLOSE:
-        {
-            PVIDEO_RENDER_CALLBACKS rend = platform_get_render(platform_default);
-            if (rend)
-                rend->renderCleanup();
+            if (ui_stream_render)
+            {
+                ui_stream_render->renderCleanup();
+                app_force_redraw = false;
+            }
+            ui_stream_render = NULL;
             return true;
-        }
         case USER_SDL_FRAME:
-            renderer_submit_frame(data1, data2);
+            if (ui_stream_render)
+                ui_stream_render->renderSubmit(data1);
             return true;
-#endif
         default:
             break;
         }

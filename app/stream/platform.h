@@ -25,13 +25,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "video/presenter.h"
 #include "api.h"
 
 enum PLATFORM_T
 {
     NONE = 0,
-    SDL,
+    FFMPEG,
     NDL,
     LGNC,
     SMP,
@@ -46,13 +45,13 @@ typedef enum PLATFORM_T PLATFORM;
 
 static const PLATFORM platform_orders[] = {
 #if TARGET_WEBOS
-    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, SDL
+    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC, FFMPEG
 #elif TARGET_LGNC
-    LGNC, SDL
+    LGNC, FFMPEG
 #elif TARGET_RASPI
-    PI, SDL
+    PI, FFMPEG
 #else
-    SDL
+    FFMPEG
 #endif
 };
 static const size_t platform_orders_len = sizeof(platform_orders) / sizeof(PLATFORM);

@@ -108,7 +108,6 @@ elseif (TARGET_RASPI)
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(GLES REQUIRED bcm_host brcmglesv2)
-    pkg_check_modules(FFMPEG REQUIRED libavcodec>=57 libavutil>=55)
     pkg_check_modules(OPUS REQUIRED opus)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
@@ -116,7 +115,6 @@ elseif (TARGET_DESKTOP)
     
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(FFMPEG REQUIRED libavcodec>=57 libavutil>=55)
     pkg_check_modules(OPUS REQUIRED opus)
 else()
     message(FATAL_ERROR "Unknown build platform")
@@ -195,7 +193,6 @@ if (HAVE_SDL)
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdl.c
-        app/stream/sdl_platform.c
     )
     if (TARGET_WEBOS)
         list(APPEND SOURCES
@@ -209,14 +206,6 @@ if (HAVE_SDL)
     else()
         list(APPEND SOURCES
             app/platform/sdl/path_sdl.c
-        )
-    endif()
-
-    if (FFMPEG_FOUND)
-        list(APPEND SOURCES
-            app/ui/sdl_renderer.c
-            app/stream/video/sdl.c
-            app/stream/video/ffmpeg.c
         )
     endif()
 elseif (HAVE_LGNC)
@@ -273,12 +262,10 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    add_dependencies(moonlight 
-        moonlight-smp moonlight-smp-acb
-    )
-    add_dependencies(moonlight
-        moonlight-dile-legacy
-    )
+    add_dependencies(moonlight moonlight-smp moonlight-smp-acb)
+    add_dependencies(moonlight moonlight-dile-legacy)
+    add_dependencies(moonlight moonlight-ffmpeg-sw)
+    target_compile_definitions(moonlight-ffmpeg-sw PRIVATE HAVE_GLES2)
     
     target_link_libraries(moonlight PRIVATE libavcodec libavutil opus)
 
@@ -314,9 +301,6 @@ elseif(TARGET_RASPI)
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
-
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GL2 HAVE_GL2)
@@ -334,9 +318,6 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
     
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

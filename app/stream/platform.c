@@ -10,7 +10,7 @@
 
 PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT] = {
     {"No codec", NULL, NULL, NULL},
-    {"SDL (SW codec)", "sdl", NULL, &platform_sdl},
+    {"FFMPEG (SW codec)", "ffmpeg-sw", "ffmpeg-sw", NULL},
     {"webOS NDL", "ndl", "ndl", NULL},
     {"NetCast Legacy", "lgnc", "lgnc", &platform_lgnc},
     {"webOS SMP", "smp", "smp", NULL},

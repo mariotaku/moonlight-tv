@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <Limelight.h>
 
 #define PLATFORM_HDR_NONE 0
 #define PLATFORM_HDR_SUPPORTED 1
@@ -30,3 +31,26 @@ typedef struct PLATFORM_INFO
     int colorRange;
     int maxBitrate;
 } * PPLATFORM_INFO, PLATFORM_INFO;
+
+typedef void (*PresenterEnterFullScreen)(void);
+typedef void (*PresenterEnterOverlay)(int x, int y, int w, int h);
+
+typedef bool (*RenderQueueSubmit)(void *);
+typedef bool (*RenderSetup)(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSubmit);
+typedef bool (*RenderSubmit)(void *);
+typedef bool (*RenderDraw)();
+typedef void (*RenderCleanup)();
+
+typedef struct _VIDEO_PRESENTER_CALLBACKS
+{
+    PresenterEnterFullScreen enterFullScreen;
+    PresenterEnterOverlay enterOverlay;
+} VIDEO_PRESENTER_CALLBACKS, *PVIDEO_PRESENTER_CALLBACKS;
+
+typedef struct _VIDEO_RENDER_CALLBACKS
+{
+    RenderSetup renderSetup;
+    RenderSubmit renderSubmit;
+    RenderDraw renderDraw;
+    RenderCleanup renderCleanup;
+} VIDEO_RENDER_CALLBACKS, *PVIDEO_RENDER_CALLBACKS;
