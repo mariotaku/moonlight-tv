@@ -45,10 +45,15 @@ typedef struct _SERVER_DATA
   SERVER_INFORMATION serverInfo;
 } SERVER_DATA, *PSERVER_DATA;
 
-int gs_init(PSERVER_DATA server, const char *address, const char *keyDirectory, int logLevel, bool unsupported);
-int gs_start_app(PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio, int gamepad_mask);
-int gs_applist(PSERVER_DATA server, PAPP_LIST *app_list);
-int gs_unpair(PSERVER_DATA server);
-int gs_pair(PSERVER_DATA server, const char *pin);
-int gs_quit_app(PSERVER_DATA server);
-int gs_download_cover(PSERVER_DATA server, int appId, const char *path);
+typedef const struct GS_CLIENT_T *GS_CLIENT;
+
+GS_CLIENT gs_new(const char *keydir, int log_level);
+void gs_destroy(GS_CLIENT);
+
+int gs_init(GS_CLIENT, PSERVER_DATA server, const char *address, bool unsupported);
+int gs_start_app(GS_CLIENT, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio, int gamepad_mask);
+int gs_applist(GS_CLIENT, PSERVER_DATA server, PAPP_LIST *app_list);
+int gs_unpair(GS_CLIENT, PSERVER_DATA server);
+int gs_pair(GS_CLIENT, PSERVER_DATA server, const char *pin);
+int gs_quit_app(GS_CLIENT, PSERVER_DATA server);
+int gs_download_cover(GS_CLIENT, PSERVER_DATA server, int appId, const char *path);

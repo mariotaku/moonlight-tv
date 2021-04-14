@@ -23,8 +23,14 @@
 #include <stdbool.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <pthread.h>
 
-static bool debug;
+struct HTTP_T
+{
+  CURL *curl;
+  int verbosity;
+  pthread_mutex_t mutex;
+};
 
 static size_t _write_curl(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -32,7 +38,7 @@ static size_t _write_curl(void *contents, size_t size, size_t nmemb, void *userp
   PHTTP_DATA mem = (PHTTP_DATA)userp;
 
   mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-  if(mem->memory == NULL)
+  if (mem->memory == NULL)
     return 0;
 
   memcpy(&(mem->memory[mem->size]), contents, realsize);
@@ -42,21 +48,21 @@ static size_t _write_curl(void *contents, size_t size, size_t nmemb, void *userp
   return realsize;
 }
 
-HTTP http_init(const char* keyDirectory, int logLevel) {
+HTTP http_init(const char *keydir, int verbosity)
+{
   CURL *curl = curl_easy_init();
-  debug = logLevel >= 2;
   if (!curl)
     return NULL;
 
   char certificateFilePath[4096];
-  sprintf(certificateFilePath, "%s/%s", keyDirectory, CERTIFICATE_FILE_NAME);
+  sprintf(certificateFilePath, "%s/%s", keydir, CERTIFICATE_FILE_NAME);
 
   char keyFilePath[4096];
-  sprintf(&keyFilePath[0], "%s/%s", keyDirectory, KEY_FILE_NAME);
+  sprintf(&keyFilePath[0], "%s/%s", keydir, KEY_FILE_NAME);
 
   curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
   curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L);
-  curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE,"PEM");
+  curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "PEM");
   curl_easy_setopt(curl, CURLOPT_SSLCERT, certificateFilePath);
   curl_easy_setopt(curl, CURLOPT_SSLKEYTYPE, "PEM");
   curl_easy_setopt(curl, CURLOPT_SSLKEY, keyFilePath);
@@ -64,53 +70,75 @@ HTTP http_init(const char* keyDirectory, int logLevel) {
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _write_curl);
   curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
   curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
-  curl_easy_setopt(curl, CURLOPT_VERBOSE, debug ? 1L : 0L);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, verbosity >= 2 ? 1L : 0L);
 
-  return (HTTP) curl;
+  struct HTTP_T *http = malloc(sizeof(struct HTTP_T));
+  http->curl = curl;
+  http->verbosity = verbosity;
+  pthread_mutex_init(&http->mutex, NULL);
+  return http;
 }
 
-int http_request(HTTP http, char* url, PHTTP_DATA data) {
-  CURL *curl = (CURL*) http;
+int http_request(HTTP http, char *url, PHTTP_DATA data)
+{
+  pthread_mutex_lock(&http->mutex);
+  CURL *curl = http->curl;
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
   curl_easy_setopt(curl, CURLOPT_URL, url);
 
-  if (debug)
+  if (http->verbosity >= 2)
     printf("Request %s\n", url);
-
-  if (data->size > 0) {
+  int ret = GS_FAILED;
+  if (data->size > 0)
+  {
     free(data->memory);
     data->memory = malloc(1);
-    if(data->memory == NULL)
-      return GS_OUT_OF_MEMORY;
+    if (data->memory == NULL)
+    {
+      ret = GS_OUT_OF_MEMORY;
+      goto finish;
+    }
 
     data->size = 0;
   }
   CURLcode res = curl_easy_perform(curl);
 
-  if(res != CURLE_OK) {
+  if (res != CURLE_OK)
+  {
     gs_error = curl_easy_strerror(res);
-    return GS_FAILED;
-  } else if (data->memory == NULL) {
-    return GS_OUT_OF_MEMORY;
+    ret = GS_FAILED;
+    goto finish;
+  }
+  else if (data->memory == NULL)
+  {
+    ret = GS_OUT_OF_MEMORY;
+    goto finish;
   }
 
-  if (debug)
+  if (http->verbosity >= 2)
     printf("Response:\n%s\n\n", data->memory);
 
-  return GS_OK;
+  ret = GS_OK;
+finish:
+  pthread_mutex_unlock(&http->mutex);
+  return ret;
 }
 
-void http_cleanup(HTTP http) {
-  curl_easy_cleanup((CURL*) http);
+void http_cleanup(HTTP http)
+{
+  curl_easy_cleanup(http->curl);
+  free((void *)http);
 }
 
-PHTTP_DATA http_create_data() {
+PHTTP_DATA http_create_data()
+{
   PHTTP_DATA data = malloc(sizeof(HTTP_DATA));
   if (data == NULL)
     return NULL;
 
   data->memory = malloc(1);
-  if(data->memory == NULL) {
+  if (data->memory == NULL)
+  {
     free(data);
     return NULL;
   }
@@ -119,8 +147,10 @@ PHTTP_DATA http_create_data() {
   return data;
 }
 
-void http_free_data(PHTTP_DATA data) {
-  if (data != NULL) {
+void http_free_data(PHTTP_DATA data)
+{
+  if (data != NULL)
+  {
     if (data->memory != NULL)
       free(data->memory);
 

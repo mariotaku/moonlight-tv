@@ -1,5 +1,6 @@
 #include "backend/computer_manager.h"
 #include "priv.h"
+#include "app.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -57,7 +58,7 @@ void *_pcmanager_pairing_action(cm_pin_request *req)
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
-    int ret = gs_pair(server, (char *)req->arg1);
+    int ret = gs_pair(app_gs_client, server, (char *)req->arg1);
     if (ret != GS_OK)
         pcmanager_resp_setgserror(resp, ret, gs_error);
     resp->server = server;
@@ -74,7 +75,7 @@ void *_pcmanager_unpairing_action(cm_pin_request *req)
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
-    int ret = gs_unpair(server);
+    int ret = gs_unpair(app_gs_client, server);
     if (ret != GS_OK)
         pcmanager_resp_setgserror(resp, ret, gs_error);
     resp->server = server;

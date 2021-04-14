@@ -2,6 +2,8 @@
 #include "computer_manager.h"
 #include "pcmanager/priv.h"
 
+#include "app.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -134,7 +136,7 @@ void *_pcmanager_quitapp_action(void *data)
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
-    int ret = gs_quit_app(server);
+    int ret = gs_quit_app(app_gs_client, server);
     if (ret != GS_OK)
         pcmanager_resp_setgserror(resp, ret, gs_error);
     resp->server = server;
@@ -150,8 +152,7 @@ void *_computer_manager_server_update_action(PSERVER_DATA data)
 {
     PSERVER_DATA server = serverdata_new();
     PPCMANAGER_RESP update = serverinfo_resp_new();
-    int ret = gs_init(server, strdup(data->serverInfo.address), app_configuration->key_dir,
-                      app_configuration->debug_level, app_configuration->unsupported);
+    int ret = gs_init(app_gs_client, server, strdup(data->serverInfo.address), app_configuration->unsupported);
     update->server = server;
     update->server_shallow = false;
     if (ret == GS_OK)

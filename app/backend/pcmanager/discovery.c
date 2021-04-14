@@ -321,7 +321,7 @@ void *_computer_manager_polling_action(void *data)
 int pcmanager_insert_by_address(const char *srvaddr, bool pair, void (*callback)(PPCMANAGER_RESP))
 {
     PSERVER_DATA server = serverdata_new();
-    int ret = gs_init(server, srvaddr, app_configuration->key_dir, app_configuration->debug_level, app_configuration->unsupported);
+    int ret = gs_init(app_gs_client, server, srvaddr, app_configuration->unsupported);
 
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     if (ret == GS_OK)

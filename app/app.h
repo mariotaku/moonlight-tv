@@ -1,14 +1,14 @@
 #pragma once
 
 #include "stream/settings.h"
+#include "libgamestream/client.h"
 
 typedef void *APP_WINDOW_CONTEXT;
 
-PCONFIGURATION app_configuration;
-
-int app_window_width, app_window_height;
-
-bool app_has_redraw, app_force_redraw;
+extern PCONFIGURATION app_configuration;
+extern GS_CLIENT app_gs_client;
+extern int app_window_width, app_window_height;
+extern bool app_has_redraw, app_force_redraw;
 
 int app_init(int argc, char *argv[]);
 

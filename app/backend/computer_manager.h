@@ -6,9 +6,8 @@
 
 #include "libgamestream/client.h"
 
-PSERVER_LIST computer_list;
-
-bool computer_discovery_running;
+extern PSERVER_LIST computer_list;
+extern bool computer_discovery_running;
 
 typedef struct PCMANAGER_RESP_T
 {

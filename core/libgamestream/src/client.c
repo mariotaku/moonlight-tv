@@ -52,14 +52,18 @@
 #define UNIQUEID_BYTES 8
 #define UNIQUEID_CHARS (UNIQUEID_BYTES * 2)
 
-static char unique_id[UNIQUEID_CHARS + 1];
-static mbedtls_pk_context privateKey;
-static mbedtls_x509_crt cert;
-static char cert_hex[8192];
-static HTTP http;
+struct GS_CLIENT_T
+{
+  char unique_id[UNIQUEID_CHARS + 1];
+  mbedtls_pk_context pk;
+  mbedtls_x509_crt cert;
+  char cert_hex[8192];
+  HTTP http;
+};
+
 const char *gs_error;
 
-static bool construct_url(char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...);
+static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...);
 
 static int mkdirtree(const char *directory)
 {
@@ -94,7 +98,7 @@ static int mkdirtree(const char *directory)
   return 0;
 }
 
-static int load_unique_id(const char *keyDirectory)
+static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory)
 {
   char uniqueFilePath[PATH_MAX];
   snprintf(uniqueFilePath, PATH_MAX, "%s/%s", keyDirectory, UNIQUE_FILE_NAME);
@@ -102,25 +106,25 @@ static int load_unique_id(const char *keyDirectory)
   FILE *fd = fopen(uniqueFilePath, "r");
   if (fd == NULL)
   {
-    snprintf(unique_id, UNIQUEID_CHARS + 1, "0123456789ABCDEF");
+    snprintf(hnd->unique_id, UNIQUEID_CHARS + 1, "0123456789ABCDEF");
 
     fd = fopen(uniqueFilePath, "w");
     if (fd == NULL)
       return GS_FAILED;
 
-    fwrite(unique_id, UNIQUEID_CHARS, 1, fd);
+    fwrite(hnd->unique_id, UNIQUEID_CHARS, 1, fd);
   }
   else
   {
-    fread(unique_id, UNIQUEID_CHARS, 1, fd);
+    fread(hnd->unique_id, UNIQUEID_CHARS, 1, fd);
   }
   fclose(fd);
-  unique_id[UNIQUEID_CHARS] = 0;
+  hnd->unique_id[UNIQUEID_CHARS] = 0;
 
   return GS_OK;
 }
 
-static int load_cert(const char *keyDirectory)
+static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory)
 {
   char certificateFilePath[PATH_MAX];
   snprintf(certificateFilePath, PATH_MAX, "%s/%s", keyDirectory, CERTIFICATE_FILE_NAME);
@@ -145,7 +149,7 @@ static int load_cert(const char *keyDirectory)
     fd = fopen(certificateFilePath, "r");
   }
 
-  if (fd == NULL || mbedtls_x509_crt_parse_file(&cert, certificateFilePath) != 0)
+  if (fd == NULL || mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath) != 0)
   {
     gs_error = "Can't open certificate file";
     return GS_FAILED;
@@ -155,15 +159,15 @@ static int load_cert(const char *keyDirectory)
   int length = 0;
   while ((c = fgetc(fd)) != EOF)
   {
-    sprintf(&cert_hex[length], "%02x", c);
+    sprintf(&hnd->cert_hex[length], "%02x", c);
     length += 2;
   }
-  cert_hex[length] = 0;
+  hnd->cert_hex[length] = 0;
 
   fclose(fd);
 
-  mbedtls_pk_init(&privateKey);
-  if (mbedtls_pk_parse_keyfile(&privateKey, keyFilePath, NULL) != 0)
+  mbedtls_pk_init(&hnd->pk);
+  if (mbedtls_pk_parse_keyfile(&hnd->pk, keyFilePath, NULL) != 0)
   {
     gs_error = "Error loading key into memory";
     return GS_FAILED;
@@ -172,7 +176,7 @@ static int load_cert(const char *keyDirectory)
   return GS_OK;
 }
 
-static int load_server_status(PSERVER_DATA server)
+static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server)
 {
   int ret;
   char url[4096];
@@ -192,7 +196,7 @@ static int load_server_status(PSERVER_DATA server)
     // is not already paired. Since we can't pair without knowing the server version, we
     // make another request over HTTP if the HTTPS request fails. We can't just use HTTP
     // for everything because it doesn't accurately tell us if we're paired.
-    construct_url(url, sizeof(url), i == 0, server->serverInfo.address, "serverinfo", NULL);
+    construct_url(hnd, url, sizeof(url), i == 0, server->serverInfo.address, "serverinfo", NULL);
 
     PHTTP_DATA data = http_create_data();
     if (data == NULL)
@@ -200,7 +204,7 @@ static int load_server_status(PSERVER_DATA server)
       ret = GS_OUT_OF_MEMORY;
       goto cleanup;
     }
-    if (http_request(http, url, data) != GS_OK)
+    if (http_request(hnd->http, url, data) != GS_OK)
     {
       ret = GS_IO_ERROR;
       goto cleanup;
@@ -330,7 +334,7 @@ static void hex_to_bytes(const char *in, unsigned char *out, size_t *len)
   }
 }
 
-int gs_unpair(PSERVER_DATA server)
+int gs_unpair(GS_CLIENT hnd, PSERVER_DATA server)
 {
   int ret = GS_OK;
   char url[4096];
@@ -338,15 +342,15 @@ int gs_unpair(PSERVER_DATA server)
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  construct_url(url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
-  ret = http_request(http, url, data);
+  construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
+  ret = http_request(hnd->http, url, data);
 
   if (xml_status(data->memory, data->size) == GS_ERROR)
   {
     ret = GS_ERROR;
     goto cleanup;
   }
-  
+
   ret = GS_OK;
   server->paired = false;
 
@@ -370,7 +374,7 @@ struct pairing_secret_t
   unsigned char signature[256];
 };
 
-int gs_pair(PSERVER_DATA server, const char *pin)
+int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin)
 {
   mbedtls_md_type_t hash_algo;
   size_t hash_length;
@@ -440,12 +444,12 @@ int gs_pair(PSERVER_DATA server, const char *pin)
 
   // Send the salt and get the server cert. This doesn't have a read timeout
   // because the user must enter the PIN before the server responds
-  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
-                "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, cert_hex);
+  construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
+                "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, hnd->cert_hex);
   PHTTP_DATA data = http_create_data();
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
-  else if ((ret = http_request(http, url, data)) != GS_OK)
+  else if ((ret = http_request(hnd->http, url, data)) != GS_OK)
     goto cleanup;
 
   if ((ret = xml_status(data->memory, data->size) != GS_OK))
@@ -513,9 +517,9 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   bytes_to_hex(encrypted_challenge, encrypted_challenge_hex, 16);
 
   // Send the encrypted challenge to the server
-  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+  construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
-  if ((ret = http_request(http, url, data)) != GS_OK)
+  if ((ret = http_request(hnd->http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -553,7 +557,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
 
   struct challenge_response_t challenge_response;
   memcpy(challenge_response.challenge, &dec_server_challenge_response[hash_length], sizeof(challenge_response.challenge));
-  memcpy(challenge_response.signature, cert.sig.p, sizeof(challenge_response.signature));
+  memcpy(challenge_response.signature, hnd->cert.sig.p, sizeof(challenge_response.signature));
   memcpy(challenge_response.secret, client_secret, sizeof(challenge_response.secret));
 
   unsigned char challenge_response_hash[32];
@@ -566,9 +570,9 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   char challenge_response_hex[65];
   bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
 
-  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+  construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
-  if ((ret = http_request(http, url, data)) != GS_OK)
+  if ((ret = http_request(hnd->http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -627,7 +631,8 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   struct pairing_secret_t client_pairing_secret;
   memcpy(client_pairing_secret.secret, client_secret, 16);
   size_t s_len;
-  if (!generateSignature(client_pairing_secret.secret, 16, client_pairing_secret.signature, &s_len, &privateKey, &ctr_drbg))
+  if (!generateSignature(client_pairing_secret.secret, 16, client_pairing_secret.signature, &s_len,
+                         (struct mbedtls_pk_context *)&hnd->pk, &ctr_drbg))
   {
     gs_error = "Failed to sign data";
     ret = GS_FAILED;
@@ -637,9 +642,9 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   char client_pairing_secret_hex[sizeof(client_pairing_secret) * 2 + 1];
   bytes_to_hex((unsigned char *)&client_pairing_secret, client_pairing_secret_hex, sizeof(client_pairing_secret));
 
-  construct_url(url, sizeof(url), false, server->serverInfo.address, "pair",
+  construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
-  if ((ret = http_request(http, url, data)) != GS_OK)
+  if ((ret = http_request(hnd->http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -657,9 +662,9 @@ int gs_pair(PSERVER_DATA server, const char *pin)
   }
 
   // Do the initial challenge (seems neccessary for us to show as paired)
-  construct_url(url, sizeof(url), true, server->serverInfo.address, "pair",
+  construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "pair",
                 "devicename=roth&updateState=1&phrase=pairchallenge");
-  if ((ret = http_request(http, url, data)) != GS_OK)
+  if ((ret = http_request(hnd->http, url, data)) != GS_OK)
     goto cleanup;
 
   free(result);
@@ -680,7 +685,7 @@ int gs_pair(PSERVER_DATA server, const char *pin)
 
 cleanup:
   if (ret != GS_OK)
-    gs_unpair(server);
+    gs_unpair(hnd, server);
 
   if (result != NULL)
     free(result);
@@ -696,7 +701,7 @@ cleanup:
   return ret;
 }
 
-int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
+int gs_applist(GS_CLIENT hnd, PSERVER_DATA server, PAPP_LIST *list)
 {
   int ret = GS_OK;
   char url[4096];
@@ -704,8 +709,8 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  construct_url(url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
-  if (http_request(http, url, data) != GS_OK)
+  construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
+  if (http_request(hnd->http, url, data) != GS_OK)
     ret = GS_IO_ERROR;
   else if (xml_status(data->memory, data->size) == GS_ERROR)
     ret = GS_ERROR;
@@ -716,7 +721,7 @@ int gs_applist(PSERVER_DATA server, PAPP_LIST *list)
   return ret;
 }
 
-int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio, int gamepad_mask)
+int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio, int gamepad_mask)
 {
   int ret = GS_OK;
   char *result = NULL;
@@ -776,16 +781,16 @@ int gs_start_app(PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, b
     // used to use 60 here but that locked the frame rate to 60 FPS
     // on GFE 3.20.3.
     int fps = config->fps > 60 ? 0 : config->fps;
-    construct_url(url, sizeof(url), true, server->serverInfo.address, "launch",
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "launch",
                   "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d",
                   appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info, gamepad_mask, gamepad_mask);
   }
   else
   {
-    construct_url(url, sizeof(url), true, server->serverInfo.address, "resume",
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "resume",
                   "rikey=%s&rikeyid=%d&surroundAudioInfo=%d", rikey_hex, rikeyid, surround_info);
   }
-  if ((ret = http_request(http, url, data)) == GS_OK)
+  if ((ret = http_request(hnd->http, url, data)) == GS_OK)
     server->currentGame = appId;
   else
     goto cleanup;
@@ -811,7 +816,7 @@ cleanup:
   return ret;
 }
 
-int gs_quit_app(PSERVER_DATA server)
+int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server)
 {
   int ret = GS_OK;
   char url[4096];
@@ -820,8 +825,8 @@ int gs_quit_app(PSERVER_DATA server)
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  construct_url(url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
-  if ((ret = http_request(http, url, data)) != GS_OK)
+  construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
+  if ((ret = http_request(hnd->http, url, data)) != GS_OK)
     goto cleanup;
 
   if ((ret = xml_status(data->memory, data->size) != GS_OK))
@@ -847,7 +852,7 @@ cleanup:
   return ret;
 }
 
-int gs_download_cover(PSERVER_DATA server, int appid, const char *path)
+int gs_download_cover(GS_CLIENT hnd, PSERVER_DATA server, int appid, const char *path)
 {
   int ret = GS_OK;
   char url[4096];
@@ -855,9 +860,9 @@ int gs_download_cover(PSERVER_DATA server, int appid, const char *path)
   if (data == NULL)
     return GS_OUT_OF_MEMORY;
 
-  construct_url(url, sizeof(url), true, server->serverInfo.address, "appasset",
+  construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "appasset",
                 "appid=%d&AssetType=2&AssetIdx=0", appid);
-  ret = http_request(http, url, data);
+  ret = http_request(hnd->http, url, data);
   if (ret != GS_OK)
     goto cleanup;
 
@@ -877,24 +882,35 @@ cleanup:
   return ret;
 }
 
-int gs_init(PSERVER_DATA server, const char *address, const char *keyDirectory, int log_level, bool unsupported)
+GS_CLIENT gs_new(const char *keydir, int log_level)
 {
-  mkdirtree(keyDirectory);
-  if (load_unique_id(keyDirectory) != GS_OK)
-    return GS_FAILED;
+  struct GS_CLIENT_T *hnd = malloc(sizeof(struct GS_CLIENT_T));
+  mkdirtree(keydir);
+  if (load_unique_id(hnd, keydir) != GS_OK)
+    return NULL;
 
-  if (load_cert(keyDirectory))
-    return GS_FAILED;
+  if (load_cert(hnd, keydir))
+    return NULL;
 
-  http = http_init(keyDirectory, log_level);
+  hnd->http = http_init(keydir, log_level);
+  return hnd;
+}
 
+void gs_destroy(GS_CLIENT hnd)
+{
+  http_cleanup(hnd->http);
+  free((void *)hnd);
+}
+
+int gs_init(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported)
+{
   LiInitializeServerInformation(&server->serverInfo);
   server->serverInfo.address = address;
   server->unsupported = unsupported;
-  return load_server_status(server);
+  return load_server_status(hnd, server);
 }
 
-static bool construct_url(char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...)
+static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt, ...)
 {
   uuid_t uuid;
   char uuid_str[37];
@@ -910,12 +926,12 @@ static bool construct_url(char *url, size_t ulen, bool secure, const char *addre
     vsnprintf(params, 4096, fmt, ap);
     va_end(ap);
     snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%s&%s", secure ? "https" : "http", address, secure ? 47984 : 47989,
-             action, unique_id, uuid_str, params);
+             action, hnd->unique_id, uuid_str, params);
   }
   else
   {
     snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%s", secure ? "https" : "http", address, secure ? 47984 : 47989,
-             action, unique_id, uuid_str);
+             action, hnd->unique_id, uuid_str);
   }
   return true;
 }

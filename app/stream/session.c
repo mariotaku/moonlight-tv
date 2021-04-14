@@ -1,5 +1,6 @@
 #include "session.h"
 #include "settings.h"
+#include "app.h"
 
 #include <stdarg.h>
 #include <string.h>
@@ -151,7 +152,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     {
         printf("Launch app %d...\n", appId);
     }
-    int ret = gs_start_app(server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
+    int ret = gs_start_app(app_gs_client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0)
     {
         _streaming_set_status(STREAMING_ERROR);
@@ -202,7 +203,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     {
         if (config->debug_level > 0)
             printf("Sending app quit request ...\n");
-        gs_quit_app(server);
+        gs_quit_app(app_gs_client, server);
     }
     pcmanager_request_update(server);
 
