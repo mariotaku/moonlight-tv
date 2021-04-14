@@ -1,8 +1,10 @@
 cmake_minimum_required (VERSION 3.6)
 
+
 if (TARGET_WEBOS)
     add_subdirectory(smp)
     add_subdirectory(dile)
+    add_subdirectory(ffmpeg-sw)
     # add_subdirectory(ndl)
     # add_subdirectory(lgnc)
 elseif (TARGET_LGNC)

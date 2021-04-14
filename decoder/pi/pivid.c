@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "stream/platform.h"
 #include "stream/video/video.h"
-#include "stream/video/presenter.h"
+#include "stream/api.h"
 
 #include <Limelight.h>
 
