@@ -1,6 +1,9 @@
 #include <unistd.h>
 
 #include "app.h"
+#include "res.h"
+
+#include "ui/config.h"
 
 #include "platform/lgnc/callbacks.h"
 #include "platform/lgnc/graphics.h"
@@ -13,14 +16,19 @@
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
+#include "nuklear/ext_text.h"
+#include "nuklear/ext_text_multiline.h"
+#include "nuklear/ext_dialog.h"
+#include "nuklear/ext_image.h"
+#include "nuklear/ext_sprites.h"
 #include "nuklear/ext_styling.h"
-
-#define NK_LGNC_GLES2_IMPLEMENTATION
-#include "nuklear/platform_lgnc_gles2.h"
+#include "nuklear/ext_imgview.h"
+#include "nuklear/ext_smooth_list_view.h"
+#include "nuklear/platform.h"
 
 #include "backend/backend_root.h"
 #include "stream/input/absinput.h"
-#include "stream/input/lgnc.h"
+#include "stream/input/lgncinput.h"
 #include "ui/root.h"
 #include "ui/config.h"
 #include "util/bus.h"
@@ -64,6 +72,8 @@ APP_WINDOW_CONTEXT app_window_create()
     }
 
     open_display(1280, 720, displayId);
+    app_window_width = 1280;
+    app_window_height = 720;
     return NULL;
 }
 
@@ -95,7 +105,7 @@ static void app_process_events(struct nk_context *ctx)
             }
             default:
                 backend_dispatch_userevent(which, data1, data2);
-                ui_dispatch_userevent(which, data1, data2);
+                ui_dispatch_userevent(ctx, which, data1, data2);
                 break;
             }
         }
@@ -133,4 +143,12 @@ void app_main_loop(void *data)
     {
         app_request_exit();
     }
+}
+
+void app_start_text_input(int x, int y, int w, int h)
+{
+}
+
+void app_stop_text_input()
+{
 }

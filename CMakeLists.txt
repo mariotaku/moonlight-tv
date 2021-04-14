@@ -13,19 +13,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
+option(TARGET_DESKTOP "Build for Desktop" OFF)
 option(TARGET_WEBOS "Build for LG webOS" OFF)
+option(TARGET_LGNC "Build for LG NetCast" OFF)
 option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 
-option(BUILD_CUSTOM_SDL "Include custom SDL" OFF)
-
-set(OPUS_BUILD_SHARED_LIBRARY ON)
-option(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF)
-option(OPUS_INSTALL_PKG_CONFIG_MODULE OFF)
-
-if (CC_BASENAME MATCHES "^arm-webos-linux")
-    set(TARGET_WEBOS ON)
-    set(CMAKE_C_COMPILER_ID "GNU")
-endif()
+option(OPUS_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
+option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
 
 include(LintOptions)
 
@@ -44,8 +38,20 @@ if (TARGET_WEBOS)
     set(HAVE_SDL TRUE)
     
     add_subdirectory(system/webos/tv-native-apis)
+    set(WEBOS_APPINFO_ID "com.limelight.webos")
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos-unused-prefix)
     set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/pkg_$ENV{ARCH})
+    set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
+    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
+    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
+elseif(TARGET_LGNC)
+    set(HAVE_SDL FALSE)
+    set(HAVE_LGNC TRUE)
+    add_subdirectory(system/webos/tv-native-apis)
+
+    set(WEBOS_APPINFO_ID "com.limelight.netcast")
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/lgnc-unused-prefix)
+    set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/lgnc_pkg_$ENV{ARCH})
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
     set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
     set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
@@ -55,15 +61,16 @@ elseif (TARGET_RASPI)
     set(HAVE_SDL TRUE)
     add_subdirectory(third_party/h264bitstream)
     add_subdirectory(third_party/ilclient)
-else()
+elseif (TARGET_DESKTOP)
     if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
         set(TARGET_DARWIN TRUE)
     else()
         set(TARGET_LINUX TRUE)
     endif()
-    
-    set(TARGET_DESKTOP TRUE)
+
     set(HAVE_SDL TRUE)
+else()
+    message(FATAL_ERROR "Unknown build platform")
 endif()
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -88,6 +95,11 @@ if (TARGET_WEBOS)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
     pkg_check_modules(LUNA_SERVICE REQUIRED luna-service2)
+elseif (TARGET_LGNC)
+    pkg_check_modules(GLES REQUIRED egl glesv2)
+    set(BUILD_SHARED_LIBS ON)
+    add_subdirectory(third_party/opus)
+    unset(BUILD_SHARED_LIBS)
 elseif (TARGET_RASPI)
     find_package(Broadcom REQUIRED)
 
@@ -104,6 +116,8 @@ elseif (TARGET_DESKTOP)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(FFMPEG REQUIRED libavcodec>=57 libavutil>=55)
     pkg_check_modules(OPUS REQUIRED opus)
+else()
+    message(FATAL_ERROR "Unknown build platform")
 endif()
 
 option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
@@ -131,6 +145,7 @@ set(SOURCES
     app/stream/session.c
     app/stream/connection.c
     app/stream/settings.c
+    app/stream/video/delegate.c
     app/ui/root.c
     app/ui/fonts.c
     app/ui/launcher/window.c
@@ -178,7 +193,6 @@ if (HAVE_SDL)
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdl.c
-        app/stream/video/delegate.c
         app/stream/sdl_platform.c
     )
     if (TARGET_WEBOS)
@@ -203,6 +217,20 @@ if (HAVE_SDL)
             app/stream/video/ffmpeg.c
         )
     endif()
+elseif (HAVE_LGNC)
+    list(APPEND SOURCES
+        app/app_lgnc.c
+        app/backend/pcmanager/lgnc_impl.c
+        app/stream/input/lgncinput.c
+        app/platform/lgnc/bus.c
+        app/platform/lgnc/callbacks.c
+        app/platform/lgnc/graphics.c
+        app/platform/lgnc/input_manager.c
+        app/platform/lgnc/path_lgnc.c
+        third_party/message_queue/message_queue.c
+    )
+else()
+    message(FATAL_ERROR "No suitable application library found - SDL2 or LGNC required")
 endif()
 
 add_executable(moonlight ${SOURCES})
@@ -237,7 +265,7 @@ target_link_libraries(moonlight PRIVATE
 target_link_libraries(moonlight PRIVATE mbedtls)
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC OS_WEBOS TARGET_WEBOS _GNU_SOURCE)
+    target_compile_definitions(moonlight PUBLIC OS_WEBOS TARGET_WEBOS _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_FFMPEG)
 
@@ -255,6 +283,15 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${LUNA_SERVICE_LIBRARIES})
+elseif (TARGET_LGNC)
+    target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
+    target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
+
+    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE lgncopenapi)
+    target_link_libraries(moonlight PRIVATE moonlight-lgnc)
+    
+    target_link_libraries(moonlight PRIVATE opus)
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
@@ -277,7 +314,7 @@ elseif(TARGET_RASPI)
     target_include_directories(moonlight SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${FFMPEG_LIBRARIES})
 
-else()
+elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GL2 HAVE_GL2)
     
@@ -300,6 +337,8 @@ else()
     
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+else()
+    message(FATAL_ERROR "Unknown build platform")
 endif()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -309,9 +348,7 @@ add_custom_target(moonlight-spritegen
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if (TARGET_WEBOS)
-    set(WEBOS_APPINFO_ID "com.limelight.webos")
-
+if (TARGET_WEBOS OR TARGET_LGNC)
     # Copy asset dir to package root
     install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR} PATTERN ".*" EXCLUDE)
     # Copy all files under deploy/webos/ to package root

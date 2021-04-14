@@ -6,7 +6,7 @@
 #endif
 #include "nuklear/spritesheet_ui.h"
 
-extern struct nk_spritesheet_ui sprites_ui;
+struct nk_spritesheet_ui sprites_ui;
 
 void nk_ext_sprites_init();
 void nk_ext_sprites_destroy();

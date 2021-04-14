@@ -34,12 +34,7 @@ INCBIN_EXTERN(spritesheet_ui_3x);
 INCBIN_EXTERN(window_icon_32);
 #endif
 #if HAVE_FFMPEG
-#if TARGET_DESKTOP
 INCBIN_EXTERN(vertex_source);
 INCBIN_EXTERN(fragment_source);
-#else
-INCBIN_EXTERN(vertex_source);
-INCBIN_EXTERN(fragment_source);
-#endif
 #endif
 #endif

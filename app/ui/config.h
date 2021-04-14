@@ -2,9 +2,12 @@
 
 float ui_scale;
 
-#if OS_WEBOS || TARGET_RASPI
+#if TARGET_WEBOS || TARGET_RASPI
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
+#elif TARGET_LGNC
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
 #else
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540

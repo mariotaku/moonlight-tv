@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ui/config.h"
+
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
@@ -14,7 +16,7 @@
 
 #include "ui/root.h"
 #include "stream/session.h"
-#include "stream/input/lgnc.h"
+#include "stream/input/lgncinput.h"
 
 LGNC_STATUS_T _MsgEventHandler(LGNC_MSG_TYPE_T msg, unsigned int submsg, char *pData, unsigned short dataSize)
 
@@ -53,7 +55,6 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
 {
     if (key == 412 /* remote control back */ && keyCond == LGNC_KEY_RELEASE)
     {
-        bus_pushevent(USER_QUIT, NULL, NULL);
         return 1;
     }
     // if (keyCond != LGNC_KEY_COND_LAST)

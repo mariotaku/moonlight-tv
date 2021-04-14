@@ -1,4 +1,4 @@
-#if OS_WEBOS
+#if HAVE_GLES2
 #include <GLES2/gl2.h>
 #elif OS_DARWIN
 #include <OpenGL/gl.h>
@@ -27,7 +27,7 @@
 
 short ui_display_width, ui_display_height;
 short ui_logic_width, ui_logic_height;
-float ui_scale;
+float ui_scale = 1;
 
 bool ui_settings_showing;
 bool ui_fake_mouse_click_started;
@@ -102,7 +102,8 @@ void ui_render_background()
     {
         if (streaming_status == STREAMING_STREAMING)
         {
-            renderer_draw();
+            platform_render_video();
+            // renderer_draw();
         }
         else
         {

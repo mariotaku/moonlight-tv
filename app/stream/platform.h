@@ -96,4 +96,6 @@ PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform);
 PLATFORM platform_preferred_audio(PLATFORM vplatform);
 PLATFORM platform_by_id(const char *id);
 
+bool platform_render_video();
+
 void platform_finalize(enum PLATFORM_T platform);

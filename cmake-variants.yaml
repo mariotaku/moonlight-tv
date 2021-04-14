@@ -21,12 +21,17 @@ buildPlatform:
       short: Standard
       long: SDL2 implementation for most platforms
       settings:
-        TARGET_WEBOS: false
+        TARGET_DESKTOP: true
     webos:
       short: webOS
       long: Build for webOS
       settings:
         TARGET_WEBOS: true
+    lgnc:
+      short: NetCast
+      long: Build for NetCast
+      settings:
+        TARGET_LGNC: true
     raspi:
       short: Raspberry Pi
       long: Build for Raspberry Pi

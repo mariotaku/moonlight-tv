@@ -3,11 +3,15 @@
 #include <lgnc_system.h>
 
 #include "absinput.h"
-#include "lgnc.h"
+#include "lgncinput.h"
 
 bool absinput_no_control = true;
 
 void absinput_init()
+{
+}
+
+void absinput_destroy()
 {
 }
 
@@ -16,9 +20,18 @@ int absinput_gamepads()
     return 0;
 }
 
-ConnListenerRumble absinput_getrumble()
+int absinput_max_gamepads()
 {
-    return NULL;
+    return 4;
+}
+
+bool absinput_gamepad_present(int which)
+{
+    return false;
+}
+
+void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor, unsigned short high_freq_motor)
+{
 }
 
 void absinput_dispatch_mouse_event(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond, struct input_event raw)

@@ -266,6 +266,11 @@ PLATFORM platform_by_id(const char *id)
     return NONE;
 }
 
+bool platform_render_video()
+{
+    return false;
+}
+
 void dlerror_log()
 {
     fprintf(stderr, "Unable to load platform library: %s\n", dlerror());
