@@ -37,10 +37,13 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_layout_row_template_end(ctx);
     nk_label(ctx, "Version", NK_TEXT_LEFT);
     nk_label(ctx, APP_VERSION, NK_TEXT_RIGHT);
-    nk_label(ctx, "Video Decoder", NK_TEXT_LEFT);
+    nk_label(ctx, "Video API", NK_TEXT_LEFT);
     nk_label(ctx, platform_definitions[_video_platform].name, NK_TEXT_RIGHT);
-    nk_label(ctx, "Audio Decoder", NK_TEXT_LEFT);
-    nk_label(ctx, platform_definitions[_audio_platform].name, NK_TEXT_RIGHT);
+    if (_audio_platform && _audio_platform != _video_platform)
+    {
+        nk_label(ctx, "Override Audio API", NK_TEXT_LEFT);
+        nk_label(ctx, platform_definitions[_audio_platform].name, NK_TEXT_RIGHT);
+    }
 
 #if OS_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
