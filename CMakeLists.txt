@@ -87,7 +87,6 @@ pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 
-
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
     set(BUILD_SHARED_LIBS ON)
@@ -275,8 +274,9 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
-    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${LUNA_SERVICE_LIBRARIES})
+
+    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
 elseif (TARGET_LGNC)
     target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)

@@ -268,6 +268,8 @@ void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strVal
 #endif
         starfish_media_apis_->Play();
         break;
+    case PF_EVENT_TYPE_STR_STATE_UPDATE__PLAYING:
+        break;
     case PF_EVENT_TYPE_STR_AUDIO_INFO:
         SetMediaAudioData(strValue);
         break;
