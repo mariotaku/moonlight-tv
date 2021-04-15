@@ -29,23 +29,21 @@
 
 enum PLATFORM_T
 {
+    AUTO = -1,
     NONE = 0,
     FFMPEG,
     NDL,
     LGNC,
     SMP,
-    SMP_ACB,
     DILE,
-    DILE_LEGACY,
     PI,
-    FAKE,
     PLATFORM_COUNT,
 };
 typedef enum PLATFORM_T PLATFORM;
 
 static const PLATFORM platform_orders[] = {
 #if TARGET_WEBOS
-    SMP, SMP_ACB, DILE_LEGACY, NDL, LGNC
+    SMP, DILE, NDL, LGNC
 #elif TARGET_LGNC
     LGNC
 #elif TARGET_RASPI
@@ -72,31 +70,34 @@ typedef struct PLATFORM_SYMBOLS_T
     PVIDEO_RENDER_CALLBACKS rend;
 } PLATFORM_SYMBOLS, PPLATFORM_SYMBOLS;
 
+typedef struct PLATFORM_DYNLIB_DEFINITION
+{
+    const char *suffix;
+    const char *library;
+} PLATFORM_DYNLIB_DEFINITION;
+
 typedef struct PLATFORM_DEFINITION
 {
     const char *name;
     const char *id;
-    const char *library;
+    const PLATFORM_DYNLIB_DEFINITION *dynlibs;
+    const size_t liblen;
     const PLATFORM_SYMBOLS *symbols;
 } PLATFORM_DEFINITION;
 
-PLATFORM platform_default;
-PLATFORM_INFO platforms_info[PLATFORM_COUNT];
-PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
-int platform_available_count;
+extern PLATFORM platform_pref_requested;
+extern PLATFORM platform_current;
+extern int platform_current_libidx;
+extern PLATFORM_INFO platform_info;
+extern PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
 
-PLATFORM_SYMBOLS platform_lgnc;
-DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
+extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
-PLATFORM platforms_init(const char *name, int argc, char *argv[]);
-PDECODER_RENDERER_CALLBACKS platform_get_video(PLATFORM platform);
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(PLATFORM platform, char *audio_device, PLATFORM vplatform);
-PVIDEO_PRESENTER_CALLBACKS platform_get_presenter(PLATFORM platform);
-PVIDEO_RENDER_CALLBACKS platform_get_render(PLATFORM platform);
-
-PLATFORM platform_preferred_audio(PLATFORM vplatform);
 PLATFORM platform_by_id(const char *id);
 
-bool platform_render_video();
-
-void platform_finalize(enum PLATFORM_T platform);
+PLATFORM platform_init(const char *name, int argc, char *argv[]);
+PDECODER_RENDERER_CALLBACKS platform_get_video();
+PAUDIO_RENDERER_CALLBACKS platform_get_audio(char *audio_device);
+PVIDEO_PRESENTER_CALLBACKS platform_get_presenter();
+PVIDEO_RENDER_CALLBACKS platform_get_render();
+void platform_finalize();

@@ -77,19 +77,18 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
         return -1;
     }
     PCONFIGURATION config = settings_load();
-    PPLATFORM_INFO pinfo = &platforms_info[platform_default];
 
     if (config->stream.bitrate < 0)
         config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height, config->stream.fps);
     // Cap framerate to platform request
-    if (pinfo->maxBitrate && config->stream.bitrate > pinfo->maxBitrate)
-        config->stream.bitrate = pinfo->maxBitrate;
+    if (platform_info.maxBitrate && config->stream.bitrate > platform_info.maxBitrate)
+        config->stream.bitrate = platform_info.maxBitrate;
     config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
-    config->stream.supportsHevc = pinfo->hevc;
-    config->stream.enableHdr &= pinfo->hevc && pinfo->hdr && server->supportsHdr &&
-                                (pinfo->hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0);
-    config->stream.colorSpace = pinfo->colorSpace;
-    config->stream.colorRange = pinfo->colorRange;
+    config->stream.supportsHevc = platform_info.hevc;
+    config->stream.enableHdr &= platform_info.hevc && platform_info.hdr && server->supportsHdr &&
+                                (platform_info.hdr == PLATFORM_HDR_ALWAYS || app->hdr != 0);
+    config->stream.colorSpace = platform_info.colorSpace;
+    config->stream.colorRange = platform_info.colorRange;
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = serverdata_new();
@@ -137,9 +136,6 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     _streaming_errmsg_write("");
     PSERVER_DATA server = req->server;
     PCONFIGURATION config = req->config;
-    PLATFORM platform = platform_by_id(config->platform);
-    if (!platform)
-        platform = platform_default;
     absinput_no_control = config->viewonly;
     int appId = req->appId;
 
@@ -167,9 +163,9 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
         printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
     }
 
-    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video(platform);
-    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(NONE, config->audio_device, platform);
-    PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter(platform);
+    PDECODER_RENDERER_CALLBACKS vdec = platform_get_video();
+    PAUDIO_RENDERER_CALLBACKS adec = platform_get_audio(config->audio_device);
+    PVIDEO_PRESENTER_CALLBACKS pres = platform_get_presenter();
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,

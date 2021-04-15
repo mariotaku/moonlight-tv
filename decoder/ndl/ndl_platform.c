@@ -9,6 +9,7 @@ static bool ndl_initialized = false;
 
 bool platform_init_ndl(int argc, char *argv[])
 {
+    printf("platform_init_ndl\n");
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0)
     {
         ndl_initialized = true;

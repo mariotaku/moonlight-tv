@@ -41,7 +41,8 @@ int main(int argc, char *argv[])
     {
         return ret;
     }
-    platform_default = platforms_init(app_configuration->platform, argc, argv);
+    platform_init(app_configuration->platform, argc, argv);
+    printf("Decoder platform: %s\n", platform_definitions[platform_current].name);
 
     /* GUI */
     struct nk_context *ctx;

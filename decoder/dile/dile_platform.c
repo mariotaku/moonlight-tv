@@ -27,6 +27,8 @@ bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO pinfo)
     pinfo->vindependent = false;
     pinfo->aindependent = true;
     pinfo->hevc = true;
+    pinfo->colorSpace = COLORSPACE_REC_709;
+    pinfo->colorRange = COLOR_RANGE_FULL;
     pinfo->maxBitrate = 50000;
     return true;
 }
