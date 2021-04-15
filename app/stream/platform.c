@@ -125,7 +125,7 @@ PAUDIO_RENDERER_CALLBACKS platform_get_audio(char *audio_device)
     if (pdef.symbols)
         return pdef.symbols->adec;
     PAUDIO_RENDERER_CALLBACKS cb = platform_dlsym("audio_callbacks_%s", platform_current, platform_current_libidx);
-    if (cb)
+    if (cb && platform_info.arank)
         return cb;
     return &audio_callbacks_sdl;
 }
