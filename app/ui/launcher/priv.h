@@ -30,8 +30,9 @@ struct pairing_computer_state
 #define LAUNCHER_MODAL_SERVERR 0x0100
 #define LAUNCHER_MODAL_PAIRERR 0x0200
 #define LAUNCHER_MODAL_QUITERR 0x0400
-#define LAUNCHER_MODAL_NOHWCODEC 0x0800
-#define LAUNCHER_MODAL_HOSTINFO 0x1000
+#define LAUNCHER_MODAL_HOSTINFO 0x0800
+#define LAUNCHER_MODAL_NOCODEC 0x1000
+#define LAUNCHER_MODAL_NOHWCODEC 0x2000
 
 uint32_t _launcher_modals;
 bool _launcher_popup_request_dismiss;

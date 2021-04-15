@@ -29,8 +29,8 @@ bool platform_check_ndl(PPLATFORM_INFO pinfo)
         return false;
     NDL_DirectVideoClose();
     pinfo->valid = true;
-    pinfo->vrank = 10;
-    pinfo->arank = 30;
+    pinfo->accelerated = true;
+    pinfo->audio= true;
     pinfo->maxBitrate = 50000;
     return true;
 }

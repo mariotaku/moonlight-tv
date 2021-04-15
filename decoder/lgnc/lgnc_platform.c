@@ -39,10 +39,8 @@ bool platform_check_lgnc(PPLATFORM_INFO pinfo)
         return false;
     LGNC_DIRECTVIDEO_Close();
     pinfo->valid = true;
-    pinfo->vrank = 9;
-    pinfo->arank = 29;
-    pinfo->vindependent = false;
-    pinfo->aindependent = false;
+    pinfo->accelerated = true;
+    pinfo->audio= true;
     pinfo->maxBitrate = 40000;
     return true;
 }

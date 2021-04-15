@@ -35,10 +35,8 @@ extern "C" bool platform_init(int argc, char *argv[])
 extern "C" bool platform_check(PPLATFORM_INFO pinfo)
 {
     pinfo->valid = true;
-    pinfo->vrank = 40;
-    pinfo->arank = 0;
-    pinfo->vindependent = true;
-    pinfo->aindependent = false;
+    pinfo->accelerated = true;
+    pinfo->audio = false;
     pinfo->hevc = true;
     pinfo->hdr = PLATFORM_HDR_ALWAYS;
     pinfo->colorSpace = COLORSPACE_REC_709;

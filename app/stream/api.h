@@ -21,10 +21,8 @@
 typedef struct PLATFORM_INFO
 {
     bool valid;
-    unsigned int vrank;
-    unsigned int arank;
-    bool vindependent;
-    bool aindependent;
+    bool accelerated;
+    bool audio;
     bool hevc;
     int hdr;
     int colorSpace;

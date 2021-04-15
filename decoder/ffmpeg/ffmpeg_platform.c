@@ -4,8 +4,7 @@
 bool platform_check_ffmpeg(PPLATFORM_INFO info)
 {
     info->valid = true;
-    info->vrank = 0;
-    info->arank = 0;
-    info->vindependent = true;
+    info->accelerated = false;
+    info->audio = false;
     return true;
 }

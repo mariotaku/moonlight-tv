@@ -22,10 +22,8 @@ bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO pinfo)
     if (!supported)
         return false;
     pinfo->valid = true;
-    pinfo->vrank = 35;
-    pinfo->arank = 20;
-    pinfo->vindependent = false;
-    pinfo->aindependent = true;
+    pinfo->accelerated = true;
+    pinfo->audio= true;
     pinfo->hevc = true;
     pinfo->colorSpace = COLORSPACE_REC_709;
     pinfo->colorRange = COLOR_RANGE_FULL;

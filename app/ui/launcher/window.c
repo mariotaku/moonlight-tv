@@ -447,11 +447,20 @@ void _launcher_modal_flags_update()
     {
         _launcher_modals |= LAUNCHER_MODAL_MANUAL_ADD;
     }
-    if (!_decoder_error_dismissed && !platform_info.vrank)
+    if (!_decoder_error_dismissed)
     {
+        if (!platform_info.valid)
+        {
 #ifndef TARGET_DESKTOP
-        _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;
+            _launcher_modals |= LAUNCHER_MODAL_NOCODEC;
 #endif
+        }
+        else if (!platform_info.accelerated)
+        {
+#ifndef TARGET_DESKTOP
+            _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;
+#endif
+        }
     }
     if (_launcher_show_host_info)
     {

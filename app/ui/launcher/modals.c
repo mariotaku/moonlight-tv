@@ -6,6 +6,7 @@
 #include "ui/root.h"
 #include "ui/fonts.h"
 #include "backend/computer_manager.h"
+#include "stream/platform.h"
 
 bool _decoder_error_dismissed;
 
@@ -79,12 +80,31 @@ void _quitapp_error_popup(struct nk_context *ctx)
     }
 }
 
+void _no_decoder_popup(struct nk_context *ctx)
+{
+    const char *message;
+    if (platform_pref_requested == AUTO)
+        message = "Unable to load video decoder. Your device is not yet supported.";
+    else
+        message = "Unable to load video decoder. Please try another decoder or use default one.";
+    enum nk_dialog_result result;
+    if ((result = nk_dialog_popup_begin(ctx, "No Video Decoder", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
+    {
+        if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
+        {
+            _decoder_error_dismissed = true;
+            nk_popup_close(ctx);
+        }
+        nk_popup_end(ctx);
+    }
+}
+
 void _decoder_warning_popup(struct nk_context *ctx)
 {
     const char *message = "No functioning hardware accelerated video decoder was detected.\n"
                           "Your streaming performance may be severely degraded in this configuration.";
     enum nk_dialog_result result;
-    if ((result = nk_dialog_popup_begin(ctx, "No Hardware Decoder", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
+    if ((result = nk_dialog_popup_begin(ctx, "Slow Video Decoder", message, "OK", NULL, NULL, NULL)) != NK_DIALOG_NONE)
     {
         if (result != NK_DIALOG_RUNNING || _launcher_popup_request_dismiss)
         {
@@ -132,6 +152,10 @@ void _hostinfo_popup(struct nk_context *ctx)
 
 void _launcher_modal_popups_show(struct nk_context *ctx)
 {
+    if (_launcher_modals & LAUNCHER_MODAL_NOCODEC)
+    {
+        _no_decoder_popup(ctx);
+    }
     if (_launcher_modals & LAUNCHER_MODAL_NOHWCODEC)
     {
         _decoder_warning_popup(ctx);
