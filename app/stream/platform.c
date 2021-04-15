@@ -59,7 +59,6 @@ static bool platform_try_init(PLATFORM ptype, int argc, char *argv[])
         for (int i = 0; i < pdef.liblen; i++)
         {
             snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.dynlibs[i].library);
-            printf("Try init %s\n", libname);
             // Lazy load to test if this library can be linked
             if (!dlopen(libname, RTLD_NOW | RTLD_GLOBAL))
             {
