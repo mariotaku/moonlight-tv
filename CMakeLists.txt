@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.6)
 project(moonlight 
-    VERSION 0.6.9
+    VERSION 0.6.10
     LANGUAGES C
 )
 
