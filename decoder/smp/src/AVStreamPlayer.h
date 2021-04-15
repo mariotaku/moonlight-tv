@@ -56,6 +56,7 @@ namespace SMP_DECODER_NS
         std::string app_id_;
         PlayerState player_state_;
         char *video_buffer_;
+        unsigned long long video_pts_;
 #ifdef USE_ACB
         void AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply);
         std::unique_ptr<Acb> acb_client_;

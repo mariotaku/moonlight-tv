@@ -36,8 +36,8 @@ extern "C" bool platform_check(PPLATFORM_INFO pinfo)
 {
     pinfo->valid = true;
     pinfo->vrank = 40;
-    pinfo->arank = 5;
-    pinfo->vindependent = false;
+    pinfo->arank = 0;
+    pinfo->vindependent = true;
     pinfo->aindependent = false;
     pinfo->hevc = true;
     pinfo->hdr = PLATFORM_HDR_ALWAYS;
@@ -59,7 +59,11 @@ static int _initPlayerWhenReady()
     if (!videoConfig.format)
         return 0;
     if (!streamPlayer->setup(videoConfig, audioConfig))
+    {
+        videoConfig.format = 0;
+        audioConfig.type = 0;
         return -1;
+    }
     return 0;
 }
 

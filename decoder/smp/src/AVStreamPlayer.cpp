@@ -17,7 +17,7 @@
 using SMP_DECODER_NS::AVStreamPlayer;
 namespace pj = pbnjson;
 
-AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED)
+AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), video_pts_(0)
 {
     app_id_ = getenv("APPID");
     video_buffer_ = (char *)malloc(DECODER_BUFFER_SIZE);
@@ -71,8 +71,7 @@ bool AVStreamPlayer::setup(VideoConfig &videoConfig, AudioConfig &audioConfig)
     }
     starfish_media_apis_.reset(new StarfishMediaAPIs());
     starfish_media_apis_->notifyForeground();
-    std::string payload = makeLoadPayload(videoConfig, audioConfig, 0);
-    std::cout << payload << std::endl;
+    std::string payload = makeLoadPayload(videoConfig, audioConfig, video_pts_);
     if (!starfish_media_apis_->Load(payload.c_str(), &LoadCallback, this))
     {
         std::cerr << "StarfishMediaAPIs::Load() failed!" << std::endl;
@@ -106,7 +105,7 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
         return DR_NEED_IDR;
     }
     unsigned long long ms = decodeUnit->presentationTimeMs;
-    unsigned long long pts = ms * 1000000ULL;
+    video_pts_ = ms * 1000000ULL;
 
     int length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
@@ -115,7 +114,7 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
         length += entry->length;
     }
 
-    if (!submitBuffer(video_buffer_, length, pts, 1))
+    if (!submitBuffer(video_buffer_, length, video_pts_, 1))
         return DR_NEED_IDR;
     return DR_OK;
 }
@@ -138,7 +137,7 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
         return false;
     }
     char payload[256];
-    snprintf(payload, sizeof(payload), "{\"bufferAddr\":\"%x\",\"bufferSize\":%d,\"pts\":%llu,\"esData\":%d}",
+    snprintf(payload, sizeof(payload), "{\"bufferAddr\":\"%p\",\"bufferSize\":%u,\"pts\":%llu,\"esData\":%d}",
              data, size, pts, esData);
     std::string result = starfish_media_apis_->Feed(payload);
     std::size_t found = result.find(std::string("Ok"));
@@ -177,14 +176,10 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     pj::JValue arg = pj::Object();
     pj::JValue option = pj::Object();
     pj::JValue contents = pj::Object();
-    pj::JValue bufferingCtrInfo = pj::Object();
     pj::JValue externalStreamingInfo = pj::Object();
     pj::JValue codec = pj::Object();
-    pj::JValue avSink = pj::Object();
     pj::JValue videoSink = pj::Object();
     videoSink.put("type", "main_video");
-
-    avSink.put("videoSink", videoSink);
 
     arg.put("mediaTransportType", "BUFFERSTREAM");
     pj::JValue adaptiveStreaming = pj::Object();
@@ -199,9 +194,6 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
 
     if (audioConfig.type)
     {
-        pj::JValue audioSink = pj::Object();
-        audioSink.put("type", "main_sound");
-        avSink.put("audioSink", audioSink);
         codec.put("audio", "OPUS");
         pj::JValue opusInfo = pj::Object();
         opusInfo.put("channels", std::to_string(audioConfig.opusConfig.channelCount));
@@ -212,39 +204,20 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
 
     pj::JValue esInfo = pj::Object();
     esInfo.put("ptsToDecode", static_cast<int64_t>(time));
-    esInfo.put("seperatedPTS", true);
+    esInfo.put("pauseAtDecodeTime", true);
+    // esInfo.put("seperatedPTS", true);
     contents.put("esInfo", esInfo);
 
-    contents.put("format", "RAW");
-    // contents.put("provider", "Chrome");
-
-    bufferingCtrInfo.put("bufferMaxLevel", 0);
-    bufferingCtrInfo.put("bufferMinLevel", 0);
-    bufferingCtrInfo.put("preBufferByte", 0);
-    bufferingCtrInfo.put("qBufferLevelAudio", 0);
-    bufferingCtrInfo.put("qBufferLevelVideo", 0);
-
-    pj::JValue srcBufferLevelAudio = pj::Object();
-    srcBufferLevelAudio.put("maximum", 10);
-    srcBufferLevelAudio.put("minimum", 1);
-    bufferingCtrInfo.put("srcBufferLevelAudio", srcBufferLevelAudio);
-
-    pj::JValue srcBufferLevelVideo = pj::Object();
-    srcBufferLevelVideo.put("maximum", DECODER_BUFFER_SIZE);
-    srcBufferLevelVideo.put("minimum", 1);
-    bufferingCtrInfo.put("srcBufferLevelVideo", srcBufferLevelVideo);
-
     externalStreamingInfo.put("contents", contents);
-    externalStreamingInfo.put("bufferingCtrInfo", bufferingCtrInfo);
 
+    // Must have this on webOS 4
     pj::JValue transmission = pj::JObject();
     transmission.put("contentsType", "WEBRTC");
 
     option.put("adaptiveStreaming", adaptiveStreaming);
     option.put("appId", app_id_);
-    option.put("avSink", avSink);
-    // option.put("queryPosition", false);
     option.put("externalStreamingInfo", externalStreamingInfo);
+    // Seems useful on webOS 5+
     option.put("lowDelayMode", true);
     option.put("transmission", transmission);
     option.put("needAudio", audioConfig.type != 0);

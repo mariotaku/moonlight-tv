@@ -267,7 +267,8 @@ if (TARGET_WEBOS)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     add_dependencies(moonlight moonlight-smp moonlight-smp-acb)
-    add_dependencies(moonlight moonlight-dile-legacy)
+    add_dependencies(moonlight moonlight-ndl)
+    # add_dependencies(moonlight moonlight-dile-legacy)
     
     target_link_libraries(moonlight PRIVATE opus)
 
