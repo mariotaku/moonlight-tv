@@ -261,16 +261,26 @@ target_link_libraries(moonlight PRIVATE
 
 target_link_libraries(moonlight PRIVATE mbedtls)
 
+function(moonlight_add_module)
+    foreach(module ${ARGN})
+        if (NOT TARGET ${module})
+            continue()
+        endif()
+        add_dependencies(moonlight ${module})
+    endforeach()
+endfunction()
+
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC OS_WEBOS TARGET_WEBOS _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    add_dependencies(moonlight moonlight-smp moonlight-smp-acb)
-    add_dependencies(moonlight moonlight-dile-legacy)
-    add_dependencies(moonlight moonlight-ndl)
-    add_dependencies(moonlight moonlight-lgnc)
+    moonlight_add_module(moonlight-smp moonlight-smp-acb)
+    moonlight_add_module(moonlight-dile-legacy)
+    moonlight_add_module(moonlight-ndl)
+    moonlight_add_module(moonlight-lgnc)
+    moonlight_add_module(moonlight-pulse)
     
     target_link_libraries(moonlight PRIVATE opus)
 
@@ -299,7 +309,7 @@ elseif(TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
-    target_link_libraries(moonlight INTERFACE moonlight-pi)
+    moonlight_add_module(moonlight-pi)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
