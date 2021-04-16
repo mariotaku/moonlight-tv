@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-#define VideoSinkManagerRegisterVDEC DECODER_SYMBOL_NAME(VideoSinkManagerRegisterVDEC)
-#define VideoSinkManagerRegisterPCMMC DECODER_SYMBOL_NAME(VideoSinkManagerRegisterPCMMC)
-#define VideoSinkManagerUnregister DECODER_SYMBOL_NAME(VideoSinkManagerUnregister)
+#define VideoSinkManagerRegisterVDEC PLUGIN_SYMBOL_NAME(VideoSinkManagerRegisterVDEC)
+#define VideoSinkManagerRegisterPCMMC PLUGIN_SYMBOL_NAME(VideoSinkManagerRegisterPCMMC)
+#define VideoSinkManagerUnregister PLUGIN_SYMBOL_NAME(VideoSinkManagerUnregister)
 
 bool VideoSinkManagerRegisterVDEC(const char *contextId, int port);
 

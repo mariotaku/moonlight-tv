@@ -17,6 +17,7 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "stream/api.h"
 #include "audio.h"
 
 #include <SDL.h>
@@ -90,3 +91,10 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
     .decodeAndPlaySample = sdl_renderer_decode_and_play_sample,
     .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
+
+bool audio_check_sdl(PAUDIO_INFO ainfo)
+{
+  ainfo->valid = true;
+  ainfo->maxChannels = MAX_CHANNEL_COUNT;
+  return true;
+}

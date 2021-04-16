@@ -162,7 +162,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
             return true;
         }
         case USER_STREAM_OPEN:
-            ui_stream_render = platform_get_render(platform_current);
+            ui_stream_render = decoder_get_render(decoder_current);
             if (ui_stream_render)
             {
                 app_force_redraw = true;

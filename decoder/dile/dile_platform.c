@@ -11,26 +11,30 @@
 #include "stream/api.h"
 #include "media_services.h"
 
-bool DECODER_SYMBOL_NAME(platform_init)(int argc, char *argv[])
+#define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
+#define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
+#define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
+
+bool decoder_init(int argc, char *argv[])
 {
     return true;
 }
 
-bool DECODER_SYMBOL_NAME(platform_check)(PPLATFORM_INFO pinfo)
+bool decoder_check(PDECODER_INFO dinfo)
 {
     bool supported = media_services_supported();
     if (!supported)
         return false;
-    pinfo->valid = true;
-    pinfo->accelerated = true;
-    pinfo->audio= true;
-    pinfo->hevc = true;
-    pinfo->colorSpace = COLORSPACE_REC_709;
-    pinfo->colorRange = COLOR_RANGE_FULL;
-    pinfo->maxBitrate = 50000;
+    dinfo->valid = true;
+    dinfo->accelerated = true;
+    dinfo->audio = true;
+    dinfo->hevc = true;
+    dinfo->colorSpace = COLORSPACE_REC_709;
+    dinfo->colorRange = COLOR_RANGE_FULL;
+    dinfo->maxBitrate = 50000;
     return true;
 }
 
-void DECODER_SYMBOL_NAME(platform_finalize)()
+void decoder_finalize()
 {
 }

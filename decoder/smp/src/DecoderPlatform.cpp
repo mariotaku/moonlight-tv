@@ -9,11 +9,11 @@
 #include <memory>
 #include <cstring>
 
-#define platform_init DECODER_SYMBOL_NAME(platform_init)
-#define platform_check DECODER_SYMBOL_NAME(platform_check)
-#define platform_finalize DECODER_SYMBOL_NAME(platform_finalize)
-#define decoder_callbacks DECODER_SYMBOL_NAME(decoder_callbacks)
-#define audio_callbacks DECODER_SYMBOL_NAME(audio_callbacks)
+#define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
+#define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
+#define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
+#define decoder_callbacks PLUGIN_SYMBOL_NAME(decoder_callbacks)
+#define audio_callbacks PLUGIN_SYMBOL_NAME(audio_callbacks)
 
 using SMP_DECODER_NS::AudioConfig;
 using SMP_DECODER_NS::AVStreamPlayer;
@@ -27,25 +27,25 @@ static VideoConfig videoConfig;
 extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
 extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks;
 
-extern "C" bool platform_init(int argc, char *argv[])
+extern "C" bool decoder_init(int argc, char *argv[])
 {
     return true;
 }
 
-extern "C" bool platform_check(PPLATFORM_INFO pinfo)
+extern "C" bool decoder_check(PDECODER_INFO dinfo)
 {
-    pinfo->valid = true;
-    pinfo->accelerated = true;
-    pinfo->audio = false;
-    pinfo->hevc = true;
-    pinfo->hdr = PLATFORM_HDR_ALWAYS;
-    pinfo->colorSpace = COLORSPACE_REC_709;
-    pinfo->colorRange = COLOR_RANGE_FULL;
-    pinfo->maxBitrate = 60000;
+    dinfo->valid = true;
+    dinfo->accelerated = true;
+    dinfo->audio = false;
+    dinfo->hevc = true;
+    dinfo->hdr = DECODER_HDR_ALWAYS;
+    dinfo->colorSpace = COLORSPACE_REC_709;
+    dinfo->colorRange = COLOR_RANGE_FULL;
+    dinfo->maxBitrate = 60000;
     return true;
 }
 
-extern "C" void platform_finalize()
+extern "C" void decoder_finalize()
 {
 }
 

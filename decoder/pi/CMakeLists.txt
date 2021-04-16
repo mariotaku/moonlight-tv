@@ -16,3 +16,5 @@ target_link_libraries(moonlight-pi PRIVATE ${BROADCOM_OMX_LIBRARIES})
 target_compile_definitions(moonlight-pi PUBLIC ${BROADCOM_OMX_DEFINITIONS})
 
 target_link_libraries(moonlight-pi PRIVATE moonlight-common-c opus ${PBNJSON_LIBRARIES})
+
+install(TARGETS moonlight-pi LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

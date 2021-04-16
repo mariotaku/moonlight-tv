@@ -4,12 +4,12 @@
 #include <stdbool.h>
 #include <pbnjson.h>
 
-#define media_services_supported DECODER_SYMBOL_NAME(media_services_supported)
-#define media_services_connect DECODER_SYMBOL_NAME(media_services_connect)
-#define media_services_disconnect DECODER_SYMBOL_NAME(media_services_disconnect)
-#define media_services_set_video_data DECODER_SYMBOL_NAME(media_services_set_video_data)
-#define media_services_set_audio_data DECODER_SYMBOL_NAME(media_services_set_audio_data)
-#define media_services_feed_arrived DECODER_SYMBOL_NAME(media_services_feed_arrived)
+#define media_services_supported PLUGIN_SYMBOL_NAME(media_services_supported)
+#define media_services_connect PLUGIN_SYMBOL_NAME(media_services_connect)
+#define media_services_disconnect PLUGIN_SYMBOL_NAME(media_services_disconnect)
+#define media_services_set_video_data PLUGIN_SYMBOL_NAME(media_services_set_video_data)
+#define media_services_set_audio_data PLUGIN_SYMBOL_NAME(media_services_set_audio_data)
+#define media_services_feed_arrived PLUGIN_SYMBOL_NAME(media_services_feed_arrived)
 
 typedef enum MEDIA_SERVICES_TYPE_T {
     MEDIA_SERVICES_TYPE_AUDIO,

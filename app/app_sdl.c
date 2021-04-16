@@ -110,7 +110,7 @@ void app_destroy()
 {
     gs_destroy(app_gs_client);
     free(app_configuration);
-    platform_finalize(platform_current);
+    decoder_finalize(decoder_current);
 #ifdef OS_WEBOS
     app_webos_destroy();
 #endif

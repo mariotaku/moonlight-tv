@@ -156,7 +156,7 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
             nk_label(ctx, cur->name, NK_TEXT_CENTERED);
         }
 
-        if (platform_info.hevc && platform_info.hdr && node->server->supportsHdr && cur->hdr)
+        if (decoder_info.hevc && decoder_info.hdr && node->server->supportsHdr && cur->hdr)
         {
             struct nk_vec2 hdr_pos = nk_vec2_add(tmp_bounds, nk_vec2_s(10, 10));
             struct nk_rect hdr_bounds = nk_recta(hdr_pos, nk_vec2(sprites_ui.ic_indicator_hdr.region[2], sprites_ui.ic_indicator_hdr.region[3]));

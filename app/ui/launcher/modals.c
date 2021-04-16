@@ -83,7 +83,7 @@ void _quitapp_error_popup(struct nk_context *ctx)
 void _no_decoder_popup(struct nk_context *ctx)
 {
     const char *message;
-    if (platform_pref_requested == AUTO)
+    if (decoder_pref_requested == DECODER_AUTO)
         message = "Unable to load video decoder. Your device is not yet supported.";
     else
         message = "Unable to load video decoder. Please try another decoder or use default one.";

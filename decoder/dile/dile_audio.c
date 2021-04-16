@@ -130,7 +130,7 @@ static void _feed(char *data, int length)
   }
 }
 
-AUDIO_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(audio_callbacks) = {
+AUDIO_RENDERER_CALLBACKS PLUGIN_SYMBOL_NAME(audio_callbacks) = {
     .init = _init,
     .cleanup = _cleanup,
     .decodeAndPlaySample = _feed,

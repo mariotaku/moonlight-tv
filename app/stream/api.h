@@ -3,22 +3,27 @@
 #include <stdbool.h>
 #include <Limelight.h>
 
-#define PLATFORM_HDR_NONE 0
-#define PLATFORM_HDR_SUPPORTED 1
-#define PLATFORM_HDR_ALWAYS 2
+#define DISPLAY_ROTATE_MASK 24
+#define DISPLAY_ROTATE_90 8
+#define DISPLAY_ROTATE_180 16
+#define DISPLAY_ROTATE_270 24
 
-#ifdef DECODER_PLATFORM_NAME
+#define DECODER_HDR_NONE 0
+#define DECODER_HDR_SUPPORTED 1
+#define DECODER_HDR_ALWAYS 2
+
+#ifdef PLUGIN_SYMBOL_SUFFIX
 // Coming from https://stackoverflow.com/a/1489985/859190
-#define DECODER_DECL_PASTER(x, y) x##_##y
-#define DECODER_DECL_EVALUATOR(x, y) DECODER_DECL_PASTER(x, y)
-#define DECODER_SYMBOL_NAME(name) DECODER_DECL_EVALUATOR(name, DECODER_PLATFORM_NAME)
+#define SYMBOL_DECL_PASTER(x, y) x##_##y
+#define SYMBOL_DECL_EVALUATOR(x, y) SYMBOL_DECL_PASTER(x, y)
+#define PLUGIN_SYMBOL_NAME(name) SYMBOL_DECL_EVALUATOR(name, PLUGIN_SYMBOL_SUFFIX)
 #endif
 
 #ifndef DECODER_EXPORTED
 #define DECODER_EXPORTED __attribute__((visibility("default")))
 #endif
 
-typedef struct PLATFORM_INFO
+typedef struct DECODER_INFO
 {
     bool valid;
     bool accelerated;
@@ -28,7 +33,13 @@ typedef struct PLATFORM_INFO
     int colorSpace;
     int colorRange;
     int maxBitrate;
-} * PPLATFORM_INFO, PLATFORM_INFO;
+} * PDECODER_INFO, DECODER_INFO;
+
+typedef struct AUDIO_INFO
+{
+    bool valid;
+    int maxChannels;
+} * PAUDIO_INFO, AUDIO_INFO;
 
 typedef void (*PresenterEnterFullScreen)(void);
 typedef void (*PresenterEnterOverlay)(int x, int y, int w, int h);

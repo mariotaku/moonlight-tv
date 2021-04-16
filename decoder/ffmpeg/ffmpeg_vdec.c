@@ -24,7 +24,7 @@
 #include <stdbool.h>
 
 #include "util/memlog.h"
-#include "stream/platform.h"
+#include "stream/api.h"
 
 #define DECODER_BUFFER_SIZE 2048 * 1024
 

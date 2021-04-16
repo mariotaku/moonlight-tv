@@ -3,13 +3,12 @@
 #include <stdbool.h>
 
 #include <NDL_directmedia.h>
-#include "stream/platform.h"
+#include "stream/api.h"
 
 static bool ndl_initialized = false;
 
-bool platform_init_ndl(int argc, char *argv[])
+bool decoder_init_ndl(int argc, char *argv[])
 {
-    printf("platform_init_ndl\n");
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0)
     {
         ndl_initialized = true;
@@ -22,20 +21,20 @@ bool platform_init_ndl(int argc, char *argv[])
     return ndl_initialized;
 }
 
-bool platform_check_ndl(PPLATFORM_INFO pinfo)
+bool decoder_check_ndl(PDECODER_INFO dinfo)
 {
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
     NDL_DirectVideoClose();
-    pinfo->valid = true;
-    pinfo->accelerated = true;
-    pinfo->audio= true;
-    pinfo->maxBitrate = 50000;
+    dinfo->valid = true;
+    dinfo->accelerated = true;
+    dinfo->audio= true;
+    dinfo->maxBitrate = 50000;
     return true;
 }
 
-void platform_finalize_ndl()
+void decoder_finalize_ndl()
 {
     if (ndl_initialized)
     {

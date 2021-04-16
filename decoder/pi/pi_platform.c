@@ -1,10 +1,10 @@
 #include "stream/api.h"
 
-bool platform_check_pi(PPLATFORM_INFO pinfo)
+bool decoder_check_pi(PDECODER_INFO dinfo)
 {
-    pinfo->valid = true;
-    pinfo->accelerated = true;
-    pinfo->audio = false;
-    pinfo->maxBitrate = 20000;
+    dinfo->valid = true;
+    dinfo->accelerated = true;
+    dinfo->audio = false;
+    dinfo->maxBitrate = 20000;
     return true;
 }

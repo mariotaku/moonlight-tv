@@ -41,8 +41,10 @@ int main(int argc, char *argv[])
     {
         return ret;
     }
-    platform_init(app_configuration->platform, argc, argv);
-    printf("Decoder platform: %s\n", platform_definitions[platform_current].name);
+    decoder_init(app_configuration->platform, argc, argv);
+    audio_init(NULL, argc, argv);
+    printf("Decoder module: %s\n", decoder_definitions[decoder_current].name);
+    printf("Audio module: %s\n", audio_definitions[audio_current].name);
 
     /* GUI */
     struct nk_context *ctx;

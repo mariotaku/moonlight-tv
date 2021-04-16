@@ -176,7 +176,7 @@ static int dile_submit_decode_unit(PDECODE_UNIT decodeUnit)
     return DR_OK;
 }
 
-DECODER_RENDERER_CALLBACKS DECODER_SYMBOL_NAME(decoder_callbacks) = {
+DECODER_RENDERER_CALLBACKS PLUGIN_SYMBOL_NAME(decoder_callbacks) = {
     .setup = dile_setup,
     .cleanup = dile_cleanup,
     .submitDecodeUnit = dile_submit_decode_unit,

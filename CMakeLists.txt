@@ -132,6 +132,7 @@ add_subdirectory(third_party/mbedtls)
 add_subdirectory(core/moonlight-common-c)
 add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
+add_subdirectory(audio)
 
 set(SOURCES
     app/main.c
@@ -144,7 +145,8 @@ set(SOURCES
     app/backend/coverloader.c
     app/backend/error_manager.c
     app/backend/types_impl.c
-    app/stream/platform.c
+    app/stream/audio.c
+    app/stream/decoder.c
     app/stream/session.c
     app/stream/connection.c
     app/stream/settings.c

@@ -449,13 +449,13 @@ void _launcher_modal_flags_update()
     }
     if (!_decoder_error_dismissed)
     {
-        if (!platform_info.valid)
+        if (!decoder_info.valid)
         {
 #ifndef TARGET_DESKTOP
             _launcher_modals |= LAUNCHER_MODAL_NOCODEC;
 #endif
         }
-        else if (!platform_info.accelerated)
+        else if (!decoder_info.accelerated)
         {
 #ifndef TARGET_DESKTOP
             _launcher_modals |= LAUNCHER_MODAL_NOHWCODEC;

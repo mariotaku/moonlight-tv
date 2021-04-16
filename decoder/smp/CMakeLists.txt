@@ -17,7 +17,7 @@ target_include_directories(moonlight-smp-acb PRIVATE ${GLIB_INCLUDE_DIRS})
 target_include_directories(moonlight-smp-acb PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(moonlight-smp-acb PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp-acb PRIVATE moonlight-common-c playerAPIs Acb)
-target_compile_definitions(moonlight-smp-acb PRIVATE USE_ACB DECODER_PLATFORM_NAME=smp_acb SMP_DECODER_NS=MoonlightStarfishAcb)
+target_compile_definitions(moonlight-smp-acb PRIVATE USE_ACB PLUGIN_SYMBOL_SUFFIX=smp_acb SMP_DECODER_NS=MoonlightStarfishAcb)
 
 install(TARGETS moonlight-smp-acb LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -34,6 +34,6 @@ target_include_directories(moonlight-smp PRIVATE ${SDL2_INCLUDE_DIRS} ${GLIB_INC
 target_include_directories(moonlight-smp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(moonlight-smp PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp PRIVATE moonlight-common-c playerAPIs ${SDL2_LIBRARIES})
-target_compile_definitions(moonlight-smp PRIVATE USE_SDL_WEBOS DECODER_PLATFORM_NAME=smp SMP_DECODER_NS=MoonlightStarfish)
+target_compile_definitions(moonlight-smp PRIVATE USE_SDL_WEBOS PLUGIN_SYMBOL_SUFFIX=smp SMP_DECODER_NS=MoonlightStarfish)
 
 install(TARGETS moonlight-smp LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

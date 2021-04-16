@@ -157,21 +157,21 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, "Video decoder", NK_TEXT_LEFT);
     struct nk_rect combo_bounds = nk_widget_bounds(ctx);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    PLATFORM selplat = platform_by_id(app_configuration->platform);
+    DECODER selplat = decoder_by_id(app_configuration->platform);
     int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
-    if (nk_combo_begin_label(ctx, selplat > 0 ? platform_definitions[selplat].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
+    if (nk_combo_begin_label(ctx, selplat > 0 ? decoder_definitions[selplat].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
     {
         *showing_combo = true;
         if (combo_hovered_item.combo != 2)
         {
             combo_hovered_item.combo = 2;
-            combo_hovered_item.count = 1 + platform_orders_len;
+            combo_hovered_item.count = 1 + decoder_orders_len;
             combo_hovered_item.request = -1;
             combo_hovered_item.item = -1;
         }
         nk_layout_row_dynamic_s(ctx, 25, 1);
         bool ever_hovered = false;
-        for (int i = 0; i < 1 + platform_orders_len; i++)
+        for (int i = 0; i < 1 + decoder_orders_len; i++)
         {
             struct nk_rect ci_bounds = nk_widget_bounds(ctx);
             nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, ci_bounds);
@@ -189,7 +189,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
             }
             if (i > 0)
             {
-                PLATFORM_DEFINITION pdef = platform_definitions[platform_orders[i - 1]];
+                MODULE_DEFINITION pdef = decoder_definitions[decoder_orders[i - 1]];
                 if (nk_combo_item_label(ctx, pdef.name, NK_TEXT_LEFT))
                     app_configuration->platform = pdef.id;
             }
@@ -205,7 +205,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
             combo_hovered_item.item = -1;
         }
     }
-    if (platform_pref_requested != selplat)
+    if (decoder_pref_requested != selplat)
     {
         nk_label_wrap(ctx, "Restart Moonlight to apply decoder change");
     }
@@ -222,7 +222,7 @@ static void _windowopen()
 {
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
-    _max_bitrate = platform_info.maxBitrate ? platform_info.maxBitrate : BITRATE_MAX;
+    _max_bitrate = decoder_info.maxBitrate ? decoder_info.maxBitrate : BITRATE_MAX;
 }
 
 static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)

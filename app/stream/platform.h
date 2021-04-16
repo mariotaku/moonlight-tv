@@ -27,77 +27,120 @@
 
 #include "api.h"
 
-enum PLATFORM_T
+enum DECODER_T
 {
-    AUTO = -1,
-    NONE = 0,
-    FFMPEG,
-    NDL,
-    LGNC,
-    SMP,
-    DILE,
-    PI,
-    PLATFORM_COUNT,
+    DECODER_AUTO = -1,
+    DECODER_NONE = 0,
+    DECODER_FFMPEG,
+    DECODER_NDL,
+    DECODER_LGNC,
+    DECODER_SMP,
+    DECODER_DILE,
+    DECODER_PI,
+    DECODER_COUNT,
 };
-typedef enum PLATFORM_T PLATFORM;
+typedef enum DECODER_T DECODER;
 
-static const PLATFORM platform_orders[] = {
-#if TARGET_WEBOS
-    SMP, DILE, NDL, LGNC
-#elif TARGET_LGNC
-    LGNC
-#elif TARGET_RASPI
-    PI, FFMPEG
-#else
-    FFMPEG
-#endif
+enum AUDIO_T
+{
+    AUDIO_DECODER = -2,
+    AUDIO_AUTO = -1,
+    AUDIO_SDL = 0,
+    AUDIO_PULSE = 1,
+    AUDIO_COUNT,
 };
-static const size_t platform_orders_len = sizeof(platform_orders) / sizeof(PLATFORM);
+typedef enum AUDIO_T AUDIO;
 
-typedef bool (*PLATFORM_INIT_FN)(int argc, char *argv[]);
-typedef bool (*PLATFORM_CHECK_FN)(PPLATFORM_INFO);
-typedef void (*PLATFORM_FINALIZE_FN)();
+typedef bool (*MODULE_INIT_FN)(int argc, char *argv[]);
+typedef bool (*DECODER_CHECK_FN)(PDECODER_INFO);
+typedef bool (*AUDIO_CHECK_FN)(PAUDIO_INFO);
+typedef void (*MODULE_FINALIZE_FN)();
 
-typedef struct PLATFORM_SYMBOLS_T
+typedef struct DECODER_SYMBOLS_T
 {
     bool valid;
-    PLATFORM_INIT_FN init;
-    PLATFORM_CHECK_FN check;
-    PLATFORM_FINALIZE_FN finalize;
+    MODULE_INIT_FN init;
+    DECODER_CHECK_FN check;
+    MODULE_FINALIZE_FN finalize;
     PAUDIO_RENDERER_CALLBACKS adec;
     PDECODER_RENDERER_CALLBACKS vdec;
     PVIDEO_PRESENTER_CALLBACKS pres;
     PVIDEO_RENDER_CALLBACKS rend;
-} PLATFORM_SYMBOLS, PPLATFORM_SYMBOLS;
+} DECODER_SYMBOLS;
 
-typedef struct PLATFORM_DYNLIB_DEFINITION
+typedef struct AUDIO_SYMBOLS_T
+{
+    bool valid;
+    MODULE_INIT_FN init;
+    AUDIO_CHECK_FN check;
+    MODULE_FINALIZE_FN finalize;
+    PAUDIO_RENDERER_CALLBACKS callbacks;
+} AUDIO_SYMBOLS;
+
+typedef struct MODULE_LIB_DEFINITION
 {
     const char *suffix;
     const char *library;
-} PLATFORM_DYNLIB_DEFINITION;
+} MODULE_LIB_DEFINITION;
 
-typedef struct PLATFORM_DEFINITION
+typedef struct MODULE_DEFINITION
 {
     const char *name;
     const char *id;
-    const PLATFORM_DYNLIB_DEFINITION *dynlibs;
+    const MODULE_LIB_DEFINITION *dynlibs;
     const size_t liblen;
-    const PLATFORM_SYMBOLS *symbols;
-} PLATFORM_DEFINITION;
+    const union
+    {
+        const void *ptr;
+        const DECODER_SYMBOLS *decoder;
+        const AUDIO_SYMBOLS *audio;
+    } symbols;
+} MODULE_DEFINITION;
 
-extern PLATFORM platform_pref_requested;
-extern PLATFORM platform_current;
-extern int platform_current_libidx;
-extern PLATFORM_INFO platform_info;
-extern PLATFORM_DEFINITION platform_definitions[PLATFORM_COUNT];
+extern DECODER decoder_pref_requested;
+extern DECODER decoder_current;
+extern int decoder_current_libidx;
+extern DECODER_INFO decoder_info;
+extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
 
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
-PLATFORM platform_by_id(const char *id);
+DECODER decoder_by_id(const char *id);
 
-PLATFORM platform_init(const char *name, int argc, char *argv[]);
-PDECODER_RENDERER_CALLBACKS platform_get_video();
-PAUDIO_RENDERER_CALLBACKS platform_get_audio(char *audio_device);
-PVIDEO_PRESENTER_CALLBACKS platform_get_presenter();
-PVIDEO_RENDER_CALLBACKS platform_get_render();
-void platform_finalize();
+DECODER decoder_init(const char *name, int argc, char *argv[]);
+PDECODER_RENDERER_CALLBACKS decoder_get_video();
+PVIDEO_PRESENTER_CALLBACKS decoder_get_presenter();
+PVIDEO_RENDER_CALLBACKS decoder_get_render();
+void decoder_finalize();
+
+extern AUDIO audio_pref_requested;
+extern AUDIO audio_current;
+extern int audio_current_libidx;
+extern AUDIO_INFO audio_info;
+extern MODULE_DEFINITION audio_definitions[AUDIO_COUNT];
+
+AUDIO audio_by_id(const char *id);
+
+AUDIO audio_init(const char *name, int argc, char *argv[]);
+void audio_finalize();
+
+PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device);
+
+static const DECODER decoder_orders[] = {
+#if TARGET_WEBOS
+    DECODER_SMP, DECODER_DILE, DECODER_NDL, DECODER_LGNC
+#elif TARGET_LGNC
+    DECODER_LGNC
+#elif TARGET_RASPI
+    DECODER_PI, DECODER_FFMPEG
+#else
+    DECODER_FFMPEG
+#endif
+};
+static const size_t decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER);
+
+static const AUDIO audio_orders[] = {
+    AUDIO_PULSE,
+    AUDIO_SDL,
+};
+static const size_t audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);

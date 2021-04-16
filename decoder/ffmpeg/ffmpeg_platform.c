@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include "stream/api.h"
 
-bool platform_check_ffmpeg(PPLATFORM_INFO info)
+bool decoder_check_ffmpeg(PDECODER_INFO info)
 {
     info->valid = true;
     info->accelerated = false;
