@@ -38,7 +38,7 @@ typedef struct DECODER_INFO
 typedef struct AUDIO_INFO
 {
     bool valid;
-    int maxChannels;
+    int configuration;
 } * PAUDIO_INFO, AUDIO_INFO;
 
 typedef void (*PresenterEnterFullScreen)(void);

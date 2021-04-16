@@ -3,6 +3,7 @@
 #include <string.h>
 
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
+static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
 
 bool audio_check_sdl(PAUDIO_INFO ainfo);
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
@@ -18,6 +19,7 @@ AUDIO_SYMBOLS audio_sdl = {
 MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
     {"SDL Audio", "sdl", NULL, 0, &audio_sdl},
     {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
+    {"ALSA", "alsa", &_alsa_lib, 1, NULL},
 };
 
 AUDIO audio_pref_requested;
@@ -104,7 +106,7 @@ static void audio_finalize_simple(AUDIO audio, int libidx)
 
 static bool audio_check_simple(AUDIO audio, int libidx)
 {
-    memset(&audio_info, 0 , sizeof(audio_info));
+    memset(&audio_info, 0, sizeof(audio_info));
     MODULE_DEFINITION pdef = audio_definitions[audio];
     AUDIO_CHECK_FN fn;
     if (pdef.symbols.ptr)

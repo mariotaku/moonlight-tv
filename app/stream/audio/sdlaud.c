@@ -17,14 +17,18 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
+
 #include "stream/api.h"
-#include "audio.h"
 
 #include <SDL.h>
 #include <SDL_audio.h>
 
-#include <stdio.h>
+#include <Limelight.h>
 #include <opus_multistream.h>
+
+#define MAX_CHANNEL_COUNT 6
+#define FRAME_SIZE 240
 
 static OpusMSDecoder *decoder;
 static short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];
@@ -95,6 +99,6 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
 bool audio_check_sdl(PAUDIO_INFO ainfo)
 {
   ainfo->valid = true;
-  ainfo->maxChannels = MAX_CHANNEL_COUNT;
+  ainfo->configuration = AUDIO_CONFIGURATION_STEREO;
   return true;
 }

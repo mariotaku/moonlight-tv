@@ -46,7 +46,8 @@ enum AUDIO_T
     AUDIO_DECODER = -2,
     AUDIO_AUTO = -1,
     AUDIO_SDL = 0,
-    AUDIO_PULSE = 1,
+    AUDIO_PULSE,
+    AUDIO_ALSA,
     AUDIO_COUNT,
 };
 typedef enum AUDIO_T AUDIO;
@@ -140,7 +141,10 @@ static const DECODER decoder_orders[] = {
 static const size_t decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER);
 
 static const AUDIO audio_orders[] = {
-    AUDIO_PULSE,
-    AUDIO_SDL,
+#if TARGET_WEBOS
+    AUDIO_SDL
+#else
+    AUDIO_ALSA, AUDIO_PULSE, AUDIO_SDL
+#endif
 };
 static const size_t audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);

@@ -22,6 +22,12 @@ struct _fps_option
     char name[8];
 };
 
+struct _ch_option
+{
+    int configuration;
+    char name[16];
+};
+
 static const struct _resolution_option _supported_resolutions[] = {
     {1280, 720, "720P\0"},
     {1920, 1080, "1080P\0"},
@@ -36,6 +42,12 @@ static const struct _fps_option _supported_fps[] = {
     {120, "120 FPS"},
 };
 #define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
+
+static const struct _ch_option _supported_ch[] = {
+    {AUDIO_CONFIGURATION_STEREO, "Stereo"},
+    {AUDIO_CONFIGURATION_51_SURROUND, "5.1 Surround"},
+};
+#define _supported_ch_len sizeof(_supported_ch) / sizeof(struct _ch_option)
 
 static struct
 {

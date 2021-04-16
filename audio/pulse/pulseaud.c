@@ -17,15 +17,18 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "audio.h"
 #include "stream/api.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <Limelight.h>
 #include <opus_multistream.h>
 #include <pulse/simple.h>
 #include <pulse/error.h>
+
+#define MAX_CHANNEL_COUNT 6
+#define FRAME_SIZE 240
 
 static OpusMSDecoder *decoder;
 static pa_simple *dev = NULL;
@@ -112,8 +115,8 @@ bool audio_init_pulse(int argc, char *argv[])
 
 bool audio_check_pulse(PAUDIO_INFO ainfo)
 {
-    // ainfo->valid = true;
-    ainfo->maxChannels = MAX_CHANNEL_COUNT;
+    ainfo->valid = true;
+    ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
     return true;
 }
 
