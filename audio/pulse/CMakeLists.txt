@@ -1,8 +1,6 @@
 pkg_check_modules(PULSE REQUIRED libpulse-simple)
 
-add_library(moonlight-pulse SHARED 
-    pulseaud.c
-)
+add_library(moonlight-pulse SHARED module.c pulse.c)
 
 target_include_directories(moonlight-pulse PRIVATE ${CMAKE_SOURCE_DIR}/app)
 

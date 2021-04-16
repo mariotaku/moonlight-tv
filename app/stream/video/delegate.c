@@ -9,6 +9,7 @@ static PDECODER_RENDERER_CALLBACKS vdec;
 static int lastFrameNumber;
 static struct VIDEO_STATS vdec_temp_stats;
 struct VIDEO_STATS vdec_summary_stats;
+struct VIDEO_INFO vdec_stream_info;
 
 static int _vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags);
 static void _vdec_delegate_cleanup();
@@ -28,10 +29,29 @@ DECODER_RENDERER_CALLBACKS decoder_render_callbacks_delegate(PDECODER_RENDERER_C
     return vdec_delegate;
 }
 
+static const char *video_format_name(int videoFormat)
+{
+    switch (videoFormat)
+    {
+    case VIDEO_FORMAT_H264:
+        return "H264";
+    case VIDEO_FORMAT_H265:
+        return "H265";
+    case VIDEO_FORMAT_H265_MAIN10:
+        return "H265 10bit";
+    default:
+        return "Unknown";
+    }
+}
+
 int _vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
     vdec = context;
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
+
+    vdec_stream_info.format = video_format_name(videoFormat);
+    vdec_stream_info.width = width;
+    vdec_stream_info.height = height;
     lastFrameNumber = 0;
     return vdec->setup(videoFormat, width, height, redrawRate, context, drFlags);
 }

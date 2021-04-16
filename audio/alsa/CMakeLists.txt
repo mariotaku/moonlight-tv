@@ -1,9 +1,7 @@
 find_package(ALSA)
 
 if (ALSA_FOUND)
-    add_library(moonlight-alsa SHARED
-        alsa.c
-    )
+    add_library(moonlight-alsa SHARED alsa.c module.c)
 
     target_include_directories(moonlight-alsa PRIVATE ${CMAKE_SOURCE_DIR}/app)
 

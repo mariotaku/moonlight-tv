@@ -4,6 +4,7 @@
 #include "ui/messages.h"
 #include "ui/fonts.h"
 
+#include "stream/platform.h"
 #include "stream/session.h"
 #include "stream/video/delegate.h"
 #include "util/bus.h"
@@ -196,8 +197,12 @@ void _streaming_perf_stat(struct nk_context *ctx)
     if (nk_begin(ctx, "Performance Stats", nk_recta(wndpos, wndsize), OVERLAY_WINDOW_FLAGS))
     {
         struct VIDEO_STATS *dst = &vdec_summary_stats;
-        static const float ratios[] = {0.7f, 0.3f};
-        nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios);
+        static const float ratios73[] = {0.7f, 0.3f};
+        static const float ratios46[] = {0.4f, 0.6f};
+        nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios46);
+        nk_label(ctx, "Decoder", NK_TEXT_ALIGN_LEFT);
+        nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%s (%s)", decoder_definitions[decoder_current].name, vdec_stream_info.format);
+        nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios73);
         nk_label(ctx, "Network framerate", NK_TEXT_ALIGN_LEFT);
         nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2f FPS", dst->receivedFps);
         nk_label(ctx, "Decode framerate", NK_TEXT_ALIGN_LEFT);
@@ -207,10 +212,10 @@ void _streaming_perf_stat(struct nk_context *ctx)
         {
             nk_label(ctx, "Network frame drop:", NK_TEXT_ALIGN_LEFT);
             nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2f%%", (float)dst->networkDroppedFrames / dst->totalFrames * 100);
-            nk_label(ctx, "Data receive:", NK_TEXT_ALIGN_LEFT);
-            nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2fms", (float)dst->totalReassemblyTime / dst->receivedFrames);
-            nk_label(ctx, "Frame submit:", NK_TEXT_ALIGN_LEFT);
-            nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2fms", (float)dst->totalDecodeTime / dst->decodedFrames);
+            nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios46);
+            nk_label(ctx, "Receive & decode:", NK_TEXT_ALIGN_LEFT);
+            nk_labelf(ctx, NK_TEXT_ALIGN_RIGHT, "%.2f ms; %.2f ms", (float)dst->totalReassemblyTime / dst->receivedFrames,
+                      (float)dst->totalDecodeTime / dst->decodedFrames);
         }
     }
     wndpos = nk_window_get_position(ctx);

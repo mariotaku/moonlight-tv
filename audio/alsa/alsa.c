@@ -123,19 +123,3 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_alsa = {
   .decodeAndPlaySample = alsa_renderer_decode_and_play_sample,
   .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
-
-bool audio_init_alsa(int argc, char *argv[])
-{
-    return true;
-}
-
-bool audio_check_alsa(PAUDIO_INFO ainfo)
-{
-    ainfo->valid = true;
-    ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
-    return true;
-}
-
-void audio_finalize_alsa()
-{
-}

@@ -35,7 +35,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_layout_row_template_end(ctx);
     nk_label(ctx, "Version", NK_TEXT_LEFT);
     nk_label(ctx, APP_VERSION, NK_TEXT_RIGHT);
-    nk_label(ctx, "Decoder", NK_TEXT_LEFT);
+    nk_label(ctx, "Decoder Module", NK_TEXT_LEFT);
     nk_label(ctx, decoder_definitions[decoder_current].name, NK_TEXT_RIGHT);
 
 #if OS_WEBOS

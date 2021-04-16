@@ -73,9 +73,6 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
         return -1;
     }
 
-    pa_usec_t latency = pa_simple_get_latency(dev, &error);
-    printf("PulseAudio latency: %lldus\n", latency);
-
     return 0;
 }
 
@@ -107,19 +104,3 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_pulse = {
     .decodeAndPlaySample = pulse_renderer_decode_and_play_sample,
     .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
-
-bool audio_init_pulse(int argc, char *argv[])
-{
-    return true;
-}
-
-bool audio_check_pulse(PAUDIO_INFO ainfo)
-{
-    ainfo->valid = true;
-    ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
-    return true;
-}
-
-void audio_finalize_pulse()
-{
-}

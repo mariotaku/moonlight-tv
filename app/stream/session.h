@@ -28,6 +28,13 @@ struct VIDEO_STATS
     float decodedFps;
 };
 
+struct VIDEO_INFO
+{
+    const char *format;
+    int width;
+    int height;
+};
+
 extern STREAMING_STATUS streaming_status;
 extern int streaming_errno;
 extern char streaming_errmsg[];
