@@ -55,6 +55,7 @@ static GLuint vertex_shader, fragment_shader, shader_program;
 
 static bool renderer_ready = false, frame_arrived;
 RenderQueueSubmit render_queue_submit_ffmpeg = NULL;
+int render_current_frame_ffmpeg, render_next_frame_ffmpeg;
 
 static bool renderer_setup(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSubmit)
 {
@@ -62,6 +63,7 @@ static bool renderer_setup(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSu
     frame_arrived = false;
     width = conf->width;
     height = conf->height;
+    render_current_frame_ffmpeg = render_next_frame_ffmpeg = 0;
     render_queue_submit_ffmpeg = queueSubmit;
 
     printf("OpenGL version: %s\n", glGetString(GL_VERSION));
@@ -133,7 +135,11 @@ static bool renderer_setup(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSu
 
 static bool renderer_submit_frame(AVFrame *frame)
 {
-    if (pthread_mutex_lock(&mutex_ffsw) == 0)
+    if (++render_current_frame_ffmpeg <= render_next_frame_ffmpeg - SDL_BUFFER_FRAMES)
+    {
+        //Skip frame
+    }
+    else if (pthread_mutex_lock(&mutex_ffsw) == 0)
     {
         if (!renderer_ready || !frame)
         {
