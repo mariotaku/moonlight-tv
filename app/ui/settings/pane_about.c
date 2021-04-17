@@ -37,6 +37,11 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, APP_VERSION, NK_TEXT_RIGHT);
     nk_label(ctx, "Decoder Module", NK_TEXT_LEFT);
     nk_label(ctx, decoder_definitions[decoder_current].name, NK_TEXT_RIGHT);
+    nk_label(ctx, "Audio Backend", NK_TEXT_LEFT);
+    if (audio_current == AUDIO_DECODER)
+        nk_label(ctx, "Use decoder", NK_TEXT_RIGHT);
+    else if (audio_current >= 0)
+        nk_label(ctx, audio_definitions[audio_current].name, NK_TEXT_RIGHT);
 
 #if TARGET_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);

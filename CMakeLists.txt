@@ -280,6 +280,7 @@ if (TARGET_WEBOS)
     moonlight_add_module(moonlight-ndl)
     moonlight_add_module(moonlight-lgnc)
     moonlight_add_module(moonlight-pulse)
+    moonlight_add_module(moonlight-ndlaud)
     
     target_link_libraries(moonlight PRIVATE opus)
 

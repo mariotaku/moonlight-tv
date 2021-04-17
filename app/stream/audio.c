@@ -4,6 +4,7 @@
 
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
 static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
+static MODULE_LIB_DEFINITION _ndl_lib = {"ndlaud", "ndlaud"};
 
 bool audio_check_sdl(PAUDIO_INFO ainfo);
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
@@ -20,6 +21,7 @@ MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
     {"SDL Audio", "sdl", NULL, 0, &audio_sdl},
     {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
     {"ALSA", "alsa", &_alsa_lib, 1, NULL},
+    {"NDL Audio", "ndlaud", &_ndl_lib, 1, NULL},
 };
 
 AUDIO audio_pref_requested;
@@ -33,6 +35,11 @@ static void dlerror_log();
 
 AUDIO audio_init(const char *name, int argc, char *argv[])
 {
+    if (decoder_info.audio)
+    {
+        audio_current = AUDIO_DECODER;
+        return AUDIO_DECODER;
+    }
     AUDIO audio = audio_by_id(name);
     audio_pref_requested = audio;
     if (audio != AUDIO_AUTO)
@@ -64,6 +71,8 @@ static void *module_sym(char *fmt, AUDIO audio, int libidx)
 
 PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(char *audio_device)
 {
+    if (audio_current < 0)
+        return NULL;
     MODULE_DEFINITION pdef = audio_definitions[audio_current];
     if (pdef.symbols.ptr)
         return pdef.symbols.audio->callbacks;
@@ -170,6 +179,8 @@ bool checkinit(AUDIO system, int libidx, int argc, char *argv[])
 
 void audio_finalize()
 {
+    if (audio_current < 0)
+        return;
     audio_finalize_simple(audio_current, audio_current_libidx);
 }
 

@@ -44,7 +44,14 @@ int main(int argc, char *argv[])
     decoder_init(app_configuration->platform, argc, argv);
     audio_init(NULL, argc, argv);
     printf("Decoder module: %s\n", decoder_definitions[decoder_current].name);
-    printf("Audio module: %s\n", audio_definitions[audio_current].name);
+    if (audio_current == AUDIO_DECODER)
+    {
+        printf("Audio module: decoder implementation\n");
+    }
+    else if (audio_current >= 0)
+    {
+        printf("Audio module: %s\n", audio_definitions[audio_current].name);
+    }
 
     /* GUI */
     struct nk_context *ctx;
