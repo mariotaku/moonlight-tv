@@ -30,7 +30,6 @@ bool decoder_check(PDECODER_INFO dinfo)
     dinfo->audio = true;
     dinfo->hevc = true;
     dinfo->colorSpace = COLORSPACE_REC_709;
-    dinfo->colorRange = COLOR_RANGE_FULL;
     dinfo->maxBitrate = 50000;
     return true;
 }

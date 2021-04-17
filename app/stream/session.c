@@ -88,7 +88,8 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
     config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server->supportsHdr &&
                                 (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
     config->stream.colorSpace = decoder_info.colorSpace;
-    config->stream.colorRange = decoder_info.colorRange;
+    if (config->stream.enableHdr)
+        config->stream.colorRange = decoder_info.colorRange;
     // if (!decoder_info.audio)
     //     config->stream.audioConfiguration = audio_info.configuration;
 

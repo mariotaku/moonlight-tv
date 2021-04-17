@@ -29,7 +29,8 @@ bool decoder_check_ndl(PDECODER_INFO dinfo)
     NDL_DirectVideoClose();
     dinfo->valid = true;
     dinfo->accelerated = true;
-    dinfo->audio= true;
+    dinfo->audio = true;
+    dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->maxBitrate = 50000;
     return true;
 }
