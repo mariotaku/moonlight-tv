@@ -31,7 +31,6 @@
 static unsigned char *ffmpeg_buffer;
 
 pthread_mutex_t mutex_ffsw = PTHREAD_MUTEX_INITIALIZER;
-int sdlCurrentFrame, sdlNextFrame;
 
 static int setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
@@ -81,7 +80,7 @@ static int decode_submit(PDECODE_UNIT decodeUnit)
       AVFrame *frame = ffmpeg_get_frame(false);
       if (frame != NULL)
       {
-        sdlNextFrame++;
+        render_next_frame_ffmpeg++;
         render_queue_submit_ffmpeg(frame);
       }
 
