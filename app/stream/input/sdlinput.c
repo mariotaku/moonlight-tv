@@ -6,7 +6,7 @@
 #include "stream/session.h"
 #include "util/user_event.h"
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 #include <SDL_webOS.h>
 #endif
 

@@ -35,7 +35,7 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 #include "platform/webos/app_init.h"
 #define FORCE_FULLSCREEN
 #elif TARGET_RASPI
@@ -62,7 +62,7 @@ static void fps_cap(int diff);
 
 int app_init(int argc, char *argv[])
 {
-#if OS_WEBOS
+#if TARGET_WEBOS
     app_webos_init(argc, argv);
 #endif
     app_configuration = settings_load();
@@ -94,7 +94,7 @@ APP_WINDOW_CONTEXT app_window_create()
     SDL_FreeSurface(winicon);
     SDL_SetWindowMinimumSize(win, 640, 400);
 #endif
-#if OS_WEBOS
+#if TARGET_WEBOS
     app_webos_window_setup(win);
 #endif
     SDL_Log("Video Driver: %s\n", SDL_GetCurrentVideoDriver());
@@ -111,7 +111,7 @@ void app_destroy()
     gs_destroy(app_gs_client);
     free(app_configuration);
     decoder_finalize(decoder_current);
-#ifdef OS_WEBOS
+#ifdef TARGET_WEBOS
     app_webos_destroy();
 #endif
     SDL_GL_DeleteContext(gl);
@@ -188,7 +188,7 @@ static void app_process_events(struct nk_context *ctx)
                     ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
                 }
 
-#if OS_WEBOS
+#if TARGET_WEBOS
                 if (state == NAVKEY_STATE_DOWN && (navkey & NAVKEY_DPAD))
                 {
                     // Hide the cursor
@@ -201,7 +201,7 @@ static void app_process_events(struct nk_context *ctx)
             {
                 ui_set_input_mode(UI_INPUT_MODE_POINTER);
             }
-#if OS_WEBOS
+#if TARGET_WEBOS
             else if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_WEBOS_SCANCODE_EXIT)
             {
                 if (!streaming_running)

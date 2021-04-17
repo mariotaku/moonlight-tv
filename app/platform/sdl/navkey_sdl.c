@@ -1,6 +1,6 @@
 #include "navkey_sdl.h"
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 NAVKEY navkey_from_sdl_webos(SDL_Event ev);
 #endif
 
@@ -34,7 +34,7 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
             return NAVKEY_MENU;
         default:
         {
-#if OS_WEBOS
+#if TARGET_WEBOS
             NAVKEY navkey;
             if (navkey = navkey_from_sdl_webos(ev))
             {

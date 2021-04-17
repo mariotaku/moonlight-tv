@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 #include "platform/webos/os_info.h"
 #if HAVE_SDL
 #include <SDL_webOS.h>
@@ -13,7 +13,7 @@
 
 #include "stream/platform.h"
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 static char webos_release[32];
 static struct
 {
@@ -38,7 +38,7 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, "Decoder Module", NK_TEXT_LEFT);
     nk_label(ctx, decoder_definitions[decoder_current].name, NK_TEXT_RIGHT);
 
-#if OS_WEBOS
+#if TARGET_WEBOS
     nk_label(ctx, "webOS version", NK_TEXT_LEFT);
     nk_label(ctx, webos_release, NK_TEXT_RIGHT);
 #if HAVE_SDL
@@ -64,12 +64,12 @@ static int _itemcount()
 
 static void _onselect()
 {
-#if OS_WEBOS
+#if TARGET_WEBOS
     load_webos_info();
 #endif
 }
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 void load_webos_info()
 {
     webos_os_info_get_release(webos_release, sizeof(webos_release));

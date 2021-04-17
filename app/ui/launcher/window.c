@@ -15,7 +15,7 @@
 #include "ui/root.h"
 #include "ui/settings/window.h"
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 #include "platform/webos/app_init.h"
 #endif
 

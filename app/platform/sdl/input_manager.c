@@ -12,7 +12,7 @@ void inputmgr_init()
 {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     int numofmappings;
-#if OS_WEBOS
+#if TARGET_WEBOS
     numofmappings = SDL_GameControllerAddMappingsFromFile("assets/gamecontrollerdb.txt");
 #else
     numofmappings = SDL_GameControllerAddMappingsFromFile("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");

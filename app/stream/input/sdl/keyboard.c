@@ -71,7 +71,7 @@ static struct KeysDown *_pressed_keys;
 #undef LINKEDLIST_PREFIX
 #undef LINKEDLIST_DOUBLE
 
-#if OS_WEBOS
+#if TARGET_WEBOS
 bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode);
 #endif
 
@@ -137,7 +137,7 @@ void performPendingSpecialKeyCombo()
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 {
     short keyCode = 0;
-#if OS_WEBOS
+#if TARGET_WEBOS
     if (webos_intercept_remote_keys(event, &keyCode))
     {
         return;
