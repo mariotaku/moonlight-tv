@@ -28,7 +28,7 @@ const static unsigned int channelChecks[] = {
 };
 const static int channelChecksCount = sizeof(channelChecks) / sizeof(unsigned int);
 
-bool audio_check_ndlaud(PAUDIO_INFO dinfo)
+bool audio_check_ndlaud(PAUDIO_INFO ainfo)
 {
     for (int i = 0; i < channelChecksCount; i++)
     {
@@ -45,8 +45,8 @@ bool audio_check_ndlaud(PAUDIO_INFO dinfo)
         if (NDL_DirectAudioOpen(&info) == 0)
         {
             NDL_DirectAudioClose();
-            dinfo->valid = true;
-            dinfo->configuration = channelChecks[i];
+            ainfo->valid = true;
+            ainfo->configuration = channelChecks[i];
             return true;
         }
     }

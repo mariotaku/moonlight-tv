@@ -27,7 +27,7 @@
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
-#define MAX_CHANNEL_COUNT 6
+#define MAX_CHANNEL_COUNT 8
 #define FRAME_SIZE 240
 
 static OpusMSDecoder *decoder;
@@ -55,6 +55,15 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
         alsaMapping[4] = opusConfig->mapping[2];
         alsaMapping[5] = opusConfig->mapping[3];
     }
+    else if (opusConfig->channelCount == 8)
+    {
+        alsaMapping[2] = opusConfig->mapping[4];
+        alsaMapping[3] = opusConfig->mapping[5];
+        alsaMapping[4] = opusConfig->mapping[2];
+        alsaMapping[5] = opusConfig->mapping[3];
+        alsaMapping[6] = opusConfig->mapping[6];
+        alsaMapping[7] = opusConfig->mapping[7];
+    }
 
     decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams, opusConfig->coupledStreams, alsaMapping, &rc);
 
@@ -65,7 +74,7 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
     };
 
     char *audio_device = (char *)context;
-    dev = pa_simple_new(audio_device, "Moonlight Embedded", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, NULL, NULL, &error);
+    dev = pa_simple_new(audio_device, "Moonlight TV", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, NULL, NULL, &error);
 
     if (!dev)
     {

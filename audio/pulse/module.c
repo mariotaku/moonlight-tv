@@ -1,5 +1,15 @@
 #include "stream/api.h"
 
+#include <stdio.h>
+#include <pulse/simple.h>
+
+const static unsigned int channelChecks[] = {
+    AUDIO_CONFIGURATION_71_SURROUND,
+    AUDIO_CONFIGURATION_51_SURROUND,
+    AUDIO_CONFIGURATION_STEREO,
+};
+const static int channelChecksCount = sizeof(channelChecks) / sizeof(unsigned int);
+
 bool audio_init_pulse(int argc, char *argv[])
 {
     return true;
@@ -7,9 +17,24 @@ bool audio_init_pulse(int argc, char *argv[])
 
 bool audio_check_pulse(PAUDIO_INFO ainfo)
 {
-    ainfo->valid = true;
-    ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
-    return true;
+    for (int i = 0; i < channelChecksCount; i++)
+    {
+        pa_sample_spec spec = {
+            .format = PA_SAMPLE_S16LE,
+            .rate = 48000,
+            .channels = CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(channelChecks[i]),
+        };
+        pa_simple *dev;
+        int error;
+        if (dev = pa_simple_new(NULL, "Moonlight TV", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, NULL, NULL, &error))
+        {
+            pa_simple_free(dev);
+            ainfo->valid = true;
+            ainfo->configuration = channelChecks[i];
+            return true;
+        }
+    }
+    return false;
 }
 
 void audio_finalize_pulse()
