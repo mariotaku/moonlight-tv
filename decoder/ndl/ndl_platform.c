@@ -33,10 +33,10 @@ bool decoder_check(PDECODER_INFO dinfo)
         .videoWidth = 1270,
         .videoHeight = 720,
         .videoType = NDL_VIDEO_TYPE_H265,
-        .audioType = NDL_AUDIO_TYPE_OPUS,
-        .unknown2 = 0,
-        .sampleRate = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(48000),
-        .opusStreamHeader = NULL,
+        .audio.type = NDL_AUDIO_TYPE_OPUS,
+        .audio.opus.channels = 2,
+        .audio.opus.sampleRate = 48.000,
+        .audio.opus.streamHeader = NULL,
     };
     if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
         return false;

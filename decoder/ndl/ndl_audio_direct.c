@@ -34,9 +34,10 @@ static int channelCount;
 static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
 {
   channelCount = opusConfig->channelCount;
-  media_info.audioType = NDL_AUDIO_TYPE_OPUS;
-  media_info.sampleRate = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(opusConfig->sampleRate);
-  media_info.opusStreamHeader = NULL;
+  media_info.audio.type = NDL_AUDIO_TYPE_OPUS;
+  media_info.audio.opus.channels = opusConfig->channelCount;
+  media_info.audio.opus.sampleRate = (double) opusConfig->sampleRate / 1000.0f;
+  media_info.audio.opus.streamHeader = NULL;
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
     return -1;

@@ -57,8 +57,9 @@ static void connection_status_update(int status)
 
 static void connection_stage_failed(int stage, int errorCode)
 {
-  fprintf(stderr, "Connection failed at stage %d, errorCode = %d\n", stage, errorCode);
-  _streaming_errmsg_write("Connection failed at stage %d, errorCode = %d", stage, errorCode);
+  const char *stageName = LiGetStageName(stage);
+  fprintf(stderr, "Connection failed at %s, errorCode = %d\n", stageName, errorCode);
+  _streaming_errmsg_write("Connection failed at %d, errorCode = %d", stageName, errorCode);
 }
 
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
@@ -69,4 +70,5 @@ CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
     .connectionTerminated = connection_terminated,
     .logMessage = connection_log_message,
     .rumble = absinput_rumble,
-    .connectionStatusUpdate = connection_status_update};
+    .connectionStatusUpdate = connection_status_update,
+};
