@@ -6,7 +6,6 @@
 typedef void *APP_WINDOW_CONTEXT;
 
 extern PCONFIGURATION app_configuration;
-extern GS_CLIENT app_gs_client;
 extern int app_window_width, app_window_height;
 extern bool app_has_redraw, app_force_redraw;
 
@@ -25,3 +24,5 @@ void app_start_text_input(int x, int y, int w, int h);
 void app_stop_text_input();
 
 bool app_render_queue_submit(void *);
+
+GS_CLIENT app_gs_client_obtain();

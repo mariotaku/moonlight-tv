@@ -41,12 +41,10 @@
 bool app_has_redraw;
 
 PCONFIGURATION app_configuration = NULL;
-GS_CLIENT app_gs_client = NULL;
 
 int app_init(int argc, char *argv[])
 {
     app_configuration = settings_load();
-    app_gs_client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
     LGNC_SYSTEM_CALLBACKS_T callbacks = {
         .pfnJoystickEventCallback = _JoystickEventCallback,
         .pfnMsgHandler = _MsgEventHandler,
@@ -62,7 +60,6 @@ int app_init(int argc, char *argv[])
 
 void app_destroy()
 {
-    gs_destroy(app_gs_client);
     free(app_configuration);
     finalize_egl();
     LGNC_GAMEPAD_UnregisterCallback();

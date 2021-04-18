@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 
 #include "app.h"
 #define RES_IMPL
@@ -24,6 +25,9 @@
 #include "util/bus.h"
 
 bool running = true;
+
+static GS_CLIENT app_gs_client = NULL;
+static void app_gs_client_destroy();
 
 int main(int argc, char *argv[])
 {
@@ -91,6 +95,7 @@ int main(int argc, char *argv[])
 
     nk_platform_shutdown();
     backend_destroy();
+    app_gs_client_destroy();
     app_destroy();
     bus_destroy();
 
@@ -103,4 +108,21 @@ int main(int argc, char *argv[])
 void app_request_exit()
 {
     running = false;
+}
+
+GS_CLIENT app_gs_client_obtain()
+{
+    assert(app_configuration);
+    app_gs_client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+    assert(app_gs_client);
+    return app_gs_client;
+}
+
+void app_gs_client_destroy()
+{
+    if (app_gs_client)
+    {
+        gs_destroy(app_gs_client);
+        app_gs_client = NULL;
+    }
 }

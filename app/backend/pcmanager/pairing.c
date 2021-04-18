@@ -58,7 +58,7 @@ void *_pcmanager_pairing_action(cm_pin_request *req)
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
-    int ret = gs_pair(app_gs_client, server, (char *)req->arg1);
+    int ret = gs_pair(app_gs_client_obtain(), server, (char *)req->arg1);
     if (ret == GS_OK)
         resp->known = true;
     else
@@ -77,7 +77,7 @@ void *_pcmanager_unpairing_action(cm_pin_request *req)
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
     memcpy(server, req->server, sizeof(SERVER_DATA));
-    int ret = gs_unpair(app_gs_client, server);
+    int ret = gs_unpair(app_gs_client_obtain(), server);
     if (ret == GS_OK)
         resp->known = false;
     else

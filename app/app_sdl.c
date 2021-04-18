@@ -52,7 +52,6 @@ int app_window_width, app_window_height;
 bool app_has_redraw = false, app_force_redraw = false, app_should_redraw_background = false;
 
 PCONFIGURATION app_configuration = NULL;
-GS_CLIENT app_gs_client = NULL;
 
 static char wintitle[32];
 
@@ -66,8 +65,6 @@ int app_init(int argc, char *argv[])
     app_webos_init(argc, argv);
 #endif
     app_configuration = settings_load();
-    app_gs_client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
-    SDL_assert(app_gs_client);
     return 0;
 }
 
@@ -108,7 +105,6 @@ APP_WINDOW_CONTEXT app_window_create()
 
 void app_destroy()
 {
-    gs_destroy(app_gs_client);
     free(app_configuration);
     decoder_finalize(decoder_current);
 #ifdef TARGET_WEBOS
