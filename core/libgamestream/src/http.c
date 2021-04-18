@@ -86,7 +86,7 @@ int http_request(HTTP http, char *url, PHTTP_DATA data)
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
   curl_easy_setopt(curl, CURLOPT_URL, url);
 
-  if (http->verbosity >= 2)
+  if (http->verbosity)
     printf("Request %s\n", url);
   int ret = GS_FAILED;
   if (data->size > 0)
@@ -114,9 +114,10 @@ int http_request(HTTP http, char *url, PHTTP_DATA data)
     ret = GS_OUT_OF_MEMORY;
     goto finish;
   }
-
+  if (http->verbosity)
+    printf("Response of %s:\n", url);
   if (http->verbosity >= 2)
-    printf("Response:\n%s\n\n", data->memory);
+    printf("%s\n\n", data->memory);
 
   ret = GS_OK;
 finish:

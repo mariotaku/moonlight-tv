@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include "app.h"
 #define RES_IMPL
@@ -27,6 +28,7 @@
 bool running = true;
 
 static GS_CLIENT app_gs_client = NULL;
+static pthread_mutex_t app_gs_client_mutex = PTHREAD_MUTEX_INITIALIZER;
 static void app_gs_client_destroy();
 
 int main(int argc, char *argv[])
@@ -112,9 +114,12 @@ void app_request_exit()
 
 GS_CLIENT app_gs_client_obtain()
 {
+    pthread_mutex_lock(&app_gs_client_mutex);
     assert(app_configuration);
-    app_gs_client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+    if (!app_gs_client)
+        app_gs_client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
     assert(app_gs_client);
+    pthread_mutex_unlock(&app_gs_client_mutex);
     return app_gs_client;
 }
 
@@ -124,5 +129,7 @@ void app_gs_client_destroy()
     {
         gs_destroy(app_gs_client);
         app_gs_client = NULL;
+        pthread_mutex_lock(&app_gs_client_mutex);
+        // Further calls to obtain gs client will be locked
     }
 }
