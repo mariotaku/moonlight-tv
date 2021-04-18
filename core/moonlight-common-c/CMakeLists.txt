@@ -1,29 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
 
-set(HEADERS
-    "moonlight-common-c/enet/include/enet/callbacks.h"
-    "moonlight-common-c/enet/include/enet/enet.h"
-    "moonlight-common-c/enet/include/enet/list.h"
-    "moonlight-common-c/enet/include/enet/protocol.h"
-    "moonlight-common-c/enet/include/enet/time.h"
-    "moonlight-common-c/enet/include/enet/types.h"
-    "moonlight-common-c/enet/include/enet/unix.h"
-    "moonlight-common-c/enet/include/enet/utility.h"
-    "moonlight-common-c/enet/include/enet/win32.h"
-    "moonlight-common-c/reedsolomon/rs.h"
-    "moonlight-common-c/src/ByteBuffer.h"
-    "moonlight-common-c/src/Input.h"
-    "moonlight-common-c/src/Limelight-internal.h"
-    "moonlight-common-c/src/Limelight.h"
-    "moonlight-common-c/src/LinkedBlockingQueue.h"
-    "moonlight-common-c/src/Platform.h"
-    "moonlight-common-c/src/PlatformSockets.h"
-    "moonlight-common-c/src/PlatformThreads.h"
-    "moonlight-common-c/src/RtpFecQueue.h"
-    "moonlight-common-c/src/RtpReorderQueue.h"
-    "moonlight-common-c/src/Rtsp.h"
-)
-
 # Update with `find moonlight-common-c/ -name '*.c' -printf '    "%p"\n'`
 set(SRC
     "moonlight-common-c/enet/callbacks.c"
@@ -46,6 +22,7 @@ set(SRC
     "moonlight-common-c/src/LinkedBlockingQueue.c"
     "moonlight-common-c/src/Misc.c"
     "moonlight-common-c/src/Platform.c"
+    "moonlight-common-c/src/PlatformCrypto.c"
     "moonlight-common-c/src/PlatformSockets.c"
     "moonlight-common-c/src/RtpFecQueue.c"
     "moonlight-common-c/src/RtpReorderQueue.c"
@@ -57,7 +34,7 @@ set(SRC
     "moonlight-common-c/src/VideoStream.c"
 )
 
-add_library(moonlight-common-c ${INCLUDES} ${SRC})
+add_library(moonlight-common-c ${SRC})
 
 set_target_properties(moonlight-common-c PROPERTIES
     PUBLIC_HEADER         moonlight-common-c/src/Limelight.h
@@ -69,6 +46,7 @@ target_compile_definitions(moonlight-common-c PRIVATE
     HAS_SOCKLEN_T=1
     HAS_FCNTL=1
     NO_MSGAPI=1
+    USE_MBEDTLS=1
 )
 
 target_include_directories(moonlight-common-c PUBLIC
@@ -78,8 +56,6 @@ target_include_directories(moonlight-common-c PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/mbed-openssl-compat>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>"
-    PRIVATE "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/mbedtls/include>"
 )
 
-add_subdirectory(mbed-openssl-compat)
-target_link_libraries(moonlight-common-c PRIVATE mbed-openssl-compat)
+target_link_libraries(moonlight-common-c mbedcrypto)
