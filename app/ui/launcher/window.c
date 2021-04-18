@@ -435,6 +435,10 @@ void _launcher_modal_flags_update()
             break;
         }
     }
+    if (pcmanager_setup_running)
+    {
+        _launcher_modals |= LAUNCHER_MODAL_CERTGEN;
+    }
     if (computer_manager_executing_quitapp)
     {
         _launcher_modals |= LAUNCHER_MODAL_QUITAPP;

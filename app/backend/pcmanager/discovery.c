@@ -242,6 +242,8 @@ open_client_sockets(int *sockets, int max_sockets, int port)
 
 void *_computer_manager_polling_action(void *data)
 {
+    if (!app_gs_client_ready())
+        return NULL;
     computer_discovery_running = true;
 #if _GNU_SOURCE
     pthread_setname_np(pthread_self(), "hostscan");

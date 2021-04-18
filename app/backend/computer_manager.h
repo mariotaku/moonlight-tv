@@ -8,6 +8,7 @@
 
 extern PSERVER_LIST computer_list;
 extern bool computer_discovery_running;
+extern bool pcmanager_setup_running;
 
 typedef struct PCMANAGER_RESP_T
 {

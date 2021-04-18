@@ -30,6 +30,20 @@ void _quitapp_window(struct nk_context *ctx)
     nk_end(ctx);
 }
 
+void _certgen_window(struct nk_context *ctx)
+{
+    struct nk_rect s = nk_rect_s_centered(ui_logic_width, ui_logic_height, 330, 60);
+    if (nk_begin_titled(ctx, "certgen_progress", "", s, NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+    {
+        struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
+        int content_height_remaining = (int)content_size.y;
+        nk_layout_row_dynamic(ctx, content_height_remaining, 1);
+
+        nk_label_multiline(ctx, "Generating certs...");
+    }
+    nk_end(ctx);
+}
+
 void _pairing_error_popup(struct nk_context *ctx)
 {
     const char *message = pairing_computer_state.error ? pairing_computer_state.error : "Pairing error.";
@@ -180,6 +194,11 @@ void _launcher_modal_popups_show(struct nk_context *ctx)
 
 void _launcher_modal_windows_show(struct nk_context *ctx)
 {
+    if (_launcher_modals & LAUNCHER_MODAL_CERTGEN)
+    {
+        _certgen_window(ctx);
+        return;
+    }
     if (_launcher_modals & LAUNCHER_MODAL_MANUAL_ADD)
     {
         _manual_add_window(ctx);

@@ -133,3 +133,8 @@ void app_gs_client_destroy()
         // Further calls to obtain gs client will be locked
     }
 }
+
+bool app_gs_client_ready()
+{
+    return app_gs_client != NULL;
+}

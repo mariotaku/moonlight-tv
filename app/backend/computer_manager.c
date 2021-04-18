@@ -33,14 +33,17 @@ static void *_pcmanager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(PSERVER_DATA data);
 static void pcmanager_load_known_hosts();
 static void pcmanager_save_known_hosts();
+static void pcmanager_client_setup();
 
 static void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp);
+
+bool pcmanager_setup_running = false;
 
 void computer_manager_init()
 {
     computer_list = NULL;
     pcmanager_load_known_hosts();
-    computer_manager_run_scan();
+    pcmanager_client_setup();
     computer_manager_auto_discovery_start();
 }
 
@@ -339,4 +342,27 @@ void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp)
     node->known = resp->known;
     node->server = resp->server;
     resp->server_referenced = true;
+}
+
+static void _pcmanager_client_setup_cb(void *data)
+{
+    pcmanager_setup_running = data != NULL;
+    if (data == NULL)
+    {
+        computer_manager_run_scan();
+    }
+}
+
+static void *_pcmanager_client_setup_action(void *unused)
+{
+    bus_pushaction(_pcmanager_client_setup_cb, (void *)1);
+    app_gs_client_obtain();
+    bus_pushaction(_pcmanager_client_setup_cb, (void *)0);
+    return NULL;
+}
+
+void pcmanager_client_setup()
+{
+    pthread_t setup_thread;
+    pthread_create(&setup_thread, NULL, _pcmanager_client_setup_action, NULL);
 }
