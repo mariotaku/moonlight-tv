@@ -17,12 +17,18 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "audio.h"
+#include "stream/api.h"
+#include "ndl_common.h"
 
 #include <NDL_directmedia.h>
 
 #include <stdio.h>
 #include <opus_multistream.h>
+
+#define audio_callbacks PLUGIN_SYMBOL_NAME(audio_callbacks)
+
+#define MAX_CHANNEL_COUNT 8
+#define FRAME_SIZE 240
 
 static OpusMSDecoder *decoder;
 static short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];
@@ -43,8 +49,8 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
       .lowerThreshold = 16,
       .channel = NDL_DIRECTAUDIO_CH_MAIN,
       .srcType = NDL_DIRECTAUDIO_SRC_TYPE_PCM,
-      .samplingFreq = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(opusConfig->sampleRate)};
-
+      .samplingFreq = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(opusConfig->sampleRate),
+  };
   if (NDL_DirectAudioOpen(&info) < 0)
   {
     printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
@@ -75,7 +81,7 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
   }
 }
 
-AUDIO_RENDERER_CALLBACKS audio_callbacks_ndl = {
+AUDIO_RENDERER_CALLBACKS audio_callbacks = {
     .init = ndl_renderer_init,
     .cleanup = ndl_renderer_cleanup,
     .decodeAndPlaySample = ndl_renderer_decode_and_play_sample,

@@ -25,10 +25,15 @@
 
 typedef struct DECODER_INFO
 {
+    /* Decoder passes the check */
     bool valid;
+    /* Decoder supports hardware acceleration */
     bool accelerated;
+    /* Decoder has built-in audio feature */
     bool audio;
+    /* Decoder supports HEVC video stream */
     bool hevc;
+    /* Decoder supports HDR */
     int hdr;
     int colorSpace;
     int colorRange;

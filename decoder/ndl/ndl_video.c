@@ -1,3 +1,6 @@
+#include "stream/api.h"
+#include "ndl_common.h"
+
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -10,12 +13,38 @@
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
+#define decoder_callbacks PLUGIN_SYMBOL_NAME(decoder_callbacks)
+
 static char *ndl_buffer;
 
 static int ndl_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
+#if NDL_WEBOS5
+  switch (videoFormat)
+  {
+  case VIDEO_FORMAT_H264:
+    media_info.videoType = NDL_VIDEO_TYPE_H264;
+    break;
+  case VIDEO_FORMAT_H265:
+  case VIDEO_FORMAT_H265_MAIN10:
+    media_info.videoType = NDL_VIDEO_TYPE_H265;
+    break;
+  default:
+    return -1;
+  }
+  media_info.videoWidth = width;
+  media_info.videoHeight = height;
+  media_info.unknown1 = 0;
+  // Unload player before reloading
+  if (media_loaded && NDL_DirectMediaUnload() != 0)
+    return -1;
+  if (NDL_DirectMediaLoad(&media_info, media_load_callback) == 0)
+    media_loaded = true;
+  else
+#else
   NDL_DIRECTVIDEO_DATA_INFO info = {width, height};
-  if (NDL_DirectVideoOpen(&info) < 0)
+  if (NDL_DirectVideoOpen(&info) != 0)
+#endif
   {
     fprintf(stderr, "Couldn't initialize video decoding\n");
     return -1;
@@ -24,16 +53,31 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   if (ndl_buffer == NULL)
   {
     fprintf(stderr, "Not enough memory\n");
+#if NDL_WEBOS5
+    NDL_DirectMediaUnload();
+    media_loaded = false;
+#else
     NDL_DirectVideoClose();
+#endif
     return -1;
   }
-
+#if NDL_WEBOS5
+  media_loaded = true;
+#endif
   return 0;
 }
 
 static void ndl_cleanup()
 {
+#if NDL_WEBOS5
+  if (media_loaded)
+  {
+    NDL_DirectMediaUnload();
+    media_loaded = false;
+  }
+#else
   NDL_DirectVideoClose();
+#endif
   if (ndl_buffer)
   {
     free(ndl_buffer);
@@ -50,7 +94,12 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
       memcpy(ndl_buffer + length, entry->data, entry->length);
       length += entry->length;
     }
-    if (NDL_DirectVideoPlay(ndl_buffer, length) == -1)
+
+#if NDL_WEBOS5
+    if (NDL_DirectVideoPlay(ndl_buffer, length, 0) != 0)
+#else
+    if (NDL_DirectVideoPlay(ndl_buffer, length) != 0)
+#endif
     {
       fprintf(stderr, "NDL_DirectVideoPlay returned -1\n");
     }
@@ -64,7 +113,7 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
   return DR_OK;
 }
 
-DECODER_RENDERER_CALLBACKS decoder_callbacks_ndl = {
+DECODER_RENDERER_CALLBACKS decoder_callbacks = {
     .setup = ndl_setup,
     .cleanup = ndl_cleanup,
     .submitDecodeUnit = ndl_submit_decode_unit,
