@@ -47,6 +47,11 @@ int main(int argc, char *argv[])
     {
         return ret;
     }
+
+    /* GUI */
+    struct nk_context *ctx;
+    APP_WINDOW_CONTEXT win = app_window_create();
+
     decoder_init(app_configuration->platform, argc, argv);
     audio_init(NULL, argc, argv);
     printf("Decoder module: %s\n", decoder_definitions[decoder_current].name);
@@ -58,10 +63,6 @@ int main(int argc, char *argv[])
     {
         printf("Audio module: %s\n", audio_definitions[audio_current].name);
     }
-
-    /* GUI */
-    struct nk_context *ctx;
-    APP_WINDOW_CONTEXT win = app_window_create();
 
     backend_init();
 

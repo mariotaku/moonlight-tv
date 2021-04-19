@@ -91,9 +91,6 @@ APP_WINDOW_CONTEXT app_window_create()
     SDL_FreeSurface(winicon);
     SDL_SetWindowMinimumSize(win, 640, 400);
 #endif
-#if TARGET_WEBOS
-    app_webos_window_setup(win);
-#endif
     SDL_Log("Video Driver: %s\n", SDL_GetCurrentVideoDriver());
 
     gl = SDL_GL_CreateContext(win);
