@@ -97,19 +97,24 @@ void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event)
         gamepad->leftStickX = event->value;
         break;
     case SDL_CONTROLLER_AXIS_LEFTY:
-        gamepad->leftStickY = -event->value - 1;
+        // Signed values have one more negative value than
+        // positive value, so inverting the sign on -32768
+        // could actually cause the value to overflow and
+        // wrap around to be negative again. Avoid that by
+        // capping the value at 32767.
+        gamepad->leftStickY = -SDL_max(event->value, (short)-32767);
         break;
     case SDL_CONTROLLER_AXIS_RIGHTX:
         gamepad->rightStickX = event->value;
         break;
     case SDL_CONTROLLER_AXIS_RIGHTY:
-        gamepad->rightStickY = -event->value - 1;
+        gamepad->rightStickY = -SDL_max(event->value, (short)-32767);
         break;
     case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-        gamepad->leftTrigger = (event->value >> 8) * 2;
+        gamepad->leftTrigger = (unsigned char)(event->value * 255UL / 32767);
         break;
     case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-        gamepad->rightTrigger = (event->value >> 8) * 2;
+        gamepad->rightTrigger = (unsigned char)(event->value * 255UL / 32767);
         break;
     default:
         return;
