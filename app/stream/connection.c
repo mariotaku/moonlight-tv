@@ -59,7 +59,7 @@ static void connection_stage_failed(int stage, int errorCode)
 {
   const char *stageName = LiGetStageName(stage);
   fprintf(stderr, "Connection failed at %s, errorCode = %d\n", stageName, errorCode);
-  _streaming_errmsg_write("Connection failed at %d, errorCode = %d", stageName, errorCode);
+  _streaming_errmsg_write("Connection failed at %s, errorCode = %d", stageName, errorCode);
 }
 
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
