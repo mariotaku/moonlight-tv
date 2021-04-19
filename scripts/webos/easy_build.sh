@@ -10,13 +10,16 @@ fi
 echo "Update submodules"
 git submodule update --init --recursive
 
+echo "Setup environment"
+source /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi
+
 echo "Project configuration"
 if [ ! -d build ]; then
     mkdir build
 fi
 
 cd build
-cmake .. -DTARGET_WEBOS=ON -DCMAKE_TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake
+cmake .. -DTARGET_WEBOS=ON
 
 echo "Start build"
 make webos-package-moonlight
