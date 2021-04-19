@@ -16,7 +16,7 @@ target_compile_definitions(moonlight-ndl PRIVATE PLUGIN_SYMBOL_SUFFIX=ndl)
 
 install(TARGETS moonlight-ndl LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_library(moonlight-ndl-webos5 SHARED 
         ndl_platform.c
         ndl_audio_direct.c
@@ -33,4 +33,4 @@ IF(CMAKE_BUILD_TYPE MATCHES "Debug")
     target_compile_definitions(moonlight-ndl-webos5 PRIVATE NDL_WEBOS5 PLUGIN_SYMBOL_SUFFIX=ndl_webos5)
 
     install(TARGETS moonlight-ndl-webos5 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+endif()
