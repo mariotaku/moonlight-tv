@@ -19,7 +19,8 @@ if [ ! -d build ]; then
 fi
 
 cd build
-cmake .. -DTARGET_WEBOS=ON
+cmake .. -DTARGET_WEBOS=ON -DCMAKE_BUILD_TYPE=Debug
 
 echo "Start build"
-make webos-package-moonlight
+cmake --install .
+cmake --build . --target webos-package-moonlight
