@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <NDL_directmedia.h>
 #include "stream/api.h"
@@ -23,6 +24,9 @@ bool decoder_init(int argc, char *argv[])
         ndl_initialized = false;
         fprintf(stderr, "Unable to initialize NDL: %s\n", NDL_DirectMediaGetError());
     }
+#if NDL_WEBOS5
+    memset(&media_info, 0, sizeof(media_info));
+#endif
     return ndl_initialized;
 }
 
@@ -30,9 +34,9 @@ bool decoder_check(PDECODER_INFO dinfo)
 {
 #if NDL_WEBOS5
     NDL_DIRECTMEDIA_DATA_INFO info = {
-        .videoWidth = 1270,
-        .videoHeight = 720,
-        .videoType = NDL_VIDEO_TYPE_H265,
+        .video.type = NDL_VIDEO_TYPE_H265,
+        .video.width = 1270,
+        .video.height = 720,
         .audio.type = NDL_AUDIO_TYPE_OPUS,
         .audio.opus.channels = 2,
         .audio.opus.sampleRate = 48.000,

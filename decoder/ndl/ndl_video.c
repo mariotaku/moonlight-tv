@@ -23,18 +23,18 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   switch (videoFormat)
   {
   case VIDEO_FORMAT_H264:
-    media_info.videoType = NDL_VIDEO_TYPE_H264;
+    media_info.video.type = NDL_VIDEO_TYPE_H264;
     break;
   case VIDEO_FORMAT_H265:
   case VIDEO_FORMAT_H265_MAIN10:
-    media_info.videoType = NDL_VIDEO_TYPE_H265;
+    media_info.video.type = NDL_VIDEO_TYPE_H265;
     break;
   default:
     return ERROR_UNKNOWN_CODEC;
   }
-  media_info.videoWidth = width;
-  media_info.videoHeight = height;
-  media_info.unknown1 = 0;
+  media_info.video.width = width;
+  media_info.video.height = height;
+  media_info.video.unknown1 = 0;
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
     return ERROR_DECODER_CLOSE_FAILED;
@@ -75,6 +75,7 @@ static void ndl_cleanup()
     NDL_DirectMediaUnload();
     media_loaded = false;
   }
+  memset(&media_info.video, 0, sizeof(media_info.video));
 #else
   NDL_DirectVideoClose();
 #endif

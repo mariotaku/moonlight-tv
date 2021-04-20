@@ -57,6 +57,7 @@ static void ndl_renderer_cleanup()
     NDL_DirectMediaUnload();
     media_loaded = false;
   }
+  memset(&media_info.audio, 0, sizeof(media_info.audio));
 }
 
 static void ndl_renderer_decode_and_play_sample(char *data, int length)
