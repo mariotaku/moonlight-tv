@@ -38,8 +38,6 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
     return ERROR_DECODER_CLOSE_FAILED;
-  printf("[NDL] NDL_DirectMediaLoad for video, type=%d, width=%d, height=%d, audio.type=%d\n", media_info.video.type, media_info.video.width,
-        media_info.video.height, media_info.audio.type);
   if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
   {
     fprintf(stderr, "NDL_DirectMediaLoad failed: %s\n", NDL_DirectMediaGetError());
@@ -66,9 +64,6 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
 #endif
     return ERROR_OUT_OF_MEMORY;
   }
-#if NDL_WEBOS5
-  media_loaded = true;
-#endif
   return 0;
 }
 
@@ -92,6 +87,10 @@ static void ndl_cleanup()
 
 static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
 {
+#if NDL_WEBOS5
+  if (!media_loaded)
+    return DR_OK;
+#endif
   if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
   {
     int length = 0;

@@ -24,6 +24,9 @@
 #include "ui/root.h"
 #include "ui/fonts.h"
 #include "util/bus.h"
+#include "util/logging.h"
+
+FILE *app_logfile;
 
 bool running = true;
 
@@ -34,9 +37,12 @@ static void app_gs_client_destroy();
 int main(int argc, char *argv[])
 {
 #if TARGET_WEBOS || TARGET_LGNC
+    app_logfile = fopen("/tmp/" APPID ".log", "a+");
+    setvbuf(app_logfile, NULL, _IONBF, 0);
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
         REDIR_STDOUT(APPID);
 #endif
+    applog_d("APP", "main() init");
 #if TARGET_RASPI
     setenv("SDL_VIDEODRIVER", "rpi", 1);
 #endif
@@ -54,14 +60,14 @@ int main(int argc, char *argv[])
 
     decoder_init(app_configuration->platform, argc, argv);
     audio_init(NULL, argc, argv);
-    printf("Decoder module: %s\n", decoder_definitions[decoder_current].name);
+    applog_i("APP", "Decoder module: %s", decoder_definitions[decoder_current].name);
     if (audio_current == AUDIO_DECODER)
     {
-        printf("Audio module: decoder implementation\n");
+        applog_i("APP", "Audio module: decoder implementation\n");
     }
     else if (audio_current >= 0)
     {
-        printf("Audio module: %s\n", audio_definitions[audio_current].name);
+        applog_i("APP", "Audio module: %s", audio_definitions[audio_current].name);
     }
 
     backend_init();
@@ -102,9 +108,7 @@ int main(int argc, char *argv[])
     app_destroy();
     bus_destroy();
 
-#if DEBUG
-    printf("Quitted gracefully :)\n");
-#endif
+    applog_d("APP", "Quitted gracefully :)");
     return 0;
 }
 

@@ -21,6 +21,7 @@
 
 #include "backend/computer_manager.h"
 
+#include "util/logging.h"
 #include "util/memlog.h"
 
 STREAMING_STATUS streaming_status = STREAMING_NONE;
@@ -147,10 +148,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     for (int i = 0; i < gamepads && i < 4; i++)
         gamepad_mask = (gamepad_mask << 1) + 1;
 
-    if (config->debug_level > 0)
-    {
-        printf("Launch app %d...\n", appId);
-    }
+    applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_obtain();
     int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0)
@@ -162,10 +160,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     int drFlags = 0;
 
-    if (config->debug_level > 0)
-    {
-        printf("Stream %d x %d, %d fps, %d kbps\n", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
-    }
+    applog_i("Session", "Stream %d x %d, %d fps, %d kbps", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
 
     PDECODER_RENDERER_CALLBACKS vdec = decoder_get_video();
     PAUDIO_RENDERER_CALLBACKS adec = module_get_audio(config->audio_device);
@@ -201,8 +196,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     if (streaming_quitapp_requested)
     {
-        if (config->debug_level > 0)
-            printf("Sending app quit request ...\n");
+        applog_i("Session", "Sending app quit request ...");
         gs_quit_app(client, server);
     }
     pcmanager_request_update(server);

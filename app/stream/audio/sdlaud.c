@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "stream/api.h"
+#include "util/logging.h"
 
 #include <SDL.h>
 #include <SDL_audio.h>
@@ -54,13 +55,13 @@ static int sdl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
   if (dev == 0)
   {
-    printf("Failed to open audio: %s\n", SDL_GetError());
+    applog_e("SDLAud", "Failed to open audio: %s", SDL_GetError());
     return -1;
   }
   else
   {
     if (have.format != want.format) // we let this one thing change.
-      printf("We didn't get requested audio format.\n");
+      applog_w("SDLAud", "We didn't get requested audio format.");
     SDL_PauseAudioDevice(dev, 0); // start audio playing.
   }
 
@@ -85,7 +86,7 @@ static void sdl_renderer_decode_and_play_sample(char *data, int length)
   }
   else
   {
-    printf("Opus error from decode: %d\n", decodeLen);
+    applog_e("SDLAud", "Opus error from decode: %d", decodeLen);
   }
 }
 

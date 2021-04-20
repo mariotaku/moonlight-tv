@@ -19,6 +19,7 @@
 
 #include "stream/api.h"
 #include "ndl_common.h"
+#include "util/logging.h"
 
 #include <NDL_directmedia.h>
 
@@ -37,14 +38,14 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   channelCount = opusConfig->channelCount;
   media_info.audio.type = NDL_AUDIO_TYPE_OPUS;
   media_info.audio.opus.channels = opusConfig->channelCount;
-  media_info.audio.opus.sampleRate = (double) opusConfig->sampleRate / 1000.0f;
+  media_info.audio.opus.sampleRate = (double)opusConfig->sampleRate / 1000.0f;
   media_info.audio.opus.streamHeader = NULL;
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
     return ERROR_AUDIO_CLOSE_FAILED;
   if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
   {
-    printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
+    applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
   media_loaded = true;
@@ -63,9 +64,11 @@ static void ndl_renderer_cleanup()
 
 static void ndl_renderer_decode_and_play_sample(char *data, int length)
 {
+  if (!media_loaded)
+    return;
   if (NDL_DirectAudioPlay(data, length, 0) != 0)
   {
-    printf("[NDL] Error playing sample\n");
+    applog_e("NDL", "Error playing sample");
   }
 }
 

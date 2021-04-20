@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "util/logging.h"
+
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
 static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
 static MODULE_LIB_DEFINITION _ndl_lib = {"ndlaud", "ndlaud"};
@@ -201,5 +203,5 @@ AUDIO audio_by_id(const char *id)
 
 void dlerror_log()
 {
-    fprintf(stderr, "Unable to load audio module: %s\n", dlerror());
+    applog_w("APP", "Unable to load audio module: %s\n", dlerror());
 }

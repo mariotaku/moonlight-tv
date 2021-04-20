@@ -270,7 +270,7 @@ function(moonlight_add_module)
 endfunction()
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}" APPLOG_TO_FILE)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
@@ -291,7 +291,7 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
 elseif (TARGET_LGNC)
-    target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
+    target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}" APPLOG_TO_FILE)
     target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})

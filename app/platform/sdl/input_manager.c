@@ -7,6 +7,7 @@
 #include <SDL.h>
 
 #include "events.h"
+#include "util/logging.h"
 
 void inputmgr_init()
 {
@@ -17,7 +18,7 @@ void inputmgr_init()
 #else
     numofmappings = SDL_GameControllerAddMappingsFromFile("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");
 #endif
-    printf("Input manager init, %d game controller mappings loaded\n", numofmappings);
+    applog_i("Input", "Input manager init, %d game controller mappings loaded", numofmappings);
     absinput_init();
 }
 
@@ -44,14 +45,14 @@ void inputmgr_sdl_handle_event(SDL_Event ev)
     }
     else if (ev.type == SDL_CONTROLLERDEVICEADDED)
     {
-        printf("SDL_CONTROLLERDEVICEADDED\n");
+        applog_d("Input", "SDL_CONTROLLERDEVICEADDED");
     }
     else if (ev.type == SDL_CONTROLLERDEVICEREMOVED)
     {
-        printf("SDL_CONTROLLERDEVICEREMOVED\n");
+        applog_d("Input", "SDL_CONTROLLERDEVICEREMOVED");
     }
     else if (ev.type == SDL_CONTROLLERDEVICEREMAPPED)
     {
-        printf("SDL_CONTROLLERDEVICEREMAPPED\n");
+        applog_d("Input", "SDL_CONTROLLERDEVICEREMAPPED");
     }
 }

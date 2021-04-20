@@ -9,6 +9,7 @@
 #include "application_manager.h"
 #include "computer_manager.h"
 #include "util/bus.h"
+#include "util/logging.h"
 
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
@@ -68,7 +69,7 @@ void *_application_manager_applist_action(PSERVER_LIST node)
     int ret;
     if ((ret = gs_applist(app_gs_client_obtain(), (PSERVER_DATA)node->server, &list)) != GS_OK)
     {
-        fprintf(stderr, "Can't get app list: %d\n", ret);
+        applog_w("AppMgr", "Can't get app list: %d", ret);
         bus_pushevent(USER_AM_APPLIST_LOADED, node, NULL);
         return NULL;
     }

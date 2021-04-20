@@ -26,6 +26,7 @@
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
+#include "util/logging.h"
 #include "util/memlog.h"
 
 enum IMAGE_STATE_T
@@ -146,11 +147,11 @@ void *coverloader_worker(void *unused)
             coverloader_notify_change(req, IMAGE_STATE_FINISHED, NULL);
             continue;
         }
-        printf("Cover fetched for %d\n", req->id);
+        applog_d("Cover", "Cover fetched for %d", req->id);
         // Now the file is in local cache, load again
         if (coverloader_decode_image(req, &decoded))
         {
-            printf("Downloaded cover decoded for %d\n", req->id);
+            applog_d("Cover", "Downloaded cover decoded for %d", req->id);
             coverloader_notify_decoded(req, &decoded);
             continue;
         }

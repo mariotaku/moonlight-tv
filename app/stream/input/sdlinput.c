@@ -5,6 +5,7 @@
 
 #include "stream/session.h"
 #include "util/user_event.h"
+#include "util/logging.h"
 
 #if TARGET_WEBOS
 #include <SDL_webOS.h>
@@ -115,31 +116,6 @@ bool absinput_dispatch_event(SDL_Event ev)
     return false;
 }
 
-bool absinput_controllerdevice_event(SDL_Event ev)
-{
-    switch (ev.type)
-    {
-    case SDL_CONTROLLERDEVICEADDED:
-    {
-        const char *name = SDL_GameControllerNameForIndex(ev.cdevice.which);
-        printf("SDL_CONTROLLERDEVICEADDED: %s(%d) connected\n", name, ev.cdevice.which);
-        break;
-    }
-    case SDL_CONTROLLERDEVICEREMOVED:
-    {
-        const char *name = SDL_GameControllerNameForIndex(ev.cdevice.which);
-        printf("SDL_CONTROLLERDEVICEREMOVED: %s(%d) disconnected\n", name, ev.cdevice.which);
-        break;
-    }
-    case SDL_CONTROLLERDEVICEREMAPPED:
-        printf("SDL_CONTROLLERDEVICEREMAPPED, which: %d\n", ev.cdevice.which);
-        break;
-    default:
-        break;
-    }
-    return false;
-}
-
 void release_gamecontroller_buttons(int which)
 {
     PGAMEPAD_STATE gamepad;
@@ -167,7 +143,7 @@ bool absinput_init_gamepad(int joystick_index)
         SDL_GameController *controller = SDL_GameControllerOpen(joystick_index);
         if (!controller)
         {
-            fprintf(stderr, "Could not open gamecontroller %i: %s\n", joystick_index, SDL_GetError());
+            applog_e("Input", "Could not open gamecontroller %i: %s", joystick_index, SDL_GetError());
             return true;
         }
 
@@ -183,7 +159,7 @@ bool absinput_init_gamepad(int joystick_index)
         PGAMEPAD_STATE state = get_gamepad(sdl_id);
         state->haptic = haptic;
         state->haptic_effect_id = -1;
-        printf("Controller #%d connected, sdl_id: %d\n", state->id, sdl_id);
+        applog_i("Input", "Controller #%d connected, sdl_id: %d", state->id, sdl_id);
         return true;
     }
     return false;
@@ -199,7 +175,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id)
     SDL_GameController *controller = SDL_GameControllerFromInstanceID(sdl_id);
     if (!controller)
     {
-        fprintf(stderr, "Could not find gamecontroller %i: %s\n", sdl_id, SDL_GetError());
+        applog_w("Input", "Could not find gamecontroller %i: %s", sdl_id, SDL_GetError());
         return;
     }
     // Reduce number of connected gamepads
@@ -211,7 +187,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id)
         SDL_HapticClose(state->haptic);
     }
     SDL_GameControllerClose(controller);
-    printf("Controller #%d disconnected, sdl_id: %d\n", state->id, sdl_id);
+    applog_i("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
     // Release the state so it can be reused later
     memset(state, 0, sizeof(GAMEPAD_STATE));
 }

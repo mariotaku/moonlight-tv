@@ -18,6 +18,7 @@
  */
 
 #include "stream/api.h"
+#include "util/logging.h"
 #include "ndl_common.h"
 
 #include <NDL_directmedia.h>
@@ -53,7 +54,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   };
   if (NDL_DirectAudioOpen(&info) != 0)
   {
-    printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
+    applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
 
@@ -77,7 +78,7 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
   }
   else
   {
-    printf("Opus error from decode: %d\n", decodeLen);
+    applog_e("NDL", "Opus error from decode: %d", decodeLen);
   }
 }
 

@@ -23,6 +23,7 @@
 #include "stream/platform.h"
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "util/logging.h"
 
 PSERVER_LIST selected_server_node;
 
@@ -86,7 +87,7 @@ void launcher_window_init(struct nk_context *ctx)
     launcher_default_cover = nk_image_id(0);
     if (!nk_imageloadm(res_default_cover_data, res_default_cover_size, &launcher_default_cover))
     {
-        fprintf(stderr, "Cannot find assets/defcover.png\n");
+        applog_e("UI", "Cannot load defcover.png");
         abort();
     }
     nk_image2texture(&launcher_default_cover, 0);

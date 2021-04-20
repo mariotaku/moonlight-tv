@@ -34,6 +34,7 @@
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "util/logging.h"
 
 #if TARGET_WEBOS
 #include "platform/webos/app_init.h"
@@ -217,7 +218,7 @@ static void app_process_events(struct nk_context *ctx)
                 handled = handled || ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
                 if (!handled)
                 {
-                    fprintf(stderr, "Nobody handles event %d\n", evt.user.code);
+                    applog_w("Event", "Nobody handles event %d", evt.user.code);
                 }
             }
         }

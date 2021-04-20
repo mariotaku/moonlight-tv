@@ -7,6 +7,7 @@
 #include <Limelight.h>
 
 #include "util.h"
+#include "util/logging.h"
 
 #if TARGET_LGNC
 extern DECODER_SYMBOLS decoder_lgnc;
@@ -238,5 +239,5 @@ DECODER decoder_by_id(const char *id)
 
 void dlerror_log()
 {
-    fprintf(stderr, "Unable to load decoder module: %s\n", dlerror());
+    applog_w("APP", "Unable to load decoder module: %s", dlerror());
 }
