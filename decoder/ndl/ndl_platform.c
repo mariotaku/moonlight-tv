@@ -37,10 +37,10 @@ bool decoder_check(PDECODER_INFO dinfo)
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
     NDL_DirectVideoClose();
+    dinfo->audio = true;
 #endif
     dinfo->valid = true;
     dinfo->accelerated = true;
-    dinfo->audio = true;
 #if NDL_WEBOS5
     dinfo->hevc = true;
 #endif
