@@ -38,7 +38,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
     return ERROR_DECODER_CLOSE_FAILED;
-  print("[NDL] NDL_DirectMediaLoad for video, type=%d, width=%d, height=%d, audio.type=%d\n", media_info.video.type, media_info.video.width,
+  printf("[NDL] NDL_DirectMediaLoad for video, type=%d, width=%d, height=%d, audio.type=%d\n", media_info.video.type, media_info.video.width,
         media_info.video.height, media_info.audio.type);
   if (NDL_DirectMediaLoad(&media_info, media_load_callback) == 0)
   {

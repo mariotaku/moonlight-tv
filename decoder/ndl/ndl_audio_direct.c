@@ -23,6 +23,7 @@
 #include <NDL_directmedia.h>
 
 #include <stdio.h>
+#include <string.h>
 
 #define audio_callbacks PLUGIN_SYMBOL_NAME(audio_callbacks)
 
