@@ -10,7 +10,7 @@ colors = {
     'ERROR': '\033[31m',  # RED
     'WARN': '\033[33m',  # YELLOW
     'INFO': '\033[36m',  # CYAN
-    'BLUE': '\033[34m',  # DEBUG
+    'DEBUG': '\033[34m',  # BLUE
     'RESET': '\033[0m',
 }
 
