@@ -40,11 +40,11 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   media_info.audio.opus.streamHeader = NULL;
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
-    return -1;
+    return ERROR_AUDIO_CLOSE_FAILED;
   if (NDL_DirectMediaLoad(&media_info, media_load_callback))
   {
     printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
-    return -1;
+    return ERROR_AUDIO_OPEN_FAILED;
   }
   media_loaded = true;
   return 0;

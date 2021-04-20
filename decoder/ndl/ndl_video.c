@@ -30,14 +30,14 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
     media_info.videoType = NDL_VIDEO_TYPE_H265;
     break;
   default:
-    return -1;
+    return ERROR_UNKNOWN_CODEC;
   }
   media_info.videoWidth = width;
   media_info.videoHeight = height;
   media_info.unknown1 = 0;
   // Unload player before reloading
   if (media_loaded && NDL_DirectMediaUnload() != 0)
-    return -1;
+    return ERROR_DECODER_CLOSE_FAILED;
   if (NDL_DirectMediaLoad(&media_info, media_load_callback) == 0)
     media_loaded = true;
   else
@@ -46,8 +46,8 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   if (NDL_DirectVideoOpen(&info) != 0)
 #endif
   {
-    fprintf(stderr, "Couldn't initialize video decoding\n");
-    return -1;
+    fprintf(stderr, "Couldn't initialize video decoding: %s\n", NDL_DirectMediaGetError());
+    return ERROR_DECODER_OPEN_FAILED;
   }
   ndl_buffer = malloc(DECODER_BUFFER_SIZE);
   if (ndl_buffer == NULL)
@@ -59,7 +59,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
 #else
     NDL_DirectVideoClose();
 #endif
-    return -1;
+    return ERROR_OUT_OF_MEMORY;
   }
 #if NDL_WEBOS5
   media_loaded = true;

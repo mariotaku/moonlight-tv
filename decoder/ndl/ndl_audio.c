@@ -54,7 +54,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   if (NDL_DirectAudioOpen(&info) < 0)
   {
     printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
-    return -1;
+    return ERROR_AUDIO_OPEN_FAILED;
   }
 
   return 0;
