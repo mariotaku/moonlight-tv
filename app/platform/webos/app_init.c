@@ -18,7 +18,3 @@ void app_webos_init(int argc, char *argv[])
 void app_webos_destroy()
 {
 }
-
-void app_webos_window_setup(SDL_Window *window)
-{
-}

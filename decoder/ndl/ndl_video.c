@@ -40,7 +40,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
     return ERROR_DECODER_CLOSE_FAILED;
   printf("[NDL] NDL_DirectMediaLoad for video, type=%d, width=%d, height=%d, audio.type=%d\n", media_info.video.type, media_info.video.width,
         media_info.video.height, media_info.audio.type);
-  if (NDL_DirectMediaLoad(&media_info, media_load_callback) == 0)
+  if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
   {
     fprintf(stderr, "NDL_DirectMediaLoad failed: %s\n", NDL_DirectMediaGetError());
     return ERROR_DECODER_OPEN_FAILED;
