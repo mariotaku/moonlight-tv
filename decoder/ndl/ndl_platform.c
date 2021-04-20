@@ -32,20 +32,7 @@ bool decoder_init(int argc, char *argv[])
 
 bool decoder_check(PDECODER_INFO dinfo)
 {
-#if NDL_WEBOS5
-    NDL_DIRECTMEDIA_DATA_INFO info = {
-        .video.type = NDL_VIDEO_TYPE_H265,
-        .video.width = 1270,
-        .video.height = 720,
-        .audio.type = NDL_AUDIO_TYPE_OPUS,
-        .audio.opus.channels = 2,
-        .audio.opus.sampleRate = 48.000,
-        .audio.opus.streamHeader = NULL,
-    };
-    if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
-        return false;
-    NDL_DirectMediaUnload();
-#else
+#ifndef NDL_WEBOS5
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
