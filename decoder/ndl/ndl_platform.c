@@ -52,7 +52,7 @@ bool decoder_check(PDECODER_INFO dinfo)
         info.audio.opus.channels = 2;
         info.audio.opus.sampleRate = 48.000;
         info.audio.opus.streamHeader = NULL;
-        if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
+        if (NDL_DirectMediaLoad(&info, NULL) != 0)
         {
             applog_e("NDL", "NDL_DirectMediaLoad failed on attempt %d: %s", i, NDL_DirectMediaGetError());
             return false;
