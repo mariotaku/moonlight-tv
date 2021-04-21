@@ -11,13 +11,18 @@
 #include "util/logging.h"
 
 static bool ndl_initialized = false;
+logvprintf_fn module_logvprintf;
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
 #define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
 #define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
 
-bool decoder_init(int argc, char *argv[])
+bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx)
 {
+    if (hctx)
+    {
+        module_logvprintf = hctx->logvprintf;
+    }
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0)
     {
         ndl_initialized = true;

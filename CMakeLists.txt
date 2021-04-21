@@ -88,7 +88,6 @@ pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
-    add_compile_definitions(_GNU_SOURCE)
     pkg_check_modules(GLES REQUIRED egl glesv2)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)

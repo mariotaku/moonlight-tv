@@ -19,7 +19,6 @@ target_include_directories(moonlight-lgnc PRIVATE
     ${PBNJSON_INCLUDE_DIRS}
 )
 target_link_libraries(moonlight-lgnc PRIVATE moonlight-common-c opus lgncopenapi)
-target_compile_definitions(moonlight-lgnc PRIVATE _GNU_SOURCE)
 
 if (DECODER_LGNC_NOINIT)
     target_compile_definitions(moonlight-lgnc PRIVATE DECODER_LGNC_NOINIT)
