@@ -17,9 +17,9 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stream/api.h"
-#include "util/logging.h"
 #include "ndl_common.h"
+#include "stream/module/api.h"
+#include "util/logging.h"
 
 #include <NDL_directmedia.h>
 

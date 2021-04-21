@@ -17,7 +17,7 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 #include <stdio.h>
 #include <stdlib.h>

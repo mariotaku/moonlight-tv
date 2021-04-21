@@ -4,7 +4,7 @@
 
 #include <lgnc_system.h>
 #include <lgnc_directvideo.h>
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 static bool lgnc_initialized = false;
 

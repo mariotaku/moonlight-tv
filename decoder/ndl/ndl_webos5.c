@@ -1,7 +1,6 @@
-#include "ndl_common.h"
-
 #include <stdio.h>
 
+#include "ndl_common.h"
 #include "util/logging.h"
 
 bool media_loaded = false;

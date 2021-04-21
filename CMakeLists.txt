@@ -88,6 +88,7 @@ pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 
 if (TARGET_WEBOS)
+    add_compile_definitions(_GNU_SOURCE)
     pkg_check_modules(GLES REQUIRED egl glesv2)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
@@ -144,8 +145,9 @@ set(SOURCES
     app/backend/coverloader.c
     app/backend/error_manager.c
     app/backend/types_impl.c
-    app/stream/audio.c
-    app/stream/decoder.c
+    app/stream/module/module.c
+    app/stream/module/audio.c
+    app/stream/module/decoder.c
     app/stream/session.c
     app/stream/connection.c
     app/stream/settings.c
@@ -173,6 +175,7 @@ set(SOURCES
     app/util/path.c
     app/util/navkey.c
     app/util/debugprint.c
+    app/util/logging.c
 )
 
 if (SDL2_IMAGE_FOUND)
@@ -241,7 +244,7 @@ set_target_properties(moonlight PROPERTIES
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
 target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
-target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}")
+target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
@@ -270,7 +273,10 @@ function(moonlight_add_module)
 endfunction()
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}" APPLOG_TO_FILE)
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS 
+        APPID="${WEBOS_APPINFO_ID}" 
+        APPLOG_FILE=app_logfile
+    )
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
@@ -291,7 +297,10 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
 elseif (TARGET_LGNC)
-    target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}" APPLOG_TO_FILE)
+    target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE 
+        APPID="${WEBOS_APPINFO_ID}"
+        APPLOG_FILE=app_logfile
+    )
     target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
@@ -300,7 +309,7 @@ elseif (TARGET_LGNC)
     
     target_link_libraries(moonlight PRIVATE opus)
 elseif(TARGET_RASPI)
-    target_compile_definitions(moonlight PUBLIC TARGET_RASPI _GNU_SOURCE)
+    target_compile_definitions(moonlight PUBLIC TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)

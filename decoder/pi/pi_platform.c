@@ -1,4 +1,4 @@
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 bool decoder_check_pi(PDECODER_INFO dinfo)
 {

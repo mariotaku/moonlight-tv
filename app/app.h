@@ -1,10 +1,12 @@
 #pragma once
 
+#include "stream/module/api.h"
 #include "stream/settings.h"
 #include "libgamestream/client.h"
 
 typedef void *APP_WINDOW_CONTEXT;
 
+extern FILE *app_logfile;
 extern PCONFIGURATION app_configuration;
 extern int app_window_width, app_window_height;
 extern bool app_has_redraw, app_force_redraw;

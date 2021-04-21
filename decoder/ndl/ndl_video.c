@@ -1,5 +1,6 @@
-#include "stream/api.h"
 #include "ndl_common.h"
+#include "stream/module/api.h"
+#include "util/logging.h"
 
 #include <unistd.h>
 #include <stdbool.h>
@@ -40,7 +41,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
     return ERROR_DECODER_CLOSE_FAILED;
   if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
   {
-    fprintf(stderr, "NDL_DirectMediaLoad failed: %s\n", NDL_DirectMediaGetError());
+    applog_e("NDL", "NDL_DirectMediaLoad failed: %s", NDL_DirectMediaGetError());
     return ERROR_DECODER_OPEN_FAILED;
   }
   media_loaded = true;
@@ -48,14 +49,15 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   NDL_DIRECTVIDEO_DATA_INFO info = {width, height};
   if (NDL_DirectVideoOpen(&info) != 0)
   {
-    fprintf(stderr, "NDL_DirectVideoOpen failed: %s\n", NDL_DirectMediaGetError());
+    applog_e("NDL", "NDL_DirectVideoOpen failed: %s", NDL_DirectMediaGetError());
     return ERROR_DECODER_OPEN_FAILED;
   }
+  applog_d("NDL", "NDL_DirectVideoOpen %d * %d", width, height);
 #endif
   ndl_buffer = malloc(DECODER_BUFFER_SIZE);
   if (ndl_buffer == NULL)
   {
-    fprintf(stderr, "Not enough memory\n");
+    applog_e("NDL", "Not enough memory");
 #if NDL_WEBOS5
     NDL_DirectMediaUnload();
     media_loaded = false;
@@ -106,12 +108,13 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
     if (NDL_DirectVideoPlay(ndl_buffer, length) != 0)
 #endif
     {
-      fprintf(stderr, "NDL_DirectVideoPlay returned -1\n");
+      applog_w("NDL", "NDL_DirectVideoPlay failed");
+      return DR_NEED_IDR;
     }
   }
   else
   {
-    fprintf(stderr, "Video decode buffer too small, skip this frame");
+    applog_w("NDL", "Video decode buffer too small, skip this frame");
     return DR_NEED_IDR;
   }
 

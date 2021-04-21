@@ -3,7 +3,7 @@ import sys
 import time
 import re
 
-line_pattern = re.compile(r'(\d+) \[(.+)?\]\[(.+)?\].*')
+line_pattern = re.compile(r'([\d\.]+) \[(.+)?\]\[(.+)?\].*')
 
 
 colors = {
@@ -19,8 +19,9 @@ try:
         line = sys.stdin.readline().rstrip('\n')
         match = line_pattern.match(line)
         if not match:
-            print(line, end=None)
+            print(line, end='')
             print(colors['RESET'])
+            continue
 
         print(colors.get(match[3].upper(), ''), end='')
         print(line, end='')

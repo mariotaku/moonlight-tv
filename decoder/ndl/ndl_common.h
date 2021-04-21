@@ -1,7 +1,7 @@
 #pragma once
 #include <NDL_directmedia.h>
 
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 #define media_loaded PLUGIN_SYMBOL_NAME(decoder_media_loaded)
 #define media_info PLUGIN_SYMBOL_NAME(decoder_media_info)

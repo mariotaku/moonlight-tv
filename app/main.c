@@ -26,10 +26,9 @@
 #include "util/bus.h"
 #include "util/logging.h"
 
-FILE *app_logfile;
+FILE *app_logfile = NULL;
 
-bool running = true;
-
+static bool running = true;
 static GS_CLIENT app_gs_client = NULL;
 static pthread_mutex_t app_gs_client_mutex = PTHREAD_MUTEX_INITIALIZER;
 static void app_gs_client_destroy();
@@ -41,8 +40,8 @@ int main(int argc, char *argv[])
     setvbuf(app_logfile, NULL, _IONBF, 0);
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
         REDIR_STDOUT(APPID);
-#endif
     applog_d("APP", "main() init");
+#endif
 #if TARGET_RASPI
     setenv("SDL_VIDEODRIVER", "rpi", 1);
 #endif
@@ -53,6 +52,7 @@ int main(int argc, char *argv[])
     {
         return ret;
     }
+    module_host_context.logvprintf = &app_logvprintf;
 
     /* GUI */
     struct nk_context *ctx;

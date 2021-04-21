@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 
 #include "util/path.h"
+#include "util/logging.h"
 #include "util/memlog.h"
 
 static void settings_initialize(char *confdir, PCONFIGURATION config);
@@ -153,7 +154,7 @@ bool settings_read(char *filename, PCONFIGURATION config)
     FILE *fd = fopen(filename, "r");
     if (fd == NULL)
     {
-        fprintf(stderr, "Can't open configuration file: %s\n", filename);
+        applog_i("Settings", "Can't open configuration file: %s", filename);
         return false;
     }
 
@@ -198,8 +199,8 @@ void settings_write(char *filename, PCONFIGURATION config)
     FILE *fd = fopen(filename, "w");
     if (fd == NULL)
     {
-        fprintf(stderr, "Can't open configuration file: %s\n", filename);
-        exit(EXIT_FAILURE);
+        applog_e("Settings", "Can't open configuration file for writing: %s", filename);
+        return;
     }
 
     if (config->stream.width != 1280)

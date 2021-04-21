@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Based upon video decode example from the Raspberry Pi firmware
 
 #include "stream/video/video.h"
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 #include <Limelight.h>
 

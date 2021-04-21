@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <Limelight.h>
 
@@ -13,7 +14,7 @@
 #define DECODER_HDR_ALWAYS 2
 
 // Corresponding to GS_OUT_OF_MEMORY
-#define ERROR_OUT_OF_MEMORY -2 
+#define ERROR_OUT_OF_MEMORY -2
 #define ERROR_UNKNOWN_CODEC 10
 #define ERROR_DECODER_OPEN_FAILED 11
 #define ERROR_DECODER_CLOSE_FAILED 12
@@ -30,6 +31,11 @@
 #ifndef DECODER_EXPORTED
 #define DECODER_EXPORTED __attribute__((visibility("default")))
 #endif
+
+typedef struct HOST_CONTEXT
+{
+    void (*logvprintf)(const char *, const char *, const char *, va_list);
+} HOST_CONTEXT, *PHOST_CONTEXT;
 
 typedef struct DECODER_INFO
 {

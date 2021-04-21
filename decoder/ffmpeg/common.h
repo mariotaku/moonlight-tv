@@ -1,7 +1,7 @@
 #pragma once
 #include <pthread.h>
 
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 #define SDL_BUFFER_FRAMES 2
 

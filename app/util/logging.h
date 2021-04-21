@@ -1,40 +1,30 @@
 #pragma once
 
-#include <stdio.h>
-#include <time.h>
-
-#ifdef APPLOG_TO_FILE
-extern FILE *app_logfile;
-#else
-#define app_logfile stdout
-#endif
-
-#ifdef _GNU_SOURCE
-#define applog_e(tag, fmt, ...) fprintf(app_logfile, "%10ld [" tag "][ERROR] " fmt "\n", time(NULL), ##__VA_ARGS__)
-#define applog_w(tag, fmt, ...) fprintf(app_logfile, "%10ld [" tag "][WARN] " fmt "\n", time(NULL), ##__VA_ARGS__)
-#define applog_i(tag, fmt, ...) fprintf(app_logfile, "%10ld [" tag "][INFO] " fmt "\n", time(NULL), ##__VA_ARGS__)
-#ifdef DEBUG
-#define applog_d(tag, fmt, ...) fprintf(app_logfile, "%10ld [" tag "][DEBUG] " fmt "\n", time(NULL), ##__VA_ARGS__)
-#else
-#define applog_d(tag, fmt, ...)
-#endif
+#ifdef APPLOG_HOST
+void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list args);
+void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...);
 #else
 #include <stdarg.h>
-static void logprintf(const char *lvl, const char *tag, const char *fmt, ...)
+
+typedef void (*logvprintf_fn)(const char *, const char *, const char *, va_list);
+
+extern logvprintf_fn module_logvprintf;
+static void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...)
 {
-    fprintf(app_logfile, "%10ld [%s][%s] ", tag, lvl, time(NULL));
+    if (!module_logvprintf)
+        return;
     va_list args;
     va_start(args, fmt);
-    vfprintf(app_logfile, fmt, args);
+    module_logvprintf(lvl, tag, fmt, args);
     va_end(args);
-    fputs("\n", app_logfile);
 }
-#define applog_e(...) logprintf("ERROR", __VA_ARGS__)
-#define applog_w(...) logprintf("WARN", __VA_ARGS__)
-#define applog_i(...) logprintf("INFO", __VA_ARGS__)
+#endif
+
+#define applog_e(...) app_logprintf("ERROR", __VA_ARGS__)
+#define applog_w(...) app_logprintf("WARN", __VA_ARGS__)
+#define applog_i(...) app_logprintf("INFO", __VA_ARGS__)
 #ifdef DEBUG
-#define applog_d(...) logprintf("DEBUG", __VA_ARGS__)
+#define applog_d(...) app_logprintf("DEBUG", __VA_ARGS__)
 #else
 #define applog_d(...)
-#endif
 #endif

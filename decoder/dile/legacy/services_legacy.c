@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "media_services.h"
 
 #include <stdio.h>

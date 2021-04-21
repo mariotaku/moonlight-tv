@@ -8,7 +8,7 @@
 #include <dlfcn.h>
 
 #include "platform/webos/os_info.h"
-#include "stream/api.h"
+#include "stream/module/api.h"
 #include "media_services.h"
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)

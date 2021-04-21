@@ -4,8 +4,11 @@
 #include <string.h>
 
 #include <NDL_directmedia.h>
-#include "stream/api.h"
+
+#define MODULE_IMPL
 #include "ndl_common.h"
+#include "stream/module/api.h"
+#include "util/logging.h"
 
 static bool ndl_initialized = false;
 
@@ -22,7 +25,7 @@ bool decoder_init(int argc, char *argv[])
     else
     {
         ndl_initialized = false;
-        fprintf(stderr, "Unable to initialize NDL: %s\n", NDL_DirectMediaGetError());
+        applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
     }
 #if NDL_WEBOS5
     memset(&media_info, 0, sizeof(media_info));
@@ -32,15 +35,28 @@ bool decoder_init(int argc, char *argv[])
 
 bool decoder_check(PDECODER_INFO dinfo)
 {
-#ifndef NDL_WEBOS5
+#if NDL_WEBOS5
+    NDL_DIRECTMEDIA_DATA_INFO info = {
+        .video.type = NDL_VIDEO_TYPE_H265,
+        .video.width = 1270,
+        .video.height = 720,
+        .audio.type = NDL_AUDIO_TYPE_OPUS,
+        .audio.opus.channels = 2,
+        .audio.opus.sampleRate = 48.000,
+        .audio.opus.streamHeader = NULL,
+    };
+    if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
+        return false;
+    NDL_DirectMediaUnload();
+#else
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
     NDL_DirectVideoClose();
-    dinfo->audio = true;
 #endif
     dinfo->valid = true;
     dinfo->accelerated = true;
+    dinfo->audio = true;
 #if NDL_WEBOS5
     dinfo->hevc = true;
 #endif

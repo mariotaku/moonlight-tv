@@ -1,4 +1,4 @@
-#include "platform.h"
+#include "stream/platform.h"
 
 #include <string.h>
 
@@ -96,7 +96,7 @@ static bool audio_init_simple(AUDIO audio, int libidx, int argc, char *argv[])
     {
         fn = module_sym("audio_init_%s", audio, libidx);
     }
-    return !fn || fn(argc, argv);
+    return !fn || fn(argc, argv, &module_host_context);
 }
 
 static void audio_finalize_simple(AUDIO audio, int libidx)

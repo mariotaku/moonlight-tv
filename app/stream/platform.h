@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "api.h"
+#include "module/api.h"
 
 enum DECODER_T
 {
@@ -53,7 +53,7 @@ enum AUDIO_T
 };
 typedef enum AUDIO_T AUDIO;
 
-typedef bool (*MODULE_INIT_FN)(int argc, char *argv[]);
+typedef bool (*MODULE_INIT_FN)(int argc, char *argv[], PHOST_CONTEXT host);
 typedef bool (*DECODER_CHECK_FN)(PDECODER_INFO);
 typedef bool (*AUDIO_CHECK_FN)(PAUDIO_INFO);
 typedef void (*MODULE_FINALIZE_FN)();
@@ -106,6 +106,8 @@ extern DECODER_INFO decoder_info;
 extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
 
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
+
+extern HOST_CONTEXT module_host_context;
 
 DECODER decoder_by_id(const char *id);
 

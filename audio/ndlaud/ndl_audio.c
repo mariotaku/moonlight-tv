@@ -17,7 +17,8 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stream/api.h"
+#include "stream/module/api.h"
+#include "util/logging.h"
 
 #include <NDL_directmedia.h>
 
@@ -50,10 +51,10 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
 
   if (NDL_DirectAudioOpen(&info) < 0)
   {
-    printf("Failed to open audio: %s\n", NDL_DirectMediaGetError());
+    applog_e("NDLAud", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return -1;
   }
-  printf("NDL Audio opened with %d channels\n", info.numChannel);
+  applog_i("NDLAud", "NDL Audio opened with %d channels", info.numChannel);
 
   return 0;
 }
@@ -79,7 +80,7 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
   }
   else
   {
-    printf("Opus error from decode: %d\n", decodeLen);
+    applog_e("NDLAud", "Opus error from decode: %d", decodeLen);
   }
 }
 

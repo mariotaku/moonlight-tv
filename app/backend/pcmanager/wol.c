@@ -10,6 +10,8 @@
 
 #include <pthread.h>
 
+#include "util/logging.h"
+
 static void *pcmanager_send_wol_action(void *arg);
 static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
@@ -32,7 +34,7 @@ void *pcmanager_send_wol_action(void *arg)
   sockfd = socket(AF_INET, SOCK_DGRAM, 0);
   if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast))
   {
-    fprintf(stderr, "setsockopt() error: %d %s\n", errno, strerror(errno));
+    applog_e("WoL", "setsockopt() error: %d %s", errno, strerror(errno));
     return NULL;
   }
 
@@ -43,7 +45,7 @@ void *pcmanager_send_wol_action(void *arg)
   // Bind socket
   if (bind(sockfd, (struct sockaddr *)&client, sizeof(client)))
   {
-    fprintf(stderr, "bind() error: %d %s\n", errno, strerror(errno));
+    applog_e("WoL", "bind() error: %d %s", errno, strerror(errno));
     return NULL;
   }
 
@@ -55,7 +57,7 @@ void *pcmanager_send_wol_action(void *arg)
   sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&server, sizeof(server));
   if (errno)
   {
-    fprintf(stderr, "sendto() error: %d %s\n", errno, strerror(errno));
+    applog_e("WoL", "sendto() error: %d %s", errno, strerror(errno));
     return NULL;
   }
   computer_manager_auto_discovery_schedule(10000);

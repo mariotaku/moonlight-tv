@@ -109,7 +109,6 @@ GLuint gen_texture_from_sdl(SDL_Surface *surface, int subsample)
     }
     else
     {
-        printf("warning: the image is not truecolor..  this will probably break\n");
         // this error should not go unhandled
         return 0;
     }

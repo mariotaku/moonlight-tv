@@ -17,10 +17,10 @@
  * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-
-#include "stream/api.h"
+#include "stream/module/api.h"
 #include "util/logging.h"
+
+#include <stdio.h>
 
 #include <SDL.h>
 #include <SDL_audio.h>

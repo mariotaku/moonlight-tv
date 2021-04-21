@@ -1,5 +1,5 @@
 #pragma once
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 #include <pbnjson.h>
 #include <resource_calculator_c.h>

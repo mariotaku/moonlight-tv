@@ -1,4 +1,4 @@
-#include "stream/api.h"
+#include "stream/module/api.h"
 
 bool audio_init_alsa(int argc, char *argv[])
 {

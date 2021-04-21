@@ -20,6 +20,7 @@
 #include "connection.h"
 #include "session.h"
 #include "input/absinput.h"
+#include "util/logging.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -29,7 +30,7 @@ bool connection_debug;
 
 static void connection_terminated(int errorCode)
 {
-  fprintf(stderr, "Connection terminated, errorCode = 0x%x\n", errorCode);
+  applog_e("Session", "Connection terminated, errorCode = 0x%x", errorCode);
   _streaming_errmsg_write("Connection terminated, errorCode = 0x%x", errorCode);
   streaming_interrupt(false);
 }
@@ -47,10 +48,10 @@ static void connection_status_update(int status)
   switch (status)
   {
   case CONN_STATUS_OKAY:
-    printf("Connection is okay\n");
+    applog_i("Session", "Connection is okay");
     break;
   case CONN_STATUS_POOR:
-    printf("Connection is poor\n");
+    applog_w("Session", "Connection is poor");
     break;
   }
 }
@@ -58,7 +59,7 @@ static void connection_status_update(int status)
 static void connection_stage_failed(int stage, int errorCode)
 {
   const char *stageName = LiGetStageName(stage);
-  fprintf(stderr, "Connection failed at %s, errorCode = %d\n", stageName, errorCode);
+  applog_e("Session", "Connection failed at %s, errorCode = %d", stageName, errorCode);
   _streaming_errmsg_write("Connection failed at %s, errorCode = %d", stageName, errorCode);
 }
 

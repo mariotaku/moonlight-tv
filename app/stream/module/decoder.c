@@ -1,4 +1,4 @@
-#include "platform.h"
+#include "stream/platform.h"
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -6,7 +6,7 @@
 
 #include <Limelight.h>
 
-#include "util.h"
+#include "stream/util.h"
 #include "util/logging.h"
 
 #if TARGET_LGNC
@@ -169,7 +169,7 @@ static bool decoder_init_simple(DECODER platform, int libidx, int argc, char *ar
     {
         fn = module_sym("decoder_init_%s", platform, libidx);
     }
-    return !fn || fn(argc, argv);
+    return !fn || fn(argc, argv, &module_host_context);
 }
 
 static void decoder_finalize_simple(DECODER platform, int libidx)
