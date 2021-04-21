@@ -24,6 +24,7 @@
 #include <NDL_directmedia.h>
 
 #include <stdio.h>
+#include <string.h>
 #include <opus_multistream.h>
 
 #define audio_callbacks PLUGIN_SYMBOL_NAME(audio_callbacks)
@@ -39,9 +40,27 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
 {
   int rc;
   decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams, opusConfig->coupledStreams, opusConfig->mapping, &rc);
+  if (!decoder)
+    return ERROR_AUDIO_OPUS_INIT_FAILED;
 
   channelCount = opusConfig->channelCount;
-
+#if NDL_WEBOS5
+  media_info.audio.type = NDL_AUDIO_TYPE_PCM;
+  media_info.audio.pcm.channelMode = NDL_DIRECTMEDIA_AUDIO_PCM_MODE_STEREO;
+  media_info.audio.pcm.format = NDL_DIRECTMEDIA_AUDIO_PCM_FORMAT_S16LE;
+  media_info.audio.pcm.sampleRate = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(opusConfig->sampleRate);
+  // Unload player before reloading
+  if (media_loaded && NDL_DirectMediaUnload() != 0)
+    return ERROR_AUDIO_CLOSE_FAILED;
+  applog_i("NDL", "Opening PCM audio, channelMode=%s, format=%s, sampleRateEnum=%d", media_info.audio.pcm.channelMode,
+           media_info.audio.pcm.format, media_info.audio.pcm.sampleRate);
+  if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
+  {
+    applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
+    return ERROR_AUDIO_OPEN_FAILED;
+  }
+  media_loaded = true;
+#else
   NDL_DIRECTAUDIO_DATA_INFO info = {
       .numChannel = channelCount,
       .bitPerSample = 16,
@@ -57,6 +76,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
     applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
+#endif
 
   return 0;
 }
@@ -66,7 +86,16 @@ static void ndl_renderer_cleanup()
   if (decoder != NULL)
     opus_multistream_decoder_destroy(decoder);
 
+#if NDL_WEBOS5
+  if (media_loaded)
+  {
+    NDL_DirectMediaUnload();
+    media_loaded = false;
+  }
+  memset(&media_info.audio, 0, sizeof(media_info.audio));
+#else
   NDL_DirectAudioClose();
+#endif
 }
 
 static void ndl_renderer_decode_and_play_sample(char *data, int length)
@@ -74,7 +103,11 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
   int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
   if (decodeLen > 0)
   {
+#if NDL_WEBOS5
+    NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short), 0);
+#else
     NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short));
+#endif
   }
   else
   {

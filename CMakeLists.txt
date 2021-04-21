@@ -272,7 +272,7 @@ function(moonlight_add_module)
 endfunction()
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS 
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS _GNU_SOURCE
         APPID="${WEBOS_APPINFO_ID}" 
         APPLOG_FILE=app_logfile
     )

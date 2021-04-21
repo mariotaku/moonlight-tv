@@ -1,6 +1,7 @@
 #include "stream/platform.h"
 
 #include <string.h>
+#include <dlfcn.h>
 
 #include "util/logging.h"
 
