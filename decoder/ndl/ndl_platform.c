@@ -57,7 +57,10 @@ bool decoder_check(PDECODER_INFO dinfo)
             applog_e("NDL", "NDL_DirectMediaLoad failed on attempt %d: %s", i, NDL_DirectMediaGetError());
             return false;
         }
-        NDL_DirectMediaUnload();
+        if (NDL_DirectMediaUnload() != 0)
+        {
+            applog_e("NDL", "NDL_DirectMediaUnload failed on attempt %d: %s", i, NDL_DirectMediaGetError());
+        }
     }
 #else
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
