@@ -41,18 +41,24 @@ bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx)
 bool decoder_check(PDECODER_INFO dinfo)
 {
 #if NDL_WEBOS5
-    NDL_DIRECTMEDIA_DATA_INFO info = {
-        .video.type = NDL_VIDEO_TYPE_H265,
-        .video.width = 1270,
-        .video.height = 720,
-        .audio.type = NDL_AUDIO_TYPE_OPUS,
-        .audio.opus.channels = 2,
-        .audio.opus.sampleRate = 48.000,
-        .audio.opus.streamHeader = NULL,
-    };
-    if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
-        return false;
-    NDL_DirectMediaUnload();
+    for (int = 0; i < 3; i++)
+    {
+        NDL_DIRECTMEDIA_DATA_INFO info = {
+            .video.type = NDL_VIDEO_TYPE_H265,
+            .video.width = 1270,
+            .video.height = 720,
+            .audio.type = NDL_AUDIO_TYPE_OPUS,
+            .audio.opus.channels = 2,
+            .audio.opus.sampleRate = 48.000,
+            .audio.opus.streamHeader = NULL,
+        };
+        if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
+        {
+            applog_e("NDL", "NDL_DirectMediaLoad failed on attempt %d: %s", i, NDL_DirectMediaGetError());
+            return false;
+        }
+        NDL_DirectMediaUnload();
+    }
 #else
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
