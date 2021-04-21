@@ -41,7 +41,7 @@ bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx)
 bool decoder_check(PDECODER_INFO dinfo)
 {
 #if NDL_WEBOS5
-    for (int = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++)
     {
         NDL_DIRECTMEDIA_DATA_INFO info = {
             .video.type = NDL_VIDEO_TYPE_H265,
