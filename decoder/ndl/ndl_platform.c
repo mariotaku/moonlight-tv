@@ -43,15 +43,15 @@ bool decoder_check(PDECODER_INFO dinfo)
 #if NDL_WEBOS5
     for (int i = 0; i < 3; i++)
     {
-        NDL_DIRECTMEDIA_DATA_INFO info = {
-            .video.type = NDL_VIDEO_TYPE_H265,
-            .video.width = 1270,
-            .video.height = 720,
-            .audio.type = NDL_AUDIO_TYPE_OPUS,
-            .audio.opus.channels = 2,
-            .audio.opus.sampleRate = 48.000,
-            .audio.opus.streamHeader = NULL,
-        };
+        NDL_DIRECTMEDIA_DATA_INFO info;
+        memset(&info, 0, sizeof(info));
+        info.video.type = NDL_VIDEO_TYPE_H265;
+        info.video.width = 1270;
+        info.video.height = 720;
+        info.audio.type = NDL_AUDIO_TYPE_OPUS;
+        info.audio.opus.channels = 2;
+        info.audio.opus.sampleRate = 48.000;
+        info.audio.opus.streamHeader = NULL;
         if (NDL_DirectMediaLoad(&info, media_load_callback) != 0)
         {
             applog_e("NDL", "NDL_DirectMediaLoad failed on attempt %d: %s", i, NDL_DirectMediaGetError());
