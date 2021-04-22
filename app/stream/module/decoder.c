@@ -60,6 +60,7 @@ static bool decoder_try_init(DECODER ptype, int argc, char *argv[])
         for (int i = 0; i < pdef.liblen; i++)
         {
             snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.dynlibs[i].library);
+            applog_d("APP", "Loading module %s", libname);
             // Lazy load to test if this library can be linked
             if (!dlopen(libname, RTLD_NOW | RTLD_GLOBAL))
             {

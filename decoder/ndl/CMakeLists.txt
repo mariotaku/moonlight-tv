@@ -11,8 +11,8 @@ target_include_directories(moonlight-ndl PRIVATE
     ${CMAKE_SOURCE_DIR}/app
     ${PBNJSON_INCLUDE_DIRS}
 )
-target_link_libraries(moonlight-ndl PRIVATE moonlight-common-c opus NDL_directmedia ${PBNJSON_LIBRARIES})
-target_compile_definitions(moonlight-ndl PRIVATE PLUGIN_SYMBOL_SUFFIX=ndl)
+target_link_libraries(moonlight-ndl PRIVATE moonlight-common-c opus NDL_directmedia)
+target_compile_definitions(moonlight-ndl PRIVATE PLUGIN_SYMBOL_SUFFIX=ndl "$<$<CONFIG:DEBUG>:DEBUG>")
 
 install(TARGETS moonlight-ndl LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -28,7 +28,7 @@ target_include_directories(moonlight-ndl-webos5 PRIVATE
     ${CMAKE_SOURCE_DIR}/app
     ${PBNJSON_INCLUDE_DIRS}
 )
-target_link_libraries(moonlight-ndl-webos5 PRIVATE moonlight-common-c opus NDL_directmedia ${PBNJSON_LIBRARIES})
-target_compile_definitions(moonlight-ndl-webos5 PRIVATE NDL_WEBOS5 PLUGIN_SYMBOL_SUFFIX=ndl_webos5)
+target_link_libraries(moonlight-ndl-webos5 PRIVATE moonlight-common-c opus NDL_directmedia)
+target_compile_definitions(moonlight-ndl-webos5 PRIVATE NDL_WEBOS5 PLUGIN_SYMBOL_SUFFIX=ndl_webos5 "$<$<CONFIG:DEBUG>:DEBUG>")
 
 install(TARGETS moonlight-ndl-webos5 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

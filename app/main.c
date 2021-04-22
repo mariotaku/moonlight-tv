@@ -54,12 +54,14 @@ int main(int argc, char *argv[])
     }
     module_host_context.logvprintf = &app_logvprintf;
 
+    // NDL requires init before window created, don't put this after app_window_create!
+    decoder_init(app_configuration->platform, argc, argv);
+    audio_init(NULL, argc, argv);
+
     /* GUI */
     struct nk_context *ctx;
     APP_WINDOW_CONTEXT win = app_window_create();
 
-    decoder_init(app_configuration->platform, argc, argv);
-    audio_init(NULL, argc, argv);
     applog_i("APP", "Decoder module: %s", decoder_definitions[decoder_current].name);
     if (audio_current == AUDIO_DECODER)
     {
