@@ -1,4 +1,4 @@
-name: Default Test Compile
+name: Compile for Standard (Desktop)
 
 on: [push]
 env:

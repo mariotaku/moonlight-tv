@@ -20,6 +20,5 @@ target_link_libraries(moonlight-ffmpeg PRIVATE moonlight-common-c ${FFMPEG_LIBRA
 target_include_directories(moonlight-ffmpeg SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS})
 target_include_directories(moonlight-ffmpeg SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 target_compile_definitions(moonlight-ffmpeg PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-target_compile_options(moonlight-ffmpeg PRIVATE -Werror=implicit-function-declaration)
 
 install(TARGETS moonlight-ffmpeg LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
