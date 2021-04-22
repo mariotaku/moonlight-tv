@@ -29,7 +29,7 @@ Download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/rel
 
 ## Building for webOS
 
-Follow instructions [here](https://github.com/webosbrew/meta-lg-webos-ndk#cmake)
-
-In order to build IPK package, you'll also need to have an additional package called
- [jo](https://github.com/jpmens/jo) installed.
+ - Follow instructions [here](https://github.com/webosbrew/meta-lg-webos-ndk) to setup NDK
+ - Create a directory e.g. `build` in project root directory, and `cd` into it.
+ - run `cmake .. -DTARGET_WEBOS=ON`
+ - run `make webos-package-moonlight` to get IPK package in `build` directory
