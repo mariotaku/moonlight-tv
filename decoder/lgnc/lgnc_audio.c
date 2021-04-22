@@ -24,6 +24,9 @@
 #include <stdio.h>
 #include <opus_multistream.h>
 
+#include "stream/module/api.h"
+#include "util/logging.h"
+
 static OpusMSDecoder *decoder;
 static short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];
 static int channelCount;
@@ -44,8 +47,8 @@ static int lgnc_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
 
   if (LGNC_DIRECTAUDIO_Open(&info) != 0)
   {
-    fprintf(stderr, "Failed to open audio\n");
-    return -1;
+    applog_e("LGNC", "Failed to open audio");
+    return ERROR_AUDIO_OPEN_FAILED;
   }
 
   return 0;
@@ -68,7 +71,7 @@ static void lgnc_renderer_decode_and_play_sample(char *data, int length)
   }
   else
   {
-    printf("Opus error from decode: %d\n", decodeLen);
+    applog_w("LGNC", "Opus error from decode: %d", decodeLen);
   }
 }
 

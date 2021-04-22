@@ -26,6 +26,9 @@
 #include <Limelight.h>
 #include <lgnc_directvideo.h>
 
+#include "stream/module/api.h"
+#include "util/logging.h"
+
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
@@ -40,15 +43,15 @@ static int lgnc_setup(int videoFormat, int width, int height, int redrawRate, vo
       .trid_type = LGNC_VDEC_3D_TYPE_NONE};
   if (LGNC_DIRECTVIDEO_Open(&info) != 0)
   {
-    fprintf(stderr, "Couldn't initialize video decoding\n");
-    return -1;
+    applog_e("LGNC", "Couldn't initialize video decoding");
+    return ERROR_DECODER_OPEN_FAILED;
   }
   lgnc_buffer = malloc(DECODER_BUFFER_SIZE);
   if (lgnc_buffer == NULL)
   {
-    fprintf(stderr, "Not enough memory\n");
+    applog_e("LGNC", "Not enough memory");
     LGNC_DIRECTVIDEO_Close();
-    return -1;
+    return ERROR_OUT_OF_MEMORY;
   }
 
   return 0;
@@ -75,12 +78,13 @@ static int lgnc_submit_decode_unit(PDECODE_UNIT decodeUnit)
     }
     if (LGNC_DIRECTVIDEO_Play(lgnc_buffer, length) != 0)
     {
-      fprintf(stderr, "LGNC_DIRECTVIDEO_Play returned non zero\n");
+      applog_w("LGNC", "LGNC_DIRECTVIDEO_Play returned non zero");
+      return DR_NEED_IDR;
     }
   }
   else
   {
-    fprintf(stderr, "Video decode buffer too small, skip this frame\n");
+    applog_w("LGNC", "Video decode buffer too small, skip this frame");
     return DR_NEED_IDR;
   }
 
