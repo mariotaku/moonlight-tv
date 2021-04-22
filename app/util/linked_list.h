@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 #include "util/memlog.h"
 
 #ifndef LINKEDLIST_TYPE
