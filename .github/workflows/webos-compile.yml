@@ -1,15 +1,9 @@
-name: Release for webOS
+name: Compile for webOS
 
-on: 
-  push:
-    branches:
-      - '!*'
-    tags:
-      - 'v*.*'
-
+on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: RelWithDebInfo
+  BUILD_TYPE: Release
   BUILD_TARGET: webos-package-moonlight
 
 jobs:
@@ -28,9 +22,6 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: 12
-
-    - name: Update packages
-      run: sudo apt-get -qq update || true
 
     - name: Install webOS CLI
       run: sudo npm install -g @webosose/ares-cli
@@ -65,36 +56,9 @@ jobs:
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE --target $BUILD_TARGET
 
-    - name: Set Environment for Release
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      run: cat github-release.env >> $GITHUB_ENV
-
     - name: Test
       working-directory: ${{github.workspace}}/build
       shell: bash
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest -C $BUILD_TYPE
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: true
-
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ${{github.workspace}}/build/${{env.RELEASE_FILENAME}}
-        asset_name: ${{env.RELEASE_FILENAME}}
-        asset_content_type: application/vnd.debian.binary-package
