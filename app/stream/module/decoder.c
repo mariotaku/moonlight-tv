@@ -110,7 +110,7 @@ static void *module_sym(char *fmt, DECODER platform, int libidx)
 
 PDECODER_RENDERER_CALLBACKS decoder_get_video()
 {
-    if (decoder_current < 0)
+    if (decoder_current == DECODER_NONE)
         return &decoder_callbacks_dummy;
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
@@ -123,7 +123,7 @@ PDECODER_RENDERER_CALLBACKS decoder_get_video()
 
 PAUDIO_RENDERER_CALLBACKS decoder_get_audio(char *audio_device)
 {
-    if (decoder_current < 0)
+    if (decoder_current == DECODER_NONE)
         return NULL;
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
@@ -136,7 +136,7 @@ PAUDIO_RENDERER_CALLBACKS decoder_get_audio(char *audio_device)
 
 PVIDEO_PRESENTER_CALLBACKS decoder_get_presenter()
 {
-    if (decoder_current < 0)
+    if (decoder_current == DECODER_NONE)
         return NULL;
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
@@ -146,7 +146,7 @@ PVIDEO_PRESENTER_CALLBACKS decoder_get_presenter()
 
 PVIDEO_RENDER_CALLBACKS decoder_get_render()
 {
-    if (decoder_current < 0)
+    if (decoder_current == DECODER_NONE)
         return NULL;
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
@@ -156,7 +156,7 @@ PVIDEO_RENDER_CALLBACKS decoder_get_render()
 
 PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device)
 {
-    if (decoder_current < 0)
+    if (decoder_current == DECODER_NONE)
         return audio_get_callbacks(audio_device);
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
