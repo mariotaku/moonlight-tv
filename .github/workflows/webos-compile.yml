@@ -7,7 +7,7 @@ env:
   BUILD_TARGET: webos-package-moonlight
 
 jobs:
-  build-and-release:
+  build:
     # The CMake configure and build commands are platform agnostic and should work equally
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
