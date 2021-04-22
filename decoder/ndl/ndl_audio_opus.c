@@ -40,25 +40,17 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   media_info.audio.opus.channels = opusConfig->channelCount;
   media_info.audio.opus.sampleRate = (double)opusConfig->sampleRate / 1000.0f;
   media_info.audio.opus.streamHeader = NULL;
-  // Unload player before reloading
-  if (media_loaded && NDL_DirectMediaUnload() != 0)
-    return ERROR_AUDIO_CLOSE_FAILED;
-  if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
+  if (media_reload() != 0)
   {
     applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
-  media_loaded = true;
   return 0;
 }
 
 static void ndl_renderer_cleanup()
 {
-  if (media_loaded)
-  {
-    NDL_DirectMediaUnload();
-    media_loaded = false;
-  }
+  media_unload();
   memset(&media_info.audio, 0, sizeof(media_info.audio));
 }
 

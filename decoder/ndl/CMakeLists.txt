@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.6)
 
 add_library(moonlight-ndl SHARED 
     ndl_platform.c
-    ndl_audio.c
+    ndl_audio_pcm.c
     ndl_video.c
 )
 target_include_directories(moonlight-ndl PRIVATE 
@@ -20,7 +20,7 @@ install(TARGETS moonlight-ndl LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_library(moonlight-ndl-webos5 SHARED 
         ndl_platform.c
-        ndl_audio.c
+        ndl_audio_opus.c
         ndl_video.c
         ndl_webos5.c
     )

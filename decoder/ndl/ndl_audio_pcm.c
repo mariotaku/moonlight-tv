@@ -49,17 +49,13 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   media_info.audio.pcm.channelMode = NDL_DIRECTMEDIA_AUDIO_PCM_MODE_STEREO;
   media_info.audio.pcm.format = NDL_DIRECTMEDIA_AUDIO_PCM_FORMAT_S16LE;
   media_info.audio.pcm.sampleRate = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(opusConfig->sampleRate);
-  // Unload player before reloading
-  if (media_loaded && NDL_DirectMediaUnload() != 0)
-    return ERROR_AUDIO_CLOSE_FAILED;
   applog_i("NDL", "Opening PCM audio, channelMode=%s, format=%s, sampleRateEnum=%d", media_info.audio.pcm.channelMode,
            media_info.audio.pcm.format, media_info.audio.pcm.sampleRate);
-  if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
+  if (media_reload() != 0)
   {
     applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
-  media_loaded = true;
 #else
   NDL_DIRECTAUDIO_DATA_INFO info = {
       .numChannel = channelCount,
@@ -87,11 +83,7 @@ static void ndl_renderer_cleanup()
     opus_multistream_decoder_destroy(decoder);
 
 #if NDL_WEBOS5
-  if (media_loaded)
-  {
-    NDL_DirectMediaUnload();
-    media_loaded = false;
-  }
+  media_unload();
   memset(&media_info.audio, 0, sizeof(media_info.audio));
 #else
   NDL_DirectAudioClose();

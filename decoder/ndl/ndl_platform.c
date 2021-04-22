@@ -10,7 +10,7 @@
 #include "stream/module/api.h"
 #include "util/logging.h"
 
-static bool ndl_initialized = false;
+bool media_initialized = false;
 logvprintf_fn module_logvprintf;
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
@@ -25,44 +25,22 @@ bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx)
     }
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0)
     {
-        ndl_initialized = true;
+        media_initialized = true;
     }
     else
     {
-        ndl_initialized = false;
+        media_initialized = false;
         applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
     }
 #if NDL_WEBOS5
     memset(&media_info, 0, sizeof(media_info));
 #endif
-    return ndl_initialized;
+    return media_initialized;
 }
 
 bool decoder_check(PDECODER_INFO dinfo)
 {
-#if NDL_WEBOS5
-    for (int i = 0; i < 3; i++)
-    {
-        NDL_DIRECTMEDIA_DATA_INFO info;
-        memset(&info, 0, sizeof(info));
-        info.video.type = NDL_VIDEO_TYPE_H265;
-        info.video.width = 1270;
-        info.video.height = 720;
-        info.audio.type = NDL_AUDIO_TYPE_OPUS;
-        info.audio.opus.channels = 2;
-        info.audio.opus.sampleRate = 48.000;
-        info.audio.opus.streamHeader = NULL;
-        if (NDL_DirectMediaLoad(&info, NULL) != 0)
-        {
-            applog_e("NDL", "NDL_DirectMediaLoad failed on attempt %d: %s", i, NDL_DirectMediaGetError());
-            return false;
-        }
-        if (NDL_DirectMediaUnload() != 0)
-        {
-            applog_e("NDL", "NDL_DirectMediaUnload failed on attempt %d: %s", i, NDL_DirectMediaGetError());
-        }
-    }
-#else
+#ifndef NDL_WEBOS5
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
@@ -81,9 +59,9 @@ bool decoder_check(PDECODER_INFO dinfo)
 
 void decoder_finalize()
 {
-    if (ndl_initialized)
+    if (media_initialized)
     {
         NDL_DirectMediaQuit();
-        ndl_initialized = false;
+        media_initialized = false;
     }
 }

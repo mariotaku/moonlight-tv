@@ -36,15 +36,11 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   media_info.video.width = width;
   media_info.video.height = height;
   media_info.video.unknown1 = 0;
-  // Unload player before reloading
-  if (media_loaded && NDL_DirectMediaUnload() != 0)
-    return ERROR_DECODER_CLOSE_FAILED;
-  if (NDL_DirectMediaLoad(&media_info, media_load_callback) != 0)
+  if (media_reload() != 0)
   {
     applog_e("NDL", "NDL_DirectMediaLoad failed: %s", NDL_DirectMediaGetError());
     return ERROR_DECODER_OPEN_FAILED;
   }
-  media_loaded = true;
 #else
   NDL_DIRECTVIDEO_DATA_INFO info = {width, height};
   if (NDL_DirectVideoOpen(&info) != 0)
@@ -59,8 +55,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   {
     applog_e("NDL", "Not enough memory");
 #if NDL_WEBOS5
-    NDL_DirectMediaUnload();
-    media_loaded = false;
+    media_unload();
 #else
     NDL_DirectVideoClose();
 #endif
@@ -72,11 +67,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
 static void ndl_cleanup()
 {
 #if NDL_WEBOS5
-  if (media_loaded)
-  {
-    NDL_DirectMediaUnload();
-    media_loaded = false;
-  }
+  media_unload();
   memset(&media_info.video, 0, sizeof(media_info.video));
 #else
   NDL_DirectVideoClose();
@@ -91,7 +82,7 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
 {
 #if NDL_WEBOS5
   if (!media_loaded)
-    return DR_OK;
+    return DR_NEED_IDR;
 #endif
   if (decodeUnit->fullLength < DECODER_BUFFER_SIZE)
   {
