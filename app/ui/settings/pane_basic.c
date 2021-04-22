@@ -352,7 +352,8 @@ void _set_res(int w, int h)
 
 void _update_bitrate()
 {
-    app_configuration->stream.bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
+    int optimal = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height, app_configuration->stream.fps);
+    app_configuration->stream.bitrate = NK_CLAMP(BITRATE_MIN, optimal, _max_bitrate);
 }
 
 bool combo_item_select(int offset)
