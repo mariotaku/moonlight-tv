@@ -43,12 +43,6 @@ static const struct _fps_option _supported_fps[] = {
 };
 #define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
 
-static const struct _ch_option _supported_ch[] = {
-    {AUDIO_CONFIGURATION_STEREO, "Stereo"},
-    {AUDIO_CONFIGURATION_51_SURROUND, "5.1 Surround"},
-};
-#define _supported_ch_len sizeof(_supported_ch) / sizeof(struct _ch_option)
-
 static struct
 {
     int combo;
@@ -166,68 +160,14 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     nk_label(ctx, "Video bitrate", NK_TEXT_LEFT);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, _max_bitrate, BITRATE_STEP, 50);
-    nk_label(ctx, "Video decoder", NK_TEXT_LEFT);
-    struct nk_rect combo_bounds = nk_widget_bounds(ctx);
-    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    DECODER selplat = decoder_by_id(app_configuration->platform);
-    int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
-    if (nk_combo_begin_label(ctx, selplat > 0 ? decoder_definitions[selplat].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
-    {
-        *showing_combo = true;
-        if (combo_hovered_item.combo != 2)
-        {
-            combo_hovered_item.combo = 2;
-            combo_hovered_item.count = 1 + decoder_orders_len;
-            combo_hovered_item.request = -1;
-            combo_hovered_item.item = -1;
-        }
-        nk_layout_row_dynamic_s(ctx, 25, 1);
-        bool ever_hovered = false;
-        for (int i = 0; i < 1 + decoder_orders_len; i++)
-        {
-            struct nk_rect ci_bounds = nk_widget_bounds(ctx);
-            nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, ci_bounds);
-            if (hovered)
-            {
-                combo_hovered_item.item = i;
-                ever_hovered = true;
-            }
-            if (combo_hovered_item.request == i)
-            {
-                // Send mouse pointer to the item
-                combo_focused_center = nk_rect_center(ci_bounds);
-                bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
-                combo_hovered_item.request = -1;
-            }
-            if (i > 0)
-            {
-                MODULE_DEFINITION pdef = decoder_definitions[decoder_orders[i - 1]];
-                if (nk_combo_item_label(ctx, pdef.name, NK_TEXT_LEFT))
-                    app_configuration->platform = pdef.id;
-            }
-            else
-            {
-                if (nk_combo_item_label(ctx, "Automatic", NK_TEXT_LEFT))
-                    app_configuration->platform = "auto";
-            }
-        }
-        nk_combo_end(ctx);
-        if (!ever_hovered)
-        {
-            combo_hovered_item.item = -1;
-        }
-    }
-    if (decoder_pref_requested != selplat)
-    {
-        nk_label_wrap(ctx, "Restart Moonlight to apply decoder change");
-    }
+
     nk_layout_row_dynamic_s(ctx, 4, 1);
     return true;
 }
 
 static int _itemcount()
 {
-    return 4;
+    return 3;
 }
 
 static void _windowopen()

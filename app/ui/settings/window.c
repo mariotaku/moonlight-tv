@@ -43,6 +43,7 @@ const struct settings_pane *settings_panes[] = {
     &settings_pane_basic,
     &settings_pane_host,
     &settings_pane_mouse,
+    &settings_pane_adv_codec,
     &settings_pane_about,
 };
 #define settings_panes_size ((int)(sizeof(settings_panes) / sizeof(struct settings_pane *)))

@@ -167,6 +167,7 @@ set(SOURCES
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
     app/ui/settings/pane_mouse.c
+    app/ui/settings/pane_adv_codec.c
     app/ui/settings/pane_about.c
     app/ui/settings/statbar.c
     app/platform/webos/sprites_webos.c
