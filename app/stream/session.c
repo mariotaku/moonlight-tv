@@ -91,8 +91,12 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
     config->stream.colorSpace = decoder_info.colorSpace;
     if (config->stream.enableHdr)
         config->stream.colorRange = decoder_info.colorRange;
-    if (!decoder_info.audio)
+    if (decoder_info.audio)
+        config->stream.audioConfiguration = decoder_info.audioConfig;
+    else
         config->stream.audioConfiguration = audio_info.configuration;
+    if (!config->stream.audioConfiguration)
+        config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
     req->server = serverdata_new();

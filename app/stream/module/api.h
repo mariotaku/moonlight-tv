@@ -53,6 +53,7 @@ typedef struct DECODER_INFO
     int colorSpace;
     int colorRange;
     int maxBitrate;
+    int audioConfig;
 } * PDECODER_INFO, DECODER_INFO;
 
 typedef struct AUDIO_INFO

@@ -53,6 +53,7 @@ bool decoder_check(PDECODER_INFO dinfo)
     dinfo->audio = true;
 #if NDL_WEBOS5
     dinfo->hevc = true;
+    dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
 #endif
     dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->maxBitrate = 50000;
