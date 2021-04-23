@@ -39,7 +39,7 @@ static void connection_log_message(const char *format, ...)
 {
   va_list arglist;
   va_start(arglist, format);
-  vprintf(format, arglist);
+  app_logvprintf("INFO", "Limelight", format, arglist);
   va_end(arglist);
 }
 

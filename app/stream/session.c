@@ -164,7 +164,8 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     int drFlags = 0;
 
-    applog_i("Session", "Stream %d x %d, %d fps, %d kbps", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
+    applog_i("Session", "Video %d x %d, %d fps, %d kbps", config->stream.width, config->stream.height, config->stream.fps, config->stream.bitrate);
+    applog_i("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
     PDECODER_RENDERER_CALLBACKS vdec = decoder_get_video();
     PAUDIO_RENDERER_CALLBACKS adec = module_get_audio(config->audio_device);
