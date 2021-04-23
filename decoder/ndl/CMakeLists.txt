@@ -21,6 +21,7 @@ add_library(moonlight-ndl-webos5 SHARED
     ndl_audio_opus.c
     ndl_video.c
     ndl_webos5.c
+    base64.c
 )
 target_include_directories(moonlight-ndl-webos5 PRIVATE 
     ${CMAKE_SOURCE_DIR}/app/stream/audio

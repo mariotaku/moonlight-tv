@@ -21,10 +21,14 @@
 #include "stream/module/api.h"
 #include "util/logging.h"
 
+#include "base64.h"
+#include "opushead.h"
+
 #include <NDL_directmedia.h>
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define audio_callbacks PLUGIN_SYMBOL_NAME(audio_callbacks)
 
@@ -39,7 +43,19 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
   media_info.audio.type = NDL_AUDIO_TYPE_OPUS;
   media_info.audio.opus.channels = opusConfig->channelCount;
   media_info.audio.opus.sampleRate = (double)opusConfig->sampleRate / 1000.0f;
-  media_info.audio.opus.streamHeader = NULL;
+  struct OpusHead header = {
+      .version = 1,
+      .channel_count = opusConfig->channelCount,
+      .pre_skip = 0,
+      .input_sample_rate = opusConfig->sampleRate,
+      .output_gain = 0,
+      .mapping_family = 1,
+      .stream_count = opusConfig->streams,
+      .coupled_count = opusConfig->coupledStreams,
+  };
+  memset(header.mapping, 0, sizeof(unsigned char) * OPUS_CHANNEL_COUNT_MAX);
+  memcpy(header.mapping, opusConfig->mapping, sizeof(unsigned char) * AUDIO_CONFIGURATION_MAX_CHANNEL_COUNT);
+  // media_info.audio.opus.streamHeader = base64_encode((unsigned char *)&header, sizeof(header), NULL);
   if (media_reload() != 0)
   {
     applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
@@ -51,6 +67,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
 static void ndl_renderer_cleanup()
 {
   media_unload();
+  // free((void *)media_info.audio.opus.streamHeader);
   memset(&media_info.audio, 0, sizeof(media_info.audio));
 }
 
