@@ -84,8 +84,10 @@ APP_WINDOW_CONTEXT app_window_create()
     applog_d("SDL", "SDL_GetCurrentDisplayMode");
     if (SDL_GetCurrentDisplayMode(0, &dm) != 0)
     {
-        applog_f("SDL", "SDL_GetCurrentDisplayMode failed. %s", SDL_GetError());
-        return NULL;
+        applog_w("SDL", "SDL_GetCurrentDisplayMode failed. %s", SDL_GetError());
+        // Fix low fps for rpi4
+        dm.w = 1920;
+        dm.h = 1080;
     }
     applog_d("SDL", "SDL_DisplayMode(w=%d, h=%d)", dm.w, dm.h);
     app_window_width = dm.w;
