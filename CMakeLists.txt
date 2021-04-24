@@ -112,7 +112,7 @@ elseif (TARGET_RASPI)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(GLES REQUIRED bcm_host glesv2)
+    pkg_check_modules(GLES REQUIRED glesv2)
     pkg_check_modules(OPUS REQUIRED opus)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
@@ -333,6 +333,9 @@ elseif(TARGET_RASPI)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+
+    target_compile_options(moonlight PRIVATE "-pg")
+    target_link_options(moonlight PRIVATE "-pg")
 
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)

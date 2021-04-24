@@ -185,6 +185,9 @@ static bool decoder_init_simple(DECODER platform, int libidx, int argc, char *ar
 
 static void decoder_finalize_simple(DECODER platform, int libidx)
 {
+    if (decoder_current == DECODER_NONE)
+        // Nothing to finalize
+        return;
     MODULE_DEFINITION pdef = decoder_definitions[platform];
     MODULE_FINALIZE_FN fn;
     if (pdef.symbols.ptr)
