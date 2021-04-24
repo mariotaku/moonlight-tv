@@ -60,6 +60,8 @@ static bool window_focus_gained;
 
 static void fps_cap(int diff);
 
+static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
+
 int app_init(int argc, char *argv[])
 {
 #if TARGET_WEBOS
@@ -71,6 +73,10 @@ int app_init(int argc, char *argv[])
 
 APP_WINDOW_CONTEXT app_window_create()
 {
+    SDL_LogSetOutputFunction(applog_logoutput, NULL);
+#if DEBUG
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+#endif
     nk_platform_preinit();
     Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 #ifdef FORCE_FULLSCREEN
@@ -86,7 +92,6 @@ APP_WINDOW_CONTEXT app_window_create()
     app_window_height = WINDOW_HEIGHT;
     window_flags |= SDL_WINDOW_RESIZABLE;
 #endif
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            app_window_width, app_window_height, window_flags);
     if (!win)
@@ -334,4 +339,10 @@ void fps_cap(int start)
     {
         SDL_Delay(16 - tickdiff);
     }
+}
+
+void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+    const char *priority_name[SDL_NUM_LOG_PRIORITIES] = {"VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+    applog(priority_name[priority], "SDL", message);
 }

@@ -20,6 +20,7 @@ static void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...
 }
 #endif
 
+#define applog(level, ...) app_logprintf(level, __VA_ARGS__)
 #define applog_e(...) app_logprintf("ERROR", __VA_ARGS__)
 #define applog_w(...) app_logprintf("WARN", __VA_ARGS__)
 #define applog_i(...) app_logprintf("INFO", __VA_ARGS__)
