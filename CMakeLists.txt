@@ -311,7 +311,7 @@ elseif (TARGET_LGNC)
     target_link_libraries(moonlight PRIVATE opus)
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI)
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
+    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2 _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
 

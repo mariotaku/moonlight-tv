@@ -42,9 +42,6 @@ int main(int argc, char *argv[])
         REDIR_STDOUT(APPID);
     applog_d("APP", "main() init");
 #endif
-#if TARGET_RASPI
-    setenv("SDL_VIDEODRIVER", "rpi", 1);
-#endif
     bus_init();
 
     int ret = app_init(argc, argv);
