@@ -1,5 +1,6 @@
 add_library(moonlight-pi SHARED 
     pi_platform.c
+    pi_presenter.c
     pivid.c
 )
 

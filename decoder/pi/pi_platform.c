@@ -1,4 +1,16 @@
+#include "pi_common.h"
 #include "stream/module/api.h"
+#include "util/logging.h"
+
+logvprintf_fn module_logvprintf;
+
+bool decoder_init_pi(int argc, char *argv[], PHOST_CONTEXT hctx)
+{
+    if (hctx)
+    {
+        module_logvprintf = hctx->logvprintf;
+    }
+}
 
 bool decoder_check_pi(PDECODER_INFO dinfo)
 {

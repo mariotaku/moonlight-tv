@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Video decode on Raspberry Pi using OpenMAX IL though the ilcient helper library
 // Based upon video decode example from the Raspberry Pi firmware
-
+#include "pi_common.h"
 #include "stream/video/video.h"
 #include "stream/module/api.h"
 
@@ -48,14 +48,16 @@ static TUNNEL_T tunnel[2];
 static COMPONENT_T *list[3];
 static ILCLIENT_T *client;
 
-static COMPONENT_T *video_decode = NULL, *video_scheduler = NULL, *video_render = NULL;
+static COMPONENT_T *video_decode = NULL, *video_scheduler = NULL;
+
+COMPONENT_T *video_render = NULL;
 
 static int port_settings_changed;
 static int first_packet;
 
 static int decoder_renderer_setup(int videoFormat, int width, int height, int redrawRate, void* context, int drFlags) {
   if (videoFormat != VIDEO_FORMAT_H264) {
-    fprintf(stderr, "Video format not supported\n");
+    applog_e("Pi", "Video format not supported\n");
     return -1;
   }
 
@@ -70,18 +72,18 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   memset(tunnel, 0, sizeof(tunnel));
 
   if((client = ilclient_init()) == NULL) {
-    fprintf(stderr, "Can't initialize video\n");
+    applog_e("Pi", "Can't initialize video\n");
     return -2;
   }
 
   if(OMX_Init() != OMX_ErrorNone) {
-    fprintf(stderr, "Can't initialize OMX\n");
+    applog_e("Pi", "Can't initialize OMX\n");
     return -2;
   }
 
   // create video_decode
   if(ilclient_create_component(client, &video_decode, "video_decode", ILCLIENT_DISABLE_ALL_PORTS | ILCLIENT_ENABLE_INPUT_BUFFERS) != 0){
-    fprintf(stderr, "Can't create video decode\n");
+    applog_e("Pi", "Can't create video decode\n");
     return -2;
   }
 
@@ -89,7 +91,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
   // create video_render
   if(ilclient_create_component(client, &video_render, "video_render", ILCLIENT_DISABLE_ALL_PORTS) != 0){
-    fprintf(stderr, "Can't create video renderer\n");
+    applog_e("Pi", "Can't create video renderer\n");
     return -2;
   }
 
@@ -116,7 +118,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
   if(OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamVideoPortFormat, &format) != OMX_ErrorNone ||
      OMX_SetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamBrcmDataUnit, &unit) != OMX_ErrorNone) {
-    fprintf(stderr, "Failed to set video parameters\n");
+    applog_e("Pi", "Failed to set video parameters\n");
     return -2;
   }
 
@@ -143,12 +145,12 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN | OMX_DISPLAY_SET_LAYER | OMX_DISPLAY_SET_MODE;
 
   if(OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigLatencyTarget, &latencyTarget) != OMX_ErrorNone) {
-    fprintf(stderr, "Failed to set video render parameters\n");
+    applog_e("Pi", "Failed to set video render parameters\n");
     exit(EXIT_FAILURE);
   }
 
   if(OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigDisplayRegion, &displayRegion) != OMX_ErrorNone) {
-    fprintf(stderr, "Failed to set video region parameters\n");
+    applog_e("Pi", "Failed to set video region parameters\n");
     exit(EXIT_FAILURE);
   }
 
@@ -171,7 +173,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   }
 
   if(OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigCommonRotate, &rotationType) != OMX_ErrorNone) {
-    fprintf(stderr, "Failed to set video rotation\n");
+    applog_e("Pi", "Failed to set video rotation\n");
     exit(EXIT_FAILURE);
   }
 
@@ -182,7 +184,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   port.nVersion.nVersion = OMX_VERSION;
   port.nPortIndex = 130;
   if(OMX_GetParameter(ILC_GET_HANDLE(video_decode), OMX_IndexParamPortDefinition, &port) != OMX_ErrorNone) {
-    fprintf(stderr, "Failed to get decoder port definition\n");
+    applog_e("Pi", "Failed to get decoder port definition\n");
     return -2;
   }
 
@@ -197,7 +199,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
     ilclient_change_component_state(video_decode, OMX_StateExecuting);
   } else {
-    fprintf(stderr, "Can't setup video\n");
+    applog_e("Pi", "Can't setup video\n");
     return -2;
   }
 
@@ -209,7 +211,7 @@ static void decoder_renderer_cleanup() {
 
   OMX_BUFFERHEADERTYPE *buf;
   if((buf = ilclient_get_input_buffer(video_decode, 130, 1)) == NULL){
-    fprintf(stderr, "Can't get video buffer\n");
+    applog_e("Pi", "Can't get video buffer\n");
     exit(EXIT_FAILURE);
   }
 
@@ -217,7 +219,7 @@ static void decoder_renderer_cleanup() {
   buf->nFlags = OMX_BUFFERFLAG_TIME_UNKNOWN | OMX_BUFFERFLAG_EOS;
 
   if(OMX_EmptyThisBuffer(ILC_GET_HANDLE(list[0]), buf) != OMX_ErrorNone){
-    fprintf(stderr, "Can't empty video buffer\n");
+    applog_e("Pi", "Can't empty video buffer\n");
     return;
   }
 
@@ -246,7 +248,7 @@ static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {
   while (entry != NULL) {
     if (buf == NULL) {
       if ((buf = ilclient_get_input_buffer(video_decode, 130, 1)) == NULL) {
-        fprintf(stderr, "Can't get video buffer\n");
+        applog_e("Pi", "Can't get video buffer\n");
         exit(EXIT_FAILURE);
       }
       buf->nFilledLen = 0;
@@ -270,7 +272,7 @@ static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {
         port_settings_changed = 1;
 
         if(ilclient_setup_tunnel(tunnel, 0, 0) != 0) {
-          fprintf(stderr, "Can't setup video\n");
+          applog_e("Pi", "Can't setup video\n");
           exit(EXIT_FAILURE);
         }
 
@@ -278,7 +280,7 @@ static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {
       }
 
       if(OMX_EmptyThisBuffer(ILC_GET_HANDLE(video_decode), buf) != OMX_ErrorNone){
-        fprintf(stderr, "Can't empty video buffer\n");
+        applog_e("Pi", "Can't empty video buffer\n");
         exit(EXIT_FAILURE);
       }
       buf = NULL;
@@ -290,50 +292,9 @@ static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {
   return DR_OK;
 }
 
-static void presenter_enter_fullscreen()
-{
-  OMX_CONFIG_DISPLAYREGIONTYPE displayRegion;
-  displayRegion.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
-  displayRegion.nVersion.nVersion = OMX_VERSION;
-  displayRegion.nPortIndex = 90;
-  displayRegion.fullscreen = OMX_TRUE;
-  displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN;
-
-  if (OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigDisplayRegion, &displayRegion) != OMX_ErrorNone)
-  {
-    fprintf(stderr, "Failed to set video region parameters\n");
-    exit(EXIT_FAILURE);
-  }
-}
-
-static void presenter_enter_overlay(int x, int y, int w, int h)
-{
-  OMX_CONFIG_DISPLAYREGIONTYPE displayRegion;
-  displayRegion.nSize = sizeof(OMX_PARAM_PORTDEFINITIONTYPE);
-  displayRegion.nVersion.nVersion = OMX_VERSION;
-  displayRegion.nPortIndex = 90;
-  displayRegion.fullscreen = OMX_FALSE;
-  displayRegion.dest_rect.x_offset = x;
-  displayRegion.dest_rect.y_offset = y;
-  displayRegion.dest_rect.width = w;
-  displayRegion.dest_rect.height = h;
-  displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN | OMX_DISPLAY_SET_DEST_RECT;
-
-  if (OMX_SetParameter(ILC_GET_HANDLE(video_render), OMX_IndexConfigDisplayRegion, &displayRegion) != OMX_ErrorNone)
-  {
-    fprintf(stderr, "Failed to set video region parameters\n");
-    exit(EXIT_FAILURE);
-  }
-}
-
 DECODER_RENDERER_CALLBACKS decoder_callbacks_pi = {
   .setup = decoder_renderer_setup,
   .cleanup = decoder_renderer_cleanup,
   .submitDecodeUnit = decoder_renderer_submit_decode_unit,
   .capabilities = CAPABILITY_DIRECT_SUBMIT,
-};
-
-VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi = {
-  .enterFullScreen = presenter_enter_fullscreen,
-  .enterOverlay = presenter_enter_overlay,
 };
