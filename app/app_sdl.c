@@ -75,7 +75,9 @@ APP_WINDOW_CONTEXT app_window_create()
     Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;
 #ifdef FORCE_FULLSCREEN
     SDL_DisplayMode dm;
+    applog_d("SDL", "SDL_GetCurrentDisplayMode");
     SDL_GetCurrentDisplayMode(0, &dm);
+    applog_d("SDL", "SDL_DisplayMode(w=%d, h=%d)", dm.w, dm.h);
     app_window_width = dm.w;
     app_window_height = dm.h;
     window_flags |= SDL_WINDOW_FULLSCREEN;
@@ -84,15 +86,22 @@ APP_WINDOW_CONTEXT app_window_create()
     app_window_height = WINDOW_HEIGHT;
     window_flags |= SDL_WINDOW_RESIZABLE;
 #endif
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
     win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                            app_window_width, app_window_height, window_flags);
+    if (!win)
+    {
+        applog_e("SDL", "SDL_CreateWindow failed. %s", SDL_GetError());
+        return NULL;
+    }
+    applog_i("SDL", "Window created. ID=%d", SDL_GetWindowID(win));
 #if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
     SDL_SetWindowMinimumSize(win, 640, 400);
 #endif
-    SDL_Log("Video Driver: %s\n", SDL_GetCurrentVideoDriver());
+    applog_i("SDL", "Video Driver: %s", SDL_GetCurrentVideoDriver());
 
     gl = SDL_GL_CreateContext(win);
 

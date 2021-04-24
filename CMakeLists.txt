@@ -112,7 +112,7 @@ elseif (TARGET_RASPI)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(GLES REQUIRED bcm_host brcmglesv2)
+    pkg_check_modules(GLES REQUIRED bcm_host glesv2)
     pkg_check_modules(OPUS REQUIRED opus)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
