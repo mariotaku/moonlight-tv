@@ -42,6 +42,11 @@ bool app_has_redraw;
 
 PCONFIGURATION app_configuration = NULL;
 
+static struct _LGNC_WINDOW_CONTEXT
+{
+    int displayId;
+} app_lgnc_window_context;
+
 int app_init(int argc, char *argv[])
 {
     app_configuration = settings_load();
@@ -70,16 +75,16 @@ APP_WINDOW_CONTEXT app_window_create()
 {
     nk_platform_preinit();
 
-    int displayId;
-    if (LGNC_SYSTEM_GetDisplayId(&displayId) != 0)
+    if (LGNC_SYSTEM_GetDisplayId(&app_lgnc_window_context.displayId) != 0)
     {
-        fprintf(stderr, "LGNC_SYSTEM_GetDisplayId failed\n");
+        applog_e("LGNC", "LGNC_SYSTEM_GetDisplayId failed\n");
+        return NULL;
     }
 
-    open_display(1280, 720, displayId);
+    open_display(1280, 720, app_lgnc_window_context.displayId);
     app_window_width = 1280;
     app_window_height = 720;
-    return NULL;
+    return &app_lgnc_window_context;
 }
 
 static void app_process_events(struct nk_context *ctx)

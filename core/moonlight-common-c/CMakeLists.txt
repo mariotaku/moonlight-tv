@@ -58,4 +58,9 @@ target_include_directories(moonlight-common-c PUBLIC
     "$<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>"
 )
 
-target_link_libraries(moonlight-common-c mbedcrypto)
+if (MBEDTLS_FOUND)
+    target_link_libraries(moonlight-common-c PRIVATE ${MBEDX509_LIBRARY})
+    target_include_directories(moonlight-common-c SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
+else()
+    target_link_libraries(moonlight-common-c PRIVATE mbedtls)
+endif()

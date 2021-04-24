@@ -58,6 +58,11 @@ int main(int argc, char *argv[])
     /* GUI */
     struct nk_context *ctx;
     APP_WINDOW_CONTEXT win = app_window_create();
+    if (!win)
+    {
+        applog_e("APP", "Failed to create window");
+        return 1;
+    }
 
     applog_i("APP", "Decoder module: %s", decoder_definitions[decoder_current].name);
     if (audio_current == AUDIO_DECODER)

@@ -36,8 +36,9 @@ if (TARGET_WEBOS)
     endif()
     set(THREADS_PTHREAD_ARG "2" CACHE STRING "Result from TRY_RUN" FORCE)
     set(HAVE_SDL TRUE)
-    
+    add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis)
+
     set(WEBOS_APPINFO_ID "com.limelight.webos")
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos-unused-prefix)
     set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/webos_pkg_$ENV{ARCH})
@@ -47,6 +48,7 @@ if (TARGET_WEBOS)
 elseif(TARGET_LGNC)
     set(HAVE_SDL FALSE)
     set(HAVE_LGNC TRUE)
+    add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis)
 
     set(WEBOS_APPINFO_ID "com.limelight.netcast")
@@ -106,6 +108,7 @@ elseif (TARGET_LGNC)
     set(DECODER_LGNC_STATIC TRUE)
 elseif (TARGET_RASPI)
     find_package(Broadcom REQUIRED)
+    find_package(MbedTLS REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -114,6 +117,7 @@ elseif (TARGET_RASPI)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
+    find_package(MbedTLS REQUIRED)
     
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -126,7 +130,6 @@ option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
 option(ENABLE_TESTING "Skip mbedtls testing" OFF)
 option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
 option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
-add_subdirectory(third_party/mbedtls)
 
 add_subdirectory(core/moonlight-common-c)
 add_subdirectory(core/libgamestream)
@@ -261,8 +264,6 @@ target_link_libraries(moonlight PRIVATE
  moonlight-common-c gamestream
 )
 
-target_link_libraries(moonlight PRIVATE mbedtls)
-
 function(moonlight_add_module)
     foreach(module ${ARGN})
         if (NOT TARGET ${module})
@@ -291,6 +292,7 @@ if (TARGET_WEBOS)
     moonlight_add_module(moonlight-ndlaud)
     
     target_link_libraries(moonlight PRIVATE opus)
+    target_link_libraries(moonlight PRIVATE mbedtls)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
@@ -303,6 +305,8 @@ elseif (TARGET_LGNC)
         APPLOG_FILE=app_logfile
     )
     target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
+
+    target_link_libraries(moonlight PRIVATE mbedtls)
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_libraries(moonlight PRIVATE lgncopenapi)
@@ -317,6 +321,8 @@ elseif(TARGET_RASPI)
 
     target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
     target_include_directories(moonlight SYSTEM PRIVATE ${GLES_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
+    target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
