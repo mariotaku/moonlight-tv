@@ -18,7 +18,6 @@ void nk_platform_preinit()
 {
     /* SDL setup */
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
-    /* do NOT init SDL on GL ES 2, or it will not work on Raspberry Pi */
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);

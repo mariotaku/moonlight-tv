@@ -8,6 +8,8 @@
 #endif
 #include "nuklear/spritesheet_ui.h"
 
+#include "util/logging.h"
+
 struct nk_spritesheet_ui sprites_ui;
 
 void nk_ext_sprites_init();
@@ -32,7 +34,7 @@ void nk_ext_sprites_init()
         return;
     if (ui_spritesheet)
         nk_ext_sprites_destroy();
-    printf("Loading %dx spritesheet\n", density);
+    applog_i("UI", "Loading %dx spritesheet", density);
     ui_spritesheet = malloc(sizeof(struct nk_image));
     switch (density)
     {

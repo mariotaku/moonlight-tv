@@ -82,7 +82,11 @@ APP_WINDOW_CONTEXT app_window_create()
 #ifdef FORCE_FULLSCREEN
     SDL_DisplayMode dm;
     applog_d("SDL", "SDL_GetCurrentDisplayMode");
-    SDL_GetCurrentDisplayMode(0, &dm);
+    if (SDL_GetCurrentDisplayMode(0, &dm) != 0)
+    {
+        applog_f("SDL", "SDL_GetCurrentDisplayMode failed. %s", SDL_GetError());
+        return NULL;
+    }
     applog_d("SDL", "SDL_DisplayMode(w=%d, h=%d)", dm.w, dm.h);
     app_window_width = dm.w;
     app_window_height = dm.h;
@@ -96,7 +100,7 @@ APP_WINDOW_CONTEXT app_window_create()
                            app_window_width, app_window_height, window_flags);
     if (!win)
     {
-        applog_e("SDL", "SDL_CreateWindow failed. %s", SDL_GetError());
+        applog_f("SDL", "SDL_CreateWindow failed. %s", SDL_GetError());
         return NULL;
     }
     applog_i("SDL", "Window created. ID=%d", SDL_GetWindowID(win));

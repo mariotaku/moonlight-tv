@@ -202,6 +202,7 @@ void ui_display_size(short width, short height)
     ui_scale = width / 640.0;
     ui_logic_width = width / ui_scale;
     ui_logic_height = height / ui_scale;
+    applog_i("UI", "Display size changed to %d x %d", width, height);
     nk_ext_sprites_init();
 }
 

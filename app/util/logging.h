@@ -1,10 +1,10 @@
 #pragma once
+#include <stdarg.h>
 
 #ifdef APPLOG_HOST
 void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list args);
 void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...);
 #else
-#include <stdarg.h>
 
 typedef void (*logvprintf_fn)(const char *, const char *, const char *, va_list);
 
@@ -21,11 +21,14 @@ static void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...
 #endif
 
 #define applog(level, ...) app_logprintf(level, __VA_ARGS__)
+#define applog_f(...) app_logprintf("FATAL", __VA_ARGS__)
 #define applog_e(...) app_logprintf("ERROR", __VA_ARGS__)
 #define applog_w(...) app_logprintf("WARN", __VA_ARGS__)
 #define applog_i(...) app_logprintf("INFO", __VA_ARGS__)
 #ifdef DEBUG
 #define applog_d(...) app_logprintf("DEBUG", __VA_ARGS__)
+#define applog_v(...) app_logprintf("VERBOSE", __VA_ARGS__)
 #else
 #define applog_d(...)
+#define applog_v(...)
 #endif
