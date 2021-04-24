@@ -89,6 +89,11 @@ pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 
+option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
+option(ENABLE_TESTING "Skip mbedtls testing" OFF)
+option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
+option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
+
 if (TARGET_WEBOS)
     pkg_check_modules(GLES REQUIRED egl glesv2)
     set(BUILD_SHARED_LIBS ON)
@@ -125,11 +130,6 @@ elseif (TARGET_DESKTOP)
 else()
     message(FATAL_ERROR "Unknown build platform")
 endif()
-
-option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
-option(ENABLE_TESTING "Skip mbedtls testing" OFF)
-option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
-option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 
 add_subdirectory(core/moonlight-common-c)
 add_subdirectory(core/libgamestream)
