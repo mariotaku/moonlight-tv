@@ -44,6 +44,7 @@ namespace SMP_DECODER_NS
         };
 
         std::string makeLoadPayload(VideoConfig &videoConfig, AudioConfig &audioConfig, uint64_t time);
+        std::string makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusConfig);
         bool submitBuffer(const void *data, size_t size, uint64_t pts, int esData);
 
         void SetMediaAudioData(const char *data);

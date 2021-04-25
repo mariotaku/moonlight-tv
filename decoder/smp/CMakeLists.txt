@@ -8,6 +8,7 @@ pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_library(moonlight-smp-acb SHARED
     src/DecoderPlatform.cpp
     src/AVStreamPlayer.cpp
+    src/base64.cpp
 )
 target_include_directories(moonlight-smp-acb PRIVATE 
     ${CMAKE_SOURCE_DIR}/app/stream/audio 
@@ -24,6 +25,7 @@ install(TARGETS moonlight-smp-acb LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 add_library(moonlight-smp SHARED
     src/DecoderPlatform.cpp
     src/AVStreamPlayer.cpp
+    src/base64.cpp
 )
 target_include_directories(moonlight-smp PRIVATE 
     ${CMAKE_SOURCE_DIR}/app/platform/webos

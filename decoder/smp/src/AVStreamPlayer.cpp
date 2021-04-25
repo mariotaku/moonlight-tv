@@ -1,4 +1,5 @@
 #include "AVStreamPlayer.h"
+#include "opus_constants.h"
 
 #include <iostream>
 #include <sstream>
@@ -16,6 +17,8 @@
 
 using SMP_DECODER_NS::AVStreamPlayer;
 namespace pj = pbnjson;
+
+std::string base64_encode(const unsigned char *src, size_t len);
 
 AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), video_pts_(0)
 {
@@ -184,7 +187,7 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     videoSink.put("type", "main_video");
 
     avSink.put("videoSink", videoSink);
-    
+
     arg.put("mediaTransportType", "BUFFERSTREAM");
     pj::JValue adaptiveStreaming = pj::Object();
     adaptiveStreaming.put("maxWidth", videoConfig.width);
@@ -205,6 +208,7 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
         pj::JValue opusInfo = pj::Object();
         opusInfo.put("channels", std::to_string(audioConfig.opusConfig.channelCount));
         opusInfo.put("sampleRate", static_cast<double>(audioConfig.opusConfig.sampleRate / 1000.f));
+        opusInfo.put("streamHeader", makeOpusHeader(audioConfig.opusConfig));
         contents.put("opusInfo", opusInfo);
     }
     contents.put("codec", codec);
@@ -257,6 +261,45 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     payload.put("args", args);
 
     return pbnjson::JGenerator::serialize(payload, pbnjson::JSchemaFragment("{}"));
+}
+
+std::string AVStreamPlayer::makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusConfig)
+{
+    unsigned char opusHead[sizeof(unsigned char) * OPUS_EXTRADATA_SIZE + 2 + OPUS_MAX_VORBIS_CHANNELS];
+    // See https://wiki.xiph.org/OggOpus#ID_Header.
+    // Set magic signature.
+    memcpy(&opusHead[OPUS_EXTRADATA_LABEL_OFFSET], "OpusHead", 8);
+    // Set Opus version.
+    opusHead[OPUS_EXTRADATA_VERSION_OFFSET] = 1;
+    // Set channel count.
+    opusHead[OPUS_EXTRADATA_CHANNELS_OFFSET] = (uint8_t)opusConfig.channelCount;
+    // Set pre-skip
+    uint16_t skip = 0;
+    memcpy(&opusHead[OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET], &skip, sizeof(uint16_t));
+    // Set original input sample rate in Hz.
+    uint32_t sampleRate = opusConfig.sampleRate;
+    memcpy(&opusHead[OPUS_EXTRADATA_SAMPLE_RATE_OFFSET], &sampleRate, sizeof(uint32_t));
+    // Set output gain in dB.
+    int16_t gain = 0;
+    memcpy(&opusHead[OPUS_EXTRADATA_GAIN_OFFSET], &gain, sizeof(int16_t));
+
+    size_t headSize = OPUS_EXTRADATA_SIZE;
+    if (opusConfig.streams > 1)
+    {
+        // Channel mapping family 1 covers 1 to 8 channels in one or more streams,
+        // using the Vorbis speaker assignments.
+        opusHead[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 1;
+        opusHead[OPUS_EXTRADATA_NUM_STREAMS_OFFSET] = opusConfig.streams;
+        opusHead[OPUS_EXTRADATA_NUM_COUPLED_OFFSET] = opusConfig.coupledStreams;
+        memcpy(&opusHead[OPUS_EXTRADATA_STREAM_MAP_OFFSET], opusConfig.mapping, sizeof(unsigned char) * opusConfig.streams);
+        headSize = headSize + 2 + opusConfig.streams;
+    }
+    else
+    {
+        // Channel mapping family 0 covers mono or stereo in a single stream.
+        opusHead[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 0;
+    }
+    return base64_encode(opusHead, headSize);
 }
 
 void AVStreamPlayer::SetMediaAudioData(const char *data)

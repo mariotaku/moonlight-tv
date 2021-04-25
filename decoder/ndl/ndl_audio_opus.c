@@ -47,10 +47,9 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
 #if DEBUG
   if (opusConfig->channelCount > 2)
   {
-    unsigned char *opusHead = malloc(sizeof(unsigned char) * OPUS_EXTRADATA_SIZE + 2 + OPUS_MAX_VORBIS_CHANNELS);
+    unsigned char opusHead[sizeof(unsigned char) * OPUS_EXTRADATA_SIZE + 2 + OPUS_MAX_VORBIS_CHANNELS];
     size_t headSize = write_opus_header(opusConfig, opusHead);
     media_info.audio.opus.streamHeader = base64_encode(opusHead, headSize, NULL);
-    free(opusHead);
   }
 #endif
   applog_d("NDL", "Reloading audio: channelCount=%d, sampleRate=%d, header=%s", opusConfig->channelCount, opusConfig->sampleRate,
