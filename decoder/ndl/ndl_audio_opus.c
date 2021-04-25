@@ -53,9 +53,13 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
       .stream_count = opusConfig->streams,
       .coupled_count = opusConfig->coupledStreams,
   };
-  memset(header.mapping, 0, sizeof(unsigned char) * OPUS_CHANNEL_COUNT_MAX);
   memcpy(header.mapping, opusConfig->mapping, sizeof(unsigned char) * AUDIO_CONFIGURATION_MAX_CHANNEL_COUNT);
-  // media_info.audio.opus.streamHeader = base64_encode((unsigned char *)&header, sizeof(header), NULL);
+#if DEBUG
+  size_t mapping_diff = sizeof(unsigned char) * (OPUS_CHANNEL_COUNT_MAX - AUDIO_CONFIGURATION_MAX_CHANNEL_COUNT);
+  media_info.audio.opus.streamHeader = base64_encode((unsigned char *)&header, sizeof(header) - mapping_diff, NULL);
+#endif
+  applog_d("NDL", "Reloading audio: channelCount=%d, sampleRate=%d, header=%s", opusConfig->channelCount, opusConfig->sampleRate,
+           media_info.audio.opus.streamHeader);
   if (media_reload() != 0)
   {
     applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
