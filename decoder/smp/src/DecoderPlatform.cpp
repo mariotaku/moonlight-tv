@@ -42,7 +42,7 @@ extern "C" bool decoder_check(PDECODER_INFO dinfo)
     dinfo->valid = true;
     dinfo->accelerated = true;
 #if DEBUG
-    dinfo->audio = true;
+    // dinfo->audio = true;
     dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
 #endif
     dinfo->hevc = true;
