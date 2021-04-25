@@ -7,7 +7,7 @@
 
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
 static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
-static MODULE_LIB_DEFINITION _ndl_libs[2] = {
+static MODULE_LIB_DEFINITION _ndl_libs[] = {
 #if DEBUG
     {"ndlaud_webos5", "ndlaud-webos5"},
 #endif
@@ -29,7 +29,7 @@ MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
     {"SDL Audio", "sdl", NULL, 0, &audio_sdl},
     {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
     {"ALSA", "alsa", &_alsa_lib, 1, NULL},
-    {"NDL Audio", "ndlaud", &_ndl_libs, 2, NULL},
+    {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
 };
 
 AUDIO audio_pref_requested;
