@@ -22,4 +22,4 @@ cd build
 cmake .. -DTARGET_RASPI=ON -DCMAKE_BUILD_TYPE=Debug
 
 echo "Start build"
-cmake --build . --target moonlight
+cmake --build . --target moonlight -j $(nproc)
