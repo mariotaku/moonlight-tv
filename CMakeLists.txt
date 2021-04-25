@@ -294,6 +294,7 @@ if (TARGET_WEBOS)
     moonlight_add_module(moonlight-lgnc)
     moonlight_add_module(moonlight-pulse)
     moonlight_add_module(moonlight-ndlaud)
+    moonlight_add_module(moonlight-ndlaud-webos5)
     
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedtls)

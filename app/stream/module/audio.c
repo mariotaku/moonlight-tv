@@ -7,7 +7,7 @@
 
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
 static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
-static MODULE_LIB_DEFINITION _ndl_libs[2] = {{"ndlaud", "ndlaud"}, {"ndlaud_webos5", "ndlaud-webos5"}};
+static MODULE_LIB_DEFINITION _ndl_libs[2] = {{"ndlaud_webos5", "ndlaud-webos5"}, {"ndlaud", "ndlaud"}};
 
 bool audio_check_sdl(PAUDIO_INFO ainfo);
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
