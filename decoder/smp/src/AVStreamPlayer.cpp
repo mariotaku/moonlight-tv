@@ -105,7 +105,8 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
         return DR_NEED_IDR;
     }
     unsigned long long ms = decodeUnit->presentationTimeMs;
-    video_pts_ = ms * 1000ULL;
+    // In nanoseconds.
+    video_pts_ = ms * 1000000ULL;
 
     int length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
