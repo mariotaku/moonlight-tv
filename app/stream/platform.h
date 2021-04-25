@@ -132,7 +132,7 @@ PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device);
 
 static const DECODER decoder_orders[] = {
 #if TARGET_WEBOS
-    DECODER_SMP, DECODER_DILE, DECODER_NDL, DECODER_LGNC
+    DECODER_SMP, DECODER_NDL, DECODER_LGNC
 #elif TARGET_LGNC
     DECODER_LGNC
 #elif TARGET_RASPI
@@ -145,7 +145,7 @@ static const size_t decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER
 
 static const AUDIO audio_orders[] = {
 #if TARGET_WEBOS
-    AUDIO_NDL, AUDIO_SDL
+    AUDIO_PULSE, AUDIO_NDL, AUDIO_SDL
 #else
     AUDIO_PULSE, AUDIO_ALSA, AUDIO_SDL
 #endif
