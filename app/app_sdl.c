@@ -115,6 +115,11 @@ APP_WINDOW_CONTEXT app_window_create()
     applog_i("SDL", "Video Driver: %s", SDL_GetCurrentVideoDriver());
 
     gl = SDL_GL_CreateContext(win);
+    if (!gl)
+    {
+        applog_f("SDL", "SDL_GL_CreateContext failed. %s", SDL_GetError());
+        return NULL;
+    }
 
     /* OpenGL setup */
     glViewport(0, 0, app_window_width, app_window_height);

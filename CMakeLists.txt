@@ -331,6 +331,8 @@ elseif(TARGET_RASPI)
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
     target_link_libraries(moonlight PRIVATE moonlight-pi)
+    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
+    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
