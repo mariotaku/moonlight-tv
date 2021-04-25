@@ -1,5 +1,6 @@
 
 #include "AVStreamPlayer.h"
+#include "util/logging.h"
 
 #include <cassert>
 #include <iostream>
@@ -27,8 +28,12 @@ static VideoConfig videoConfig;
 extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
 extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks;
 
-extern "C" bool decoder_init(int argc, char *argv[])
+extern "C" bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx)
 {
+    if (hctx)
+    {
+        module_logvprintf = hctx->logvprintf;
+    }
     return true;
 }
 
@@ -36,7 +41,10 @@ extern "C" bool decoder_check(PDECODER_INFO dinfo)
 {
     dinfo->valid = true;
     dinfo->accelerated = true;
-    dinfo->audio = false;
+#if DEBUG
+    dinfo->audio = true;
+    dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
+#endif
     dinfo->hevc = true;
     dinfo->hdr = DECODER_HDR_ALWAYS;
     dinfo->colorSpace = COLORSPACE_REC_709;
@@ -138,3 +146,5 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks = {
     .decodeAndPlaySample = _audioSubmit,
     .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
+
+logvprintf_fn module_logvprintf = NULL;

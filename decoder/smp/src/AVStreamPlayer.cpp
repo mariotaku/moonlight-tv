@@ -1,10 +1,6 @@
 #include "AVStreamPlayer.h"
+#include "util/logging.h"
 #include "opus_constants.h"
-
-#include <iostream>
-#include <sstream>
-#include <cstdio>
-#include <stdlib.h>
 
 #include <pbnjson.hpp>
 
@@ -33,7 +29,7 @@ AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), vi
                                 std::placeholders::_4, std::placeholders::_5);
     if (!acb_client_->initialize(ACB::PlayerType::MSE, app_id_, acbHandler))
     {
-        std::cerr << "Acb::initialize() failed!" << std::endl;
+        applog_e("SMP", "Acb::initialize() failed!");
         return;
     }
 #endif
@@ -75,9 +71,10 @@ bool AVStreamPlayer::setup(VideoConfig &videoConfig, AudioConfig &audioConfig)
     starfish_media_apis_.reset(new StarfishMediaAPIs());
     starfish_media_apis_->notifyForeground();
     std::string payload = makeLoadPayload(videoConfig, audioConfig, video_pts_);
+    applog_d("SMP", "StarfishMediaAPIs::Load(%s)", payload.c_str());
     if (!starfish_media_apis_->Load(payload.c_str(), &LoadCallback, this))
     {
-        std::cerr << "StarfishMediaAPIs::Load() failed!" << std::endl;
+        applog_e("SMP", "StarfishMediaAPIs::Load() failed!");
         return false;
     }
     player_state_ = PlayerState::LOADED;
@@ -85,7 +82,7 @@ bool AVStreamPlayer::setup(VideoConfig &videoConfig, AudioConfig &audioConfig)
 #ifdef USE_ACB
     if (!acb_client_->setDisplayWindow(0, 0, videoConfig.width, videoConfig.height, true))
     {
-        std::cerr << "Acb::setDisplayWindow() failed!" << std::endl;
+        applog_e("SMP", "Acb::setDisplayWindow() failed!");
         return false;
     }
 #endif
@@ -136,7 +133,7 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
     }
     else if (player_state_ != LOADED && player_state_ != PLAYING)
     {
-        std::cerr << "Player not ready to feed" << std::endl;
+        applog_e("SMP", "Player not ready to feed");
         return false;
     }
     char payload[256];
@@ -157,7 +154,7 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
     {
 #ifdef USE_ACB
         if (!acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::SEAMLESS_LOADED))
-            std::cerr << "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!" << std::endl;
+            applog_e("SMP", "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!");
 #endif
         player_state_ = PLAYING;
     }
@@ -207,7 +204,7 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
         codec.put("audio", "OPUS");
         pj::JValue opusInfo = pj::Object();
         opusInfo.put("channels", std::to_string(audioConfig.opusConfig.channelCount));
-        opusInfo.put("sampleRate", static_cast<double>(audioConfig.opusConfig.sampleRate / 1000.f));
+        opusInfo.put("sampleRate", static_cast<double>(audioConfig.opusConfig.sampleRate) / 1000.0);
         opusInfo.put("streamHeader", makeOpusHeader(audioConfig.opusConfig));
         contents.put("opusInfo", opusInfo);
     }
@@ -304,12 +301,12 @@ std::string AVStreamPlayer::makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusC
 
 void AVStreamPlayer::SetMediaAudioData(const char *data)
 {
-    std::cout << "AVStreamPlayer::SetMediaAudioData" << data << std::endl;
+    applog_d("SMP", "AVStreamPlayer::SetMediaAudioData %s", data);
 }
 
 void AVStreamPlayer::SetMediaVideoData(const char *data)
 {
-    std::cout << "AVStreamPlayer::SetMediaVideoData" << data << std::endl;
+    applog_d("SMP", "AVStreamPlayer::SetMediaVideoData %s", data);
 #ifdef USE_ACB
     acb_client_->setMediaVideoData(data);
 #endif

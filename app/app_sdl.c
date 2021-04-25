@@ -75,7 +75,7 @@ APP_WINDOW_CONTEXT app_window_create()
 {
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
 #if DEBUG
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    // SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 #endif
     nk_platform_preinit();
     Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI;

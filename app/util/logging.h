@@ -1,4 +1,10 @@
 #pragma once
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdarg.h>
 
 #ifdef APPLOG_HOST
@@ -31,4 +37,8 @@ static void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...
 #else
 #define applog_d(...)
 #define applog_v(...)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
