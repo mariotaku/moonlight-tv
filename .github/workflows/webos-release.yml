@@ -2,8 +2,8 @@ name: Release for webOS
 
 on: 
   push:
-    branches:
-      - '!*'
+    branches-ignore:
+      - '*'
     tags:
       - 'v*.*'
 
