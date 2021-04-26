@@ -406,10 +406,20 @@ if (TARGET_WEBOS OR TARGET_LGNC)
     )
     
     if ($ENV{CI})
+        get_target_property(package_id moonlight WEBOS_APPINFO_ID)
+        get_target_property(package_file moonlight WEBOS_PACKAGE_PATH)
         get_target_property(package_filename moonlight WEBOS_PACKAGE_FILENAME)
         get_target_property(package_target moonlight WEBOS_PACKAGE_TARGET)
+
+        set(WEBOS_HOMEBREW_MANIFEST_FILENAME "${package_id}.manifest.json")
+
         add_custom_command(TARGET ${package_target} POST_BUILD
-            COMMAND echo RELEASE_FILENAME=${package_filename} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
+            COMMAND echo RELEASE_IPK_FILENAME=${package_filename} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
+            # Force PATH environment variable to use system python
+            COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/tools/gen_manifest.py -a ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json 
+                -p ${CMAKE_BINARY_DIR}/${WEBOS_PACKAGE_FILENAME}
+                -o ${CMAKE_BINARY_DIR}/${WEBOS_HOMEBREW_MANIFEST_FILENAME}
+            COMMAND echo RELEASE_MANIFEST_FILENAME=${WEBOS_HOMEBREW_MANIFEST_FILENAME} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
         )
     else()
         include(WebOSInstall)
