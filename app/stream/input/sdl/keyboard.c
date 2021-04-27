@@ -440,9 +440,6 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
             keyCode = 0xE2;
             break;
         default:
-            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                        "Unhandled button event: %d, keyCode now: %d",
-                        event->keysym.scancode, keyCode);
             if (!keyCode)
             {
                 SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
