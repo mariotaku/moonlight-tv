@@ -30,6 +30,8 @@ static bool parse_audio_config(const char *value, int *config);
 #define write_config_int(fd, key, value) fprintf(fd, "%s = %d\n", key, value)
 #define write_config_bool(fd, key, value) fprintf(fd, "%s = %s\n", key, value ? "true" : "false")
 
+#define SHORT_OPTION_AUDIO_BACKEND 'o'
+#define SHORT_OPTION_DECODER 'p'
 #define SHORT_OPTION_SURROUND 'u'
 
 static struct option long_options[] = {
@@ -44,8 +46,8 @@ static struct option long_options[] = {
     {"nosops", no_argument, NULL, 'l'},
     {"audio", required_argument, NULL, 'm'},
     {"localaudio", no_argument, NULL, 'n'},
-    {"config", required_argument, NULL, 'o'},
-    {"platform", required_argument, NULL, 'p'},
+    {"audio_backend", required_argument, NULL, SHORT_OPTION_AUDIO_BACKEND},
+    {"platform", required_argument, NULL, SHORT_OPTION_DECODER},
     {"save", required_argument, NULL, 'q'},
     {"keydir", required_argument, NULL, 'r'},
     {"remote", no_argument, NULL, 's'},
@@ -108,7 +110,8 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->stream.supportsHevc = false;
 
     config->debug_level = 0;
-    config->platform = "auto";
+    config->audio_backend = "auto";
+    config->decoder = "auto";
     config->address = NULL;
     config->config_file = NULL;
     config->audio_device = NULL;
@@ -242,8 +245,10 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_bool(fd, "viewonly", config->viewonly);
     if (config->rotate != 0)
         write_config_int(fd, "rotate", config->rotate);
-    if (strcmp(config->platform, "auto") != 0)
-        write_config_string(fd, "platform", config->platform);
+    if (config->decoder && strcmp(config->decoder, "auto") != 0)
+        write_config_string(fd, "platform", config->decoder);
+    if (config->audio_backend && strcmp(config->audio_backend, "auto") != 0)
+        write_config_string(fd, "audio_backend", config->audio_backend);
     if (config->audio_device != NULL)
         write_config_string(fd, "audio", config->audio_device);
     if (audio_config_valid(config->stream.audioConfiguration))
@@ -295,8 +300,12 @@ void parse_argument(int c, char *value, PCONFIGURATION config)
     case 'n':
         config->localaudio = true;
         break;
-    case 'p':
-        config->platform = value;
+    case SHORT_OPTION_AUDIO_BACKEND:
+        config->audio_backend = value;
+        free_value = false;
+        break;
+    case SHORT_OPTION_DECODER:
+        config->decoder = value;
         free_value = false;
         break;
     case 'q':

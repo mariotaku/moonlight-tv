@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
     }
     module_host_context.logvprintf = &app_logvprintf;
 
-    // NDL requires init before window created, don't put this after app_window_create!
-    decoder_init(app_configuration->platform, argc, argv);
-    audio_init(NULL, argc, argv);
+    // LGNC requires init before window created, don't put this after app_window_create!
+    decoder_init(app_configuration->decoder, argc, argv);
+    audio_init(app_configuration->audio_backend, argc, argv);
 
     /* GUI */
     struct nk_context *ctx;

@@ -44,7 +44,8 @@ typedef struct _CONFIGURATION
   int debug_level;
   char *address;
   char *mapping;
-  const char *platform;
+  const char *decoder;
+  const char *audio_backend;
   char *audio_device;
   char *config_file;
   char key_dir[4096];
