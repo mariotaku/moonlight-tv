@@ -176,7 +176,7 @@ bool _audio_combo(struct nk_context *ctx, AUDIO audio)
 {
     struct nk_rect combo_bounds = nk_widget_bounds(ctx);
     int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
-    if (nk_combo_begin_label(ctx, audio > 0 ? audio_definitions[audio].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
+    if (nk_combo_begin_label(ctx, audio >= 0 ? audio_definitions[audio].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
     {
         if (combo_hovered_item.combo != 0)
         {
