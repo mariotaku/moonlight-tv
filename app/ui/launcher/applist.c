@@ -219,7 +219,7 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     {
         if (node->server->currentGame > 0 && node->server->currentGame != cur->id)
         {
-            printf("Quit running game first\n");
+            applog_w("Session", "Quit running game first");
         }
         else
         {

@@ -20,6 +20,7 @@
 #include "priv.h"
 
 #include "util/memlog.h"
+#include "util/logging.h"
 
 #define SERVICE_NAME "_nvstream._tcp.local"
 
@@ -49,9 +50,8 @@ bool computer_discovery_running = false;
 void handle_server_discovered(PPCMANAGER_RESP discovered);
 bool pcmanager_is_known_host(const char *srvaddr);
 
-static mdns_string_t
-ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
-                       size_t addrlen)
+static mdns_string_t ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
+                                            size_t addrlen)
 {
     char host[NI_MAXHOST] = {0};
     char service[NI_MAXSERV] = {0};
@@ -73,9 +73,8 @@ ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *
     return str;
 }
 
-static mdns_string_t
-ipv6_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in6 *addr,
-                       size_t addrlen)
+static mdns_string_t ipv6_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in6 *addr,
+                                            size_t addrlen)
 {
     char host[NI_MAXHOST] = {0};
     char service[NI_MAXSERV] = {0};
@@ -97,8 +96,7 @@ ipv6_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in6 
     return str;
 }
 
-static mdns_string_t
-ip_address_to_string(char *buffer, size_t capacity, const struct sockaddr *addr, size_t addrlen)
+static mdns_string_t ip_address_to_string(char *buffer, size_t capacity, const struct sockaddr *addr, size_t addrlen)
 {
     if (addr->sa_family == AF_INET6)
         return ipv6_address_to_string(buffer, capacity, (const struct sockaddr_in6 *)addr, addrlen);
@@ -118,11 +116,10 @@ static char *parse_server_name(mdns_string_t entrystr)
     return srvname;
 }
 
-static int
-query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
-               uint16_t query_id, uint16_t rtype, uint16_t rclass, uint32_t ttl, const void *data,
-               size_t size, size_t name_offset, size_t name_length, size_t record_offset,
-               size_t record_length, void *user_data)
+static int query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
+                          uint16_t query_id, uint16_t rtype, uint16_t rclass, uint32_t ttl, const void *data,
+                          size_t size, size_t name_offset, size_t name_length, size_t record_offset,
+                          size_t record_length, void *user_data)
 {
     (void)sizeof(sock);
     (void)sizeof(query_id);
@@ -140,6 +137,7 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
             ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
         char *srvaddr = calloc(addrstr.length + 1, sizeof(char));
         snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
+        applog_d("mDNS", "An A record discovered: %.*s", MDNS_STRING_FORMAT(addrstr));
         if (pcmanager_is_known_host(srvaddr))
         {
             free(srvaddr);
@@ -150,8 +148,7 @@ query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry
     return 0;
 }
 
-static int
-open_client_sockets(int *sockets, int max_sockets, int port)
+static int open_client_sockets(int *sockets, int max_sockets, int port)
 {
     // When sending, each socket can only send to one network interface
     // Thus we need to open one socket for each interface and address family
@@ -161,7 +158,7 @@ open_client_sockets(int *sockets, int max_sockets, int port)
     struct ifaddrs *ifa = 0;
 
     if (getifaddrs(&ifaddr) < 0)
-        fprintf(stderr, "Unable to get interface addresses\n");
+        applog_w("mDNS", "Unable to get interface addresses\n");
 
     int first_ipv4 = 1;
     int first_ipv6 = 1;
@@ -260,7 +257,7 @@ void *_computer_manager_polling_action(void *data)
     int num_sockets = open_client_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]), 0);
     if (num_sockets <= 0)
     {
-        fprintf(stderr, "Failed to open any client sockets\n");
+        applog_e("mDNS", "Failed to open any client sockets\n");
         computer_discovery_running = false;
         return NULL;
     }
@@ -275,7 +272,7 @@ void *_computer_manager_polling_action(void *data)
         query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, SERVICE_NAME,
                                           sizeof(SERVICE_NAME) - 1, buffer, capacity, 0);
         if (query_id[isock] < 0)
-            fprintf(stderr, "Failed to send mDNS query: %s\n", strerror(errno));
+            applog_w("mDNS", "Failed to send mDNS query: %s\n", strerror(errno));
     }
 
     // This is a simple implementation that loops for 5 seconds or as long as we get replies

@@ -35,6 +35,7 @@ static void app_gs_client_destroy();
 
 int main(int argc, char *argv[])
 {
+    app_loginit();
 #if TARGET_WEBOS || TARGET_LGNC
     app_logfile = fopen("/tmp/" APPID ".log", "a+");
     setvbuf(app_logfile, NULL, _IONBF, 0);

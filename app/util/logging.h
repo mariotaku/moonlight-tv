@@ -10,6 +10,7 @@ extern "C"
 #ifdef APPLOG_HOST
 void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list args);
 void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...);
+void app_loginit();
 #else
 
 typedef void (*logvprintf_fn)(const char *, const char *, const char *, va_list);
