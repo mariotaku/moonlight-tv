@@ -38,43 +38,27 @@ static int channelCount;
 static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
 {
     int rc, error;
-    unsigned char alsaMapping[MAX_CHANNEL_COUNT];
 
     channelCount = opusConfig->channelCount;
 
-    /* The supplied mapping array has order: FL-FR-C-LFE-RL-RR
-   * ALSA expects the order: FL-FR-RL-RR-C-LFE
-   * We need copy the mapping locally and swap the channels around.
-   */
-    alsaMapping[0] = opusConfig->mapping[0];
-    alsaMapping[1] = opusConfig->mapping[1];
-    if (opusConfig->channelCount == 6)
-    {
-        alsaMapping[2] = opusConfig->mapping[4];
-        alsaMapping[3] = opusConfig->mapping[5];
-        alsaMapping[4] = opusConfig->mapping[2];
-        alsaMapping[5] = opusConfig->mapping[3];
-    }
-    else if (opusConfig->channelCount == 8)
-    {
-        alsaMapping[2] = opusConfig->mapping[4];
-        alsaMapping[3] = opusConfig->mapping[5];
-        alsaMapping[4] = opusConfig->mapping[2];
-        alsaMapping[5] = opusConfig->mapping[3];
-        alsaMapping[6] = opusConfig->mapping[6];
-        alsaMapping[7] = opusConfig->mapping[7];
-    }
-
-    decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams, opusConfig->coupledStreams, alsaMapping, &rc);
+    decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount,
+                                              opusConfig->streams, opusConfig->coupledStreams, opusConfig->mapping, &rc);
 
     pa_sample_spec spec = {
         .format = PA_SAMPLE_S16LE,
         .rate = opusConfig->sampleRate,
         .channels = opusConfig->channelCount,
     };
+    pa_buffer_attr buffer_attr = {
+        .maxlength = -1,
+        .tlength = FRAME_SIZE * opusConfig->channelCount / 2,
+        .prebuf = -1,
+        .minreq = -1,
+        .fragsize = -1
+    };
 
     char *audio_device = (char *)context;
-    dev = pa_simple_new(audio_device, "Moonlight TV", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, NULL, NULL, &error);
+    dev = pa_simple_new(audio_device, "Moonlight TV", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, NULL, &buffer_attr, &error);
 
     if (!dev)
     {
