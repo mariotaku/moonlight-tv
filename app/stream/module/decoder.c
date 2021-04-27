@@ -168,6 +168,15 @@ PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device)
     return audio_get_callbacks(audio_device);
 }
 
+int module_audio_configuration()
+{
+    if (decoder_current == DECODER_NONE)
+        return audio_info.configuration;
+    if (decoder_info.audio)
+        return decoder_info.audioConfig;
+    return audio_info.configuration;
+}
+
 static bool decoder_init_simple(DECODER platform, int libidx, int argc, char *argv[])
 {
     MODULE_DEFINITION pdef = decoder_definitions[platform];

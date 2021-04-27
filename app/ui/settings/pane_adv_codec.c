@@ -10,24 +10,7 @@
 
 #include "stream/platform.h"
 
-struct _ch_option
-{
-    int configuration;
-    char name[16];
-};
-
-static const struct _ch_option _supported_ch[] = {
-    {AUDIO_CONFIGURATION_STEREO, "Stereo"},
-    {AUDIO_CONFIGURATION_51_SURROUND, "5.1 Surround"},
-};
-#define _supported_ch_len sizeof(_supported_ch) / sizeof(struct _ch_option)
-
-static struct
-{
-    int combo;
-    int item, count;
-    int request;
-} combo_hovered_item;
+static struct combo_hovered_item_t combo_hovered_item;
 
 static struct nk_vec2 combo_focused_center;
 
@@ -136,9 +119,9 @@ bool _vdec_combo(struct nk_context *ctx, DECODER selplat)
     int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
     if (nk_combo_begin_label(ctx, selplat > 0 ? decoder_definitions[selplat].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
     {
-        if (combo_hovered_item.combo != 2)
+        if (combo_hovered_item.combo != 0)
         {
-            combo_hovered_item.combo = 2;
+            combo_hovered_item.combo = 0;
             combo_hovered_item.count = 1 + decoder_orders_len;
             combo_hovered_item.request = -1;
             combo_hovered_item.item = -1;

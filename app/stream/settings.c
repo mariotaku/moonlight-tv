@@ -21,9 +21,16 @@ static void parse_argument(int c, char *value, PCONFIGURATION config);
 static void write_config_absmouse_mapping(FILE *fd, char *key, ABSMOUSE_MAPPING mapping);
 static bool parse_config_absmouse_mapping(char *value, ABSMOUSE_MAPPING *mapping);
 
+static int find_ch_idx_by_config(int config);
+static int find_ch_idx_by_value(const char *value);
+static void write_audio_config(FILE *fd, char *key, int config);
+static bool parse_audio_config(const char *value, int *config);
+
 #define write_config_string(fd, key, value) fprintf(fd, "%s = %s\n", key, value)
 #define write_config_int(fd, key, value) fprintf(fd, "%s = %d\n", key, value)
 #define write_config_bool(fd, key, value) fprintf(fd, "%s = %s\n", key, value ? "true" : "false")
+
+#define SHORT_OPTION_SURROUND 'u'
 
 static struct option long_options[] = {
     {"width", required_argument, NULL, 'c'},
@@ -43,7 +50,7 @@ static struct option long_options[] = {
     {"keydir", required_argument, NULL, 'r'},
     {"remote", no_argument, NULL, 's'},
     {"windowed", no_argument, NULL, 't'},
-    {"surround", no_argument, NULL, 'u'},
+    {"surround", required_argument, NULL, SHORT_OPTION_SURROUND},
     {"fps", required_argument, NULL, 'v'},
     {"codec", required_argument, NULL, 'x'},
     {"unsupported", no_argument, NULL, 'y'},
@@ -54,6 +61,18 @@ static struct option long_options[] = {
     {"debug", no_argument, NULL, 'Z'},
     {0, 0, 0, 0},
 };
+struct audio_config
+{
+    int configuration;
+    const char *value;
+};
+
+static struct audio_config audio_configs[3] = {
+    {AUDIO_CONFIGURATION_STEREO, "stereo"},
+    {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch"},
+    {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch"},
+};
+static const int audio_config_len = sizeof(audio_configs) / sizeof(struct audio_config);
 
 PCONFIGURATION settings_load()
 {
@@ -227,6 +246,8 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_string(fd, "platform", config->platform);
     if (config->audio_device != NULL)
         write_config_string(fd, "audio", config->audio_device);
+    if (audio_config_valid(config->stream.audioConfiguration))
+        write_audio_config(fd, "surround", config->stream.audioConfiguration);
     if (config->address != NULL)
         write_config_string(fd, "address", config->address);
     if (config->stream.enableHdr)
@@ -291,8 +312,8 @@ void parse_argument(int c, char *value, PCONFIGURATION config)
     case 't':
         config->fullscreen = false;
         break;
-    case 'u':
-        config->stream.audioConfiguration = AUDIO_CONFIGURATION_51_SURROUND;
+    case SHORT_OPTION_SURROUND:
+        parse_audio_config(value, &config->stream.audioConfiguration);
         break;
     case 'v':
         config->stream.fps = atoi(value);
@@ -341,6 +362,11 @@ bool absmouse_mapping_valid(ABSMOUSE_MAPPING mapping)
     return mapping.desktop_w && mapping.desktop_h && mapping.screen_w && mapping.screen_h;
 }
 
+bool audio_config_valid(int config)
+{
+    return find_ch_idx_by_config(config) >= 0;
+}
+
 void write_config_absmouse_mapping(FILE *fd, char *key, ABSMOUSE_MAPPING mapping)
 {
     fprintf(fd, "%s = [%d,%d][%d*%d]@[%d*%d]\n", key, mapping.screen_x, mapping.screen_y, mapping.screen_w, mapping.screen_h,
@@ -361,4 +387,38 @@ bool parse_config_absmouse_mapping(char *value, ABSMOUSE_MAPPING *mapping)
     mapping->screen_x = screen_x;
     mapping->screen_y = screen_y;
     return true;
+}
+
+void write_audio_config(FILE *fd, char *key, int config)
+{
+    fprintf(fd, "%s = %s\n", key, audio_configs[find_ch_idx_by_config(config)].value);
+}
+
+bool parse_audio_config(const char *value, int *config)
+{
+    int index = find_ch_idx_by_value(value);
+    if (index < 0)
+        return false;
+    *config = audio_configs[index].configuration;
+    return true;
+}
+
+int find_ch_idx_by_config(int config)
+{
+    for (int i = 0; i < audio_config_len; i++)
+    {
+        if (audio_configs[i].configuration == config)
+            return i;
+    }
+    return -1;
+}
+
+int find_ch_idx_by_value(const char *value)
+{
+    for (int i = 0; i < audio_config_len; i++)
+    {
+        if (strcmp(audio_configs[i].value, value) == 0)
+            return i;
+    }
+    return -1;
 }

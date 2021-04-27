@@ -51,10 +51,10 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
     };
     pa_buffer_attr buffer_attr = {
         .maxlength = -1,
-        .tlength = FRAME_SIZE * opusConfig->channelCount / 2,
+        .tlength = FRAME_SIZE * sizeof(short) * channelCount / 8,
         .prebuf = -1,
         .minreq = -1,
-        .fragsize = -1
+        .fragsize = -1,
     };
 
     char *audio_device = (char *)context;

@@ -79,3 +79,5 @@ int settings_optimal_bitrate(int w, int h, int fps);
 bool settings_sops_supported(int w, int h, int fps);
 
 bool absmouse_mapping_valid(ABSMOUSE_MAPPING mapping);
+
+bool audio_config_valid(int config);

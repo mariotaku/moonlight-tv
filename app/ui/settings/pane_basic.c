@@ -22,12 +22,6 @@ struct _fps_option
     char name[8];
 };
 
-struct _ch_option
-{
-    int configuration;
-    char name[16];
-};
-
 static const struct _resolution_option _supported_resolutions[] = {
     {1280, 720, "720P\0"},
     {1920, 1080, "1080P\0"},
@@ -43,12 +37,20 @@ static const struct _fps_option _supported_fps[] = {
 };
 #define _supported_fps_len sizeof(_supported_fps) / sizeof(struct _fps_option)
 
-static struct
+struct _ch_option
 {
-    int combo;
-    int item, count;
-    int request;
-} combo_hovered_item;
+    int configuration;
+    char name[16];
+};
+
+static const struct _ch_option _supported_ch[] = {
+    {AUDIO_CONFIGURATION_STEREO, "Stereo"},
+    {AUDIO_CONFIGURATION_51_SURROUND, "5.1 Surround"},
+    {AUDIO_CONFIGURATION_71_SURROUND, "7.1 Surround"},
+};
+#define _supported_ch_len sizeof(_supported_ch) / sizeof(struct _ch_option)
+
+static struct combo_hovered_item_t combo_hovered_item;
 
 static struct nk_vec2 combo_focused_center;
 
@@ -57,11 +59,14 @@ static struct nk_vec2 combo_focused_center;
 #define BITRATE_STEP 500
 
 static int _max_bitrate = BITRATE_MAX;
+static int _max_ch_idx = 0;
 
 static void _set_fps(int fps);
 static void _set_res(int w, int h);
 static void _update_bitrate();
+static bool _ch_combo(struct nk_context *ctx, int *value);
 static bool combo_item_select(int offset);
+static int _calc_max_ch_idx();
 
 static bool _render(struct nk_context *ctx, bool *showing_combo)
 {
@@ -161,13 +166,17 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, _max_bitrate, BITRATE_STEP, 50);
 
+    nk_label(ctx, "Audio channels", NK_TEXT_LEFT);
+    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
+    *showing_combo |= _ch_combo(ctx, &app_configuration->stream.audioConfiguration);
+
     nk_layout_row_dynamic_s(ctx, 4, 1);
     return true;
 }
 
 static int _itemcount()
 {
-    return 3;
+    return 4;
 }
 
 static void _windowopen()
@@ -175,6 +184,67 @@ static void _windowopen()
     _set_fps(app_configuration->stream.fps);
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
     _max_bitrate = decoder_info.maxBitrate ? decoder_info.maxBitrate : BITRATE_MAX;
+    _max_ch_idx = _calc_max_ch_idx();
+}
+
+int _calc_max_ch_idx()
+{
+    int max_ch = CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration());
+    for (int i = _supported_ch_len - 1; i >= 0; i--)
+    {
+        if (max_ch >= CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(_supported_ch[i].configuration))
+            return i;
+    }
+    return 0;
+}
+
+bool _ch_combo(struct nk_context *ctx, int *value)
+{
+    struct nk_rect combo_bounds = nk_widget_bounds(ctx);
+    int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
+    int ch_idx = 0;
+    for (int i = 0; i <= _max_ch_idx; i++)
+    {
+        if (_supported_ch[i].configuration == *value)
+        {
+            ch_idx = i;
+            break;
+        }
+    }
+    if (nk_combo_begin_label(ctx, _supported_ch[ch_idx].name, nk_vec2(nk_widget_width(ctx), combo_height)))
+    {
+        if (combo_hovered_item.combo != 1)
+        {
+            combo_hovered_item.combo = 1;
+            combo_hovered_item.count = _max_ch_idx;
+            combo_hovered_item.request = -1;
+            combo_hovered_item.item = -1;
+        }
+        nk_layout_row_dynamic_s(ctx, 25, 1);
+        bool ever_hovered = false;
+        for (int i = 0; i <= _max_ch_idx; i++)
+        {
+            struct nk_rect ci_bounds = nk_widget_bounds(ctx);
+            nk_bool hovered = nk_input_is_mouse_hovering_rect(&ctx->input, ci_bounds);
+            if (hovered)
+            {
+                combo_hovered_item.item = i;
+                ever_hovered = true;
+            }
+            if (combo_hovered_item.request == i)
+            {
+                // Send mouse pointer to the item
+                combo_focused_center = nk_rect_center(ci_bounds);
+                bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &combo_focused_center, NULL);
+                combo_hovered_item.request = -1;
+            }
+            if (nk_combo_item_label(ctx, _supported_ch[i].name, NK_TEXT_LEFT))
+                app_configuration->stream.audioConfiguration = _supported_ch[i].configuration;
+        }
+        nk_combo_end(ctx);
+        return true;
+    }
+    return false;
 }
 
 static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
