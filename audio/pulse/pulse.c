@@ -18,6 +18,7 @@
  */
 
 #include "stream/module/api.h"
+#include "util/logging.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +26,7 @@
 #include <Limelight.h>
 #include <opus_multistream.h>
 #include <pulse/simple.h>
+#include <pulse/channelmap.h>
 #include <pulse/error.h>
 
 #define MAX_CHANNEL_COUNT 8
@@ -51,18 +53,37 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
     };
     pa_buffer_attr buffer_attr = {
         .maxlength = -1,
-        .tlength = FRAME_SIZE * sizeof(short) * channelCount / 8,
+        .tlength = sizeof(short) * channelCount,
         .prebuf = -1,
         .minreq = -1,
         .fragsize = -1,
     };
+    pa_channel_map channel_map;
+    pa_channel_map *pchannel_map = pa_channel_map_init(&channel_map);
+    pchannel_map->channels = channelCount;
+    switch (channelCount)
+    {
+    case 8:
+        pchannel_map->map[6] = PA_CHANNEL_POSITION_SIDE_LEFT;
+        pchannel_map->map[7] = PA_CHANNEL_POSITION_SIDE_RIGHT;
+    // Intentionally fallthrough
+    case 6:
+        pchannel_map->map[2] = PA_CHANNEL_POSITION_FRONT_CENTER;
+        pchannel_map->map[3] = PA_CHANNEL_POSITION_LFE;
+        pchannel_map->map[4] = PA_CHANNEL_POSITION_REAR_LEFT;
+        pchannel_map->map[5] = PA_CHANNEL_POSITION_REAR_RIGHT;
+    // Intentionally fallthrough
+    default:
+        pchannel_map->map[0] = PA_CHANNEL_POSITION_FRONT_LEFT;
+        pchannel_map->map[1] = PA_CHANNEL_POSITION_FRONT_RIGHT;
+    }
 
     char *audio_device = (char *)context;
-    dev = pa_simple_new(audio_device, "Moonlight TV", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, NULL, &buffer_attr, &error);
+    dev = pa_simple_new(audio_device, "Moonlight TV", PA_STREAM_PLAYBACK, NULL, "Streaming", &spec, pchannel_map, &buffer_attr, &error);
 
     if (!dev)
     {
-        printf("Pulseaudio error: %s\n", pa_strerror(error));
+        applog_e("PulseAudio", "Failed to create device: %s\n", pa_strerror(error));
         return -1;
     }
 
@@ -78,11 +99,11 @@ static void pulse_renderer_decode_and_play_sample(char *data, int length)
         int rc = pa_simple_write(dev, pcmBuffer, decodeLen * sizeof(short) * channelCount, &error);
 
         if (rc < 0)
-            printf("Pulseaudio error: %s\n", pa_strerror(error));
+            applog_w("PulseAudio", "playback error: %s", pa_strerror(error));
     }
     else
     {
-        printf("Opus error from decode: %d\n", decodeLen);
+        applog_w("PulseAudio", "Opus error from decode: %d", decodeLen);
     }
 }
 

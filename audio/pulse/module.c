@@ -1,7 +1,19 @@
 #include "stream/module/api.h"
+#include "util/logging.h"
 
 #include <stdio.h>
 #include <pulse/simple.h>
+
+logvprintf_fn module_logvprintf;
+
+bool audio_init_pulse(int argc, char *argv[], PHOST_CONTEXT hctx)
+{
+    if (hctx)
+    {
+        module_logvprintf = hctx->logvprintf;
+    }
+    return true;
+}
 
 const static unsigned int channelChecks[] = {
     AUDIO_CONFIGURATION_71_SURROUND,
@@ -9,11 +21,6 @@ const static unsigned int channelChecks[] = {
     AUDIO_CONFIGURATION_STEREO,
 };
 const static int channelChecksCount = sizeof(channelChecks) / sizeof(unsigned int);
-
-bool audio_init_pulse(int argc, char *argv[])
-{
-    return true;
-}
 
 bool audio_check_pulse(PAUDIO_INFO ainfo)
 {
