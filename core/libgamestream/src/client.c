@@ -32,6 +32,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
+#include <arpa/inet.h>
 #include <uuid/uuid.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
@@ -762,10 +763,13 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
 
   mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *)config->remoteInputAesKey, 16);
   memset(config->remoteInputAesIv, 0, 16);
+  mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *)config->remoteInputAesIv, 4);
+  u_int32_t rikeyid = 0;
+  memcpy(&rikeyid, config->remoteInputAesIv, 4);
+  rikeyid = htonl(rikeyid);
 
   srand(time(NULL));
   char url[4096];
-  u_int32_t rikeyid = 0;
   char rikey_hex[33];
   bytes_to_hex((unsigned char *)config->remoteInputAesKey, rikey_hex, 16);
 
