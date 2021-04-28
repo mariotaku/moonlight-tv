@@ -21,6 +21,9 @@ option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 option(OPUS_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
 option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
 
+option(USE_MBEDTLS "" OFF)
+option(USE_WERROR "" OFF)
+
 include(LintOptions)
 
 if (TARGET_WEBOS)
@@ -136,6 +139,8 @@ else()
 endif()
 
 add_subdirectory(core/moonlight-common-c)
+install(TARGETS moonlight-common-c LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
 add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
 add_subdirectory(audio)
