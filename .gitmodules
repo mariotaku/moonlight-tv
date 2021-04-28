@@ -8,7 +8,7 @@
 	path = third_party/opus
 	url = https://gitlab.xiph.org/xiph/opus.git
 [submodule "core/moonlight-common-c"]
-	path = core/moonlight-common-c/moonlight-common-c
+	path = core/moonlight-common-c
 	url = https://github.com/moonlight-stream/moonlight-common-c.git
 [submodule "third_party/mdns"]
 	path = third_party/mdns
