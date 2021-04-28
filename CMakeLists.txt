@@ -21,8 +21,9 @@ option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 option(OPUS_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
 option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
 
-option(USE_MBEDTLS "" OFF)
+option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
+option(BUILD_STATIC "" ON)
 
 include(LintOptions)
 
@@ -139,7 +140,9 @@ else()
 endif()
 
 add_subdirectory(core/moonlight-common-c)
-install(TARGETS moonlight-common-c LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+if (NOT BUILD_STATIC)
+    install(TARGETS moonlight-common-c LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
 
 add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
