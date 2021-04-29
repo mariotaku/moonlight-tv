@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "mdns.h"
+#include <mdns.h>
 
 #include <errno.h>
 #include <netdb.h>

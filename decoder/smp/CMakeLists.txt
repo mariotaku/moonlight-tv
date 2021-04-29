@@ -5,6 +5,7 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 
+set(CMAKE_CXX_STANDARD 11)
 add_library(moonlight-smp-acb SHARED
     src/DecoderPlatform.cpp
     src/AVStreamPlayer.cpp
@@ -20,8 +21,12 @@ target_include_directories(moonlight-smp-acb PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp-acb PRIVATE moonlight-common-c playerAPIs Acb)
 target_compile_definitions(moonlight-smp-acb PRIVATE USE_ACB PLUGIN_SYMBOL_SUFFIX=smp_acb SMP_DECODER_NS=MoonlightStarfishAcb)
 target_compile_definitions(moonlight-smp-acb PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
+# webOS 3 and before don't have GLIBCXX_3.4.21
+target_compile_definitions(moonlight-smp-acb PRIVATE _GLIBCXX_USE_CXX11_ABI=0)
 
 install(TARGETS moonlight-smp-acb LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+unset(CMAKE_CXX_STANDARD)
 
 add_library(moonlight-smp SHARED
     src/DecoderPlatform.cpp

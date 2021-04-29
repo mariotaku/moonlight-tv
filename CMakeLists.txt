@@ -24,6 +24,13 @@ option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
 option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
 
+option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
+option(ENABLE_TESTING "Skip mbedtls testing" OFF)
+option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
+option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
+
+option(MDNS_BUILD_EXAMPLE "" OFF)
+
 include(LintOptions)
 
 if (TARGET_WEBOS)
@@ -86,11 +93,6 @@ pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 
-option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
-option(ENABLE_TESTING "Skip mbedtls testing" OFF)
-option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
-option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
-
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
@@ -145,6 +147,18 @@ unset(BUILD_SHARED_LIBS)
 add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
 add_subdirectory(audio)
+
+if (DEFINED CMAKE_INSTALL_DATAROOTDIR)
+    set(CMAKE_INSTALL_DATAROOTDIR_BACKUP ${CMAKE_INSTALL_DATAROOTDIR})
+    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_BINARY_DIR}/mdns-unused)
+endif()
+
+add_subdirectory(third_party/mdns)
+
+if (CMAKE_INSTALL_DATAROOTDIR_BACKUP)
+    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR_BACKUP})
+    unset(CMAKE_INSTALL_DATAROOTDIR_BACKUP)
+endif()
 
 set(SOURCES
     app/main.c
@@ -262,7 +276,6 @@ target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" AP
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 
@@ -271,7 +284,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES} 
  m ${CMAKE_DL_LIBS} Threads::Threads
- moonlight-common-c gamestream
+ moonlight-common-c gamestream mdns
 )
 
 function(moonlight_add_module)
@@ -401,7 +414,7 @@ if (TARGET_WEBOS OR TARGET_LGNC)
 
     add_custom_target(webos-package-moonlight
         COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR}
+        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e mdns
     )
 
     set_target_properties(moonlight PROPERTIES
