@@ -23,7 +23,6 @@ option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
 
 option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
-option(BUILD_STATIC "" ON)
 
 include(LintOptions)
 
@@ -139,10 +138,9 @@ else()
     message(FATAL_ERROR "Unknown build platform")
 endif()
 
-add_subdirectory(core/moonlight-common-c)
-if (NOT BUILD_STATIC)
-    install(TARGETS moonlight-common-c LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif()
+set(BUILD_SHARED_LIBS OFF)
+    add_subdirectory(core/moonlight-common-c)
+unset(BUILD_SHARED_LIBS)
 
 add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
