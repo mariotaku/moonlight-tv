@@ -19,7 +19,7 @@ extern DECODER_SYMBOLS decoder_lgnc;
 static MODULE_LIB_DEFINITION _ffmpeg_lib = {"ffmpeg", "ffmpeg"};
 static MODULE_LIB_DEFINITION _ndl_libs[2] = {{"ndl_webos5", "ndl-webos5"}, {"ndl", "ndl"}};
 static MODULE_LIB_DEFINITION _lgnc_lib = {"lgnc", "lgnc"};
-static MODULE_LIB_DEFINITION _smp_libs[2] = {{"smp", "smp"}, {"smp_acb", "smp-acb"}};
+static MODULE_LIB_DEFINITION _smp_libs[3] = {{"smp", "smp"}, {"smp_webos4", "smp-webos4"}, {"smp_webos3", "smp-webos3"}};
 static MODULE_LIB_DEFINITION _dile_libs[2] = {{"dile", "dile"}, {"dile_legacy", "dile-legacy"}};
 static MODULE_LIB_DEFINITION _pi_lib = {"pi", "pi"};
 
@@ -28,7 +28,7 @@ MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
     {"FFMPEG (SW codec)", "ffmpeg", &_ffmpeg_lib, 1, NULL},
     {"webOS NDL", "ndl", _ndl_libs, 2, NULL},
     {"NetCast Legacy", "lgnc", &_lgnc_lib, 1, LGNC_SYMBOLS},
-    {"webOS SMP", "smp", _smp_libs, 2, NULL},
+    {"webOS SMP", "smp", _smp_libs, 3, NULL},
     {"webOS DILE", "dile", _dile_libs, 2, NULL},
     {"Raspberry Pi", "pi", &_pi_lib, 1, NULL},
 };
