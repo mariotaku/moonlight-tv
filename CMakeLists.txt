@@ -153,7 +153,7 @@ if (DEFINED CMAKE_INSTALL_DATAROOTDIR)
     set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_BINARY_DIR}/mdns-unused)
 endif()
 
-add_subdirectory(third_party/mdns)
+# add_subdirectory(third_party/mdns)
 
 if (CMAKE_INSTALL_DATAROOTDIR_BACKUP)
     set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR_BACKUP})
@@ -278,13 +278,14 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestr
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
+target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/mdns)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
  ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES} 
  m ${CMAKE_DL_LIBS} Threads::Threads
- moonlight-common-c gamestream mdns
+ moonlight-common-c gamestream  # mdns
 )
 
 function(moonlight_add_module)
