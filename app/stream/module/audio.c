@@ -46,6 +46,7 @@ AUDIO audio_init(const char *name, int argc, char *argv[])
     if (decoder_info.audio)
     {
         audio_current = AUDIO_DECODER;
+        audio_pref_requested = AUDIO_AUTO;
         return AUDIO_DECODER;
     }
     AUDIO audio = audio_by_id(name);
