@@ -150,8 +150,10 @@ static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory)
     fd = fopen(certificateFilePath, "r");
   }
 
+  mbedtls_x509_crt_init(&hnd->cert);
   if (fd == NULL || mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath) != 0)
   {
+    mbedtls_x509_crt_free(&hnd->cert);
     gs_error = "Can't open certificate file";
     return GS_FAILED;
   }
@@ -170,6 +172,7 @@ static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory)
   mbedtls_pk_init(&hnd->pk);
   if (mbedtls_pk_parse_keyfile(&hnd->pk, keyFilePath, NULL) != 0)
   {
+    mbedtls_pk_free(&hnd->pk);
     gs_error = "Error loading key into memory";
     return GS_FAILED;
   }
@@ -891,10 +894,16 @@ GS_CLIENT gs_new(const char *keydir, int log_level)
   struct GS_CLIENT_T *hnd = malloc(sizeof(struct GS_CLIENT_T));
   mkdirtree(keydir);
   if (load_unique_id(hnd, keydir) != GS_OK)
+  {
+    free(hnd);
     return NULL;
+  }
 
-  if (load_cert(hnd, keydir))
+  if (load_cert(hnd, keydir) != GS_OK)
+  {
+    free(hnd);
     return NULL;
+  }
 
   hnd->http = http_init(keydir, log_level);
   return hnd;
@@ -902,6 +911,8 @@ GS_CLIENT gs_new(const char *keydir, int log_level)
 
 void gs_destroy(GS_CLIENT hnd)
 {
+  mbedtls_pk_free(&hnd->pk);
+  mbedtls_x509_crt_free(&hnd->cert);
   http_cleanup(hnd->http);
   free((void *)hnd);
 }

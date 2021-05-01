@@ -45,7 +45,7 @@ typedef struct _SERVER_DATA
   SERVER_INFORMATION serverInfo;
 } SERVER_DATA, *PSERVER_DATA;
 
-typedef const struct GS_CLIENT_T *GS_CLIENT;
+typedef struct GS_CLIENT_T *GS_CLIENT;
 
 GS_CLIENT gs_new(const char *keydir, int log_level);
 void gs_destroy(GS_CLIENT);
