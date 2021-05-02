@@ -32,7 +32,7 @@ bool audio_init_ndlaud(int argc, char *argv[], PHOST_CONTEXT hctx)
 
 const static unsigned int channelChecks[] = {
     // AUDIO_CONFIGURATION_71_SURROUND,
-    // AUDIO_CONFIGURATION_51_SURROUND,
+    AUDIO_CONFIGURATION_51_SURROUND,
     AUDIO_CONFIGURATION_STEREO,
 };
 const static int channelChecksCount = sizeof(channelChecks) / sizeof(unsigned int);
@@ -48,11 +48,13 @@ bool audio_check_ndlaud(PAUDIO_INFO ainfo)
             .upperThreshold = 48,
             .lowerThreshold = 16,
             .channel = NDL_DIRECTAUDIO_CH_MAIN,
-            .srcType = NDL_DIRECTAUDIO_SRC_TYPE_PCM,
+            .srcType = channelChecks[i] == AUDIO_CONFIGURATION_STEREO ? NDL_DIRECTAUDIO_SRC_TYPE_PCM
+                                                                      : NDL_DIRECTAUDIO_SRC_TYPE_AAC,
             .samplingFreq = NDL_DIRECTAUDIO_SAMPLING_FREQ_OF(48000),
         };
         if (NDL_DirectAudioOpen(&info) == 0)
         {
+            applog_i("NDLAud", "Go with %d channels", info.numChannel);
             NDL_DirectAudioClose();
             ainfo->valid = true;
             ainfo->configuration = channelChecks[i];
@@ -70,3 +72,28 @@ void audio_finalize_ndlaud()
         ndl_initialized = false;
     }
 }
+extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndlaud_aac;
+extern AUDIO_RENDERER_CALLBACKS audio_callbacks_ndlaud_pcm;
+
+static AUDIO_RENDERER_CALLBACKS audio_callbacks_ndlaud_selected;
+
+static int delegate_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
+{
+    audio_callbacks_ndlaud_selected = audioConfiguration == AUDIO_CONFIGURATION_STEREO ? audio_callbacks_ndlaud_pcm : audio_callbacks_ndlaud_aac;
+    return audio_callbacks_ndlaud_selected.init(audioConfiguration, opusConfig, context, arFlags);
+}
+static void delegate_cleanup()
+{
+    audio_callbacks_ndlaud_selected.cleanup();
+}
+static void delegate_decode_and_play_sample(char *data, int length)
+{
+    audio_callbacks_ndlaud_selected.decodeAndPlaySample(data, length);
+}
+
+AUDIO_RENDERER_CALLBACKS audio_callbacks_ndlaud = {
+    .init = delegate_init,
+    .cleanup = delegate_cleanup,
+    .decodeAndPlaySample = delegate_decode_and_play_sample,
+    .capabilities = CAPABILITY_DIRECT_SUBMIT,
+};
