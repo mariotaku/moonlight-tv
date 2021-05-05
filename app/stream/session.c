@@ -48,6 +48,7 @@ typedef struct
 
 static void *_streaming_thread_action(STREAMING_REQUEST *req);
 static void _streaming_set_status(STREAMING_STATUS status);
+static bool _streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps);
 
 void streaming_init()
 {
@@ -84,7 +85,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
     // Cap framerate to platform request
     if (decoder_info.maxBitrate && config->stream.bitrate > decoder_info.maxBitrate)
         config->stream.bitrate = decoder_info.maxBitrate;
-    config->sops &= settings_sops_supported(config->stream.width, config->stream.height, config->stream.fps);
+    config->sops &= _streaming_sops_supported(server->modes, config->stream.width, config->stream.height, config->stream.fps);
     config->stream.supportsHevc = decoder_info.hevc;
     config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server->supportsHdr &&
                                 (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
@@ -245,4 +246,14 @@ void _streaming_errmsg_write(const char *fmt, ...)
     vsnprintf(streaming_errmsg, sizeof(streaming_errmsg) / sizeof(char), fmt, arglist);
     va_end(arglist);
     pthread_mutex_unlock(&streaming_errmsg_lock);
+}
+
+bool _streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps)
+{
+    for (PDISPLAY_MODE cur = modes; cur != NULL; cur = cur->next)
+    {
+        if (cur->width == w && cur->height == h && cur->refresh == fps)
+            return true;
+    }
+    return false;
 }

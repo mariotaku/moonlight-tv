@@ -154,22 +154,6 @@ int settings_optimal_bitrate(int w, int h, int fps)
     return kbps * fps / 30;
 }
 
-bool settings_sops_supported(int w, int h, int fps)
-{
-    if (fps != 30 && fps != 60)
-    {
-        return false;
-    }
-    switch (RES_MERGE(w, h))
-    {
-    case RES_720P:
-    case RES_1080P:
-    case RES_4K:
-        return true;
-    default:
-        return false;
-    }
-}
 
 bool settings_read(char *filename, PCONFIGURATION config)
 {

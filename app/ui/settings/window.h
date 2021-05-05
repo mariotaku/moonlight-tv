@@ -23,7 +23,7 @@
 typedef bool (*settings_panel_render)(struct nk_context *, bool *showing_combo);
 typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 typedef int (*settings_panel_itemcount)();
-typedef void (*settings_panel_voidfn)();
+typedef void (*settings_panel_voidfn)(struct nk_context *);
 
 extern struct settings_pane settings_pane_basic;
 extern struct settings_pane settings_pane_host;
@@ -49,7 +49,7 @@ extern int settings_hovered_item;
 
 void settings_window_init(struct nk_context *ctx);
 
-bool settings_window_open();
+bool settings_window_open(struct nk_context *ctx);
 
 bool settings_window_close();
 

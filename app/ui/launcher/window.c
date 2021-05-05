@@ -172,7 +172,7 @@ bool launcher_window(struct nk_context *ctx)
         launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_settings))
         {
-            settings_window_open();
+            settings_window_open(ctx);
         }
         launcher_item_update_selected_bounds(ctx, topbar_item_count++, &item_bounds);
         if (nk_button_image(ctx, sprites_ui.ic_close))

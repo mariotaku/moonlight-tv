@@ -1,6 +1,7 @@
 #include "window.h"
 #include "priv.h"
 #include "ui/root.h"
+#include "ui/fonts.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -36,7 +37,9 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     *showing_combo |= _audio_combo(ctx, audio);
     if (decoder_pref_requested != decoder || audio_pref_requested != audio)
     {
+        nk_style_push_font(ctx, &font_ui_15->handle);
         nk_label_wrap(ctx, "Restart Moonlight to apply changes");
+        nk_style_pop_font(ctx);
     }
     nk_layout_row_dynamic_s(ctx, 4, 1);
     return true;

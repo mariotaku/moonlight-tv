@@ -29,8 +29,8 @@ enum settings_entries
 };
 
 static enum settings_entries _selected_entry = ENTRY_NONE;
-static void _pane_select_index(int new_index);
-static void _pane_select_offset(int offset);
+static void _pane_select_index(struct nk_context *ctx, int new_index);
+static void _pane_select_offset(struct nk_context *ctx, int offset);
 static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 static int _pane_itemcount(int index);
 
@@ -61,7 +61,7 @@ void settings_window_init(struct nk_context *ctx)
 {
 }
 
-bool settings_window_open()
+bool settings_window_open(struct nk_context *ctx)
 {
     if (ui_settings_showing)
     {
@@ -72,7 +72,7 @@ bool settings_window_open()
     {
         if (settings_panes[i]->onwindowopen)
         {
-            settings_panes[i]->onwindowopen();
+            settings_panes[i]->onwindowopen(ctx);
         }
     }
     return true;
@@ -118,7 +118,7 @@ bool settings_window(struct nk_context *ctx)
                 nk_bool selected = i == selected_pane_index;
                 if (nk_selectable_label(ctx, settings_panes[i]->title, NK_TEXT_LEFT, &selected))
                 {
-                    _pane_select_index(i);
+                    _pane_select_index(ctx, i);
                 }
             }
             nk_group_end(ctx);
@@ -204,7 +204,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
         }
         else if (!settings_showing_combo && !navkey_intercept_repeat(state, timestamp))
         {
-            _pane_select_offset(-1);
+            _pane_select_offset(ctx, -1);
         }
         break;
     case NAVKEY_DOWN:
@@ -221,7 +221,7 @@ bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVK
         }
         else if (!settings_showing_combo && !navkey_intercept_repeat(state, timestamp))
         {
-            _pane_select_offset(1);
+            _pane_select_offset(ctx, 1);
         }
         break;
     case NAVKEY_LEFT:
@@ -280,7 +280,7 @@ bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey
     return settings_panes[pane_index]->navkey && settings_panes[pane_index]->navkey(ctx, navkey, state, timestamp);
 }
 
-void _pane_select_index(int new_index)
+void _pane_select_index(struct nk_context *ctx, int new_index)
 {
     if (new_index < 0)
     {
@@ -296,13 +296,13 @@ void _pane_select_index(int new_index)
     }
     if (settings_panes[selected_pane_index]->onselect)
     {
-        settings_panes[selected_pane_index]->onselect();
+        settings_panes[selected_pane_index]->onselect(ctx);
     }
 }
 
-void _pane_select_offset(int offset)
+void _pane_select_offset(struct nk_context *ctx, int offset)
 {
-    _pane_select_index(selected_pane_index + offset);
+    _pane_select_index(ctx, selected_pane_index + offset);
 }
 
 void settings_pane_item_offset(int offset)
