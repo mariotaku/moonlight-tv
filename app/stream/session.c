@@ -91,10 +91,12 @@ int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
     config->stream.colorSpace = decoder_info.colorSpace;
     if (config->stream.enableHdr)
         config->stream.colorRange = decoder_info.colorRange;
+#if HAVE_SURROUND_SOUND
     if (!config->stream.audioConfiguration)
         config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
     else if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration()) < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration))
         config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
+#endif
     config->stream.encryptionFlags = ENCFLG_AUDIO;
 
     STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));

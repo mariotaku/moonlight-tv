@@ -142,9 +142,9 @@ endif()
 
 set(BUILD_SHARED_LIBS OFF)
     add_subdirectory(core/moonlight-common-c)
+    add_subdirectory(core/libgamestream)
 unset(BUILD_SHARED_LIBS)
 
-add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
 add_subdirectory(audio)
 

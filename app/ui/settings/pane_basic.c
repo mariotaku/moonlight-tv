@@ -166,9 +166,11 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_property_int(ctx, "kbps:", BITRATE_MIN, &app_configuration->stream.bitrate, _max_bitrate, BITRATE_STEP, 50);
 
+#if HAVE_SURROUND_SOUND
     nk_label(ctx, "Audio channels", NK_TEXT_LEFT);
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     *showing_combo |= _ch_combo(ctx, &app_configuration->stream.audioConfiguration);
+#endif
 
     nk_layout_row_dynamic_s(ctx, 4, 1);
     return true;
