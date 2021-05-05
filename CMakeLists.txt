@@ -21,9 +21,6 @@ option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 option(OPUS_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
 option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
 
-option(FDK_AAC_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
-option(FDK_AAC_INSTALL_PKGCONFIG_MODULE "" OFF)
-
 option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
 
@@ -99,7 +96,6 @@ pkg_check_modules(EXPAT REQUIRED expat)
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
-    add_subdirectory(third_party/fdk-aac)
     unset(BUILD_SHARED_LIBS)
 
     add_subdirectory(third_party/mbedtls)
@@ -113,7 +109,6 @@ if (TARGET_WEBOS)
 elseif (TARGET_LGNC)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
-    add_subdirectory(third_party/fdk-aac)
     unset(BUILD_SHARED_LIBS)
 
     set(DECODER_LGNC_NOINIT TRUE)
@@ -147,9 +142,9 @@ endif()
 
 set(BUILD_SHARED_LIBS OFF)
     add_subdirectory(core/moonlight-common-c)
-    add_subdirectory(core/libgamestream)
 unset(BUILD_SHARED_LIBS)
 
+add_subdirectory(core/libgamestream)
 add_subdirectory(decoder)
 add_subdirectory(audio)
 
