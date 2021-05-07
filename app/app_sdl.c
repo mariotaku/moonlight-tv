@@ -164,6 +164,10 @@ static void app_process_events(struct nk_context *ctx)
             else if (evt.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
             {
                 window_focus_gained = false;
+#if TARGET_RASPI
+                // Interrupt streaming because app will go to background
+                streaming_interrupt(false);
+#endif
             }
             else if (evt.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
