@@ -53,6 +53,7 @@ if (H264BITSTREAM_FOUND)
     )
 
     target_link_libraries(gamestream-sps PRIVATE h264bitstream moonlight-common-c)
+    install(TARGETS gamestream-sps LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
 if (BUILD_TESTING)
