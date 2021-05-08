@@ -10,6 +10,7 @@ bool decoder_init_pi(int argc, char *argv[], PHOST_CONTEXT hctx)
     {
         module_logvprintf = hctx->logvprintf;
     }
+    return true;
 }
 
 bool decoder_check_pi(PDECODER_INFO dinfo)
