@@ -92,7 +92,7 @@ APP_WINDOW_CONTEXT app_window_create()
     applog_d("SDL", "SDL_DisplayMode(w=%d, h=%d)", dm.w, dm.h);
     app_window_width = dm.w;
     app_window_height = dm.h;
-    window_flags |= SDL_WINDOW_FULLSCREEN;
+    window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 #else
     app_window_width = WINDOW_WIDTH;
     app_window_height = WINDOW_HEIGHT;
@@ -157,21 +157,31 @@ static void app_process_events(struct nk_context *ctx)
 #if TARGET_DESKTOP || TARGET_RASPI
         else if (evt.type == SDL_WINDOWEVENT)
         {
-            if (evt.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+            switch (evt.window.event)
             {
+            case SDL_WINDOWEVENT_FOCUS_GAINED:
                 window_focus_gained = true;
-            }
-            else if (evt.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
-            {
-                window_focus_gained = false;
+                break;
+            case SDL_WINDOWEVENT_FOCUS_LOST:
+                applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
 #if TARGET_RASPI
                 // Interrupt streaming because app will go to background
                 streaming_interrupt(false);
 #endif
-            }
-            else if (evt.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-            {
+                window_focus_gained = false;
+                break;
+            case SDL_WINDOWEVENT_SIZE_CHANGED:
                 ui_display_size(evt.window.data1, evt.window.data2);
+                break;
+            case SDL_WINDOWEVENT_HIDDEN:
+                applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
+#if TARGET_RASPI
+                // Interrupt streaming because app will go to background
+                streaming_interrupt(false);
+#endif
+                break;
+            default:
+                break;
             }
         }
 #endif
