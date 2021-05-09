@@ -10,8 +10,10 @@ fi
 echo "Update submodules"
 git submodule update --init --recursive
 
-echo "Install dependencies. You'll be prompted to enter password"
-sudo apt-get install libsdl2-dev libsdl2-image-dev libopus-dev libcurl4-openssl-dev uuid-dev libavcodec-dev libavutil-dev libexpat1-dev libmbedtls-dev
+echo "Install dependencies. You may be prompted to enter password"
+sudo apt-get install build-essentials cmake
+sudo apt-get install libsdl2-dev libsdl2-image-dev libopus-dev libcurl4-openssl-dev uuid-dev\
+    libavcodec-dev libavutil-dev libexpat1-dev libmbedtls-dev libraspberrypi-dev
 
 echo "Project configuration"
 if [ ! -d build ]; then
@@ -23,3 +25,6 @@ cmake .. -DTARGET_RASPI=ON -DCMAKE_BUILD_TYPE=Debug
 
 echo "Start build"
 cmake --build . --target moonlight -j $(nproc)
+
+echo "Build package"
+cpack
