@@ -11,9 +11,10 @@ echo "Update submodules"
 git submodule update --init --recursive
 
 echo "Install dependencies. You may be prompted to enter password"
-sudo apt-get install build-essential cmake
-sudo apt-get install libsdl2-dev libsdl2-image-dev libopus-dev libcurl4-openssl-dev uuid-dev\
-    libavcodec-dev libavutil-dev libexpat1-dev libmbedtls-dev libraspberrypi-dev
+sudo apt-get install -y build-essential cmake
+sudo apt-get install -y libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev    \
+     libcurl4-openssl-dev libavcodec-dev libavutil-dev libexpat1-dev          \
+     libmbedtls-dev libraspberrypi-dev
 
 echo "Project configuration"
 if [ ! -d build ]; then
