@@ -17,6 +17,7 @@ bool decoder_check_pi(PDECODER_INFO dinfo)
 {
     dinfo->valid = true;
     dinfo->accelerated = true;
+    dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->audio = false;
     dinfo->maxBitrate = 20000;
     return true;

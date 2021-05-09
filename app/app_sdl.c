@@ -129,7 +129,6 @@ APP_WINDOW_CONTEXT app_window_create()
 
 void app_destroy()
 {
-    free(app_configuration);
     decoder_finalize(decoder_current);
 #ifdef TARGET_WEBOS
     app_webos_destroy();
@@ -137,6 +136,7 @@ void app_destroy()
     SDL_GL_DeleteContext(gl);
     SDL_DestroyWindow(win);
     SDL_Quit();
+    free(app_configuration);
 }
 
 void inputmgr_sdl_handle_event(SDL_Event ev);
