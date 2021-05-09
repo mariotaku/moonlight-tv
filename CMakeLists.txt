@@ -5,9 +5,10 @@ project(moonlight
 )
 
 # Add folder where are supportive functions
-set(CMAKE_MODULE_PATH 
+set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/utils/cmake
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/core/moonlight-common-c/cmake
 )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -97,6 +98,8 @@ pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 
+set(BUILD_SHARED_CORE_LIBS OFF)
+
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
@@ -132,6 +135,8 @@ elseif (TARGET_RASPI)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(GLES REQUIRED glesv2)
     pkg_check_modules(OPUS REQUIRED opus)
+
+    set(BUILD_SHARED_CORE_LIBS ON)
 elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
@@ -144,7 +149,7 @@ else()
     message(FATAL_ERROR "Unknown build platform")
 endif()
 
-set(BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_CORE_LIBS})
     add_subdirectory(core/moonlight-common-c)
     add_subdirectory(core/libgamestream)
 unset(BUILD_SHARED_LIBS)
@@ -287,7 +292,6 @@ target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_pa
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- ${CURL_LIBRARIES} ${UUID_LIBRARIES} ${EXPAT_LIBRARIES} 
  m ${CMAKE_DL_LIBS} Threads::Threads
  moonlight-common-c gamestream  # mdns
 )
@@ -453,6 +457,7 @@ elseif (TARGET_RASPI)
 
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_NAME "moonlight-tv")
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "armhf")
     set(CPACK_DEBIAN_PACKAGE_SUMMARY "Open Source NVIDIA GameStream Client")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Mariotaku Lee <mariotaku.lee@gmail.com>")
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/mariotaku/moonlight-tv")

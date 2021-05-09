@@ -14,8 +14,6 @@
 
 #include <sys/stat.h>
 
-#include <uuid/uuid.h>
-
 #include "nuklear/ext_image.h"
 
 #include "util/bus.h"
