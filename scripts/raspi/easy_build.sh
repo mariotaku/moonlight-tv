@@ -7,6 +7,9 @@ if [ $TOPDIR != $PWD ]; then
     return 1
 fi
 
+echo "Cleaning project root"
+git clean -Xdf
+
 echo "Update submodules"
 git submodule update --init --recursive
 
