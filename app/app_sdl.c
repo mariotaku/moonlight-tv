@@ -93,6 +93,7 @@ APP_WINDOW_CONTEXT app_window_create()
     app_window_width = dm.w;
     app_window_height = dm.h;
     window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    applog_d("SDL", "Selected video driver: %s", SDL_GetCurrentVideoDriver());
 #else
     app_window_width = WINDOW_WIDTH;
     app_window_height = WINDOW_HEIGHT;

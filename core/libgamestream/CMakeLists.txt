@@ -29,6 +29,7 @@ else()
     target_link_libraries(gamestream PRIVATE mbedtls)
 endif()
 target_link_libraries(gamestream PRIVATE ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${UUID_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+install(TARGETS gamestream LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 if (H264BITSTREAM_FOUND)
     add_library(gamestream-sps SHARED libgamestream/sps.h src/sps.c)
