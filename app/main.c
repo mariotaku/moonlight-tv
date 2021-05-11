@@ -26,6 +26,8 @@
 #include "util/bus.h"
 #include "util/logging.h"
 
+#include <fontconfig/fontconfig.h>
+
 FILE *app_logfile = NULL;
 
 static bool running = true;
@@ -81,15 +83,49 @@ int main(int argc, char *argv[])
     ui_display_size(app_window_width, app_window_height);
     streaming_display_size(app_window_width, app_window_height);
     {
+        FcInit();
+        FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
+
+        //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
+        FcPattern *pat = FcNameParse((const FcChar8 *)"Sans Serif");
+
+        FcConfigSubstitute(config, pat, FcMatchPattern); //NECESSARY; it increases the scope of possible fonts
+        FcDefaultSubstitute(pat);                        //NECESSARY; it increases the scope of possible fonts
+
         struct nk_font_atlas *atlas;
         nk_platform_font_stash_begin(&atlas);
-        struct nk_font *noto20 = nk_font_atlas_add_from_memory_s(atlas, (void *)res_notosans_regular_data, res_notosans_regular_size, 20, NULL);
-        fonts_init(atlas);
+
+        struct nk_font *font_ui_20 = NULL;
+        char *fontFile = NULL;
+        FcResult result;
+
+        FcPattern *font = FcFontMatch(config, pat, &result);
+        if (font)
+        {
+            //The pointer stored in 'file' is tied to 'font'; therefore, when 'font' is freed, this pointer is freed automatically.
+            //If you want to return the filename of the selected font, pass a buffer and copy the file name into that buffer
+            FcChar8 *file = NULL;
+
+            if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
+            {
+                fontFile = (char *)file;
+                font_ui_20 = nk_font_atlas_add_from_file_s(atlas, fontFile, 20, NULL);
+            }
+        }
+        if (!font_ui_20)
+        {
+            font_ui_20 = nk_font_atlas_add_default(atlas, 20 * NK_UI_SCALE, NULL);
+        }
+        fonts_init(atlas, fontFile);
         nk_platform_font_stash_end();
-        nk_style_set_font(ctx, &noto20->handle);
+        nk_style_set_font(ctx, &font_ui_20->handle);
 #if DEBUG && TARGET_DESKTOP
         nk_style_load_all_cursors(ctx, atlas->cursors);
 #endif
+        FcPatternDestroy(font);  //needs to be called for every pattern created; in this case, 'fontFile' / 'file' is also freed
+        FcPatternDestroy(pat);   //needs to be called for every pattern created
+        FcConfigDestroy(config); //needs to be called for every config created
+        FcFini();
     }
     nk_ext_sprites_init();
     nk_ext_apply_style(ctx);

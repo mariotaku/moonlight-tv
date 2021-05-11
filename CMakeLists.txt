@@ -99,6 +99,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
+find_package(Fontconfig REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
@@ -299,6 +300,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  m ${CMAKE_DL_LIBS} Threads::Threads
  moonlight-common-c gamestream  # mdns
+ Fontconfig::Fontconfig
 )
 
 function(moonlight_add_module)
