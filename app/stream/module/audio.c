@@ -30,6 +30,9 @@ MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
     {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
     {"ALSA", "alsa", &_alsa_lib, 1, NULL},
     {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
+#if DEBUG
+    {"Null", "null", NULL, 0, NULL},
+#endif
 };
 
 AUDIO audio_pref_requested;

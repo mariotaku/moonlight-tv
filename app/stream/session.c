@@ -161,6 +161,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     {
         _streaming_set_status(STREAMING_ERROR);
         streaming_errno = ret;
+        applog_e("Session", "Failed to launch session: gamestream returned %d", ret);
         goto thread_cleanup;
     }
 
@@ -176,10 +177,11 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &vdec_delegate, adec, vdec, drFlags, config->audio_device, 0);
-    if (startResult != 0 || session_interrupted)
+    if (startResult != 0)
     {
         _streaming_set_status(STREAMING_ERROR);
         streaming_errno = GS_WRONG_STATE;
+        applog_e("Session", "Failed to start connection: Limelight returned %d", startResult);
         goto thread_cleanup;
     }
     streaming_running = true;

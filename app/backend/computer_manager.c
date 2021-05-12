@@ -65,6 +65,9 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
 
 void handle_server_updated(PPCMANAGER_RESP update)
 {
+    assert(update);
+    if (update->result.code != GS_OK)
+        return;
     PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, serverlist_compare_uuid);
     if (!node)
         return;
@@ -79,9 +82,7 @@ void handle_server_updated(PPCMANAGER_RESP update)
 void handle_server_discovered(PPCMANAGER_RESP discovered)
 {
     if (discovered->state.code != SERVER_STATE_ONLINE)
-    {
         return;
-    }
     PSERVER_LIST node = serverlist_find_by(computer_list, discovered->server->uuid, serverlist_compare_uuid);
     if (node)
     {
@@ -327,7 +328,7 @@ static int pcmanager_callbacks_comparator(PPCMANAGER_CALLBACKS p1, const void *p
 void pcmanager_unregister_callbacks(PPCMANAGER_CALLBACKS callbacks)
 {
     assert(callbacks);
-    PPCMANAGER_CALLBACKS find = pcmanager_callbacks_find_by(callbacks_list, callbacks, &pcmanager_callbacks_comparator);
+    PPCMANAGER_CALLBACKS find = pcmanager_callbacks_find_by(callbacks_list, callbacks, pcmanager_callbacks_comparator);
     if (!find)
         return;
     callbacks_list = pcmanager_callbacks_remove(callbacks_list, find);

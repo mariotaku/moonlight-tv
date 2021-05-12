@@ -31,6 +31,9 @@ MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
     {"webOS SMP", "smp", _smp_libs, 3, NULL},
     {"webOS DILE", "dile", _dile_libs, 2, NULL},
     {"Raspberry Pi", "pi", &_pi_lib, 1, NULL},
+#if DEBUG
+    {"Null", "null", NULL, 0, NULL},
+#endif
 };
 DECODER decoder_pref_requested;
 DECODER decoder_current;

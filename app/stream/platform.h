@@ -37,6 +37,9 @@ enum DECODER_T
     DECODER_SMP,
     DECODER_DILE,
     DECODER_PI,
+#if DEBUG
+    DECODER_EMPTY,
+#endif
     DECODER_COUNT,
 };
 typedef enum DECODER_T DECODER;
@@ -49,6 +52,9 @@ enum AUDIO_T
     AUDIO_PULSE,
     AUDIO_ALSA,
     AUDIO_NDL,
+#if DEBUG
+    AUDIO_EMPTY,
+#endif
     AUDIO_COUNT,
 };
 typedef enum AUDIO_T AUDIO;

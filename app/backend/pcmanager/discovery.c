@@ -1,5 +1,6 @@
 #include "backend/computer_manager.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 #include <mdns.h>
@@ -352,6 +353,7 @@ static int serverlist_find_address(PSERVER_LIST other, const void *v)
 
 bool pcmanager_is_known_host(const char *srvaddr)
 {
+    assert(servaddr);
     PSERVER_LIST find = serverlist_find_by(computer_list, srvaddr, serverlist_find_address);
     return find != NULL && find->known;
 }
