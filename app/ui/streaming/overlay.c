@@ -204,7 +204,7 @@ void _streaming_perf_stat(struct nk_context *ctx)
         nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios46);
         nk_label(ctx, "Decoder", NK_TEXT_LEFT);
         nk_labelf(ctx, NK_TEXT_RIGHT, "%s (%s)", decoder_definitions[decoder_current].name, vdec_stream_info.format);
-        nk_label(ctx, "Audio Backend", NK_TEXT_LEFT);
+        nk_label(ctx, "Audio backend", NK_TEXT_LEFT);
         if (audio_current == AUDIO_DECODER)
             nk_label(ctx, "Use decoder", NK_TEXT_RIGHT);
         else if (audio_current >= 0)
@@ -215,10 +215,10 @@ void _streaming_perf_stat(struct nk_context *ctx)
 
         if (dst->decodedFrames)
         {
-            nk_label(ctx, "Network frame drop:", NK_TEXT_LEFT);
+            nk_label(ctx, "Network frame drop", NK_TEXT_LEFT);
             nk_labelf(ctx, NK_TEXT_RIGHT, "%.2f%%", (float)dst->networkDroppedFrames / dst->totalFrames * 100);
-            nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios46);
-            nk_label(ctx, "Receive & decode:", NK_TEXT_LEFT);
+            nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios73);
+            nk_label(ctx, "Receive & decode", NK_TEXT_LEFT);
             nk_labelf(ctx, NK_TEXT_RIGHT, "%.2f ms; %.2f ms", (float)dst->totalReassemblyTime / dst->receivedFrames,
                       (float)dst->totalDecodeTime / dst->decodedFrames);
         }
