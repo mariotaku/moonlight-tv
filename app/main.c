@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
         struct nk_font_atlas *atlas;
         nk_platform_font_stash_begin(&atlas);
 
-        struct nk_font *font_ui_20 = NULL;
+        struct nk_font *font_ui = NULL;
         char *fontFile = NULL;
         FcResult result;
 
@@ -109,16 +109,16 @@ int main(int argc, char *argv[])
             if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
             {
                 fontFile = (char *)file;
-                font_ui_20 = nk_font_atlas_add_from_file_s(atlas, fontFile, 20, NULL);
+                font_ui = nk_font_atlas_add_from_file_s(atlas, fontFile, FONT_SIZE_DEFAULT, NULL);
             }
         }
-        if (!font_ui_20)
+        if (!font_ui)
         {
-            font_ui_20 = nk_font_atlas_add_default(atlas, 20 * NK_UI_SCALE, NULL);
+            font_ui = nk_font_atlas_add_default(atlas, FONT_SIZE_DEFAULT * NK_UI_SCALE, NULL);
         }
         fonts_init(atlas, fontFile);
         nk_platform_font_stash_end();
-        nk_style_set_font(ctx, &font_ui_20->handle);
+        nk_style_set_font(ctx, &font_ui->handle);
 #if DEBUG && TARGET_DESKTOP
         nk_style_load_all_cursors(ctx, atlas->cursors);
 #endif
