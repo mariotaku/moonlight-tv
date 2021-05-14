@@ -15,3 +15,9 @@ float ui_scale;
 #define NK_UI_SCALE ui_scale
 
 #define KEY_REPEAT_DURATION 300
+
+#if TARGET_WEBOS
+#define FONT_FAMILY "Museo Sans"
+#else
+#define FONT_FAMILY "Sans Serif"
+#endif

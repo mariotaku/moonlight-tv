@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
 
         //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
-        FcPattern *pat = FcNameParse((const FcChar8 *)"Sans Serif");
+        FcPattern *pat = FcNameParse((const FcChar8 *)FONT_FAMILY);
 
         FcConfigSubstitute(config, pat, FcMatchPattern); //NECESSARY; it increases the scope of possible fonts
         FcDefaultSubstitute(pat);                        //NECESSARY; it increases the scope of possible fonts
