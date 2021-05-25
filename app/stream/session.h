@@ -26,6 +26,7 @@ struct VIDEO_STATS
     float totalFps;
     float receivedFps;
     float decodedFps;
+    uint32_t rtt, rttVariance;
 };
 
 struct VIDEO_INFO

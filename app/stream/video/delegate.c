@@ -109,4 +109,5 @@ void _vdec_stat_submit(struct VIDEO_STATS *src, long now)
     dst->totalFps = (float)dst->totalFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
     dst->receivedFps = (float)dst->receivedFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
     dst->decodedFps = (float)dst->decodedFrames / ((float)(now - dst->measurementStartTimestamp) / 1000);
+    LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
 }

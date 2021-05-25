@@ -193,7 +193,7 @@ void _streaming_perf_stat(struct nk_context *ctx)
 {
     _overlay_windows_push_style(ctx);
     struct nk_vec2 wndpos = nk_vec2_s(10, 10);
-    struct nk_vec2 wndsize = nk_vec2_s(240, 150);
+    struct nk_vec2 wndsize = nk_vec2_s(240, 174);
     struct VIDEO_STATS *dst = &vdec_summary_stats;
     static char title[64];
     snprintf(title, sizeof(title) - 1, "Performance Stats | %.2f FPS", dst->decodedFps);
@@ -209,6 +209,9 @@ void _streaming_perf_stat(struct nk_context *ctx)
             nk_label(ctx, "Use decoder", NK_TEXT_RIGHT);
         else if (audio_current >= 0)
             nk_label(ctx, audio_definitions[audio_current].name, NK_TEXT_RIGHT);
+        nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios46);
+        nk_label(ctx, "Network RTT", NK_TEXT_LEFT);
+        nk_labelf(ctx, NK_TEXT_RIGHT, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
         nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios73);
         nk_label(ctx, "Network framerate", NK_TEXT_LEFT);
         nk_labelf(ctx, NK_TEXT_RIGHT, "%.2f FPS", dst->receivedFps);
@@ -218,9 +221,8 @@ void _streaming_perf_stat(struct nk_context *ctx)
             nk_label(ctx, "Network frame drop", NK_TEXT_LEFT);
             nk_labelf(ctx, NK_TEXT_RIGHT, "%.2f%%", (float)dst->networkDroppedFrames / dst->totalFrames * 100);
             nk_layout_row_s(ctx, NK_DYNAMIC, 20, 2, ratios73);
-            nk_label(ctx, "Receive & decode", NK_TEXT_LEFT);
-            nk_labelf(ctx, NK_TEXT_RIGHT, "%.2f ms; %.2f ms", (float)dst->totalReassemblyTime / dst->receivedFrames,
-                      (float)dst->totalDecodeTime / dst->decodedFrames);
+            nk_label(ctx, "Decode time", NK_TEXT_LEFT);
+            nk_labelf(ctx, NK_TEXT_RIGHT, " %.2f ms", (float)dst->totalDecodeTime / dst->decodedFrames);
         }
     }
     wndpos = nk_window_get_position(ctx);
