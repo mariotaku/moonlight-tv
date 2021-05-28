@@ -9,12 +9,16 @@ assignees: ''
 
 <!-- Since device support range becomes wider, please submit this issue ONLY when you got problems -->
 
-# Basic information
+## Basic information
+<!-- Please fill info into following spaces -->
+ - Device model: (       ) <!-- e.g. 55SM8100PJB -->
+ - Firmware version: (       ) <!-- Can be found in webOS Settings, e.g. 05.00.01 -->
+ - webOS version: (       ) <!-- Can be found in Moonlight Settings - About, e.g. 4.9.0-53802 -->
+ - Moonlight version: (       ) <!-- Can be found in Moonlight Settings - About -->
+ - Is audio working: (       ) <!-- e.g. Yes/No -->
+ - Is video working: (       ) <!-- e.g. 4K60fps -->
+ - Is input working: (       ) <!-- e.g. Gamepad, Remote -->
 
- - Device Model: (       ) <!-- e.g. 55SM8100PJB -->
- - webOS Version: (       ) <!-- Can be found in Moonlight Settings - About, e.g. 4.9.0-53802 -->
- - Is Audio Working: (       ) <!-- e.g. Yes/No -->
- - Is Video Working: (       ) <!-- e.g. 4K60fps -->
- - Is Input Working: (       ) <!-- e.g. Gamepad, Remote -->
+## Description
+<!-- Please describe the issue you have been encountered -->
 
-<!-- Please also provide additional information when possible. -->
