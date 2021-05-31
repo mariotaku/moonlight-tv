@@ -15,10 +15,6 @@
 #include "ui/root.h"
 #include "ui/settings/window.h"
 
-#if TARGET_WEBOS
-#include "platform/webos/app_init.h"
-#endif
-
 #include "stream/input/absinput.h"
 #include "stream/platform.h"
 #include "util/bus.h"

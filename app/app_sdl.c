@@ -37,7 +37,6 @@
 #include "util/logging.h"
 
 #if TARGET_WEBOS
-#include "platform/webos/app_init.h"
 #define FORCE_FULLSCREEN
 #elif TARGET_RASPI
 #define FORCE_FULLSCREEN
@@ -64,9 +63,6 @@ static void applog_logoutput(void *, int category, SDL_LogPriority priority, con
 
 int app_init(int argc, char *argv[])
 {
-#if TARGET_WEBOS
-    app_webos_init(argc, argv);
-#endif
     app_configuration = settings_load();
     return 0;
 }
@@ -130,9 +126,6 @@ APP_WINDOW_CONTEXT app_window_create()
 void app_destroy()
 {
     decoder_finalize(decoder_current);
-#ifdef TARGET_WEBOS
-    app_webos_destroy();
-#endif
     SDL_GL_DeleteContext(gl);
     SDL_DestroyWindow(win);
     SDL_Quit();

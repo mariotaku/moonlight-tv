@@ -245,7 +245,6 @@ if (HAVE_SDL)
     )
     if (TARGET_WEBOS)
         list(APPEND SOURCES
-            app/platform/webos/app_init.c
             app/stream/input/sdl/keyboard_webos.c
             app/platform/webos/navkey_sdl_webos.c
             app/platform/webos/path_webos.c
