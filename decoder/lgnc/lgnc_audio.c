@@ -43,7 +43,8 @@ static int lgnc_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
       .AChannel = LGNC_ADEC_CH_INDEX_MAIN,
       .samplingFreq = LGNC_ADEC_SAMPLING_FREQ_OF(opusConfig->sampleRate),
       .numberOfChannel = opusConfig->channelCount,
-      .bitPerSample = 16};
+      .bitPerSample = 16,
+  };
 
   if (LGNC_DIRECTAUDIO_Open(&info) != 0)
   {
