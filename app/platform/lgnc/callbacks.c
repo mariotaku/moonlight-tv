@@ -54,7 +54,7 @@ unsigned int _KeyEventCallback(unsigned int key, LGNC_KEY_COND_T keyCond, LGNC_A
 
 unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_COND_T keyCond, LGNC_ADDITIONAL_INPUT_INFO_T *keyInput)
 {
-    if (key == LGNC_KEYCODE_BACK)
+    if (key == LGNC_REMOTE_BACK)
     {
         struct LGNC_NAVKEY_EVENT_T *evt = malloc(sizeof(struct LGNC_NAVKEY_EVENT_T));
         evt->navkey = NAVKEY_CANCEL;
@@ -66,9 +66,10 @@ unsigned int _MouseEventCallback(int posX, int posY, unsigned int key, LGNC_KEY_
         bus_pushevent(USER_INPUT_NAVKEY, evt, NULL);
         return 1;
     }
-    else if (key)
+    else if (key && key != LGNC_REMOTE_PRESS)
     {
         applog_v("LGNC", "key = %d", key);
+        return 1;
     }
     // if (keyCond != LGNC_KEY_COND_LAST)
     struct input_event raw_event = keyInput->event;
