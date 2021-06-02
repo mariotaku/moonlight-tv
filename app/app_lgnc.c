@@ -41,6 +41,8 @@
 bool app_has_redraw;
 
 PCONFIGURATION app_configuration = NULL;
+int app_window_width, app_window_height;
+bool app_has_redraw = false, app_force_redraw = false, app_should_redraw_background = false;
 
 static struct _LGNC_WINDOW_CONTEXT
 {
@@ -108,6 +110,13 @@ static void app_process_events(struct nk_context *ctx)
                 free(evt);
                 break;
             }
+            case USER_INPUT_NAVKEY:
+            {
+                struct LGNC_NAVKEY_EVENT_T *evt = data1;
+                ui_dispatch_navkey(ctx, evt->navkey, evt->state, evt->timestamp);
+                free(evt);
+                break;
+            }
             case USER_QUIT:
             {
                 app_request_exit();
@@ -161,4 +170,9 @@ void app_start_text_input(int x, int y, int w, int h)
 
 void app_stop_text_input()
 {
+}
+
+bool app_render_queue_submit(void *data)
+{
+    return false;
 }

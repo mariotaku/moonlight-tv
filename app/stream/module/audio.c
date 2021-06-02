@@ -14,6 +14,7 @@ static MODULE_LIB_DEFINITION _ndl_libs[] = {
     {"ndlaud", "ndlaud"},
 };
 
+#if HAVE_SDL
 bool audio_check_sdl(PAUDIO_INFO ainfo);
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 
@@ -24,9 +25,13 @@ AUDIO_SYMBOLS audio_sdl = {
     NULL,
     &audio_callbacks_sdl,
 };
+#define AUDIO_SYMBOLS_SDL &audio_sdl
+#else
+#define AUDIO_SYMBOLS_SDL NULL
+#endif
 
 MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
-    {"SDL Audio", "sdl", NULL, 0, &audio_sdl},
+    {"SDL Audio", "sdl", NULL, 0, AUDIO_SYMBOLS_SDL},
     {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
     {"ALSA", "alsa", &_alsa_lib, 1, NULL},
     {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
@@ -91,7 +96,11 @@ PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(char *audio_device)
     PAUDIO_RENDERER_CALLBACKS cb = module_sym("audio_callbacks_%s", audio_current, audio_current_libidx);
     if (cb)
         return cb;
+#if HAVE_SDL
     return &audio_callbacks_sdl;
+#else
+    return NULL;
+#endif
 }
 
 static bool audio_init_simple(AUDIO audio, int libidx, int argc, char *argv[])

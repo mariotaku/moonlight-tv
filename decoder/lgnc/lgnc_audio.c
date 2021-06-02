@@ -45,7 +45,7 @@ static int lgnc_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
       .numberOfChannel = opusConfig->channelCount,
       .bitPerSample = 16,
   };
-
+  applog_i("LGNC", "Opening audio, codec=%d, sampleRate=%d, numberOfChannel=%d", info.codec, info.samplingFreq, info.numberOfChannel);
   if (LGNC_DIRECTAUDIO_Open(&info) != 0)
   {
     applog_e("LGNC", "Failed to open audio");

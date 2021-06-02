@@ -130,7 +130,11 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     }
     if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
     {
+#ifndef TARGET_LGNC
         struct nk_image *cover = coverloader_get(node, cur->id, cover_width, cover_height);
+#else
+        struct nk_image *cover = NULL;
+#endif
         bool defcover = _cover_use_default(cover);
         nk_layout_space_begin(ctx, NK_STATIC, item_height, running ? 3 : (defcover ? 2 : 1));
         struct nk_rect cover_bounds = nk_rect(0, 0, cover_width, cover_height);

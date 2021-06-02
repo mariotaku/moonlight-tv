@@ -1,13 +1,6 @@
-#include "api.h"
+#include "platform.h"
 
-bool decoder_check_lgnc(PDECODER_INFO dinfo)
-{
-    dinfo->valid = true;
-    dinfo->accelerated = true;
-    dinfo->audio= true;
-    dinfo->maxBitrate = 40000;
-    return true;
-}
+bool decoder_check_lgnc(PDECODER_INFO dinfo);
 
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_lgnc;
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_lgnc;
