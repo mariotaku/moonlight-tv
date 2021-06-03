@@ -26,6 +26,10 @@ bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx)
         .pfnMouseEventCallback = NULL,
     };
     applog_d("LGNC", "LGNC_SYSTEM_Initialize");
+    for (int i = 0; i < argc; i++)
+    {
+        applog_d("LGNC", "LGNC_SYSTEM_Initialize. argv[%d] = %s", i, argv[i]);
+    }
     if (LGNC_SYSTEM_Initialize(argc, argv, &callbacks) == 0)
     {
         lgnc_initialized = true;
