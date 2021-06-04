@@ -19,7 +19,7 @@ extern DECODER_SYMBOLS decoder_lgnc;
 static MODULE_LIB_DEFINITION _ffmpeg_lib = {"ffmpeg", "ffmpeg"};
 static MODULE_LIB_DEFINITION _ndl_libs[2] = {{"ndl_webos5", "ndl-webos5"}, {"ndl", "ndl"}};
 static MODULE_LIB_DEFINITION _lgnc_lib = {"lgnc", "lgnc"};
-static MODULE_LIB_DEFINITION _smp_libs[3] = {{"smp", "smp"}, {"smp_webos4", "smp-webos4"}, {"smp_webos3", "smp-webos3"}};
+static MODULE_LIB_DEFINITION _smp_libs[2] = {{"smp", "smp"}, {"smp_webos4", "smp-webos4"}};
 static MODULE_LIB_DEFINITION _dile_libs[2] = {{"dile", "dile"}, {"dile_legacy", "dile-legacy"}};
 static MODULE_LIB_DEFINITION _pi_lib = {"pi", "pi"};
 
