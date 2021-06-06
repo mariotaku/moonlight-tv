@@ -66,7 +66,7 @@ bool computer_manager_dispatch_userevent(int which, void *data1, void *data2)
 void handle_server_updated(PPCMANAGER_RESP update)
 {
     assert(update);
-    if (update->result.code != GS_OK)
+    if (update->result.code != GS_OK || !update->server)
         return;
     PSERVER_LIST node = serverlist_find_by(computer_list, update->server->uuid, serverlist_compare_uuid);
     if (!node)
@@ -157,10 +157,12 @@ void *_computer_manager_server_update_action(PSERVER_DATA data)
     PSERVER_DATA server = serverdata_new();
     PPCMANAGER_RESP update = serverinfo_resp_new();
     int ret = gs_init(app_gs_client_obtain(), server, strdup(data->serverInfo.address), app_configuration->unsupported);
-    update->server = server;
-    update->server_shallow = false;
     if (ret == GS_OK)
+    {
         update->state.code = SERVER_STATE_ONLINE;
+        update->server = server;
+        update->server_shallow = false;
+    }
     else
         serverstate_setgserror(&update->state, ret, gs_error);
     bus_pushaction((bus_actionfunc)handle_server_updated, update);
