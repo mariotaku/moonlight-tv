@@ -328,6 +328,7 @@ if (TARGET_WEBOS)
     )
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
+    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     moonlight_add_module(TARGETS moonlight-smp moonlight-smp-webos4 moonlight-smp-webos3)
@@ -351,7 +352,7 @@ elseif (TARGET_LGNC)
         APPLOG_FILE=app_logfile
     )
     target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
-    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
+    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
 
     target_link_libraries(moonlight PRIVATE mbedtls)
 
