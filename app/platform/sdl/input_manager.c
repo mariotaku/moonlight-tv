@@ -4,20 +4,38 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #include <SDL.h>
 
 #include "events.h"
+#include "util/path.h"
 #include "util/logging.h"
+
+#include "backend/gamecontrollerdb_updater.h"
 
 void inputmgr_init()
 {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     int numofmappings;
+
+    char *condb = gamecontrollerdb_path();
+    if (access(condb, F_OK) == 0)
+    {
+        numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
+    }
+    else
+    {
 #if TARGET_WEBOS
-    numofmappings = SDL_GameControllerAddMappingsFromFile("assets/gamecontrollerdb.txt");
+        numofmappings = SDL_GameControllerAddMappingsFromFile("assets/gamecontrollerdb.txt");
 #else
-    numofmappings = SDL_GameControllerAddMappingsFromFile("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");
+        numofmappings = SDL_GameControllerAddMappingsFromFile("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");
 #endif
+    }
+    free(condb);
+
+    gamecontrollerdb_update();
+
     applog_i("Input", "Input manager init, %d game controller mappings loaded", numofmappings);
     absinput_init();
 }

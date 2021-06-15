@@ -100,6 +100,7 @@ pkg_check_modules(CURL REQUIRED libcurl)
 pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 find_package(Fontconfig REQUIRED)
+find_package(CURL REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
@@ -182,6 +183,7 @@ set(SOURCES
     app/backend/pcmanager/pairing.c
     app/backend/pcmanager/discovery.c
     app/backend/pcmanager/wol.c
+    app/backend/gamecontrollerdb_updater.c
     app/backend/application_manager.c
     app/backend/coverloader.c
     app/backend/error_manager.c
@@ -298,7 +300,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  m ${CMAKE_DL_LIBS} Threads::Threads
  moonlight-common-c gamestream mdns
- Fontconfig::Fontconfig
+ Fontconfig::Fontconfig ${CURL_LIBRARIES}
 )
 
 macro(moonlight_add_module)
@@ -349,6 +351,7 @@ elseif (TARGET_LGNC)
         APPLOG_FILE=app_logfile
     )
     target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
+    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
     target_link_libraries(moonlight PRIVATE mbedtls)
 
@@ -362,6 +365,7 @@ elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2 _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
+    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
 
     target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
     target_include_directories(moonlight SYSTEM PRIVATE ${GLES_INCLUDE_DIRS})
@@ -370,8 +374,8 @@ elseif(TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
-    moonlight_add_module(TARGETS moonlight-pi)
-    moonlight_add_module(TARGETS moonlight-ffmpeg)
+    moonlight_add_module(TARGETS moonlight-pi LINK)
+    moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
     target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
@@ -386,8 +390,10 @@ elseif (TARGET_DESKTOP)
     
     if(TARGET_DARWIN)
         target_compile_definitions(moonlight PUBLIC OS_DARWIN GL_SILENCE_DEPRECATION)
+        target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif(TARGET_LINUX)
         target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
+        target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
     endif()
 
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
