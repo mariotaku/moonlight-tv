@@ -13,22 +13,6 @@
 
 #define WINDOW_TITLE "Settings"
 
-enum settings_entries
-{
-    ENTRY_NONE = -1,
-    ENTRY_RES_FPS = 0,
-    ENTRY_BITRATE,
-    ENTRY_SOPS,
-    ENTRY_LOCALAUDIO,
-    ENTRY_VIEWONLY,
-#if HAS_WEBOS_SETTINGS
-    ENTRY_WEBOS_VDEC,
-    ENTRY_WEBOS_SDLAUD,
-#endif
-    ENTRY_COUNT
-};
-
-static enum settings_entries _selected_entry = ENTRY_NONE;
 static void _pane_select_index(struct nk_context *ctx, int new_index);
 static void _pane_select_offset(struct nk_context *ctx, int offset);
 static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
