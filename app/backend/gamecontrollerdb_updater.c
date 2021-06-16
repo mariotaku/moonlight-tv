@@ -13,9 +13,11 @@
 
 typedef struct WRITE_CONTEXT
 {
+    CURL *curl;
     char *buf;
     size_t size;
     FILE *fp;
+    int status;
 } WRITE_CONTEXT;
 
 static pthread_t update_thread;
@@ -35,8 +37,10 @@ char *gamecontrollerdb_path()
     return condb;
 }
 
-static void _write_mapping(WRITE_CONTEXT *ctx)
+static void _write_mapping_lines(WRITE_CONTEXT *ctx)
 {
+    if (!ctx->fp)
+        return;
     char *curLine = ctx->buf;
     while (curLine)
     {
@@ -74,18 +78,109 @@ static void _write_mapping(WRITE_CONTEXT *ctx)
     }
 }
 
-static size_t _mappings_writef(void *contents, size_t size, size_t nmemb, WRITE_CONTEXT *ctx)
+static size_t _body_cb(void *buffer, size_t size, size_t nitems, WRITE_CONTEXT *ctx)
 {
-    size_t realsize = size * nmemb;
+    if (ctx->status < 0)
+        return 0;
+    size_t realsize = size * nitems;
     ctx->buf = realloc(ctx->buf, ctx->size + realsize + 1);
     if (ctx->buf == NULL)
         return 0;
 
-    memcpy(&(ctx->buf[ctx->size]), contents, realsize);
+    memcpy(&(ctx->buf[ctx->size]), buffer, realsize);
     ctx->size += realsize;
     ctx->buf[ctx->size] = 0;
-    _write_mapping(ctx);
+    _write_mapping_lines(ctx);
     return realsize;
+}
+
+static void _write_header_lines(WRITE_CONTEXT *ctx)
+{
+    if (!ctx->fp)
+        return;
+    char *curLine = ctx->buf;
+    while (curLine)
+    {
+        char *nextLine = memchr(curLine, '\n', ctx->size - (curLine - ctx->buf));
+        if (nextLine)
+        {
+            *nextLine = '\0';
+            if (nextLine > curLine)
+                nextLine[-1] = '\0';
+            char *headerValue = strstr(curLine, ": ");
+            if (headerValue && strncasecmp(curLine, "etag", headerValue - curLine) == 0)
+            {
+                fprintf(ctx->fp, "# etag: %s\n", headerValue + 2);
+            }
+            curLine = nextLine + 1;
+        }
+        else
+        {
+            size_t rem = ctx->size - (curLine - ctx->buf);
+            ctx->size = rem;
+            memmove(ctx->buf, curLine, rem);
+            break;
+        }
+    }
+}
+
+static size_t _header_cb(char *buffer, size_t size, size_t nitems, WRITE_CONTEXT *ctx)
+{
+    if (ctx->status < 0)
+        return 0;
+    /* received header is nitems * size long in 'buffer' NOT ZERO TERMINATED */
+    /* 'userdata' is set with CURLOPT_HEADERDATA */
+    size_t realsize = size * nitems;
+    ctx->buf = realloc(ctx->buf, ctx->size + realsize + 1);
+    if (ctx->buf == NULL)
+        return 0;
+
+    memcpy(&(ctx->buf[ctx->size]), buffer, realsize);
+    ctx->size += realsize;
+    ctx->buf[ctx->size] = 0;
+    if (!ctx->status || ctx->status == 301 || ctx->status == 302)
+    {
+        curl_easy_getinfo(ctx->curl, CURLINFO_RESPONSE_CODE, &ctx->status);
+        if (!ctx->fp && ctx->status == 200)
+        {
+            char *condb = gamecontrollerdb_path();
+            ctx->fp = fopen(condb, "w");
+            applog_d("GameControllerDB", "Locking controller db file %s", condb);
+            free(condb);
+            if (lockf(fileno(ctx->fp), F_LOCK, 0) != 0)
+            {
+                ctx->status = -1;
+            }
+        }
+    }
+    _write_header_lines(ctx);
+    return realsize;
+}
+
+static void load_headers(struct curl_slist **headers)
+{
+    char *condb = gamecontrollerdb_path();
+    FILE *fp = fopen(condb, "r");
+    free(condb);
+    if (!fp)
+        return;
+
+    char linebuf[1024];
+    size_t linelen;
+    while (fgets(linebuf, 1024, fp))
+    {
+        if (linebuf[0] != '#')
+            break;
+        linebuf[strnlen(linebuf, 1024) - 1] = '\0';
+        if (strncmp(linebuf, "# etag: ", 8) == 0)
+        {
+            char headbuf[512];
+            snprintf(headbuf, 511, "if-none-match: %s", &linebuf[8]);
+            *headers = curl_slist_append(*headers, headbuf);
+        }
+    }
+
+    fclose(fp);
 }
 
 void *_gamecontrollerdb_update_worker(void *unused)
@@ -94,27 +189,40 @@ void *_gamecontrollerdb_update_worker(void *unused)
     CURL *curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, "https://github.com/gabomdq/SDL_GameControllerDB/raw/master/gamecontrollerdb.txt");
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _mappings_writef);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, _header_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _body_cb);
+    struct curl_slist *headers = NULL;
+    load_headers(&headers);
+    if (headers)
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    }
     WRITE_CONTEXT *ctx = malloc(sizeof(WRITE_CONTEXT));
+    ctx->curl = curl;
     ctx->buf = malloc(1);
     ctx->size = 0;
+    ctx->fp = NULL;
+    ctx->status = 0;
 
-    char *condb = gamecontrollerdb_path();
-    ctx->fp = fopen(condb, "w");
-    applog_d("GameControllerDB", "Locking controller db file %s", condb);
-    free(condb);
-    if (lockf(fileno(ctx->fp), F_LOCK, 0) != 0)
-    {
-        goto cleanup;
-    }
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, ctx);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, ctx);
     CURLcode res = curl_easy_perform(curl);
-    applog_d("GameControllerDB", "Unlocking controller db file");
-    lockf(fileno(ctx->fp), F_ULOCK, 0);
-cleanup:
-    fclose(ctx->fp);
+    if (ctx->status == 304)
+    {
+        applog_d("GameControllerDB", "Controller db has no update");
+    }
+    if (ctx->fp)
+    {
+        applog_d("GameControllerDB", "Unlocking controller db file");
+        lockf(fileno(ctx->fp), F_ULOCK, 0);
+        fclose(ctx->fp);
+    }
     free(ctx->buf);
     free(ctx);
+    if (headers)
+    {
+        curl_slist_free_all(headers);
+    }
     curl_easy_cleanup(curl);
     pthread_mutex_unlock(&update_lock);
     return NULL;
