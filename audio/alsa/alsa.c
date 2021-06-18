@@ -60,12 +60,8 @@ static int alsa_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
   snd_pcm_uframes_t buffer_size = 2 * period_size;
   unsigned int sampleRate = opusConfig->sampleRate;
 
-  char* audio_device = (char*) context;
-  if (audio_device == NULL)
-    audio_device = "default";
-
   /* Open PCM device for playback. */
-  CHECK_RETURN(snd_pcm_open(&handle, audio_device, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))
+  CHECK_RETURN(snd_pcm_open(&handle, "sysdefault", SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))
 
   /* Set hardware parameters */
   CHECK_RETURN(snd_pcm_hw_params_malloc(&hw_params));
