@@ -67,14 +67,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    applog_i("APP", "Decoder module: %s", decoder_definitions[decoder_current].name);
+    applog_i("APP", "Decoder module: %s (%s requested)", decoder_definitions[decoder_current].name, app_configuration.decoder);
     if (audio_current == AUDIO_DECODER)
     {
-        applog_i("APP", "Audio module: decoder implementation\n");
+        applog_i("APP", "Audio module: decoder implementation (%s requested)\n", app_configuration.audio_backend);
     }
     else if (audio_current >= 0)
     {
-        applog_i("APP", "Audio module: %s", audio_definitions[audio_current].name);
+        applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name, app_configuration.audio_backend);
     }
 
     backend_init();
