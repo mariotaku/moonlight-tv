@@ -14,7 +14,7 @@ NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img)
     SDL_Surface *s = IMG_Load(path);
     if (!s)
     {
-        applog_w("IMG", "Failed to load image %s: %s", path, IMG_GetError());
+        applog_w("IMG", "Failed to load image path %s: %s", path, IMG_GetError());
         return nk_false;
     }
     img->w = s->w;
@@ -33,7 +33,7 @@ NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img)
     SDL_Surface *s = IMG_Load_RW(rw, SDL_TRUE);
     if (!s)
     {
-        applog_w("IMG", "Failed to load image %s: %s", path, IMG_GetError());
+        applog_w("IMG", "Failed to load image pointer %p: %s", mem, IMG_GetError());
         return nk_false;
     }
     img->w = s->w;
