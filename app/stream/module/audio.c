@@ -51,14 +51,9 @@ static void dlerror_log();
 
 AUDIO audio_init(const char *name, int argc, char *argv[])
 {
-    if (decoder_info.audio)
-    {
-        audio_current = AUDIO_DECODER;
-        audio_pref_requested = AUDIO_AUTO;
-        return AUDIO_DECODER;
-    }
     AUDIO audio = audio_by_id(name);
     audio_pref_requested = audio;
+    // Has explicitly specified audio backend
     if (audio != AUDIO_AUTO)
     {
         // Has preferred value
@@ -66,14 +61,20 @@ AUDIO audio_init(const char *name, int argc, char *argv[])
         {
             return audio;
         }
-        return AUDIO_SDL;
+    }
+    // Has audio backend provided by decoder
+    if (decoder_info.audio)
+    {
+        audio_current = AUDIO_DECODER;
+        audio_pref_requested = AUDIO_AUTO;
+        return AUDIO_DECODER;
     }
     for (int i = 0; i < audio_orders_len; i++)
     {
-        AUDIO audio = audio_orders[i];
-        if (audio_try_init(audio, argc, argv))
+        AUDIO attempt = audio_orders[i];
+        if (audio != attempt && audio_try_init(attempt, argc, argv))
         {
-            return audio;
+            return attempt;
         }
     }
     return AUDIO_SDL;
