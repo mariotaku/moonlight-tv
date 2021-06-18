@@ -13,6 +13,7 @@ if (PULSE_FOUND)
         target_include_directories(moonlight-pulse PRIVATE ${OPUS_INCLUDE_DIRS})
         target_link_libraries(moonlight-pulse PRIVATE ${OPUS_LIBRARIES})
     endif()
+    target_compile_definitions(moonlight-pulse PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
     install(TARGETS moonlight-pulse LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

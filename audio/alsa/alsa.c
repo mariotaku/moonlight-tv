@@ -26,7 +26,7 @@
 #include <opus_multistream.h>
 #include <alsa/asoundlib.h>
 
-#define CHECK_RETURN(f) if ((rc = f) < 0) { applog_e("Alsa", "Alsa error code %d\n", rc); return -1; }
+#define CHECK_RETURN(f) if ((rc = f) < 0) { applog_e("ALSA", "ALSA error code %d\n", rc); return -1; }
 #define MAX_CHANNEL_COUNT 6
 #define FRAME_SIZE 240
 #define FRAME_BUFFER 12
@@ -60,8 +60,12 @@ static int alsa_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
   snd_pcm_uframes_t buffer_size = 2 * period_size;
   unsigned int sampleRate = opusConfig->sampleRate;
 
+  char *audio_device = (char *)context;
+  if (!audio_device) {
+    audio_device = "sysdefault";
+  }
   /* Open PCM device for playback. */
-  CHECK_RETURN(snd_pcm_open(&handle, "sysdefault", SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))
+  CHECK_RETURN(snd_pcm_open(&handle, audio_device, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))
 
   /* Set hardware parameters */
   CHECK_RETURN(snd_pcm_hw_params_malloc(&hw_params));
@@ -85,6 +89,7 @@ static int alsa_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
 
   CHECK_RETURN(snd_pcm_prepare(handle));
 
+  applog_d("ALSA", "Audio render created. Device: %s", audio_device);
   return 0;
 }
 
@@ -101,16 +106,15 @@ static void alsa_renderer_cleanup() {
 static void alsa_renderer_decode_and_play_sample(char* data, int length) {
   int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
   if (decodeLen > 0) {
-    int rc = snd_pcm_writei(handle, pcmBuffer, decodeLen);
-    if (rc == -EPIPE)
-      snd_pcm_recover(handle, rc, 1);
-
-    if (rc<0)
-      applog_w("Alsa", "Alsa error from writei: %d\n", rc);
+    int rc;
+    if (rc = snd_pcm_writei(handle, pcmBuffer, decodeLen) == -EPIPE) {
+      snd_pcm_prepare(handle);
+    } else if (rc < 0)
+      applog_w("ALSA", "ALSA error from writei: %d\n", rc);
     else if (decodeLen != rc)
-      applog_w("Alsa", "Alsa shortm write, write %d frames\n", rc);
+      applog_w("ALSA", "ALSA shortm write, write %d frames\n", rc);
   } else {
-      applog_w("Alsa", "Opus error from decode: %d\n", decodeLen);
+      applog_w("ALSA", "Opus error from decode: %d\n", decodeLen);
   }
 }
 

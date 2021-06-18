@@ -160,7 +160,7 @@ PVIDEO_RENDER_CALLBACKS decoder_get_render()
 
 PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device)
 {
-    if (decoder_current == DECODER_NONE)
+    if (audio_current > 0)
         return audio_get_callbacks(audio_device);
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)

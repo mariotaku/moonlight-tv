@@ -13,6 +13,7 @@ if (ALSA_FOUND)
         target_include_directories(moonlight-alsa PRIVATE ${OPUS_INCLUDE_DIRS})
         target_link_libraries(moonlight-alsa PRIVATE ${OPUS_LIBRARIES})
     endif()
+    target_compile_definitions(moonlight-alsa PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
     install(TARGETS moonlight-alsa LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
