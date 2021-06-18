@@ -31,13 +31,6 @@ enum codecs
   CODEC_HEVC
 };
 
-typedef struct _ABSMOUSE_MAPPING
-{
-  int desktop_w, desktop_h;
-  int screen_w, screen_h;
-  int screen_x, screen_y;
-} ABSMOUSE_MAPPING;
-
 typedef struct _CONFIGURATION
 {
   STREAM_CONFIGURATION stream;
@@ -56,7 +49,6 @@ typedef struct _CONFIGURATION
   bool unsupported;
   bool quitappafter;
   bool viewonly;
-  ABSMOUSE_MAPPING absmouse_mapping;
   enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 
@@ -76,7 +68,5 @@ PCONFIGURATION settings_load();
 void settings_save(PCONFIGURATION config);
 
 int settings_optimal_bitrate(int w, int h, int fps);
-
-bool absmouse_mapping_valid(ABSMOUSE_MAPPING mapping);
 
 bool audio_config_valid(int config);

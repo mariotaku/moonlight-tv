@@ -18,9 +18,6 @@ static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
 static void parse_argument(int c, char *value, PCONFIGURATION config);
 
-static void write_config_absmouse_mapping(FILE *fd, char *key, ABSMOUSE_MAPPING mapping);
-static bool parse_config_absmouse_mapping(char *value, ABSMOUSE_MAPPING *mapping);
-
 static int find_ch_idx_by_config(int config);
 static int find_ch_idx_by_value(const char *value);
 static void write_audio_config(FILE *fd, char *key, int config);
@@ -37,7 +34,6 @@ static bool parse_audio_config(const char *value, int *config);
 static struct option long_options[] = {
     {"width", required_argument, NULL, 'c'},
     {"height", required_argument, NULL, 'd'},
-    {"absmouse_mapping", required_argument, NULL, 'e'},
     {"bitrate", required_argument, NULL, 'g'},
     {"hdr", no_argument, NULL, 'h'},
     {"packetsize", required_argument, NULL, 'i'},
@@ -245,8 +241,6 @@ void settings_write(char *filename, PCONFIGURATION config)
         write_config_bool(fd, "verbose", true);
     else if (config->debug_level == 2)
         write_config_bool(fd, "debug", true);
-    if (absmouse_mapping_valid(config->absmouse_mapping))
-        write_config_absmouse_mapping(fd, "absmouse_mapping", config->absmouse_mapping);
 
     fclose(fd);
 }
@@ -261,9 +255,6 @@ void parse_argument(int c, char *value, PCONFIGURATION config)
         break;
     case 'd':
         config->stream.height = atoi(value);
-        break;
-    case 'e':
-        parse_config_absmouse_mapping(value, &config->absmouse_mapping);
         break;
     case 'g':
         config->stream.bitrate = atoi(value);
@@ -350,36 +341,10 @@ void parse_argument(int c, char *value, PCONFIGURATION config)
     }
 }
 
-bool absmouse_mapping_valid(ABSMOUSE_MAPPING mapping)
-{
-    return mapping.desktop_w && mapping.desktop_h && mapping.screen_w && mapping.screen_h;
-}
 
 bool audio_config_valid(int config)
 {
     return find_ch_idx_by_config(config) >= 0;
-}
-
-void write_config_absmouse_mapping(FILE *fd, char *key, ABSMOUSE_MAPPING mapping)
-{
-    fprintf(fd, "%s = [%d,%d][%d*%d]@[%d*%d]\n", key, mapping.screen_x, mapping.screen_y, mapping.screen_w, mapping.screen_h,
-            mapping.desktop_w, mapping.desktop_h);
-}
-
-bool parse_config_absmouse_mapping(char *value, ABSMOUSE_MAPPING *mapping)
-{
-    int screen_x, screen_y, screen_w, screen_h, desktop_w, desktop_h;
-    if (sscanf(value, "[%d,%d][%d*%d]@[%d*%d]", &screen_x, &screen_y, &screen_w, &screen_h, &desktop_w, &desktop_h) != 6)
-    {
-        return false;
-    }
-    mapping->desktop_w = desktop_w;
-    mapping->desktop_h = desktop_h;
-    mapping->screen_w = screen_w;
-    mapping->screen_h = screen_h;
-    mapping->screen_x = screen_x;
-    mapping->screen_y = screen_y;
-    return true;
 }
 
 void write_audio_config(FILE *fd, char *key, int config)

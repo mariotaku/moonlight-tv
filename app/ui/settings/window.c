@@ -26,7 +26,6 @@ void settings_set_pane_focused(bool focused);
 const struct settings_pane *settings_panes[] = {
     &settings_pane_basic,
     &settings_pane_host,
-    &settings_pane_mouse,
     &settings_pane_adv_codec,
     &settings_pane_about,
 };

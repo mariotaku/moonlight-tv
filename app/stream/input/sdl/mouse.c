@@ -9,9 +9,6 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-static void _mouse_position_map(short raw_x, short raw_y, short raw_width, short raw_height,
-                                short *out_x, short *out_y, short *out_width, short *out_height);
-
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event)
 {
     if (absinput_no_control)
@@ -66,28 +63,6 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
     }
     else
     {
-        short x, y, w, h;
-        _mouse_position_map(event->x, event->y, streaming_display_width, streaming_display_height, &x, &y, &w, &h);
-        LiSendMousePositionEvent(x, y, w, h);
-    }
-}
-
-void _mouse_position_map(short raw_x, short raw_y, short raw_width, short raw_height,
-                         short *out_x, short *out_y, short *out_width, short *out_height)
-{
-    ABSMOUSE_MAPPING mapping = app_configuration->absmouse_mapping;
-    if (absmouse_mapping_valid(mapping))
-    {
-        *out_width = mapping.desktop_w;
-        *out_height = mapping.desktop_h;
-        *out_x = mapping.screen_x + raw_x / (raw_width / (float)mapping.screen_w);
-        *out_y = mapping.screen_y + raw_y / (raw_height / (float)mapping.screen_h);
-    }
-    else
-    {
-        *out_x = raw_x;
-        *out_y = raw_y;
-        *out_width = raw_width;
-        *out_height = raw_height;
+        LiSendMousePositionEvent(event->x, event->y, streaming_display_width, streaming_display_height);
     }
 }
