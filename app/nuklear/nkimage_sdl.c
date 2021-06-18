@@ -5,6 +5,8 @@
 #include <SDL_image.h>
 #include <SDL_opengl.h>
 
+#include "util/logging.h"
+
 static GLuint gen_texture_from_sdl(SDL_Surface *surface, int subsample);
 
 NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img)
@@ -12,6 +14,7 @@ NK_API nk_bool nk_imageloadf(const char *path, struct nk_image *img)
     SDL_Surface *s = IMG_Load(path);
     if (!s)
     {
+        applog_w("IMG", "Failed to load image %s: %s", path, IMG_GetError());
         return nk_false;
     }
     img->w = s->w;
@@ -30,6 +33,7 @@ NK_API nk_bool nk_imageloadm(const void *mem, size_t size, struct nk_image *img)
     SDL_Surface *s = IMG_Load_RW(rw, SDL_TRUE);
     if (!s)
     {
+        applog_w("IMG", "Failed to load image %s: %s", path, IMG_GetError());
         return nk_false;
     }
     img->w = s->w;
