@@ -18,6 +18,7 @@
  */
 
 #include "stream/module/api.h"
+#include "util/logging.h"
 
 #include <stdio.h>
 
@@ -25,7 +26,7 @@
 #include <opus_multistream.h>
 #include <alsa/asoundlib.h>
 
-#define CHECK_RETURN(f) if ((rc = f) < 0) { printf("Alsa error code %d\n", rc); return -1; }
+#define CHECK_RETURN(f) if ((rc = f) < 0) { applog_e("Alsa", "Alsa error code %d\n", rc); return -1; }
 #define MAX_CHANNEL_COUNT 6
 #define FRAME_SIZE 240
 #define FRAME_BUFFER 12
@@ -61,7 +62,7 @@ static int alsa_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
 
   char* audio_device = (char*) context;
   if (audio_device == NULL)
-    audio_device = "sysdefault";
+    audio_device = "default";
 
   /* Open PCM device for playback. */
   CHECK_RETURN(snd_pcm_open(&handle, audio_device, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))
@@ -109,11 +110,11 @@ static void alsa_renderer_decode_and_play_sample(char* data, int length) {
       snd_pcm_recover(handle, rc, 1);
 
     if (rc<0)
-      printf("Alsa error from writei: %d\n", rc);
+      applog_w("Alsa", "Alsa error from writei: %d\n", rc);
     else if (decodeLen != rc)
-      printf("Alsa shortm write, write %d frames\n", rc);
+      applog_w("Alsa", "Alsa shortm write, write %d frames\n", rc);
   } else {
-    printf("Opus error from decode: %d\n", decodeLen);
+      applog_w("Alsa", "Opus error from decode: %d\n", decodeLen);
   }
 }
 
