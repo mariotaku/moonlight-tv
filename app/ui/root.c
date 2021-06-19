@@ -168,6 +168,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
                 app_force_redraw = true;
                 ui_stream_render->renderSetup((PSTREAM_CONFIGURATION)data1, app_render_queue_submit);
             }
+            streaming_enter_fullscreen();
             return true;
         case USER_STREAM_CLOSE:
             if (ui_stream_render)
