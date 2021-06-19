@@ -18,5 +18,8 @@ target_compile_definitions(moonlight-pi PUBLIC ${BROADCOM_OMX_DEFINITIONS})
 target_compile_definitions(moonlight-pi PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_link_libraries(moonlight-pi PRIVATE moonlight-common-c opus)
+target_include_directories(moonlight-pi SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+target_link_libraries(moonlight-pi PRIVATE ${SDL2_LIBRARIES})
+
 
 install(TARGETS moonlight-pi LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

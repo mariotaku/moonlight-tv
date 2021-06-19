@@ -34,7 +34,7 @@
                 },
                 {
                     "description": "Ignore SIGPIPE",
-                    "text": "-handle SIGPIPE nostop noprint pass",
+                    "text": "-exec handle SIGPIPE nostop pass",
                     "ignoreFailures": true
                 }
             ]
