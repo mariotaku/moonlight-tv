@@ -42,6 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ilclient.h>
 #include <bcm_host.h>
 
+#include <SDL2/SDL.h>
+
 #define MAX_DECODE_UNIT_SIZE 262144
 
 static TUNNEL_T tunnel[2];
@@ -140,7 +142,12 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
   displayRegion.nVersion.nVersion = OMX_VERSION;
   displayRegion.nPortIndex = 90;
   displayRegion.fullscreen = OMX_TRUE;
-  displayRegion.layer = 10000;
+  const char* vdrv = SDL_GetCurrentVideoDriver();
+  if (strcmp(vdrv, "KMSDRM") == 0 || strcmp(vdrv, "RPI") == 0) {
+    displayRegion.layer = 10000;
+  } else {
+    displayRegion.layer = 0;
+  }
   displayRegion.mode = OMX_DISPLAY_MODE_LETTERBOX;
   displayRegion.set = OMX_DISPLAY_SET_FULLSCREEN | OMX_DISPLAY_SET_LAYER | OMX_DISPLAY_SET_MODE;
 

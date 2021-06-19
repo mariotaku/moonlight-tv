@@ -10,6 +10,8 @@
 #include <ilclient.h>
 #include <bcm_host.h>
 
+#include <SDL2/SDL.h>
+
 static void presenter_enter_fullscreen()
 {
     OMX_CONFIG_DISPLAYREGIONTYPE displayRegion;
@@ -23,6 +25,8 @@ static void presenter_enter_fullscreen()
     {
         applog_e("Pi", "Failed to set video region parameters\n");
     }
+    
+    SDL_ShowCursor(SDL_FALSE);
 }
 
 static void presenter_enter_overlay(int x, int y, int w, int h)
@@ -42,6 +46,8 @@ static void presenter_enter_overlay(int x, int y, int w, int h)
     {
         applog_e("Pi", "Failed to set video region parameters\n");
     }
+
+    SDL_ShowCursor(SDL_TRUE);
 }
 
 VIDEO_PRESENTER_CALLBACKS presenter_callbacks_pi = {
