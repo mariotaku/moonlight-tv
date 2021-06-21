@@ -53,6 +53,7 @@ void inputmgr_sdl_handle_event(SDL_Event ev)
         if (absinput_gamepads() >= absinput_max_gamepads())
         {
             // Ignore controllers more than supported
+            applog_w("Input", "Too many controllers, ignoring.");
             return;
         }
         absinput_init_gamepad(ev.jdevice.which);

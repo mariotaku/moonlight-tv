@@ -159,8 +159,15 @@ bool absinput_init_gamepad(int joystick_index)
         PGAMEPAD_STATE state = get_gamepad(sdl_id);
         state->haptic = haptic;
         state->haptic_effect_id = -1;
-        applog_i("Input", "Controller #%d connected, sdl_id: %d", state->id, sdl_id);
+        applog_i("Input", "Controller #%d (%s) connected, sdl_id: %d", state->id, SDL_JoystickName(joystick), sdl_id);
         return true;
+    }
+    else
+    {
+        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
+        char guidstr[33];
+        SDL_JoystickGetGUIDString(guid, guidstr, 33);
+        applog_w("Input", "Unrecognized game controller. GUID: %s", guidstr);
     }
     return false;
 }
