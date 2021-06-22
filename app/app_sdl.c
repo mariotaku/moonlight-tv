@@ -363,5 +363,9 @@ void fps_cap(int start)
 void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
     const char *priority_name[SDL_NUM_LOG_PRIORITIES] = {"VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+#ifndef DEBUG
+    if (priority <= SDL_LOG_PRIORITY_INFO)
+        return;
+#endif
     applog(priority_name[priority], "SDL", message);
 }

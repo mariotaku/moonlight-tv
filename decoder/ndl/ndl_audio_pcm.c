@@ -72,6 +72,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
     applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
+  applog_d("NDL", "NDL_DirectAudioOpen %d ch", info.numChannel);
 #endif
 
   return 0;
