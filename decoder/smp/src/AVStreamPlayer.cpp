@@ -101,7 +101,7 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
 {
     if (decodeUnit->fullLength > DECODER_BUFFER_SIZE)
     {
-        fprintf(stderr, "Video decode buffer too small, skip this frame");
+        applog_w("SMP", "Video decode buffer too small, skip this frame");
         return DR_NEED_IDR;
     }
     unsigned long long ms = decodeUnit->presentationTimeMs;
@@ -320,13 +320,13 @@ void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strVal
     case 0:
         break;
     case PF_EVENT_TYPE_STR_ERROR:
-        fprintf(stderr, "LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
+        applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
         break;
     case PF_EVENT_TYPE_INT_ERROR:
-        fprintf(stderr, "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %s, strValue: %p\n", numValue, strValue);
+        applog_w("SMP", "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
         break;
     case PF_EVENT_TYPE_STR_BUFFERFULL:
-        fprintf(stderr, "LoadCallback PF_EVENT_TYPE_STR_BUFFERFULL\n");
+        applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_BUFFERFULL\n");
         break;
     case PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED:
 #ifdef USE_ACB
@@ -347,7 +347,7 @@ void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strVal
     case PF_EVENT_TYPE_INT_SVP_VDEC_READY:
         break;
     default:
-        fprintf(stderr, "LoadCallback unhandled 0x%02x\n", type);
+        applog_w("SMP", "LoadCallback unhandled 0x%02x\n", type);
         break;
     }
 }
@@ -355,8 +355,8 @@ void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strVal
 #ifdef USE_ACB
 void AVStreamPlayer::AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply)
 {
-    printf("AcbHandler acbId = %ld, taskId = %ld, eventType = %ld, appState = %ld,playState = %ld, reply = %s EOL\n",
-           acb_id, task_id, event_type, app_state, play_state, reply);
+    applog_d("SMP", "AcbHandler acbId = %ld, taskId = %ld, eventType = %ld, appState = %ld,playState = %ld, reply = %s EOL\n",
+             acb_id, task_id, event_type, app_state, play_state, reply);
 }
 #endif
 
