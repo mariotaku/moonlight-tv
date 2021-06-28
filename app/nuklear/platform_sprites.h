@@ -8,3 +8,4 @@ struct nk_image ic_navkey_cancel();
 struct nk_image ic_navkey_close();
 struct nk_image ic_navkey_menu();
 struct nk_image ic_navkey_confirm();
+struct nk_image ic_navkey_alternative();

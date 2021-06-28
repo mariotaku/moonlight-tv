@@ -16,6 +16,7 @@ static void release_keyboard_keys(SDL_Event ev);
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
+void sdlinput_handle_text_event(SDL_TextInputEvent *event);
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
 void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event);
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event);
@@ -111,6 +112,9 @@ bool absinput_dispatch_event(SDL_Event ev)
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
         sdlinput_handle_mbutton_event(&ev.button);
+        break;
+    case SDL_TEXTINPUT:
+        sdlinput_handle_text_event(&ev.text);
         break;
     }
     return false;

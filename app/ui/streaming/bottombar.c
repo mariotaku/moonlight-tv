@@ -1,8 +1,18 @@
+#include "app.h"
 #include "overlay.h"
 #include "priv.h"
 
 #include "ui/root.h"
 #include "stream/input/absinput.h"
+
+static bool ui_is_remote_control()
+{
+#if TARGET_WEBOS
+    return true;
+#else
+    return false;
+#endif
+}
 
 void _streaming_bottom_bar(struct nk_context *ctx)
 {
@@ -25,6 +35,7 @@ void _streaming_bottom_bar(struct nk_context *ctx)
         float action_icon_width = UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
         float quit_label_width = nk_string_measure_width(ctx, "Quit Game");
         float back_label_width = nk_string_measure_width(ctx, "Games List");
+        float soft_keyboard_width = nk_string_measure_width(ctx, "Soft Keyboard");
         float bar_content_height = bar_height - ctx->style.window.padding.y * 2;
 
         nk_layout_space_push(ctx, nk_rect(0, 0, region.w, bar_content_height));
@@ -34,6 +45,11 @@ void _streaming_bottom_bar(struct nk_context *ctx)
         {
             nk_layout_row_template_begin_s(ctx, 30);
             nk_layout_row_template_push_variable(ctx, 1);
+            if (ui_is_remote_control())
+            {
+                nk_layout_row_template_push_static(ctx, action_button_padding.x * 2 + action_icon_width + action_spacing + soft_keyboard_width);
+                nk_layout_row_template_push_static(ctx, 1);
+            }
             nk_layout_row_template_push_static(ctx, action_button_padding.x * 2 + action_icon_width + action_spacing + back_label_width);
             nk_layout_row_template_push_static(ctx, 1);
             nk_layout_row_template_push_static(ctx, action_button_padding.x * 2 + action_icon_width + action_spacing + quit_label_width);
@@ -41,6 +57,18 @@ void _streaming_bottom_bar(struct nk_context *ctx)
 
             nk_spacing(ctx, 1);
             struct nk_rect bounds = nk_widget_bounds(ctx);
+            if (ui_is_remote_control())
+            {
+                _btn_keyboard_center = nk_rect_center(bounds);
+                if (nk_button_label(ctx, ""))
+                {
+                    app_start_text_input(0, 0, 0, 0);
+                    streaming_overlay_hide();
+                }
+
+                nk_spacing(ctx, 1);
+                bounds = nk_widget_bounds(ctx);
+            }
             _btn_suspend_center = nk_rect_center(bounds);
             if (nk_button_label(ctx, ""))
             {
@@ -69,6 +97,12 @@ void _streaming_bottom_bar(struct nk_context *ctx)
             nk_layout_row_template_push_static_s(ctx, UI_BOTTOM_BAR_HEIGHT_DP);
             nk_layout_row_template_push_static_s(ctx, 50);
             nk_layout_row_template_push_variable(ctx, 1);
+            if (ui_is_remote_control())
+            {
+                nk_layout_row_template_push_static(ctx, action_icon_width);
+                nk_layout_row_template_push_static(ctx, soft_keyboard_width + action_button_padding.x);
+                nk_layout_row_template_push_static(ctx, action_button_padding.x + 1);
+            }
             nk_layout_row_template_push_static(ctx, action_icon_width);
             nk_layout_row_template_push_static(ctx, back_label_width + action_button_padding.x);
             nk_layout_row_template_push_static(ctx, action_button_padding.x + 1);
@@ -79,6 +113,12 @@ void _streaming_bottom_bar(struct nk_context *ctx)
             nk_image(ctx, sprites_ui.ic_gamepad);
             nk_labelf(ctx, NK_TEXT_LEFT, "%d", absinput_gamepads());
 
+            if (ui_is_remote_control())
+            {
+                nk_spacing(ctx, 1);
+                nk_image_padded(ctx, ic_navkey_alternative(), ui_statbar_icon_padding);
+                nk_label(ctx, "Soft Keyboard", NK_TEXT_LEFT);
+            }
             nk_spacing(ctx, 1);
             nk_image_padded(ctx, ic_navkey_menu(), ui_statbar_icon_padding);
             nk_label(ctx, "Games List", NK_TEXT_LEFT);

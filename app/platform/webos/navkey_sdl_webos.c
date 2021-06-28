@@ -14,6 +14,8 @@ NAVKEY navkey_from_sdl_webos(SDL_Event ev)
             return NAVKEY_NEGATIVE;
         case SDL_WEBOS_SCANCODE_YELLOW:
             return NAVKEY_MENU;
+        case SDL_WEBOS_SCANCODE_BLUE:
+            return NAVKEY_ALTERNATIVE;
         case SDL_WEBOS_SCANCODE_BACK:
             return NAVKEY_CANCEL;
         default:

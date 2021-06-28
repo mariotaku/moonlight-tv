@@ -44,6 +44,20 @@ struct nk_image ic_navkey_menu()
     }
 }
 
+struct nk_image ic_navkey_alternative()
+{
+    switch (ui_input_mode)
+    {
+    case UI_INPUT_MODE_GAMEPAD:
+        return sprites_ui.ic_gamepad_y;
+    case UI_INPUT_MODE_POINTER:
+    case UI_INPUT_MODE_KEY:
+    case UI_INPUT_MODE_REMOTE:
+    default:
+        return sprites_ui.ic_remote_blue;
+    }
+}
+
 struct nk_image ic_navkey_confirm()
 {
     switch (ui_input_mode)

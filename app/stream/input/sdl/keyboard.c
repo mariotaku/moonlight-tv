@@ -7,6 +7,7 @@
 
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "util/logging.h"
 
 #define VK_0 0x30
 #define VK_A 0x41
@@ -490,5 +491,31 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 
         // If we made it this far, no keys are pressed
         performPendingSpecialKeyCombo();
+    }
+}
+
+void sdlinput_handle_text_event(SDL_TextInputEvent *event)
+{
+    char ch = event->text[0];
+    if (!ch)
+        return;
+    if ((ch >= '0' && ch <= '9'))
+    {
+        LiSendKeyboardEvent(ch, KEY_ACTION_DOWN, 0);
+        LiSendKeyboardEvent(ch, KEY_ACTION_UP, 0);
+    }
+    else if (ch >= 'a' && ch <= 'z')
+    {
+        LiSendKeyboardEvent(ch - 0x20, KEY_ACTION_DOWN, 0);
+        LiSendKeyboardEvent(ch - 0x20, KEY_ACTION_UP, 0);
+    }
+    else if (ch >= 'A' && ch <= 'Z')
+    {
+        LiSendKeyboardEvent(ch, KEY_ACTION_DOWN, MODIFIER_SHIFT);
+        LiSendKeyboardEvent(ch, KEY_ACTION_UP, MODIFIER_SHIFT);
+    }
+    else
+    {
+        applog_d("SDL", "Input text %s", event->text);
     }
 }

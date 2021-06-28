@@ -10,8 +10,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
-struct nk_vec2 _btn_suspend_center = {0, 0}, _btn_quit_center = {0, 0},
-               _btn_confirm_center = {0, 0};
+struct nk_vec2 _btn_keyboard_center = {0, 0}, _btn_suspend_center = {0, 0},
+               _btn_quit_center = {0, 0}, _btn_confirm_center = {0, 0};
 struct nk_dialog_widget_bounds _dialog_bounds;
 
 static void _connection_window(struct nk_context *ctx, STREAMING_STATUS stat);
@@ -93,6 +93,9 @@ bool streaming_overlay_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NA
             break;
         case NAVKEY_MENU:
             bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_suspend_center, (void *)state);
+            break;
+        case NAVKEY_ALTERNATIVE:
+            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_btn_keyboard_center, (void *)state);
             break;
         default:
             break;

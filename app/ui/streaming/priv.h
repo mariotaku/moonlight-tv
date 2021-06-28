@@ -8,4 +8,4 @@
 #include "nuklear/ext_dialog.h"
 #endif
 
-extern struct nk_vec2 _btn_suspend_center, _btn_quit_center;
+extern struct nk_vec2 _btn_keyboard_center, _btn_suspend_center, _btn_quit_center;
