@@ -81,9 +81,9 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     if (nk_combo_begin_label(ctx, settings_res_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         *showing_combo = true;
-        if (combo_hovered_item.combo != 1)
+        if (combo_hovered_item.combo != 0)
         {
-            combo_hovered_item.combo = 1;
+            combo_hovered_item.combo = 0;
             combo_hovered_item.count = _supported_resolutions_len;
             combo_hovered_item.request = -1;
             combo_hovered_item.item = -1;
@@ -123,9 +123,9 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     if (nk_combo_begin_label(ctx, settings_fps_label, nk_vec2(nk_widget_width(ctx), 200 * NK_UI_SCALE)))
     {
         *showing_combo = true;
-        if (combo_hovered_item.combo != 2)
+        if (combo_hovered_item.combo != 1)
         {
-            combo_hovered_item.combo = 2;
+            combo_hovered_item.combo = 1;
             combo_hovered_item.count = _supported_fps_len;
             combo_hovered_item.request = -1;
             combo_hovered_item.item = -1;
@@ -187,6 +187,7 @@ static void _windowopen()
     _set_res(app_configuration->stream.width, app_configuration->stream.height);
     _max_bitrate = decoder_info.maxBitrate ? decoder_info.maxBitrate : BITRATE_MAX;
     _max_ch_idx = _calc_max_ch_idx();
+    combo_hovered_item.combo = -1;
 }
 
 int _calc_max_ch_idx()
@@ -215,9 +216,9 @@ bool _ch_combo(struct nk_context *ctx, int *value)
     }
     if (nk_combo_begin_label(ctx, _supported_ch[ch_idx].name, nk_vec2(nk_widget_width(ctx), combo_height)))
     {
-        if (combo_hovered_item.combo != 1)
+        if (combo_hovered_item.combo != 2)
         {
-            combo_hovered_item.combo = 1;
+            combo_hovered_item.combo = 2;
             combo_hovered_item.count = _max_ch_idx;
             combo_hovered_item.request = -1;
             combo_hovered_item.item = -1;

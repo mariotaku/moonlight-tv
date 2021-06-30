@@ -52,6 +52,7 @@ static int _itemcount()
 
 static void _windowopen()
 {
+    combo_hovered_item.combo = -1;
 }
 
 static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
@@ -63,22 +64,10 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
         {
             return true;
         }
-        else if (settings_hovered_item == 1)
-        {
-            if (state == NAVKEY_STATE_UP)
-                settings_pane_item_offset(-1);
-            return true;
-        }
         return false;
     case NAVKEY_RIGHT:
         if (settings_showing_combo)
         {
-            return true;
-        }
-        else if (settings_hovered_item == 0)
-        {
-            if (state == NAVKEY_STATE_UP)
-                settings_pane_item_offset(1);
             return true;
         }
         return true;
@@ -87,21 +76,16 @@ static bool _navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, u
         {
             return navkey_intercept_repeat(state, timestamp) || combo_item_select(-1);
         }
-        else if (settings_hovered_item >= 2)
+        else
         {
             if (state == NAVKEY_STATE_UP)
-                settings_pane_item_offset(0 - settings_hovered_item);
+                settings_pane_item_offset(-1);
         }
         return true;
     case NAVKEY_DOWN:
         if (settings_showing_combo)
         {
             return navkey_intercept_repeat(state, timestamp) || combo_item_select(1);
-        }
-        else if (settings_hovered_item <= 1)
-        {
-            if (state == NAVKEY_STATE_UP)
-                settings_pane_item_offset(2 - settings_hovered_item);
         }
         else
         {
@@ -181,9 +165,9 @@ bool _audio_combo(struct nk_context *ctx, AUDIO audio)
     int combo_height = NK_MIN(200 * NK_UI_SCALE, ui_display_height - (combo_bounds.y + combo_bounds.h));
     if (nk_combo_begin_label(ctx, audio >= 0 ? audio_definitions[audio].name : "Automatic", nk_vec2(nk_widget_width(ctx), combo_height)))
     {
-        if (combo_hovered_item.combo != 0)
+        if (combo_hovered_item.combo != 1)
         {
-            combo_hovered_item.combo = 0;
+            combo_hovered_item.combo = 1;
             combo_hovered_item.count = 1 + audio_orders_len;
             combo_hovered_item.request = -1;
             combo_hovered_item.item = -1;
