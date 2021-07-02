@@ -64,7 +64,9 @@ static int _initPlayerWhenReady()
     // Don't setup before video comes in
     if (!videoConfig.format)
         return 0;
-    if (!streamPlayer->setup(videoConfig, audioConfig))
+    streamPlayer->videoConfig = videoConfig;
+    streamPlayer->audioConfig = audioConfig;
+    if (!streamPlayer->load())
     {
         videoConfig.format = 0;
         audioConfig.type = 0;

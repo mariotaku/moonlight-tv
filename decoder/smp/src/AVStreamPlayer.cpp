@@ -16,7 +16,7 @@ namespace pj = pbnjson;
 
 std::string base64_encode(const unsigned char *src, size_t len);
 
-AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), video_pts_(0)
+AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), video_pts_(0), videoConfig({0}), audioConfig({0})
 {
     app_id_ = getenv("APPID");
     video_buffer_ = (char *)malloc(DECODER_BUFFER_SIZE);
@@ -54,7 +54,7 @@ AVStreamPlayer::~AVStreamPlayer()
 #endif
 }
 
-bool AVStreamPlayer::setup(VideoConfig &videoConfig, AudioConfig &audioConfig)
+bool AVStreamPlayer::load()
 {
     if (player_state_ != PlayerState::UNLOADED)
     {
@@ -117,6 +117,12 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
 
     if (!submitBuffer(video_buffer_, length, video_pts_, 1))
         return DR_NEED_IDR;
+
+    if (request_idr_)
+    {
+        request_idr_ = false;
+        return DR_NEED_IDR;
+    }
     return DR_OK;
 }
 
@@ -323,8 +329,15 @@ void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strVal
         applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
         break;
     case PF_EVENT_TYPE_INT_ERROR:
+    {
         applog_w("SMP", "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
+        if (player_state_ == PLAYING)
+        {
+            request_idr_ = true;
+            load();
+        }
         break;
+    }
     case PF_EVENT_TYPE_STR_BUFFERFULL:
         applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_BUFFERFULL\n");
         break;

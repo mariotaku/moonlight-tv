@@ -28,10 +28,14 @@ namespace SMP_DECODER_NS
     public:
         AVStreamPlayer();
         ~AVStreamPlayer();
-        bool setup(VideoConfig &videoConfig, AudioConfig &audioConfig);
+        bool load();
         int submitVideo(PDECODE_UNIT decodeUnit);
         void submitAudio(char *sampleData, int sampleLength);
         void sendEOS();
+        bool restart();
+
+        VideoConfig videoConfig;
+        AudioConfig audioConfig;
 
     private:
         enum PlayerState
@@ -58,6 +62,7 @@ namespace SMP_DECODER_NS
         PlayerState player_state_;
         char *video_buffer_;
         unsigned long long video_pts_;
+        bool request_idr_;
 #ifdef USE_ACB
         void AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply);
         std::unique_ptr<Acb> acb_client_;
