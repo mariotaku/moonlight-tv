@@ -135,7 +135,7 @@ AUDIO audio_by_id(const char *id);
 AUDIO audio_init(const char *name, int argc, char *argv[]);
 void audio_finalize();
 
-PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device);
+PAUDIO_RENDERER_CALLBACKS module_get_audio(const char *audio_device);
 
 int module_audio_configuration();
 

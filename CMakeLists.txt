@@ -101,6 +101,7 @@ pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 find_package(Fontconfig REQUIRED)
 find_package(CURL REQUIRED)
+find_package(Config REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
@@ -345,6 +346,9 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
+    
+    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
 elseif (TARGET_LGNC)
     target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE 
         APPID="${WEBOS_APPINFO_ID}"
@@ -386,6 +390,8 @@ elseif(TARGET_RASPI)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
@@ -409,6 +415,8 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
     
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

@@ -39,7 +39,7 @@ typedef struct _CONFIGURATION
   char *mapping;
   const char *decoder;
   const char *audio_backend;
-  char *audio_device;
+  const char *audio_device;
   char *config_file;
   char key_dir[4096];
   bool sops;
@@ -53,6 +53,7 @@ typedef struct _CONFIGURATION
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_STREAMING "streaming.conf"
+#define CONF_NAME_MOONLIGHT "config"
 
 #define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | (h & 0xFFFF))
 

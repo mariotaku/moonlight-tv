@@ -158,7 +158,7 @@ PVIDEO_RENDER_CALLBACKS decoder_get_render()
     return module_sym("render_callbacks_%s", decoder_current, decoder_current_libidx);
 }
 
-PAUDIO_RENDERER_CALLBACKS module_get_audio(char *audio_device)
+PAUDIO_RENDERER_CALLBACKS module_get_audio(const char *audio_device)
 {
     if (audio_current > 0)
         return audio_get_callbacks(audio_device);

@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <getopt.h>
+
+#include <libconfig.h>
 
 #include <sys/stat.h>
 
@@ -16,49 +17,60 @@
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
-static void parse_argument(int c, char *value, PCONFIGURATION config);
 
 static int find_ch_idx_by_config(int config);
 static int find_ch_idx_by_value(const char *value);
-static void write_audio_config(FILE *fd, char *key, int config);
-static bool parse_audio_config(const char *value, int *config);
+static const char *serialize_audio_config(int config);
+static int parse_audio_config(const char *value);
 
-#define write_config_string(fd, key, value) fprintf(fd, "%s = %s\n", key, value)
-#define write_config_int(fd, key, value) fprintf(fd, "%s = %d\n", key, value)
-#define write_config_bool(fd, key, value) fprintf(fd, "%s = %s\n", key, value ? "true" : "false")
+static inline int config_setting_set_enum(config_setting_t *setting, int value, const char *(*converter)(int))
+{
+    return config_setting_set_string(setting, converter(value));
+}
 
-#define SHORT_OPTION_AUDIO_BACKEND 'o'
-#define SHORT_OPTION_DECODER 'p'
-#define SHORT_OPTION_SURROUND 'u'
+static inline int config_lookup_enum(const config_t *config, const char *path, int *value, int (*converter)(const char *))
+{
+    int ret;
+    const char *str = NULL;
+    if ((ret = config_lookup_string(config, path, &str)) == CONFIG_TRUE)
+    {
+        *value = converter(str);
+    }
+    return ret;
+}
 
-static struct option long_options[] = {
-    {"width", required_argument, NULL, 'c'},
-    {"height", required_argument, NULL, 'd'},
-    {"bitrate", required_argument, NULL, 'g'},
-    {"hdr", no_argument, NULL, 'h'},
-    {"packetsize", required_argument, NULL, 'i'},
-    {"input", required_argument, NULL, 'j'},
-    {"mapping", required_argument, NULL, 'k'},
-    {"nosops", no_argument, NULL, 'l'},
-    {"audio", required_argument, NULL, 'm'},
-    {"localaudio", no_argument, NULL, 'n'},
-    {"audio_backend", required_argument, NULL, SHORT_OPTION_AUDIO_BACKEND},
-    {"platform", required_argument, NULL, SHORT_OPTION_DECODER},
-    {"save", required_argument, NULL, 'q'},
-    {"keydir", required_argument, NULL, 'r'},
-    {"remote", no_argument, NULL, 's'},
-    {"windowed", no_argument, NULL, 't'},
-    {"surround", required_argument, NULL, SHORT_OPTION_SURROUND},
-    {"fps", required_argument, NULL, 'v'},
-    {"codec", required_argument, NULL, 'x'},
-    {"unsupported", no_argument, NULL, 'y'},
-    {"quitappafter", no_argument, NULL, '1'},
-    {"viewonly", no_argument, NULL, '2'},
-    {"rotate", required_argument, NULL, '3'},
-    {"verbose", no_argument, NULL, 'z'},
-    {"debug", no_argument, NULL, 'Z'},
-    {0, 0, 0, 0},
-};
+static inline int config_lookup_string_dup(const config_t *config, const char *path, const char **value)
+{
+    int ret;
+    if ((ret = config_lookup_string(config, path, value)) == CONFIG_TRUE && *value)
+    {
+        *value = strdup(*value);
+    }
+    return ret;
+}
+
+static inline void write_config_string(config_setting_t *parent, const char *key, const char *value)
+{
+    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_STRING);
+    config_setting_set_string(setting, value);
+}
+static inline void write_config_int(config_setting_t *parent, const char *key, int value)
+{
+    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_INT);
+    config_setting_set_int(setting, value);
+}
+static inline void write_config_bool(config_setting_t *parent, const char *key, bool value)
+{
+    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_BOOL);
+    config_setting_set_bool(setting, value);
+}
+
+static inline int write_config_enum(config_setting_t *parent, const char *key, int value, const char *(*converter)(int))
+{
+    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_STRING);
+    return config_setting_set_enum(setting, value, converter);
+}
+
 struct audio_config
 {
     int configuration;
@@ -75,7 +87,7 @@ static const int audio_config_len = sizeof(audio_configs) / sizeof(struct audio_
 PCONFIGURATION settings_load()
 {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
     settings_initialize(confdir, config);
     settings_read(conffile, config);
     free(conffile);
@@ -85,7 +97,7 @@ PCONFIGURATION settings_load()
 
 void settings_save(PCONFIGURATION config)
 {
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_STREAMING);
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
     settings_write(conffile, config);
     free(conffile);
     free(confdir);
@@ -150,215 +162,104 @@ int settings_optimal_bitrate(int w, int h, int fps)
     return kbps * fps / 30;
 }
 
-
 bool settings_read(char *filename, PCONFIGURATION config)
 {
-    FILE *fd = fopen(filename, "r");
-    if (fd == NULL)
+    struct config_t libconfig;
+    config_init(&libconfig);
+    int options = config_get_options(&libconfig);
+    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
+    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
+    config_set_options(&libconfig, options);
+
+    if (config_read_file(&libconfig, filename) != CONFIG_TRUE)
     {
+        config_destroy(&libconfig);
         applog_i("Settings", "Can't open configuration file: %s", filename);
         return false;
     }
 
-    char *line = NULL;
-    size_t len = 0;
+    config_lookup_int(&libconfig, "streaming.width", &config->stream.width);
+    config_lookup_int(&libconfig, "streaming.height", &config->stream.height);
+    config_lookup_int(&libconfig, "streaming.fps", &config->stream.fps);
+    config_lookup_int(&libconfig, "streaming.bitrate", &config->stream.bitrate);
+    config_lookup_int(&libconfig, "streaming.packetsize", &config->stream.packetSize);
+    config_lookup_int(&libconfig, "streaming.rotate", &config->rotate);
+    config_lookup_bool(&libconfig, "streaming.hdr", (int *)&config->stream.enableHdr);
+    config_lookup_enum(&libconfig, "streaming.surround", &config->stream.audioConfiguration, parse_audio_config);
 
-    while (getline(&line, &len, fd) != -1)
-    {
-        char key[256], valtmp[256];
-        if (sscanf(line, "%s = %s", key, valtmp) == 2)
-        {
-            char *value = strdup(valtmp);
-            if (strcmp(key, "address") == 0)
-            {
-                config->address = value;
-            }
-            else if (strcmp(key, "sops") == 0)
-            {
-                config->sops = strcmp("true", value) == 0;
-                free(value);
-            }
-            else
-            {
-                for (int i = 0; long_options[i].name != NULL; i++)
-                {
-                    if (strcmp(long_options[i].name, key) == 0)
-                    {
-                        if (long_options[i].has_arg == required_argument)
-                            parse_argument(long_options[i].val, value, config);
-                        else if (strcmp("true", value) == 0)
-                            parse_argument(long_options[i].val, NULL, config);
-                    }
-                }
-            }
-        }
-    }
+    config_lookup_bool(&libconfig, "host.sops", (int *)&config->sops);
+    config_lookup_bool(&libconfig, "host.localaudio", (int *)&config->localaudio);
+    config_lookup_bool(&libconfig, "host.quitappafter", (int *)&config->quitappafter);
+    config_lookup_bool(&libconfig, "host.viewonly", (int *)&config->viewonly);
+
+    config_lookup_string_dup(&libconfig, "decoder.platform", &config->decoder);
+    config_lookup_string_dup(&libconfig, "decoder.audio_backend", &config->audio_backend);
+    config_lookup_string_dup(&libconfig, "decoder.audio_device", &config->audio_device);
+
+    config_lookup_int(&libconfig, "debug_level", &config->debug_level);
+
+    config_destroy(&libconfig);
     return true;
 }
 
 void settings_write(char *filename, PCONFIGURATION config)
 {
-    FILE *fd = fopen(filename, "w");
-    if (fd == NULL)
+    struct config_t libconfig;
+    config_init(&libconfig);
+    int options = config_get_options(&libconfig);
+    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
+    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
+    config_set_options(&libconfig, options);
+
+    config_setting_t *root = config_root_setting(&libconfig);
+    config_setting_t *streaming = config_setting_add(root, "streaming", CONFIG_TYPE_GROUP);
+    config_setting_t *host = config_setting_add(root, "host", CONFIG_TYPE_GROUP);
+    config_setting_t *decoder = config_setting_add(root, "decoder", CONFIG_TYPE_GROUP);
+
+    write_config_int(streaming, "width", config->stream.width);
+    write_config_int(streaming, "height", config->stream.height);
+    write_config_int(streaming, "fps", config->stream.fps);
+    write_config_int(streaming, "bitrate", config->stream.bitrate);
+    write_config_int(streaming, "packetsize", config->stream.packetSize);
+    write_config_bool(host, "sops", config->sops);
+    write_config_bool(host, "localaudio", config->localaudio);
+    write_config_bool(host, "quitappafter", config->quitappafter);
+    write_config_bool(host, "viewonly", config->viewonly);
+    write_config_int(streaming, "rotate", config->rotate);
+    write_config_string(decoder, "platform", config->decoder);
+    write_config_string(decoder, "audio_backend", config->audio_backend);
+    if (!config->audio_device || !config->audio_device[0])
+        config_setting_remove(decoder, "audio_device");
+    else
+        write_config_string(decoder, "audio_device", config->audio_device);
+    write_config_enum(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
+
+    write_config_bool(streaming, "hdr", config->stream.enableHdr);
+    write_config_int(root, "debug_level", config->debug_level);
+
+    if (config_write_file(&libconfig, filename) != CONFIG_TRUE)
     {
         applog_e("Settings", "Can't open configuration file for writing: %s", filename);
-        return;
     }
-
-    if (config->stream.width != 1280)
-        write_config_int(fd, "width", config->stream.width);
-    if (config->stream.height != 720)
-        write_config_int(fd, "height", config->stream.height);
-    if (config->stream.fps != 60)
-        write_config_int(fd, "fps", config->stream.fps);
-    if (config->stream.bitrate != -1)
-        write_config_int(fd, "bitrate", config->stream.bitrate);
-    if (config->stream.packetSize != 1024)
-        write_config_int(fd, "packetsize", config->stream.packetSize);
-    if (!config->sops)
-        write_config_bool(fd, "sops", config->sops);
-    if (config->localaudio)
-        write_config_bool(fd, "localaudio", config->localaudio);
-    if (config->quitappafter)
-        write_config_bool(fd, "quitappafter", config->quitappafter);
-    if (config->viewonly)
-        write_config_bool(fd, "viewonly", config->viewonly);
-    if (config->rotate != 0)
-        write_config_int(fd, "rotate", config->rotate);
-    if (config->decoder && strcmp(config->decoder, "auto") != 0)
-        write_config_string(fd, "platform", config->decoder);
-    if (config->audio_backend && strcmp(config->audio_backend, "auto") != 0)
-        write_config_string(fd, "audio_backend", config->audio_backend);
-    if (config->audio_device != NULL)
-        write_config_string(fd, "audio", config->audio_device);
-    if (audio_config_valid(config->stream.audioConfiguration))
-        write_audio_config(fd, "surround", config->stream.audioConfiguration);
-    if (config->address != NULL)
-        write_config_string(fd, "address", config->address);
-    if (config->stream.enableHdr)
-        write_config_bool(fd, "hdr", true);
-    if (config->debug_level == 1)
-        write_config_bool(fd, "verbose", true);
-    else if (config->debug_level == 2)
-        write_config_bool(fd, "debug", true);
-
-    fclose(fd);
+    config_destroy(&libconfig);
 }
-
-void parse_argument(int c, char *value, PCONFIGURATION config)
-{
-    bool free_value = true;
-    switch (c)
-    {
-    case 'c':
-        config->stream.width = atoi(value);
-        break;
-    case 'd':
-        config->stream.height = atoi(value);
-        break;
-    case 'g':
-        config->stream.bitrate = atoi(value);
-        break;
-    case 'h':
-        config->stream.enableHdr = true;
-        break;
-    case 'i':
-        config->stream.packetSize = atoi(value);
-        break;
-    case 'l':
-        config->sops = false;
-        break;
-    case 'm':
-        config->audio_device = value;
-        free_value = false;
-        break;
-    case 'n':
-        config->localaudio = true;
-        break;
-    case SHORT_OPTION_AUDIO_BACKEND:
-        config->audio_backend = value;
-        free_value = false;
-        break;
-    case SHORT_OPTION_DECODER:
-        config->decoder = value;
-        free_value = false;
-        break;
-    case 'q':
-        config->config_file = value;
-        free_value = false;
-        break;
-    case 'r':
-        strcpy(config->key_dir, value);
-        break;
-    case 's':
-        config->stream.streamingRemotely = 1;
-        break;
-    case 't':
-        config->fullscreen = false;
-        break;
-    case SHORT_OPTION_SURROUND:
-        parse_audio_config(value, &config->stream.audioConfiguration);
-        break;
-    case 'v':
-        config->stream.fps = atoi(value);
-        break;
-    case 'x':
-        if (strcasecmp(value, "auto") == 0)
-            config->codec = CODEC_UNSPECIFIED;
-        else if (strcasecmp(value, "h264") == 0)
-            config->codec = CODEC_H264;
-        if (strcasecmp(value, "h265") == 0 || strcasecmp(value, "hevc") == 0)
-            config->codec = CODEC_HEVC;
-        break;
-    case 'y':
-        config->unsupported = true;
-        break;
-    case '1':
-        config->quitappafter = true;
-        break;
-    case '2':
-        config->viewonly = true;
-        break;
-    case '3':
-        config->rotate = atoi(value);
-        break;
-    case 'z':
-        config->debug_level = 1;
-        break;
-    case 'Z':
-        config->debug_level = 2;
-        break;
-    case 1:
-        if (config->address == NULL)
-        {
-            config->address = value;
-            free_value = false;
-        }
-    }
-    if (free_value && value)
-    {
-        free(value);
-    }
-}
-
 
 bool audio_config_valid(int config)
 {
     return find_ch_idx_by_config(config) >= 0;
 }
 
-void write_audio_config(FILE *fd, char *key, int config)
+const char *serialize_audio_config(int config)
 {
-    fprintf(fd, "%s = %s\n", key, audio_configs[find_ch_idx_by_config(config)].value);
+    return audio_configs[find_ch_idx_by_config(config)].value;
 }
 
-bool parse_audio_config(const char *value, int *config)
+int parse_audio_config(const char *value)
 {
-    int index = find_ch_idx_by_value(value);
+    int index = value ? find_ch_idx_by_value(value) : -1;
     if (index < 0)
-        return false;
-    *config = audio_configs[index].configuration;
-    return true;
+        index = 0;
+    return audio_configs[index].configuration;
 }
 
 int find_ch_idx_by_config(int config)

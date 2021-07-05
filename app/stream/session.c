@@ -176,7 +176,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
-                                        &vdec_delegate, adec, vdec, drFlags, config->audio_device, 0);
+                                        &vdec_delegate, adec, vdec, drFlags, (void *)config->audio_device, 0);
     if (startResult != 0)
     {
         _streaming_set_status(STREAMING_ERROR);
