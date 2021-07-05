@@ -32,6 +32,9 @@ option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 
 option(MDNS_BUILD_EXAMPLE "" OFF)
 
+option(BUILD_EXAMPLES "" OFF)
+option(BUILD_TESTS "" OFF)
+
 include(LintOptions)
 
 if (TARGET_WEBOS)
@@ -101,13 +104,13 @@ pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 find_package(Fontconfig REQUIRED)
 find_package(CURL REQUIRED)
-find_package(Config REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
+    add_subdirectory(third_party/libconfig)
     unset(BUILD_SHARED_LIBS)
 
     add_subdirectory(third_party/mbedtls)
@@ -135,6 +138,7 @@ elseif (TARGET_RASPI)
 
     find_package(Broadcom REQUIRED)
     find_package(MbedTLS REQUIRED)
+    find_package(Config REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -146,6 +150,7 @@ elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
     find_package(MbedTLS REQUIRED)
+    find_package(Config REQUIRED)
     
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -347,8 +352,7 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
     
-    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
+    target_link_libraries(moonlight PRIVATE config)
 elseif (TARGET_LGNC)
     target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE 
         APPID="${WEBOS_APPINFO_ID}"
@@ -448,7 +452,7 @@ if (TARGET_WEBOS OR TARGET_LGNC)
 
     add_custom_target(webos-package-moonlight
         COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e mdns
+        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e mdns -e include -e cmake
     )
 
     set_target_properties(moonlight PROPERTIES
