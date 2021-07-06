@@ -53,7 +53,8 @@ typedef struct _CONFIGURATION
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_STREAMING "streaming.conf"
-#define CONF_NAME_MOONLIGHT "config"
+#define CONF_NAME_MOONLIGHT "moonlight.conf"
+#define CONF_NAME_HOSTS "hosts.conf"
 
 #define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | (h & 0xFFFF))
 

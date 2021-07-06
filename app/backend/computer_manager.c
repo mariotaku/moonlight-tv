@@ -188,7 +188,7 @@ int serverlist_compare_uuid(PSERVER_LIST other, const void *v)
 
 void pcmanager_load_known_hosts()
 {
-    char *confdir = path_pref(), *conffile = path_join(confdir, "hosts.conf");
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
     free(confdir);
     config_t config;
     config_init(&config);
@@ -255,7 +255,7 @@ void pcmanager_save_known_hosts()
             config_setting_set_bool_simple(item, "selected", true);
         }
     }
-    char *confdir = path_pref(), *conffile = path_join(confdir, "hosts.conf");
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
     free(confdir);
     config_write_file(&config, conffile);
 cleanup:
