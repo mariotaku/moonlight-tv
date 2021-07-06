@@ -452,7 +452,7 @@ if (TARGET_WEBOS OR TARGET_LGNC)
 
     add_custom_target(webos-package-moonlight
         COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e mdns -e include -e cmake
+        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e mdns -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
     )
 
     set_target_properties(moonlight PROPERTIES
