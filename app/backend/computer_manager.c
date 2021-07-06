@@ -7,9 +7,12 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <pthread.h>
 #include <signal.h>
+
+#include <libconfig.h>
 
 #include "libgamestream/errors.h"
 #include "error_manager.h"
@@ -23,6 +26,13 @@
 #include "app.h"
 
 #include "util/memlog.h"
+#include "util/libconfig_ext.h"
+
+static void strlower(char *p)
+{
+    for (; *p; ++p)
+        *p = tolower(*p);
+}
 
 static pthread_t computer_manager_polling_thread;
 
@@ -178,35 +188,33 @@ int serverlist_compare_uuid(PSERVER_LIST other, const void *v)
 
 void pcmanager_load_known_hosts()
 {
-    char *confdir = path_pref(), *conffile = path_join(confdir, "known_hosts");
-    FILE *fd = fopen(conffile, "r");
+    char *confdir = path_pref(), *conffile = path_join(confdir, "hosts.conf");
     free(confdir);
-    free(conffile);
-    if (fd == NULL)
+    config_t config;
+    config_init(&config);
+    int options = config_get_options(&config);
+    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
+    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
+    config_set_options(&config, options);
+    if (config_read_file(&config, conffile) != CONFIG_TRUE)
     {
-        return;
+        goto cleanup;
     }
-
-    char *line = NULL;
-    size_t len = 0;
-
-    while (getline(&line, &len, fd) != -1)
+    config_setting_t *root = config_root_setting(&config);
+    for (int i = 0, j = config_setting_length(root); i < j; i++)
     {
-        if (strlen(line) >= 150)
+        config_setting_t *item = config_setting_get_elem(root, i);
+        const char *mac = config_setting_get_string_simple(item, "mac"),
+                   *hostname = config_setting_get_string_simple(item, "hostname"),
+                   *address = config_setting_get_string_simple(item, "address");
+        if (!mac || !hostname || !address)
         {
             continue;
         }
-        // UUID: 37 including NUL
-        // MAC: 17 including NUL
-        // HOSTNAME: 17 including NUL
-        // ADDRESS: 57 including NUL
-        char uuid[150], mac[150], hostname[150], address[150];
-        if (sscanf(line, "%s %s %s %s", uuid, mac, hostname, address) != 4)
-        {
-            continue;
-        }
+        char *uuid = strdup(config_setting_name(item));
+        strlower(uuid);
         PSERVER_DATA server = serverdata_new();
-        server->uuid = strdup(uuid);
+        server->uuid = uuid;
         server->mac = strdup(mac);
         server->hostname = strdup(hostname);
         server->serverInfo.address = strdup(address);
@@ -217,19 +225,20 @@ void pcmanager_load_known_hosts()
         node->known = true;
         computer_list = serverlist_append(computer_list, node);
     }
-    fclose(fd);
+cleanup:
+    config_destroy(&config);
+    free(conffile);
 }
 
 void pcmanager_save_known_hosts()
 {
-    char *confdir = path_pref(), *conffile = path_join(confdir, "known_hosts");
-    FILE *fd = fopen(conffile, "w");
-    free(confdir);
-    free(conffile);
-    if (fd == NULL)
-    {
-        return;
-    }
+    config_t config;
+    config_init(&config);
+    int options = config_get_options(&config);
+    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
+    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
+    config_set_options(&config, options);
+    config_setting_t *root = config_root_setting(&config);
     for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
     {
         if (!cur->server || !cur->known)
@@ -237,9 +246,21 @@ void pcmanager_save_known_hosts()
             continue;
         }
         const SERVER_DATA *server = cur->server;
-        fprintf(fd, "%s %s %s %s\n", server->uuid, server->mac, server->hostname, server->serverInfo.address);
+        config_setting_t *item = config_setting_add(root, server->uuid, CONFIG_TYPE_GROUP);
+        config_setting_set_string_simple(item, "mac", server->mac);
+        config_setting_set_string_simple(item, "hostname", server->hostname);
+        config_setting_set_string_simple(item, "address", server->serverInfo.address);
+        if (app_configuration->address && strcmp(app_configuration->address, server->serverInfo.address) == 0)
+        {
+            config_setting_set_bool_simple(item, "selected", true);
+        }
     }
-    fclose(fd);
+    char *confdir = path_pref(), *conffile = path_join(confdir, "hosts.conf");
+    free(confdir);
+    config_write_file(&config, conffile);
+cleanup:
+    config_destroy(&config);
+    free(conffile);
 }
 
 PSERVER_DATA serverdata_new()

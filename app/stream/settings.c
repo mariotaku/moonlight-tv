@@ -13,6 +13,7 @@
 #include "util/path.h"
 #include "util/logging.h"
 #include "util/memlog.h"
+#include "util/libconfig_ext.h"
 
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);
@@ -23,53 +24,6 @@ static int find_ch_idx_by_value(const char *value);
 static const char *serialize_audio_config(int config);
 static int parse_audio_config(const char *value);
 
-static inline int config_setting_set_enum(config_setting_t *setting, int value, const char *(*converter)(int))
-{
-    return config_setting_set_string(setting, converter(value));
-}
-
-static inline int config_lookup_enum(const config_t *config, const char *path, int *value, int (*converter)(const char *))
-{
-    int ret;
-    const char *str = NULL;
-    if ((ret = config_lookup_string(config, path, &str)) == CONFIG_TRUE)
-    {
-        *value = converter(str);
-    }
-    return ret;
-}
-
-static inline int config_lookup_string_dup(const config_t *config, const char *path, const char **value)
-{
-    int ret;
-    if ((ret = config_lookup_string(config, path, value)) == CONFIG_TRUE && *value)
-    {
-        *value = strdup(*value);
-    }
-    return ret;
-}
-
-static inline void write_config_string(config_setting_t *parent, const char *key, const char *value)
-{
-    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_STRING);
-    config_setting_set_string(setting, value);
-}
-static inline void write_config_int(config_setting_t *parent, const char *key, int value)
-{
-    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_INT);
-    config_setting_set_int(setting, value);
-}
-static inline void write_config_bool(config_setting_t *parent, const char *key, bool value)
-{
-    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_BOOL);
-    config_setting_set_bool(setting, value);
-}
-
-static inline int write_config_enum(config_setting_t *parent, const char *key, int value, const char *(*converter)(int))
-{
-    config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_STRING);
-    return config_setting_set_enum(setting, value, converter);
-}
 
 struct audio_config
 {
@@ -216,26 +170,26 @@ void settings_write(char *filename, PCONFIGURATION config)
     config_setting_t *host = config_setting_add(root, "host", CONFIG_TYPE_GROUP);
     config_setting_t *decoder = config_setting_add(root, "decoder", CONFIG_TYPE_GROUP);
 
-    write_config_int(streaming, "width", config->stream.width);
-    write_config_int(streaming, "height", config->stream.height);
-    write_config_int(streaming, "fps", config->stream.fps);
-    write_config_int(streaming, "bitrate", config->stream.bitrate);
-    write_config_int(streaming, "packetsize", config->stream.packetSize);
-    write_config_bool(host, "sops", config->sops);
-    write_config_bool(host, "localaudio", config->localaudio);
-    write_config_bool(host, "quitappafter", config->quitappafter);
-    write_config_bool(host, "viewonly", config->viewonly);
-    write_config_int(streaming, "rotate", config->rotate);
-    write_config_string(decoder, "platform", config->decoder);
-    write_config_string(decoder, "audio_backend", config->audio_backend);
+    config_setting_set_int_simple(streaming, "width", config->stream.width);
+    config_setting_set_int_simple(streaming, "height", config->stream.height);
+    config_setting_set_int_simple(streaming, "fps", config->stream.fps);
+    config_setting_set_int_simple(streaming, "bitrate", config->stream.bitrate);
+    config_setting_set_int_simple(streaming, "packetsize", config->stream.packetSize);
+    config_setting_set_bool_simple(host, "sops", config->sops);
+    config_setting_set_bool_simple(host, "localaudio", config->localaudio);
+    config_setting_set_bool_simple(host, "quitappafter", config->quitappafter);
+    config_setting_set_bool_simple(host, "viewonly", config->viewonly);
+    config_setting_set_int_simple(streaming, "rotate", config->rotate);
+    config_setting_set_string_simple(decoder, "platform", config->decoder);
+    config_setting_set_string_simple(decoder, "audio_backend", config->audio_backend);
     if (!config->audio_device || !config->audio_device[0])
         config_setting_remove(decoder, "audio_device");
     else
-        write_config_string(decoder, "audio_device", config->audio_device);
-    write_config_enum(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
+        config_setting_set_string_simple(decoder, "audio_device", config->audio_device);
+    config_setting_set_enum_simple(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
 
-    write_config_bool(streaming, "hdr", config->stream.enableHdr);
-    write_config_int(root, "debug_level", config->debug_level);
+    config_setting_set_bool_simple(streaming, "hdr", config->stream.enableHdr);
+    config_setting_set_int_simple(root, "debug_level", config->debug_level);
 
     if (config_write_file(&libconfig, filename) != CONFIG_TRUE)
     {

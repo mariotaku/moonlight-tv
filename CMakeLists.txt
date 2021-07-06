@@ -225,6 +225,7 @@ set(SOURCES
     app/util/navkey.c
     app/util/debugprint.c
     app/util/logging.c
+    app/util/libconfig_ext.c
 )
 
 if (SDL2_IMAGE_FOUND)
