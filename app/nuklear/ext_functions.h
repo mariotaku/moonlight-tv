@@ -44,6 +44,7 @@ NK_API nk_bool nk_checkbox_label_std(struct nk_context*, const char* label, bool
 
 #define nk_list_view_begin_s(ctx, out, id, flags, row_height, row_count) nk_list_view_begin(ctx, out, id, flags, (row_height) * NK_UI_SCALE, row_count)
 
+#define nk_font_atlas_add_default_s(atlas, height, config) nk_font_atlas_add_default(atlas, (height) * NK_UI_SCALE, config)
 #define nk_font_atlas_add_from_file_s(atlas, file_path, height, config) nk_font_atlas_add_from_file(atlas, file_path, (height) * NK_UI_SCALE, config)
 #define nk_font_atlas_add_from_memory_s(atlas, memory, size, height, config) nk_font_atlas_add_from_memory(atlas, memory, size, (height) * NK_UI_SCALE, config)
 
