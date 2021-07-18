@@ -104,17 +104,21 @@ pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 find_package(Fontconfig REQUIRED)
 find_package(CURL REQUIRED)
+find_package(Config REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
+    unset(BUILD_SHARED_LIBS)
+    set(BUILD_SHARED_LIBS OFF)
     add_subdirectory(third_party/libconfig)
     unset(BUILD_SHARED_LIBS)
 
     add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis)
+    add_subdirectory(system/webos/prebuilts)
 
     pkg_check_modules(GLES REQUIRED egl glesv2)
     pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -130,6 +134,7 @@ elseif (TARGET_LGNC)
     set(DECODER_LGNC_STATIC TRUE)
     add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis)
+    add_subdirectory(system/webos/prebuilts)
 
     pkg_check_modules(GLES REQUIRED egl glesv2)
 elseif (TARGET_RASPI)
@@ -138,7 +143,6 @@ elseif (TARGET_RASPI)
 
     find_package(Broadcom REQUIRED)
     find_package(MbedTLS REQUIRED)
-    find_package(Config REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -150,7 +154,6 @@ elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
     find_package(MbedTLS REQUIRED)
-    find_package(Config REQUIRED)
     
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -309,6 +312,9 @@ target_link_libraries(moonlight PRIVATE
  Fontconfig::Fontconfig ${CURL_LIBRARIES}
 )
 
+target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
+
 macro(moonlight_add_module)
     set(multiValueArgs TARGETS)
     set(oneValueArgs UNUSED)
@@ -352,8 +358,6 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
-    
-    target_link_libraries(moonlight PRIVATE config)
 elseif (TARGET_LGNC)
     target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE 
         APPID="${WEBOS_APPINFO_ID}"
@@ -395,8 +399,6 @@ elseif(TARGET_RASPI)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
@@ -420,8 +422,6 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
     
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
