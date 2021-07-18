@@ -306,11 +306,8 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 target_link_libraries(moonlight PRIVATE
  m ${CMAKE_DL_LIBS} Threads::Threads
  moonlight-common-c gamestream mdns
- Fontconfig::Fontconfig ${CURL_LIBRARIES}
+ Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES}
 )
-
-target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
 
 macro(moonlight_add_module)
     set(multiValueArgs TARGETS)
