@@ -93,14 +93,18 @@ APP_WINDOW_CONTEXT app_window_create()
     applog_d("SDL", "SDL_DisplayMode(w=%d, h=%d)", dm.w, dm.h);
     app_window_width = dm.w;
     app_window_height = dm.h;
+#if TARGET_WEBOS || TARGET_LGNC
+    window_flags |= SDL_WINDOW_FULLSCREEN;
+#else
     window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+#endif
     applog_d("SDL", "Selected video driver: %s", SDL_GetCurrentVideoDriver());
 #else
     app_window_width = WINDOW_WIDTH;
     app_window_height = WINDOW_HEIGHT;
     window_flags |= SDL_WINDOW_RESIZABLE;
 #endif
-    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                            app_window_width, app_window_height, window_flags);
     if (!win)
     {
