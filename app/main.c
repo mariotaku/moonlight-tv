@@ -176,9 +176,9 @@ void app_gs_client_destroy()
     {
         gs_destroy(app_gs_client);
         app_gs_client = NULL;
-        pthread_mutex_lock(&app_gs_client_mutex);
-        // Further calls to obtain gs client will be locked
     }
+    // Further calls to obtain gs client will be locked
+    pthread_mutex_lock(&app_gs_client_mutex);
 }
 
 bool app_gs_client_ready()
