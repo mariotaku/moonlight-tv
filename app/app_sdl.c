@@ -85,6 +85,11 @@ APP_WINDOW_CONTEXT app_window_create()
         dm.w = 1920;
         dm.h = 1080;
     }
+    if (!dm.w || !dm.h)
+    {
+        dm.w = 1280;
+        dm.h = 720;
+    }
     applog_d("SDL", "SDL_DisplayMode(w=%d, h=%d)", dm.w, dm.h);
     app_window_width = dm.w;
     app_window_height = dm.h;

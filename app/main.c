@@ -41,6 +41,8 @@ int main(int argc, char *argv[])
     app_loginit();
 #if TARGET_WEBOS || TARGET_LGNC
     app_logfile = fopen("/tmp/" APPID ".log", "a+");
+    if (!app_logfile)
+        app_logfile = stdout;
     setvbuf(app_logfile, NULL, _IONBF, 0);
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
         REDIR_STDOUT(APPID);

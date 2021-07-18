@@ -25,6 +25,8 @@ static FILE *logfile()
     char filename[64];
     snprintf(filename, sizeof(filename), "/tmp/memlog_%d.log", getpid());
     f = fopen(filename, "a");
+    if (!f)
+        f = stdout;
     setvbuf(f, NULL, _IONBF, 0);
     return f;
 }

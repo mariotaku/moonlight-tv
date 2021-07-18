@@ -24,7 +24,6 @@ static int find_ch_idx_by_value(const char *value);
 static const char *serialize_audio_config(int config);
 static int parse_audio_config(const char *value);
 
-
 struct audio_config
 {
     int configuration;

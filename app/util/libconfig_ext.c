@@ -1,5 +1,6 @@
 #include "libconfig_ext.h"
 
+#include <dlfcn.h>
 #include <string.h>
 
 int config_setting_set_enum(config_setting_t *setting, int value, const char *(*converter)(int))
@@ -66,4 +67,20 @@ int config_setting_set_enum_simple(config_setting_t *parent, const char *key, in
 {
     config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_STRING);
     return config_setting_set_enum(setting, value, converter);
+}
+
+int config_get_options(const config_t *config)
+{
+    int (*fn)(config_t *) = dlsym(RTLD_NEXT, "config_get_options");
+    if (!fn)
+        return 0;
+    return fn(config);
+}
+
+void config_set_options(config_t *config, int options)
+{
+    void (*fn)(config_t *, int) = dlsym(RTLD_NEXT, "config_set_options");
+    if (!fn)
+        return;
+    fn(config, options);
 }
