@@ -74,6 +74,7 @@ bool settings_window_close()
 
 bool settings_window(struct nk_context *ctx)
 {
+    bool request_close = false;
     struct nk_rect s = nk_rect(0, 0, ui_display_width, ui_display_height);
     nk_style_push_vec2(ctx, &ctx->style.window.padding, nk_vec2_s(20, 15));
     nk_style_push_vec2(ctx, &ctx->style.window.scrollbar_size, nk_vec2_s(2, 0));
@@ -82,14 +83,26 @@ bool settings_window(struct nk_context *ctx)
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         float content_height = content_size.y;
 
-        nk_layout_row_dynamic_s(ctx, UI_TITLE_BAR_HEIGHT_DP, 1);
+        nk_layout_row_template_begin_s(ctx, UI_TITLE_BAR_HEIGHT_DP);
+        nk_layout_row_template_push_variable_s(ctx, 10);
+        nk_layout_row_template_push_static_s(ctx, UI_TITLE_BAR_HEIGHT_DP);
+        nk_layout_row_template_end(ctx);
         content_height -= nk_widget_height(ctx);
         content_height -= ctx->style.window.spacing.y;
-        nk_label(ctx, "Settings", NK_TEXT_LEFT);
+        nk_label(ctx, WINDOW_TITLE, NK_TEXT_LEFT);
+
+        nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
+        if (nk_button_image(ctx, sprites_ui.ic_close))
+        {
+            request_close = true;
+        }
+        nk_style_pop_vec2(ctx);
 
         content_height -= UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
         content_height -= ctx->style.window.spacing.y;
+        nk_layout_row_dynamic_s(ctx, 1, 1);
         struct nk_rect content_bounds = nk_widget_bounds(ctx);
+        nk_spacing(ctx, 1);
 
         static const float pane_ratio[] = {0.33, 0.67};
         nk_layout_row(ctx, NK_DYNAMIC, content_height, 2, pane_ratio);
@@ -131,7 +144,7 @@ bool settings_window(struct nk_context *ctx)
         nk_style_pop_style_item(ctx);
 
         nk_stroke_line(&ctx->current->buffer, content_bounds.x, content_bounds.y, content_bounds.x + content_bounds.w,
-                       content_bounds.y, 1 * NK_UI_SCALE, ctx->style.text.color);
+                       content_bounds.y, content_bounds.h, ctx->style.text.color);
         if (!settings_showing_combo)
         {
             settings_draw_highlight(ctx);
@@ -142,7 +155,7 @@ bool settings_window(struct nk_context *ctx)
     nk_style_pop_vec2(ctx);
     nk_style_pop_vec2(ctx);
     // Why Nuklear why, the button looks like "close" but it actually "hide"
-    if (nk_window_is_hidden(ctx, WINDOW_TITLE))
+    if (nk_window_is_hidden(ctx, WINDOW_TITLE) || request_close)
     {
         nk_window_close(ctx, WINDOW_TITLE);
         return false;
