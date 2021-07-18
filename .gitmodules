@@ -28,6 +28,3 @@
 [submodule "system/webos/tv-native-apis"]
 	path = system/webos/tv-native-apis
 	url = https://github.com/webosbrew/tv-native-apis.git
-[submodule "third_party/libconfig"]
-	path = third_party/libconfig
-	url = https://github.com/hyperrealm/libconfig.git
