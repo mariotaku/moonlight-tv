@@ -48,6 +48,14 @@ void config_setting_set_int_simple(config_setting_t *parent, const char *key, in
     config_setting_set_int(setting, value);
 }
 
+bool config_setting_get_bool_simple(config_setting_t *setting, const char *name)
+{
+    config_setting_t *member = config_setting_get_member(setting, name);
+    if (!member)
+        return false;
+    return config_setting_get_bool(member);
+}
+
 void config_setting_set_bool_simple(config_setting_t *parent, const char *key, bool value)
 {
     config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_BOOL);

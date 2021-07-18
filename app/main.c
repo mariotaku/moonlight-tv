@@ -83,7 +83,8 @@ int main(int argc, char *argv[])
     ui_display_size(app_window_width, app_window_height);
     streaming_display_size(app_window_width, app_window_height);
     {
-        FcInit();
+        FcBool initRet = FcInit();
+        assert(initRet);
         FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
 
         //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you

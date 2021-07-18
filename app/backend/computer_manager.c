@@ -224,6 +224,10 @@ void pcmanager_load_known_hosts()
         node->server = server;
         node->known = true;
         computer_list = serverlist_append(computer_list, node);
+        if (config_setting_get_bool_simple(item, "selected"))
+        {
+            app_configuration->address = strdup(address);
+        }
     }
 cleanup:
     config_destroy(&config);
