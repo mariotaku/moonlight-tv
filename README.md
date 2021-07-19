@@ -31,7 +31,7 @@ Or download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/
 
 ## [Gamepad Setup](https://github.com/mariotaku/moonlight-tv/wiki/Gamepad-Setup)
 
-## Building for webOS
+## (For developers) Building for webOS
 
  - Follow instructions [here](https://github.com/webosbrew/meta-lg-webos-ndk) to setup NDK
  - Create a directory e.g. `build` in project root directory, and `cd` into it.
