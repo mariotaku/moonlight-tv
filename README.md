@@ -19,7 +19,11 @@ It was originally designed for LG webOS TVs, but may support running on more dev
 
 ## Download
 
-Download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/releases/latest)
+### For webOS
+
+[Easy installation with dev-manager-desktop](https://github.com/webosbrew/dev-manager-desktop) (recommended)
+
+Or download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/releases/latest)
 
 ## [Installation Guide](https://github.com/mariotaku/moonlight-tv/wiki/Installation-Guide)
 
