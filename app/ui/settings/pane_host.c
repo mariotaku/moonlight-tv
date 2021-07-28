@@ -16,8 +16,6 @@ static bool _settings_pane_host(struct nk_context *ctx, bool *showing_combo)
     int item_index = 0;
 
     nk_layout_row_dynamic_s(ctx, 25, 1);
-    nk_label(ctx, "Host Settings", NK_TEXT_LEFT);
-    nk_layout_row_dynamic_s(ctx, 25, 1);
 
     int w = app_configuration->stream.width, h = app_configuration->stream.height,
         fps = app_configuration->stream.fps;
@@ -46,16 +44,13 @@ static bool _settings_pane_host(struct nk_context *ctx, bool *showing_combo)
     nk_checkbox_label_std(ctx, "Play audio on host PC", &app_configuration->localaudio);
 
     settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
-    nk_checkbox_label_std(ctx, "Disable all input processing (view-only mode)", &app_configuration->viewonly);
-
-    settings_item_update_selected_bounds(ctx, item_index++, &item_bounds);
     nk_checkbox_label_std(ctx, "HDR (Experimental)", &app_configuration->stream.enableHdr);
     return true;
 }
 
 int _settings_pane_host_itemcount()
 {
-    return 4;
+    return 3;
 }
 
 static void _onselect(struct nk_context *ctx)

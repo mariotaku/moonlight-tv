@@ -360,6 +360,11 @@ bool app_render_queue_submit(void *data)
     return true;
 }
 
+void app_set_mouse_grab(bool grab)
+{
+    SDL_SetRelativeMouseMode(grab ? SDL_TRUE : SDL_FALSE);
+}
+
 void fps_cap(int start)
 {
     int tickdiff = SDL_GetTicks() - start;

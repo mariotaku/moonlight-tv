@@ -216,6 +216,7 @@ set(SOURCES
     app/ui/settings/window.c
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
+    app/ui/settings/pane_input.c
     app/ui/settings/pane_adv_codec.c
     app/ui/settings/pane_about.c
     app/ui/settings/statbar.c

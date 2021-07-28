@@ -27,6 +27,7 @@ typedef void (*settings_panel_voidfn)(struct nk_context *);
 
 extern struct settings_pane settings_pane_basic;
 extern struct settings_pane settings_pane_host;
+extern struct settings_pane settings_pane_input;
 extern struct settings_pane settings_pane_adv_codec;
 extern struct settings_pane settings_pane_about;
 

@@ -49,6 +49,7 @@ typedef struct _CONFIGURATION
   bool unsupported;
   bool quitappafter;
   bool viewonly;
+  bool absmouse;
   enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 

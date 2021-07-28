@@ -176,6 +176,7 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
                 ui_stream_render->renderCleanup();
                 app_force_redraw = false;
             }
+            app_set_mouse_grab(false);
             ui_stream_render = NULL;
             return true;
         case USER_SDL_FRAME:

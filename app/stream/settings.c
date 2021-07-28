@@ -15,6 +15,12 @@
 #include "util/memlog.h"
 #include "util/libconfig_ext.h"
 
+#if TARGET_WEBOS
+#define DEFAULT_ABSMOUSE true
+#else
+#define DEFAULT_ABSMOUSE false
+#endif
+
 static void settings_initialize(char *confdir, PCONFIGURATION config);
 static bool settings_read(char *filename, PCONFIGURATION config);
 static void settings_write(char *filename, PCONFIGURATION config);
@@ -85,6 +91,7 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->viewonly = false;
     config->rotate = 0;
     config->codec = CODEC_UNSPECIFIED;
+    config->absmouse = DEFAULT_ABSMOUSE;
 
     config->mapping = NULL;
     sprintf(config->key_dir, "%s/%s", confdir, "key");
@@ -143,7 +150,9 @@ bool settings_read(char *filename, PCONFIGURATION config)
     config_lookup_bool(&libconfig, "host.sops", (int *)&config->sops);
     config_lookup_bool(&libconfig, "host.localaudio", (int *)&config->localaudio);
     config_lookup_bool(&libconfig, "host.quitappafter", (int *)&config->quitappafter);
+
     config_lookup_bool(&libconfig, "host.viewonly", (int *)&config->viewonly);
+    config_lookup_bool(&libconfig, "input.absmouse", (int *)&config->absmouse);
 
     config_lookup_string_dup(&libconfig, "decoder.platform", &config->decoder);
     config_lookup_string_dup(&libconfig, "decoder.audio_backend", &config->audio_backend);
@@ -167,6 +176,7 @@ void settings_write(char *filename, PCONFIGURATION config)
     config_setting_t *root = config_root_setting(&libconfig);
     config_setting_t *streaming = config_setting_add(root, "streaming", CONFIG_TYPE_GROUP);
     config_setting_t *host = config_setting_add(root, "host", CONFIG_TYPE_GROUP);
+    config_setting_t *input = config_setting_add(root, "input", CONFIG_TYPE_GROUP);
     config_setting_t *decoder = config_setting_add(root, "decoder", CONFIG_TYPE_GROUP);
 
     config_setting_set_int_simple(streaming, "width", config->stream.width);
@@ -178,6 +188,7 @@ void settings_write(char *filename, PCONFIGURATION config)
     config_setting_set_bool_simple(host, "localaudio", config->localaudio);
     config_setting_set_bool_simple(host, "quitappafter", config->quitappafter);
     config_setting_set_bool_simple(host, "viewonly", config->viewonly);
+    config_setting_set_bool_simple(input, "absmouse", config->absmouse);
     config_setting_set_int_simple(streaming, "rotate", config->rotate);
     config_setting_set_string_simple(decoder, "platform", config->decoder);
     config_setting_set_string_simple(decoder, "audio_backend", config->audio_backend);

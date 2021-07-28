@@ -30,3 +30,5 @@ bool app_render_queue_submit(void *);
 GS_CLIENT app_gs_client_obtain();
 
 bool app_gs_client_ready();
+
+void app_set_mouse_grab(bool);

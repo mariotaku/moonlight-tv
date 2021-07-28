@@ -221,16 +221,16 @@ thread_cleanup:
 
 void streaming_enter_fullscreen()
 {
-    if (!video_presenter_cb)
-        return;
-    video_presenter_cb->enterFullScreen();
+    app_set_mouse_grab(!app_configuration->absmouse);
+    if (video_presenter_cb)
+        video_presenter_cb->enterFullScreen();
 }
 
 void streaming_enter_overlay(int x, int y, int w, int h)
 {
-    if (!video_presenter_cb)
-        return;
-    video_presenter_cb->enterOverlay(x, y, w, h);
+    app_set_mouse_grab(false);
+    if (video_presenter_cb)
+        video_presenter_cb->enterOverlay(x, y, w, h);
 }
 
 void _streaming_set_status(STREAMING_STATUS status)
