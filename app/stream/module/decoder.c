@@ -43,7 +43,7 @@ DECODER_INFO decoder_info;
 static void dlerror_log();
 static bool checkinit(DECODER system, int libidx, int argc, char *argv[]);
 
-PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(char *audio_device);
+PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device);
 
 static bool decoder_try_init(DECODER ptype, int argc, char *argv[])
 {
@@ -125,7 +125,7 @@ PDECODER_RENDERER_CALLBACKS decoder_get_video()
     return &decoder_callbacks_dummy;
 }
 
-PAUDIO_RENDERER_CALLBACKS decoder_get_audio(char *audio_device)
+PAUDIO_RENDERER_CALLBACKS decoder_get_audio(const char *audio_device)
 {
     if (decoder_current == DECODER_NONE)
         return NULL;

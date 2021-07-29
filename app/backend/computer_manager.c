@@ -183,7 +183,7 @@ void *_computer_manager_server_update_action(PSERVER_DATA data)
 
 int serverlist_compare_uuid(PSERVER_LIST other, const void *v)
 {
-    return strcmp(v, other->server->uuid);
+    return strcasecmp(v, other->server->uuid);
 }
 
 void pcmanager_load_known_hosts()
@@ -212,7 +212,6 @@ void pcmanager_load_known_hosts()
             continue;
         }
         char *uuid = strdup(config_setting_name(item));
-        strlower(uuid);
         PSERVER_DATA server = serverdata_new();
         server->uuid = uuid;
         server->mac = strdup(mac);
@@ -250,7 +249,14 @@ void pcmanager_save_known_hosts()
             continue;
         }
         const SERVER_DATA *server = cur->server;
-        config_setting_t *item = config_setting_add(root, server->uuid, CONFIG_TYPE_GROUP);
+        char *uuid = strdup(server->uuid);
+        strlower(uuid);
+        config_setting_t *item = config_setting_add(root, uuid, CONFIG_TYPE_GROUP);
+        free(uuid);
+        if (!item)
+        {
+            continue;
+        }
         config_setting_set_string_simple(item, "mac", server->mac);
         config_setting_set_string_simple(item, "hostname", server->hostname);
         config_setting_set_string_simple(item, "address", server->serverInfo.address);

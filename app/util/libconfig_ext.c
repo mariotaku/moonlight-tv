@@ -37,16 +37,18 @@ const char *config_setting_get_string_simple(config_setting_t *setting, const ch
     return config_setting_get_string(member);
 }
 
-void config_setting_set_string_simple(config_setting_t *parent, const char *key, const char *value)
+int config_setting_set_string_simple(config_setting_t *parent, const char *key, const char *value)
 {
     config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_STRING);
-    config_setting_set_string(setting, value);
+    if (!setting) return 0;
+    return config_setting_set_string(setting, value);
 }
 
-void config_setting_set_int_simple(config_setting_t *parent, const char *key, int value)
+int config_setting_set_int_simple(config_setting_t *parent, const char *key, int value)
 {
     config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_INT);
-    config_setting_set_int(setting, value);
+    if (!setting) return 0;
+    return config_setting_set_int(setting, value);
 }
 
 bool config_setting_get_bool_simple(config_setting_t *setting, const char *name)
@@ -57,10 +59,11 @@ bool config_setting_get_bool_simple(config_setting_t *setting, const char *name)
     return config_setting_get_bool(member);
 }
 
-void config_setting_set_bool_simple(config_setting_t *parent, const char *key, bool value)
+int config_setting_set_bool_simple(config_setting_t *parent, const char *key, bool value)
 {
     config_setting_t *setting = config_setting_add(parent, key, CONFIG_TYPE_BOOL);
-    config_setting_set_bool(setting, value);
+    if (!setting) return 0;
+    return config_setting_set_bool(setting, value);
 }
 
 int config_setting_set_enum_simple(config_setting_t *parent, const char *key, int value, const char *(*converter)(int))
@@ -71,7 +74,7 @@ int config_setting_set_enum_simple(config_setting_t *parent, const char *key, in
 
 int config_get_options(const config_t *config)
 {
-    int (*fn)(config_t *) = dlsym(RTLD_NEXT, "config_get_options");
+    int (*fn)(const config_t *) = dlsym(RTLD_NEXT, "config_get_options");
     if (!fn)
         return 0;
     return fn(config);

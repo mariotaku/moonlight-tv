@@ -87,7 +87,7 @@ static void *module_sym(char *fmt, AUDIO audio, int libidx)
     return dlsym(RTLD_DEFAULT, symbol);
 }
 
-PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(char *audio_device)
+PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device)
 {
     if (audio_current < 0)
         return NULL;
