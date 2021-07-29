@@ -1,4 +1,5 @@
 #include "stream/input/sdlinput.h"
+#include "stream/input/absinput.h"
 
 #include <Limelight.h>
 #include <SDL.h>
@@ -84,6 +85,8 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event)
         return;
     }
 
+    if (absinput_no_control)
+        return;
     LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
                                gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
 }
@@ -119,6 +122,9 @@ void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event)
     default:
         return;
     }
+
+    if (absinput_no_control)
+        return;
     LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
                                gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
 }
