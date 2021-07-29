@@ -156,7 +156,7 @@ static const AUDIO audio_orders[] = {
 #if TARGET_WEBOS
     AUDIO_NDL, AUDIO_PULSE, AUDIO_SDL
 #else
-    AUDIO_PULSE, AUDIO_ALSA, AUDIO_SDL
+    AUDIO_ALSA, AUDIO_PULSE, AUDIO_SDL
 #endif
 };
 static const size_t audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);

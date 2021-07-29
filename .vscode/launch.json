@@ -30,12 +30,12 @@
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
+                    "ignoreFailures": false
                 },
                 {
                     "description": "Ignore SIGPIPE",
-                    "text": "-exec handle SIGPIPE nostop pass",
-                    "ignoreFailures": true
+                    "text": "handle SIGPIPE nostop pass",
+                    "ignoreFailures": false
                 }
             ]
         },

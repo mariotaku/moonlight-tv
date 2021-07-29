@@ -111,8 +111,6 @@ static void alsa_renderer_decode_and_play_sample(char* data, int length) {
       snd_pcm_prepare(handle);
     } else if (rc < 0)
       applog_w("ALSA", "ALSA error from writei: %d\n", rc);
-    else if (decodeLen != rc)
-      applog_w("ALSA", "ALSA shortm write, write %d frames\n", rc);
   } else {
       applog_w("ALSA", "Opus error from decode: %d\n", decodeLen);
   }
