@@ -496,26 +496,8 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 
 void sdlinput_handle_text_event(SDL_TextInputEvent *event)
 {
-    char ch = event->text[0];
-    if (!ch)
+    size_t len = strlen(event->text);
+    if (!len)
         return;
-    if ((ch >= '0' && ch <= '9'))
-    {
-        LiSendKeyboardEvent(ch, KEY_ACTION_DOWN, 0);
-        LiSendKeyboardEvent(ch, KEY_ACTION_UP, 0);
-    }
-    else if (ch >= 'a' && ch <= 'z')
-    {
-        LiSendKeyboardEvent(ch - 0x20, KEY_ACTION_DOWN, 0);
-        LiSendKeyboardEvent(ch - 0x20, KEY_ACTION_UP, 0);
-    }
-    else if (ch >= 'A' && ch <= 'Z')
-    {
-        LiSendKeyboardEvent(ch, KEY_ACTION_DOWN, MODIFIER_SHIFT);
-        LiSendKeyboardEvent(ch, KEY_ACTION_UP, MODIFIER_SHIFT);
-    }
-    else
-    {
-        applog_d("SDL", "Input text %s", event->text);
-    }
+    LiSendUnicodeEvent(event->text, len);
 }
