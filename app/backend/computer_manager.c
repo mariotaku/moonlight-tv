@@ -26,6 +26,7 @@
 #include "app.h"
 
 #include "util/memlog.h"
+#include "util/logging.h"
 #include "util/libconfig_ext.h"
 
 static void strlower(char *p)
@@ -211,7 +212,9 @@ void pcmanager_load_known_hosts()
         {
             continue;
         }
-        char *uuid = strdup(config_setting_name(item));
+        const char *key = config_setting_name(item);
+        int keyoff = key[0] == '*' ? 1 : 0;
+        char *uuid = strdup(&key[keyoff]);
         PSERVER_DATA server = serverdata_new();
         server->uuid = uuid;
         server->mac = strdup(mac);
@@ -249,10 +252,11 @@ void pcmanager_save_known_hosts()
             continue;
         }
         const SERVER_DATA *server = cur->server;
-        char *uuid = strdup(server->uuid);
-        strlower(uuid);
-        config_setting_t *item = config_setting_add(root, uuid, CONFIG_TYPE_GROUP);
-        free(uuid);
+        char key[38];
+        key[0] = '*';
+        strncpy(&key[1], server->uuid, 36);
+        strlower(&key[1]);
+        config_setting_t *item = config_setting_add(root, key, CONFIG_TYPE_GROUP);
         if (!item)
         {
             continue;
