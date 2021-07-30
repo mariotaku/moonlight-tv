@@ -499,5 +499,5 @@ void sdlinput_handle_text_event(SDL_TextInputEvent *event)
     size_t len = strlen(event->text);
     if (!len)
         return;
-    LiSendUnicodeEvent(event->text, len);
+    LiSendUtf8TextEvent(event->text, len);
 }
