@@ -84,6 +84,9 @@ bool settings_window(struct nk_context *ctx)
         struct nk_vec2 content_size = nk_window_get_content_inner_size(ctx);
         float content_height = content_size.y;
 
+        struct nk_rect titlebar_bounds = nk_layout_widget_bounds(ctx);
+        titlebar_bounds.h = 1 * NK_UI_SCALE;
+
         nk_layout_row_template_begin_s(ctx, UI_TITLE_BAR_HEIGHT_DP);
         nk_layout_row_template_push_variable_s(ctx, 10);
         nk_layout_row_template_push_static_s(ctx, UI_TITLE_BAR_HEIGHT_DP);
@@ -101,9 +104,7 @@ bool settings_window(struct nk_context *ctx)
 
         content_height -= UI_BOTTOM_BAR_HEIGHT_DP * NK_UI_SCALE;
         content_height -= ctx->style.window.spacing.y;
-        nk_layout_row_dynamic_s(ctx, 1, 1);
-        struct nk_rect content_bounds = nk_widget_bounds(ctx);
-        nk_spacing(ctx, 1);
+        titlebar_bounds.y = nk_widget_position(ctx).y;
 
         static const float pane_ratio[] = {0.33, 0.67};
         nk_layout_row(ctx, NK_DYNAMIC, content_height, 2, pane_ratio);
@@ -144,8 +145,8 @@ bool settings_window(struct nk_context *ctx)
         nk_style_pop_vec2(ctx);
         nk_style_pop_style_item(ctx);
 
-        nk_stroke_line(&ctx->current->buffer, content_bounds.x, content_bounds.y, content_bounds.x + content_bounds.w,
-                       content_bounds.y, content_bounds.h, ctx->style.text.color);
+        nk_stroke_line(&ctx->current->buffer, titlebar_bounds.x, titlebar_bounds.y, titlebar_bounds.x + titlebar_bounds.w,
+                       titlebar_bounds.y, titlebar_bounds.h, ctx->style.text.color);
         if (!settings_showing_combo)
         {
             settings_draw_highlight(ctx);
