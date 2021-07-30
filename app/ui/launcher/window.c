@@ -34,7 +34,6 @@ int topbar_hovered_item = -1;
 struct nk_rect topbar_hovering_item_bounds = {0, 0, 0, 0};
 struct nk_vec2 topbar_focused_item_center = {0, 0};
 static int topbar_item_count = 0;
-static bool initial_server_selected = false;
 bool topbar_showing_combo = false;
 bool computer_manager_executing_quitapp = false;
 struct nk_vec2 _computer_picker_center = {0, 0};
@@ -88,6 +87,15 @@ void launcher_window_init(struct nk_context *ctx)
     }
     nk_image2texture(&launcher_default_cover, 0);
     selected_server_node = NULL;
+
+    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
+    {
+        if (cur->known && app_configuration->address && strcmp(app_configuration->address, cur->server->serverInfo.address) == 0)
+        {
+            selected_server_node = cur;
+            break;
+        }
+    }
     pairing_computer_state.state = PS_NONE;
     memcpy(&cm_list_button_style, &(ctx->style.button), sizeof(struct nk_style_button));
     cm_list_button_style.text_alignment = NK_TEXT_ALIGN_LEFT;
@@ -382,18 +390,9 @@ void launcher_handle_server_updated(PPCMANAGER_RESP resp)
     if (!node)
         return;
     // Select saved paired server if not selected before
-    if (resp->server && resp->server->paired && app_configuration->address)
+    if (resp->server && resp->server->paired && selected_server_node == node && !node->apps)
     {
-        if (selected_server_node == NULL && !initial_server_selected &&
-            strcmp(app_configuration->address, resp->server->serverInfo.address) == 0)
-        {
-            _select_computer(node, node->apps == NULL);
-            initial_server_selected = true;
-        }
-        else if (selected_server_node == node && !node->apps)
-        {
-            application_manager_load(node);
-        }
+        application_manager_load(node);
     }
 }
 
