@@ -256,6 +256,7 @@ void pcmanager_save_known_hosts()
         key[0] = '*';
         strncpy(&key[1], server->uuid, 36);
         strlower(&key[1]);
+        key[37] = '\0';
         config_setting_t *item = config_setting_add(root, key, CONFIG_TYPE_GROUP);
         if (!item)
         {
