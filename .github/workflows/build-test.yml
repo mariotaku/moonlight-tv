@@ -129,7 +129,10 @@ jobs:
       id: sysroot-cache
       with:
         path: |
-          /opt/pi-sysroot
+          /opt/pi-sysroot/bin
+          /opt/pi-sysroot/lib
+          /opt/pi-sysroot/opt
+          /opt/pi-sysroot/usr
         key: ${{ runner.os }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
 
     - name: Update packages
