@@ -105,7 +105,7 @@ static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory)
   snprintf(uniqueFilePath, PATH_MAX, "%s/%s", keyDirectory, UNIQUE_FILE_NAME);
 
   FILE *fd = fopen(uniqueFilePath, "r");
-  if (fd == NULL)
+  if (fd == NULL || fread(hnd->unique_id, UNIQUEID_CHARS, 1, fd) != UNIQUEID_CHARS)
   {
     snprintf(hnd->unique_id, UNIQUEID_CHARS + 1, "0123456789ABCDEF");
 
@@ -114,10 +114,6 @@ static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory)
       return GS_FAILED;
 
     fwrite(hnd->unique_id, UNIQUEID_CHARS, 1, fd);
-  }
-  else
-  {
-    fread(hnd->unique_id, UNIQUEID_CHARS, 1, fd);
   }
   fclose(fd);
   hnd->unique_id[UNIQUEID_CHARS] = 0;
