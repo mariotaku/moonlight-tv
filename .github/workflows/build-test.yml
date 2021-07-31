@@ -129,7 +129,7 @@ jobs:
 
     - name: Install Dependencies
       # Use qemu to support cross-architecture debootstrap
-      run: sudo apt-get -y -qq install gcc-arm-linux-gnueabihf qemu-user-static
+      run: sudo apt-get -y -qq install debootstrap qemu-user-static gcc-arm-linux-gnueabihf
 
     - run: sudo update-binfmts --enable qemu-arm
     - run: mkdir -p $SYSROOT
