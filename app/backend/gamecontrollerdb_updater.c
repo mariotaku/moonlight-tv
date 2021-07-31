@@ -174,8 +174,8 @@ static void load_headers(struct curl_slist **headers)
         linebuf[strnlen(linebuf, 1024) - 1] = '\0';
         if (strncmp(linebuf, "# etag: ", 8) == 0)
         {
-            char headbuf[512];
-            snprintf(headbuf, 511, "if-none-match: %s", &linebuf[8]);
+            char headbuf[2048];
+            snprintf(headbuf, 2047, "if-none-match: %s", &linebuf[8]);
             *headers = curl_slist_append(*headers, headbuf);
         }
     }
