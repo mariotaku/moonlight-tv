@@ -138,13 +138,14 @@ jobs:
     - name: Update packages
       run: sudo apt-get -qq update || true
 
-    - name: Install Dependencies
+    - name: Install Crossbuild GCC
       # Use qemu to support cross-architecture debootstrap
-      run: sudo apt-get -y -qq install debootstrap qemu-user-static crossbuild-essential-armhf
+      run: sudo apt-get -y -qq install crossbuild-essential-armhf
 
     - name: Install Sysroot
       if: steps.sysroot-cache.outputs.cache-hit != 'true'
       run: |
+        sudo apt-get -y -qq install debootstrap qemu-user-static
         sudo update-binfmts --enable qemu-arm
         sudo mkdir -p ${SYSROOT}
         sudo qemu-debootstrap --arch=armhf --no-check-gpg buster ${SYSROOT} http://raspbian.raspberrypi.org/raspbian/

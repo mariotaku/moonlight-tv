@@ -34,7 +34,7 @@ void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list a
     struct timespec ts, delta;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     timespec_diff(&ts, &app_start_time, &delta);
-    fprintf(APPLOG_FILE, "%06ld.%03u [%s][%s] ", delta.tv_sec, delta.tv_nsec / 1000000UL, tag, lvl);
+    fprintf(APPLOG_FILE, "%06ld.%03ld [%s][%s] ", delta.tv_sec, delta.tv_nsec / 1000000L, tag, lvl);
     size_t len = strlen(fmt);
     vfprintf(APPLOG_FILE, fmt, args);
     if (len && fmt[len - 1] != '\n')
