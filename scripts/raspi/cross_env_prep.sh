@@ -8,6 +8,8 @@ sudo apt-get install qemu-user-static
 # Create a fake rootfs
 sudo qemu-debootstrap --arch=armhf --no-check-gpg buster ${SYSROOT} http://raspbian.raspberrypi.org/raspbian/
 
+sudo update-binfmts --enable qemu-arm
+
 # Run installation command in chroot environment
 cat << CHROOT_SCRIPT | sudo chroot $SYSROOT
 
@@ -23,11 +25,14 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 82B129927FA3303E
 # Install dependencies
 apt-get -y update
 
-# Install libraries and headers
-apt-get -y install libavcodec-dev libavutil-dev libc6-dev libcurl4-openssl-dev \
-    libexpat1-dev libmbedtls-dev libopus-dev libraspberrypi-dev libsdl2-dev    \
-    libsdl2-image-dev uuid-dev
+# Install symlinks tool
+apt-get install symlinks
 
-# Don't know why but following files are included, and they should be removed
-rm -f /lib/arm-linux-gnueabihf/*.a
+# Install libraries and headers
+apt-get install -y libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev    \
+     libcurl4-openssl-dev libavcodec-dev libavutil-dev libexpat1-dev          \
+     libmbedtls-dev libfontconfig1-dev libraspberrypi-dev libconfig-dev
+
+symlinks -cr /usr/lib
+
 CHROOT_SCRIPT

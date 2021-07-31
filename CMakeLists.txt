@@ -169,18 +169,7 @@ unset(BUILD_SHARED_LIBS)
 
 add_subdirectory(decoder)
 add_subdirectory(audio)
-
-if (DEFINED CMAKE_INSTALL_DATAROOTDIR)
-    set(CMAKE_INSTALL_DATAROOTDIR_BACKUP ${CMAKE_INSTALL_DATAROOTDIR})
-    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_BINARY_DIR}/mdns-unused)
-endif()
-
-add_subdirectory(third_party/mdns)
-
-if (CMAKE_INSTALL_DATAROOTDIR_BACKUP)
-    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_DATAROOTDIR_BACKUP})
-    unset(CMAKE_INSTALL_DATAROOTDIR_BACKUP)
-endif()
+add_subdirectory(third_party/mdns EXCLUDE_FROM_ALL)
 
 set(SOURCES
     app/main.c
@@ -504,6 +493,7 @@ elseif (TARGET_RASPI)
         "libexpat1 (>= 2.0.1)"
         "libmbedcrypto3 (>= 2.13)"
         "libmbedx509-0 (>= 2.0)"
+        "libconfig9 (>= 1.5)"
         "libraspberrypi0"
     )
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST
