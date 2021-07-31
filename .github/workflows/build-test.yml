@@ -130,7 +130,7 @@ jobs:
       with:
         path: |
           /opt/pi-sysroot
-        key: ${{ runner.os }}-${{ hashFiles('${{github.workspace}}/scripts/raspi/pi-sysroot-setup.sh') }}
+        key: ${{ runner.os }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
 
     - name: Update packages
       run: sudo apt-get -qq update || true
