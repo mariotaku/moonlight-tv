@@ -159,7 +159,9 @@ jobs:
 
     - name: Package
       working-directory: ${{github.workspace}}/build
-      run: cpack
+      run: |
+        cpack
+        dpkg-scanpackages . > Release
 
     - name: Create Release (Raspberry Pi)
       id: create_release_raspi
@@ -169,4 +171,4 @@ jobs:
         name: Release ${{ steps.tagName.outputs.tag }}
         prerelease: true
         allowUpdates: true
-        artifacts: build/*.deb
+        artifacts: build/*.deb,build/Release
