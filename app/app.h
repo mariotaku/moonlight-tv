@@ -32,3 +32,5 @@ GS_CLIENT app_gs_client_obtain();
 bool app_gs_client_ready();
 
 void app_set_mouse_grab(bool);
+
+void app_set_keep_awake(bool);

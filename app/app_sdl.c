@@ -365,6 +365,15 @@ void app_set_mouse_grab(bool grab)
     SDL_SetRelativeMouseMode(grab ? SDL_TRUE : SDL_FALSE);
 }
 
+void app_set_keep_awake(bool awake)
+{
+    if (awake) {
+        SDL_DisableScreenSaver();
+    } else {
+        SDL_EnableScreenSaver();
+    }
+}
+
 void fps_cap(int start)
 {
     int tickdiff = SDL_GetTicks() - start;
