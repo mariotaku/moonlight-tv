@@ -72,6 +72,8 @@ static struct KeysDown *_pressed_keys;
 #undef LINKEDLIST_PREFIX
 #undef LINKEDLIST_DOUBLE
 
+static int keydown_count = 0;
+
 #if TARGET_WEBOS
 bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode);
 #endif
@@ -137,6 +139,15 @@ void performPendingSpecialKeyCombo()
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 {
+    if (event->state == SDL_PRESSED)
+    {
+        keydown_count++;
+    }
+    else if (event->state == SDL_RELEASED)
+    {
+        keydown_count--;
+    }
+
     short keyCode = 0;
 #if TARGET_WEBOS
     if (webos_intercept_remote_keys(event, &keyCode))
@@ -496,6 +507,11 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 
 void sdlinput_handle_text_event(SDL_TextInputEvent *event)
 {
+    if (keydown_count)
+    {
+        applog_v("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
+        return;
+    }
     size_t len = strlen(event->text);
     if (!len)
         return;
