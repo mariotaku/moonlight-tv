@@ -1,10 +1,12 @@
 #include "navkey_sdl.h"
+#include "stream/input/sdlinput.h"
+#include "app.h"
 
 #if TARGET_WEBOS
 NAVKEY navkey_from_sdl_webos(SDL_Event ev);
 #endif
 
-static NAVKEY navkey_gamepad_map(Uint8 button);
+static NAVKEY navkey_gamepad_map(SDL_JoystickID which, Uint8 button);
 
 NAVKEY navkey_from_sdl(SDL_Event ev)
 {
@@ -48,15 +50,16 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
     {
-        return navkey_gamepad_map(ev.cbutton.button);
+        return navkey_gamepad_map(ev.cbutton.which, ev.cbutton.button);
     }
     default:
         return NAVKEY_UNKNOWN;
     }
 }
 
-NAVKEY navkey_gamepad_map(Uint8 button)
+NAVKEY navkey_gamepad_map(SDL_JoystickID which, Uint8 button)
 {
+    PGAMEPAD_STATE state = get_gamepad(which);
     switch (button)
     {
     case SDL_CONTROLLER_BUTTON_DPAD_UP:
@@ -68,13 +71,13 @@ NAVKEY navkey_gamepad_map(Uint8 button)
     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
         return NAVKEY_RIGHT;
     case SDL_CONTROLLER_BUTTON_A:
-        return NAVKEY_CONFIRM;
+        return app_configuration->swap_abxy ? NAVKEY_CANCEL : NAVKEY_CONFIRM;
     case SDL_CONTROLLER_BUTTON_B:
-        return NAVKEY_CANCEL;
+        return app_configuration->swap_abxy ? NAVKEY_CONFIRM : NAVKEY_CANCEL;
     case SDL_CONTROLLER_BUTTON_X:
-        return NAVKEY_NEGATIVE;
+        return app_configuration->swap_abxy ? NAVKEY_ALTERNATIVE: NAVKEY_NEGATIVE;
     case SDL_CONTROLLER_BUTTON_Y:
-        return NAVKEY_ALTERNATIVE;
+        return app_configuration->swap_abxy ? NAVKEY_NEGATIVE: NAVKEY_ALTERNATIVE;
     case SDL_CONTROLLER_BUTTON_BACK:
         return NAVKEY_MENU;
     case SDL_CONTROLLER_BUTTON_START:

@@ -50,6 +50,7 @@ typedef struct _CONFIGURATION
   bool quitappafter;
   bool viewonly;
   bool absmouse;
+  bool swap_abxy;
   enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 
