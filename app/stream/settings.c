@@ -153,6 +153,7 @@ bool settings_read(char *filename, PCONFIGURATION config)
 
     config_lookup_bool(&libconfig, "host.viewonly", (int *)&config->viewonly);
     config_lookup_bool(&libconfig, "input.absmouse", (int *)&config->absmouse);
+    config_lookup_bool(&libconfig, "input.swap_abxy", (int *)&config->swap_abxy);
 
     config_lookup_string_dup(&libconfig, "decoder.platform", &config->decoder);
     config_lookup_string_dup(&libconfig, "decoder.audio_backend", &config->audio_backend);
@@ -189,6 +190,7 @@ void settings_write(char *filename, PCONFIGURATION config)
     config_setting_set_bool_simple(host, "quitappafter", config->quitappafter);
     config_setting_set_bool_simple(host, "viewonly", config->viewonly);
     config_setting_set_bool_simple(input, "absmouse", config->absmouse);
+    config_setting_set_bool_simple(input, "swap_abxy", config->swap_abxy);
     config_setting_set_int_simple(streaming, "rotate", config->rotate);
     config_setting_set_string_simple(decoder, "platform", config->decoder);
     config_setting_set_string_simple(decoder, "audio_backend", config->audio_backend);
