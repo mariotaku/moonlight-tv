@@ -153,8 +153,10 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
         found = result.find(std::string("BufferFull"));
         if (found != std::string::npos)
         {
+        applog_w("SMP", "Buffer is full");
             return true;
         }
+        applog_w("SMP", "Buffer submit returned error: %s", result.c_str());
         return false;
     }
     if (player_state_ == LOADED)
