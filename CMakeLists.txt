@@ -170,6 +170,14 @@ unset(BUILD_SHARED_LIBS)
 add_subdirectory(decoder)
 add_subdirectory(audio)
 add_subdirectory(third_party/mdns EXCLUDE_FROM_ALL)
+add_subdirectory(third_party/lvgl)
+target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src PRIVATE ${CMAKE_SOURCE_DIR}/app/lvgl)
+target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+target_compile_definitions(lvgl PRIVATE LV_CONF_PATH=${CMAKE_SOURCE_DIR}/app/lvgl/lv_conf.h)
+target_sources(lvgl PRIVATE
+    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_display.c
+    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_input.c
+)
 
 set(SOURCES
     app/main.c
@@ -295,7 +303,7 @@ target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
  m ${CMAKE_DL_LIBS} Threads::Threads
- moonlight-common-c gamestream mdns
+ moonlight-common-c gamestream mdns lvgl
  Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES}
 )
 
