@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     bus_destroy();
 
     applog_d("APP", "Quitted gracefully :)");
-    return 0;
+    return ret;
 }
 
 void app_request_exit()

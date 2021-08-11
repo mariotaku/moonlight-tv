@@ -15,7 +15,7 @@ bool audio_init_pulse(int argc, char *argv[], PHOST_CONTEXT hctx)
 bool audio_check_alsa(PAUDIO_INFO ainfo)
 {
     ainfo->valid = true;
-    ainfo->configuration = AUDIO_CONFIGURATION_STEREO;
+    ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
     return true;
 }
 

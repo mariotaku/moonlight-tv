@@ -363,6 +363,9 @@ bool app_render_queue_submit(void *data)
 void app_set_mouse_grab(bool grab)
 {
     SDL_SetRelativeMouseMode(grab ? SDL_TRUE : SDL_FALSE);
+    if (!grab) {
+        SDL_ShowCursor(SDL_TRUE);
+    }
 }
 
 void app_set_keep_awake(bool awake)

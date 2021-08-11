@@ -1,6 +1,8 @@
 #include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 
+#include "app.h"
+
 #include <Limelight.h>
 #include <SDL.h>
 
@@ -18,16 +20,16 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event)
     switch (event->button)
     {
     case SDL_CONTROLLER_BUTTON_A:
-        button = A_FLAG;
+        button = app_configuration->swap_abxy ? B_FLAG : A_FLAG;
         break;
     case SDL_CONTROLLER_BUTTON_B:
-        button = B_FLAG;
+        button = app_configuration->swap_abxy ? A_FLAG : B_FLAG;
         break;
     case SDL_CONTROLLER_BUTTON_Y:
-        button = Y_FLAG;
+        button = app_configuration->swap_abxy ? X_FLAG : Y_FLAG;
         break;
     case SDL_CONTROLLER_BUTTON_X:
-        button = X_FLAG;
+        button = app_configuration->swap_abxy ? Y_FLAG : X_FLAG;
         break;
     case SDL_CONTROLLER_BUTTON_DPAD_UP:
         button = UP_FLAG;

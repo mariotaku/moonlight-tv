@@ -22,6 +22,9 @@ static bool _render(struct nk_context *ctx, bool *showing_combo)
     settings_item_update_selected_bounds(ctx, _item_count++, &item_bounds);
     nk_checkbox_label_std(ctx, "Absolute mouse", &app_configuration->absmouse);
 #endif
+
+    settings_item_update_selected_bounds(ctx, _item_count++, &item_bounds);
+    nk_checkbox_label_std(ctx, "Gamepad has ABXY swapped", &app_configuration->swap_abxy);
     return true;
 }
 
