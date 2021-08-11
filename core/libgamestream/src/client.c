@@ -785,7 +785,7 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     // on GFE 3.20.3.
     int fps = config->fps > 60 ? 0 : config->fps;
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "launch",
-                  "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&bEnableIGVoiceChat=1&localAudioPlayMode=%d&surroundAudioInfo=%d&allowMimicRemoteCursor=0&remoteControllersBitmap=%d&gcmap=%d",
+                  "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d",
                   appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info, gamepad_mask, gamepad_mask);
   }
   else
