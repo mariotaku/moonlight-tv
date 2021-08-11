@@ -27,10 +27,10 @@
 #include "lv_conf.h"
 #include "lv_sdl_drv_display.h"
 
-static lv_disp_buf_t disp_buf;
+static lv_disp_draw_buf_t disp_buf;
 static lv_color_t pixels[LV_HOR_RES_MAX * LV_VER_RES_MAX];
 #include <SDL.h>
-static lv_task_t *sdl_present_task;
+static SDL_TimerID sdl_present_task = 0;
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
@@ -40,8 +40,9 @@ static void sdl_fb_flush(lv_disp_drv_t *disp_drv,
                          lv_color_t *color_p)
 {
 
-    if(area->x2 < 0 || area->y2 < 0 ||
-       area->x1 > disp_drv->hor_res - 1 || area->y1 > disp_drv->ver_res - 1) {
+    if (area->x2 < 0 || area->y2 < 0 ||
+        area->x1 > disp_drv->hor_res - 1 || area->y1 > disp_drv->ver_res - 1)
+    {
         lv_disp_flush_ready(disp_drv);
         return;
     }
@@ -56,16 +57,15 @@ static void sdl_fb_flush(lv_disp_drv_t *disp_drv,
     lv_disp_flush_ready(disp_drv);
 }
 
-#ifndef NXDK
-static void sdl_present(lv_task_t *task)
+static Uint32 sdl_present(Uint32 interval, void *param)
 {
     if (renderer && framebuffer)
     {
         SDL_RenderCopy(renderer, framebuffer, NULL, NULL);
         SDL_RenderPresent(renderer);
     }
+    return interval;
 }
-#endif
 
 __attribute__((weak)) void display_wait_cb(lv_disp_drv_t *disp_drv)
 {
@@ -81,10 +81,10 @@ lv_disp_t *lv_sdl_init_display(const char *win_name, int width, int height)
         width = LV_HOR_RES_MAX;
     if (height > LV_VER_RES_MAX)
         height = LV_VER_RES_MAX;
-    lv_disp_buf_init(&disp_buf, pixels, NULL, width * height);
+    lv_disp_draw_buf_init(&disp_buf, pixels, NULL, width * height);
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
-    disp_drv.buffer = &disp_buf;
+    disp_drv.draw_buf = &disp_buf;
     disp_drv.wait_cb = display_wait_cb;
     disp_drv.flush_cb = sdl_fb_flush;
     disp_drv.hor_res = width;
@@ -100,20 +100,19 @@ lv_disp_t *lv_sdl_init_display(const char *win_name, int width, int height)
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
     framebuffer = SDL_CreateTexture(renderer,
-                                    (LV_COLOR_DEPTH == 32) ? (SDL_PIXELFORMAT_ARGB8888) :
-                                                             (SDL_PIXELFORMAT_RGB565),
+                                    (LV_COLOR_DEPTH == 32) ? (SDL_PIXELFORMAT_ARGB8888) : (SDL_PIXELFORMAT_RGB565),
                                     SDL_TEXTUREACCESS_STREAMING,
                                     width,
                                     height);
 
-    sdl_present_task = lv_task_create(sdl_present, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_HIGHEST, NULL);
+    sdl_present_task = SDL_AddTimer(LV_DISP_DEF_REFR_PERIOD, &sdl_present, NULL);
 
     return lv_disp_drv_register(&disp_drv);
 }
 
 void lv_sdl_deinit_display(void)
 {
-    lv_task_del(sdl_present_task);
+    SDL_RemoveTimer(sdl_present_task);
     SDL_DestroyTexture(framebuffer);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
