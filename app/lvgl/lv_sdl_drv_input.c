@@ -123,7 +123,7 @@ lv_indev_t *lv_sdl_init_input(void)
         SDL_GameControllerOpen(i);
     }
 
-    lv_indev_drv_t indev_drv;
+    static lv_indev_drv_t indev_drv;
     lv_indev_drv_init(&indev_drv);
     indev_drv.type = LV_INDEV_TYPE_KEYPAD;
     indev_drv.read_cb = sdl_input_read;

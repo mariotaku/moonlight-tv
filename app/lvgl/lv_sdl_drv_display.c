@@ -67,7 +67,7 @@ static Uint32 sdl_present(Uint32 interval, void *param)
     return interval;
 }
 
-__attribute__((weak)) void display_wait_cb(lv_disp_drv_t *disp_drv)
+static void display_wait_cb(lv_disp_drv_t *disp_drv)
 {
     (void)disp_drv;
     //OPTIONAL: Called periodically while lvgl waits for an operation to be completed
@@ -82,7 +82,7 @@ lv_disp_t *lv_sdl_init_display(const char *win_name, int width, int height)
     if (height > LV_VER_RES_MAX)
         height = LV_VER_RES_MAX;
     lv_disp_draw_buf_init(&disp_buf, pixels, NULL, width * height);
-    lv_disp_drv_t disp_drv;
+    static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.draw_buf = &disp_buf;
     disp_drv.wait_cb = display_wait_cb;

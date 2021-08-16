@@ -17,6 +17,10 @@
 #include "nuklear/ext_styling.h"
 #include "nuklear/platform.h"
 
+#include "lvgl.h"
+#include "lvgl/lv_sdl_drv_display.h"
+#include "lvgl/lv_sdl_drv_input.h"
+
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
@@ -37,6 +41,32 @@ static void app_gs_client_destroy();
 static bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas);
 
 int main(int argc, char *argv[])
+{
+    app_loginit();
+#if TARGET_WEBOS || TARGET_LGNC
+    app_logfile = fopen("/tmp/" APPID ".log", "a+");
+    if (!app_logfile)
+        app_logfile = stdout;
+    setvbuf(app_logfile, NULL, _IONBF, 0);
+    if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
+        REDIR_STDOUT(APPID);
+    applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
+#endif
+    lv_init();
+    lv_disp_t *disp = lv_sdl_init_display("Moonlight", 960, 540);
+    lv_sdl_init_input();
+
+    while (running)
+    {
+        lv_task_handler();
+    }
+
+    lv_sdl_deinit_input();
+    lv_sdl_deinit_display();
+    lv_deinit();
+}
+
+int main2(int argc, char *argv[])
 {
     app_loginit();
 #if TARGET_WEBOS || TARGET_LGNC
