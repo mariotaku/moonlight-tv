@@ -21,30 +21,48 @@
  * SOFTWARE.
  */
 
-#ifndef _LV_SDL_INPUT
-#define _LV_SDL_INPUT
+#include <stdio.h>
+#include <SDL.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "lv_conf.h"
 #include "lvgl.h"
+#include "lv_conf.h"
+#include "lv_sdl_drv_pointer_input.h"
 
-typedef enum 
+static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
-    NONE = 0,
-    REBOOT,
-    SHUTDOWN
-} quit_event_t;
+    (void)drv;
 
-quit_event_t get_quit_event(void);
-void set_quit_event(quit_event_t quit);
-lv_indev_t *lv_sdl_init_input(void);
-void lv_sdl_deinit_input(void);
-
-#ifdef __cplusplus
+    SDL_PumpEvents();
+    static SDL_Event e;
+    data->continue_reading = SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEBUTTONUP) > 0;
+    static lv_indev_state_t state = LV_INDEV_STATE_REL;
+    if (e.type == SDL_MOUSEBUTTONDOWN)
+    {
+        state = LV_INDEV_STATE_PR;
+        data->point = (lv_point_t){.x = e.button.x, .y = e.button.y};
+    }
+    else if (e.type == SDL_MOUSEBUTTONUP)
+    {
+        state = LV_INDEV_STATE_REL;
+        data->point = (lv_point_t){.x = e.button.x, .y = e.button.y};
+    }
+    else
+    {
+        data->point = (lv_point_t){.x = e.motion.x, .y = e.motion.y};
+    }
+    data->state = state;
 }
-#endif
 
-#endif
+lv_indev_t *lv_sdl_init_pointer_input(void)
+{
+    static lv_indev_drv_t indev_drv;
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type = LV_INDEV_TYPE_POINTER;
+    indev_drv.read_cb = sdl_input_read;
+
+    return lv_indev_drv_register(&indev_drv);
+}
+
+void lv_sdl_deinit_pointer_input(void)
+{
+}

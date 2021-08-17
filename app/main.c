@@ -19,12 +19,14 @@
 
 #include "lvgl.h"
 #include "lvgl/lv_sdl_drv_display.h"
-#include "lvgl/lv_sdl_drv_input.h"
+#include "lvgl/lv_sdl_drv_key_input.h"
+#include "lvgl/lv_sdl_drv_pointer_input.h"
 
 #include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
+#include "ui/manager.h"
 #include "ui/root.h"
 #include "ui/fonts.h"
 #include "util/bus.h"
@@ -54,14 +56,18 @@ int main(int argc, char *argv[])
 #endif
     lv_init();
     lv_disp_t *disp = lv_sdl_init_display("Moonlight", 960, 540);
-    lv_sdl_init_input();
+    lv_sdl_init_key_input();
+    lv_sdl_init_pointer_input();
+
+    ui_init();
 
     while (running)
     {
         lv_task_handler();
     }
 
-    lv_sdl_deinit_input();
+    lv_sdl_deinit_pointer_input();
+    lv_sdl_deinit_key_input();
     lv_sdl_deinit_display();
     lv_deinit();
 }

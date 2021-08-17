@@ -176,7 +176,8 @@ target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=${CMAKE_SOURCE_DIR}/app/lvgl/lv_conf.h)
 target_sources(lvgl PRIVATE
     ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_display.c
-    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_input.c
+    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_key_input.c
+    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_pointer_input.c
 )
 
 set(SOURCES
@@ -198,6 +199,7 @@ set(SOURCES
     app/stream/connection.c
     app/stream/settings.c
     app/stream/video/delegate.c
+    app/ui/manager.c
     app/ui/root.c
     app/ui/fonts.c
     app/ui/launcher/window.c
