@@ -58,4 +58,6 @@ void handle_unpairing_done(PPCMANAGER_RESP resp);
 void launcher_controller_init();
 void launcher_controller_pc_selected(lv_event_t *event);
 
+PSERVER_LIST launcher_win_selected_server();
 void launcher_win_update_pclist();
+void launcher_win_update_selected();

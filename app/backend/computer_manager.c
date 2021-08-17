@@ -36,9 +36,9 @@ static void strlower(char *p)
 }
 
 static pthread_t computer_manager_polling_thread;
+static PPCMANAGER_CALLBACKS callbacks_list;
 
 PSERVER_LIST computer_list;
-PPCMANAGER_CALLBACKS callbacks_list;
 
 static void *_pcmanager_quitapp_action(void *data);
 static void *_computer_manager_server_update_action(PSERVER_DATA data);
