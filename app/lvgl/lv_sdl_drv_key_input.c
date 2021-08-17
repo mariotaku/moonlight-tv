@@ -32,8 +32,6 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
     data->key = 0;
-
-    SDL_PumpEvents();
     static SDL_Event e;
     if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP) > 0)
     {

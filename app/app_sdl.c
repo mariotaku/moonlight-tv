@@ -143,185 +143,101 @@ void app_destroy()
 
 void inputmgr_sdl_handle_event(SDL_Event ev);
 
-static void app_process_events(struct nk_context *ctx)
+static int app_event_filter(void *userdata, SDL_Event *event)
 {
-    /* Input */
-    SDL_Event evt;
-    if (app_has_redraw)
-        nk_input_begin(ctx);
-    while (SDL_PollEvent(&evt))
+    switch (event->type)
     {
-        bool block_steam_inputevent = false;
-        if (evt.type == SDL_APP_WILLENTERBACKGROUND)
+    case SDL_APP_WILLENTERBACKGROUND:
+    {
+        // Interrupt streaming because app will go to background
+        streaming_interrupt(false);
+        break;
+    }
+#if TARGET_DESKTOP || TARGET_RASPI
+    case SDL_WINDOWEVENT:
+    {
+        switch (event->window.event)
         {
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            window_focus_gained = true;
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
+#if TARGET_RASPI
             // Interrupt streaming because app will go to background
             streaming_interrupt(false);
-        }
-#if TARGET_DESKTOP || TARGET_RASPI
-        else if (evt.type == SDL_WINDOWEVENT)
-        {
-            switch (evt.window.event)
-            {
-            case SDL_WINDOWEVENT_FOCUS_GAINED:
-                window_focus_gained = true;
-                break;
-            case SDL_WINDOWEVENT_FOCUS_LOST:
-                applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
+#endif
+            window_focus_gained = false;
+            break;
+        case SDL_WINDOWEVENT_SIZE_CHANGED:
+            ui_display_size(event->window.data1, event->window.data2);
+            break;
+        case SDL_WINDOWEVENT_HIDDEN:
+            applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
 #if TARGET_RASPI
-                // Interrupt streaming because app will go to background
-                streaming_interrupt(false);
+            // Interrupt streaming because app will go to background
+            streaming_interrupt(false);
 #endif
-                window_focus_gained = false;
-                break;
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
-                ui_display_size(evt.window.data1, evt.window.data2);
-                break;
-            case SDL_WINDOWEVENT_HIDDEN:
-                applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
-#if TARGET_RASPI
-                // Interrupt streaming because app will go to background
-                streaming_interrupt(false);
-#endif
-                break;
-            default:
-                break;
-            }
+            break;
+        default:
+            break;
         }
-#endif
-        else if (SDL_IS_INPUT_EVENT(evt))
-        {
-            inputmgr_sdl_handle_event(evt);
-            block_steam_inputevent |= ui_should_block_input();
-
-            // Those are input events
-            NAVKEY navkey = navkey_from_sdl(evt);
-            if (navkey)
-            {
-                Uint32 timestamp = 0;
-                bool is_key = false, is_gamepad = false;
-                if (evt.type == SDL_KEYDOWN || evt.type == SDL_KEYUP)
-                {
-                    timestamp = evt.key.timestamp;
-                    is_key = true;
-                }
-                else if (evt.type == SDL_CONTROLLERBUTTONDOWN || evt.type == SDL_CONTROLLERBUTTONUP)
-                {
-                    timestamp = evt.cbutton.timestamp;
-                    is_gamepad = true;
-                }
-                NAVKEY_STATE state;
-                if (is_key)
-                {
-                    state = evt.key.state == SDL_PRESSED;
-                    if (evt.key.repeat)
-                        state |= NAVKEY_STATE_REPEAT;
-                    else
-                        ui_set_input_mode(UI_INPUT_MODE_KEY);
-                }
-                else if (is_gamepad)
-                {
-                    state = evt.cbutton.state == SDL_PRESSED;
-                    ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
-                }
-
-#if TARGET_WEBOS
-                if (state == NAVKEY_STATE_DOWN && (navkey & NAVKEY_DPAD))
-                {
-                    // Hide the cursor
-                    SDL_webOSCursorVisibility(SDL_FALSE);
-                }
-#endif
-                ui_dispatch_navkey(ctx, navkey, state, timestamp);
-            }
-            else if (evt.type == SDL_MOUSEMOTION)
-            {
-                ui_set_input_mode(UI_INPUT_MODE_POINTER);
-            }
-#if TARGET_WEBOS
-            else if (evt.type == SDL_KEYDOWN && evt.key.keysym.scancode == SDL_WEBOS_SCANCODE_EXIT)
-            {
-                if (!streaming_running)
-                {
-                    app_request_exit();
-                }
-            }
-#endif
-        }
-        else if (evt.type == SDL_USEREVENT)
-        {
-            if (evt.user.code == BUS_INT_EVENT_ACTION)
-            {
-                bus_actionfunc actionfn = evt.user.data1;
-                actionfn(evt.user.data2);
-            }
-            else
-            {
-                bool handled = backend_dispatch_userevent(evt.user.code, evt.user.data1, evt.user.data2);
-                handled = handled || ui_dispatch_userevent(ctx, evt.user.code, evt.user.data1, evt.user.data2);
-                if (!handled)
-                {
-                    applog_w("Event", "Nobody handles event %d", evt.user.code);
-                }
-            }
-        }
-        else if (evt.type == SDL_QUIT)
-        {
-            app_request_exit();
-        }
-        if (!block_steam_inputevent)
-        {
-            absinput_dispatch_event(evt);
-        }
-        if (app_has_redraw)
-            nk_sdl_handle_event(&evt);
+        break;
     }
-    if (app_has_redraw)
-        nk_input_end(ctx);
+#endif
+    case SDL_USEREVENT:
+    {
+        if (event->user.code == BUS_INT_EVENT_ACTION)
+        {
+            bus_actionfunc actionfn = event->user.data1;
+            actionfn(event->user.data2);
+        }
+        else
+        {
+            bool handled = backend_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
+            if (!handled)
+            {
+                applog_w("Event", "Nobody handles event %d", event->user.code);
+            }
+        }
+        break;
+    }
+    case SDL_QUIT:
+    {
+        app_request_exit();
+        break;
+    }
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+    case SDL_MOUSEMOTION:
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+    case SDL_MOUSEWHEEL:
+        return 1;
+    default:
+        return 0;
+    }
+    return 0;
+}
+
+void app_process_events()
+{
+    SDL_PumpEvents();
+    SDL_FilterEvents(app_event_filter, NULL);
 }
 
 void app_main_loop(void *data)
 {
     static Uint32 fps_ticks = 0, framecount = 0;
     Uint32 start_ticks = SDL_GetTicks();
-    struct nk_context *ctx = (struct nk_context *)data;
 
-    app_process_events(ctx);
-
-    app_has_redraw = ui_root(ctx) || app_force_redraw;
-
-    /* Draw */
-
-    if (app_has_redraw)
-    {
-        ui_render_background();
-        nk_platform_render();
-        SDL_GL_SwapWindow(win);
-        app_should_redraw_background = true;
-#if OS_LINUX
-        fps_cap(start_ticks);
-#elif OS_DARWIN
-        if (!window_focus_gained)
-            fps_cap(start_ticks);
-#endif
-    }
-    else if (app_should_redraw_background)
-    {
-        ui_render_background();
-        SDL_GL_SwapWindow(win);
-        app_should_redraw_background = false;
-    }
-    else
-    {
-        // Just delay for 1ms so we can get ~1000 loops per second for input events
-        SDL_Delay(1);
-    }
+    app_process_events();
     Uint32 end_ticks = SDL_GetTicks();
     Sint32 deltams = end_ticks - start_ticks;
     if (deltams < 0)
     {
         deltams = 0;
     }
-    ctx->delta_time_seconds = deltams / 1000.0f;
     if ((end_ticks - fps_ticks) >= 1000)
     {
         sprintf(wintitle, "Moonlight | %d FPS", (int)(framecount * 1000.0 / (end_ticks - fps_ticks)));
@@ -363,16 +279,20 @@ bool app_render_queue_submit(void *data)
 void app_set_mouse_grab(bool grab)
 {
     SDL_SetRelativeMouseMode(grab ? SDL_TRUE : SDL_FALSE);
-    if (!grab) {
+    if (!grab)
+    {
         SDL_ShowCursor(SDL_TRUE);
     }
 }
 
 void app_set_keep_awake(bool awake)
 {
-    if (awake) {
+    if (awake)
+    {
         SDL_DisableScreenSaver();
-    } else {
+    }
+    else
+    {
         SDL_EnableScreenSaver();
     }
 }

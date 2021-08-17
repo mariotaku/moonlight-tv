@@ -16,7 +16,6 @@ get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
 option(TARGET_DESKTOP "Build for Desktop" OFF)
 option(TARGET_WEBOS "Build for LG webOS" OFF)
-option(TARGET_LGNC "Build for LG NetCast" OFF)
 option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 
 option(OPUS_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
@@ -54,16 +53,6 @@ if (TARGET_WEBOS)
     set(WEBOS_APPINFO_ID "com.limelight.webos")
     set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos-unused-prefix)
     set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/webos_pkg_$ENV{ARCH})
-    set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
-    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
-    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
-elseif(TARGET_LGNC)
-    set(HAVE_SDL FALSE)
-    set(HAVE_LGNC TRUE)
-
-    set(WEBOS_APPINFO_ID "com.limelight.netcast")
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/lgnc-unused-prefix)
-    set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/lgnc_pkg_$ENV{ARCH})
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
     set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
     set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
@@ -122,18 +111,6 @@ if (TARGET_WEBOS)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
     pkg_check_modules(LUNA_SERVICE REQUIRED luna-service2)
-elseif (TARGET_LGNC)
-    set(BUILD_SHARED_LIBS ON)
-    add_subdirectory(third_party/opus)
-    unset(BUILD_SHARED_LIBS)
-
-    set(DECODER_LGNC_NOINIT TRUE)
-    set(DECODER_LGNC_STATIC TRUE)
-    add_subdirectory(third_party/mbedtls)
-    add_subdirectory(system/webos/tv-native-apis)
-    add_subdirectory(system/webos/prebuilts)
-
-    pkg_check_modules(GLES REQUIRED egl glesv2)
 elseif (TARGET_RASPI)
     add_subdirectory(third_party/h264bitstream)
     add_subdirectory(third_party/ilclient)
@@ -173,7 +150,7 @@ add_subdirectory(third_party/mdns EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/lvgl)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src PRIVATE ${CMAKE_SOURCE_DIR}/app/lvgl)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
-target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=${CMAKE_SOURCE_DIR}/app/lvgl/lv_conf.h)
+target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=${CMAKE_SOURCE_DIR}/app/lvgl/lv_conf.h PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 target_sources(lvgl PRIVATE
     ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_display.c
     ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_key_input.c
@@ -203,6 +180,8 @@ set(SOURCES
     app/ui/root.c
     app/ui/fonts.c
     app/ui/launcher/window.c
+    app/ui/launcher/launcher.view.c
+    app/ui/launcher/launcher.controller.c
     app/ui/launcher/pclist.c
     app/ui/launcher/pcempty.c
     app/ui/launcher/applist.c
@@ -264,21 +243,8 @@ if (HAVE_SDL)
             app/platform/sdl/path_sdl.c
         )
     endif()
-elseif (HAVE_LGNC)
-    list(APPEND SOURCES
-        app/app_lgnc.c
-        app/backend/pcmanager/lgnc_impl.c
-        app/stream/input/lgncinput.c
-        app/stream/lgnc_platform.c
-        app/platform/lgnc/bus.c
-        app/platform/lgnc/callbacks.c
-        app/platform/lgnc/graphics.c
-        app/platform/lgnc/input_manager.c
-        app/platform/lgnc/path_lgnc.c
-        third_party/message_queue/message_queue.c
-    )
 else()
-    message(FATAL_ERROR "No suitable application library found - SDL2 or LGNC required")
+    message(FATAL_ERROR "SDL2 required")
 endif()
 
 add_executable(moonlight ${SOURCES})
@@ -352,21 +318,6 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
-elseif (TARGET_LGNC)
-    target_compile_definitions(moonlight PUBLIC TARGET_LGNC _GNU_SOURCE 
-        APPID="${WEBOS_APPINFO_ID}"
-        APPLOG_FILE=app_logfile
-    )
-    target_compile_definitions(moonlight PUBLIC NK_LGNC_GLES2 HAVE_GLES2)
-    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
-
-    target_link_libraries(moonlight PRIVATE mbedtls)
-
-    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    target_link_libraries(moonlight PRIVATE lgncopenapi)
-    target_link_libraries(moonlight PRIVATE moonlight-lgnc)
-    
-    target_link_libraries(moonlight PRIVATE opus)
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2 _GNU_SOURCE)
@@ -431,7 +382,7 @@ add_custom_target(moonlight-spritegen
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-if (TARGET_WEBOS OR TARGET_LGNC)
+if (TARGET_WEBOS)
     # Copy asset dir to package root
     install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR} PATTERN ".*" EXCLUDE)
     # Copy all files under deploy/webos/ to package root

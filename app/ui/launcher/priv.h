@@ -6,6 +6,8 @@
 
 #include "libgamestream/errors.h"
 
+#include "lvgl.h"
+
 typedef enum pairing_state
 {
     PS_NONE,
@@ -35,15 +37,15 @@ struct pairing_computer_state
 #define LAUNCHER_MODAL_NOCODEC 0x1000
 #define LAUNCHER_MODAL_NOHWCODEC 0x2000
 
-uint32_t _launcher_modals;
-bool _launcher_popup_request_dismiss;
-struct pairing_computer_state pairing_computer_state;
-bool _decoder_error_dismissed;
-bool _quitapp_errno;
-bool _launcher_show_manual_pair;
-bool _launcher_show_host_info;
-bool computer_manager_executing_quitapp;
-struct nk_vec2 _computer_picker_center;
+extern uint32_t _launcher_modals;
+extern bool _launcher_popup_request_dismiss;
+extern struct pairing_computer_state pairing_computer_state;
+extern bool _decoder_error_dismissed;
+extern bool _quitapp_errno;
+extern bool _launcher_show_manual_pair;
+extern bool _launcher_show_host_info;
+extern bool computer_manager_executing_quitapp;
+extern struct nk_vec2 _computer_picker_center;
 
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
@@ -52,3 +54,8 @@ void _open_unpair(PSERVER_LIST node);
 
 void launcher_handle_quitapp(PPCMANAGER_RESP resp);
 void handle_unpairing_done(PPCMANAGER_RESP resp);
+
+void launcher_controller_init();
+void launcher_controller_pc_selected(lv_event_t *event);
+
+void launcher_win_update_pclist();

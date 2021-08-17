@@ -18,6 +18,7 @@
 #include "nuklear/ext_smooth_list_view.h"
 #include "nuklear/platform_sprites.h"
 #endif
+#include "lvgl.h"
 
 #include "util/navkey.h"
 
@@ -43,3 +44,5 @@ bool launcher_window_dispatch_userevent(int which, void *data1, void *data2);
 bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 
 void launcher_add_server();
+
+lv_obj_t *launcher_win_create();

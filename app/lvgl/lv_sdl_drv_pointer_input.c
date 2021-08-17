@@ -31,8 +31,6 @@
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     (void)drv;
-
-    SDL_PumpEvents();
     static SDL_Event e;
     data->continue_reading = SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEBUTTONUP) > 0;
     static lv_indev_state_t state = LV_INDEV_STATE_REL;

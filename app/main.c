@@ -54,6 +54,21 @@ int main(int argc, char *argv[])
         REDIR_STDOUT(APPID);
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
 #endif
+    bus_init();
+
+    int ret = app_init(argc, argv);
+    if (ret != 0)
+    {
+        return ret;
+    }
+    module_host_context.logvprintf = &app_logvprintf;
+
+    // LGNC requires init before window created, don't put this after app_window_create!
+    decoder_init(app_configuration->decoder, argc, argv);
+    audio_init(app_configuration->audio_backend, argc, argv);
+
+    backend_init();
+
     lv_init();
     lv_disp_t *disp = lv_sdl_init_display("Moonlight", 960, 540);
     lv_sdl_init_key_input();
@@ -63,13 +78,23 @@ int main(int argc, char *argv[])
 
     while (running)
     {
+        app_process_events();
         lv_task_handler();
     }
+
+    settings_save(app_configuration);
 
     lv_sdl_deinit_pointer_input();
     lv_sdl_deinit_key_input();
     lv_sdl_deinit_display();
     lv_deinit();
+
+    backend_destroy();
+    app_gs_client_destroy();
+    app_destroy();
+    bus_destroy();
+
+    applog_d("APP", "Quitted gracefully :)");
 }
 
 int main2(int argc, char *argv[])
