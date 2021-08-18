@@ -34,8 +34,8 @@
  *====================*/
 
 /* Maximal horizontal and vertical resolution to support by the library.*/
-#define LV_HOR_RES_MAX          (960)
-#define LV_VER_RES_MAX          (540)
+#define LV_HOR_RES_MAX          (1920)
+#define LV_VER_RES_MAX          (1080)
 
 /* Color depth:
  * - 16: RGB565
@@ -50,7 +50,7 @@
 /* 1: Enable screen transparency.
  * Useful for OSD or other overlapping GUIs.
  * Requires `LV_COLOR_DEPTH = 32` colors and the screen's style should be modified: `style.body.opa = ...`*/
-#define LV_COLOR_SCREEN_TRANSP    0
+#define LV_COLOR_SCREEN_TRANSP    1
 
 /*Images pixels with this color will not be drawn (with chroma keying)*/
 #define LV_COLOR_TRANSP    LV_COLOR_LIME         /*LV_COLOR_LIME: pure green*/
@@ -78,8 +78,14 @@
 #define LV_DISP_MEDIUM_LIMIT 50
 #define LV_DISP_LARGE_LIMIT  70
 
+#define LV_USE_LARGE_COORD 1
+
 /* Type of coordinates. Should be `int16_t` (or `int32_t` for extreme cases) */
+#if LV_USE_LARGE_COORD == 0
 typedef int16_t lv_coord_t;
+#else
+typedef int32_t lv_coord_t;
+#endif
 
 /*=========================
    Memory manager settings
@@ -306,7 +312,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
  *===============*/
 
 /*1: Enable the log module*/
-#define LV_USE_LOG      0
+#define LV_USE_LOG      1
 #if LV_USE_LOG
 /* How important log should be added:
  * LV_LOG_LEVEL_TRACE       A lot of logs to give detailed information
@@ -315,7 +321,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
  * LV_LOG_LEVEL_ERROR       Only critical issue, when the system may fail
  * LV_LOG_LEVEL_NONE        Do not log anything
  */
-#  define LV_LOG_LEVEL    LV_LOG_LEVEL_WARN
+#  define LV_LOG_LEVEL    LV_LOG_LEVEL_INFO
 
 /* 1: Print the log with 'printf';
  * 0: user need to register a callback with `lv_log_register_print_cb`*/

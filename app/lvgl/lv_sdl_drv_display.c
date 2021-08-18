@@ -94,7 +94,7 @@ lv_disp_t *lv_sdl_init_display(const char *win_name, int width, int height)
         printf("SDL_InitSubSystem failed: %s\n", SDL_GetError());
 
     window = SDL_CreateWindow(win_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              width, height, 0);
+                              width, height, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 

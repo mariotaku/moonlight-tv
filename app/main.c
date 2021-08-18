@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     backend_init();
 
     lv_init();
-    lv_disp_t *disp = lv_sdl_init_display("Moonlight", 960, 540);
+    lv_disp_t *disp = lv_sdl_init_display("Moonlight", 1920, 1080);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
     lv_group_t *group = lv_group_create();
