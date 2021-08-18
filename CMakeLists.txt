@@ -192,6 +192,7 @@ set(SOURCES
     app/ui/streaming/bottombar.c
     app/stream/video/dummy.c
     app/ui/settings/window.c
+    app/ui/settings/settings.view.c
     app/ui/settings/pane_basic.c
     app/ui/settings/pane_host.c
     app/ui/settings/pane_input.c

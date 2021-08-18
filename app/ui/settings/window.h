@@ -17,6 +17,8 @@
 #include "nuklear/platform_sprites.h"
 #endif
 
+#include "lvgl.h"
+
 #include "stream/settings.h"
 #include "app.h"
 
@@ -62,3 +64,5 @@ void settings_item_update_selected_bounds(struct nk_context *ctx, int index, str
 void settings_pane_item_offset(int offset);
 
 void settings_draw_highlight(struct nk_context *ctx);
+
+lv_obj_t *settings_win_create();

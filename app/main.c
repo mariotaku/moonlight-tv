@@ -9,14 +9,6 @@
 
 #include "ui/config.h"
 
-#include "nuklear/config.h"
-#include "nuklear.h"
-#include "nuklear/ext_functions.h"
-#include "nuklear/ext_image.h"
-#include "nuklear/ext_sprites.h"
-#include "nuklear/ext_styling.h"
-#include "nuklear/platform.h"
-
 #include "lvgl.h"
 #include "lvgl/lv_sdl_drv_display.h"
 #include "lvgl/lv_sdl_drv_key_input.h"
@@ -67,10 +59,25 @@ int main(int argc, char *argv[])
     decoder_init(app_configuration->decoder, argc, argv);
     audio_init(app_configuration->audio_backend, argc, argv);
 
+    applog_i("APP", "Decoder module: %s (%s requested)", decoder_definitions[decoder_current].name, app_configuration->decoder);
+    if (audio_current == AUDIO_DECODER)
+    {
+        applog_i("APP", "Audio module: decoder implementation (%s requested)\n", app_configuration->audio_backend);
+    }
+    else if (audio_current >= 0)
+    {
+        applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name, app_configuration->audio_backend);
+    }
+
     backend_init();
 
     lv_init();
     lv_disp_t *disp = lv_sdl_init_display("Moonlight", 960, 540);
+    streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
+
+    lv_group_t *group = lv_group_create();
+    lv_group_set_editing(group, 0);
+    lv_group_set_default(group);
     lv_sdl_init_key_input();
     lv_sdl_init_pointer_input();
 
@@ -95,95 +102,6 @@ int main(int argc, char *argv[])
     bus_destroy();
 
     applog_d("APP", "Quitted gracefully :)");
-}
-
-int main2(int argc, char *argv[])
-{
-    app_loginit();
-#if TARGET_WEBOS || TARGET_LGNC
-    app_logfile = fopen("/tmp/" APPID ".log", "a+");
-    if (!app_logfile)
-        app_logfile = stdout;
-    setvbuf(app_logfile, NULL, _IONBF, 0);
-    if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
-        REDIR_STDOUT(APPID);
-    applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
-#endif
-    bus_init();
-
-    int ret = app_init(argc, argv);
-    if (ret != 0)
-    {
-        return ret;
-    }
-    module_host_context.logvprintf = &app_logvprintf;
-
-    // LGNC requires init before window created, don't put this after app_window_create!
-    decoder_init(app_configuration->decoder, argc, argv);
-    audio_init(app_configuration->audio_backend, argc, argv);
-
-    /* GUI */
-    struct nk_context *ctx;
-    APP_WINDOW_CONTEXT win = app_window_create();
-    if (!win)
-    {
-        applog_e("APP", "Failed to create window");
-        return 1;
-    }
-
-    applog_i("APP", "Decoder module: %s (%s requested)", decoder_definitions[decoder_current].name, app_configuration->decoder);
-    if (audio_current == AUDIO_DECODER)
-    {
-        applog_i("APP", "Audio module: decoder implementation (%s requested)\n", app_configuration->audio_backend);
-    }
-    else if (audio_current >= 0)
-    {
-        applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name, app_configuration->audio_backend);
-    }
-
-    backend_init();
-
-    ctx = nk_platform_init(win);
-    ui_display_size(app_window_width, app_window_height);
-    streaming_display_size(app_window_width, app_window_height);
-    {
-        struct nk_font_atlas *atlas;
-        nk_platform_font_stash_begin(&atlas);
-        if (!app_load_font(ctx, atlas))
-        {
-            struct nk_font *font_ui = nk_font_atlas_add_default(atlas, FONT_SIZE_DEFAULT * NK_UI_SCALE, NULL);
-            fonts_init_fallback(atlas);
-            nk_style_set_font(ctx, &font_ui->handle);
-        }
-        nk_platform_font_stash_end();
-#if DEBUG && TARGET_DESKTOP
-        nk_style_load_all_cursors(ctx, atlas->cursors);
-#endif
-    }
-    nk_ext_sprites_init();
-    nk_ext_apply_style(ctx);
-
-    ui_root_init(ctx);
-
-    while (running)
-    {
-        app_main_loop((void *)ctx);
-    }
-
-    settings_save(app_configuration);
-
-    ui_root_destroy();
-
-    nk_ext_sprites_destroy();
-
-    nk_platform_shutdown();
-    backend_destroy();
-    app_gs_client_destroy();
-    app_destroy();
-    bus_destroy();
-
-    applog_d("APP", "Quitted gracefully :)");
-    return ret;
 }
 
 void app_request_exit()
