@@ -65,6 +65,9 @@ void uimanager_pop()
 
 void ui_init()
 {
+    lv_obj_t *scr = lv_scr_act();
+    lv_obj_set_style_bg_color(scr, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(scr, 0, 0);
     /*Create a window*/
     uimanager_push(launcher_win_create);
 }

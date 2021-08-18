@@ -106,7 +106,10 @@ lv_disp_t *lv_sdl_init_display(const char *win_name, int width, int height)
 
     sdl_present_task = SDL_AddTimer(LV_DISP_DEF_REFR_PERIOD, &sdl_present, NULL);
 
-    return lv_disp_drv_register(&disp_drv);
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+    lv_disp_set_bg_color(disp, lv_color_black());
+    lv_disp_set_bg_opa(disp, 0);
+    return disp;
 }
 
 void lv_sdl_deinit_display(void)
