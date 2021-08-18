@@ -73,9 +73,16 @@ lv_indev_t *lv_indev_get_type_act(lv_indev_type_t type)
 void launcher_win_update_pclist()
 {
     lv_dropdown_clear_options(pclist);
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
+    if (!computer_list)
     {
-        lv_dropdown_add_option(pclist, cur->server->hostname, LV_DROPDOWN_POS_LAST);
+        lv_dropdown_add_option(pclist, "No Computer", 0);
+    }
+    else
+    {
+        for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next)
+        {
+            lv_dropdown_add_option(pclist, cur->server->hostname, LV_DROPDOWN_POS_LAST);
+        }
     }
 }
 
@@ -83,7 +90,12 @@ void launcher_win_update_selected()
 {
     lv_obj_clean(applist);
     PSERVER_LIST node = launcher_win_selected_server();
-    if (node->state.code == SERVER_STATE_ONLINE)
+    if (!node)
+    {
+        lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+    }
+    else if (node->state.code == SERVER_STATE_ONLINE)
     {
         if (node->appload)
         {

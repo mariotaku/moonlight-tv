@@ -37,7 +37,7 @@ void launcher_controller_destroy()
 void _update_selected()
 {
     PSERVER_LIST node = launcher_win_selected_server();
-    if (node->state.code == SERVER_STATE_ONLINE && !node->apps)
+    if (node && node->state.code == SERVER_STATE_ONLINE && !node->apps)
     {
         application_manager_load(node);
     }
