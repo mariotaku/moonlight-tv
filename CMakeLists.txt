@@ -377,7 +377,7 @@ elseif(TARGET_RASPI)
     moonlight_add_module(TARGETS moonlight-alsa LINK)
     moonlight_add_module(TARGETS moonlight-pulse LINK)
     
-#    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
+    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
