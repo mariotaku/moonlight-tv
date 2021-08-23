@@ -283,7 +283,7 @@ set_target_properties(moonlight PROPERTIES
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
 target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
-target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST)
+target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST=1)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
@@ -377,7 +377,7 @@ elseif(TARGET_RASPI)
     moonlight_add_module(TARGETS moonlight-alsa LINK)
     moonlight_add_module(TARGETS moonlight-pulse LINK)
     
-    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
+#    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})

@@ -1,6 +1,7 @@
 
 # Project specific
 build/
+cmake-build-*/
 /temp
 # Let third party libraries handle by themselves
 !/third_party/**
@@ -82,6 +83,9 @@ dkms.conf
 
 # Local History for Visual Studio Code
 .history/
+
+# IDEA
+.idea/
 
 # General
 .DS_Store
