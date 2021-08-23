@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Video decode on Raspberry Pi using OpenMAX IL though the ilcient helper library
 // Based upon video decode example from the Raspberry Pi firmware
 #include "pi_common.h"
-#include "stream/video/video.h"
 #include "stream/module/api.h"
 
 #include <Limelight.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-float ui_scale;
+extern float ui_scale;
 
 #if TARGET_WEBOS || TARGET_RASPI
 #define WINDOW_WIDTH 1920
