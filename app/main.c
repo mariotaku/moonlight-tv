@@ -3,14 +3,17 @@
 #include <pthread.h>
 
 #include "app.h"
+
 #define RES_IMPL
+
 #include "res.h"
+
 #undef RES_IMPL
 
 #include "ui/config.h"
 
 #include "lvgl.h"
-#include "lvgl/lv_sdl_drv_display.h"
+#include "gpu/lv_gpu_sdl.h"
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_sdl_drv_pointer_input.h"
 
@@ -31,11 +34,12 @@ FILE *app_logfile = NULL;
 static bool running = true;
 static GS_CLIENT app_gs_client = NULL;
 static pthread_mutex_t app_gs_client_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static void app_gs_client_destroy();
+
 static bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas);
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     app_loginit();
 #if TARGET_WEBOS || TARGET_LGNC
     app_logfile = fopen("/tmp/" APPID ".log", "a+");
@@ -49,8 +53,7 @@ int main(int argc, char *argv[])
     bus_init();
 
     int ret = app_init(argc, argv);
-    if (ret != 0)
-    {
+    if (ret != 0) {
         return ret;
     }
     module_host_context.logvprintf = &app_logvprintf;
@@ -59,20 +62,21 @@ int main(int argc, char *argv[])
     decoder_init(app_configuration->decoder, argc, argv);
     audio_init(app_configuration->audio_backend, argc, argv);
 
-    applog_i("APP", "Decoder module: %s (%s requested)", decoder_definitions[decoder_current].name, app_configuration->decoder);
-    if (audio_current == AUDIO_DECODER)
-    {
+    applog_i("APP", "Decoder module: %s (%s requested)", decoder_definitions[decoder_current].name,
+             app_configuration->decoder);
+    if (audio_current == AUDIO_DECODER) {
         applog_i("APP", "Audio module: decoder implementation (%s requested)\n", app_configuration->audio_backend);
-    }
-    else if (audio_current >= 0)
-    {
-        applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name, app_configuration->audio_backend);
+    } else if (audio_current >= 0) {
+        applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name,
+                 app_configuration->audio_backend);
     }
 
     backend_init();
 
+    SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
     lv_init();
-    lv_disp_t *disp = lv_sdl_init_display("Moonlight", 1920, 1080);
+    lv_disp_t *disp = lv_sdl_display_init(window);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
     lv_group_t *group = lv_group_create();
@@ -83,18 +87,20 @@ int main(int argc, char *argv[])
 
     ui_init();
 
-    while (running)
-    {
+    while (running) {
         app_process_events();
         lv_task_handler();
+        SDL_Delay(1);
     }
 
     settings_save(app_configuration);
 
     lv_sdl_deinit_pointer_input();
     lv_sdl_deinit_key_input();
-    lv_sdl_deinit_display();
-    lv_deinit();
+    lv_sdl_display_deinit(disp);
+//    lv_deinit();
+
+    SDL_DestroyWindow(window);
 
     backend_destroy();
     app_gs_client_destroy();
@@ -104,13 +110,11 @@ int main(int argc, char *argv[])
     applog_d("APP", "Quitted gracefully :)");
 }
 
-void app_request_exit()
-{
+void app_request_exit() {
     running = false;
 }
 
-GS_CLIENT app_gs_client_obtain()
-{
+GS_CLIENT app_gs_client_obtain() {
     pthread_mutex_lock(&app_gs_client_mutex);
     assert(app_configuration);
     if (!app_gs_client)
@@ -120,10 +124,8 @@ GS_CLIENT app_gs_client_obtain()
     return app_gs_client;
 }
 
-void app_gs_client_destroy()
-{
-    if (app_gs_client)
-    {
+void app_gs_client_destroy() {
+    if (app_gs_client) {
         gs_destroy(app_gs_client);
         app_gs_client = NULL;
     }
@@ -131,19 +133,17 @@ void app_gs_client_destroy()
     pthread_mutex_lock(&app_gs_client_mutex);
 }
 
-bool app_gs_client_ready()
-{
+bool app_gs_client_ready() {
     return app_gs_client != NULL;
 }
 
-bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas)
-{
+bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas) {
     FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
     if (!config)
         return false;
 
     //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
-    FcPattern *pat = FcNameParse((const FcChar8 *)FONT_FAMILY);
+    FcPattern *pat = FcNameParse((const FcChar8 *) FONT_FAMILY);
     if (!pat)
         goto deconfig;
 
@@ -161,17 +161,17 @@ bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas)
     //If you want to return the filename of the selected font, pass a buffer and copy the file name into that buffer
     FcChar8 *file = NULL;
 
-    if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch)
-    {
-        font_ui = nk_font_atlas_add_from_file_s(atlas, (char *)file, FONT_SIZE_DEFAULT, NULL);
-        fonts_init(atlas, (char *)file);
+    if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch) {
+        font_ui = nk_font_atlas_add_from_file_s(atlas, (char *) file, FONT_SIZE_DEFAULT, NULL);
+        fonts_init(atlas, (char *) file);
         nk_style_set_font(ctx, &font_ui->handle);
     }
 
-    FcPatternDestroy(font); //needs to be called for every pattern created; in this case, 'fontFile' / 'file' is also freed
-depat:
+    FcPatternDestroy(
+            font); //needs to be called for every pattern created; in this case, 'fontFile' / 'file' is also freed
+    depat:
     FcPatternDestroy(pat); //needs to be called for every pattern created
-deconfig:
+    deconfig:
     FcConfigDestroy(config); //needs to be called for every config created
     return font_ui != NULL;
 }
