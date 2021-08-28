@@ -240,52 +240,6 @@ void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
     }
 }
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
-{
-    switch (navkey)
-    {
-    case NAVKEY_LEFT:
-        if (!navkey_intercept_repeat(state, timestamp))
-            _applist_item_select(node, -1);
-        return true;
-    case NAVKEY_RIGHT:
-        if (!navkey_intercept_repeat(state, timestamp))
-            _applist_item_select(node, 1);
-        return true;
-    case NAVKEY_UP:
-        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, -_applist_colcount);
-    case NAVKEY_DOWN:
-        if (!navkey_intercept_repeat(state, timestamp))
-            _applist_item_select(node, _applist_colcount);
-        return true;
-    case NAVKEY_FOCUS:
-        return navkey_intercept_repeat(state, timestamp) || _applist_item_select(node, 0);
-    case NAVKEY_NEGATIVE:
-        if (applist_hovered_item && node->server->currentGame == applist_hovered_item->id)
-        {
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_close_center, (void *)state);
-        }
-        return true;
-    case NAVKEY_CONFIRM:
-    case NAVKEY_START:
-        if (applist_hovered_item)
-        {
-            if (node->server->currentGame == applist_hovered_item->id)
-            {
-                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_resume_center, (void *)state);
-            }
-            else
-            {
-                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &applist_focused_item_center, (void *)state);
-            }
-        }
-        return true;
-    default:
-        break;
-    }
-    return false;
-}
-
 bool _applist_item_select(PSERVER_LIST node, int offset)
 {
     if (_applist_visible_start == NULL)

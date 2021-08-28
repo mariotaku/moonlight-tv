@@ -39,6 +39,8 @@ static void app_gs_client_destroy();
 
 static bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas);
 
+static void lv_bg_draw(lv_area_t *area);
+
 int main(int argc, char *argv[]) {
     app_loginit();
 #if TARGET_WEBOS || TARGET_LGNC
@@ -77,13 +79,18 @@ int main(int argc, char *argv[]) {
 
     lv_init();
     lv_disp_t *disp = lv_sdl_display_init(window);
+    disp->bg_color = lv_color_make(0, 0, 0);
+    disp->bg_opa = 0;
+    disp->bg_fn = lv_bg_draw;
+    disp->theme->font_small = &lv_font_montserrat_24;
+    disp->theme->font_large = &lv_font_montserrat_32;
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
     lv_sdl_init_key_input();
-    lv_sdl_init_pointer_input();
+    lv_sdl_init_pointer();
 
     ui_init();
 
@@ -95,7 +102,7 @@ int main(int argc, char *argv[]) {
 
     settings_save(app_configuration);
 
-    lv_sdl_deinit_pointer_input();
+    lv_sdl_deinit_pointer();
     lv_sdl_deinit_key_input();
     lv_sdl_display_deinit(disp);
 //    lv_deinit();
@@ -174,4 +181,17 @@ bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas) {
     deconfig:
     FcConfigDestroy(config); //needs to be called for every config created
     return font_ui != NULL;
+}
+
+static void lv_bg_draw(lv_area_t *area) {
+    SDL_Rect rect = {.x=area->x1, .y= area->x1, .w = lv_area_get_width(area), .h = lv_area_get_height(area)};
+    lv_disp_t *disp = lv_disp_get_default();
+    lv_disp_drv_t *driver = disp->driver;
+    if (rect.w != driver->hor_res || rect.h != driver->ver_res) return;
+    SDL_Renderer *renderer = driver->user_data;
+    SDL_assert(SDL_GetRenderTarget(renderer) == lv_disp_get_draw_buf(disp)->buf_act);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    SDL_RenderSetClipRect(renderer, NULL);
+    SDL_RenderFillRect(renderer, &rect);
 }

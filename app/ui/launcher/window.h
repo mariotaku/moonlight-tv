@@ -33,16 +33,12 @@ void launcher_window_init(struct nk_context *ctx);
 
 void launcher_window_destroy();
 
-void launcher_display_size(struct nk_context *ctx, short width, short height);
-
 bool launcher_window(struct nk_context *ctx);
 
 bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
 
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2);
 
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
-
 void launcher_add_server();
 
-lv_obj_t *launcher_win_create();
+lv_obj_t *launcher_win_create(lv_obj_t *parent, const void *args);

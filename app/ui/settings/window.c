@@ -15,7 +15,7 @@
 
 static void _pane_select_index(struct nk_context *ctx, int new_index);
 static void _pane_select_offset(struct nk_context *ctx, int offset);
-static bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
+
 static int _pane_itemcount(int index);
 
 void _settings_nav(struct nk_context *ctx);
@@ -163,119 +163,6 @@ bool settings_window(struct nk_context *ctx)
         return false;
     }
     return true;
-}
-
-bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
-{
-    switch (navkey)
-    {
-    case NAVKEY_CANCEL:
-        if (settings_showing_combo)
-        {
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &settings_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
-            return true;
-        }
-        else if (state)
-        {
-            return true;
-        }
-        if (settings_pane_focused)
-        {
-            settings_set_pane_focused(false);
-        }
-        else
-        {
-            nk_window_show(ctx, WINDOW_TITLE, false);
-        }
-        break;
-    case NAVKEY_UP:
-        if (settings_pane_focused)
-        {
-            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
-            {
-                break;
-            }
-            else if (!navkey_intercept_repeat(state, timestamp))
-            {
-                settings_pane_item_offset(-1);
-            }
-        }
-        else if (!settings_showing_combo && !navkey_intercept_repeat(state, timestamp))
-        {
-            _pane_select_offset(ctx, -1);
-        }
-        break;
-    case NAVKEY_DOWN:
-        if (settings_pane_focused)
-        {
-            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
-            {
-                break;
-            }
-            else if (!navkey_intercept_repeat(state, timestamp))
-            {
-                settings_pane_item_offset(1);
-            }
-        }
-        else if (!settings_showing_combo && !navkey_intercept_repeat(state, timestamp))
-        {
-            _pane_select_offset(ctx, 1);
-        }
-        break;
-    case NAVKEY_LEFT:
-        if (settings_pane_focused)
-        {
-            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
-            {
-                break;
-            }
-            else if (!settings_showing_combo && state == NAVKEY_STATE_UP)
-            {
-                settings_set_pane_focused(false);
-            }
-        }
-        break;
-    case NAVKEY_RIGHT:
-        if (settings_pane_focused)
-        {
-            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
-            {
-                break;
-            }
-        }
-        else if (!settings_showing_combo && state == NAVKEY_STATE_UP)
-        {
-
-            settings_set_pane_focused(true);
-        }
-        break;
-    case NAVKEY_CONFIRM:
-        if (settings_pane_focused)
-        {
-            if (_pane_dispatch_navkey(ctx, selected_pane_index, navkey, state, timestamp))
-            {
-                break;
-            }
-            else if (settings_focused_item_center.x)
-            {
-                bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &settings_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
-            }
-        }
-        else if (!settings_showing_combo && state == NAVKEY_STATE_UP)
-        {
-
-            settings_set_pane_focused(true);
-        }
-        break;
-    default:
-        break;
-    }
-    return true;
-}
-
-bool _pane_dispatch_navkey(struct nk_context *ctx, int pane_index, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp)
-{
-    return settings_panes[pane_index]->navkey && settings_panes[pane_index]->navkey(ctx, navkey, state, timestamp);
 }
 
 void _pane_select_index(struct nk_context *ctx, int new_index)

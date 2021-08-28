@@ -3,18 +3,20 @@
 
 static void settings_win_close(lv_event_t *e);
 
-lv_obj_t *settings_win_create()
-{
+lv_obj_t *settings_win_create(lv_obj_t *parent, const void *args) {
     /*Create a window*/
-    lv_obj_t *win = lv_win_create(lv_scr_act(), 60);
+    lv_obj_t *win = lv_win_create(parent, 80);
     lv_win_add_title(win, "Settings");
 
     lv_obj_t *header = lv_win_get_header(win);
     lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_pad_ver(header, 15, 0);
 
-    lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, 30);
-    lv_obj_add_event_cb(close_btn, (lv_event_cb_t)uimanager_pop, LV_EVENT_CLICKED, win);
+    lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, 50);
+    lv_obj_set_style_size(close_btn, 50, 0);
+    lv_obj_set_style_radius(close_btn, LV_RADIUS_CIRCLE, 0);
+
+    lv_obj_add_event_cb(close_btn, (lv_event_cb_t) uimanager_pop, LV_EVENT_CLICKED, win);
 
     lv_obj_t *content = lv_win_get_content(win);
     static lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};

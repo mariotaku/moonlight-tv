@@ -69,8 +69,12 @@ elseif (TARGET_RASPI)
 elseif (TARGET_DESKTOP)
     if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
         set(TARGET_DARWIN TRUE)
-    else()
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(TARGET_LINUX TRUE)
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        set(TARGET_WINDOWS TRUE)
+    else()
+        message(FATAL_ERROR "Unknown build system")
     endif()
 
     set(HAVE_SDL TRUE)
@@ -89,7 +93,6 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(CURL REQUIRED libcurl)
-pkg_check_modules(UUID REQUIRED uuid)
 pkg_check_modules(EXPAT REQUIRED expat)
 find_package(Fontconfig REQUIRED)
 find_package(CURL REQUIRED)
@@ -148,13 +151,9 @@ add_subdirectory(decoder)
 add_subdirectory(audio)
 add_subdirectory(third_party/mdns EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/lvgl)
-target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src PRIVATE ${CMAKE_SOURCE_DIR}/app/lvgl)
+target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
-target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=${CMAKE_SOURCE_DIR}/app/lvgl/lv_conf.h PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
-target_sources(lvgl PRIVATE
-    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_key_input.c
-    ${CMAKE_SOURCE_DIR}/app/lvgl/lv_sdl_drv_pointer_input.c
-)
+target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
 set(SOURCES
     app/main.c
@@ -205,6 +204,8 @@ set(SOURCES
     app/util/debugprint.c
     app/util/logging.c
     app/util/libconfig_ext.c
+    app/lvgl/lv_sdl_drv_key_input.c
+    app/lvgl/lv_sdl_drv_pointer_input.c
 )
 
 if (SDL2_IMAGE_FOUND)
@@ -356,6 +357,9 @@ elseif (TARGET_DESKTOP)
     elseif(TARGET_LINUX)
         target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
+    elseif(TARGET_WINDOWS)
+        target_compile_definitions(moonlight PUBLIC OS_WINDOWS)
+        target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Windows")
     endif()
 
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)

@@ -37,16 +37,11 @@ extern struct nk_vec2 ui_statbar_icon_padding;
 
 void ui_root_init(struct nk_context *ctx);
 
-void ui_root_destroy();
-
 /**
  * @return false if this call didn't involve with any Nuklear calls, so redraw can be ignored
  */
-bool ui_root(struct nk_context *ctx);
 
-void ui_render_background();
-
-bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void *data2);
+bool ui_dispatch_userevent(int which, void *data1, void *data2);
 
 /**
  * @brief Check if GUI should consume input events, so it will not pass onto streaming
@@ -54,7 +49,5 @@ bool ui_dispatch_userevent(struct nk_context *ctx, int which, void *data1, void 
 bool ui_should_block_input();
 
 void ui_display_size(short width, short height);
-
-bool ui_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 
 bool ui_set_input_mode(enum UI_INPUT_MODE mode);

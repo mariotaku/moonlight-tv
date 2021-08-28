@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "ui/config.h"
 #include "util/navkey.h"
@@ -23,8 +24,11 @@
 #include "app.h"
 
 typedef bool (*settings_panel_render)(struct nk_context *, bool *showing_combo);
+
 typedef bool (*settings_panel_navkey)(struct nk_context *, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
+
 typedef int (*settings_panel_itemcount)();
+
 typedef void (*settings_panel_voidfn)(struct nk_context *);
 
 extern struct settings_pane settings_pane_basic;
@@ -33,8 +37,7 @@ extern struct settings_pane settings_pane_input;
 extern struct settings_pane settings_pane_adv_codec;
 extern struct settings_pane settings_pane_about;
 
-struct settings_pane
-{
+struct settings_pane {
     const char *title;
     settings_panel_render render;
     settings_panel_navkey navkey;
@@ -57,12 +60,10 @@ bool settings_window_close();
 
 bool settings_window(struct nk_context *ctx);
 
-bool settings_window_dispatch_navkey(struct nk_context *ctx, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
-
 void settings_item_update_selected_bounds(struct nk_context *ctx, int index, struct nk_rect *bounds);
 
 void settings_pane_item_offset(int offset);
 
 void settings_draw_highlight(struct nk_context *ctx);
 
-lv_obj_t *settings_win_create();
+lv_obj_t *settings_win_create(lv_obj_t *parent, const void *args);

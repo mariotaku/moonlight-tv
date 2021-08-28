@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "backend/computer_manager.h"
 
@@ -8,16 +9,14 @@
 
 #include "lvgl.h"
 
-typedef enum pairing_state
-{
+typedef enum pairing_state {
     PS_NONE,
     PS_PAIRING,
     PS_UNPAIRING,
     PS_FAIL
 } pairing_state;
 
-struct pairing_computer_state
-{
+struct pairing_computer_state {
     pairing_state state;
     char pin[5];
     const char *error;
@@ -50,15 +49,23 @@ extern struct nk_vec2 _computer_picker_center;
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
 void _open_pair(PSERVER_LIST node);
+
 void _open_unpair(PSERVER_LIST node);
 
 void launcher_handle_quitapp(PPCMANAGER_RESP resp);
+
 void handle_unpairing_done(PPCMANAGER_RESP resp);
 
 void launcher_controller_init();
+
 void launcher_controller_destroy();
+
 void launcher_controller_pc_selected(lv_event_t *event);
 
+void launcher_open_game(lv_event_t *event);
+
 PSERVER_LIST launcher_win_selected_server();
+
 void launcher_win_update_pclist();
-void launcher_win_update_selected();
+
+void launcher_win_update_selected(PSERVER_LIST node);

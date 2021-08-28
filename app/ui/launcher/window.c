@@ -47,7 +47,6 @@ void _decoder_warning_popup(struct nk_context *ctx);
 bool pclist_dropdown(struct nk_context *ctx, bool event_emitted);
 bool pclist_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp);
 
-bool _applist_dispatch_navkey(struct nk_context *ctx, PSERVER_LIST node, NAVKEY navkey, NAVKEY_STATE state, uint32_t timestamp);
 void launcher_statbar(struct nk_context *ctx);
 bool launcher_pcempty(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
 
@@ -248,84 +247,9 @@ bool launcher_window(struct nk_context *ctx)
     return true;
 }
 
-void launcher_display_size(struct nk_context *ctx, short width, short height)
-{
-}
-
 bool launcher_window_dispatch_userevent(int which, void *data1, void *data2)
 {
     return false;
-}
-
-bool launcher_window_dispatch_navkey(struct nk_context *ctx, NAVKEY key, NAVKEY_STATE state, uint32_t timestamp)
-{
-    bool key_handled = false;
-    if (_launcher_modals & LAUNCHER_MODAL_MASK_WINDOW)
-    {
-        _launcher_modal_windows_navkey(ctx, key, state, timestamp);
-        return true;
-    }
-    else if (_launcher_modals & LAUNCHER_MODAL_MASK_POPUP)
-    {
-        if (state == NAVKEY_STATE_UP && (key == NAVKEY_CANCEL || key == NAVKEY_START || key == NAVKEY_CONFIRM))
-        {
-            _launcher_popup_request_dismiss = true;
-        }
-        return true;
-    }
-    else if (_launcher_showing_combo)
-    {
-        return pclist_dispatch_navkey(ctx, key, state, timestamp);
-    }
-    else if (selected_server_node && selected_server_node->server && topbar_hovered_item < 0)
-    {
-        key_handled |= _applist_dispatch_navkey(ctx, selected_server_node, key, state, timestamp);
-    }
-    if (key_handled)
-    {
-        return true;
-    }
-    switch (key)
-    {
-    case NAVKEY_MENU:
-        if (_computer_picker_center.x && _computer_picker_center.y)
-        {
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &_computer_picker_center, (void *)state);
-        }
-        return true;
-    case NAVKEY_CANCEL:
-        if (state == NAVKEY_STATE_UP)
-        {
-            app_request_exit();
-        }
-        return true;
-    case NAVKEY_UP:
-        if (!navkey_intercept_repeat(state, timestamp))
-            topbar_item_offset(0);
-        return true;
-    case NAVKEY_DOWN:
-        if (!navkey_intercept_repeat(state, timestamp))
-        {
-            topbar_hovered_item = -1;
-            _applist_dispatch_navkey(ctx, selected_server_node, NAVKEY_FOCUS, state, timestamp);
-        }
-        return true;
-    case NAVKEY_LEFT:
-        if (!navkey_intercept_repeat(state, timestamp))
-            topbar_item_offset(-1);
-        return true;
-    case NAVKEY_RIGHT:
-        if (!navkey_intercept_repeat(state, timestamp))
-            topbar_item_offset(1);
-        return true;
-    case NAVKEY_CONFIRM:
-        if (topbar_focused_item_center.x)
-            bus_pushevent(USER_FAKEINPUT_MOUSE_CLICK, &topbar_focused_item_center, (void *)(state | NAVKEY_STATE_NO_RESET));
-        return true;
-    default:
-        break;
-    }
-    return true;
 }
 
 void launcher_add_server()
