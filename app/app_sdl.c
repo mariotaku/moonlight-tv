@@ -6,21 +6,6 @@
 
 #include "ui/config.h"
 
-#define NK_IMPLEMENTATION
-
-#include "nuklear/config.h"
-#include "nuklear.h"
-#include "nuklear/ext_functions.h"
-#include "nuklear/ext_text.h"
-#include "nuklear/ext_text_multiline.h"
-#include "nuklear/ext_dialog.h"
-#include "nuklear/ext_image.h"
-#include "nuklear/ext_sprites.h"
-#include "nuklear/ext_styling.h"
-#include "nuklear/ext_imgview.h"
-#include "nuklear/ext_smooth_list_view.h"
-#include "nuklear/platform.h"
-
 #if TARGET_DESKTOP || TARGET_RASPI
 
 #include <SDL_image.h>

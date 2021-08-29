@@ -164,7 +164,6 @@ set(SOURCES
     app/backend/pcmanager/wol.c
     app/backend/gamecontrollerdb_updater.c
     app/backend/application_manager.c
-    app/backend/coverloader.c
     app/backend/error_manager.c
     app/backend/types_impl.c
     app/stream/module/module.c
@@ -176,14 +175,13 @@ set(SOURCES
     app/stream/video/delegate.c
     app/ui/manager.c
     app/ui/root.c
-        app/ui/launcher/launcher.view.c
+    app/ui/launcher/launcher.view.c
     app/ui/launcher/launcher.controller.c
-        app/ui/streaming/overlay.c
-        app/ui/streaming/streaming.controller.c
+    app/ui/streaming/overlay.c
+    app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
     app/stream/video/dummy.c
-    app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
@@ -193,16 +191,6 @@ set(SOURCES
     app/lvgl/lv_sdl_drv_key_input.c
     app/lvgl/lv_sdl_drv_pointer_input.c
 )
-
-if (SDL2_IMAGE_FOUND)
-    list(APPEND SOURCES
-        app/nuklear/nkimage_sdl.c
-    )
-else()
-    list(APPEND SOURCES
-        app/nuklear/nkimage_stb.c
-    )
-endif()
 
 if (HAVE_SDL)
     list(APPEND SOURCES
@@ -250,7 +238,6 @@ target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" AP
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/third_party/Nuklear)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 
@@ -366,11 +353,6 @@ else()
 endif()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
-
-add_custom_target(moonlight-spritegen
-    COMMAND nk-spritegen -n ui -i res/sprites -o res/ -c app/nuklear/ -s 1 -s 2 -s 3
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
 
 if (TARGET_WEBOS)
     # Copy asset dir to package root

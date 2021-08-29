@@ -1,5 +1,3 @@
-#if HAVE_GLES2
-
 #include "app.h"
 #include "root.h"
 #include "config.h"
@@ -13,6 +11,7 @@
 
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "util/logging.h"
 
 #include "res.h"
 
@@ -71,7 +70,6 @@ void ui_display_size(short width, short height) {
     ui_logic_width = width / ui_scale;
     ui_logic_height = height / ui_scale;
     applog_i("UI", "Display size changed to %d x %d", width, height);
-    nk_ext_sprites_init();
 }
 
 bool ui_set_input_mode(enum UI_INPUT_MODE mode) {

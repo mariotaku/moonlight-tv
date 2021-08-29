@@ -49,9 +49,8 @@ bool streaming_overlay_show() {
     if (stream_overlay_showing)
         return false;
     stream_overlay_showing = true;
-    struct nk_vec2 wndpos = nk_vec2_s(10, 10);
 
-    streaming_enter_overlay(ui_display_width / 2 - wndpos.x, wndpos.y, ui_display_width / 2, ui_display_height / 2);
+//    streaming_enter_overlay(ui_display_width / 2 - wndpos.x, wndpos.y, ui_display_width / 2, ui_display_height / 2);
     return true;
 }
 
