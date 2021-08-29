@@ -14,7 +14,7 @@ ui_view_controller_t *streaming_controller(const void *args) {
     const STREAMING_SCENE_ARGS *req = (STREAMING_SCENE_ARGS *) args;
     streaming_begin(req->server, req->app);
 
-    return controller;
+    return (ui_view_controller_t *) controller;
 }
 
 static bool on_event(streaming_controller_t *controller, int which, void *data1, void *data2) {

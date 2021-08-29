@@ -23,7 +23,6 @@
 #include "stream/platform.h"
 #include "ui/manager.h"
 #include "ui/root.h"
-#include "ui/fonts.h"
 #include "util/bus.h"
 #include "util/logging.h"
 
@@ -37,8 +36,6 @@ static GS_CLIENT app_gs_client = NULL;
 static pthread_mutex_t app_gs_client_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void app_gs_client_destroy();
-
-static bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas);
 
 static void lv_bg_draw(lv_area_t *area);
 
@@ -150,45 +147,6 @@ void app_gs_client_destroy() {
 
 bool app_gs_client_ready() {
     return app_gs_client != NULL;
-}
-
-bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas) {
-    FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
-    if (!config)
-        return false;
-
-    //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
-    FcPattern *pat = FcNameParse((const FcChar8 *) FONT_FAMILY);
-    if (!pat)
-        goto deconfig;
-
-    FcConfigSubstitute(config, pat, FcMatchPattern); //NECESSARY; it increases the scope of possible fonts
-    FcDefaultSubstitute(pat);                        //NECESSARY; it increases the scope of possible fonts
-
-    struct nk_font *font_ui = NULL;
-    char *fontFile = NULL;
-    FcResult result;
-
-    FcPattern *font = FcFontMatch(config, pat, &result);
-    if (!font)
-        goto depat;
-    //The pointer stored in 'file' is tied to 'font'; therefore, when 'font' is freed, this pointer is freed automatically.
-    //If you want to return the filename of the selected font, pass a buffer and copy the file name into that buffer
-    FcChar8 *file = NULL;
-
-    if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch) {
-        font_ui = nk_font_atlas_add_from_file_s(atlas, (char *) file, FONT_SIZE_DEFAULT, NULL);
-        fonts_init(atlas, (char *) file);
-        nk_style_set_font(ctx, &font_ui->handle);
-    }
-
-    FcPatternDestroy(
-            font); //needs to be called for every pattern created; in this case, 'fontFile' / 'file' is also freed
-    depat:
-    FcPatternDestroy(pat); //needs to be called for every pattern created
-    deconfig:
-    FcConfigDestroy(config); //needs to be called for every config created
-    return font_ui != NULL;
 }
 
 static void lv_bg_draw(lv_area_t *area) {

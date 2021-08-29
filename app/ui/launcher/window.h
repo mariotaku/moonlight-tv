@@ -5,32 +5,22 @@
 
 #include "ui/config.h"
 
-#ifndef NK_NUKLEAR_H_
-#include "nuklear/config.h"
-#include "nuklear.h"
-#include "nuklear/ext_functions.h"
-#include "nuklear/ext_image.h"
-#include "nuklear/ext_text.h"
-#include "nuklear/ext_text_multiline.h"
-#include "nuklear/ext_dialog.h"
-#include "nuklear/ext_sprites.h"
-#include "nuklear/ext_styling.h"
-#include "nuklear/ext_imgview.h"
-#include "nuklear/ext_smooth_list_view.h"
-#include "nuklear/platform_sprites.h"
-#endif
 #include "lvgl.h"
 
 #include "util/navkey.h"
 
 #include "backend/computer_manager.h"
+#include "backend/application_manager.h"
 
-extern struct nk_image launcher_default_cover;
-extern PSERVER_LIST selected_server_node;
-extern PAPP_DLIST applist_hovered_item;
-extern bool pclist_showing;
+typedef struct {
+    ui_view_controller_t base;
+    PCMANAGER_CALLBACKS _pcmanager_callbacks;
+    APPMANAGER_CALLBACKS _appmanager_callbacks;
+    lv_obj_t *pclist, *applist, *appload;
+    PSERVER_LIST selected_server;
+} launcher_controller_t;
 
-bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted);
 
+lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *parent);
 
 ui_view_controller_t *launcher_controller(const void *args);

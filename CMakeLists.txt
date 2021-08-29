@@ -176,18 +176,10 @@ set(SOURCES
     app/stream/video/delegate.c
     app/ui/manager.c
     app/ui/root.c
-    app/ui/fonts.c
-    app/ui/launcher/window.c
-    app/ui/launcher/launcher.view.c
+        app/ui/launcher/launcher.view.c
     app/ui/launcher/launcher.controller.c
-    app/ui/launcher/pclist.c
-    app/ui/launcher/applist.c
-    app/ui/launcher/statbar.c
-    app/ui/launcher/modals.c
-    app/ui/launcher/pairing.c
-    app/ui/streaming/overlay.c
-    app/ui/streaming/bottombar.c
-    app/ui/streaming/streaming.controller.c
+        app/ui/streaming/overlay.c
+        app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
     app/stream/video/dummy.c

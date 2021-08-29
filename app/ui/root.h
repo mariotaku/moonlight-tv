@@ -5,18 +5,9 @@
 
 #include "ui/config.h"
 
-#ifndef NK_NUKLEAR_H_
-#include "nuklear/config.h"
-#include "nuklear.h"
-#include "nuklear/ext_functions.h"
-#include "nuklear/ext_image.h"
-#include "nuklear/ext_sprites.h"
-#endif
-
 #include "util/navkey.h"
 
-enum UI_INPUT_MODE
-{
+enum UI_INPUT_MODE {
     UI_INPUT_MODE_POINTER,
     UI_INPUT_MODE_KEY,
     UI_INPUT_MODE_REMOTE,
@@ -29,17 +20,7 @@ enum UI_INPUT_MODE
 
 extern short ui_display_width, ui_display_height;
 extern short ui_logic_width, ui_logic_height;
-extern bool ui_settings_showing;
 extern enum UI_INPUT_MODE ui_input_mode;
-extern bool ui_fake_mouse_click_started;
-
-extern struct nk_vec2 ui_statbar_icon_padding;
-
-void ui_root_init(struct nk_context *ctx);
-
-/**
- * @return false if this call didn't involve with any Nuklear calls, so redraw can be ignored
- */
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2);
 

@@ -1,13 +1,5 @@
 #if HAVE_GLES2
 
-#include <GLES2/gl2.h>
-
-#elif OS_DARWIN
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
-
 #include "app.h"
 #include "root.h"
 #include "config.h"
@@ -28,22 +20,9 @@ short ui_display_width, ui_display_height;
 short ui_logic_width, ui_logic_height;
 float ui_scale = 1;
 
-bool ui_settings_showing;
-bool ui_fake_mouse_click_started;
 enum UI_INPUT_MODE ui_input_mode;
-struct nk_vec2 ui_statbar_icon_padding;
 
 static PVIDEO_RENDER_CALLBACKS ui_stream_render;
-static bool ui_send_faketouch_cancel;
-static bool ui_fake_mouse_event_received;
-
-void ui_root_init(struct nk_context *ctx) {
-    streaming_overlay_init(ctx);
-    ui_send_faketouch_cancel = false;
-    ui_fake_mouse_click_started = false;
-    ui_input_mode = UI_INPUT_MODE_POINTER;
-    ui_statbar_icon_padding = nk_vec2_s(2, 2);
-}
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;

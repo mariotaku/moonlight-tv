@@ -1,7 +1,7 @@
 #include "ui/streaming/streaming.controller.h"
-#include "priv.h"
 #include "lvgl.h"
 #include "ui/streaming/overlay.h"
+#include "window.h"
 
 void launcher_view_init(launcher_controller_t *controller);
 

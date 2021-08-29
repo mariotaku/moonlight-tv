@@ -3,7 +3,7 @@
 
 #include "lvgl.h"
 
-#include "priv.h"
+#include "window.h"
 
 static void open_settings(lv_event_t *event);
 
