@@ -47,7 +47,7 @@ void ui_root_init(struct nk_context *ctx) {
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;
-    handled |= streaming_overlay_dispatch_userevent(which);
+    handled |= uimanager_dispatch_event(app_uimanager, which, data1, data2);
     if (!handled) {
         switch (which) {
             case USER_STREAM_OPEN:

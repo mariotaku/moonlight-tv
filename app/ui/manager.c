@@ -88,6 +88,15 @@ void uimanager_pop(uimanager_ctx *ctx) {
     manager->top = prev;
 }
 
+bool uimanager_dispatch_event(uimanager_ctx *ctx, int which, void *data1, void *data2) {
+    uimanager_t *manager = (uimanager_t *) ctx;
+    PUIMANAGER_STACK top = manager->top;
+    if (!top || !top->_view) return false;
+    ui_view_controller_t *controller = top->_controller;
+    if (!controller || !controller->dispatch_event) return false;
+    return controller->dispatch_event(controller, which, data1, data2);
+}
+
 static void item_create_view(uimanager_t *manager, PUIMANAGER_STACK item, lv_obj_t *parent, const void *args) {
     ui_view_controller_t *controller = item->_controller;
     if (!controller) {
@@ -106,10 +115,6 @@ static void item_destroy_view(PUIMANAGER_STACK item) {
     lv_obj_t *view = item->_view;
     lv_obj_del(view);
     item->_view = item->_controller->view = NULL;
-}
-
-void uimanager_push_from_event(lv_event_t *event) {
-    uimanager_push(lv_scr_act(), event->user_data, NULL);
 }
 
 static void view_cb_delete(lv_event_t *event) {

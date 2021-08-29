@@ -67,7 +67,7 @@ elseif (TARGET_RASPI)
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR})
     set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 elseif (TARGET_DESKTOP)
-    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin") 
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(TARGET_DARWIN TRUE)
     elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         set(TARGET_LINUX TRUE)
@@ -78,7 +78,7 @@ elseif (TARGET_DESKTOP)
     endif()
 
     set(HAVE_SDL TRUE)
-    
+
     set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
     set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
     set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/share)
@@ -131,7 +131,7 @@ elseif (TARGET_DESKTOP)
     set(OpenGL_GL_PREFERENCE "GLVND")
     find_package(OpenGL REQUIRED)
     find_package(MbedTLS REQUIRED)
-    
+
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(OPUS REQUIRED opus)
@@ -181,16 +181,17 @@ set(SOURCES
     app/ui/launcher/launcher.view.c
     app/ui/launcher/launcher.controller.c
     app/ui/launcher/pclist.c
-        app/ui/launcher/applist.c
+    app/ui/launcher/applist.c
     app/ui/launcher/statbar.c
     app/ui/launcher/modals.c
     app/ui/launcher/pairing.c
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
-    app/stream/video/dummy.c
-        app/ui/settings/settings.controller.c
+    app/ui/streaming/streaming.controller.c
+    app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
-        app/platform/webos/sprites_webos.c
+    app/stream/video/dummy.c
+    app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
@@ -289,7 +290,7 @@ endmacro()
 
 if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC TARGET_WEBOS _GNU_SOURCE
-        APPID="${WEBOS_APPINFO_ID}" 
+        APPID="${WEBOS_APPINFO_ID}"
         APPLOG_FILE=app_logfile
     )
     target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
@@ -303,7 +304,7 @@ if (TARGET_WEBOS)
     moonlight_add_module(TARGETS moonlight-lgnc)
     moonlight_add_module(TARGETS moonlight-pulse)
     moonlight_add_module(TARGETS moonlight-ndlaud moonlight-ndlaud-webos5)
-    
+
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedtls)
 
@@ -331,7 +332,7 @@ elseif(TARGET_RASPI)
     moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
     moonlight_add_module(TARGETS moonlight-alsa LINK)
     moonlight_add_module(TARGETS moonlight-pulse LINK)
-    
+
     target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
@@ -343,7 +344,7 @@ elseif(TARGET_RASPI)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC NK_SDL_GL2 HAVE_GL2)
-    
+
     if(TARGET_DARWIN)
         target_compile_definitions(moonlight PUBLIC OS_DARWIN GL_SILENCE_DEPRECATION)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
@@ -359,13 +360,13 @@ elseif (TARGET_DESKTOP)
 
     target_link_libraries(moonlight PRIVATE mbedtls)
     target_link_libraries(moonlight PRIVATE OpenGL::GL)
-    
+
     target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
     target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GL2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-    
+
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 else()
@@ -405,7 +406,7 @@ if (TARGET_WEBOS)
         WEBOS_PACKAGE_FILENAME ${WEBOS_PACKAGE_FILENAME}
         WEBOS_APPINFO_ID ${WEBOS_APPINFO_ID}
     )
-    
+
     if ($ENV{CI})
         get_target_property(package_id moonlight WEBOS_APPINFO_ID)
         get_target_property(package_file moonlight WEBOS_PACKAGE_PATH)
@@ -417,7 +418,7 @@ if (TARGET_WEBOS)
         add_custom_command(TARGET ${package_target} POST_BUILD
             COMMAND echo RELEASE_IPK_FILENAME=${package_filename} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
             # Force PATH environment variable to use system python
-            COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/tools/gen_manifest.py -a ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json 
+            COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/tools/gen_manifest.py -a ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json
                 -p ${CMAKE_BINARY_DIR}/${WEBOS_PACKAGE_FILENAME}
                 -o ${CMAKE_BINARY_DIR}/${WEBOS_HOMEBREW_MANIFEST_FILENAME}
             COMMAND echo RELEASE_MANIFEST_FILENAME=${WEBOS_HOMEBREW_MANIFEST_FILENAME} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
@@ -442,7 +443,7 @@ elseif (TARGET_RASPI)
     set(CPACK_DEBIAN_PACKAGE_SECTION "games")
     # set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
     # set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY ">=")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS_LIST 
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS_LIST
         "libc6 (>= 2.28)"
         "libsdl2-2.0-0 (>= 2.0.4)"
         "libsdl2-image-2.0-0 (>= 2.0.1)"

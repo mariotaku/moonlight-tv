@@ -42,6 +42,8 @@ static bool app_load_font(struct nk_context *ctx, struct nk_font_atlas *atlas);
 
 static void lv_bg_draw(lv_area_t *area);
 
+uimanager_ctx *app_uimanager;
+
 int main(int argc, char *argv[]) {
     app_loginit();
 #if TARGET_WEBOS || TARGET_LGNC
@@ -95,8 +97,8 @@ int main(int argc, char *argv[]) {
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_opa(scr, 0, 0);
-    uimanager_ctx *uimanager = uimanager_new(scr);
-    uimanager_push(uimanager, launcher_controller, NULL);
+    app_uimanager = uimanager_new(scr);
+    uimanager_push(app_uimanager, launcher_controller, NULL);
 
     while (running) {
         app_process_events();
@@ -106,7 +108,7 @@ int main(int argc, char *argv[]) {
 
     settings_save(app_configuration);
 
-    uimanager_destroy(uimanager);
+    uimanager_destroy(app_uimanager);
 
     lv_sdl_deinit_pointer();
     lv_sdl_deinit_key_input();

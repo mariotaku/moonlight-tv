@@ -1,3 +1,4 @@
+#include "ui/streaming/streaming.controller.h"
 #include "priv.h"
 #include "lvgl.h"
 #include "ui/streaming/overlay.h"
@@ -50,6 +51,7 @@ static void update_selected(launcher_controller_t *controller, PSERVER_LIST node
     if (node && node->state.code == SERVER_STATE_ONLINE && !node->apps) {
         application_manager_load(node);
     }
+    controller->selected_server = node;
     launcher_win_update_selected(controller, node);
 }
 
@@ -60,7 +62,7 @@ void launcher_handle_server_updated(launcher_controller_t *controller, PPCMANAGE
 
 static void cb_pc_selected(lv_event_t *event) {
     launcher_controller_t *controller = event->user_data;
-    update_selected(controller, (PSERVER_LIST) event->user_data);
+    update_selected(controller, (PSERVER_LIST) event->target->user_data);
 }
 
 void launcher_open_game(lv_event_t *event) {
@@ -69,7 +71,7 @@ void launcher_open_game(lv_event_t *event) {
             .server = controller->selected_server->server,
             .app = (PAPP_DLIST) event->target->user_data
     };
-    uimanager_push(lv_scr_act(), streaming_scene_create, &args);
+    uimanager_push(controller->base.manager, streaming_controller, &args);
 }
 
 void launcher_handle_apps_updated(launcher_controller_t *controller, PSERVER_LIST node) {

@@ -43,5 +43,3 @@ bool streaming_overlay_should_block_input();
 bool streaming_overlay_hide();
 
 bool streaming_overlay_show();
-
-lv_obj_t *streaming_scene_create(lv_obj_t *parent, const void *args);

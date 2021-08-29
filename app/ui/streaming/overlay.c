@@ -1,3 +1,4 @@
+#include <ui/manager.h>
 #include "overlay.h"
 #include "priv.h"
 #include "ui/root.h"
@@ -9,6 +10,7 @@
 #include "stream/video/delegate.h"
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "streaming.controller.h"
 
 struct nk_vec2 _btn_keyboard_center = {0, 0}, _btn_suspend_center = {0, 0},
         _btn_quit_center = {0, 0}, _btn_confirm_center = {0, 0};
@@ -112,7 +114,7 @@ void _streaming_perf_stat(struct nk_context *ctx) {
     nk_end(ctx);
 }
 
-lv_obj_t *streaming_scene_create(lv_obj_t *parent, const void *args) {
+lv_obj_t *streaming_scene_create(streaming_controller_t *controller, lv_obj_t *parent) {
     lv_obj_t *scene = lv_obj_create(parent);
     lv_obj_set_style_radius(scene, 0, 0);
     lv_obj_set_style_border_side(scene, LV_BORDER_SIDE_NONE, 0);
@@ -122,7 +124,6 @@ lv_obj_t *streaming_scene_create(lv_obj_t *parent, const void *args) {
     lv_obj_set_size(progress, lv_dpx(50), lv_dpx(50));
     lv_obj_center(progress);
 
-    const STREAMING_SCENE_ARGS *req = (STREAMING_SCENE_ARGS *) args;
-    streaming_begin(req->server, req->app);
+    controller->progress = progress;
     return scene;
 }

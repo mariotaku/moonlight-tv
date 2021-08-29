@@ -137,6 +137,9 @@ void streaming_display_size(short width, short height)
 
 void *_streaming_thread_action(STREAMING_REQUEST *req)
 {
+    pthread_mutex_lock(&streaming_interrupt_lock);
+    session_interrupted = false;
+    pthread_mutex_unlock(&streaming_interrupt_lock);
 #if _GNU_SOURCE
     pthread_setname_np(pthread_self(), "session");
 #endif
@@ -212,8 +215,8 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     // Don't always reset status as error state should be kept
     _streaming_set_status(STREAMING_NONE);
-    bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
 thread_cleanup:
+    bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
     free(req->server);
     free(req->config);
     free(req);
