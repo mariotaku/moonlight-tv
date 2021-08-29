@@ -1,9 +1,6 @@
 [submodule "utils"]
 	path = utils
 	url = https://github.com/webosbrew/native-dev-utils.git
-[submodule "third_party/Nuklear"]
-	path = third_party/Nuklear
-	url = https://github.com/Immediate-Mode-UI/Nuklear.git
 [submodule "third_party/opus"]
 	path = third_party/opus
 	url = https://gitlab.xiph.org/xiph/opus.git
