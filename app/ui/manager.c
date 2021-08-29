@@ -1,30 +1,14 @@
 #include "manager.h"
-#include "launcher/window.h"
-#include "settings/settings.controller.h"
 
-#include <memory.h>
-#include <SDL.h>
+#include <assert.h>
+#include <stdlib.h>
 
 typedef struct UIMANAGER_STACK {
     UIMANAGER_CONTROLLER_CREATOR creator;
-    ui_view_controller_t *_controller;
-    lv_obj_t *_view;
+    ui_view_controller_t *controller;
+    lv_obj_t *view;
     struct UIMANAGER_STACK *prev;
-    struct UIMANAGER_STACK *next;
 } UIMANAGER_STACK, *PUIMANAGER_STACK;
-
-#define LINKEDLIST_IMPL
-
-#define LINKEDLIST_TYPE UIMANAGER_STACK
-#define LINKEDLIST_PREFIX uistack
-#define LINKEDLIST_DOUBLE 1
-
-#include "util/linked_list.h"
-
-#undef LINKEDLIST_DOUBLE
-#undef LINKEDLIST_TYPE
-#undef LINKEDLIST_PREFIX
-
 
 typedef struct {
     lv_obj_t *parent;
@@ -50,7 +34,7 @@ void uimanager_destroy(uimanager_ctx *ctx) {
     PUIMANAGER_STACK top = instance->top;
     while (top) {
         item_destroy_view(top);
-        top->_controller->destroy_controller(top->_controller);
+        top->controller->destroy_controller(top->controller);
         struct UIMANAGER_STACK *prev = top->prev;
         free(top);
         top = prev;
@@ -63,11 +47,14 @@ void uimanager_push(uimanager_ctx *ctx, UIMANAGER_CONTROLLER_CREATOR creator, co
     if (manager->top) {
         item_destroy_view(manager->top);
     }
-    PUIMANAGER_STACK item = uistack_new();
+    PUIMANAGER_STACK item = malloc(sizeof(UIMANAGER_STACK));
     item->creator = creator;
+    item->controller = NULL;
+    item->view = NULL;
     lv_obj_t *parent = manager->parent;
     item_create_view(manager, item, parent, args);
-    uistack_append(manager->top, item);
+    PUIMANAGER_STACK top = manager->top;
+    item->prev = top;
     manager->top = item;
 }
 
@@ -77,12 +64,11 @@ void uimanager_pop(uimanager_ctx *ctx) {
     if (!top) return;
 
     item_destroy_view(top);
-    top->_controller->destroy_controller(top->_controller);
-    top->_controller = NULL;
+    top->controller->destroy_controller(top->controller);
+    top->controller = NULL;
     PUIMANAGER_STACK prev = top->prev;
     free(top);
     if (prev) {
-        prev->next = NULL;
         item_create_view(manager, prev, manager->parent, NULL);
     }
     manager->top = prev;
@@ -91,20 +77,20 @@ void uimanager_pop(uimanager_ctx *ctx) {
 bool uimanager_dispatch_event(uimanager_ctx *ctx, int which, void *data1, void *data2) {
     uimanager_t *manager = (uimanager_t *) ctx;
     PUIMANAGER_STACK top = manager->top;
-    if (!top || !top->_view) return false;
-    ui_view_controller_t *controller = top->_controller;
+    if (!top || !top->view) return false;
+    ui_view_controller_t *controller = top->controller;
     if (!controller || !controller->dispatch_event) return false;
     return controller->dispatch_event(controller, which, data1, data2);
 }
 
 static void item_create_view(uimanager_t *manager, PUIMANAGER_STACK item, lv_obj_t *parent, const void *args) {
-    ui_view_controller_t *controller = item->_controller;
+    ui_view_controller_t *controller = item->controller;
     if (!controller) {
-        controller = item->_controller = item->creator(args);
+        controller = item->controller = item->creator(args);
         controller->manager = manager;
     }
     lv_obj_t *view = controller->create_view(controller, parent);
-    item->_view = controller->view = view;
+    item->view = controller->view = view;
     if (controller->view_created) {
         controller->view_created(controller, view);
     }
@@ -112,9 +98,9 @@ static void item_create_view(uimanager_t *manager, PUIMANAGER_STACK item, lv_obj
 }
 
 static void item_destroy_view(PUIMANAGER_STACK item) {
-    lv_obj_t *view = item->_view;
+    lv_obj_t *view = item->view;
     lv_obj_del(view);
-    item->_view = item->_controller->view = NULL;
+    item->view = item->controller->view = NULL;
 }
 
 static void view_cb_delete(lv_event_t *event) {

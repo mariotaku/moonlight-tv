@@ -12,7 +12,6 @@ extern float ui_scale;
 #define WINDOW_WIDTH 960
 #define WINDOW_HEIGHT 540
 #endif
-#define NK_UI_SCALE ui_scale
 
 #define KEY_REPEAT_DURATION 300
 
