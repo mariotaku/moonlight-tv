@@ -212,6 +212,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req)
 
     // Don't always reset status as error state should be kept
     _streaming_set_status(STREAMING_NONE);
+    bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
 thread_cleanup:
     free(req->server);
     free(req->config);

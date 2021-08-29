@@ -16,7 +16,7 @@
 #include "stream/session.h"
 
 #include "launcher/window.h"
-#include "settings/window.h"
+#include "settings/settings.controller.h"
 #include "streaming/overlay.h"
 
 #include "util/bus.h"
@@ -38,8 +38,6 @@ static bool ui_send_faketouch_cancel;
 static bool ui_fake_mouse_event_received;
 
 void ui_root_init(struct nk_context *ctx) {
-    launcher_window_init(ctx);
-    settings_window_init(ctx);
     streaming_overlay_init(ctx);
     ui_send_faketouch_cancel = false;
     ui_fake_mouse_click_started = false;
@@ -49,7 +47,6 @@ void ui_root_init(struct nk_context *ctx) {
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;
-    handled |= launcher_window_dispatch_userevent(which, data1, data2);
     handled |= streaming_overlay_dispatch_userevent(which);
     if (!handled) {
         switch (which) {

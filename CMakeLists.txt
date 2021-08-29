@@ -181,23 +181,16 @@ set(SOURCES
     app/ui/launcher/launcher.view.c
     app/ui/launcher/launcher.controller.c
     app/ui/launcher/pclist.c
-    app/ui/launcher/pcempty.c
-    app/ui/launcher/applist.c
+        app/ui/launcher/applist.c
     app/ui/launcher/statbar.c
     app/ui/launcher/modals.c
     app/ui/launcher/pairing.c
     app/ui/streaming/overlay.c
     app/ui/streaming/bottombar.c
     app/stream/video/dummy.c
-    app/ui/settings/window.c
+        app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
-    app/ui/settings/pane_basic.c
-    app/ui/settings/pane_host.c
-    app/ui/settings/pane_input.c
-    app/ui/settings/pane_adv_codec.c
-    app/ui/settings/pane_about.c
-    app/ui/settings/statbar.c
-    app/platform/webos/sprites_webos.c
+        app/platform/webos/sprites_webos.c
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c

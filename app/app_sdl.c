@@ -7,6 +7,7 @@
 #include "ui/config.h"
 
 #define NK_IMPLEMENTATION
+
 #include "nuklear/config.h"
 #include "nuklear.h"
 #include "nuklear/ext_functions.h"
@@ -178,6 +179,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                 actionfn(event->user.data2);
             } else {
                 bool handled = backend_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
+                handled = handled || ui_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
                 if (!handled) {
                     applog_w("Event", "Nobody handles event %d", event->user.code);
                 }

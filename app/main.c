@@ -28,6 +28,7 @@
 #include "util/logging.h"
 
 #include <fontconfig/fontconfig.h>
+#include <ui/launcher/window.h>
 
 FILE *app_logfile = NULL;
 
@@ -92,7 +93,10 @@ int main(int argc, char *argv[]) {
     lv_sdl_init_key_input();
     lv_sdl_init_pointer();
 
-    ui_init();
+    lv_obj_t *scr = lv_scr_act();
+    lv_obj_set_style_bg_opa(scr, 0, 0);
+    uimanager_ctx *uimanager = uimanager_new(scr);
+    uimanager_push(uimanager, launcher_controller, NULL);
 
     while (running) {
         app_process_events();
@@ -101,6 +105,8 @@ int main(int argc, char *argv[]) {
     }
 
     settings_save(app_configuration);
+
+    uimanager_destroy(uimanager);
 
     lv_sdl_deinit_pointer();
     lv_sdl_deinit_key_input();

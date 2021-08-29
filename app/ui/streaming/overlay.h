@@ -36,8 +36,6 @@ extern bool stream_overlay_showing;
 
 void streaming_overlay_init(struct nk_context *ctx);
 
-bool streaming_overlay(struct nk_context *ctx, STREAMING_STATUS stat);
-
 bool streaming_overlay_dispatch_userevent(int which);
 
 bool streaming_overlay_should_block_input();

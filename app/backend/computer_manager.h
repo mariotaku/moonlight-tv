@@ -10,30 +10,30 @@ extern PSERVER_LIST computer_list;
 extern bool computer_discovery_running;
 extern bool pcmanager_setup_running;
 
-typedef struct PCMANAGER_RESP_T
-{
-  union
-  {
-    int code;
-    struct
-    {
-      int code;
-      const char *message;
-    } error;
-  } result;
-  bool known;
-  SERVER_STATE state;
-  const SERVER_DATA *server;
-  bool server_shallow;
-  bool server_referenced;
+typedef struct PCMANAGER_RESP_T {
+    union {
+        int code;
+        struct {
+            int code;
+            const char *message;
+        } error;
+    } result;
+    bool known;
+    SERVER_STATE state;
+    const SERVER_DATA *server;
+    bool server_shallow;
+    bool server_referenced;
 } PCMANAGER_RESP, *PPCMANAGER_RESP;
 
-typedef struct PCMANAGER_CALLBACKS
-{
-  void (*onAdded)(PPCMANAGER_RESP);
-  void (*onUpdated)(PPCMANAGER_RESP);
-  struct PCMANAGER_CALLBACKS *prev;
-  struct PCMANAGER_CALLBACKS *next;
+typedef struct PCMANAGER_CALLBACKS {
+    void (*added)(void *userdata, PPCMANAGER_RESP);
+
+    void (*updated)(void *userdata, PPCMANAGER_RESP);
+
+    void *userdata;
+
+    struct PCMANAGER_CALLBACKS *prev;
+    struct PCMANAGER_CALLBACKS *next;
 } PCMANAGER_CALLBACKS, *PPCMANAGER_CALLBACKS;
 
 #ifdef PCMANAGER_IMPL
@@ -43,6 +43,7 @@ typedef struct PCMANAGER_CALLBACKS
 #define LINKEDLIST_TYPE PCMANAGER_CALLBACKS
 #define LINKEDLIST_PREFIX pcmanager_callbacks
 #define LINKEDLIST_DOUBLE 1
+
 #include "util/linked_list.h"
 
 #undef LINKEDLIST_DOUBLE
@@ -95,4 +96,5 @@ bool pcmanager_send_wol(const SERVER_DATA *server);
 void pcmanager_request_update(const SERVER_DATA *server);
 
 void pcmanager_register_callbacks(PPCMANAGER_CALLBACKS callbacks);
+
 void pcmanager_unregister_callbacks(PPCMANAGER_CALLBACKS callbacks);

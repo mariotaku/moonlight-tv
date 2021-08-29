@@ -4,10 +4,13 @@
 #include <stdint.h>
 
 #include "backend/computer_manager.h"
+#include "backend/application_manager.h"
 
 #include "libgamestream/errors.h"
 
 #include "lvgl.h"
+
+#include "ui/manager.h"
 
 typedef enum pairing_state {
     PS_NONE,
@@ -21,6 +24,15 @@ struct pairing_computer_state {
     char pin[5];
     const char *error;
 };
+
+typedef struct {
+    ui_view_controller_t base;
+    PCMANAGER_CALLBACKS _pcmanager_callbacks;
+    APPMANAGER_CALLBACKS _appmanager_callbacks;
+    lv_obj_t *pclist, *applist, *appload;
+    PSERVER_LIST selected_server;
+} launcher_controller_t;
+
 
 #define LAUNCHER_MODAL_MASK_WINDOW 0x00FF
 #define LAUNCHER_MODAL_PAIRING 0x0001
@@ -44,7 +56,6 @@ extern bool _quitapp_errno;
 extern bool _launcher_show_manual_pair;
 extern bool _launcher_show_host_info;
 extern bool computer_manager_executing_quitapp;
-extern struct nk_vec2 _computer_picker_center;
 
 void _select_computer(PSERVER_LIST node, bool load_apps);
 
@@ -56,16 +67,4 @@ void launcher_handle_quitapp(PPCMANAGER_RESP resp);
 
 void handle_unpairing_done(PPCMANAGER_RESP resp);
 
-void launcher_controller_init();
-
-void launcher_controller_destroy();
-
-void launcher_controller_pc_selected(lv_event_t *event);
-
-void launcher_open_game(lv_event_t *event);
-
-PSERVER_LIST launcher_win_selected_server();
-
-void launcher_win_update_pclist();
-
-void launcher_win_update_selected(PSERVER_LIST node);
+lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *parent);

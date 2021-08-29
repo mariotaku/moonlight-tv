@@ -1,22 +1,13 @@
+#include <ui/settings/settings.controller.h>
 #include "app.h"
 
 #include "lvgl.h"
 
 #include "priv.h"
-#include "backend/computer_manager.h"
-#include "util/logging.h"
 
-#include "ui/manager.h"
+static void open_settings(lv_event_t *event);
 
-static lv_indev_t *lv_indev_get_type_act(lv_indev_type_t type);
-
-static void pclist_predraw(lv_event_t *ev);
-
-static void pclist_dpad(lv_event_t *ev);
-
-lv_obj_t *pclist = NULL, *applist = NULL, *appload = NULL;
-
-lv_obj_t *launcher_win_create(lv_obj_t *parent, const void *args) {
+lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *parent) {
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, lv_dpx(40));
 
@@ -45,7 +36,7 @@ lv_obj_t *launcher_win_create(lv_obj_t *parent, const void *args) {
 
     lv_obj_set_style_pad_all(right, 0, 0);
 
-    pclist = lv_list_create(nav);
+    lv_obj_t *pclist = lv_list_create(nav);
     lv_obj_set_width(pclist, LV_PCT(100));
     lv_obj_set_style_radius(pclist, 0, 0);
     lv_obj_set_style_border_width(pclist, 0, 0);
@@ -53,10 +44,6 @@ lv_obj_t *launcher_win_create(lv_obj_t *parent, const void *args) {
     lv_obj_set_style_bg_opa(pclist, 0, 0);
 
     lv_obj_set_flex_grow(pclist, 1);
-//    lv_obj_set_flex_grow(menu, 0);
-
-//    lv_obj_add_event_cb(pclist, pclist_dpad, LV_EVENT_KEY, NULL);
-//    lv_obj_add_event_cb(pclist, pclist_predraw, LV_EVENT_DRAW_MAIN_BEGIN, NULL);
 
     // Use list button for normal container
     lv_obj_t *info_btn = lv_list_add_btn(nav, LV_SYMBOL_LIST, "Info");
@@ -73,67 +60,26 @@ lv_obj_t *launcher_win_create(lv_obj_t *parent, const void *args) {
     lv_obj_set_flex_grow(close_btn, 0);
     lv_obj_set_style_border_side(close_btn, LV_BORDER_SIDE_NONE, 0);
 
-    lv_obj_add_event_cb(pref_btn, (lv_event_cb_t) ui_open_settings, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(close_btn, (lv_event_cb_t) app_request_exit, LV_EVENT_CLICKED, NULL);
 
-    applist = lv_list_create(right);
+    lv_obj_t *applist = lv_list_create(right);
     lv_obj_set_style_radius(applist, 0, 0);
     lv_obj_set_style_border_width(applist, 0, 0);
     lv_obj_set_style_outline_width(applist, 0, 0);
     lv_obj_set_style_bg_opa(applist, 0, 0);
     lv_obj_set_size(applist, LV_PCT(100), LV_PCT(100));
-    appload = lv_spinner_create(right, 1000, 60);
+    lv_obj_t *appload = lv_spinner_create(right, 1000, 60);
+    lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
 
-    launcher_controller_init();
-
-    lv_obj_add_event_cb(win, (lv_event_cb_t) launcher_controller_destroy, LV_EVENT_DELETE, NULL);
+    controller->applist = applist;
+    controller->appload = appload;
+    controller->pclist = pclist;
     return win;
 }
 
-lv_indev_t *lv_indev_get_type_act(lv_indev_type_t type) {
-    for (lv_indev_t *cur = lv_indev_get_act(); cur != NULL; cur = lv_indev_get_next(cur)) {
-        if (cur->driver->type == type)
-            return cur;
-    }
-    return NULL;
-}
-
-void launcher_win_update_pclist() {
-    lv_obj_clean(pclist);
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
-        lv_obj_t *pcitem = lv_list_add_btn(pclist, NULL, cur->server->hostname);
-        lv_obj_add_event_cb(pcitem, launcher_controller_pc_selected, LV_EVENT_CLICKED, cur);
-
-    }
-}
-
-static PSERVER_LIST selected_server;
-
-void launcher_win_update_selected(PSERVER_LIST node) {
-    selected_server = node;
-    lv_obj_clean(applist);
-    if (!node) {
-        lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-    } else if (node->state.code == SERVER_STATE_ONLINE) {
-        if (node->appload) {
-            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            for (PAPP_DLIST cur = node->apps; cur != NULL; cur = cur->next) {
-                lv_obj_t *item = lv_list_add_btn(applist, NULL, cur->name);
-                lv_obj_add_event_cb(item, launcher_open_game, LV_EVENT_CLICKED, cur);
-            }
-        }
-    } else {
-        lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-    }
-}
-
-PSERVER_LIST launcher_win_selected_server() {
-    return selected_server;
+static void open_settings(lv_event_t *event) {
+    ui_view_controller_t *controller = event->user_data;
+    uimanager_push(controller->manager, settings_controller, NULL);
 }

@@ -14,8 +14,9 @@
 
 static bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur, int cover_width, int cover_height,
                           bool event_emitted, bool *ever_hovered);
+
 static void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked);
-static bool _applist_item_select(PSERVER_LIST node, int offset);
+
 static bool _cover_use_default(struct nk_image *img);
 
 PAPP_DLIST applist_hovered_item = NULL;
@@ -25,10 +26,11 @@ static struct nk_list_view list_view;
 static struct nk_rect list_view_bounds;
 static int _applist_colcount = 5;
 static int _applist_rowcount = 0;
-static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_resume_center = {0, 0}, applist_focused_close_center = {0, 0};
+static struct nk_vec2 applist_focused_item_center = {0, 0}, applist_focused_resume_center = {0,
+                                                                                             0}, applist_focused_close_center = {
+        0, 0};
 
-bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted)
-{
+bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emitted) {
     struct nk_style_window winstyle = ctx->style.window;
     int app_len = node->applen;
 
@@ -36,8 +38,7 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
     int rowwidth = nk_widget_width(ctx) - winstyle.group_padding.x * 2 - winstyle.scrollbar_size.x;
     _applist_colcount = NK_MAX((rowwidth + winstyle.spacing.x) / (120 * NK_UI_SCALE), 1);
     int colcount = _applist_colcount, rowcount = app_len / colcount;
-    if (app_len && app_len % colcount)
-    {
+    if (app_len && app_len % colcount) {
         rowcount++;
     }
     int rowspacing = winstyle.spacing.y;
@@ -48,73 +49,64 @@ bool launcher_applist(struct nk_context *ctx, PSERVER_LIST node, bool event_emit
 
     list_view_bounds = nk_widget_bounds(ctx);
     int scroll_diff;
-    if (nk_smooth_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount))
-    {
+    if (nk_smooth_list_view_begin(ctx, &list_view, "apps_list", 0, itemheight, rowcount)) {
         scroll_diff = list_view.scroll_value;
         bool ever_hovered = false;
         nk_layout_row_dynamic(ctx, itemheight, colcount);
         int startidx = list_view.begin * colcount;
         PAPP_DLIST cur = applist_nth(node->apps, startidx);
         int visible_top = list_view.scroll_value, visible_bottom = visible_top + list_view_bounds.h;
-        for (int i = 0; i < list_view.count; i++)
-        {
+        for (int i = 0; i < list_view.count; i++) {
             int row = list_view.begin + i;
             int row_top = itemheight * row + rowspacing * row, row_bottom = row_top + itemheight;
-            if (row_top >= visible_top && row_bottom <= visible_bottom)
-            {
+            if (row_top >= visible_top && row_bottom <= visible_bottom) {
                 _applist_visible_start = cur;
             }
             int col;
-            for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next)
-            {
+            for (col = 0; col < colcount && cur != NULL; col++, cur = cur->next) {
                 _applist_item(ctx, node, cur, coverwidth, coverheight, event_emitted, &ever_hovered);
             }
-            if (col < colcount)
-            {
+            if (col < colcount) {
                 nk_spacing(ctx, colcount - col);
             }
         }
-        if (!ever_hovered && !event_emitted && !ui_fake_mouse_click_started)
-        {
+        if (!ever_hovered && !event_emitted && !ui_fake_mouse_click_started) {
             applist_hovered_item = NULL;
         }
 
         nk_smooth_list_view_end(&list_view);
         scroll_diff = list_view.scroll_value - scroll_diff;
     }
-    if (applist_hover_request)
-    {
+    if (applist_hover_request) {
         applist_focused_item_center.y += scroll_diff;
         bus_pushevent(USER_FAKEINPUT_MOUSE_MOTION, &applist_focused_item_center, NULL);
         applist_hover_request = NULL;
     }
     const float fading_edge_size = 5 * NK_UI_SCALE;
-    struct nk_rect fadingedge_bounds = nk_rect(list_view_bounds.x, ceil(list_view_bounds.y + list_view_bounds.h - fading_edge_size),
+    struct nk_rect fadingedge_bounds = nk_rect(list_view_bounds.x,
+                                               ceil(list_view_bounds.y + list_view_bounds.h - fading_edge_size),
                                                list_view_bounds.w, fading_edge_size);
     struct nk_color bg_color = ctx->style.window.fixed_background.data.color;
 #define nk_withalpha(color, alpha) nk_rgba(color.r, color.g, color.b, alpha)
-    nk_fill_rect_multi_color(&ctx->current->buffer, fadingedge_bounds, nk_withalpha(bg_color, 0), nk_withalpha(bg_color, 0),
+    nk_fill_rect_multi_color(&ctx->current->buffer, fadingedge_bounds, nk_withalpha(bg_color, 0),
+                             nk_withalpha(bg_color, 0),
                              nk_withalpha(bg_color, 255), nk_withalpha(bg_color, 255));
 #undef nk_withalpha
     return event_emitted;
 }
 
 bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
-                   int cover_width, int cover_height, bool event_emitted, bool *ever_hovered)
-{
+                   int cover_width, int cover_height, bool event_emitted, bool *ever_hovered) {
     nk_bool hovered = nk_widget_is_hovered(ctx), mouse_down = nk_widget_has_mouse_click_down(ctx, NK_BUTTON_LEFT, true);
-    if (hovered && !event_emitted)
-    {
+    if (hovered && !event_emitted) {
         applist_hovered_item = cur;
         *ever_hovered = true;
     }
     static int click_down_id = -1, should_ignore_click = -1;
-    if (mouse_down && click_down_id == -1)
-    {
+    if (mouse_down && click_down_id == -1) {
         click_down_id = cur->id;
         // If event_emitted is true, means there's combo opened. So next click event shoule be ignored
-        if (event_emitted)
-        {
+        if (event_emitted) {
             should_ignore_click = cur->id;
         }
     }
@@ -123,13 +115,11 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     int clicked = 0;
     struct nk_rect tmp_bounds = nk_widget_bounds(ctx);
     int item_height = tmp_bounds.h;
-    if (cur == applist_hover_request)
-    {
+    if (cur == applist_hover_request) {
         // Send mouse pointer to the item
         applist_focused_item_center = nk_rect_center(tmp_bounds);
     }
-    if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR))
-    {
+    if (nk_group_begin(ctx, cur->name, NK_WINDOW_NO_SCROLLBAR)) {
 #ifndef TARGET_LGNC
         struct nk_image *cover = coverloader_get(node, cur->id, cover_width, cover_height);
 #else
@@ -141,56 +131,51 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         nk_layout_space_push(ctx, cover_bounds);
 
         nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
-        if (ui_input_mode != UI_INPUT_MODE_POINTER)
-        {
-            nk_style_push_style_item(ctx, &ctx->style.button.hover, nk_style_item_color(nk_ext_color_style[NK_EXT_COLOR_FOCUSED]));
-            nk_style_push_style_item(ctx, &ctx->style.button.active, nk_style_item_color(nk_ext_color_style[NK_EXT_COLOR_FOCUSED_PRESSED]));
+        if (ui_input_mode != UI_INPUT_MODE_POINTER) {
+            nk_style_push_style_item(ctx, &ctx->style.button.hover,
+                                     nk_style_item_color(nk_ext_color_style[NK_EXT_COLOR_FOCUSED]));
+            nk_style_push_style_item(ctx, &ctx->style.button.active,
+                                     nk_style_item_color(nk_ext_color_style[NK_EXT_COLOR_FOCUSED_PRESSED]));
         }
         clicked = !running & nk_button_image(ctx, defcover ? launcher_default_cover : *cover);
-        if (ui_input_mode != UI_INPUT_MODE_POINTER)
-        {
+        if (ui_input_mode != UI_INPUT_MODE_POINTER) {
             nk_style_pop_style_item(ctx);
             nk_style_pop_style_item(ctx);
         }
         nk_style_pop_vec2(ctx);
-        if (defcover && !running)
-        {
+        if (defcover && !running) {
             int insetx = 8 * NK_UI_SCALE, insety = 6 * NK_UI_SCALE;
             nk_layout_space_push(ctx, nk_rect(insetx, insety, cover_width - insetx * 2, cover_height - insety * 2));
             nk_label(ctx, cur->name, NK_TEXT_CENTERED);
         }
 
-        if (decoder_info.hevc && decoder_info.hdr && node->server->supportsHdr && cur->hdr)
-        {
+        if (decoder_info.hevc && decoder_info.hdr && node->server->supportsHdr && cur->hdr) {
             struct nk_vec2 hdr_pos = nk_vec2_add(tmp_bounds, nk_vec2_s(10, 10));
-            struct nk_rect hdr_bounds = nk_recta(hdr_pos, nk_vec2(sprites_ui.ic_indicator_hdr.region[2], sprites_ui.ic_indicator_hdr.region[3]));
+            struct nk_rect hdr_bounds = nk_recta(hdr_pos, nk_vec2(sprites_ui.ic_indicator_hdr.region[2],
+                                                                  sprites_ui.ic_indicator_hdr.region[3]));
             nk_draw_image(&ctx->current->buffer, hdr_bounds, &sprites_ui.ic_indicator_hdr, nk_rgb(255, 255, 255));
         }
 
-        if (running)
-        {
+        if (running) {
             const int button_size = 24 * NK_UI_SCALE;
             int button_x = (cover_width - button_size) / 2;
             int button_spacing = 4 * NK_UI_SCALE;
-            nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 - button_size - button_spacing, button_size, button_size));
+            nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 - button_size - button_spacing, button_size,
+                                              button_size));
             tmp_bounds = nk_widget_bounds(ctx);
-            if (hovered)
-            {
+            if (hovered) {
                 applist_focused_resume_center = nk_rect_center(tmp_bounds);
             }
             nk_style_push_vec2(ctx, &ctx->style.button.padding, nk_vec2_s(0, 0));
-            if (nk_button_image(ctx, sprites_ui.ic_play))
-            {
+            if (nk_button_image(ctx, sprites_ui.ic_play)) {
                 clicked = 1;
             }
             nk_layout_space_push(ctx, nk_rect(button_x, cover_height / 2 + button_spacing, button_size, button_size));
             tmp_bounds = nk_widget_bounds(ctx);
-            if (hovered)
-            {
+            if (hovered) {
                 applist_focused_close_center = nk_rect_center(tmp_bounds);
             }
-            if (nk_button_image(ctx, sprites_ui.ic_close))
-            {
+            if (nk_button_image(ctx, sprites_ui.ic_close)) {
                 clicked = -1;
             }
             nk_style_pop_vec2(ctx);
@@ -199,15 +184,12 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
         nk_group_end(ctx);
     }
     // Captured a click event that should be ignored, reset state
-    if (should_ignore_click == cur->id && !mouse_down)
-    {
+    if (should_ignore_click == cur->id && !mouse_down) {
         clicked = 0;
         should_ignore_click = -1;
     }
-    if (clicked)
-    {
-        if (should_ignore_click == -1 && click_down_id == cur->id)
-        {
+    if (clicked) {
+        if (should_ignore_click == -1 && click_down_id == cur->id) {
             event_emitted |= true;
             _applist_item_do_click(node, cur, clicked);
         }
@@ -217,88 +199,28 @@ bool _applist_item(struct nk_context *ctx, PSERVER_LIST node, PAPP_DLIST cur,
     return event_emitted;
 }
 
-void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked)
-{
-    if (clicked == 1)
-    {
-        if (node->server->currentGame > 0 && node->server->currentGame != cur->id)
-        {
+void _applist_item_do_click(PSERVER_LIST node, PAPP_DLIST cur, int clicked) {
+    if (clicked == 1) {
+        if (node->server->currentGame > 0 && node->server->currentGame != cur->id) {
             applog_w("Session", "Quit running game first");
-        }
-        else
-        {
+        } else {
             streaming_begin(node->server, cur);
         }
-    }
-    else
-    {
-        if (pcmanager_quitapp(node->server, launcher_handle_quitapp))
-        {
+    } else {
+        if (pcmanager_quitapp(node->server, launcher_handle_quitapp)) {
             _quitapp_errno = false;
             computer_manager_executing_quitapp = true;
         }
     }
 }
 
-bool _applist_item_select(PSERVER_LIST node, int offset)
-{
-    if (_applist_visible_start == NULL)
-        return true;
-    if (!_applist_rowcount)
-        return false;
-
-    PAPP_DLIST item;
-    if (!offset || !applist_hovered_item)
-        item = _applist_visible_start;
-    else
-    {
-        item = applist_nth(applist_hovered_item, offset);
-        if (offset > 0 && !item)
-            item = applist_tail(applist_hovered_item);
-    }
-    if (!item)
-    {
-        return false;
-    }
-    applist_hover_request = item;
-    int spacing = list_view.ctx->style.window.spacing.y;
-    int rowheight = (list_view.total_height - spacing * (_applist_rowcount - 1)) / _applist_rowcount;
-    // Fully visible rows
-    int full_rows = list_view_bounds.h / (rowheight + spacing);
-    if (!full_rows)
-    {
-        // If the screen is so tiny, focing to 1 row
-        full_rows = 1;
-    }
-
-    int index = applist_index(node->apps, item);
-    if (index >= 0)
-    {
-        // Row index for selected item
-        int row = index / _applist_colcount;
-        int target_top = row * rowheight + spacing * row, target_bottom = target_top + rowheight;
-        int visible_top = list_view.scroll_value, visible_bottom = visible_top + list_view_bounds.h;
-        // Only change list offset if select row is not fully visible
-        if (target_top < visible_top || target_bottom > visible_bottom)
-        {
-            // Scroll the list if selected item is out of bounds
-            int max_scroll = list_view.total_height - list_view_bounds.h + spacing;
-            *list_view.scroll_pointer = NK_CLAMP(0, target_top, max_scroll);
-        }
-    }
-    return true;
-}
-
-bool _cover_use_default(struct nk_image *img)
-{
+bool _cover_use_default(struct nk_image *img) {
     return img == NULL || img->w == 0 || img->h == 0;
 }
 
-void launcher_handle_quitapp(PPCMANAGER_RESP resp)
-{
+void launcher_handle_quitapp(PPCMANAGER_RESP resp) {
     computer_manager_executing_quitapp = false;
-    if (resp->result.code != GS_OK)
-    {
+    if (resp->result.code != GS_OK) {
         _quitapp_errno = true;
     }
 }
