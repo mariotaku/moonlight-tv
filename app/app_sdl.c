@@ -51,6 +51,11 @@ static void applog_logoutput(void *, int category, SDL_LogPriority priority, con
 
 int app_init(int argc, char *argv[]) {
     app_configuration = settings_load();
+#if TARGET_WEBOS
+    SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
+    SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
+    SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
+#endif
     return 0;
 }
 

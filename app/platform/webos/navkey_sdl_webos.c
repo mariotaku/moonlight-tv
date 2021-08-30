@@ -1,7 +1,7 @@
 #include "platform/sdl/navkey_sdl.h"
 #include <SDL_webOS.h>
 
-NAVKEY navkey_from_sdl_webos(SDL_Event *ev)
+NAVKEY navkey_from_sdl_webos(const SDL_Event *ev)
 {
     switch (ev->type)
     {

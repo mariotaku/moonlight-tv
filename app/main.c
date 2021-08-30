@@ -153,10 +153,9 @@ bool app_gs_client_ready() {
 }
 
 static void lv_bg_draw(lv_area_t *area) {
-    SDL_Rect rect = {.x=area->x1, .y= area->x1, .w = lv_area_get_width(area), .h = lv_area_get_height(area)};
+    SDL_Rect rect = {.x=area->x1, .y= area->y1, .w = lv_area_get_width(area), .h = lv_area_get_height(area)};
     lv_disp_t *disp = lv_disp_get_default();
     lv_disp_drv_t *driver = disp->driver;
-    if (rect.w != driver->hor_res || rect.h != driver->ver_res) return;
     SDL_Renderer *renderer = driver->user_data;
     SDL_assert(SDL_GetRenderTarget(renderer) == lv_disp_get_draw_buf(disp)->buf_act);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);

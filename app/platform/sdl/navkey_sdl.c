@@ -3,7 +3,7 @@
 #include "app.h"
 
 #if TARGET_WEBOS
-NAVKEY navkey_from_sdl_webos(SDL_Event *ev);
+NAVKEY navkey_from_sdl_webos(const SDL_Event *ev);
 #endif
 
 static NAVKEY navkey_gamepad_map(SDL_JoystickID which, Uint8 button);
