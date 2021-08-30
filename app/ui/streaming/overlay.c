@@ -38,7 +38,8 @@ bool streaming_overlay_show() {
     return true;
 }
 
-lv_obj_t *streaming_scene_create(streaming_controller_t *controller, lv_obj_t *parent) {
+lv_obj_t *streaming_scene_create(ui_view_controller_t *self, lv_obj_t *parent) {
+    streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
     lv_obj_set_style_radius(scene, 0, 0);
     lv_obj_set_style_border_side(scene, LV_BORDER_SIDE_NONE, 0);
@@ -48,7 +49,19 @@ lv_obj_t *streaming_scene_create(streaming_controller_t *controller, lv_obj_t *p
     lv_obj_set_size(progress, lv_dpx(50), lv_dpx(50));
     lv_obj_center(progress);
 
+    lv_obj_t *exit_btn = lv_btn_create(scene);
+    lv_obj_t *exit_lbl = lv_label_create(exit_btn);
+    lv_label_set_text(exit_lbl, "Exit");
+    lv_obj_align(exit_btn, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
 
+    lv_obj_t *suspend_btn = lv_btn_create(scene);
+    lv_obj_t *suspend_lbl = lv_label_create(suspend_btn);
+    lv_label_set_text(suspend_lbl, "Games List");
+    lv_obj_align_to(suspend_btn, exit_btn, LV_ALIGN_OUT_LEFT_MID, 0, 0);
+
+
+    controller->quit_btn = exit_btn;
+    controller->suspend_btn = suspend_btn;
 
     controller->progress = progress;
     return scene;
