@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 typedef struct UIMANAGER_STACK {
-    UIMANAGER_CONTROLLER_CREATOR creator;
+    uimanager_controller_ctor_t creator;
     ui_view_controller_t *controller;
     lv_obj_t *view;
     struct UIMANAGER_STACK *prev;
@@ -30,6 +30,7 @@ uimanager_ctx *uimanager_new(lv_obj_t *parent) {
 }
 
 void uimanager_destroy(uimanager_ctx *ctx) {
+    assert(ctx);
     uimanager_t *instance = (uimanager_t *) ctx;
     PUIMANAGER_STACK top = instance->top;
     while (top) {
@@ -42,7 +43,9 @@ void uimanager_destroy(uimanager_ctx *ctx) {
     free(instance);
 }
 
-void uimanager_push(uimanager_ctx *ctx, UIMANAGER_CONTROLLER_CREATOR creator, const void *args) {
+void uimanager_push(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, const void *args) {
+    assert(ctx);
+    assert(creator);
     uimanager_t *manager = (uimanager_t *) ctx;
     if (manager->top) {
         item_destroy_view(manager->top);
@@ -58,7 +61,24 @@ void uimanager_push(uimanager_ctx *ctx, UIMANAGER_CONTROLLER_CREATOR creator, co
     manager->top = item;
 }
 
+void uimanager_replace(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, const void *args) {
+    assert(ctx);
+    assert(creator);
+    uimanager_t *manager = (uimanager_t *) ctx;
+    PUIMANAGER_STACK top = manager->top;
+    if (top) {
+        item_destroy_view(top);
+        top->controller->destroy_controller(top->controller);
+    } else {
+        top = manager->top = malloc(sizeof(UIMANAGER_STACK));
+    }
+    top->controller = NULL;
+    top->creator = creator;
+    item_create_view(manager, top, manager->parent, args);
+}
+
 void uimanager_pop(uimanager_ctx *ctx) {
+    assert(ctx);
     uimanager_t *manager = (uimanager_t *) ctx;
     PUIMANAGER_STACK top = manager->top;
     if (!top) return;
@@ -75,6 +95,7 @@ void uimanager_pop(uimanager_ctx *ctx) {
 }
 
 bool uimanager_dispatch_event(uimanager_ctx *ctx, int which, void *data1, void *data2) {
+    assert(ctx);
     uimanager_t *manager = (uimanager_t *) ctx;
     PUIMANAGER_STACK top = manager->top;
     if (!top || !top->view) return false;

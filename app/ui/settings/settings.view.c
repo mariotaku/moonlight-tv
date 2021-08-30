@@ -3,7 +3,8 @@
 
 static void settings_close(lv_event_t *e);
 
-lv_obj_t *settings_win_create(struct ui_view_controller_t *controller, lv_obj_t *parent) {
+lv_obj_t *settings_win_create(struct ui_view_controller_t *self, lv_obj_t *parent) {
+    settings_controller_t *controller = (settings_controller_t *) self;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, 80);
     lv_win_add_title(win, "Settings");
@@ -23,15 +24,12 @@ lv_obj_t *settings_win_create(struct ui_view_controller_t *controller, lv_obj_t 
     static lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(content, col_dsc, row_dsc);
     lv_obj_t *nav = lv_list_create(content);
+    controller->nav = nav;
     lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
-    lv_list_add_btn(nav, LV_SYMBOL_DUMMY, "Basic Settings");
-    lv_list_add_btn(nav, LV_SYMBOL_DUMMY, "Host Settings");
-    lv_list_add_btn(nav, LV_SYMBOL_KEYBOARD, "Input Settings");
-    lv_list_add_btn(nav, LV_SYMBOL_VIDEO, "Decoder Settings");
-    lv_list_add_btn(nav, LV_SYMBOL_DUMMY, "About");
 
     lv_obj_t *detail = lv_obj_create(content);
     lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+    controller->detail = detail;
 
     return win;
 }

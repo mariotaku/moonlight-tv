@@ -4,8 +4,7 @@
 
 #include <SDL.h>
 
-typedef struct _GAMEPAD_STATE
-{
+typedef struct _GAMEPAD_STATE {
     char leftTrigger, rightTrigger;
     short leftStickX, leftStickY;
     short rightStickX, rightStickY;
@@ -20,7 +19,7 @@ typedef struct _GAMEPAD_STATE
 extern GAMEPAD_STATE gamepads[4];
 extern int activeGamepadMask;
 
-bool absinput_dispatch_event(SDL_Event ev);
+bool absinput_dispatch_event(SDL_Event *event);
 
 bool absinput_init_gamepad(int which);
 

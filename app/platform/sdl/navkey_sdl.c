@@ -8,14 +8,14 @@ NAVKEY navkey_from_sdl_webos(SDL_Event ev);
 
 static NAVKEY navkey_gamepad_map(SDL_JoystickID which, Uint8 button);
 
-NAVKEY navkey_from_sdl(SDL_Event ev)
+NAVKEY navkey_from_sdl(const SDL_Event *ev)
 {
-    switch (ev.type)
+    switch (ev->type)
     {
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-        switch (ev.key.keysym.sym)
+        switch (ev->key.keysym.sym)
         {
         case SDLK_UP:
             return NAVKEY_UP;
@@ -50,7 +50,7 @@ NAVKEY navkey_from_sdl(SDL_Event ev)
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
     {
-        return navkey_gamepad_map(ev.cbutton.which, ev.cbutton.button);
+        return navkey_gamepad_map(ev->cbutton.which, ev->cbutton.button);
     }
     default:
         return NAVKEY_UNKNOWN;

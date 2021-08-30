@@ -84,37 +84,37 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
-bool absinput_dispatch_event(SDL_Event ev)
+bool absinput_dispatch_event(SDL_Event *event)
 {
     if (streaming_status != STREAMING_STREAMING)
     {
         return false;
     }
-    switch (ev.type)
+    switch (event->type)
     {
     case SDL_KEYDOWN:
     case SDL_KEYUP:
-        sdlinput_handle_key_event(&ev.key);
+        sdlinput_handle_key_event(&event->key);
         break;
     case SDL_CONTROLLERAXISMOTION:
-        sdlinput_handle_caxis_event(&ev.caxis);
+        sdlinput_handle_caxis_event(&event->caxis);
         break;
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
-        sdlinput_handle_cbutton_event(&ev.cbutton);
+        sdlinput_handle_cbutton_event(&event->cbutton);
         break;
     case SDL_MOUSEMOTION:
-        sdlinput_handle_mmotion_event(&ev.motion);
+        sdlinput_handle_mmotion_event(&event->motion);
         break;
     case SDL_MOUSEWHEEL:
-        sdlinput_handle_mwheel_event(&ev.wheel);
+        sdlinput_handle_mwheel_event(&event->wheel);
         break;
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
-        sdlinput_handle_mbutton_event(&ev.button);
+        sdlinput_handle_mbutton_event(&event->button);
         break;
     case SDL_TEXTINPUT:
-        sdlinput_handle_text_event(&ev.text);
+        sdlinput_handle_text_event(&event->text);
         break;
     }
     return false;

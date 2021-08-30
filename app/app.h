@@ -19,8 +19,6 @@ APP_WINDOW_CONTEXT app_window_create();
 
 void app_destroy();
 
-void app_main_loop(void *data);
-
 void app_process_events();
 
 void app_request_exit();

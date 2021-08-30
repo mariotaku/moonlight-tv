@@ -76,6 +76,9 @@ int main(int argc, char *argv[]) {
     backend_init();
 
     SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    ui_display_size(w, h);
 
     lv_init();
     lv_disp_t *disp = lv_sdl_display_init(window);
@@ -90,7 +93,7 @@ int main(int argc, char *argv[]) {
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
     lv_sdl_init_key_input();
-    lv_sdl_init_pointer();
+    lv_indev_t *indev_pointer = lv_sdl_init_pointer();
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_opa(scr, 0, 0);
@@ -107,8 +110,8 @@ int main(int argc, char *argv[]) {
 
     uimanager_destroy(app_uimanager);
 
-    lv_sdl_deinit_pointer();
-    lv_sdl_deinit_key_input();
+    lv_sdl_deinit_pointer(indev_pointer);
+    lv_sdl_deinit_key_input(NULL);
     lv_sdl_display_deinit(disp);
 //    lv_deinit();
 

@@ -21,11 +21,10 @@
  * SOFTWARE.
  */
 
-#include <stdio.h>
 #include <SDL.h>
+#include <stream/input/sdlinput.h>
 
 #include "lvgl.h"
-#include "lv_conf.h"
 #include "lv_sdl_drv_pointer_input.h"
 
 
@@ -40,6 +39,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         data->point.y = (lv_coord_t) y;
         return;
     }
+    absinput_dispatch_event(&e);
     if (e.type == SDL_MOUSEMOTION) {
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
@@ -59,6 +59,6 @@ lv_indev_t *lv_sdl_init_pointer() {
 }
 
 
-void lv_sdl_deinit_pointer(void)
-{
+void lv_sdl_deinit_pointer(lv_indev_t *dev) {
+    free(dev->driver);
 }

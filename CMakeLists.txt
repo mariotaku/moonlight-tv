@@ -181,6 +181,7 @@ set(SOURCES
     app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
+    app/ui/settings/panes/basic.pane.c
     app/stream/video/dummy.c
     app/util/lruc.c
     app/util/path.c
@@ -244,9 +245,9 @@ target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_pa
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
 target_link_libraries(moonlight PRIVATE
- m ${CMAKE_DL_LIBS} Threads::Threads
- moonlight-common-c gamestream mdns lvgl
- Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES}
+    m ${CMAKE_DL_LIBS} Threads::Threads
+    moonlight-common-c gamestream mdns lvgl
+    Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES}
 )
 
 macro(moonlight_add_module)

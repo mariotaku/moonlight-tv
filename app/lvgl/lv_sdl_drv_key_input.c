@@ -1,99 +1,92 @@
-/* MIT License
- * 
- * Copyright (c) [2020] [Ryan Wendland]
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#include <stdio.h>
 #include <SDL.h>
+#include <stream/input/sdlinput.h>
+#include <stdint.h>
+#include <platform/sdl/navkey_sdl.h>
 
 #include "lvgl.h"
-#include "lv_conf.h"
 #include "lv_sdl_drv_key_input.h"
 
-static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
-{
-    (void)drv;
-    data->key = 0;
-    static SDL_Event e;
-    data->continue_reading = SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP) > 0;
-    if (e.type == SDL_KEYDOWN)
-        data->state = LV_INDEV_STATE_PR;
-    if (e.type == SDL_KEYUP)
-        data->state = LV_INDEV_STATE_REL;
+typedef struct {
+    uint32_t key;
+    lv_indev_state_t state;
+} indev_key_state_t;
 
-    switch (e.key.keysym.sym)
-    {
-    case SDLK_ESCAPE:
-        data->key = LV_KEY_ESC;
-        break;
-    case SDLK_BACKSPACE:
-        data->key = LV_KEY_BACKSPACE;
-        break;
-    case SDLK_HOME:
-        data->key = LV_KEY_HOME;
-        break;
-    case SDLK_RETURN:
-        data->key = LV_KEY_ENTER;
-        break;
-    case SDLK_PAGEDOWN:
-        data->key = LV_KEY_PREV;
-        break;
-    case SDLK_PAGEUP:
-        data->key = LV_KEY_NEXT;
-        break;
-    case SDLK_TAB:
-        data->key = e.key.keysym.mod & KMOD_SHIFT ? LV_KEY_PREV : LV_KEY_NEXT;
-        break;  
-    case SDLK_UP:
-        data->key = LV_KEY_UP;
-        break;
-    case SDLK_DOWN:
-        data->key = LV_KEY_DOWN;
-        break;
-    case SDLK_LEFT:
-        data->key = LV_KEY_LEFT;
-        break;
-    case SDLK_RIGHT:
-        data->key = LV_KEY_RIGHT;
-        break;
+static bool read_event(const SDL_Event *event, indev_key_state_t *state);
+
+static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
+    indev_key_state_t *state = drv->user_data;
+    SDL_Event e;
+    if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP) > 0) {
+        absinput_dispatch_event(&e);
+        read_event(&e, state);
+        data->continue_reading = true;
+    } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_CONTROLLERAXISMOTION, SDL_CONTROLLERBUTTONUP) > 0) {
+        absinput_dispatch_event(&e);
+        read_event(&e, state);
+        data->continue_reading = true;
+    } else {
+        data->continue_reading = false;
     }
+    data->key = state->key;
+    data->state = state->state;
 }
 
-lv_indev_t *lv_sdl_init_key_input(void)
-{
+lv_indev_t *lv_sdl_init_key_input() {
     lv_group_t *group = lv_group_get_default();
 
-    static lv_indev_drv_t indev_drv;
-    lv_indev_drv_init(&indev_drv);
-    indev_drv.type = LV_INDEV_TYPE_KEYPAD;
-    indev_drv.read_cb = sdl_input_read;
+    lv_indev_drv_t *indev_drv = malloc(sizeof(lv_indev_drv_t));
+    lv_indev_drv_init(indev_drv);
+    indev_key_state_t *state = malloc(sizeof(indev_key_state_t));
+    indev_drv->user_data = state;
+    indev_drv->type = LV_INDEV_TYPE_KEYPAD;
+    indev_drv->read_cb = sdl_input_read;
 
-    lv_indev_t *indev = lv_indev_drv_register(&indev_drv);
-    if (group)
-    {
+    state->state = LV_INDEV_STATE_RELEASED;
+    state->key = 0;
+
+    lv_indev_t *indev = lv_indev_drv_register(indev_drv);
+    if (group) {
         lv_indev_set_group(indev, group);
     }
     return indev;
 }
 
-void lv_sdl_deinit_key_input(void)
-{
+void lv_sdl_deinit_key_input(lv_indev_t *indev) {
+    free(indev->driver->user_data);
+    free(indev->driver);
+}
+
+static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
+    NAVKEY navkey = navkey_from_sdl(event);
+    switch (navkey) {
+        case NAVKEY_UP:
+            state->key = LV_KEY_UP;
+            break;
+        case NAVKEY_DOWN:
+            state->key = LV_KEY_DOWN;
+            break;
+        case NAVKEY_LEFT:
+            state->key = LV_KEY_LEFT;
+            break;
+        case NAVKEY_RIGHT:
+            state->key = LV_KEY_RIGHT;
+            break;
+        case NAVKEY_CONFIRM:
+            state->key = LV_KEY_ENTER;
+            break;
+        case NAVKEY_CANCEL:
+            state->key = LV_KEY_ESC;
+            break;
+        case NAVKEY_NEGATIVE:
+            state->key = LV_KEY_DEL;
+            break;
+        case NAVKEY_ALTERNATIVE:
+            state->key = LV_KEY_BACKSPACE;
+            break;
+        default:
+            return false;
+    }
+    bool pressed = event->type == SDL_CONTROLLERBUTTONDOWN || event->type == SDL_KEYDOWN;
+    state->state = pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+    return true;
 }

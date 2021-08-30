@@ -22,8 +22,6 @@ extern bool stream_overlay_showing;
 
 void streaming_overlay_init();
 
-bool streaming_overlay_dispatch_userevent(int which);
-
 bool streaming_overlay_should_block_input();
 
 bool streaming_overlay_hide();

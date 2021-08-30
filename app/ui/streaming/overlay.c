@@ -12,25 +12,9 @@
 
 bool stream_overlay_showing;
 
-#if TARGET_RASPI
-#define OVERLAY_WINDOW_FLAGS NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR
-#else
-#define OVERLAY_WINDOW_FLAGS NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_MINIMIZABLE | NK_WINDOW_MOVABLE
-#endif
 
 void streaming_overlay_init() {
     stream_overlay_showing = false;
-}
-
-bool streaming_overlay_dispatch_userevent(int which) {
-    switch (which) {
-        case USER_ST_QUITAPP_CONFIRM:
-            streaming_overlay_show();
-            return true;
-        default:
-            break;
-    }
-    return false;
 }
 
 bool streaming_overlay_should_block_input() {
@@ -50,7 +34,7 @@ bool streaming_overlay_show() {
         return false;
     stream_overlay_showing = true;
 
-//    streaming_enter_overlay(ui_display_width / 2 - wndpos.x, wndpos.y, ui_display_width / 2, ui_display_height / 2);
+    streaming_enter_overlay(0, 0, ui_display_width / 2, ui_display_height / 2);
     return true;
 }
 
@@ -63,6 +47,8 @@ lv_obj_t *streaming_scene_create(streaming_controller_t *controller, lv_obj_t *p
     lv_obj_t *progress = lv_spinner_create(scene, 1000, 60);
     lv_obj_set_size(progress, lv_dpx(50), lv_dpx(50));
     lv_obj_center(progress);
+
+
 
     controller->progress = progress;
     return scene;

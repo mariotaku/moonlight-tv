@@ -105,6 +105,7 @@ void launcher_win_update_selected(launcher_controller_t *controller, PSERVER_LIS
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             for (PAPP_DLIST cur = node->apps; cur != NULL; cur = cur->next) {
                 lv_obj_t *item = lv_list_add_btn(applist, NULL, cur->name);
+                lv_obj_set_style_bg_opa(item, LV_STATE_DEFAULT, 0);
                 item->user_data = cur;
                 lv_obj_add_event_cb(item, launcher_open_game, LV_EVENT_CLICKED, controller);
             }

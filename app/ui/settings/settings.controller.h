@@ -12,6 +12,12 @@
 #include "stream/settings.h"
 #include "app.h"
 
-lv_obj_t *settings_win_create(struct ui_view_controller_t *controller, lv_obj_t *parent);
+typedef struct {
+    ui_view_controller_t base;
+    uimanager_ctx *pane_manager;
+    lv_obj_t *nav, *detail;
+} settings_controller_t;
+
+lv_obj_t *settings_win_create(struct ui_view_controller_t *self, lv_obj_t *parent);
 
 ui_view_controller_t *settings_controller(const void *args);

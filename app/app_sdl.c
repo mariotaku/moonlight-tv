@@ -193,26 +193,6 @@ void app_process_events() {
     SDL_FilterEvents(app_event_filter, NULL);
 }
 
-void app_main_loop(void *data) {
-    static Uint32 fps_ticks = 0, framecount = 0;
-    Uint32 start_ticks = SDL_GetTicks();
-
-    app_process_events();
-    Uint32 end_ticks = SDL_GetTicks();
-    Sint32 deltams = end_ticks - start_ticks;
-    if (deltams < 0) {
-        deltams = 0;
-    }
-    if ((end_ticks - fps_ticks) >= 1000) {
-        sprintf(wintitle, "Moonlight | %d FPS", (int) (framecount * 1000.0 / (end_ticks - fps_ticks)));
-        SDL_SetWindowTitle(win, wintitle);
-        fps_ticks = end_ticks;
-        framecount = 0;
-    } else {
-        framecount++;
-    }
-}
-
 void app_start_text_input(int x, int y, int w, int h) {
     if (w > 0 && h > 0) {
         struct SDL_Rect rect = {x, y, w, h};
