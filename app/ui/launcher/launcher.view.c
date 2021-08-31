@@ -60,18 +60,7 @@ lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *paren
 
     lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
 
-    lv_obj_t *applist = lv_list_create(right);
-    lv_obj_set_style_pad_all(applist, 0, 0);
-    lv_obj_set_style_radius(applist, 0, 0);
-    lv_obj_set_style_border_side(applist, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_set_style_bg_opa(applist, 0, 0);
-    lv_obj_set_size(applist, LV_PCT(100), LV_PCT(100));
-    lv_obj_t *appload = lv_spinner_create(right, 1000, 60);
-    lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
-    lv_obj_center(appload);
-
-    controller->applist = applist;
-    controller->appload = appload;
+    controller->right = right;
     controller->pclist = pclist;
     return win;
 }

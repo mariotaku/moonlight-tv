@@ -15,12 +15,13 @@
 typedef struct {
     ui_view_controller_t base;
     PCMANAGER_CALLBACKS _pcmanager_callbacks;
-    APPMANAGER_CALLBACKS _appmanager_callbacks;
-    lv_obj_t *pclist, *applist, *appload;
+    lv_obj_t *right;
+    lv_obj_t *pclist;
     PSERVER_LIST selected_server;
+    uimanager_ctx *pane_manager;
 } launcher_controller_t;
 
 
 lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *parent);
 
-ui_view_controller_t *launcher_controller(const void *args);
+ui_view_controller_t *launcher_controller(void *args);

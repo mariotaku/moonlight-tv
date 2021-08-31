@@ -17,7 +17,7 @@ typedef struct {
 
 static void item_create_view(uimanager_t *manager, PUIMANAGER_STACK item, lv_obj_t *parent, const void *args);
 
-static void item_destroy_view(PUIMANAGER_STACK item);
+static void item_destroy_view(uimanager_t *manager, PUIMANAGER_STACK item);
 
 static void view_cb_delete(lv_event_t *event);
 
@@ -31,16 +31,16 @@ uimanager_ctx *uimanager_new(lv_obj_t *parent) {
 
 void uimanager_destroy(uimanager_ctx *ctx) {
     assert(ctx);
-    uimanager_t *instance = (uimanager_t *) ctx;
-    PUIMANAGER_STACK top = instance->top;
+    uimanager_t *manager = (uimanager_t *) ctx;
+    PUIMANAGER_STACK top = manager->top;
     while (top) {
-        item_destroy_view(top);
+        item_destroy_view(manager, top);
         top->controller->destroy_controller(top->controller);
         struct UIMANAGER_STACK *prev = top->prev;
         free(top);
         top = prev;
     }
-    free(instance);
+    free(manager);
 }
 
 void uimanager_push(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, const void *args) {
@@ -48,7 +48,7 @@ void uimanager_push(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, con
     assert(creator);
     uimanager_t *manager = (uimanager_t *) ctx;
     if (manager->top) {
-        item_destroy_view(manager->top);
+        item_destroy_view(manager, manager->top);
     }
     PUIMANAGER_STACK item = malloc(sizeof(UIMANAGER_STACK));
     item->creator = creator;
@@ -67,7 +67,7 @@ void uimanager_replace(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, 
     uimanager_t *manager = (uimanager_t *) ctx;
     PUIMANAGER_STACK top = manager->top;
     if (top) {
-        item_destroy_view(top);
+        item_destroy_view(manager, top);
         top->controller->destroy_controller(top->controller);
     } else {
         top = manager->top = malloc(sizeof(UIMANAGER_STACK));
@@ -83,7 +83,7 @@ void uimanager_pop(uimanager_ctx *ctx) {
     PUIMANAGER_STACK top = manager->top;
     if (!top) return;
 
-    item_destroy_view(top);
+    item_destroy_view(manager, top);
     top->controller->destroy_controller(top->controller);
     top->controller = NULL;
     PUIMANAGER_STACK prev = top->prev;
@@ -115,13 +115,23 @@ static void item_create_view(uimanager_t *manager, PUIMANAGER_STACK item, lv_obj
     if (controller->view_created) {
         controller->view_created(controller, view);
     }
-    lv_obj_add_event_cb(view, view_cb_delete, LV_EVENT_DELETE, controller);
+    if (view) {
+        lv_obj_add_event_cb(view, view_cb_delete, LV_EVENT_DELETE, controller);
+    }
 }
 
-static void item_destroy_view(PUIMANAGER_STACK item) {
+static void item_destroy_view(uimanager_t *manager, PUIMANAGER_STACK item) {
     lv_obj_t *view = item->view;
-    lv_obj_del(view);
-    item->view = item->controller->view = NULL;
+    ui_view_controller_t *controller = item->controller;
+    if (view) {
+        lv_obj_del(view);
+    } else {
+        lv_obj_clean(manager->parent);
+        if (controller->destroy_view) {
+            controller->destroy_view(controller, NULL);
+        }
+    }
+    item->view = controller->view = NULL;
 }
 
 static void view_cb_delete(lv_event_t *event) {

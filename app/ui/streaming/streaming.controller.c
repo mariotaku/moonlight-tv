@@ -10,7 +10,7 @@ static void on_view_created(ui_view_controller_t *self, lv_obj_t *view);
 
 static bool on_event(ui_view_controller_t *, int, void *, void *);
 
-ui_view_controller_t *streaming_controller(const void *args) {
+ui_view_controller_t *streaming_controller(void *args) {
     streaming_controller_t *controller = malloc(sizeof(streaming_controller_t));
     lv_memset_00(controller, sizeof(streaming_controller_t));
     controller->base.create_view = streaming_scene_create;

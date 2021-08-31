@@ -21,7 +21,7 @@ struct ui_view_controller_t {
 
 typedef struct ui_view_controller_t ui_view_controller_t;
 
-typedef ui_view_controller_t *(*uimanager_controller_ctor_t)(const void *args);
+typedef ui_view_controller_t *(*uimanager_controller_ctor_t)(void *args);
 
 uimanager_ctx *uimanager_new(lv_obj_t *parent);
 

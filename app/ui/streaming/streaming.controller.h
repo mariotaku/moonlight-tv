@@ -9,6 +9,6 @@ typedef struct {
     lv_obj_t *quit_btn;
 } streaming_controller_t;
 
-ui_view_controller_t *streaming_controller(const void *args);
+ui_view_controller_t *streaming_controller(void *args);
 
 lv_obj_t *streaming_scene_create(ui_view_controller_t *self, lv_obj_t *parent);
