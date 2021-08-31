@@ -2,8 +2,12 @@
 // Created by Mariotaku on 2021/08/31.
 //
 
+#include "app.h"
+
 #include <malloc.h>
-#include <backend/application_manager.h>
+#include "backend/application_manager.h"
+#include "ui/streaming/overlay.h"
+#include "ui/streaming/streaming.controller.h"
 #include "apps.controller.h"
 
 typedef struct {
@@ -21,7 +25,7 @@ static void on_destroy_view(ui_view_controller_t *self, lv_obj_t *view);
 
 static void on_apps_updated(void *userdata, PSERVER_LIST node);
 
-void launcher_open_game(lv_event_t *event);
+static void launcher_open_game(lv_event_t *event);
 
 static void update_data(apps_controller_t *controller, PSERVER_LIST node);
 
@@ -101,3 +105,11 @@ static void update_data(apps_controller_t *controller, PSERVER_LIST node) {
     }
 }
 
+static void launcher_open_game(lv_event_t *event) {
+    apps_controller_t *controller = event->user_data;
+    STREAMING_SCENE_ARGS args = {
+            .server = controller->server->server,
+            .app = (PAPP_DLIST) event->target->user_data
+    };
+    uimanager_push(app_uimanager, streaming_controller, &args);
+}

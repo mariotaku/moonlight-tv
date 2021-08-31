@@ -61,15 +61,6 @@ static void cb_pc_selected(lv_event_t *event) {
     uimanager_replace(controller->pane_manager, apps_controller, event->target->user_data);
 }
 
-void launcher_open_game(lv_event_t *event) {
-    launcher_controller_t *controller = event->user_data;
-    STREAMING_SCENE_ARGS args = {
-            .server = controller->selected_server->server,
-            .app = (PAPP_DLIST) event->target->user_data
-    };
-    uimanager_push(controller->base.manager, streaming_controller, &args);
-}
-
 
 static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);

@@ -31,6 +31,8 @@ static bool on_event(ui_view_controller_t *self, int which, void *data1, void *d
     switch (which) {
         case USER_STREAM_OPEN: {
             lv_obj_add_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->suspend_btn, LV_OBJ_FLAG_HIDDEN);
             break;
         }
         case USER_STREAM_CLOSE: {
@@ -42,6 +44,8 @@ static bool on_event(ui_view_controller_t *self, int which, void *data1, void *d
             break;
         }
         case USER_ST_QUITAPP_CONFIRM: {
+            lv_obj_clear_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->suspend_btn, LV_OBJ_FLAG_HIDDEN);
             streaming_overlay_show();
             break;
         }

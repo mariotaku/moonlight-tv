@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct UIMANAGER_STACK {
     uimanager_controller_ctor_t creator;
@@ -51,9 +52,8 @@ void uimanager_push(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, con
         item_destroy_view(manager, manager->top);
     }
     PUIMANAGER_STACK item = malloc(sizeof(UIMANAGER_STACK));
+    memset(item, 0, sizeof(UIMANAGER_STACK));
     item->creator = creator;
-    item->controller = NULL;
-    item->view = NULL;
     lv_obj_t *parent = manager->parent;
     item_create_view(manager, item, parent, args);
     PUIMANAGER_STACK top = manager->top;
@@ -71,6 +71,7 @@ void uimanager_replace(uimanager_ctx *ctx, uimanager_controller_ctor_t creator, 
         top->controller->destroy_controller(top->controller);
     } else {
         top = manager->top = malloc(sizeof(UIMANAGER_STACK));
+        memset(top, 0, sizeof(UIMANAGER_STACK));
     }
     top->controller = NULL;
     top->creator = creator;
