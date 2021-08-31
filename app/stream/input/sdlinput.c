@@ -12,15 +12,23 @@
 #endif
 
 static void release_gamecontroller_buttons(int which);
+
 static void release_keyboard_keys(SDL_Event ev);
+
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
 
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
+
 void sdlinput_handle_text_event(SDL_TextInputEvent *event);
+
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
+
 void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event);
+
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event);
+
 void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event);
+
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 
 bool absinput_no_control;
@@ -29,32 +37,26 @@ GAMEPAD_STATE gamepads[4];
 int activeGamepadMask = 0;
 int sdl_gamepads = 0;
 
-void absinput_init()
-{
+void absinput_init() {
     memset(gamepads, 0, sizeof(gamepads));
 }
 
-void absinput_destroy()
-{
+void absinput_destroy() {
 }
 
-int absinput_gamepads()
-{
+int absinput_gamepads() {
     return sdl_gamepads;
 }
 
-int absinput_max_gamepads()
-{
+int absinput_max_gamepads() {
     return 4;
 }
 
-bool absinput_gamepad_present(int which)
-{
+bool absinput_gamepad_present(int which) {
     return (activeGamepadMask & (1 << which)) != 0;
 }
 
-void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor, unsigned short high_freq_motor)
-{
+void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor, unsigned short high_freq_motor) {
     if (controller_id >= 4)
         return;
 
@@ -84,44 +86,42 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
-bool absinput_dispatch_event(SDL_Event *event)
-{
-    if (streaming_status != STREAMING_STREAMING)
-    {
+bool absinput_dispatch_event(SDL_Event *event) {
+    if (streaming_status != STREAMING_STREAMING) {
         return false;
     }
-    switch (event->type)
-    {
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-        sdlinput_handle_key_event(&event->key);
-        break;
-    case SDL_CONTROLLERAXISMOTION:
-        sdlinput_handle_caxis_event(&event->caxis);
-        break;
-    case SDL_CONTROLLERBUTTONDOWN:
-    case SDL_CONTROLLERBUTTONUP:
-        sdlinput_handle_cbutton_event(&event->cbutton);
-        break;
-    case SDL_MOUSEMOTION:
-        sdlinput_handle_mmotion_event(&event->motion);
-        break;
-    case SDL_MOUSEWHEEL:
-        sdlinput_handle_mwheel_event(&event->wheel);
-        break;
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-        sdlinput_handle_mbutton_event(&event->button);
-        break;
-    case SDL_TEXTINPUT:
-        sdlinput_handle_text_event(&event->text);
-        break;
+    switch (event->type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+            sdlinput_handle_key_event(&event->key);
+            break;
+        case SDL_CONTROLLERAXISMOTION:
+            sdlinput_handle_caxis_event(&event->caxis);
+            break;
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+            sdlinput_handle_cbutton_event(&event->cbutton);
+            break;
+        case SDL_MOUSEMOTION:
+            sdlinput_handle_mmotion_event(&event->motion);
+            break;
+        case SDL_MOUSEWHEEL:
+            sdlinput_handle_mwheel_event(&event->wheel);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+            sdlinput_handle_mbutton_event(&event->button);
+            break;
+        case SDL_TEXTINPUT:
+            sdlinput_handle_text_event(&event->text);
+            break;
+        default:
+            return false;
     }
-    return false;
+    return true;
 }
 
-void release_gamecontroller_buttons(int which)
-{
+void release_gamecontroller_buttons(int which) {
     PGAMEPAD_STATE gamepad;
     gamepad = get_gamepad(which);
     gamepad->buttons = 0;
@@ -131,30 +131,26 @@ void release_gamecontroller_buttons(int which)
     gamepad->leftStickY = 0;
     gamepad->rightStickX = 0;
     gamepad->rightStickY = 0;
-    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger, gamepad->rightTrigger,
+    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+                               gamepad->rightTrigger,
                                gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
 }
 
-void release_keyboard_keys(SDL_Event ev)
-{
+void release_keyboard_keys(SDL_Event ev) {
 }
 
-bool absinput_init_gamepad(int joystick_index)
-{
-    if (SDL_IsGameController(joystick_index))
-    {
+bool absinput_init_gamepad(int joystick_index) {
+    if (SDL_IsGameController(joystick_index)) {
         sdl_gamepads++;
         SDL_GameController *controller = SDL_GameControllerOpen(joystick_index);
-        if (!controller)
-        {
+        if (!controller) {
             applog_e("Input", "Could not open gamecontroller %i: %s", joystick_index, SDL_GetError());
             return true;
         }
 
         SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
         SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
-        if (haptic && (SDL_HapticQuery(haptic) & SDL_HAPTIC_LEFTRIGHT) == 0)
-        {
+        if (haptic && (SDL_HapticQuery(haptic) & SDL_HAPTIC_LEFTRIGHT) == 0) {
             SDL_HapticClose(haptic);
             haptic = NULL;
         }
@@ -165,9 +161,7 @@ bool absinput_init_gamepad(int joystick_index)
         state->haptic_effect_id = -1;
         applog_i("Input", "Controller #%d (%s) connected, sdl_id: %d", state->id, SDL_JoystickName(joystick), sdl_id);
         return true;
-    }
-    else
-    {
+    } else {
         SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
         char guidstr[33];
         SDL_JoystickGetGUIDString(guid, guidstr, 33);
@@ -176,16 +170,13 @@ bool absinput_init_gamepad(int joystick_index)
     return false;
 }
 
-void absinput_close_gamepad(SDL_JoystickID sdl_id)
-{
+void absinput_close_gamepad(SDL_JoystickID sdl_id) {
     PGAMEPAD_STATE state = get_gamepad(sdl_id);
-    if (!state)
-    {
+    if (!state) {
         return;
     }
     SDL_GameController *controller = SDL_GameControllerFromInstanceID(sdl_id);
-    if (!controller)
-    {
+    if (!controller) {
         applog_w("Input", "Could not find gamecontroller %i: %s", sdl_id, SDL_GetError());
         return;
     }
@@ -193,8 +184,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id)
     sdl_gamepads--;
     // Remove gamepad mask
     activeGamepadMask &= ~(1 << state->id);
-    if (state->haptic)
-    {
+    if (state->haptic) {
         SDL_HapticClose(state->haptic);
     }
     SDL_GameControllerClose(controller);

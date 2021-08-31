@@ -14,18 +14,14 @@
 
 #include "backend/gamecontrollerdb_updater.h"
 
-void inputmgr_init()
-{
+void inputmgr_init() {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     int numofmappings;
 
     char *condb = gamecontrollerdb_path();
-    if (access(condb, F_OK) == 0)
-    {
+    if (access(condb, F_OK) == 0) {
         numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
-    }
-    else
-    {
+    } else {
 #if TARGET_WEBOS
         numofmappings = SDL_GameControllerAddMappingsFromFile("assets/gamecontrollerdb.txt");
 #else
@@ -40,38 +36,26 @@ void inputmgr_init()
     absinput_init();
 }
 
-void inputmgr_destroy()
-{
+void inputmgr_destroy() {
     absinput_destroy();
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 }
 
-void inputmgr_sdl_handle_event(SDL_Event ev)
-{
-    if (ev.type == SDL_JOYDEVICEADDED)
-    {
-        if (absinput_gamepads() >= absinput_max_gamepads())
-        {
+void inputmgr_sdl_handle_event(SDL_Event *ev) {
+    if (ev->type == SDL_JOYDEVICEADDED) {
+        if (absinput_gamepads() >= absinput_max_gamepads()) {
             // Ignore controllers more than supported
             applog_w("Input", "Too many controllers, ignoring.");
             return;
         }
-        absinput_init_gamepad(ev.jdevice.which);
-    }
-    else if (ev.type == SDL_JOYDEVICEREMOVED)
-    {
-        absinput_close_gamepad(ev.jdevice.which);
-    }
-    else if (ev.type == SDL_CONTROLLERDEVICEADDED)
-    {
+        absinput_init_gamepad(ev->jdevice.which);
+    } else if (ev->type == SDL_JOYDEVICEREMOVED) {
+        absinput_close_gamepad(ev->jdevice.which);
+    } else if (ev->type == SDL_CONTROLLERDEVICEADDED) {
         applog_d("Input", "SDL_CONTROLLERDEVICEADDED");
-    }
-    else if (ev.type == SDL_CONTROLLERDEVICEREMOVED)
-    {
+    } else if (ev->type == SDL_CONTROLLERDEVICEREMOVED) {
         applog_d("Input", "SDL_CONTROLLERDEVICEREMOVED");
-    }
-    else if (ev.type == SDL_CONTROLLERDEVICEREMAPPED)
-    {
+    } else if (ev->type == SDL_CONTROLLERDEVICEREMAPPED) {
         applog_d("Input", "SDL_CONTROLLERDEVICEREMAPPED");
     }
 }

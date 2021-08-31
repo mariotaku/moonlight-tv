@@ -124,7 +124,7 @@ void app_destroy() {
     free(app_configuration);
 }
 
-void inputmgr_sdl_handle_event(SDL_Event ev);
+void inputmgr_sdl_handle_event(SDL_Event *ev);
 
 static int app_event_filter(void *userdata, SDL_Event *event) {
     switch (event->type) {
@@ -180,12 +180,23 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             app_request_exit();
             break;
         }
+        case SDL_JOYDEVICEADDED:
+        case SDL_JOYDEVICEREMOVED:
+        case SDL_CONTROLLERDEVICEADDED:
+        case SDL_CONTROLLERDEVICEREMOVED:
+        case SDL_CONTROLLERDEVICEREMAPPED: {
+            inputmgr_sdl_handle_event(event);
+            break;
+        }
         case SDL_KEYDOWN:
         case SDL_KEYUP:
         case SDL_MOUSEMOTION:
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEWHEEL:
+        case SDL_CONTROLLERBUTTONDOWN:
+        case SDL_CONTROLLERBUTTONUP:
+        case SDL_CONTROLLERAXISMOTION:
             return 1;
         default:
             return 0;

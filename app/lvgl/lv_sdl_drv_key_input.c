@@ -17,12 +17,18 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     indev_key_state_t *state = drv->user_data;
     SDL_Event e;
     if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP) > 0) {
-        absinput_dispatch_event(&e);
-        read_event(&e, state);
+        if (absinput_dispatch_event(&e)) {
+            state->state = LV_INDEV_STATE_RELEASED;
+        } else {
+            read_event(&e, state);
+        }
         data->continue_reading = true;
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_CONTROLLERAXISMOTION, SDL_CONTROLLERBUTTONUP) > 0) {
-        absinput_dispatch_event(&e);
-        read_event(&e, state);
+        if (absinput_dispatch_event(&e)) {
+            state->state = LV_INDEV_STATE_RELEASED;
+        } else {
+            read_event(&e, state);
+        }
         data->continue_reading = true;
     } else {
         data->continue_reading = false;
