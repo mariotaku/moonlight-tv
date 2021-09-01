@@ -79,7 +79,6 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->debug_level = 0;
     config->audio_backend = "auto";
     config->decoder = "auto";
-    config->address = NULL;
     config->config_file = NULL;
     config->audio_device = NULL;
     config->sops = true;

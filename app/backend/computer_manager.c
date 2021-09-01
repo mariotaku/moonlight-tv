@@ -98,15 +98,19 @@ void handle_server_discovered(PPCMANAGER_RESP discovered) {
             serverdata_free((PSERVER_DATA) node->server);
         }
         serverlist_set_from_resp(node, discovered);
-        for (PPCMANAGER_CALLBACKS cur = callbacks_list; cur != NULL; cur = cur->next)
+        for (PPCMANAGER_CALLBACKS cur = callbacks_list; cur != NULL; cur = cur->next) {
+            if (!cur->updated) continue;
             cur->updated(cur->userdata, discovered);
+        }
     } else {
         node = serverlist_new();
         serverlist_set_from_resp(node, discovered);
 
         computer_list = serverlist_append(computer_list, node);
-        for (PPCMANAGER_CALLBACKS cur = callbacks_list; cur != NULL; cur = cur->next)
+        for (PPCMANAGER_CALLBACKS cur = callbacks_list; cur != NULL; cur = cur->next) {
+            if (!cur->added) continue;
             cur->added(cur->userdata, discovered);
+        }
     }
 }
 
@@ -184,6 +188,7 @@ void pcmanager_load_known_hosts() {
         goto cleanup;
     }
     config_setting_t *root = config_root_setting(&config);
+    bool selected_set = false;
     for (int i = 0, j = config_setting_length(root); i < j; i++) {
         config_setting_t *item = config_setting_get_elem(root, i);
         const char *mac = config_setting_get_string_simple(item, "mac"),
@@ -202,12 +207,13 @@ void pcmanager_load_known_hosts() {
         server->serverInfo.address = strdup(address);
 
         PSERVER_LIST node = serverlist_new();
-        node->state.code = SERVER_STATE_OFFLINE;
+        node->state.code = SERVER_STATE_NONE;
         node->server = server;
         node->known = true;
         computer_list = serverlist_append(computer_list, node);
-        if (config_setting_get_bool_simple(item, "selected")) {
-            app_configuration->address = strdup(address);
+        if (!selected_set && config_setting_get_bool_simple(item, "selected")) {
+            node->selected = true;
+            selected_set = true;
         }
     }
     cleanup:
@@ -223,6 +229,7 @@ void pcmanager_save_known_hosts() {
     options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
     config_set_options(&config, options);
     config_setting_t *root = config_root_setting(&config);
+    bool selected_set = false;
     for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
         if (!cur->server || !cur->known) {
             continue;
@@ -240,7 +247,7 @@ void pcmanager_save_known_hosts() {
         config_setting_set_string_simple(item, "mac", server->mac);
         config_setting_set_string_simple(item, "hostname", server->hostname);
         config_setting_set_string_simple(item, "address", server->serverInfo.address);
-        if (app_configuration->address && strcmp(app_configuration->address, server->serverInfo.address) == 0) {
+        if (!selected_set && cur->selected) {
             config_setting_set_bool_simple(item, "selected", true);
         }
     }
@@ -317,8 +324,6 @@ void pcmanager_request_update(const SERVER_DATA *server) {
 }
 
 void pcmanager_register_callbacks(PPCMANAGER_CALLBACKS callbacks) {
-    assert(callbacks->added);
-    assert(callbacks->updated);
     callbacks->next = NULL;
     callbacks->prev = NULL;
     callbacks_list = pcmanager_callbacks_append(callbacks_list, callbacks);

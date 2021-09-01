@@ -24,37 +24,33 @@
 
 #define MAX_INPUTS 6
 
-enum codecs
-{
-  CODEC_UNSPECIFIED,
-  CODEC_H264,
-  CODEC_HEVC
+enum codecs {
+    CODEC_UNSPECIFIED,
+    CODEC_H264,
+    CODEC_HEVC
 };
 
-typedef struct _CONFIGURATION
-{
-  STREAM_CONFIGURATION stream;
-  int debug_level;
-  char *address;
-  char *mapping;
-  const char *decoder;
-  const char *audio_backend;
-  const char *audio_device;
-  char *config_file;
-  char key_dir[4096];
-  bool sops;
-  bool localaudio;
-  bool fullscreen;
-  int rotate;
-  bool unsupported;
-  bool quitappafter;
-  bool viewonly;
-  bool absmouse;
-  bool swap_abxy;
-  enum codecs codec;
+typedef struct _CONFIGURATION {
+    STREAM_CONFIGURATION stream;
+    int debug_level;
+    char *mapping;
+    const char *decoder;
+    const char *audio_backend;
+    const char *audio_device;
+    char *config_file;
+    char key_dir[4096];
+    bool sops;
+    bool localaudio;
+    bool fullscreen;
+    int rotate;
+    bool unsupported;
+    bool quitappafter;
+    bool viewonly;
+    bool absmouse;
+    bool swap_abxy;
+    enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 
-#define CONF_NAME_STREAMING "streaming.conf"
 #define CONF_NAME_MOONLIGHT "moonlight.conf"
 #define CONF_NAME_HOSTS "hosts.conf"
 

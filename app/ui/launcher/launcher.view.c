@@ -3,11 +3,12 @@
 
 #include "lvgl.h"
 
-#include "window.h"
+#include "launcher.controller.h"
 
 static void open_settings(lv_event_t *event);
 
-lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *parent) {
+lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent) {
+    launcher_controller_t *controller = (launcher_controller_t *) self;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, lv_dpx(40));
 

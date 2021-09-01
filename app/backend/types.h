@@ -48,7 +48,7 @@ typedef union SERVER_STATE
 
 typedef struct SERVER_LIST_T
 {
-  bool known;
+  bool known, selected;
   SERVER_STATE state;
   const SERVER_DATA *server;
   PAPP_DLIST apps;

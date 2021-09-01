@@ -9,11 +9,11 @@ typedef struct {
 } settings_entry_t;
 
 static const settings_entry_t entries[] = {
-        {LV_SYMBOL_DUMMY, "Basic Settings", settings_pane_basic},
-        {LV_SYMBOL_DUMMY, "Host Settings", settings_pane_basic},
-        {LV_SYMBOL_KEYBOARD, "Input Settings", settings_pane_basic},
-        {LV_SYMBOL_VIDEO, "Decoder Settings", settings_pane_basic},
-        {LV_SYMBOL_DUMMY, "About", settings_pane_basic},
+        {LV_SYMBOL_DUMMY,    "Basic Settings",   settings_pane_basic},
+        {LV_SYMBOL_DUMMY,    "Host Settings",    settings_pane_basic},
+        {LV_SYMBOL_KEYBOARD, "Input Settings",   settings_pane_basic},
+        {LV_SYMBOL_VIDEO,    "Decoder Settings", settings_pane_basic},
+        {LV_SYMBOL_DUMMY,    "About",            settings_pane_basic},
 };
 static const entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
@@ -23,14 +23,14 @@ static void on_destroy_view(ui_view_controller_t *controller, lv_obj_t *view);
 
 static void on_entry_click(lv_event_t *event);
 
-ui_view_controller_t *settings_controller(const void *args) {
+ui_view_controller_t *settings_controller(void *args) {
     settings_controller_t *controller = malloc(sizeof(settings_controller_t));
     lv_memset_00(controller, sizeof(settings_controller_t));
     controller->base.create_view = settings_win_create;
     controller->base.view_created = on_view_created;
     controller->base.destroy_view = on_destroy_view;
     controller->base.destroy_controller = free;
-    return controller;
+    return (ui_view_controller_t *) controller;
 }
 
 static void on_view_created(ui_view_controller_t *self, lv_obj_t *view) {

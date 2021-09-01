@@ -27,7 +27,7 @@
 #include "util/logging.h"
 
 #include <fontconfig/fontconfig.h>
-#include <ui/launcher/window.h>
+#include <ui/launcher/launcher.controller.h>
 
 FILE *app_logfile = NULL;
 
@@ -40,6 +40,8 @@ static void app_gs_client_destroy();
 static void lv_bg_draw(lv_area_t *area);
 
 uimanager_ctx *app_uimanager;
+
+lv_indev_t *app_indev_key;
 
 int main(int argc, char *argv[]) {
     app_loginit();
@@ -92,8 +94,9 @@ int main(int argc, char *argv[]) {
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
-    lv_sdl_init_key_input();
+    lv_indev_t *indev_key = lv_sdl_init_key_input();
     lv_indev_t *indev_pointer = lv_sdl_init_pointer();
+    app_indev_key = indev_key;
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_opa(scr, 0, 0);
@@ -111,7 +114,7 @@ int main(int argc, char *argv[]) {
     uimanager_destroy(app_uimanager);
 
     lv_sdl_deinit_pointer(indev_pointer);
-    lv_sdl_deinit_key_input(NULL);
+    lv_sdl_deinit_key_input(indev_key);
     lv_sdl_display_deinit(disp);
 //    lv_deinit();
 

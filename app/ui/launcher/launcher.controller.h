@@ -1,16 +1,13 @@
 #pragma once
 
 #include <stdbool.h>
-#include <ui/manager.h>
 
 #include "ui/config.h"
+#include "ui/manager.h"
 
 #include "lvgl.h"
 
-#include "util/navkey.h"
-
 #include "backend/computer_manager.h"
-#include "backend/application_manager.h"
 
 typedef struct {
     ui_view_controller_t base;
@@ -22,6 +19,6 @@ typedef struct {
 } launcher_controller_t;
 
 
-lv_obj_t *launcher_win_create(launcher_controller_t *controller, lv_obj_t *parent);
+lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent);
 
 ui_view_controller_t *launcher_controller(void *args);

@@ -5,7 +5,7 @@
 #include "stream/platform.h"
 #include "stream/session.h"
 
-#include "launcher/window.h"
+#include "launcher/launcher.controller.h"
 #include "settings/settings.controller.h"
 #include "streaming/overlay.h"
 

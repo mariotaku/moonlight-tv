@@ -7,7 +7,7 @@
 
 static lv_obj_t *on_create_view(ui_view_controller_t *self, lv_obj_t *parent);
 
-ui_view_controller_t *settings_pane_basic(const void *args) {
+ui_view_controller_t *settings_pane_basic(void *args) {
     ui_view_controller_t *controller = malloc(sizeof(ui_view_controller_t));
     memset(controller, 0, sizeof(ui_view_controller_t));
     controller->create_view = on_create_view;

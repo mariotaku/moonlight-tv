@@ -77,6 +77,9 @@ static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
         case NAVKEY_RIGHT:
             state->key = LV_KEY_RIGHT;
             break;
+        case NAVKEY_MENU:
+            state->key = LV_KEY_NEXT;
+            break;
         case NAVKEY_CONFIRM:
             state->key = LV_KEY_ENTER;
             break;

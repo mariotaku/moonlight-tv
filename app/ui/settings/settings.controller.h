@@ -20,4 +20,4 @@ typedef struct {
 
 lv_obj_t *settings_win_create(struct ui_view_controller_t *self, lv_obj_t *parent);
 
-ui_view_controller_t *settings_controller(const void *args);
+ui_view_controller_t *settings_controller(void *args);

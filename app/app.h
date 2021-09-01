@@ -1,6 +1,7 @@
 #pragma once
 
-#include <ui/manager.h>
+#include "lvgl.h"
+#include "ui/manager.h"
 #include "stream/module/api.h"
 #include "stream/settings.h"
 #include "libgamestream/client.h"
@@ -12,6 +13,7 @@ extern PCONFIGURATION app_configuration;
 extern int app_window_width, app_window_height;
 extern bool app_has_redraw, app_force_redraw;
 extern uimanager_ctx *app_uimanager;
+extern lv_indev_t *app_indev_key;
 
 int app_init(int argc, char *argv[]);
 
