@@ -16,6 +16,7 @@
 #include "gpu/lv_gpu_sdl.h"
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_sdl_drv_pointer_input.h"
+#include "lvgl/lv_sdl_img.h"
 
 #include "debughelper.h"
 #include "backend/backend_root.h"
@@ -90,6 +91,9 @@ int main(int argc, char *argv[]) {
     disp->theme->font_small = &lv_font_montserrat_24;
     disp->theme->font_large = &lv_font_montserrat_32;
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
+
+    lv_img_decoder_t *img_decoder = lv_img_decoder_create();
+    lv_sdl_img_decoder_init(img_decoder);
 
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);

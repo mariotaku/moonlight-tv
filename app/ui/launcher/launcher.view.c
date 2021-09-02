@@ -36,7 +36,7 @@ lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_set_style_pad_all(right, 0, 0);
     lv_obj_set_style_radius(right, 0, 0);
-    lv_obj_set_style_bg_color(right, lv_color_black(), 0);
+    lv_obj_set_style_bg_color(right, lv_color_lighten(lv_color_black(), 30), 0);
     lv_obj_set_style_shadow_color(right, lv_color_black(), 0);
     lv_obj_set_style_shadow_opa(right, LV_OPA_MAX, 0);
     lv_obj_set_style_shadow_width(right, lv_dpx(5), 0);

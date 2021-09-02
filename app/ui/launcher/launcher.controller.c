@@ -76,7 +76,7 @@ static void cb_pc_selected(lv_event_t *event) {
 static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);
     for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
-        lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, NULL, cur->server->hostname);
+        lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, LV_SYMBOL_DUMMY, cur->server->hostname);
         lv_obj_set_style_bg_color(pcitem, lv_palette_main(LV_PALETTE_BLUE), LV_STATE_CHECKED);
         lv_obj_set_user_data(pcitem, cur);
         lv_obj_add_event_cb(pcitem, cb_pc_selected, LV_EVENT_CLICKED, controller);

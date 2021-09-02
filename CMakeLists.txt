@@ -191,7 +191,7 @@ set(SOURCES
     app/util/libconfig_ext.c
     app/lvgl/lv_sdl_drv_key_input.c
     app/lvgl/lv_sdl_drv_pointer_input.c
-        app/ui/launcher/apps.controller.c app/ui/launcher/apps.controller.h)
+        app/ui/launcher/apps.controller.c app/ui/launcher/apps.controller.h app/lvgl/lv_ext_utils.c app/lvgl/lv_ext_utils.h app/lvgl/lv_sdl_img.c app/lvgl/lv_sdl_img.h)
 
 if (HAVE_SDL)
     list(APPEND SOURCES
