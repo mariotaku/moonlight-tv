@@ -8,7 +8,7 @@
 #include "ui/config.h"
 
 
-#include "backend/computer_manager.h"
+#include "backend/pcmanager.h"
 #include "stream/session.h"
 
 #include "util/navkey.h"

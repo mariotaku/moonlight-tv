@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 
-#include "backend/computer_manager.h"
+#include "backend/pcmanager.h"
 
 enum STREAMING_STATUS
 {

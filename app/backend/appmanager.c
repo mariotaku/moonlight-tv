@@ -9,7 +9,7 @@
 #include <pthread.h>
 
 #include "util/user_event.h"
-#include "application_manager.h"
+#include "appmanager.h"
 #include "util/bus.h"
 #include "util/logging.h"
 

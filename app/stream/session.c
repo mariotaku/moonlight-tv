@@ -19,7 +19,7 @@
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
-#include "backend/computer_manager.h"
+#include "backend/pcmanager.h"
 
 #include "util/logging.h"
 #include "util/memlog.h"

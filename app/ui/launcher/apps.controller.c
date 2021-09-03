@@ -6,8 +6,9 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <backend/coverloader.h>
 #include "lvgl/lv_ext_utils.h"
-#include "backend/application_manager.h"
+#include "backend/appmanager.h"
 #include "ui/streaming/overlay.h"
 #include "ui/streaming/streaming.controller.h"
 #include "apps.controller.h"
@@ -21,6 +22,8 @@ typedef struct {
     lv_obj_t *applist, *appload;
 
     lv_style_t btn_style;
+    int col_count;
+    lv_coord_t col_width, col_height;
 } apps_controller_t;
 
 typedef struct {
@@ -98,7 +101,8 @@ static void on_view_created(ui_view_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
     appmanager_register_callbacks(&controller->_appmanager_callbacks);
     pcmanager_register_callbacks(&controller->_pcmanager_callbacks);
-    lv_group_remove_obj(controller->applist);
+    lv_obj_t *applist = controller->applist;
+    lv_group_remove_obj(applist);
     controller->group = lv_group_create();
     lv_indev_set_group(app_indev_key, controller->group);
 
@@ -106,6 +110,15 @@ static void on_view_created(ui_view_controller_t *self, lv_obj_t *view) {
     if (!controller->node->apps) {
         application_manager_load(controller->node);
     }
+
+    int col_count = 5;
+    lv_coord_t applist_width = lv_measure_width(applist);
+    lv_coord_t col_width = (applist_width - lv_obj_get_style_pad_left(applist, 0) -
+                            lv_obj_get_style_pad_right(applist, 0) -
+                            lv_obj_get_style_pad_column(applist, 0) * (col_count - 1)) / col_count;
+    controller->col_count = col_count;
+    controller->col_width = col_width;
+    controller->col_height = col_width / 3 * 4;
 }
 
 static void on_destroy_view(ui_view_controller_t *self, lv_obj_t *view) {
@@ -136,28 +149,22 @@ static void update_data(apps_controller_t *controller) {
     lv_obj_t *appload = controller->appload;
     if (node->state.code == SERVER_STATE_NONE) {
         lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-//        lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
     } else if (node->state.code == SERVER_STATE_ONLINE) {
         if (node->appload) {
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-//            lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
         } else {
             lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             if (lv_obj_get_child_cnt(applist) == 0) {
                 int len = applist_len(node->apps);
-                lv_coord_t applist_width = lv_measure_width(applist);
-                int col_count = 5, row_count = len / col_count + 1;
-                lv_coord_t col_width = (applist_width - lv_obj_get_style_pad_left(applist, 0) -
-                                        lv_obj_get_style_pad_right(applist, 0) -
-                                        lv_obj_get_style_pad_column(applist, 0) * (col_count - 1)) / col_count;
-                lv_coord_t col_height = col_width / 3 * 4;
+                int col_count = controller->col_count;
+                int row_count = len / col_count + 1;
                 lv_coord_t *row_dsc = malloc((row_count + 1) * sizeof(lv_coord_t));
                 lv_coord_t *col_dsc = malloc((col_count + 1) * sizeof(lv_coord_t));
                 for (int i = 0; i < row_count; i++) {
-                    row_dsc[i] = col_height;
+                    row_dsc[i] = controller->col_height;
                 }
                 row_dsc[row_count] = LV_GRID_TEMPLATE_LAST;
                 for (int i = 0; i < col_count; i++) {
@@ -222,7 +229,8 @@ static lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
 
 static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, struct _APP_DLIST *app) {
     appitem_viewholder_t *holder = item->user_data;
-    lv_obj_set_style_bg_img_src(item, "SDL_Image test", 0);
+
+    coverloader_display(controller->node, app->id, item, LV_MAX(controller->col_width, controller->col_height));
 
     if (controller->node->server->currentGame == app->id) {
         lv_obj_clear_flag(holder->play_btn, LV_OBJ_FLAG_HIDDEN);

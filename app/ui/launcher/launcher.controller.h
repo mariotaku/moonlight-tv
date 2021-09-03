@@ -7,7 +7,7 @@
 
 #include "lvgl.h"
 
-#include "backend/computer_manager.h"
+#include "backend/pcmanager.h"
 
 typedef struct {
     ui_view_controller_t base;

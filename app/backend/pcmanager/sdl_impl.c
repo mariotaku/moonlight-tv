@@ -1,4 +1,4 @@
-#include "backend/computer_manager.h"
+#include "backend/pcmanager.h"
 #include <SDL.h>
 
 static Uint32 _auto_discovery_cb(Uint32 interval, void *repeat);

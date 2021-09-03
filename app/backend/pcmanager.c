@@ -1,6 +1,6 @@
 #define PCMANAGER_IMPL
 
-#include "computer_manager.h"
+#include "pcmanager.h"
 #include "pcmanager/priv.h"
 
 #include "app.h"
