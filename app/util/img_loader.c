@@ -13,7 +13,7 @@ struct img_loader_task_t {
 };
 
 struct img_loader_t {
-    img_loader_impl_t datasource;
+    img_loader_impl_t impl;
     struct img_loader_task_t *task_queue;
     SDL_mutex *queue_lock;
     SDL_cond *queue_cond;
@@ -48,9 +48,11 @@ static int loader_worker(img_loader_t *loader);
 
 static void notify_cb(notify_cb_t *args);
 
-img_loader_t *img_loader_create(const img_loader_impl_t *datasource) {
+static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2);
+
+img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
     img_loader_t *loader = SDL_malloc(sizeof(img_loader_t));
-    SDL_memcpy(&loader->datasource, datasource, sizeof(img_loader_t));
+    SDL_memcpy(&loader->impl, impl, sizeof(img_loader_impl_t));
     loader->task_queue = NULL;
     loader->queue_lock = SDL_CreateMutex();
     loader->queue_cond = SDL_CreateCond();
@@ -68,7 +70,7 @@ void img_loader_destroy(img_loader_t *loader) {
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
     cb->start_cb(request);
-    void *cached = loader->datasource.memcache_get(request);
+    void *cached = loader->impl.memcache_get(request);
     // Memory cache found, finish loading
     if (cached) {
         cb->complete_cb(request, cached);
@@ -111,26 +113,29 @@ static img_loader_task_t *loader_task_poll(img_loader_t *loader) {
 
 static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
     void *request = task->request;
-    void *cached = loader->datasource.filecache_get(request);
-    notify_cb_t *args = malloc(sizeof(notify_cb_t));
+    void *cached = loader->impl.filecache_get(request);
     if (!cached) {
-        cached = loader->datasource.fetch(request);
+        cached = loader->impl.fetch(request);
         if (!cached) {
             // call fail_cb
-            args->fn = (img_loader_fn2) task->cb.fail_cb;
-            args->arg1 = request;
-            args->arg2 = NULL;
-            loader->datasource.run_on_main(loader, (img_loader_fn) notify_cb, args);
+            run_on_main(loader, (img_loader_fn2) task->cb.fail_cb, request, NULL);
             return;
         }
-        loader->datasource.filecache_put(request, cached);
+        loader->impl.filecache_put(request, cached);
     }
-    loader->datasource.memcache_put(request, cached);
-    // call complete_cb
-    args->fn = task->cb.complete_cb;
-    args->arg1 = request;
-    args->arg2 = cached;
-    loader->datasource.run_on_main(loader, (img_loader_fn) notify_cb, args);
+    run_on_main(loader, loader->impl.memcache_put, request, cached);
+    if (loader->impl.memcache_put_wait) {
+        loader->impl.memcache_put_wait(request);
+    }
+    run_on_main(loader, task->cb.complete_cb, request, cached);
+}
+
+static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2) {
+    notify_cb_t *args = malloc(sizeof(notify_cb_t));
+    args->arg1 = arg1;
+    args->arg2 = arg2;
+    args->fn = fn;
+    loader->impl.run_on_main(loader, (img_loader_fn) notify_cb, args);
 }
 
 static void notify_cb(notify_cb_t *args) {

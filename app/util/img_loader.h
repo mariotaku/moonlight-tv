@@ -27,6 +27,8 @@ typedef struct img_loader_datasource_t {
 
     img_loader_fn2 memcache_put;
 
+    img_loader_fn memcache_put_wait;
+
     img_loader_get_fn filecache_get;
 
     img_loader_fn2 filecache_put;
@@ -36,7 +38,7 @@ typedef struct img_loader_datasource_t {
     void (*run_on_main)(img_loader_t *loader, img_loader_fn fn, void *args);
 } img_loader_impl_t;
 
-img_loader_t *img_loader_create(const img_loader_impl_t *datasource);
+img_loader_t *img_loader_create(const img_loader_impl_t *impl);
 
 void img_loader_destroy(img_loader_t *loader);
 

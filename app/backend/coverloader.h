@@ -15,7 +15,8 @@ MAIN_THREAD void coverloader_init();
 
 MAIN_THREAD void coverloader_destroy();
 
-MAIN_THREAD void coverloader_display(PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_size);
+MAIN_THREAD void coverloader_display(PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_width,
+                                     lv_coord_t target_height);
 
 #ifndef _COVERLOADER_IMPL
 #undef MAIN_THREAD

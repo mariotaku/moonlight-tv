@@ -1,6 +1,7 @@
 #include "lv_sdl_img.h"
 
 #include <SDL_image.h>
+#include <gpu/sdl/lv_gpu_sdl_texture_cache.h>
 
 static char img_fmt[64] = "";
 
@@ -48,27 +49,35 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
     }
     lv_sdl_img_src_t sdl_src;
     lv_sdl_img_src_parse(dsc->src, &sdl_src);
-    SDL_Surface *surface;
     switch (sdl_src.type) {
         case LV_SDL_IMG_TYPE_SURFACE: {
-            surface = sdl_src.data.surface;
+            dsc->img_data = sdl_src.data.surface->pixels;
+            dsc->user_data = NULL;
+            break;
+        }
+        case LV_SDL_IMG_TYPE_TEXTURE: {
+            dsc->img_data = NULL;
+            lv_gpu_sdl_dec_dsc_userdata_t *userdata = SDL_malloc(sizeof(lv_gpu_sdl_dec_dsc_userdata_t));
+            SDL_memcpy(userdata->head, LV_GPU_SDL_DEC_DSC_TEXTURE_HEAD, 8);
+            userdata->texture = sdl_src.data.texture;
+            dsc->user_data = userdata;
             break;
         }
         case LV_SDL_IMG_TYPE_PATH: {
-            surface = IMG_Load(sdl_src.data.path);
+            SDL_Surface *surface = IMG_Load(sdl_src.data.path);
             if (surface->format->BytesPerPixel == 3) {
                 SDL_Surface *converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
                 SDL_FreeSurface(surface);
                 surface = converted;
             }
+            dsc->img_data = surface->pixels;
+            dsc->user_data = surface;
             break;
         }
         default: {
             return LV_RES_INV;
         }
     }
-    dsc->img_data = surface->pixels;
-    dsc->user_data = surface;
     return LV_RES_OK;
 }
 
@@ -81,6 +90,10 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
     switch (sdl_src.type) {
         case LV_SDL_IMG_TYPE_PATH: {
             SDL_FreeSurface(dsc->user_data);
+            break;
+        }
+        case LV_SDL_IMG_TYPE_TEXTURE: {
+            SDL_free(dsc->user_data);
             break;
         }
         default: {

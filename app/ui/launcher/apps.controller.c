@@ -230,7 +230,7 @@ static lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
 static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, struct _APP_DLIST *app) {
     appitem_viewholder_t *holder = item->user_data;
 
-    coverloader_display(controller->node, app->id, item, LV_MAX(controller->col_width, controller->col_height));
+    coverloader_display(controller->node, app->id, item, controller->col_width, controller->col_height);
 
     if (controller->node->server->currentGame == app->id) {
         lv_obj_clear_flag(holder->play_btn, LV_OBJ_FLAG_HIDDEN);
