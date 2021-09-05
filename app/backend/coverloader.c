@@ -31,6 +31,7 @@
 #define COVER_SRC_LEN_MAX 64
 
 typedef struct coverloader_request {
+    coverloader_t *loader;
     int id;
     PSERVER_LIST node;
     lv_obj_t *target;
@@ -59,15 +60,15 @@ static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void
 
 static void img_loader_start_cb(coverloader_req_t *req);
 
-static void img_loader_complete_cb(coverloader_req_t *req, SDL_Surface *data);
-
-static void img_loader_fail_cb(coverloader_req_t *req);
+static void img_loader_result_cb(coverloader_req_t *req);
 
 static void img_loader_cancel_cb(coverloader_req_t *req);
 
 static void memcache_item_free(lv_sdl_img_src_t *item);
 
 static void coverloader_req_free(coverloader_req_t *req);
+
+static void obj_free_res_cb(lv_event_t *event);
 
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
@@ -81,28 +82,35 @@ static const img_loader_impl_t coverloader_impl = {
 
 static const img_loader_cb_t coverloader_cb = {
         .start_cb = (img_loader_fn) img_loader_start_cb,
-        .complete_cb = (img_loader_fn2) img_loader_complete_cb,
-        .fail_cb = (img_loader_fn) img_loader_fail_cb,
+        .complete_cb = (img_loader_fn2) img_loader_result_cb,
+        .fail_cb = (img_loader_fn) img_loader_result_cb,
         .cancel_cb = (img_loader_fn) img_loader_cancel_cb,
 };
 
-static img_loader_t *base_loader;
-static lv_lru_t *mem_cache;
+struct coverloader_t {
+    img_loader_t *base_loader;
+    lv_lru_t *mem_cache;
+};
 
-MAIN_THREAD void coverloader_init() {
-    mem_cache = lv_lru_new(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, SDL_free);
-    base_loader = img_loader_create(&coverloader_impl);
+
+coverloader_t *coverloader_new() {
+    coverloader_t *loader = malloc(sizeof(coverloader_t));
+    loader->mem_cache = lv_lru_new(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
+    loader->base_loader = img_loader_create(&coverloader_impl);
+    return loader;
 }
 
-MAIN_THREAD void coverloader_destroy() {
-    img_loader_destroy(base_loader);
-    lv_lru_free(mem_cache);
+void coverloader_destroy(coverloader_t *loader) {
+    img_loader_destroy(loader->base_loader);
+    lv_lru_free(loader->mem_cache);
+    free(loader);
 }
 
-MAIN_THREAD void coverloader_display(PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_width,
-                                     lv_coord_t target_height) {
+void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_width,
+                         lv_coord_t target_height) {
     coverloader_req_t *req = malloc(sizeof(coverloader_req_t));
     SDL_memset(req, 0, sizeof(coverloader_req_t));
+    req->loader = loader;
     req->id = id;
     req->node = node;
     req->target = target;
@@ -111,7 +119,7 @@ MAIN_THREAD void coverloader_display(PSERVER_LIST node, int id, lv_obj_t *target
     req->finished = false;
     req->mutex = SDL_CreateMutex();
     req->cond = SDL_CreateCond();
-    img_loader_load(base_loader, req, &coverloader_cb);
+    img_loader_load(loader->base_loader, req, &coverloader_cb);
 }
 
 char *coverloader_cache_dir() {
@@ -133,7 +141,7 @@ char *coverloader_cache_dir() {
 static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
     // Uses result cache instead
     lv_sdl_img_src_t *result = NULL;
-    lv_lru_get(mem_cache, &req->id, sizeof(int), (void **) &result);
+    lv_lru_get(req->loader->mem_cache, &req->id, sizeof(int), (void **) &result);
     req->result = result;
     return NULL;
 }
@@ -141,14 +149,14 @@ static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
     lv_disp_t *disp = lv_disp_get_default();
     SDL_Renderer *renderer = disp->driver->user_data;
-    lv_sdl_img_src_t *result = SDL_malloc(sizeof(lv_sdl_img_src_t));
+    lv_sdl_img_src_t *result = malloc(sizeof(lv_sdl_img_src_t));
     SDL_memset(result, 0, sizeof(lv_sdl_img_src_t));
     result->type = LV_SDL_IMG_TYPE_TEXTURE;
     result->cf = LV_IMG_CF_TRUE_COLOR;
     result->w = cached->w;
     result->h = cached->h;
     result->data.texture = SDL_CreateTextureFromSurface(renderer, cached);
-    lv_lru_set(mem_cache, &req->id, sizeof(int), result, result->w * result->h);
+    lv_lru_set(req->loader->mem_cache, &req->id, sizeof(int), result, result->w * result->h);
     req->result = result;
     req->finished = true;
     SDL_CondSignal(req->cond);
@@ -218,21 +226,20 @@ static void img_loader_start_cb(coverloader_req_t *req) {
 
 }
 
-static void img_loader_complete_cb(coverloader_req_t *req, SDL_Surface *data) {
-    const void *old_src = lv_obj_get_style_bg_img_src(req->target, 0);
+static void img_loader_result_cb(coverloader_req_t *req) {
+    const void *old_src = lv_img_get_src(req->target);
     if (old_src) {
-        SDL_free((void *) old_src);
+        free((void *) old_src);
+        lv_obj_remove_event_cb(req->target, obj_free_res_cb);
     }
-    char *src = SDL_malloc(COVER_SRC_LEN_MAX);
-    lv_sdl_img_src_stringify(req->result, src);
-    lv_obj_set_style_bg_img_src(req->target, src, 0);
-    lv_obj_set_style_bg_opa(req->target, 0, 0);
-    coverloader_req_free(req);
-}
-
-static void img_loader_fail_cb(coverloader_req_t *req) {
-    lv_obj_set_style_bg_img_src(req->target, NULL, 0);
-    lv_obj_set_style_bg_opa(req->target, LV_OPA_COVER, 0);
+    if (req->result) {
+        char *src = malloc(COVER_SRC_LEN_MAX);
+        lv_sdl_img_src_stringify(req->result, src);
+        lv_img_set_src(req->target, src);
+        lv_obj_add_event_cb(req->target, obj_free_res_cb, LV_EVENT_DELETE, src);
+    } else {
+        lv_img_set_src(req->target, NULL);
+    }
     coverloader_req_free(req);
 }
 
@@ -242,11 +249,15 @@ static void img_loader_cancel_cb(coverloader_req_t *req) {
 
 static void memcache_item_free(lv_sdl_img_src_t *item) {
     SDL_DestroyTexture(item->data.texture);
-    SDL_free(item);
+    free(item);
 }
 
 static void coverloader_req_free(coverloader_req_t *req) {
     SDL_DestroyMutex(req->mutex);
     SDL_DestroyCond(req->cond);
-    SDL_free(req);
+    free(req);
+}
+
+static void obj_free_res_cb(lv_event_t *event) {
+    free(event->user_data);
 }

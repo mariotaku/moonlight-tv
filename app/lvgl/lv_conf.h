@@ -45,7 +45,7 @@
 /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/
 #  define LV_MEM_ADR          0     /*0: unused*/
 #else       /*LV_MEM_CUSTOM*/
-#  define LV_MEM_CUSTOM_INCLUDE <stdlib.h>   /*Header for the dynamic memory function*/
+#  define LV_MEM_CUSTOM_INCLUDE "memlog.h"   /*Header for the dynamic memory function*/
 #  define LV_MEM_CUSTOM_ALLOC     malloc
 #  define LV_MEM_CUSTOM_FREE      free
 #  define LV_MEM_CUSTOM_REALLOC   realloc

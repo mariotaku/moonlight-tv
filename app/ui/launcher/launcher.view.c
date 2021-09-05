@@ -58,8 +58,12 @@ lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *pref_btn = lv_list_add_btn(nav, LV_SYMBOL_SETTINGS, "Settings");
     lv_obj_set_flex_grow(pref_btn, 0);
     lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
+    lv_obj_t *exit_btn = lv_list_add_btn(nav, LV_SYMBOL_CLOSE, "Exit");
+    lv_obj_set_flex_grow(exit_btn, 0);
+    lv_obj_set_style_border_side(exit_btn, LV_BORDER_SIDE_NONE, 0);
 
     lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(exit_btn, app_request_exit, LV_EVENT_CLICKED, NULL);
 
     controller->right = right;
     controller->pclist = pclist;

@@ -63,9 +63,11 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
 
 void img_loader_destroy(img_loader_t *loader) {
     loader->destroyed = SDL_TRUE;
+    SDL_CondSignal(loader->queue_cond);
     SDL_DetachThread(loader->worker_thread);
     SDL_DestroyCond(loader->queue_cond);
     SDL_DestroyMutex(loader->queue_lock);
+    SDL_free(loader);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
@@ -95,6 +97,7 @@ static int loader_worker(img_loader_t *loader) {
             continue;
         }
         loader_task_execute(loader, task);
+        free(task);
     }
     return 0;
 }

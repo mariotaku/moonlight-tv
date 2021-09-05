@@ -7,19 +7,13 @@
 #include "libgamestream/client.h"
 #include "lvgl/lv_sdl_img.h"
 
-#define MAIN_THREAD
-#define WORKER_THREAD
-#define THREAD_SAFE
+struct coverloader_t;
 
-MAIN_THREAD void coverloader_init();
+typedef struct coverloader_t coverloader_t;
 
-MAIN_THREAD void coverloader_destroy();
+coverloader_t *coverloader_new();
 
-MAIN_THREAD void coverloader_display(PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_width,
-                                     lv_coord_t target_height);
+void coverloader_destroy(coverloader_t *);
 
-#ifndef _COVERLOADER_IMPL
-#undef MAIN_THREAD
-#undef WORKER_THREAD
-#undef THREAD_SAFE
-#endif
+void coverloader_display(coverloader_t *, PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_width,
+                         lv_coord_t target_height);

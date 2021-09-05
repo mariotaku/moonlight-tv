@@ -152,6 +152,7 @@ add_subdirectory(audio)
 add_subdirectory(third_party/mdns EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
+target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
@@ -193,15 +194,11 @@ set(SOURCES
     app/lvgl/lv_sdl_drv_key_input.c
     app/lvgl/lv_sdl_drv_pointer_input.c
     app/ui/launcher/apps.controller.c
-    app/ui/launcher/apps.controller.h
     app/lvgl/lv_ext_utils.c
-    app/lvgl/lv_ext_utils.h
     app/lvgl/lv_sdl_img.c
-    app/lvgl/lv_sdl_img.h
     app/backend/coverloader.c
-    app/backend/coverloader.h
     app/util/img_loader.c
-    app/util/img_loader.h
+    app/ui/launcher/appitem.view.c
 )
 
 if (HAVE_SDL)
