@@ -387,15 +387,19 @@ static void adapter_recycle_item(lv_grid_t *adapter, int index) {
     // Move item from inuse pool to free pool
     lv_obj_t *item = view_pool_take(&adapter->pool_inuse, index);
     assert(item);
+    lv_obj_add_flag(item, LV_OBJ_FLAG_HIDDEN);
     view_pool_put(&adapter->pool_free, -1, item);
 }
 
 static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int index) {
     // Move item from free pool to inuse pool, or create one
-    lv_obj_t *item = view_pool_pop(&grid->pool_free);
+    lv_obj_t *item = view_pool_find(&grid->pool_inuse, index);
+    if (item) return item;
+    item = view_pool_pop(&grid->pool_free);
     if (!item) {
         item = grid->adapter.create_view((lv_obj_t *) grid);
     }
+    lv_obj_clear_flag(item, LV_OBJ_FLAG_HIDDEN);
     view_pool_put(&grid->pool_inuse, index, item);
     return item;
 }
