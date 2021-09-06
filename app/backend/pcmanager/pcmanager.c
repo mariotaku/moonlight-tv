@@ -1,30 +1,24 @@
 #define PCMANAGER_IMPL
 
-#include "pcmanager.h"
-#include "pcmanager/priv.h"
+#include "backend/pcmanager.h"
+#include "priv.h"
 
 #include "app.h"
 
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 
-#include <pthread.h>
-#include <signal.h>
+#include <SDL.h>
 
 #include <libconfig.h>
 
 #include "libgamestream/errors.h"
-#include "error_manager.h"
 
 #include "util/bus.h"
-#include "util/user_event.h"
 #include "util/path.h"
 
 #include "stream/session.h"
 #include "stream/settings.h"
-#include "app.h"
 
 #include "util/memlog.h"
 #include "util/logging.h"
@@ -35,14 +29,14 @@ static void strlower(char *p) {
         *p = tolower(*p);
 }
 
-static pthread_t computer_manager_polling_thread;
+static SDL_Thread *computer_manager_polling_thread = NULL;
 static PPCMANAGER_CALLBACKS callbacks_list;
 
 PSERVER_LIST computer_list;
 
-static void *_pcmanager_quitapp_action(void *data);
+static int _pcmanager_quitapp_action(void *data);
 
-static void *_computer_manager_server_update_action(PSERVER_DATA data);
+static int _computer_manager_server_update_action(PSERVER_DATA data);
 
 static void pcmanager_load_known_hosts();
 
@@ -64,7 +58,8 @@ void computer_manager_init() {
 void computer_manager_destroy() {
     computer_manager_auto_discovery_stop();
     if (computer_discovery_running) {
-        pthread_kill(computer_manager_polling_thread, 0);
+        SDL_DetachThread(computer_manager_polling_thread);
+        computer_manager_polling_thread = NULL;
     }
     pcmanager_save_known_hosts();
     serverlist_free(computer_list, serverlist_nodefree);
@@ -118,57 +113,55 @@ bool computer_manager_run_scan() {
     if (computer_discovery_running || streaming_status != STREAMING_NONE) {
         return false;
     }
-    pthread_create(&computer_manager_polling_thread, NULL, _computer_manager_polling_action, NULL);
+    computer_manager_polling_thread = SDL_CreateThread(_computer_manager_polling_action, "hostscan", NULL);
     return true;
 }
 
-static int server_list_namecmp(PSERVER_LIST item, const void *address) {
-    return strcmp(item->server->serverInfo.address, address);
-}
-
-bool pcmanager_quitapp(const SERVER_DATA *server, void (*callback)(PPCMANAGER_RESP)) {
+bool pcmanager_quitapp(const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
     if (server->currentGame == 0) {
         return false;
     }
-    cm_pin_request *req = malloc(sizeof(cm_pin_request));
+    cm_request_t *req = malloc(sizeof(cm_request_t));
     req->server = server;
     req->callback = callback;
-    pthread_t quitapp_thread;
-    pthread_create(&quitapp_thread, NULL, _pcmanager_quitapp_action, req);
+    req->userdata = userdata;
+    SDL_CreateThread(_pcmanager_quitapp_action, "quitapp", req);
     return true;
 }
 
-void *_pcmanager_quitapp_action(void *data) {
-    cm_pin_request *req = (cm_pin_request *) data;
+int _pcmanager_quitapp_action(void *data) {
+    cm_request_t *req = (cm_request_t *) data;
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     PSERVER_DATA server = serverdata_new();
-    memcpy(server, req->server, sizeof(SERVER_DATA));
+    SDL_memcpy(server, req->server, sizeof(SERVER_DATA));
     int ret = gs_quit_app(app_gs_client_obtain(), server);
     if (ret != GS_OK)
         pcmanager_resp_setgserror(resp, ret, gs_error);
     resp->server = server;
     resp->server_shallow = true;
     bus_pushaction((bus_actionfunc) handle_server_updated, resp);
-    bus_pushaction((bus_actionfunc) req->callback, resp);
+    bus_pushaction((bus_actionfunc) invoke_callback, invoke_callback_args(resp, req->callback, req->userdata));
     bus_pushaction((bus_actionfunc) serverinfo_resp_free, resp);
     free(req);
-    return NULL;
+    return 0;
 }
 
-void *_computer_manager_server_update_action(PSERVER_DATA data) {
+int _computer_manager_server_update_action(PSERVER_DATA data) {
     PSERVER_DATA server = serverdata_new();
     PPCMANAGER_RESP update = serverinfo_resp_new();
-    int ret = gs_init(app_gs_client_obtain(), server, strdup(data->serverInfo.address), app_configuration->unsupported);
+    int ret = gs_init(app_gs_client_obtain(), server, SDL_strdup(data->serverInfo.address),
+                      app_configuration->unsupported);
     if (ret == GS_OK) {
         update->state.code = SERVER_STATE_ONLINE;
         update->server = server;
         update->server_shallow = false;
-    } else
+    } else {
         serverstate_setgserror(&update->state, ret, gs_error);
+    }
     bus_pushaction((bus_actionfunc) handle_server_updated, update);
     bus_pushaction((bus_actionfunc) serverinfo_resp_free, update);
     free(data);
-    return NULL;
+    return 0;
 }
 
 int serverlist_compare_uuid(PSERVER_LIST other, const void *v) {
@@ -199,12 +192,12 @@ void pcmanager_load_known_hosts() {
         }
         const char *key = config_setting_name(item);
         int keyoff = key[0] == '*' ? 1 : 0;
-        char *uuid = strdup(&key[keyoff]);
+        char *uuid = SDL_strdup(&key[keyoff]);
         PSERVER_DATA server = serverdata_new();
         server->uuid = uuid;
-        server->mac = strdup(mac);
-        server->hostname = strdup(hostname);
-        server->serverInfo.address = strdup(address);
+        server->mac = SDL_strdup(mac);
+        server->hostname = SDL_strdup(hostname);
+        server->serverInfo.address = SDL_strdup(address);
 
         PSERVER_LIST node = serverlist_new();
         node->state.code = SERVER_STATE_NONE;
@@ -237,7 +230,7 @@ void pcmanager_save_known_hosts() {
         const SERVER_DATA *server = cur->server;
         char key[38];
         key[0] = '*';
-        strncpy(&key[1], server->uuid, 36);
+        SDL_memcpy(&key[1], server->uuid, 36);
         key[37] = '\0';
         strlower(&key[1]);
         config_setting_t *item = config_setting_add(root, key, CONFIG_TYPE_GROUP);
@@ -249,6 +242,7 @@ void pcmanager_save_known_hosts() {
         config_setting_set_string_simple(item, "address", server->serverInfo.address);
         if (!selected_set && cur->selected) {
             config_setting_set_bool_simple(item, "selected", true);
+            selected_set = true;
         }
     }
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
@@ -261,13 +255,13 @@ void pcmanager_save_known_hosts() {
 
 PSERVER_DATA serverdata_new() {
     PSERVER_DATA server = malloc(sizeof(SERVER_DATA));
-    memset(server, 0, sizeof(SERVER_DATA));
+    SDL_memset(server, 0, sizeof(SERVER_DATA));
     return server;
 }
 
 PPCMANAGER_RESP serverinfo_resp_new() {
     PPCMANAGER_RESP resp = malloc(sizeof(PCMANAGER_RESP));
-    memset(resp, 0, sizeof(PCMANAGER_RESP));
+    SDL_memset(resp, 0, sizeof(PCMANAGER_RESP));
     return resp;
 }
 
@@ -289,20 +283,21 @@ void pcmanager_resp_setgserror(PPCMANAGER_RESP resp, int code, const char *msg) 
     resp->result.error.message = msg;
 }
 
-#define free_nullable(p) \
-    if (p)               \
-    free((void *)p)
+static inline void free_nullable(void *p) {
+    if (!p) return;
+    free(p);
+}
 
 void serverdata_free(PSERVER_DATA data) {
     free_nullable(data->modes);
-    free_nullable(data->uuid);
-    free_nullable(data->mac);
-    free_nullable(data->hostname);
-    free_nullable(data->gpuType);
-    free_nullable(data->gsVersion);
-    free_nullable(data->serverInfo.serverInfoAppVersion);
-    free_nullable(data->serverInfo.serverInfoGfeVersion);
-    free_nullable(data->serverInfo.address);
+    free_nullable((void *) data->uuid);
+    free_nullable((void *) data->mac);
+    free_nullable((void *) data->hostname);
+    free_nullable((void *) data->gpuType);
+    free_nullable((void *) data->gsVersion);
+    free_nullable((void *) data->serverInfo.serverInfoAppVersion);
+    free_nullable((void *) data->serverInfo.serverInfoGfeVersion);
+    free_nullable((void *) data->serverInfo.address);
     free(data);
 }
 
@@ -317,10 +312,9 @@ void serverlist_nodefree(PSERVER_LIST node) {
 }
 
 void pcmanager_request_update(const SERVER_DATA *server) {
-    pthread_t update_thread;
     PSERVER_DATA arg = serverdata_new();
-    memcpy(arg, server, sizeof(SERVER_DATA));
-    pthread_create(&update_thread, NULL, (void *(*)(void *)) _computer_manager_server_update_action, arg);
+    SDL_memcpy(arg, server, sizeof(SERVER_DATA));
+    SDL_CreateThread((SDL_ThreadFunction) _computer_manager_server_update_action, "srvupd", arg);
 }
 
 void pcmanager_register_callbacks(PPCMANAGER_CALLBACKS callbacks) {
@@ -343,7 +337,7 @@ void pcmanager_unregister_callbacks(PPCMANAGER_CALLBACKS callbacks) {
 
 void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp) {
     if (resp->state.code != SERVER_STATE_NONE) {
-        memcpy(&node->state, &resp->state, sizeof(resp->state));
+        SDL_memcpy(&node->state, &resp->state, sizeof(resp->state));
     }
     node->known = resp->known;
     node->server = resp->server;
@@ -357,14 +351,14 @@ static void _pcmanager_client_setup_cb(void *data) {
     }
 }
 
-static void *_pcmanager_client_setup_action(void *unused) {
+static int _pcmanager_client_setup_action(void *unused) {
+    (void) unused;
     bus_pushaction(_pcmanager_client_setup_cb, (void *) 1);
     app_gs_client_obtain();
     bus_pushaction(_pcmanager_client_setup_cb, (void *) 0);
-    return NULL;
+    return 0;
 }
 
 void pcmanager_client_setup() {
-    pthread_t setup_thread;
-    pthread_create(&setup_thread, NULL, _pcmanager_client_setup_action, NULL);
+    SDL_CreateThread(_pcmanager_client_setup_action, "clntinit", NULL);
 }

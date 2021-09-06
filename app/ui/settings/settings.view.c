@@ -1,9 +1,9 @@
 #include "settings.controller.h"
-#include "ui/manager.h"
+#include "lvgl/manager.h"
 
 static void settings_close(lv_event_t *e);
 
-lv_obj_t *settings_win_create(struct ui_view_controller_t *self, lv_obj_t *parent) {
+lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, 80);
@@ -36,6 +36,6 @@ lv_obj_t *settings_win_create(struct ui_view_controller_t *self, lv_obj_t *paren
 
 
 static void settings_close(lv_event_t *e) {
-    ui_view_controller_t *controller = e->user_data;
+    lv_obj_controller_t *controller = e->user_data;
     uimanager_pop(controller->manager);
 }

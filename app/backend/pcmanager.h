@@ -25,6 +25,8 @@ typedef struct PCMANAGER_RESP_T {
     bool server_referenced;
 } PCMANAGER_RESP, *PPCMANAGER_RESP;
 
+typedef void (*pcmanager_callback_t)(PPCMANAGER_RESP, void *);
+
 typedef struct PCMANAGER_CALLBACKS {
     void (*added)(void *userdata, PPCMANAGER_RESP);
 
@@ -83,13 +85,13 @@ void computer_manager_auto_discovery_stop();
  * @param p 
  * @param pin 
  */
-bool pcmanager_pair(const SERVER_DATA *server, char *pin, void (*callback)(PPCMANAGER_RESP));
+bool pcmanager_pair(const SERVER_DATA *server, char *pin, pcmanager_callback_t callback, void *userdata);
 
-bool pcmanager_unpair(const SERVER_DATA *server, void (*callback)(PPCMANAGER_RESP));
+bool pcmanager_unpair(const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
 
-bool pcmanager_quitapp(const SERVER_DATA *server, void (*callback)(PPCMANAGER_RESP));
+bool pcmanager_quitapp(const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
 
-bool pcmanager_manual_add(const char *address, void (*callback)(PPCMANAGER_RESP));
+bool pcmanager_manual_add(const char *address, pcmanager_callback_t callback, void *userdata);
 
 bool pcmanager_send_wol(const SERVER_DATA *server);
 

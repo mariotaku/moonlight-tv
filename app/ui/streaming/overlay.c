@@ -1,4 +1,4 @@
-#include <ui/manager.h>
+#include <lvgl/manager.h>
 #include "overlay.h"
 #include "ui/root.h"
 #include "ui/messages.h"
@@ -38,7 +38,7 @@ bool streaming_overlay_show() {
     return true;
 }
 
-lv_obj_t *streaming_scene_create(ui_view_controller_t *self, lv_obj_t *parent) {
+lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
     lv_obj_set_style_radius(scene, 0, 0);

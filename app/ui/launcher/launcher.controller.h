@@ -3,14 +3,14 @@
 #include <stdbool.h>
 
 #include "ui/config.h"
-#include "ui/manager.h"
+#include "lvgl/manager.h"
 
 #include "lvgl.h"
 
 #include "backend/pcmanager.h"
 
 typedef struct {
-    ui_view_controller_t base;
+    lv_obj_controller_t base;
     PCMANAGER_CALLBACKS _pcmanager_callbacks;
     lv_obj_t *right;
     lv_obj_t *pclist;
@@ -19,6 +19,6 @@ typedef struct {
 } launcher_controller_t;
 
 
-lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent);
+lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent);
 
-ui_view_controller_t *launcher_controller(void *args);
+lv_obj_controller_t *launcher_controller(void *args);

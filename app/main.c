@@ -22,7 +22,7 @@
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
-#include "ui/manager.h"
+#include "lvgl/manager.h"
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/logging.h"

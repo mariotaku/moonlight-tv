@@ -159,16 +159,14 @@ target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 set(SOURCES
     app/main.c
     app/backend/backend_root.c
-    app/backend/pcmanager.c
+    app/backend/pcmanager/pcmanager.c
     app/backend/pcmanager/pairing.c
     app/backend/pcmanager/discovery.c
     app/backend/pcmanager/wol.c
+    app/backend/pcmanager/pcmanager_common.c
     app/backend/gamecontrollerdb_updater.c
     app/backend/appmanager.c
-        app/ui/launcher/coverloader.c
-    app/backend/error_manager.c
     app/backend/types_impl.c
-        app/ui/launcher/coverloader.c
     app/stream/module/module.c
     app/stream/module/audio.c
     app/stream/module/decoder.c
@@ -177,12 +175,12 @@ set(SOURCES
     app/stream/settings.c
     app/stream/video/delegate.c
     app/stream/video/dummy.c
-    app/ui/manager.c
     app/ui/root.c
     app/ui/launcher/launcher.view.c
     app/ui/launcher/launcher.controller.c
     app/ui/launcher/apps.controller.c
     app/ui/launcher/appitem.view.c
+    app/ui/launcher/coverloader.c
     app/ui/streaming/overlay.c
     app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
@@ -192,7 +190,8 @@ set(SOURCES
     app/lvgl/lv_sdl_drv_pointer_input.c
     app/lvgl/lv_ext_utils.c
     app/lvgl/lv_sdl_img.c
-        app/lvgl/lv_gridview.c
+    app/lvgl/lv_gridview.c
+    app/lvgl/manager.c
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
@@ -200,21 +199,19 @@ set(SOURCES
     app/util/logging.c
     app/util/libconfig_ext.c
     app/util/img_loader.c
+    app/app_sdl.c
+    app/backend/pcmanager/sdl_impl.c
+    app/stream/input/sdlinput.c
+    app/stream/input/sdl/keyboard.c
+    app/stream/input/sdl/gamepad.c
+    app/stream/input/sdl/mouse.c
+    app/platform/sdl/bus.c
+    app/platform/sdl/input_manager.c
+    app/platform/sdl/navkey_sdl.c
+    app/stream/audio/sdlaud.c
 )
 
 if (HAVE_SDL)
-    list(APPEND SOURCES
-        app/app_sdl.c
-        app/backend/pcmanager/sdl_impl.c
-        app/stream/input/sdlinput.c
-        app/stream/input/sdl/keyboard.c
-        app/stream/input/sdl/gamepad.c
-        app/stream/input/sdl/mouse.c
-        app/platform/sdl/bus.c
-        app/platform/sdl/input_manager.c
-        app/platform/sdl/navkey_sdl.c
-        app/stream/audio/sdlaud.c
-    )
     if (TARGET_WEBOS)
         list(APPEND SOURCES
             app/stream/input/sdl/keyboard_webos.c

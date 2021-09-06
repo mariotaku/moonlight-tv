@@ -7,7 +7,7 @@
 
 static void open_settings(lv_event_t *event);
 
-lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent) {
+lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, lv_dpx(40));
@@ -71,6 +71,6 @@ lv_obj_t *launcher_win_create(ui_view_controller_t *self, lv_obj_t *parent) {
 }
 
 static void open_settings(lv_event_t *event) {
-    ui_view_controller_t *controller = event->user_data;
+    lv_obj_controller_t *controller = event->user_data;
     uimanager_push(controller->manager, settings_controller, NULL);
 }

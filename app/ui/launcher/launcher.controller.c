@@ -2,9 +2,9 @@
 #include "launcher.controller.h"
 #include "apps.controller.h"
 
-static void launcher_view_init(ui_view_controller_t *self, lv_obj_t *view);
+static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view);
 
-static void launcher_view_destroy(ui_view_controller_t *self, lv_obj_t *view);
+static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void launcher_handle_server_updated(void *userdata, PPCMANAGER_RESP resp);
 
@@ -12,12 +12,12 @@ static void update_pclist(launcher_controller_t *controller);
 
 static void cb_pc_selected(lv_event_t *event);
 
-ui_view_controller_t *launcher_controller(void *args) {
+lv_obj_controller_t *launcher_controller(void *args) {
     (void) args;
     launcher_controller_t *controller = lv_mem_alloc(sizeof(launcher_controller_t));
     lv_memset_00(controller, sizeof(launcher_controller_t));
     controller->base.create_view = launcher_win_create;
-    controller->base.destroy_controller = (void (*)(struct ui_view_controller_t *)) lv_mem_free;
+    controller->base.destroy_controller = (void (*)(struct lv_obj_controller_t *)) lv_mem_free;
     controller->base.view_created = launcher_view_init;
     controller->base.destroy_view = launcher_view_destroy;
     controller->_pcmanager_callbacks.added = launcher_handle_server_updated;
@@ -29,10 +29,10 @@ ui_view_controller_t *launcher_controller(void *args) {
             break;
         }
     }
-    return (ui_view_controller_t *) controller;
+    return (lv_obj_controller_t *) controller;
 }
 
-static void launcher_view_init(ui_view_controller_t *self, lv_obj_t *view) {
+static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     pcmanager_register_callbacks(&controller->_pcmanager_callbacks);
     controller->pane_manager = uimanager_new(controller->right);
@@ -45,7 +45,7 @@ static void launcher_view_init(ui_view_controller_t *self, lv_obj_t *view) {
     }
 }
 
-static void launcher_view_destroy(ui_view_controller_t *self, lv_obj_t *view) {
+static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     uimanager_destroy(controller->pane_manager);
     pcmanager_unregister_callbacks(&controller->_pcmanager_callbacks);

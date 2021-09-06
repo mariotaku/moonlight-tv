@@ -1,5 +1,5 @@
 #pragma once
 
-#include "ui/manager.h"
+#include "lvgl/manager.h"
 
-ui_view_controller_t *apps_controller(void *args);
+lv_obj_controller_t *apps_controller(void *args);

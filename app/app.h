@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lvgl.h"
-#include "ui/manager.h"
+#include "lvgl/manager.h"
 #include "stream/module/api.h"
 #include "stream/settings.h"
 #include "libgamestream/client.h"
