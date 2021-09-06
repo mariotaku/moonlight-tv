@@ -16,13 +16,15 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_flag(header, LV_OBJ_FLAG_HIDDEN);
 
     lv_obj_t *content = lv_win_get_content(win);
+    lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_pad_all(content, 0, 0);
 
     lv_obj_t *nav = lv_obj_create(content);
-    lv_obj_t *right = lv_obj_create(content);
+    lv_obj_t *detail = lv_obj_create(content);
     lv_obj_set_size(nav, lv_dpx(200), LV_PCT(100));
-    lv_obj_set_size(right, lv_obj_get_width(parent) - lv_dpx(40), LV_PCT(100));
-    lv_obj_align(right, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_obj_set_size(detail, lv_obj_get_width(parent) - lv_dpx(40), LV_PCT(100));
+    lv_obj_align(detail, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_obj_clear_flag(detail, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_set_style_pad_row(nav, 0, 0);
 
@@ -34,15 +36,20 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 //    lv_obj_set_style_bg_opa(nav, 0, 0);
     lv_obj_set_style_border_width(nav, 0, 0);
 
-    lv_obj_set_style_pad_all(right, 0, 0);
-    lv_obj_set_style_radius(right, 0, 0);
-    lv_obj_set_style_bg_color(right, lv_color_lighten(lv_color_black(), 30), 0);
-    lv_obj_set_style_shadow_color(right, lv_color_black(), 0);
-    lv_obj_set_style_shadow_opa(right, LV_OPA_MAX, 0);
-    lv_obj_set_style_shadow_width(right, lv_dpx(5), 0);
-    lv_obj_set_style_border_width(right, 0, 0);
+    lv_obj_set_style_pad_all(detail, 0, 0);
+    lv_obj_set_style_radius(detail, 0, 0);
+    lv_obj_set_style_bg_color(detail, lv_color_lighten(lv_color_black(), 30), 0);
+    lv_obj_set_style_shadow_color(detail, lv_color_black(), 0);
+    lv_obj_set_style_shadow_opa(detail, LV_OPA_MAX, 0);
+    lv_obj_set_style_shadow_width(detail, lv_dpx(5), 0);
+    lv_obj_set_style_border_width(detail, 0, 0);
+    lv_obj_set_style_translate_x(detail, lv_dpx(200 - 40), 0);
+    lv_obj_set_style_translate_x(detail, 0, LV_STATE_USER_1);
+    lv_obj_set_style_transition(detail, &controller->tr_nav, 0);
+    lv_obj_set_style_transition(detail, &controller->tr_detail, LV_STATE_USER_1);
 
     lv_obj_t *pclist = lv_list_create(nav);
+    lv_obj_add_flag(pclist, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_width(pclist, LV_PCT(100));
     lv_obj_set_style_pad_all(pclist, 0, 0);
     lv_obj_set_style_radius(pclist, 0, 0);
@@ -53,19 +60,23 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     // Use list button for normal container
     lv_obj_t *add_btn = lv_list_add_btn(nav, LV_SYMBOL_PLUS, "Add");
+    lv_obj_add_flag(add_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(add_btn, 0);
     lv_obj_set_style_border_side(add_btn, LV_BORDER_SIDE_NONE, 0);
     lv_obj_t *pref_btn = lv_list_add_btn(nav, LV_SYMBOL_SETTINGS, "Settings");
+    lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(pref_btn, 0);
     lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
     lv_obj_t *exit_btn = lv_list_add_btn(nav, LV_SYMBOL_CLOSE, "Exit");
+    lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(exit_btn, 0);
     lv_obj_set_style_border_side(exit_btn, LV_BORDER_SIDE_NONE, 0);
 
     lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(exit_btn, app_request_exit, LV_EVENT_CLICKED, NULL);
 
-    controller->right = right;
+    controller->nav = nav;
+    controller->detail = detail;
     controller->pclist = pclist;
     return win;
 }

@@ -92,6 +92,7 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
     lv_obj_t *applist = lv_gridview_create(parent);
+    lv_obj_add_flag(applist, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_pad_all(applist, lv_dpx(24), 0);
     lv_obj_set_style_pad_gap(applist, lv_dpx(24), 0);
     lv_obj_set_style_radius(applist, 0, 0);
