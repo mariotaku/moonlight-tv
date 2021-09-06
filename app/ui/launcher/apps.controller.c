@@ -118,6 +118,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(applist, launcher_open_game, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
+    lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_LEAVE, controller);
     lv_group_add_obj(lv_group_get_default(), applist);
 
     int col_count = 5;

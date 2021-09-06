@@ -33,7 +33,6 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(nav, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_style_pad_all(nav, 0, 0);
     lv_obj_set_style_radius(nav, 0, 0);
-//    lv_obj_set_style_bg_opa(nav, 0, 0);
     lv_obj_set_style_border_width(nav, 0, 0);
 
     lv_obj_set_style_pad_all(detail, 0, 0);
