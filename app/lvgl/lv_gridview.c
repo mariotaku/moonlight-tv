@@ -236,6 +236,9 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
         case LV_EVENT_LONG_PRESSED_REPEAT:
             press_cb(grid, e);
             break;
+        case LV_EVENT_SIZE_CHANGED:
+            update_grid(grid);
+            break;
         default:
             return;
     }
@@ -311,14 +314,15 @@ static void press_cb(lv_grid_t *grid, lv_event_t *e) {
 
 static void update_grid(lv_grid_t *grid) {
     lv_obj_t *obj = &grid->obj;
-    lv_coord_t scroll_y = lv_obj_get_scroll_y(obj);
     lv_coord_t content_height = lv_obj_get_content_height(obj);
+    if (content_height <= 0)return;
+    lv_coord_t scroll_y = lv_obj_get_scroll_y(obj);
     lv_coord_t pad_row = lv_obj_get_style_pad_row(obj, 0);
     lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, 0);
     lv_coord_t pad_bottom = lv_obj_get_style_pad_bottom(obj, 0);
     lv_coord_t extend = grid->row_height / 4;
     lv_coord_t row_height = grid->row_height;
-    int row_start = 0;
+    int row_start = -1;
     for (int i = 0; i < grid->row_count; i++) {
         lv_coord_t row_top = row_height * i + pad_row * i;
         lv_coord_t row_bottom = row_top + row_height;
@@ -328,7 +332,7 @@ static void update_grid(lv_grid_t *grid) {
             break;
         }
     }
-    int row_end = 0;
+    int row_end = -1;
     for (int i = grid->row_count - 1; i >= row_start; i--) {
         lv_coord_t row_top = row_height * i + pad_row * i;
         lv_coord_t end_bound = scroll_y + content_height + pad_bottom + extend;

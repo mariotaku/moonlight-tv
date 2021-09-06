@@ -206,7 +206,7 @@ static void launcher_open_game(lv_event_t *event) {
             .server = controller->node->server,
             .app = (PAPP_DLIST) holder->app
     };
-//    uimanager_push(app_uimanager, streaming_controller, &args);
+    uimanager_push(app_uimanager, streaming_controller, &args);
 }
 
 static void launcher_resume_game(lv_event_t *event) {
@@ -226,9 +226,8 @@ static void launcher_quit_game(lv_event_t *event) {
 
 static int adapter_item_count(lv_obj_t *adapter, void *data) {
     apps_controller_t *controller = lv_obj_get_user_data(adapter);
-    int len = applist_len(data) * 7;
-    // LVGL can only display up to 255 rows/columns of items
-    return LV_MIN(len, 255 * controller->col_count);
+    // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
+    return LV_MIN(applist_len(data), 255 * controller->col_count);
 }
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
@@ -238,18 +237,18 @@ static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
     lv_group_remove_obj(item);
 
     appitem_viewholder_t *holder = item->user_data;
-//    lv_obj_add_event_cb(holder->play_btn, launcher_resume_game, LV_EVENT_CLICKED, controller);
-//    lv_obj_add_event_cb(holder->close_btn, launcher_quit_game, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(holder->play_btn, launcher_resume_game, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(holder->close_btn, launcher_quit_game, LV_EVENT_CLICKED, controller);
     return item;
 }
 
 static void adapter_bind_view(lv_obj_t *obj, lv_obj_t *item_view, void *data, int position) {
     apps_controller_t *controller = lv_obj_get_user_data(obj);
-    appitem_bind(controller, item_view, applist_nth(data, position % applist_len(data)));
+    appitem_bind(controller, item_view, applist_nth(data, position));
 }
 
 static int adapter_item_id(lv_obj_t *adapter, void *data, int position) {
-    return applist_nth(data, position % applist_len(data))->id;
+    return applist_nth(data, position)->id;
 }
 
 
