@@ -14,6 +14,7 @@ typedef struct {
     PAPP_DLIST app;
     lv_obj_t *play_btn;
     lv_obj_t *close_btn;
+    char cover_src[64];
 } appitem_viewholder_t;
 
 

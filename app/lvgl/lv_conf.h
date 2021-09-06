@@ -187,7 +187,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
  *-----------*/
 
 /*1: Show CPU usage and FPS count in the right bottom corner*/
-#define LV_USE_PERF_MONITOR     1
+#define LV_USE_PERF_MONITOR     0
 
 /*1: Show the used memory and the memory fragmentation  in the left bottom corner
  * Requires LV_MEM_CUSTOM = 0*/
@@ -255,7 +255,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_EXPORT_CONST_INT(int_value) struct _silence_gcc_warning /*The default value just prevents GCC warning*/
 
 /*Extend the default -32k..32k coordinate range to -4M..4M by using int32_t for coordinates instead of int16_t*/
-#define LV_USE_LARGE_COORD  0
+#define LV_USE_LARGE_COORD  1
 
 /*==================
  *   FONT USAGE

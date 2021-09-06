@@ -165,9 +165,10 @@ set(SOURCES
     app/backend/pcmanager/wol.c
     app/backend/gamecontrollerdb_updater.c
     app/backend/appmanager.c
-    app/backend/coverloader.c
+        app/ui/launcher/coverloader.c
     app/backend/error_manager.c
     app/backend/types_impl.c
+        app/ui/launcher/coverloader.c
     app/stream/module/module.c
     app/stream/module/audio.c
     app/stream/module/decoder.c
@@ -175,30 +176,30 @@ set(SOURCES
     app/stream/connection.c
     app/stream/settings.c
     app/stream/video/delegate.c
+    app/stream/video/dummy.c
     app/ui/manager.c
     app/ui/root.c
     app/ui/launcher/launcher.view.c
     app/ui/launcher/launcher.controller.c
+    app/ui/launcher/apps.controller.c
+    app/ui/launcher/appitem.view.c
     app/ui/streaming/overlay.c
     app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
     app/ui/settings/panes/basic.pane.c
-    app/stream/video/dummy.c
+    app/lvgl/lv_sdl_drv_key_input.c
+    app/lvgl/lv_sdl_drv_pointer_input.c
+    app/lvgl/lv_ext_utils.c
+    app/lvgl/lv_sdl_img.c
+        app/lvgl/lv_gridview.c
     app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
     app/util/debugprint.c
     app/util/logging.c
     app/util/libconfig_ext.c
-    app/lvgl/lv_sdl_drv_key_input.c
-    app/lvgl/lv_sdl_drv_pointer_input.c
-    app/ui/launcher/apps.controller.c
-    app/lvgl/lv_ext_utils.c
-    app/lvgl/lv_sdl_img.c
-    app/backend/coverloader.c
     app/util/img_loader.c
-    app/ui/launcher/appitem.view.c
 )
 
 if (HAVE_SDL)

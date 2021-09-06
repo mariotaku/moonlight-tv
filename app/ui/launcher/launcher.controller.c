@@ -14,10 +14,10 @@ static void cb_pc_selected(lv_event_t *event);
 
 ui_view_controller_t *launcher_controller(void *args) {
     (void) args;
-    launcher_controller_t *controller = malloc(sizeof(launcher_controller_t));
+    launcher_controller_t *controller = lv_mem_alloc(sizeof(launcher_controller_t));
     lv_memset_00(controller, sizeof(launcher_controller_t));
     controller->base.create_view = launcher_win_create;
-    controller->base.destroy_controller = (void (*)(ui_view_controller_t *)) free;
+    controller->base.destroy_controller = (void (*)(struct ui_view_controller_t *)) lv_mem_free;
     controller->base.view_created = launcher_view_init;
     controller->base.destroy_view = launcher_view_destroy;
     controller->_pcmanager_callbacks.added = launcher_handle_server_updated;

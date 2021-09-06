@@ -10,13 +10,14 @@ static void appitem_holder_free_cb(lv_event_t *event);
 lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
     lv_obj_t *item = lv_img_create(parent);
     lv_obj_add_flag(item, LV_OBJ_FLAG_EVENT_BUBBLE | LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_clear_flag(item, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_style(item, &styles->cover, 0);
 
-    lv_obj_set_style_outline_opa(item, LV_OPA_COVER, LV_STATE_FOCUSED);
+    lv_obj_set_style_outline_opa(item, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
 
-    lv_obj_set_style_transform_zoom(item, 256 * 105 / 100, LV_STATE_PRESSED);
-    lv_obj_set_style_transform_zoom(item, 256 * 108 / 100, LV_STATE_FOCUSED);
-    lv_obj_set_style_transition(item, &styles->tr_pressed, LV_STATE_PRESSED | LV_STATE_FOCUSED);
+    lv_obj_set_style_transform_zoom(item, 256 * 103 / 100, LV_STATE_PRESSED);
+    lv_obj_set_style_transform_zoom(item, 256 * 105 / 100, LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_transition(item, &styles->tr_pressed, LV_STATE_PRESSED | LV_STATE_FOCUS_KEY);
     lv_obj_set_style_transition(item, &styles->tr_released, LV_STATE_DEFAULT);
 
     lv_obj_t *play_btn = lv_btn_create(item);

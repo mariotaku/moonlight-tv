@@ -8,6 +8,7 @@
 struct img_loader_task_t {
     void *request;
     img_loader_cb_t cb;
+    int cancelled;
     struct img_loader_task_t *prev;
     struct img_loader_task_t *next;
 };
@@ -50,6 +51,8 @@ static void notify_cb(notify_cb_t *args);
 
 static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2);
 
+static int tasklist_find_id(struct img_loader_task_t *p, const void *fv);
+
 img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
     img_loader_t *loader = SDL_malloc(sizeof(img_loader_t));
     SDL_memcpy(&loader->impl, impl, sizeof(img_loader_impl_t));
@@ -78,13 +81,21 @@ img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const im
         cb->complete_cb(request, cached);
         return NULL;
     }
-    // TODO create task
     img_loader_task_t *task = tasklist_new();
     task->request = request;
+    task->cancelled = SDL_FALSE;
     SDL_memcpy(&task->cb, cb, sizeof(img_loader_cb_t));
     loader_task_push(loader, task);
     SDL_CondSignal(loader->queue_cond);
     return task;
+}
+
+void img_loader_cancel(img_loader_t *loader, img_loader_task_t *task) {
+    SDL_LockMutex(loader->queue_lock);
+    if (task) {
+        task->cancelled = SDL_TRUE;
+    }
+    SDL_UnlockMutex(loader->queue_lock);
 }
 
 static int loader_worker(img_loader_t *loader) {
@@ -121,7 +132,8 @@ static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
         cached = loader->impl.fetch(request);
         if (!cached) {
             // call fail_cb
-            run_on_main(loader, (img_loader_fn2) task->cb.fail_cb, request, NULL);
+            img_loader_fn cb = task->cancelled ? task->cb.cancel_cb : task->cb.fail_cb;
+            run_on_main(loader, (img_loader_fn2) cb, request, NULL);
             return;
         }
         loader->impl.filecache_put(request, cached);
@@ -130,7 +142,8 @@ static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
     if (loader->impl.memcache_put_wait) {
         loader->impl.memcache_put_wait(request);
     }
-    run_on_main(loader, task->cb.complete_cb, request, cached);
+    img_loader_fn2 cb = task->cancelled ? (img_loader_fn2) task->cb.cancel_cb : task->cb.complete_cb;
+    run_on_main(loader, cb, request, cached);
 }
 
 static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2) {
