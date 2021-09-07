@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 
     backend_init();
 
-    SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, 0);
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     ui_display_size(w, h);
@@ -132,6 +132,7 @@ int main(int argc, char *argv[]) {
     bus_destroy();
 
     applog_d("APP", "Quitted gracefully :)");
+    return 0;
 }
 
 void app_request_exit() {

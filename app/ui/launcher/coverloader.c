@@ -20,8 +20,9 @@
 #include "libgamestream/errors.h"
 
 #include <SDL_image.h>
-#include <util/img_loader.h>
+#include "util/img_loader.h"
 #include <gpu/sdl/lv_gpu_sdl_lru.h>
+#include "util/compat.h"
 
 #include "util/logging.h"
 #include "util/memlog.h"
@@ -53,6 +54,7 @@ typedef struct coverloader_request {
 #undef LINKEDLIST_PREFIX
 #undef LINKEDLIST_DOUBLE
 #define LINKEDLIST_IMPL
+
 
 static char *coverloader_cache_dir();
 
@@ -151,7 +153,7 @@ char *coverloader_cache_dir() {
     }
     if (access(confdir, F_OK) == -1) {
         if (errno == ENOENT) {
-            mkdir(confdir, 0755);
+            MKDIR(confdir, 0755);
         }
     }
     return confdir;

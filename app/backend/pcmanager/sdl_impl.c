@@ -4,12 +4,12 @@
 static Uint32 _auto_discovery_cb(Uint32 interval, void *repeat);
 static SDL_TimerID _auto_discovery_timer = 0;
 
-void computer_manager_auto_discovery_start()
+void pcmanager_auto_discovery_start()
 {
     _auto_discovery_timer = SDL_AddTimer(30000, _auto_discovery_cb, (void *)1);
 }
 
-void computer_manager_auto_discovery_stop()
+void pcmanager_auto_discovery_stop()
 {
     if (_auto_discovery_timer)
     {

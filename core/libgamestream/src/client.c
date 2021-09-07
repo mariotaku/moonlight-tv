@@ -32,7 +32,6 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
-#include <arpa/inet.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
 #include <mbedtls/aes.h>
@@ -43,9 +42,11 @@
 #include <mbedtls/rsa.h>
 #include <mbedtls/error.h>
 
-#ifdef OS_WINDOWS
+#if __WIN32
+#include <windows.h>
 #else
 #include <uuid/uuid.h>
+#include <arpa/inet.h>
 #endif
 
 #include <assert.h>
@@ -67,9 +68,13 @@ struct GS_CLIENT_T {
 
 const char *gs_error;
 
-static bool
-construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action, const char *fmt,
-              ...);
+static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action,
+                          const char *fmt, ...);
+#if __WIN32
+#define MKDIR(path) mkdir(path)
+#else
+#define MKDIR(path) mkdir(path, 0775)
+#endif
 
 static int mkdirtree(const char *directory) {
     char buffer[PATH_MAX];
@@ -90,7 +95,7 @@ static int mkdirtree(const char *directory) {
         *p = 0;
 
         // Create the directory if it doesn't exist already
-        if (mkdir(buffer, 0775) == -1 && errno != EEXIST) {
+        if (MKDIR(buffer) == -1 && errno != EEXIST) {
             return -1;
         }
 
@@ -711,7 +716,7 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
     mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *) config->remoteInputAesKey, 16);
     memset(config->remoteInputAesIv, 0, 16);
     mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *) config->remoteInputAesIv, 4);
-    u_int32_t rikeyid = 0;
+    uint32_t rikeyid = 0;
     memcpy(&rikeyid, config->remoteInputAesIv, 4);
     rikeyid = htonl(rikeyid);
 
@@ -858,11 +863,16 @@ int gs_init(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupp
 
 static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, const char *address, const char *action,
                           const char *fmt, ...) {
-    uuid_t uuid;
     char uuid_str[37];
-
+#if __WIN32
+    UUID uuid;
+    UuidCreate(&uuid);
+    UuidToStringA(&uuid, (RPC_CSTR *) uuid_str);
+#else
+    uuid_t uuid;
     uuid_generate_random(uuid);
     uuid_unparse(uuid, uuid_str);
+#endif
 
     int port = secure ? 47984 : 47989;
     char *const proto = secure ? "https" : "http";

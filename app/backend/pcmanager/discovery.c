@@ -46,11 +46,82 @@ typedef struct {
     int port;
 } service_record_t;
 
-bool computer_discovery_running = false;
+static int query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
+                          uint16_t query_id, uint16_t rtype, uint16_t rclass, uint32_t ttl, const void *data,
+                          size_t size, size_t name_offset, size_t name_length, size_t record_offset,
+                          size_t record_length, void *user_data);
 
-void handle_server_discovered(PPCMANAGER_RESP discovered);
+static int open_client_sockets(int *sockets, int max_sockets, int port);
 
-bool pcmanager_is_known_host(const char *srvaddr);
+int _computer_manager_polling_action(void *data) {
+    if (!app_gs_client_ready())
+        return -1;
+    computer_discovery_running = true;
+    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
+        if (!cur->known)
+            continue;
+        const char *srvaddr = strdup(cur->server->serverInfo.address);
+        pcmanager_insert_by_address(srvaddr, false, NULL, NULL);
+    }
+    int sockets[32];
+    int query_id[32];
+    int num_sockets = open_client_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]), 0);
+    if (num_sockets <= 0) {
+        applog_e("mDNS", "Failed to open any client sockets\n");
+        computer_discovery_running = false;
+        return -1;
+    }
+
+    size_t capacity = 2048;
+    void *buffer = malloc(capacity);
+    void *user_data = 0;
+    size_t records;
+
+    for (int isock = 0; isock < num_sockets; ++isock) {
+        query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, SERVICE_NAME,
+                                          sizeof(SERVICE_NAME) - 1, buffer, capacity, 0);
+        if (query_id[isock] < 0)
+            applog_w("mDNS", "Failed to send mDNS query: %s\n", strerror(errno));
+    }
+
+    // This is a simple implementation that loops for 5 seconds or as long as we get replies
+    int res;
+    do {
+        struct timeval timeout;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
+
+        int nfds = 0;
+        fd_set readfs;
+        FD_ZERO(&readfs);
+        for (int isock = 0; isock < num_sockets; ++isock) {
+            if (sockets[isock] >= nfds)
+                nfds = sockets[isock] + 1;
+            FD_SET(sockets[isock], &readfs);
+        }
+
+        records = 0;
+        res = select(nfds, &readfs, 0, 0, &timeout);
+        if (res > 0) {
+            for (int isock = 0; isock < num_sockets; ++isock) {
+                if (FD_ISSET(sockets[isock], &readfs)) {
+                    records += mdns_query_recv(sockets[isock], buffer, capacity, query_callback,
+                                               user_data, query_id[isock]);
+                }
+                FD_SET(sockets[isock], &readfs);
+            }
+        }
+    } while (res > 0);
+
+    free(buffer);
+
+    for (int isock = 0; isock < num_sockets; ++isock)
+        mdns_socket_close(sockets[isock]);
+    computer_discovery_running = false;
+    return 0;
+}
+
+
 
 static mdns_string_t ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
                                             size_t addrlen) {
@@ -98,17 +169,6 @@ static mdns_string_t ip_address_to_string(char *buffer, size_t capacity, const s
     if (addr->sa_family == AF_INET6)
         return ipv6_address_to_string(buffer, capacity, (const struct sockaddr_in6 *) addr, addrlen);
     return ipv4_address_to_string(buffer, capacity, (const struct sockaddr_in *) addr, addrlen);
-}
-
-static char *parse_server_name(mdns_string_t entrystr) {
-    static const char suffix[] = ".local.";
-    int nlen = entrystr.length;
-    if (entrystr.length > 7 && SDL_strncmp(&(entrystr.str[entrystr.length - 7]), suffix, 7) == 0) {
-        nlen -= 7;
-    }
-    char *srvname = calloc(nlen + 1, sizeof(char));
-    snprintf(srvname, nlen + 1, "%.*s", nlen, entrystr.str);
-    return srvname;
 }
 
 static int query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
@@ -211,106 +271,4 @@ static int open_client_sockets(int *sockets, int max_sockets, int port) {
     freeifaddrs(ifaddr);
 
     return num_sockets;
-}
-
-int _computer_manager_polling_action(void *data) {
-    if (!app_gs_client_ready())
-        return -1;
-    computer_discovery_running = true;
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
-        if (!cur->known)
-            continue;
-        const char *srvaddr = strdup(cur->server->serverInfo.address);
-        pcmanager_insert_by_address(srvaddr, false, NULL, NULL);
-    }
-    int sockets[32];
-    int query_id[32];
-    int num_sockets = open_client_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]), 0);
-    if (num_sockets <= 0) {
-        applog_e("mDNS", "Failed to open any client sockets\n");
-        computer_discovery_running = false;
-        return -1;
-    }
-
-    size_t capacity = 2048;
-    void *buffer = malloc(capacity);
-    void *user_data = 0;
-    size_t records;
-
-    for (int isock = 0; isock < num_sockets; ++isock) {
-        query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, SERVICE_NAME,
-                                          sizeof(SERVICE_NAME) - 1, buffer, capacity, 0);
-        if (query_id[isock] < 0)
-            applog_w("mDNS", "Failed to send mDNS query: %s\n", strerror(errno));
-    }
-
-    // This is a simple implementation that loops for 5 seconds or as long as we get replies
-    int res;
-    do {
-        struct timeval timeout;
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
-
-        int nfds = 0;
-        fd_set readfs;
-        FD_ZERO(&readfs);
-        for (int isock = 0; isock < num_sockets; ++isock) {
-            if (sockets[isock] >= nfds)
-                nfds = sockets[isock] + 1;
-            FD_SET(sockets[isock], &readfs);
-        }
-
-        records = 0;
-        res = select(nfds, &readfs, 0, 0, &timeout);
-        if (res > 0) {
-            for (int isock = 0; isock < num_sockets; ++isock) {
-                if (FD_ISSET(sockets[isock], &readfs)) {
-                    records += mdns_query_recv(sockets[isock], buffer, capacity, query_callback,
-                                               user_data, query_id[isock]);
-                }
-                FD_SET(sockets[isock], &readfs);
-            }
-        }
-    } while (res > 0);
-
-    free(buffer);
-
-    for (int isock = 0; isock < num_sockets; ++isock)
-        mdns_socket_close(sockets[isock]);
-    computer_discovery_running = false;
-    return 0;
-}
-
-int pcmanager_insert_by_address(const char *srvaddr, bool pair, pcmanager_callback_t callback, void *userdata) {
-    PSERVER_DATA server = serverdata_new();
-    int ret = gs_init(app_gs_client_obtain(), server, srvaddr, app_configuration->unsupported);
-
-    PPCMANAGER_RESP resp = serverinfo_resp_new();
-    if (ret == GS_OK) {
-        resp->state.code = SERVER_STATE_ONLINE;
-        resp->server = server;
-        if (server->paired) {
-            resp->known = true;
-        }
-        resp->server = server;
-        bus_pushaction((bus_actionfunc) handle_server_discovered, resp);
-    } else {
-        pcmanager_resp_setgserror(resp, ret, gs_error);
-        free(server);
-    }
-    if (callback) {
-        bus_pushaction((bus_actionfunc) invoke_callback, invoke_callback_args(resp, callback, userdata));
-    }
-    bus_pushaction((bus_actionfunc) serverinfo_resp_free, resp);
-    return ret;
-}
-
-static int serverlist_find_address(PSERVER_LIST other, const void *v) {
-    return SDL_strcmp(other->server->serverInfo.address, (char *) v);
-}
-
-bool pcmanager_is_known_host(const char *srvaddr) {
-    assert(srvaddr);
-    PSERVER_LIST find = serverlist_find_by(computer_list, srvaddr, serverlist_find_address);
-    return find != NULL && find->known;
 }

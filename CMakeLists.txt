@@ -161,7 +161,6 @@ set(SOURCES
     app/backend/backend_root.c
     app/backend/pcmanager/pcmanager.c
     app/backend/pcmanager/pairing.c
-    app/backend/pcmanager/discovery.c
     app/backend/pcmanager/wol.c
     app/backend/pcmanager/pcmanager_common.c
     app/backend/gamecontrollerdb_updater.c
@@ -192,7 +191,6 @@ set(SOURCES
     app/lvgl/lv_sdl_img.c
     app/lvgl/lv_gridview.c
     app/lvgl/manager.c
-    app/util/lruc.c
     app/util/path.c
     app/util/navkey.c
     app/util/debugprint.c
@@ -211,21 +209,26 @@ set(SOURCES
     app/stream/audio/sdlaud.c
 )
 
-if (HAVE_SDL)
-    if (TARGET_WEBOS)
-        list(APPEND SOURCES
+if (TARGET_WINDOWS)
+    list(APPEND SOURCES app/backend/pcmanager/discovery_win.c)
+else()
+    list(APPEND SOURCES app/backend/pcmanager/discovery.c)
+endif()
+if (TARGET_WEBOS)
+    list(APPEND SOURCES
             app/stream/input/sdl/keyboard_webos.c
             app/platform/webos/navkey_sdl_webos.c
             app/platform/webos/path_webos.c
             app/platform/webos/os_info.c
             app/platform/webos/SDL_webOS_compat.c
-        )
-    else()
-        list(APPEND SOURCES
-            app/platform/sdl/path_sdl.c
-        )
-    endif()
+            )
 else()
+    list(APPEND SOURCES
+            app/platform/sdl/path_sdl.c
+            )
+endif()
+
+if (NOT HAVE_SDL)
     message(FATAL_ERROR "SDL2 required")
 endif()
 
@@ -250,9 +253,17 @@ target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_pa
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
+if (TARGET_WINDOWS)
+    pkg_check_modules(MICRODNS REQUIRED microdns)
+    target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
+else()
+    target_link_libraries(moonlight PRIVATE mdns)
+endif()
+
+
 target_link_libraries(moonlight PRIVATE
     m ${CMAKE_DL_LIBS} Threads::Threads
-    moonlight-common-c gamestream mdns lvgl
+    moonlight-common-c gamestream lvgl
     Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES}
 )
 
@@ -347,8 +358,8 @@ elseif (TARGET_DESKTOP)
     target_link_libraries(moonlight PRIVATE mbedtls)
     target_link_libraries(moonlight PRIVATE OpenGL::GL)
 
-    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
-    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GL2)
+#    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
+#    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GL2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})

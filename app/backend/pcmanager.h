@@ -38,20 +38,6 @@ typedef struct PCMANAGER_CALLBACKS {
     struct PCMANAGER_CALLBACKS *next;
 } PCMANAGER_CALLBACKS, *PPCMANAGER_CALLBACKS;
 
-#ifdef PCMANAGER_IMPL
-#define LINKEDLIST_IMPL
-#endif
-
-#define LINKEDLIST_TYPE PCMANAGER_CALLBACKS
-#define LINKEDLIST_PREFIX pcmanager_callbacks
-#define LINKEDLIST_DOUBLE 1
-
-#include "util/linked_list.h"
-
-#undef LINKEDLIST_DOUBLE
-#undef LINKEDLIST_TYPE
-#undef LINKEDLIST_PREFIX
-
 /**
  * @brief Initialize computer manager context
  * 
@@ -74,9 +60,9 @@ bool computer_manager_run_scan();
 
 void computer_manager_auto_discovery_schedule(unsigned int ms);
 
-void computer_manager_auto_discovery_start();
+void pcmanager_auto_discovery_start();
 
-void computer_manager_auto_discovery_stop();
+void pcmanager_auto_discovery_stop();
 
 /**
  * @brief Generates a PIN code, and start pairing process.

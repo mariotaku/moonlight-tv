@@ -34,6 +34,8 @@ static PPCMANAGER_CALLBACKS callbacks_list;
 
 PSERVER_LIST computer_list;
 
+bool computer_discovery_running = false;
+
 static int _pcmanager_quitapp_action(void *data);
 
 static int _computer_manager_server_update_action(PSERVER_DATA data);
@@ -52,11 +54,9 @@ void computer_manager_init() {
     computer_list = NULL;
     pcmanager_load_known_hosts();
     pcmanager_client_setup();
-    computer_manager_auto_discovery_start();
 }
 
 void computer_manager_destroy() {
-    computer_manager_auto_discovery_stop();
     if (computer_discovery_running) {
         SDL_DetachThread(computer_manager_polling_thread);
         computer_manager_polling_thread = NULL;

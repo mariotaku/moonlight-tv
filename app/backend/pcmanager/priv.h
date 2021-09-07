@@ -2,6 +2,20 @@
 
 #include "../pcmanager.h"
 
+#ifdef PCMANAGER_IMPL
+#define LINKEDLIST_IMPL
+#endif
+
+#define LINKEDLIST_TYPE PCMANAGER_CALLBACKS
+#define LINKEDLIST_PREFIX pcmanager_callbacks
+#define LINKEDLIST_DOUBLE 1
+
+#include "util/linked_list.h"
+
+#undef LINKEDLIST_DOUBLE
+#undef LINKEDLIST_TYPE
+#undef LINKEDLIST_PREFIX
+
 typedef struct CM_PIN_REQUEST_T {
     const SERVER_DATA *server;
     const void *arg1;
@@ -34,8 +48,12 @@ PPCMANAGER_RESP serverinfo_resp_new();
 
 void serverinfo_resp_free(PPCMANAGER_RESP resp);
 
+void handle_server_discovered(PPCMANAGER_RESP discovered);
+
 void handle_server_updated(PPCMANAGER_RESP update);
 
 void invoke_callback(invoke_callback_t *args);
 
 invoke_callback_t *invoke_callback_args(PPCMANAGER_RESP resp, pcmanager_callback_t callback, void *userdata);
+
+bool pcmanager_is_known_host(const char *srvaddr);

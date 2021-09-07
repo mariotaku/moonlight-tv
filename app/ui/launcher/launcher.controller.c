@@ -56,9 +56,12 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
         uimanager_replace(controller->pane_manager, apps_controller, cur);
         break;
     }
+    pcmanager_auto_discovery_start();
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
+    pcmanager_auto_discovery_stop();
+
     launcher_controller_t *controller = (launcher_controller_t *) self;
     uimanager_destroy(controller->pane_manager);
     pcmanager_unregister_callbacks(&controller->_pcmanager_callbacks);

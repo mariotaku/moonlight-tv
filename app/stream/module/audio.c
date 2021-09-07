@@ -1,7 +1,10 @@
 #include "stream/platform.h"
 
 #include <string.h>
+
+#ifndef __WIN32
 #include <dlfcn.h>
+#endif
 
 #include "util/logging.h"
 
@@ -9,21 +12,23 @@ static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
 static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
 static MODULE_LIB_DEFINITION _ndl_libs[] = {
 #if DEBUG
-    {"ndlaud_webos5", "ndlaud-webos5"},
+        {"ndlaud_webos5", "ndlaud-webos5"},
 #endif
-    {"ndlaud", "ndlaud"},
+        {"ndlaud", "ndlaud"},
 };
 
 #if HAVE_SDL
+
 bool audio_check_sdl(PAUDIO_INFO ainfo);
+
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 
 AUDIO_SYMBOLS audio_sdl = {
-    true,
-    NULL,
-    &audio_check_sdl,
-    NULL,
-    &audio_callbacks_sdl,
+        true,
+        NULL,
+        &audio_check_sdl,
+        NULL,
+        &audio_callbacks_sdl,
 };
 #define AUDIO_SYMBOLS_SDL &audio_sdl
 #else
@@ -31,12 +36,12 @@ AUDIO_SYMBOLS audio_sdl = {
 #endif
 
 MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
-    {"SDL Audio", "sdl", NULL, 0, AUDIO_SYMBOLS_SDL},
-    {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
-    {"ALSA", "alsa", &_alsa_lib, 1, NULL},
-    {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
+        {"SDL Audio", "sdl", NULL, 0, AUDIO_SYMBOLS_SDL},
+        {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
+        {"ALSA", "alsa", &_alsa_lib, 1, NULL},
+        {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
 #if DEBUG
-    {"Null", "null", NULL, 0, NULL},
+        {"Null", "null", NULL, 0, NULL},
 #endif
 };
 
@@ -46,49 +51,47 @@ int audio_current_libidx;
 AUDIO_INFO audio_info;
 
 static bool checkinit(AUDIO system, int libidx, int argc, char *argv[]);
+
 static bool audio_try_init(AUDIO audio, int argc, char *argv[]);
+
 static void dlerror_log();
 
-AUDIO audio_init(const char *name, int argc, char *argv[])
-{
+AUDIO audio_init(const char *name, int argc, char *argv[]) {
     AUDIO audio = audio_by_id(name);
     audio_pref_requested = audio;
     // Has explicitly specified audio backend
-    if (audio != AUDIO_AUTO)
-    {
+    if (audio != AUDIO_AUTO) {
         // Has preferred value
-        if (audio_try_init(audio, argc, argv))
-        {
+        if (audio_try_init(audio, argc, argv)) {
             return audio;
         }
     }
     // Has audio backend provided by decoder
-    if (decoder_info.audio)
-    {
+    if (decoder_info.audio) {
         audio_current = AUDIO_DECODER;
         audio_pref_requested = AUDIO_AUTO;
         return AUDIO_DECODER;
     }
-    for (int i = 0; i < audio_orders_len; i++)
-    {
+    for (int i = 0; i < audio_orders_len; i++) {
         AUDIO attempt = audio_orders[i];
-        if (audio != attempt && audio_try_init(attempt, argc, argv))
-        {
+        if (audio != attempt && audio_try_init(attempt, argc, argv)) {
             return attempt;
         }
     }
     return AUDIO_SDL;
 }
 
-static void *module_sym(char *fmt, AUDIO audio, int libidx)
-{
+static void *module_sym(char *fmt, AUDIO audio, int libidx) {
     char symbol[128];
     snprintf(symbol, sizeof(symbol), fmt, audio_definitions[audio].dynlibs[libidx].suffix);
+#if __WIN32
+    return NULL;
+#else
     return dlsym(RTLD_DEFAULT, symbol);
+#endif
 }
 
-PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device)
-{
+PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device) {
     if (audio_current < 0)
         return NULL;
     MODULE_DEFINITION pdef = audio_definitions[audio_current];
@@ -104,39 +107,30 @@ PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device)
 #endif
 }
 
-static bool audio_init_simple(AUDIO audio, int libidx, int argc, char *argv[])
-{
+static bool audio_init_simple(AUDIO audio, int libidx, int argc, char *argv[]) {
     MODULE_DEFINITION pdef = audio_definitions[audio];
     MODULE_INIT_FN fn;
-    if (pdef.symbols.ptr)
-    {
+    if (pdef.symbols.ptr) {
         fn = pdef.symbols.audio->init;
-    }
-    else
-    {
+    } else {
         fn = module_sym("audio_init_%s", audio, libidx);
     }
     return !fn || fn(argc, argv, &module_host_context);
 }
 
-static void audio_finalize_simple(AUDIO audio, int libidx)
-{
+static void audio_finalize_simple(AUDIO audio, int libidx) {
     MODULE_DEFINITION pdef = audio_definitions[audio];
     MODULE_FINALIZE_FN fn;
-    if (pdef.symbols.ptr)
-    {
+    if (pdef.symbols.ptr) {
         fn = pdef.symbols.audio->finalize;
-    }
-    else
-    {
+    } else {
         fn = module_sym("audio_finalize_%s", audio, libidx);
     }
     if (fn)
         fn();
 }
 
-static bool audio_check_simple(AUDIO audio, int libidx)
-{
+static bool audio_check_simple(AUDIO audio, int libidx) {
     memset(&audio_info, 0, sizeof(audio_info));
     MODULE_DEFINITION pdef = audio_definitions[audio];
     AUDIO_CHECK_FN fn;
@@ -144,75 +138,63 @@ static bool audio_check_simple(AUDIO audio, int libidx)
         fn = pdef.symbols.audio->check;
     else
         fn = module_sym("audio_check_%s", audio, libidx);
-    if (fn == NULL)
-    {
+    if (fn == NULL) {
         audio_info.valid = true;
         return true;
     }
     return fn(&audio_info) && audio_info.valid;
 }
 
-bool audio_try_init(AUDIO audio, int argc, char *argv[])
-{
+bool audio_try_init(AUDIO audio, int argc, char *argv[]) {
     char libname[64];
     MODULE_DEFINITION pdef = audio_definitions[audio];
-    if (pdef.symbols.ptr && pdef.symbols.audio->valid)
-    {
-        if (checkinit(audio, -1, argc, argv))
-        {
+    if (pdef.symbols.ptr && pdef.symbols.audio->valid) {
+        if (checkinit(audio, -1, argc, argv)) {
             audio_current = audio;
             audio_current_libidx = -1;
             return true;
         }
-    }
-    else
-    {
-        for (int i = 0; i < pdef.liblen; i++)
-        {
+    } else {
+#ifndef __WIN32
+        for (int i = 0; i < pdef.liblen; i++) {
             snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.dynlibs[i].library);
             applog_d("APP", "Loading module %s", libname);
             // Lazy load to test if this library can be linked
-            if (!dlopen(libname, RTLD_NOW | RTLD_GLOBAL))
-            {
+            if (!dlopen(libname, RTLD_NOW | RTLD_GLOBAL)) {
                 dlerror_log();
                 continue;
             }
-            if (checkinit(audio, i, argc, argv))
-            {
+            if (checkinit(audio, i, argc, argv)) {
                 audio_current = audio;
                 audio_current_libidx = i;
                 return true;
             }
         }
+#endif
     }
     return false;
 }
 
-bool checkinit(AUDIO system, int libidx, int argc, char *argv[])
-{
+bool checkinit(AUDIO system, int libidx, int argc, char *argv[]) {
     if (!audio_init_simple(system, libidx, argc, argv))
         return false;
-    if (!audio_check_simple(system, libidx))
-    {
+    if (!audio_check_simple(system, libidx)) {
         audio_finalize_simple(system, libidx);
         return false;
     }
     return true;
 }
 
-void audio_finalize()
-{
+void audio_finalize() {
     if (audio_current < 0)
         return;
     audio_finalize_simple(audio_current, audio_current_libidx);
 }
 
-AUDIO audio_by_id(const char *id)
-{
+AUDIO audio_by_id(const char *id) {
     if (!id || id[0] == 0 || strcmp(id, "auto") == 0)
         return AUDIO_AUTO;
-    for (int i = 0; i < AUDIO_COUNT; i++)
-    {
+    for (int i = 0; i < AUDIO_COUNT; i++) {
         MODULE_DEFINITION pdef = audio_definitions[i];
         if (!pdef.id)
             continue;
@@ -222,7 +204,8 @@ AUDIO audio_by_id(const char *id)
     return AUDIO_SDL;
 }
 
-void dlerror_log()
-{
+void dlerror_log() {
+#ifndef __WIN32
     applog_w("APP", "Unable to load audio module: %s\n", dlerror());
+#endif
 }

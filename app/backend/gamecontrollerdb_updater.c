@@ -147,10 +147,12 @@ static size_t _header_cb(char *buffer, size_t size, size_t nitems, WRITE_CONTEXT
             ctx->fp = fopen(condb, "w");
             applog_d("GameControllerDB", "Locking controller db file %s", condb);
             free(condb);
+#ifndef __WIN32
             if (lockf(fileno(ctx->fp), F_LOCK, 0) != 0)
             {
                 ctx->status = -1;
             }
+#endif
         }
     }
     _write_header_lines(ctx);
@@ -214,7 +216,9 @@ void *_gamecontrollerdb_update_worker(void *unused)
     if (ctx->fp)
     {
         applog_d("GameControllerDB", "Unlocking controller db file");
+#ifndef __WIN32
         lockf(fileno(ctx->fp), F_ULOCK, 0);
+#endif
         fclose(ctx->fp);
     }
     free(ctx->buf);

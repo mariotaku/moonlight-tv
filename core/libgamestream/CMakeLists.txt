@@ -14,11 +14,15 @@ set(SRC
     src/xml.c
 )
 
-if (NOT TARGET_WINDOWS)
-    pkg_check_modules(UUID REQUIRED uuid)
-endif()
-
 add_library(gamestream ${HEADERS} ${SRC})
+
+
+if (TARGET_WINDOWS)
+    target_link_libraries(gamestream PRIVATE rpcrt4)
+else()
+    pkg_check_modules(UUID REQUIRED uuid)
+    target_link_libraries(gamestream PRIVATE ${UUID_LIBRARIES})
+endif()
 
 target_include_directories(gamestream PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgamestream>"
@@ -33,9 +37,6 @@ else()
     target_link_libraries(gamestream PRIVATE mbedtls)
 endif()
 target_link_libraries(gamestream PRIVATE ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-if (UUID_LIBRARIES)
-    target_link_libraries(gamestream PRIVATE ${UUID_LIBRARIES})
-endif()
 if (BUILD_SHARED_LIBS)
     install(TARGETS gamestream LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
