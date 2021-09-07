@@ -156,10 +156,6 @@ int _computer_manager_server_update_action(PSERVER_DATA data) {
     return 0;
 }
 
-int serverlist_compare_uuid(PSERVER_LIST other, const void *v) {
-    return strcasecmp(v, other->server->uuid);
-}
-
 
 PSERVER_DATA serverdata_new() {
     PSERVER_DATA server = malloc(sizeof(SERVER_DATA));

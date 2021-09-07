@@ -160,7 +160,7 @@ static void on_host_updated(void *userdata, PPCMANAGER_RESP resp) {
 
 static void update_data(apps_controller_t *controller) {
     PSERVER_LIST node = controller->node;
-    assert(node);
+    LV_ASSERT(node);
     lv_obj_t *applist = controller->applist;
     lv_obj_t *appload = controller->appload;
     if (node->state.code == SERVER_STATE_NONE) {
@@ -207,7 +207,7 @@ static void launcher_open_game(lv_event_t *event) {
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
     STREAMING_SCENE_ARGS args = {
             .server = controller->node->server,
-            .app = (PAPP_DLIST) holder->app
+            .app = holder->app
     };
     lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
 }
@@ -217,7 +217,7 @@ static void launcher_resume_game(lv_event_t *event) {
     lv_obj_t *item = lv_obj_get_parent(lv_event_get_current_target(event));
     STREAMING_SCENE_ARGS args = {
             .server = controller->node->server,
-            .app = (PAPP_DLIST) ((appitem_viewholder_t *) lv_obj_get_user_data(item))->app
+            .app = ((appitem_viewholder_t *) lv_obj_get_user_data(item))->app
     };
     lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
 }

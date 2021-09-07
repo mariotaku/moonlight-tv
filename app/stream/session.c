@@ -72,7 +72,7 @@ void streaming_destroy()
     pthread_mutex_destroy(&streaming_errmsg_lock);
 }
 
-int streaming_begin(const SERVER_DATA *server, const APP_DLIST *app)
+int streaming_begin(const SERVER_DATA *server, const APP_LIST *app)
 {
     if (streaming_status != STREAMING_NONE)
     {

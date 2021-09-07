@@ -16,6 +16,16 @@
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
 
+#define LINKEDLIST_TYPE SERVER_LIST
+#define LINKEDLIST_PREFIX serverlist
+#define LINKEDLIST_DOUBLE 1
+
+#include "util/linked_list.h"
+
+#undef LINKEDLIST_DOUBLE
+#undef LINKEDLIST_TYPE
+#undef LINKEDLIST_PREFIX
+
 typedef struct CM_PIN_REQUEST_T {
     const SERVER_DATA *server;
     const void *arg1;
@@ -61,3 +71,5 @@ bool pcmanager_is_known_host(const char *srvaddr);
 void pcmanager_load_known_hosts();
 
 void pcmanager_save_known_hosts();
+
+int serverlist_compare_uuid(PSERVER_LIST other, const void *v);

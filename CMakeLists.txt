@@ -167,8 +167,7 @@ set(SOURCES
     app/backend/pcmanager/sdl_impl.c
     app/backend/gamecontrollerdb_updater.c
         app/backend/apploader/apploader.c
-    app/backend/types_impl.c
-    app/stream/module/module.c
+        app/stream/module/module.c
     app/stream/module/audio.c
     app/stream/module/decoder.c
     app/stream/session.c

@@ -47,6 +47,11 @@ static int serverlist_find_address(PSERVER_LIST other, const void *v) {
     return SDL_strcmp(other->server->serverInfo.address, (char *) v);
 }
 
+int serverlist_compare_uuid(PSERVER_LIST other, const void *v) {
+    return strcasecmp(v, other->server->uuid);
+}
+
+
 bool pcmanager_is_known_host(const char *srvaddr) {
     assert(srvaddr);
     PSERVER_LIST find = serverlist_find_by(computer_list, srvaddr, serverlist_find_address);

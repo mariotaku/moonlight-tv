@@ -15,7 +15,7 @@
 
 typedef struct {
     const SERVER_DATA *server;
-    const APP_DLIST *app;
+    const APP_LIST *app;
 } STREAMING_SCENE_ARGS;
 
 extern bool stream_overlay_showing;
