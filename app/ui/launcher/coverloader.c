@@ -165,7 +165,7 @@ static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
     lv_lru_get(req->loader->mem_cache, &req->id, sizeof(int), (void **) &result);
     req->result = result;
     // Must return something not falsy or loader will think this is a cache miss
-    return (SDL_Surface *) (result != NULL);
+    return (SDL_Surface *) (size_t) (result != NULL);
 }
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
