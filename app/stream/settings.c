@@ -83,7 +83,9 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->audio_device = NULL;
     config->sops = true;
     config->localaudio = false;
+#if TARGET_RASPI
     config->fullscreen = true;
+#endif
     // TODO make this automatic
     config->unsupported = true;
     config->quitappafter = false;
@@ -143,16 +145,16 @@ bool settings_read(char *filename, PCONFIGURATION config)
     config_lookup_int(&libconfig, "streaming.bitrate", &config->stream.bitrate);
     config_lookup_int(&libconfig, "streaming.packetsize", &config->stream.packetSize);
     config_lookup_int(&libconfig, "streaming.rotate", &config->rotate);
-    config_lookup_bool(&libconfig, "streaming.hdr", (int *)&config->stream.enableHdr);
+    config_lookup_bool_std(&libconfig, "streaming.hdr", &config->stream.enableHdr);
     config_lookup_enum(&libconfig, "streaming.surround", &config->stream.audioConfiguration, parse_audio_config);
 
-    config_lookup_bool(&libconfig, "host.sops", (int *)&config->sops);
-    config_lookup_bool(&libconfig, "host.localaudio", (int *)&config->localaudio);
-    config_lookup_bool(&libconfig, "host.quitappafter", (int *)&config->quitappafter);
+    config_lookup_bool_std(&libconfig, "host.sops", &config->sops);
+    config_lookup_bool_std(&libconfig, "host.localaudio", &config->localaudio);
+    config_lookup_bool_std(&libconfig, "host.quitappafter", &config->quitappafter);
 
-    config_lookup_bool(&libconfig, "host.viewonly", (int *)&config->viewonly);
-    config_lookup_bool(&libconfig, "input.absmouse", (int *)&config->absmouse);
-    config_lookup_bool(&libconfig, "input.swap_abxy", (int *)&config->swap_abxy);
+    config_lookup_bool_std(&libconfig, "host.viewonly", &config->viewonly);
+    config_lookup_bool_std(&libconfig, "input.absmouse", &config->absmouse);
+    config_lookup_bool_std(&libconfig, "input.swap_abxy", &config->swap_abxy);
 
     config_lookup_string_dup(&libconfig, "decoder.platform", &config->decoder);
     config_lookup_string_dup(&libconfig, "decoder.audio_backend", &config->audio_backend);

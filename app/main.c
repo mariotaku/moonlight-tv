@@ -79,8 +79,15 @@ int main(int argc, char *argv[]) {
     }
 
     backend_init();
-
-    SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, 0);
+    Uint32 window_flags = 0;
+#ifdef TARGET_WEBOS
+    window_flags |= SDL_WINDOW_FULLSCREEN;
+#else
+    if (app_configuration->fullscreen) {
+        window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+#endif
+    SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, window_flags);
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     ui_display_size(w, h);

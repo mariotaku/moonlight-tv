@@ -1,5 +1,5 @@
 /**
- * @file lv_obj.c
+ * @file lv_gridview.c
  *
  */
 
@@ -8,15 +8,19 @@
  *********************/
 
 #include "lv_gridview.h"
-#include "util/logging.h"
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
+#include "core/lv_indev.h"
+#include "extra/layouts/grid/lv_grid.h"
+
+#if LV_USE_GRIDVIEW
 
 /*********************
  *      DEFINES
  *********************/
 #define MY_CLASS &lv_gridview_class
+
+/**********************
+ *      TYPEDEFS
+ **********************/
 
 typedef struct view_pool_item_t {
     int key;
@@ -44,10 +48,16 @@ typedef struct lv_grid_t {
     /*Tmp data*/
     lv_coord_t *col_dsc, *row_dsc;
     lv_obj_t *placeholder;
+    lv_coord_t content_height;
+    lv_coord_t pad_row, pad_top, pad_bottom;
 
     view_pool_t pool_inuse, pool_free;
     lv_style_t style_scrollbar, style_scrollbar_scrolled;
 } lv_grid_t;
+
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
 
 static void update_col_dsc(lv_grid_t *adapter);
 
@@ -85,6 +95,12 @@ static void key_cb(lv_grid_t *grid, lv_event_t *e);
 
 static void press_cb(lv_grid_t *grid, lv_event_t *e);
 
+static void update_sizes(lv_grid_t *grid);
+
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+
 const lv_obj_class_t lv_gridview_class = {
         .constructor_cb = lv_gridview_constructor,
         .destructor_cb = lv_gridview_destructor,
@@ -96,6 +112,15 @@ const lv_obj_class_t lv_gridview_class = {
         .instance_size = (sizeof(lv_grid_t)),
         .base_class = &lv_obj_class,
 };
+
+/**********************
+ *      MACROS
+ **********************/
+
+
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
 
 lv_obj_t *lv_gridview_create(lv_obj_t *parent) {
     lv_obj_t *obj = lv_obj_class_create_obj(MY_CLASS, parent);
@@ -162,6 +187,10 @@ int lv_gridview_get_focused_index(lv_obj_t *obj) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     return grid->focused_index;
 }
+
+/**********************
+ *   STATIC FUNCTIONS
+ **********************/
 
 static void lv_gridview_constructor(const lv_obj_class_t *class_p, lv_obj_t *obj) {
     lv_grid_t *grid = (lv_grid_t *) obj;
@@ -237,7 +266,11 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
             press_cb(grid, e);
             break;
         case LV_EVENT_SIZE_CHANGED:
+            update_sizes(grid);
             update_grid(grid);
+            break;
+        case LV_EVENT_STYLE_CHANGED:
+            update_sizes(grid);
             break;
         default:
             return;
@@ -312,14 +345,23 @@ static void press_cb(lv_grid_t *grid, lv_event_t *e) {
     lv_event_send(focused, e->code, indev);
 }
 
+
+static void update_sizes(lv_grid_t *grid) {
+    lv_obj_t *obj = &grid->obj;
+    grid->content_height = lv_obj_get_content_height(obj);
+    grid->pad_row = lv_obj_get_style_pad_row(obj, 0);
+    grid->pad_top = lv_obj_get_style_pad_top(obj, 0);
+    grid->pad_bottom = lv_obj_get_style_pad_bottom(obj, 0);
+}
+
 static void update_grid(lv_grid_t *grid) {
     lv_obj_t *obj = &grid->obj;
-    lv_coord_t content_height = lv_obj_get_content_height(obj);
-    if (content_height <= 0)return;
+    int content_height = grid->content_height;
+    if (content_height <= 0) return;
     lv_coord_t scroll_y = lv_obj_get_scroll_y(obj);
-    lv_coord_t pad_row = lv_obj_get_style_pad_row(obj, 0);
-    lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, 0);
-    lv_coord_t pad_bottom = lv_obj_get_style_pad_bottom(obj, 0);
+    lv_coord_t pad_row = grid->pad_row;
+    lv_coord_t pad_top = grid->pad_top;
+    lv_coord_t pad_bottom = grid->pad_bottom;
     lv_coord_t extend = grid->row_height / 4;
     lv_coord_t row_height = grid->row_height;
     int row_start = -1;
@@ -390,7 +432,8 @@ static void fill_rows(lv_grid_t *grid, int row_start, int row_end) {
 static void adapter_recycle_item(lv_grid_t *adapter, int index) {
     // Move item from inuse pool to free pool
     lv_obj_t *item = view_pool_take(&adapter->pool_inuse, index);
-    assert(item);
+    LV_ASSERT_MSG(item, "should never recycle invalid item");
+    if (!item) return;
     lv_obj_add_flag(item, LV_OBJ_FLAG_HIDDEN);
     view_pool_put(&adapter->pool_free, -1, item);
 }
@@ -443,11 +486,11 @@ static void view_pool_put(view_pool_t *pool, int key, lv_obj_t *value) {
     if (!pool->data) {
         pool->capacity = 16;
         pool->data = lv_mem_alloc(pool->capacity * sizeof(view_pool_item_t));
-        assert(pool->data);
+        LV_ASSERT_MALLOC(pool->data);
     } else if (pool->size + 1 > pool->capacity) {
         pool->capacity *= 2;
         pool->data = lv_mem_realloc(pool->data, pool->capacity * sizeof(view_pool_item_t));
-        assert(pool->data);
+        LV_ASSERT_MALLOC(pool->data);
     }
     int index = pool->size;
     pool->data[index].key = key;
@@ -463,3 +506,5 @@ static void view_pool_reset(view_pool_t *pool) {
     pool->size = 0;
     pool->capacity = 0;
 }
+
+#endif /* LV_USE_GRIDVIEW */

@@ -458,6 +458,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 #define LV_USE_TILEVIEW     1
 
+#define LV_USE_GRIDVIEW     1
+
 #define LV_USE_WIN          1
 
 #define LV_USE_SPAN         1
