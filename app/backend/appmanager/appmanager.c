@@ -9,12 +9,27 @@
 #include <pthread.h>
 
 #include "util/user_event.h"
-#include "appmanager.h"
+#include "backend/appmanager.h"
 #include "util/bus.h"
 #include "util/logging.h"
 
 #include "libgamestream/client.h"
 #include "libgamestream/errors.h"
+
+#ifdef APPMANAGER_IMPL
+#define LINKEDLIST_IMPL
+#endif
+
+#define LINKEDLIST_TYPE APPMANAGER_CALLBACKS
+#define LINKEDLIST_PREFIX appmanager_callbacks
+#define LINKEDLIST_DOUBLE 1
+
+#include "util/linked_list.h"
+
+#undef LINKEDLIST_DOUBLE
+#undef LINKEDLIST_TYPE
+#undef LINKEDLIST_PREFIX
+
 
 static pthread_t _application_manager_load_thread;
 static PAPPMANAGER_CALLBACKS callbacks_list;

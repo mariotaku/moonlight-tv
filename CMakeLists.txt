@@ -163,8 +163,10 @@ set(SOURCES
     app/backend/pcmanager/pairing.c
     app/backend/pcmanager/wol.c
     app/backend/pcmanager/pcmanager_common.c
+    app/backend/pcmanager/known_hosts.c
+    app/backend/pcmanager/sdl_impl.c
     app/backend/gamecontrollerdb_updater.c
-    app/backend/appmanager.c
+    app/backend/appmanager/appmanager.c
     app/backend/types_impl.c
     app/stream/module/module.c
     app/stream/module/audio.c
@@ -190,7 +192,7 @@ set(SOURCES
     app/lvgl/lv_ext_utils.c
     app/lvgl/lv_sdl_img.c
     app/lvgl/lv_gridview.c
-    app/lvgl/manager.c
+        app/lvgl/lv_obj_controller.c
     app/util/path.c
     app/util/navkey.c
     app/util/debugprint.c
@@ -198,7 +200,6 @@ set(SOURCES
     app/util/libconfig_ext.c
     app/util/img_loader.c
     app/app_sdl.c
-    app/backend/pcmanager/sdl_impl.c
     app/stream/input/sdlinput.c
     app/stream/input/sdl/keyboard.c
     app/stream/input/sdl/gamepad.c

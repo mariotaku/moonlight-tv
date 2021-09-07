@@ -57,3 +57,7 @@ void invoke_callback(invoke_callback_t *args);
 invoke_callback_t *invoke_callback_args(PPCMANAGER_RESP resp, pcmanager_callback_t callback, void *userdata);
 
 bool pcmanager_is_known_host(const char *srvaddr);
+
+void pcmanager_load_known_hosts();
+
+void pcmanager_save_known_hosts();

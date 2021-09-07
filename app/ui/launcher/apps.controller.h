@@ -1,5 +1,5 @@
 #pragma once
 
-#include "lvgl/manager.h"
+#include "lvgl/lv_obj_controller.h"
 
-lv_obj_controller_t *apps_controller(void *args);
+extern const lv_obj_controller_class_t apps_controller_class;

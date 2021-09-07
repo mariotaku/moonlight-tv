@@ -5,7 +5,6 @@
 #include "app.h"
 
 #include <malloc.h>
-#include <string.h>
 #include <ui/launcher/coverloader.h>
 #include "lvgl/lv_gridview.h"
 #include "lvgl/lv_ext_utils.h"
@@ -63,6 +62,8 @@ static int adapter_item_id(lv_obj_t *, void *data, int position);
 
 static void quitgame_cb(PPCMANAGER_RESP resp, void *userdata);
 
+static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
+
 const static lv_grid_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
@@ -70,13 +71,17 @@ const static lv_grid_adapter_t apps_adapter = {
         .item_id = adapter_item_id,
 };
 
-lv_obj_controller_t *apps_controller(void *args) {
-    apps_controller_t *controller = lv_mem_alloc(sizeof(apps_controller_t));
-    lv_memset_00(controller, sizeof(apps_controller_t));
-    controller->base.create_view = apps_view;
-    controller->base.view_created = on_view_created;
-    controller->base.destroy_view = on_destroy_view;
-    controller->base.destroy_controller = (void (*)(lv_obj_controller_t *)) lv_mem_free;
+const lv_obj_controller_class_t apps_controller_class = {
+        .constructor_cb = apps_controller_ctor,
+        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
+        .create_obj_cb = apps_view,
+        .obj_created_cb = on_view_created,
+        .obj_deleted_cb = on_destroy_view,
+        .instance_size = sizeof(apps_controller_t),
+};
+
+static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
+    apps_controller_t *controller = (apps_controller_t *) self;
     controller->_pcmanager_callbacks.added = NULL;
     controller->_pcmanager_callbacks.updated = on_host_updated;
     controller->_pcmanager_callbacks.userdata = controller;
@@ -85,7 +90,6 @@ lv_obj_controller_t *apps_controller(void *args) {
     controller->node = args;
 
     appitem_style_init(&controller->appitem_style);
-    return (lv_obj_controller_t *) controller;
 }
 
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
@@ -210,7 +214,7 @@ static void launcher_open_game(lv_event_t *event) {
             .server = controller->node->server,
             .app = (PAPP_DLIST) holder->app
     };
-    uimanager_push(app_uimanager, streaming_controller, &args);
+    lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
 }
 
 static void launcher_resume_game(lv_event_t *event) {
@@ -220,7 +224,7 @@ static void launcher_resume_game(lv_event_t *event) {
             .server = controller->node->server,
             .app = (PAPP_DLIST) ((appitem_viewholder_t *) lv_obj_get_user_data(item))->app
     };
-    uimanager_push(app_uimanager, streaming_controller, &args);
+    lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
 }
 
 static void launcher_quit_game(lv_event_t *event) {

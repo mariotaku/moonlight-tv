@@ -28,32 +28,39 @@
 #define MIN_SUPPORTED_GFE_VERSION 3
 #define MAX_SUPPORTED_GFE_VERSION 7
 
-typedef struct _SERVER_DATA
-{
-  const char *uuid;
-  const char *mac;
-  const char *hostname;
-  const char *gpuType;
-  bool paired;
-  bool supports4K;
-  bool supportsHdr;
-  bool unsupported;
-  int currentGame;
-  int serverMajorVersion;
-  const char *gsVersion;
-  PDISPLAY_MODE modes;
-  SERVER_INFORMATION serverInfo;
+typedef struct _SERVER_DATA {
+    const char *uuid;
+    const char *mac;
+    const char *hostname;
+    const char *gpuType;
+    bool paired;
+    bool supports4K;
+    bool supportsHdr;
+    bool unsupported;
+    int currentGame;
+    int serverMajorVersion;
+    const char *gsVersion;
+    PDISPLAY_MODE modes;
+    SERVER_INFORMATION serverInfo;
 } SERVER_DATA, *PSERVER_DATA;
 
 typedef struct GS_CLIENT_T *GS_CLIENT;
 
 GS_CLIENT gs_new(const char *keydir, int log_level);
+
 void gs_destroy(GS_CLIENT);
 
 int gs_init(GS_CLIENT, PSERVER_DATA server, const char *address, bool unsupported);
-int gs_start_app(GS_CLIENT, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio, int gamepad_mask);
-int gs_applist(GS_CLIENT, PSERVER_DATA server, PAPP_LIST *app_list);
+
+int gs_start_app(GS_CLIENT, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio,
+                 int gamepad_mask);
+
+int gs_applist(GS_CLIENT, const SERVER_DATA *server, PAPP_LIST *app_list);
+
 int gs_unpair(GS_CLIENT, PSERVER_DATA server);
+
 int gs_pair(GS_CLIENT, PSERVER_DATA server, const char *pin);
+
 int gs_quit_app(GS_CLIENT, PSERVER_DATA server);
+
 int gs_download_cover(GS_CLIENT, PSERVER_DATA server, int appId, const char *path);

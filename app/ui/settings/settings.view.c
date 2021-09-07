@@ -1,5 +1,5 @@
 #include "settings.controller.h"
-#include "lvgl/manager.h"
+#include "lvgl/lv_obj_controller.h"
 
 static void settings_close(lv_event_t *e);
 
@@ -37,5 +37,5 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
 
 static void settings_close(lv_event_t *e) {
     lv_obj_controller_t *controller = e->user_data;
-    uimanager_pop(controller->manager);
+    lv_controller_manager_pop(controller->manager);
 }

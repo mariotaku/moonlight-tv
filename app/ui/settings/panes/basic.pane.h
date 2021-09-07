@@ -1,5 +1,5 @@
 #pragma once
 
-#include "lvgl/manager.h"
+#include "lvgl/lv_obj_controller.h"
 
-lv_obj_controller_t *settings_pane_basic(void *args);
+extern const lv_obj_controller_class_t settings_pane_basic_cls;

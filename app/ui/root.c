@@ -25,7 +25,7 @@ static PVIDEO_RENDER_CALLBACKS ui_stream_render;
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;
-    handled |= uimanager_dispatch_event(app_uimanager, which, data1, data2);
+    handled |= lv_controller_manager_dispatch_event(app_uimanager, which, data1, data2);
     if (!handled) {
         switch (which) {
             case USER_STREAM_OPEN:

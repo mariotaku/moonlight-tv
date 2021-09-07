@@ -7,12 +7,17 @@
 
 static lv_obj_t *on_create_view(lv_obj_controller_t *self, lv_obj_t *parent);
 
-lv_obj_controller_t *settings_pane_basic(void *args) {
-    lv_obj_controller_t *controller = malloc(sizeof(lv_obj_controller_t));
-    memset(controller, 0, sizeof(lv_obj_controller_t));
-    controller->create_view = on_create_view;
-    controller->destroy_controller = ui_view_controller_free;
-    return controller;
+static void settings_pane_basic_ctor(lv_obj_controller_t *self, void *args);
+
+const lv_obj_controller_class_t settings_pane_basic_cls = {
+        .constructor_cb = settings_pane_basic_ctor,
+        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
+        .create_obj_cb = on_create_view,
+        .instance_size = sizeof(lv_obj_controller_t),
+};
+
+static void settings_pane_basic_ctor(lv_obj_controller_t *self, void *args) {
+
 }
 
 static lv_obj_t *on_create_view(lv_obj_controller_t *self, lv_obj_t *parent) {

@@ -10,20 +10,24 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
 
 static bool on_event(lv_obj_controller_t *, int, void *, void *);
 
-lv_obj_controller_t *streaming_controller(void *args) {
-    streaming_controller_t *controller = malloc(sizeof(streaming_controller_t));
-    lv_memset_00(controller, sizeof(streaming_controller_t));
-    controller->base.create_view = streaming_scene_create;
-    controller->base.view_created = on_view_created;
-    controller->base.dispatch_event = on_event;
-    controller->base.destroy_controller = ui_view_controller_free;
+static void streaming_controller_ctor(lv_obj_controller_t *self, void *args);
+
+const lv_obj_controller_class_t streaming_controller_class = {
+        .constructor_cb = streaming_controller_ctor,
+        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
+        .create_obj_cb = streaming_scene_create,
+        .obj_created_cb = on_view_created,
+        .event_cb = on_event,
+        .instance_size = sizeof(streaming_controller_t),
+};
+
+static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
+    streaming_controller_t *controller = (streaming_controller_t *) self;
 
     const STREAMING_SCENE_ARGS *req = (STREAMING_SCENE_ARGS *) args;
     streaming_begin(req->server, req->app);
 
     streaming_overlay_init();
-
-    return (lv_obj_controller_t *) controller;
 }
 
 static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
@@ -40,7 +44,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             break;
         }
         case USER_STREAM_FINISHED: {
-            uimanager_pop(controller->base.manager);
+            lv_controller_manager_pop(controller->base.manager);
             break;
         }
         case USER_ST_QUITAPP_CONFIRM: {

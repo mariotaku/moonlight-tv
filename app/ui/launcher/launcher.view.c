@@ -82,5 +82,5 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
 static void open_settings(lv_event_t *event) {
     lv_obj_controller_t *controller = event->user_data;
-    uimanager_push(controller->manager, settings_controller, NULL);
+    lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
 }

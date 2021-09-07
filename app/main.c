@@ -22,7 +22,7 @@
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
-#include "lvgl/manager.h"
+#include "lvgl/lv_obj_controller.h"
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/logging.h"
@@ -40,7 +40,7 @@ static void app_gs_client_destroy();
 
 static void lv_bg_draw(lv_area_t *area);
 
-uimanager_ctx *app_uimanager;
+lv_controller_manager_t *app_uimanager;
 
 lv_indev_t *app_indev_key;
 
@@ -113,8 +113,8 @@ int main(int argc, char *argv[]) {
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_set_style_bg_opa(scr, 0, 0);
-    app_uimanager = uimanager_new(scr);
-    uimanager_push(app_uimanager, launcher_controller, NULL);
+    app_uimanager = lv_controller_manager_create(scr);
+    lv_controller_manager_push(app_uimanager, &launcher_controller_class, NULL);
 
     while (running) {
         app_process_events();
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
 
     settings_save(app_configuration);
 
-    uimanager_destroy(app_uimanager);
+    lv_controller_manager_del(app_uimanager);
 
     lv_sdl_deinit_pointer(indev_pointer);
     lv_sdl_deinit_key_input(indev_key);

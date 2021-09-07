@@ -45,8 +45,10 @@
 #if __WIN32
 #include <windows.h>
 #else
+
 #include <uuid/uuid.h>
 #include <arpa/inet.h>
+
 #endif
 
 #include <assert.h>
@@ -70,6 +72,7 @@ const char *gs_error;
 
 static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action,
                           const char *fmt, ...);
+
 #if __WIN32
 #define MKDIR(path) mkdir(path)
 #else
@@ -657,7 +660,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     return ret;
 }
 
-int gs_applist(GS_CLIENT hnd, PSERVER_DATA server, PAPP_LIST *list) {
+int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     int ret = GS_OK;
     char url[4096];
     PHTTP_DATA data = http_create_data();

@@ -1,4 +1,4 @@
-#include <lvgl/manager.h>
+#include <lvgl/lv_obj_controller.h>
 #include "overlay.h"
 #include "ui/root.h"
 #include "ui/messages.h"
