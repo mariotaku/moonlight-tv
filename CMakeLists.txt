@@ -29,8 +29,6 @@ option(ENABLE_TESTING "Skip mbedtls testing" OFF)
 option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
 option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 
-option(MDNS_BUILD_EXAMPLE "" OFF)
-
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" OFF)
 
@@ -149,7 +147,6 @@ unset(BUILD_SHARED_LIBS)
 
 add_subdirectory(decoder)
 add_subdirectory(audio)
-add_subdirectory(third_party/mdns EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
