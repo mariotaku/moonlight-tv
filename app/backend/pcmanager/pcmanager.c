@@ -30,8 +30,6 @@ static PPCMANAGER_CALLBACKS callbacks_list;
 
 PSERVER_LIST computer_list;
 
-bool computer_discovery_running = false;
-
 static int _pcmanager_quitapp_action(void *data);
 
 static int _computer_manager_server_update_action(PSERVER_DATA data);
@@ -40,8 +38,6 @@ static void pcmanager_client_setup();
 
 static void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp);
 
-bool pcmanager_setup_running = false;
-
 void computer_manager_init() {
     computer_list = NULL;
     pcmanager_load_known_hosts();
@@ -49,16 +45,9 @@ void computer_manager_init() {
 }
 
 void computer_manager_destroy() {
-    if (computer_discovery_running) {
-        SDL_DetachThread(computer_manager_polling_thread);
-        computer_manager_polling_thread = NULL;
-    }
+    pcmanager_auto_discovery_stop();
     pcmanager_save_known_hosts();
     serverlist_free(computer_list, serverlist_nodefree);
-}
-
-bool computer_manager_dispatch_userevent(int which, void *data1, void *data2) {
-    return false;
 }
 
 void handle_server_updated(PPCMANAGER_RESP update) {
@@ -99,14 +88,6 @@ void handle_server_discovered(PPCMANAGER_RESP discovered) {
             cur->added(cur->userdata, discovered);
         }
     }
-}
-
-bool computer_manager_run_scan() {
-    if (computer_discovery_running || streaming_status != STREAMING_NONE) {
-        return false;
-    }
-    computer_manager_polling_thread = SDL_CreateThread(_computer_manager_polling_action, "hostscan", NULL);
-    return true;
 }
 
 bool pcmanager_quitapp(const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
@@ -245,21 +226,5 @@ void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp) {
     resp->server_referenced = true;
 }
 
-static void _pcmanager_client_setup_cb(void *data) {
-    pcmanager_setup_running = data != NULL;
-    if (data == NULL) {
-        computer_manager_run_scan();
-    }
-}
-
-static int _pcmanager_client_setup_action(void *unused) {
-    (void) unused;
-    bus_pushaction(_pcmanager_client_setup_cb, (void *) 1);
-    app_gs_client_obtain();
-    bus_pushaction(_pcmanager_client_setup_cb, (void *) 0);
-    return 0;
-}
-
 void pcmanager_client_setup() {
-    SDL_CreateThread(_pcmanager_client_setup_action, "clntinit", NULL);
 }

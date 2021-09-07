@@ -7,8 +7,6 @@
 #include "libgamestream/client.h"
 
 extern PSERVER_LIST computer_list;
-extern bool computer_discovery_running;
-extern bool pcmanager_setup_running;
 
 typedef struct PCMANAGER_RESP_T {
     union {
@@ -50,13 +48,10 @@ void computer_manager_init();
  */
 void computer_manager_destroy();
 
-bool computer_manager_dispatch_userevent(int which, void *data1, void *data2);
-
 /**
  * @brief Run scan task
  * 
  */
-bool computer_manager_run_scan();
 
 void computer_manager_auto_discovery_schedule(unsigned int ms);
 

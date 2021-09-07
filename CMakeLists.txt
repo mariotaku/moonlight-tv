@@ -164,10 +164,10 @@ set(SOURCES
     app/backend/pcmanager/wol.c
     app/backend/pcmanager/pcmanager_common.c
     app/backend/pcmanager/known_hosts.c
-    app/backend/pcmanager/sdl_impl.c
+        app/backend/pcmanager/discovery.c
     app/backend/gamecontrollerdb_updater.c
-        app/backend/apploader/apploader.c
-        app/stream/module/module.c
+    app/backend/apploader/apploader.c
+    app/stream/module/module.c
     app/stream/module/audio.c
     app/stream/module/decoder.c
     app/stream/session.c
@@ -191,7 +191,7 @@ set(SOURCES
     app/lvgl/lv_ext_utils.c
     app/lvgl/lv_sdl_img.c
     app/lvgl/lv_gridview.c
-        app/lvgl/lv_obj_controller.c
+    app/lvgl/lv_obj_controller.c
     app/util/path.c
     app/util/navkey.c
     app/util/debugprint.c
@@ -209,11 +209,6 @@ set(SOURCES
     app/stream/audio/sdlaud.c
 )
 
-if (TARGET_WINDOWS)
-    list(APPEND SOURCES app/backend/pcmanager/discovery_win.c)
-else()
-    list(APPEND SOURCES app/backend/pcmanager/discovery.c)
-endif()
 if (TARGET_WEBOS)
     list(APPEND SOURCES
             app/stream/input/sdl/keyboard_webos.c
@@ -257,7 +252,8 @@ if (TARGET_WINDOWS)
     pkg_check_modules(MICRODNS REQUIRED microdns)
     target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
 else()
-    target_link_libraries(moonlight PRIVATE mdns)
+    include(BuildMicrodns)
+    target_link_libraries(moonlight PRIVATE microdns)
 endif()
 
 
@@ -389,7 +385,7 @@ if (TARGET_WEBOS)
 
     add_custom_target(webos-package-moonlight
         COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e mdns -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
+        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
     )
 
     set_target_properties(moonlight PROPERTIES

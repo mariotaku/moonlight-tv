@@ -50,8 +50,6 @@ void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg);
 
 void pcmanager_resp_setgserror(PPCMANAGER_RESP resp, int code, const char *msg);
 
-int _computer_manager_polling_action(void *data);
-
 PSERVER_DATA serverdata_new();
 
 PPCMANAGER_RESP serverinfo_resp_new();

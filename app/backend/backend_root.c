@@ -18,6 +18,5 @@ void backend_destroy() {
 
 bool backend_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;
-    handled |= computer_manager_dispatch_userevent(which, data1, data2);
     return handled;
 }

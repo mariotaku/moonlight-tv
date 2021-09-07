@@ -1,274 +1,84 @@
-#include "backend/pcmanager.h"
-
-#include <assert.h>
-#include <stdio.h>
-
-#include <mdns.h>
-
-#include <errno.h>
-#include <netdb.h>
-#include <ifaddrs.h>
-
-#include <pthread.h>
+#include "priv.h"
+#include <microdns/microdns.h>
+#include "util/logging.h"
 #include <SDL.h>
 
-#include "libgamestream/errors.h"
-#include "stream/settings.h"
-
-#include "util/bus.h"
-#include "util/user_event.h"
-
-#include "app.h"
-#include "priv.h"
-
-#include "util/memlog.h"
-#include "util/logging.h"
-
-#define SERVICE_NAME "_nvstream._tcp.local"
-
-static char addrbuffer[64];
-static char entrybuffer[256];
-static char namebuffer[256];
-static char sendbuffer[256];
-static mdns_record_txt_t txtbuffer[128];
-
-static uint32_t service_address_ipv4;
-static uint8_t service_address_ipv6[16];
-
-static int has_ipv4;
-static int has_ipv6;
-
 typedef struct {
-    const char *service;
-    const char *hostname;
-    uint32_t address_ipv4;
-    uint8_t *address_ipv6;
-    int port;
-} service_record_t;
+    bool stop;
+    SDL_Thread *thread;
+} discovery_task_t;
 
-static int query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
-                          uint16_t query_id, uint16_t rtype, uint16_t rclass, uint32_t ttl, const void *data,
-                          size_t size, size_t name_offset, size_t name_length, size_t record_offset,
-                          size_t record_length, void *user_data);
+static int discovery_worker(discovery_task_t *task);
 
-static int open_client_sockets(int *sockets, int max_sockets, int port);
+static bool discovery_stop(discovery_task_t *task);
 
-int _computer_manager_polling_action(void *data) {
-    if (!app_gs_client_ready())
-        return -1;
-    computer_discovery_running = true;
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
-        if (!cur->known)
-            continue;
-        const char *srvaddr = strdup(cur->server->serverInfo.address);
-        pcmanager_insert_by_address(srvaddr, false, NULL, NULL);
+static void discovery_callback(void *p_cookie, int status, const struct rr_entry *entries);
+
+static discovery_task_t *discovery_task = NULL;
+
+void pcmanager_auto_discovery_start() {
+    discovery_task_t *task = SDL_malloc(sizeof(discovery_task_t));
+    task->stop = false;
+    task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
+    discovery_task = task;
+}
+
+void pcmanager_auto_discovery_stop() {
+    if (!discovery_task) return;
+    discovery_task->stop = SDL_TRUE;
+}
+
+void computer_manager_auto_discovery_schedule(unsigned int ms) {
+
+}
+
+
+static int discovery_worker(discovery_task_t *task) {
+    int r = 0;
+    char err[128];
+    struct mdns_ctx *ctx = NULL;
+    mdns_init(&ctx, NULL, MDNS_PORT);
+
+    static const char *service_name[] = {"_nvstream._tcp.local"};
+
+    if ((r = mdns_init(&ctx, NULL, MDNS_PORT)) < 0)
+        goto err;
+    if ((r = mdns_listen(ctx, service_name, 1, RR_PTR, 10, (mdns_stop_func) discovery_stop,
+                         discovery_callback, task)) < 0)
+        goto err;
+    err:
+    if (r < 0) {
+        mdns_strerror(r, err, sizeof(err));
+        applog_e("mDNS", "fatal: %s", err);
     }
-    int sockets[32];
-    int query_id[32];
-    int num_sockets = open_client_sockets(sockets, sizeof(sockets) / sizeof(sockets[0]), 0);
-    if (num_sockets <= 0) {
-        applog_e("mDNS", "Failed to open any client sockets\n");
-        computer_discovery_running = false;
-        return -1;
-    }
-
-    size_t capacity = 2048;
-    void *buffer = malloc(capacity);
-    void *user_data = 0;
-    size_t records;
-
-    for (int isock = 0; isock < num_sockets; ++isock) {
-        query_id[isock] = mdns_query_send(sockets[isock], MDNS_RECORDTYPE_PTR, SERVICE_NAME,
-                                          sizeof(SERVICE_NAME) - 1, buffer, capacity, 0);
-        if (query_id[isock] < 0)
-            applog_w("mDNS", "Failed to send mDNS query: %s\n", strerror(errno));
-    }
-
-    // This is a simple implementation that loops for 5 seconds or as long as we get replies
-    int res;
-    do {
-        struct timeval timeout;
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
-
-        int nfds = 0;
-        fd_set readfs;
-        FD_ZERO(&readfs);
-        for (int isock = 0; isock < num_sockets; ++isock) {
-            if (sockets[isock] >= nfds)
-                nfds = sockets[isock] + 1;
-            FD_SET(sockets[isock], &readfs);
-        }
-
-        records = 0;
-        res = select(nfds, &readfs, 0, 0, &timeout);
-        if (res > 0) {
-            for (int isock = 0; isock < num_sockets; ++isock) {
-                if (FD_ISSET(sockets[isock], &readfs)) {
-                    records += mdns_query_recv(sockets[isock], buffer, capacity, query_callback,
-                                               user_data, query_id[isock]);
-                }
-                FD_SET(sockets[isock], &readfs);
-            }
-        }
-    } while (res > 0);
-
-    free(buffer);
-
-    for (int isock = 0; isock < num_sockets; ++isock)
-        mdns_socket_close(sockets[isock]);
-    computer_discovery_running = false;
+    mdns_destroy(ctx);
+    SDL_free(task);
+    discovery_task = NULL;
     return 0;
 }
 
+static bool discovery_stop(discovery_task_t *task) {
+    return task->stop;
+}
 
+static void discovery_callback(void *p_cookie, int status, const struct rr_entry *entries) {
+    char err[128];
 
-static mdns_string_t ipv4_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in *addr,
-                                            size_t addrlen) {
-    char host[NI_MAXHOST] = {0};
-    char service[NI_MAXSERV] = {0};
-    int ret = getnameinfo((const struct sockaddr *) addr, (socklen_t) addrlen, host, NI_MAXHOST,
-                          service, NI_MAXSERV, NI_NUMERICSERV | NI_NUMERICHOST);
-    int len = 0;
-    if (ret == 0) {
-        if (addr->sin_port != 0)
-            len = SDL_snprintf(buffer, capacity, "%s:%s", host, service);
-        else
-            len = SDL_snprintf(buffer, capacity, "%s", host);
+    if (status < 0) {
+        mdns_strerror(status, err, sizeof(err));
+        applog_e("mDNS", "error: %s", err);
+        return;
     }
-    if (len >= (int) capacity)
-        len = (int) capacity - 1;
-    mdns_string_t str;
-    str.str = buffer;
-    str.length = len;
-    return str;
-}
 
-static mdns_string_t ipv6_address_to_string(char *buffer, size_t capacity, const struct sockaddr_in6 *addr,
-                                            size_t addrlen) {
-    char host[NI_MAXHOST] = {0};
-    char service[NI_MAXSERV] = {0};
-    int ret = getnameinfo((const struct sockaddr *) addr, (socklen_t) addrlen, host, NI_MAXHOST,
-                          service, NI_MAXSERV, NI_NUMERICSERV | NI_NUMERICHOST);
-    int len = 0;
-    if (ret == 0) {
-        if (addr->sin6_port != 0)
-            len = snprintf(buffer, capacity, "[%s]:%s", host, service);
-        else
-            len = snprintf(buffer, capacity, "%s", host);
-    }
-    if (len >= (int) capacity)
-        len = (int) capacity - 1;
-    mdns_string_t str;
-    str.str = buffer;
-    str.length = len;
-    return str;
-}
-
-static mdns_string_t ip_address_to_string(char *buffer, size_t capacity, const struct sockaddr *addr, size_t addrlen) {
-    if (addr->sa_family == AF_INET6)
-        return ipv6_address_to_string(buffer, capacity, (const struct sockaddr_in6 *) addr, addrlen);
-    return ipv4_address_to_string(buffer, capacity, (const struct sockaddr_in *) addr, addrlen);
-}
-
-static int query_callback(int sock, const struct sockaddr *from, size_t addrlen, mdns_entry_type_t entry,
-                          uint16_t query_id, uint16_t rtype, uint16_t rclass, uint32_t ttl, const void *data,
-                          size_t size, size_t name_offset, size_t name_length, size_t record_offset,
-                          size_t record_length, void *user_data) {
-    (void) sizeof(sock);
-    (void) sizeof(query_id);
-    (void) sizeof(name_length);
-    (void) sizeof(user_data);
-    mdns_string_t fromaddrstr = ip_address_to_string(addrbuffer, sizeof(addrbuffer), from, addrlen);
-    const char *entrytype = (entry == MDNS_ENTRYTYPE_ANSWER) ? "answer" : ((entry == MDNS_ENTRYTYPE_AUTHORITY)
-                                                                           ? "authority" : "additional");
-    mdns_string_t entrystr =
-            mdns_string_extract(data, size, &name_offset, entrybuffer, sizeof(entrybuffer));
-    if (rtype == MDNS_RECORDTYPE_A) {
-        struct sockaddr_in addr;
-        mdns_record_parse_a(data, size, record_offset, record_length, &addr);
-        mdns_string_t addrstr =
-                ipv4_address_to_string(namebuffer, sizeof(namebuffer), &addr, sizeof(addr));
-        char *srvaddr = calloc(addrstr.length + 1, sizeof(char));
-        snprintf(srvaddr, addrstr.length + 1, "%.*s", MDNS_STRING_FORMAT(addrstr));
-        applog_d("mDNS", "An A record discovered: %.*s", MDNS_STRING_FORMAT(addrstr));
-        if (pcmanager_is_known_host(srvaddr)) {
-            free(srvaddr);
-            return 0;
-        }
-        pcmanager_insert_by_address(srvaddr, false, NULL, NULL);
-    }
-    return 0;
-}
-
-static int open_client_sockets(int *sockets, int max_sockets, int port) {
-    // When sending, each socket can only send to one network interface
-    // Thus we need to open one socket for each interface and address family
-    int num_sockets = 0;
-
-    struct ifaddrs *ifaddr = 0;
-    struct ifaddrs *ifa = 0;
-
-    if (getifaddrs(&ifaddr) < 0)
-        applog_w("mDNS", "Unable to get interface addresses\n");
-
-    int first_ipv4 = 1;
-    int first_ipv6 = 1;
-    for (ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
-        if (!ifa->ifa_addr)
-            continue;
-
-        if (ifa->ifa_addr->sa_family == AF_INET) {
-            struct sockaddr_in *saddr = (struct sockaddr_in *) ifa->ifa_addr;
-            if (saddr->sin_addr.s_addr != htonl(INADDR_LOOPBACK)) {
-                int log_addr = 0;
-                if (first_ipv4) {
-                    service_address_ipv4 = saddr->sin_addr.s_addr;
-                    first_ipv4 = 0;
-                    log_addr = 1;
+    for (const struct rr_entry *cur = entries; cur; cur = cur->next) {
+        switch (cur->type) {
+            case RR_A: {
+                if (pcmanager_is_known_host(cur->data.A.addr_str)) {
+                    break;
                 }
-                has_ipv4 = 1;
-                if (num_sockets < max_sockets) {
-                    saddr->sin_port = htons(port);
-                    int sock = mdns_socket_open_ipv4(saddr);
-                    if (sock >= 0) {
-                        sockets[num_sockets++] = sock;
-                        log_addr = 1;
-                    } else {
-                        log_addr = 0;
-                    }
-                }
-            }
-        } else if (ifa->ifa_addr->sa_family == AF_INET6) {
-            struct sockaddr_in6 *saddr = (struct sockaddr_in6 *) ifa->ifa_addr;
-            static const unsigned char localhost[] = {0, 0, 0, 0, 0, 0, 0, 0,
-                                                      0, 0, 0, 0, 0, 0, 0, 1};
-            static const unsigned char localhost_mapped[] = {0, 0, 0, 0, 0, 0, 0, 0,
-                                                             0, 0, 0xff, 0xff, 0x7f, 0, 0, 1};
-            if (memcmp(saddr->sin6_addr.s6_addr, localhost, 16) &&
-                memcmp(saddr->sin6_addr.s6_addr, localhost_mapped, 16)) {
-                int log_addr = 0;
-                if (first_ipv6) {
-                    memcpy(service_address_ipv6, &saddr->sin6_addr, 16);
-                    first_ipv6 = 0;
-                    log_addr = 1;
-                }
-                has_ipv6 = 1;
-                if (num_sockets < max_sockets) {
-                    saddr->sin6_port = htons(port);
-                    int sock = mdns_socket_open_ipv6(saddr);
-                    if (sock >= 0) {
-                        sockets[num_sockets++] = sock;
-                        log_addr = 1;
-                    } else {
-                        log_addr = 0;
-                    }
-                }
+                pcmanager_insert_by_address(strdup(cur->data.A.addr_str), false, NULL, NULL);
+                break;
             }
         }
     }
-
-    freeifaddrs(ifaddr);
-
-    return num_sockets;
 }

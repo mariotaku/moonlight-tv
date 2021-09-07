@@ -28,3 +28,6 @@
 [submodule "third_party/lvgl"]
 	path = third_party/lvgl
 	url = https://github.com/mariotaku/lvgl.git
+[submodule "third_party/libmicrodns"]
+	path = third_party/libmicrodns
+	url = https://github.com/videolabs/libmicrodns.git
