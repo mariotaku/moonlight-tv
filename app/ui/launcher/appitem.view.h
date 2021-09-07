@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lvgl.h"
-#include "backend/appmanager.h"
+#include "client.h"
 
 typedef struct {
     lv_style_t cover;
@@ -11,7 +11,7 @@ typedef struct {
 } appitem_styles_t;
 
 typedef struct {
-    PAPP_DLIST app;
+    APP_LIST *app;
     lv_obj_t *play_btn;
     lv_obj_t *close_btn;
     char cover_src[64];

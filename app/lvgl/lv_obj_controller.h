@@ -19,8 +19,6 @@ extern "C" {
 /*********************
  *      DEFINES
  *********************/
-#define LV_OBJ_CONTROLLER_DTOR_DEF (void (*)(lv_obj_controller_t *)) lv_mem_free
-
 
 /**********************
  *      TYPEDEFS

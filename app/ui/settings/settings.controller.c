@@ -27,7 +27,6 @@ static void settings_controller_ctor(lv_obj_controller_t *self, void *args);
 
 const lv_obj_controller_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
-        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
         .create_obj_cb = settings_win_create,
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,

@@ -23,7 +23,6 @@ static void cb_detail_focused(lv_event_t *event);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
-        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
         .create_obj_cb = launcher_win_create,
         .obj_created_cb = launcher_view_init,
         .obj_deleted_cb = launcher_view_destroy,

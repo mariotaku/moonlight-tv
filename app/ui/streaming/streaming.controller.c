@@ -14,7 +14,6 @@ static void streaming_controller_ctor(lv_obj_controller_t *self, void *args);
 
 const lv_obj_controller_class_t streaming_controller_class = {
         .constructor_cb = streaming_controller_ctor,
-        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
         .create_obj_cb = streaming_scene_create,
         .obj_created_cb = on_view_created,
         .event_cb = on_event,

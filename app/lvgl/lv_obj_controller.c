@@ -37,6 +37,8 @@ static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *
 
 static void item_destroy_view(lv_controller_manager_t *manager, manager_stack_t *item);
 
+static void item_destroy_controller(manager_stack_t *item);
+
 static void view_cb_delete(lv_event_t *event);
 
 /**********************
@@ -46,6 +48,8 @@ static void view_cb_delete(lv_event_t *event);
 /**********************
  *      MACROS
  **********************/
+
+
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -64,7 +68,7 @@ void lv_controller_manager_del(lv_controller_manager_t *manager) {
     manager_stack_t *top = manager->top;
     while (top) {
         item_destroy_view(manager, top);
-        top->cls->destructor_cb(top->controller);
+        item_destroy_controller(top);
         struct manager_stack_t *prev = top->prev;
         lv_mem_free(top);
         top = prev;
@@ -94,15 +98,15 @@ void lv_controller_manager_replace(lv_controller_manager_t *manager, const lv_ob
     manager_stack_t *top = manager->top;
     if (top) {
         item_destroy_view(manager, top);
-        top->cls->destructor_cb(top->controller);
+        item_destroy_controller(top);
     } else {
         top = manager->top = lv_mem_alloc(sizeof(manager_stack_t));
         lv_memset_00(top, sizeof(manager_stack_t));
     }
-    top->controller = NULL;
     top->cls = cls;
     item_create_view(manager, top, manager->parent, args);
 }
+
 
 void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     LV_ASSERT(manager);
@@ -110,8 +114,7 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     if (!top) return;
 
     item_destroy_view(manager, top);
-    top->cls->destructor_cb(top->controller);
-    top->controller = NULL;
+    item_destroy_controller(top);
     manager_stack_t *prev = top->prev;
     lv_mem_free(top);
     if (prev) {
@@ -166,6 +169,15 @@ static void item_destroy_view(lv_controller_manager_t *manager, manager_stack_t 
         }
     }
     item->view = controller->obj = NULL;
+}
+
+static void item_destroy_controller(manager_stack_t *item) {
+    const lv_obj_controller_class_t *cls = item->cls;
+    if (cls->destructor_cb) {
+        cls->destructor_cb(item->controller);
+    }
+    lv_mem_free(item->controller);
+    item->controller = NULL;
 }
 
 static void view_cb_delete(lv_event_t *event) {

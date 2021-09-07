@@ -4,11 +4,10 @@
 
 #include "app.h"
 
-#include <malloc.h>
-#include <ui/launcher/coverloader.h>
+#include "coverloader.h"
+#include "backend/apploader/apploader.h"
 #include "lvgl/lv_gridview.h"
 #include "lvgl/lv_ext_utils.h"
-#include "backend/appmanager.h"
 #include "ui/streaming/overlay.h"
 #include "ui/streaming/streaming.controller.h"
 #include "apps.controller.h"
@@ -17,7 +16,7 @@
 typedef struct {
     lv_obj_controller_t base;
     PCMANAGER_CALLBACKS _pcmanager_callbacks;
-    APPMANAGER_CALLBACKS _appmanager_callbacks;
+    apploader_t *apploader;
     coverloader_t *coverloader;
     PSERVER_LIST node;
     lv_obj_t *applist, *appload;
@@ -36,8 +35,6 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void on_host_updated(void *userdata, PPCMANAGER_RESP resp);
 
-static void on_apps_updated(void *userdata, PSERVER_LIST node);
-
 static void launcher_open_game(lv_event_t *event);
 
 static void launcher_resume_game(lv_event_t *event);
@@ -50,7 +47,7 @@ static void applist_focus_leave(lv_event_t *event);
 
 static void update_data(apps_controller_t *controller);
 
-static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, struct _APP_DLIST *app);
+static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST *app);
 
 static int adapter_item_count(lv_obj_t *, void *data);
 
@@ -64,6 +61,10 @@ static void quitgame_cb(PPCMANAGER_RESP resp, void *userdata);
 
 static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
 
+static void apps_controller_dtor(lv_obj_controller_t *self);
+
+static void appload_cb(apploader_t *loader, void *userdata);
+
 const static lv_grid_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
@@ -73,7 +74,7 @@ const static lv_grid_adapter_t apps_adapter = {
 
 const lv_obj_controller_class_t apps_controller_class = {
         .constructor_cb = apps_controller_ctor,
-        .destructor_cb = LV_OBJ_CONTROLLER_DTOR_DEF,
+        .destructor_cb = apps_controller_dtor,
         .create_obj_cb = apps_view,
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,
@@ -85,11 +86,15 @@ static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
     controller->_pcmanager_callbacks.added = NULL;
     controller->_pcmanager_callbacks.updated = on_host_updated;
     controller->_pcmanager_callbacks.userdata = controller;
-    controller->_appmanager_callbacks.updated = on_apps_updated;
-    controller->_appmanager_callbacks.userdata = controller;
     controller->node = args;
+    controller->apploader = apploader_new(controller->node->server);
 
     appitem_style_init(&controller->appitem_style);
+}
+
+static void apps_controller_dtor(lv_obj_controller_t *self) {
+    apps_controller_t *controller = (apps_controller_t *) self;
+    apploader_destroy(controller->apploader);
 }
 
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
@@ -116,7 +121,6 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
     controller->coverloader = coverloader_new();
-    appmanager_register_callbacks(&controller->_appmanager_callbacks);
     pcmanager_register_callbacks(&controller->_pcmanager_callbacks);
     lv_obj_t *applist = controller->applist;
     lv_obj_add_event_cb(applist, launcher_open_game, LV_EVENT_CLICKED, controller);
@@ -138,15 +142,12 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_set_user_data(controller->applist, controller);
 
     update_data(controller);
-    if (!controller->node->apps) {
-        application_manager_load(controller->node);
-    }
+    apploader_load(controller->apploader, appload_cb, controller);
 }
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
-    appmanager_unregister_callbacks(&controller->_appmanager_callbacks);
     pcmanager_unregister_callbacks(&controller->_pcmanager_callbacks);
     coverloader_destroy(controller->coverloader);
 }
@@ -154,12 +155,6 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
 static void on_host_updated(void *userdata, PPCMANAGER_RESP resp) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
-    update_data(controller);
-}
-
-static void on_apps_updated(void *userdata, PSERVER_LIST node) {
-    apps_controller_t *controller = (apps_controller_t *) userdata;
-    if (node != controller->node) return;
     update_data(controller);
 }
 
@@ -172,13 +167,13 @@ static void update_data(apps_controller_t *controller) {
         lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
     } else if (node->state.code == SERVER_STATE_ONLINE) {
-        if (node->appload) {
+        if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
         } else {
             lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            lv_grid_set_data(controller->applist, node->apps);
+            lv_grid_set_data(controller->applist, controller->apploader->apps);
         }
     } else {
         lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
@@ -186,7 +181,7 @@ static void update_data(apps_controller_t *controller) {
     }
 }
 
-static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, struct _APP_DLIST *app) {
+static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST *app) {
     appitem_viewholder_t *holder = lv_obj_get_user_data(item);
 
     coverloader_display(controller->coverloader, controller->node, app->id, item, controller->col_width,
@@ -232,10 +227,10 @@ static void launcher_quit_game(lv_event_t *event) {
     pcmanager_quitapp(controller->node->server, quitgame_cb, controller);
 }
 
-static int adapter_item_count(lv_obj_t *adapter, void *data) {
-    apps_controller_t *controller = lv_obj_get_user_data(adapter);
+static int adapter_item_count(lv_obj_t *grid, void *data) {
+    apps_controller_t *controller = lv_obj_get_user_data(grid);
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
-    return LV_MIN(applist_len(data), 255 * controller->col_count);
+    return LV_MIN(controller->apploader->apps_count, 255 * controller->col_count);
 }
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
@@ -251,12 +246,13 @@ static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
 }
 
 static void adapter_bind_view(lv_obj_t *obj, lv_obj_t *item_view, void *data, int position) {
-    apps_controller_t *controller = lv_obj_get_user_data(obj);
-    appitem_bind(controller, item_view, applist_nth(data, position));
+    APP_LIST *apps = (APP_LIST *) data;
+    appitem_bind(lv_obj_get_user_data(obj), item_view, &apps[position]);
 }
 
-static int adapter_item_id(lv_obj_t *adapter, void *data, int position) {
-    return applist_nth(data, position)->id;
+static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
+    APP_LIST *apps = (APP_LIST *) data;
+    return apps[position].id;
 }
 
 
@@ -275,5 +271,9 @@ static void applist_focus_leave(lv_event_t *event) {
 
 static void quitgame_cb(PPCMANAGER_RESP resp, void *userdata) {
     apps_controller_t *controller = userdata;
+}
 
+static void appload_cb(apploader_t *loader, void *userdata) {
+    apps_controller_t *controller = userdata;
+    update_data(controller);
 }

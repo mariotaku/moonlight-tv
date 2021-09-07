@@ -166,7 +166,7 @@ set(SOURCES
     app/backend/pcmanager/known_hosts.c
     app/backend/pcmanager/sdl_impl.c
     app/backend/gamecontrollerdb_updater.c
-    app/backend/appmanager/appmanager.c
+        app/backend/apploader/apploader.c
     app/backend/types_impl.c
     app/stream/module/module.c
     app/stream/module/audio.c
