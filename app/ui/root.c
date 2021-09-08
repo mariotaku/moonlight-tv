@@ -31,7 +31,6 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
             case USER_STREAM_OPEN:
                 ui_stream_render = decoder_get_render(decoder_current);
                 if (ui_stream_render) {
-                    app_force_redraw = true;
                     ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, app_render_queue_submit);
                 }
                 app_set_keep_awake(true);
@@ -40,7 +39,6 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
             case USER_STREAM_CLOSE:
                 if (ui_stream_render) {
                     ui_stream_render->renderCleanup();
-                    app_force_redraw = false;
                 }
                 app_set_keep_awake(false);
                 app_set_mouse_grab(false);

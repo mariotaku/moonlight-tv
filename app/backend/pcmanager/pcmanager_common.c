@@ -1,87 +1,23 @@
 #include "priv.h"
-#include "app.h"
-#include "libgamestream/client.h"
-#include "libgamestream/errors.h"
-#include "util/bus.h"
-#include <SDL.h>
 
 
-int query_server(const char *address, pcmanager_callback_t callback, void *userdata);
-
-int pcmanager_insert_sync(const char *address, pcmanager_callback_t callback, void *userdata) {
-    pcmanager_list_lock(pcmanager);
-    PSERVER_LIST existing = pcmanager_find_by_address(address);
-    if (existing && existing->state.code == SERVER_STATE_QUERYING) {
-        pcmanager_list_unlock(pcmanager);
-        return 0;
+void pcmanager_worker_finalize(pcmanager_finalizer_args *args) {
+    if (args->callback) {
+        args->callback(args->resp, args->userdata);
     }
-    existing->state.code = SERVER_STATE_QUERYING;
-    pcmanager_list_unlock(pcmanager);
-    return query_server(address, callback, userdata);
-}
-
-int pcmanager_update_sync(PSERVER_LIST existing, pcmanager_callback_t callback, void *userdata) {
-    pcmanager_list_lock(pcmanager);
-    if (existing && existing->state.code == SERVER_STATE_QUERYING) {
-        pcmanager_list_unlock(pcmanager);
-        return 0;
-    }
-    existing->state.code = SERVER_STATE_QUERYING;
-    pcmanager_list_unlock(pcmanager);
-    return query_server(existing->server->serverInfo.address, callback, userdata);
-}
-
-int query_server(const char *address, pcmanager_callback_t callback, void *userdata) {
-    PSERVER_DATA server = serverdata_new();
-    int ret = gs_init(app_gs_client_obtain(), server, strdup(address), app_configuration->unsupported);
-
-    PPCMANAGER_RESP resp = serverinfo_resp_new();
-    if (ret == GS_OK) {
-        resp->state.code = SERVER_STATE_ONLINE;
-        resp->server = server;
-        if (server->paired) {
-            resp->known = true;
-        }
-        resp->server = server;
-        bus_pushaction((bus_actionfunc) handle_server_queried, resp);
-    } else {
-        pcmanager_resp_setgserror(resp, ret, gs_error);
-        serverdata_free(server);
-    }
-    if (callback) {
-        bus_pushaction((bus_actionfunc) invoke_callback, invoke_callback_args(resp, callback, userdata));
-    }
-    bus_pushaction((bus_actionfunc) serverinfo_resp_free, resp);
-    return ret;
-}
-
-void invoke_callback(invoke_callback_t *args) {
-    args->callback(args->resp, args->userdata);
+    SDL_free(args->resp);
     SDL_free(args);
 }
 
-invoke_callback_t *invoke_callback_args(PPCMANAGER_RESP resp, pcmanager_callback_t callback, void *userdata) {
-    invoke_callback_t *args = SDL_malloc(sizeof(invoke_callback_t));
+pcmanager_finalizer_args *pcmanager_finalize_args(pcmanager_resp_t *resp, pcmanager_callback_t callback,
+                                                  void *userdata) {
+    pcmanager_finalizer_args *args = SDL_malloc(sizeof(pcmanager_finalizer_args));
     args->resp = resp;
     args->callback = callback;
     args->userdata = userdata;
     return args;
 }
 
-
-static int serverlist_find_address(PSERVER_LIST other, const void *v) {
-    return SDL_strcmp(other->server->serverInfo.address, (char *) v);
-}
-
-int serverlist_compare_uuid(PSERVER_LIST other, const void *v) {
-    return SDL_strcasecmp(v, other->server->uuid);
-}
-
-
-PSERVER_LIST pcmanager_find_by_address(const char *srvaddr) {
-    SDL_assert(srvaddr);
-    return serverlist_find_by(pcmanager->servers, srvaddr, serverlist_find_address);
-}
 
 PSERVER_DATA serverdata_new() {
     PSERVER_DATA server = malloc(sizeof(SERVER_DATA));

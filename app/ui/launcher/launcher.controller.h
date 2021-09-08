@@ -11,7 +11,6 @@
 
 typedef struct {
     lv_obj_controller_t base;
-    pcmanager_listener _pcmanager_callbacks;
     lv_obj_t *nav;
     lv_obj_t *detail;
     lv_obj_t *pclist;

@@ -1,25 +1,26 @@
 #include "priv.h"
 #include <microdns/microdns.h>
 #include "util/logging.h"
-#include <SDL.h>
 
 typedef struct {
-    bool stop;
+    pcmanager_t *manager;
     SDL_Thread *thread;
+    bool stop;
 } discovery_task_t;
 
 static int discovery_worker(discovery_task_t *task);
 
 static bool discovery_stop(discovery_task_t *task);
 
-static void discovery_callback(void *p_cookie, int status, const struct rr_entry *entries);
+static void discovery_callback(discovery_task_t *task, int status, const struct rr_entry *entries);
 
 static discovery_task_t *discovery_task = NULL;
 
 void pcmanager_auto_discovery_start(pcmanager_t *manager) {
     discovery_task_t *task = SDL_malloc(sizeof(discovery_task_t));
-    task->stop = false;
+    task->manager = manager;
     task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
+    task->stop = false;
     discovery_task = task;
 }
 
@@ -40,7 +41,7 @@ static int discovery_worker(discovery_task_t *task) {
     if ((r = mdns_init(&ctx, NULL, MDNS_PORT)) < 0)
         goto err;
     if ((r = mdns_listen(ctx, service_name, 1, RR_PTR, 10, (mdns_stop_func) discovery_stop,
-                         discovery_callback, task)) < 0)
+                         (mdns_listen_callback) discovery_callback, task)) < 0)
         goto err;
     err:
     if (r < 0) {
@@ -57,7 +58,7 @@ static bool discovery_stop(discovery_task_t *task) {
     return task->stop;
 }
 
-static void discovery_callback(void *p_cookie, int status, const struct rr_entry *entries) {
+static void discovery_callback(discovery_task_t *task, int status, const struct rr_entry *entries) {
     char err[128];
 
     if (status < 0) {
@@ -67,18 +68,8 @@ static void discovery_callback(void *p_cookie, int status, const struct rr_entry
     }
 
     for (const struct rr_entry *cur = entries; cur; cur = cur->next) {
-        switch (cur->type) {
-            case RR_A: {
-                PSERVER_LIST found = pcmanager_find_by_address(cur->data.A.addr_str);
-                if (found && found->known) {
-                    if (found->state.code == SERVER_STATE_NONE) {
-                        pcmanager_update_sync(found, NULL, NULL);
-                    }
-                    break;
-                }
-                pcmanager_insert_sync(cur->data.A.addr_str, NULL, NULL);
-                break;
-            }
-        }
+        if (cur->type != RR_A) continue;
+        pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, NULL, NULL);
     }
 }
+

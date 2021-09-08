@@ -1,11 +1,12 @@
 #include "priv.h"
+#include "pclist.h"
 
 #include <libconfig.h>
-#include <SDL.h>
 
 #include "util/libconfig_ext.h"
 #include "util/path.h"
 #include "stream/settings.h"
+
 
 static void strlower(char *p);
 
@@ -40,11 +41,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->hostname = SDL_strdup(hostname);
         server->serverInfo.address = SDL_strdup(address);
 
-        PSERVER_LIST node = serverlist_new();
-        node->state.code = SERVER_STATE_NONE;
-        node->server = server;
-        node->known = true;
-        manager->servers = serverlist_append(manager->servers, node);
+        SERVER_LIST *node = pclist_insert_known(manager, server);
         if (!selected_set && config_setting_get_bool_simple(item, "selected")) {
             node->selected = true;
             selected_set = true;

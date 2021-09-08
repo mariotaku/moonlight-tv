@@ -10,7 +10,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view);
 
-static void launcher_handle_server_updated(void *userdata, PPCMANAGER_RESP resp);
+static void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata);
 
 static void update_pclist(launcher_controller_t *controller);
 
@@ -29,12 +29,14 @@ const lv_obj_controller_class_t launcher_controller_class = {
         .instance_size = sizeof(launcher_controller_t),
 };
 
+static const pcmanager_listener_t pcmanager_callbacks = {
+        .added = launcher_handle_server_updated,
+        .updated = launcher_handle_server_updated,
+};
+
 static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
     (void) args;
     launcher_controller_t *controller = (launcher_controller_t *) self;
-    controller->_pcmanager_callbacks.added = launcher_handle_server_updated;
-    controller->_pcmanager_callbacks.updated = launcher_handle_server_updated;
-    controller->_pcmanager_callbacks.userdata = controller;
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
             controller->selected_server = cur;
@@ -49,7 +51,7 @@ static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
 
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
-    pcmanager_register_listener(&controller->_pcmanager_callbacks);
+    pcmanager_register_listener(pcmanager, &pcmanager_callbacks, controller);
     controller->pane_manager = lv_controller_manager_create(controller->detail);
     lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
@@ -69,10 +71,10 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
     lv_controller_manager_del(controller->pane_manager);
-    pcmanager_unregister_listener(&controller->_pcmanager_callbacks);
+    pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);
 }
 
-void launcher_handle_server_updated(void *userdata, PPCMANAGER_RESP resp) {
+void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata) {
     launcher_controller_t *controller = userdata;
     update_pclist(controller);
 }

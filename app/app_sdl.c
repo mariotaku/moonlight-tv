@@ -37,7 +37,7 @@
 SDL_Window *win;
 static SDL_GLContext gl;
 int app_window_width, app_window_height;
-bool app_has_redraw = false, app_force_redraw = false, app_should_redraw_background = false;
+bool app_should_redraw_background = false;
 
 PCONFIGURATION app_configuration = NULL;
 

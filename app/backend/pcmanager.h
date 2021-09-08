@@ -19,22 +19,15 @@ typedef struct PCMANAGER_RESP_T {
     bool known;
     SERVER_STATE state;
     const SERVER_DATA *server;
-    bool server_shallow;
-    bool server_referenced;
-} PCMANAGER_RESP, *PPCMANAGER_RESP;
+} pcmanager_resp_t, *PPCMANAGER_RESP;
 
-typedef void (*pcmanager_callback_t)(PPCMANAGER_RESP, void *);
+typedef void (*pcmanager_callback_t)(const pcmanager_resp_t *, void *);
 
-typedef struct pcmanager_listener {
-    void (*added)(void *userdata, PPCMANAGER_RESP);
+typedef struct pcmanager_listener_t {
+    void (*added)(const pcmanager_resp_t *, void *userdata);
 
-    void (*updated)(void *userdata, PPCMANAGER_RESP);
-
-    void *userdata;
-
-    struct pcmanager_listener *prev;
-    struct pcmanager_listener *next;
-} pcmanager_listener;
+    void (*updated)(const pcmanager_resp_t *, void *userdata);
+} pcmanager_listener_t;
 
 /**
  * @brief Initialize computer manager context
@@ -52,7 +45,7 @@ void pcmanager_auto_discovery_start(pcmanager_t *manager);
 
 void pcmanager_auto_discovery_stop(pcmanager_t *manager);
 
-PSERVER_LIST pcmanager_servers(pcmanager_t *self);
+PSERVER_LIST pcmanager_servers(pcmanager_t *manager);
 
 /**
  * @brief Generates a PIN code, and start pairing process.
@@ -73,6 +66,6 @@ void pcmanager_request_update(const SERVER_DATA *server);
 
 bool pcmanager_manual_add(const char *address, pcmanager_callback_t callback, void *userdata);
 
-void pcmanager_register_listener(pcmanager_listener *listener);
+void pcmanager_register_listener(pcmanager_t *manager, const pcmanager_listener_t *listener, void *userdata);
 
-void pcmanager_unregister_listener(pcmanager_listener *listener);
+void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listener_t *listener);

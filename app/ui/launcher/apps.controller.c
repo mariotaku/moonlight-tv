@@ -15,7 +15,6 @@
 
 typedef struct {
     lv_obj_controller_t base;
-    pcmanager_listener _pcmanager_callbacks;
     apploader_t *apploader;
     coverloader_t *coverloader;
     PSERVER_LIST node;
@@ -33,7 +32,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view);
 
-static void on_host_updated(void *userdata, PPCMANAGER_RESP resp);
+static void on_host_updated(const pcmanager_resp_t *resp, void *userdata);
 
 static void launcher_open_game(lv_event_t *event);
 
@@ -57,7 +56,7 @@ static void adapter_bind_view(lv_obj_t *, lv_obj_t *, void *data, int position);
 
 static int adapter_item_id(lv_obj_t *, void *data, int position);
 
-static void quitgame_cb(PPCMANAGER_RESP resp, void *userdata);
+static void quitgame_cb(const pcmanager_resp_t * resp, void *userdata);
 
 static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
 
@@ -71,6 +70,9 @@ const static lv_grid_adapter_t apps_adapter = {
         .bind_view = adapter_bind_view,
         .item_id = adapter_item_id,
 };
+const static pcmanager_listener_t pc_listeners = {
+        .updated = on_host_updated,
+};
 
 const lv_obj_controller_class_t apps_controller_class = {
         .constructor_cb = apps_controller_ctor,
@@ -83,9 +85,6 @@ const lv_obj_controller_class_t apps_controller_class = {
 
 static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
     apps_controller_t *controller = (apps_controller_t *) self;
-    controller->_pcmanager_callbacks.added = NULL;
-    controller->_pcmanager_callbacks.updated = on_host_updated;
-    controller->_pcmanager_callbacks.userdata = controller;
     controller->node = args;
     controller->apploader = apploader_new(controller->node->server);
 
@@ -121,7 +120,7 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
     controller->coverloader = coverloader_new();
-    pcmanager_register_listener(&controller->_pcmanager_callbacks);
+    pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
     lv_obj_add_event_cb(applist, launcher_open_game, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
@@ -148,11 +147,11 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
-    pcmanager_unregister_listener(&controller->_pcmanager_callbacks);
+    pcmanager_unregister_listener(pcmanager, &pc_listeners);
     coverloader_destroy(controller->coverloader);
 }
 
-static void on_host_updated(void *userdata, PPCMANAGER_RESP resp) {
+static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
     update_data(controller);
@@ -269,7 +268,7 @@ static void applist_focus_leave(lv_event_t *event) {
     lv_gridview_focus(controller->applist, -1);
 }
 
-static void quitgame_cb(PPCMANAGER_RESP resp, void *userdata) {
+static void quitgame_cb(const pcmanager_resp_t * resp, void *userdata) {
     apps_controller_t *controller = userdata;
 }
 

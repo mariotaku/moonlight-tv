@@ -1,35 +1,15 @@
 #pragma once
 
 #include "../pcmanager.h"
-#include "SDL_mutex.h"
+#include <SDL.h>
 
-#ifdef PCMANAGER_IMPL
-#define LINKEDLIST_IMPL
-#endif
-
-#define LINKEDLIST_TYPE pcmanager_listener
-#define LINKEDLIST_PREFIX pcmanager_callbacks
-#define LINKEDLIST_DOUBLE 1
-
-#include "util/linked_list.h"
-
-#undef LINKEDLIST_DOUBLE
-#undef LINKEDLIST_TYPE
-#undef LINKEDLIST_PREFIX
-
-#define LINKEDLIST_TYPE SERVER_LIST
-#define LINKEDLIST_PREFIX serverlist
-#define LINKEDLIST_DOUBLE 1
-
-#include "util/linked_list.h"
-
-#undef LINKEDLIST_DOUBLE
-#undef LINKEDLIST_TYPE
-#undef LINKEDLIST_PREFIX
+typedef struct pcmanager_listener_list pcmanager_listener_list;
 
 struct pcmanager_t {
+    SDL_threadID thread_id;
     SERVER_LIST *servers;
     SDL_mutex *servers_lock;
+    pcmanager_listener_list *listeners;
 };
 
 typedef struct CM_PIN_REQUEST_T {
@@ -42,17 +22,11 @@ typedef struct CM_PIN_REQUEST_T {
 
 typedef struct {
     pcmanager_callback_t callback;
-    PPCMANAGER_RESP resp;
+    pcmanager_resp_t *resp;
     void *userdata;
-} invoke_callback_t;
-
-int pcmanager_update_sync(SERVER_LIST *existing, pcmanager_callback_t callback, void *userdata);
-
-int pcmanager_insert_sync(const char *address, pcmanager_callback_t callback, void *userdata);
+} pcmanager_finalizer_args;
 
 void serverdata_free(PSERVER_DATA data);
-
-void serverlist_nodefree(PSERVER_LIST node);
 
 void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg);
 
@@ -62,26 +36,21 @@ PSERVER_DATA serverdata_new();
 
 PPCMANAGER_RESP serverinfo_resp_new();
 
-void serverinfo_resp_free(PPCMANAGER_RESP resp);
+void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp);
 
-void serverlist_set_from_resp(PSERVER_LIST node, PPCMANAGER_RESP resp);
+void pcmanager_worker_finalize(pcmanager_finalizer_args *args);
 
-void handle_server_queried(PPCMANAGER_RESP resp);
+pcmanager_finalizer_args *pcmanager_finalize_args(pcmanager_resp_t *resp, pcmanager_callback_t callback,
+                                                  void *userdata);
 
-void handle_server_updated(PPCMANAGER_RESP update);
-
-void invoke_callback(invoke_callback_t *args);
-
-invoke_callback_t *invoke_callback_args(PPCMANAGER_RESP resp, pcmanager_callback_t callback, void *userdata);
-
-PSERVER_LIST pcmanager_find_by_address(const char *srvaddr);
+PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr);
 
 void pcmanager_load_known_hosts(pcmanager_t *manager);
 
 void pcmanager_save_known_hosts(pcmanager_t *manager);
 
-int serverlist_compare_uuid(PSERVER_LIST other, const void *v);
-
 void pcmanager_list_lock(pcmanager_t *manager);
 
 void pcmanager_list_unlock(pcmanager_t *manager);
+
+int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata);
