@@ -13,6 +13,7 @@ struct pcmanager_t {
 };
 
 typedef struct CM_PIN_REQUEST_T {
+    pcmanager_t *manager;
     const SERVER_DATA *server;
     const void *arg1;
     void *userdata;

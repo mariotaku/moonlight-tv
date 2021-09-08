@@ -5,7 +5,12 @@
 #include "pclist.h"
 
 
-pcmanager_t *computer_manager_new() {
+cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+                             void *userdata);
+
+static int request_update_worker(cm_request_t *req);
+
+pcmanager_t *pcmanager_new() {
     pcmanager_t *manager = SDL_malloc(sizeof(pcmanager_t));
     manager->thread_id = SDL_ThreadID();
     manager->servers_lock = SDL_CreateMutex();
@@ -14,7 +19,7 @@ pcmanager_t *computer_manager_new() {
     return manager;
 }
 
-void computer_manager_destroy(pcmanager_t *manager) {
+void pcmanager_destroy(pcmanager_t *manager) {
     pcmanager_auto_discovery_stop(manager);
     pcmanager_save_known_hosts(manager);
     pclist_free(manager);
@@ -22,16 +27,29 @@ void computer_manager_destroy(pcmanager_t *manager) {
     SDL_free(manager);
 }
 
-bool pcmanager_quitapp(const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
-    if (server->currentGame == 0) {
-        return false;
-    }
+cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+                             void *userdata) {
     cm_request_t *req = malloc(sizeof(cm_request_t));
+    req->manager = manager;
     req->server = server;
     req->callback = callback;
     req->userdata = userdata;
+    return req;
+}
+
+bool pcmanager_quitapp(pcmanager_t *manager,const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
+    if (server->currentGame == 0) {
+        return false;
+    }
+    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
     // TODO threaded operation
     return true;
+}
+
+void pcmanager_request_update(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+                              void *userdata) {
+    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
+    SDL_CreateThread((SDL_ThreadFunction) request_update_worker, "pcupdate", req);
 }
 
 
@@ -52,10 +70,13 @@ void pcmanager_resp_setgserror(PPCMANAGER_RESP resp, int code, const char *msg) 
     resp->result.error.message = msg;
 }
 
-void pcmanager_request_update(const SERVER_DATA *server) {
-}
-
 
 PSERVER_LIST pcmanager_servers(pcmanager_t *manager) {
     return manager->servers;
+}
+
+static int request_update_worker(cm_request_t *req) {
+    pcmanager_upsert_worker(req->manager, req->server->serverInfo.address, req->callback, req->userdata);
+    free(req);
+    return 0;
 }

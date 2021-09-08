@@ -31,7 +31,6 @@ const lv_obj_controller_class_t launcher_controller_class = {
 
 static const pcmanager_listener_t pcmanager_callbacks = {
         .added = launcher_handle_server_updated,
-        .updated = launcher_handle_server_updated,
 };
 
 static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
@@ -84,6 +83,7 @@ static void cb_pc_selected(lv_event_t *event) {
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
+    if (selected->selected) return;
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
     uint32_t pclen = lv_obj_get_child_cnt(controller->pclist);
     for (int i = 0; i < pclen; i++) {

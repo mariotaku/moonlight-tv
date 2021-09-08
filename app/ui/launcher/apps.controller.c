@@ -44,7 +44,7 @@ static void applist_focus_enter(lv_event_t *event);
 
 static void applist_focus_leave(lv_event_t *event);
 
-static void update_data(apps_controller_t *controller);
+static void update_view_state(apps_controller_t *controller);
 
 static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST *app);
 
@@ -56,7 +56,7 @@ static void adapter_bind_view(lv_obj_t *, lv_obj_t *, void *data, int position);
 
 static int adapter_item_id(lv_obj_t *, void *data, int position);
 
-static void quitgame_cb(const pcmanager_resp_t * resp, void *userdata);
+static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata);
 
 static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
 
@@ -140,7 +140,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_gridview_set_config(controller->applist, col_count, row_height);
     lv_obj_set_user_data(controller->applist, controller);
 
-    update_data(controller);
+    update_view_state(controller);
+    pcmanager_request_update(pcmanager, controller->node->server, NULL, NULL);
     apploader_load(controller->apploader, appload_cb, controller);
 }
 
@@ -154,10 +155,10 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
-    update_data(controller);
+    update_view_state(controller);
 }
 
-static void update_data(apps_controller_t *controller) {
+static void update_view_state(apps_controller_t *controller) {
     PSERVER_LIST node = controller->node;
     LV_ASSERT(node);
     lv_obj_t *applist = controller->applist;
@@ -223,7 +224,7 @@ static void launcher_resume_game(lv_event_t *event) {
 
 static void launcher_quit_game(lv_event_t *event) {
     apps_controller_t *controller = event->user_data;
-    pcmanager_quitapp(controller->node->server, quitgame_cb, controller);
+    pcmanager_quitapp(pcmanager, controller->node->server, quitgame_cb, controller);
 }
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
@@ -268,11 +269,11 @@ static void applist_focus_leave(lv_event_t *event) {
     lv_gridview_focus(controller->applist, -1);
 }
 
-static void quitgame_cb(const pcmanager_resp_t * resp, void *userdata) {
+static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = userdata;
 }
 
 static void appload_cb(apploader_t *loader, void *userdata) {
     apps_controller_t *controller = userdata;
-    update_data(controller);
+    update_view_state(controller);
 }

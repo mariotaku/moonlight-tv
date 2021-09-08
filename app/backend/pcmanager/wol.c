@@ -18,7 +18,7 @@ static int pcmanager_send_wol_action(void *arg);
 
 static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
-bool pcmanager_send_wol(const SERVER_DATA *server) {
+bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server) {
     SDL_CreateThread(pcmanager_send_wol_action, "wol", (void *) server->mac);
     return true;
 }
