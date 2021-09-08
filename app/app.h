@@ -4,6 +4,7 @@
 #include "lvgl/lv_obj_controller.h"
 #include "stream/module/api.h"
 #include "stream/settings.h"
+#include "backend/pcmanager.h"
 #include "libgamestream/client.h"
 
 typedef void *APP_WINDOW_CONTEXT;
@@ -14,6 +15,7 @@ extern int app_window_width, app_window_height;
 extern bool app_has_redraw, app_force_redraw;
 extern lv_controller_manager_t *app_uimanager;
 extern lv_indev_t *app_indev_key;
+extern pcmanager_t *pcmanager;
 
 int app_init(int argc, char *argv[]);
 

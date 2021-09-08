@@ -4,8 +4,10 @@
 #include "input_manager.h"
 #include "stream/session.h"
 
+pcmanager_t *pcmanager;
+
 void backend_init() {
-    computer_manager_init();
+    pcmanager = computer_manager_new();
     streaming_init();
     inputmgr_init();
 }
@@ -13,7 +15,7 @@ void backend_init() {
 void backend_destroy() {
     inputmgr_destroy();
     streaming_destroy();
-    computer_manager_destroy();
+    computer_manager_destroy(pcmanager);
 }
 
 bool backend_dispatch_userevent(int which, void *data1, void *data2) {

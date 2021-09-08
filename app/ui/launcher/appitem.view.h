@@ -3,6 +3,8 @@
 #include "lvgl.h"
 #include "client.h"
 
+#include "lvgl/lv_sdl_img.h"
+
 typedef struct {
     lv_style_t cover;
     lv_style_t btn;
@@ -14,7 +16,7 @@ typedef struct {
     APP_LIST *app;
     lv_obj_t *play_btn;
     lv_obj_t *close_btn;
-    char cover_src[64];
+    char cover_src[LV_SDL_IMG_MAX_LEN];
 } appitem_viewholder_t;
 
 

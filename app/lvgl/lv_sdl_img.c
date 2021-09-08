@@ -3,7 +3,7 @@
 #include <SDL_image.h>
 #include <gpu/sdl/lv_gpu_sdl_texture_cache.h>
 
-static char img_fmt[64] = "";
+static char img_fmt[LV_SDL_IMG_MAX_LEN] = "";
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header);
 
@@ -23,12 +23,13 @@ void lv_sdl_img_decoder_init(lv_img_decoder_t *decoder) {
 void lv_sdl_img_src_stringify(const lv_sdl_img_src_t *src, char *str) {
     img_fmt_init();
     SDL_memcpy(str, LV_SDL_IMG_HEAD, 8);
-    SDL_snprintf(&str[8], LV_SDL_IMG_LEN - 8, img_fmt, src->w, src->h, src->cf, src->type, src->data.pointer);
+    SDL_snprintf(&str[8], LV_SDL_IMG_LEN - 8, img_fmt, src->w, src->h, src->cf, src->type,
+                 src->data.pointer, src->data_len);
 }
 
 void lv_sdl_img_src_parse(const char *str, lv_sdl_img_src_t *src) {
     img_fmt_init();
-    SDL_sscanf(&str[8], img_fmt, &src->w, &src->h, &src->cf, &src->type, &src->data.pointer);
+    SDL_sscanf(&str[8], img_fmt, &src->w, &src->h, &src->cf, &src->type, &src->data.pointer, &src->data_len);
 }
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header) {
@@ -74,6 +75,17 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
             dsc->user_data = surface;
             break;
         }
+        case LV_SDL_IMG_TYPE_CONST_PTR: {
+            SDL_Surface *surface = IMG_Load_RW(SDL_RWFromConstMem(sdl_src.data.pointer, sdl_src.data_len), 1);
+            if (surface->format->BytesPerPixel == 3) {
+                SDL_Surface *converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+                SDL_FreeSurface(surface);
+                surface = converted;
+            }
+            dsc->img_data = surface->pixels;
+            dsc->user_data = surface;
+            break;
+        }
         default: {
             return LV_RES_INV;
         }
@@ -88,7 +100,8 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
     lv_sdl_img_src_t sdl_src;
     lv_sdl_img_src_parse(dsc->src, &sdl_src);
     switch (sdl_src.type) {
-        case LV_SDL_IMG_TYPE_PATH: {
+        case LV_SDL_IMG_TYPE_PATH:
+        case LV_SDL_IMG_TYPE_CONST_PTR: {
             SDL_FreeSurface(dsc->user_data);
             break;
         }
@@ -106,6 +119,7 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
 
 static void img_fmt_init() {
     if (img_fmt[0]) return;
-    SDL_snprintf(img_fmt, 64, "%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx", sizeof(lv_coord_t) * 2, sizeof(lv_coord_t) * 2,
-                 sizeof(lv_img_cf_t) * 2, sizeof(lv_sdl_img_src_type_t) * 2, sizeof(void *) * 2);
+    SDL_snprintf(img_fmt, LV_SDL_IMG_MAX_LEN, "%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx", sizeof(lv_coord_t) * 2,
+                 sizeof(lv_coord_t) * 2, sizeof(lv_img_cf_t) * 2, sizeof(lv_sdl_img_src_type_t) * 2, sizeof(void *) * 2,
+                 sizeof(int) * 2);
 }

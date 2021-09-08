@@ -15,7 +15,7 @@
 
 typedef struct {
     lv_obj_controller_t base;
-    PCMANAGER_CALLBACKS _pcmanager_callbacks;
+    pcmanager_listener _pcmanager_callbacks;
     apploader_t *apploader;
     coverloader_t *coverloader;
     PSERVER_LIST node;
@@ -121,7 +121,7 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
     controller->coverloader = coverloader_new();
-    pcmanager_register_callbacks(&controller->_pcmanager_callbacks);
+    pcmanager_register_listener(&controller->_pcmanager_callbacks);
     lv_obj_t *applist = controller->applist;
     lv_obj_add_event_cb(applist, launcher_open_game, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
@@ -148,7 +148,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
-    pcmanager_unregister_callbacks(&controller->_pcmanager_callbacks);
+    pcmanager_unregister_listener(&controller->_pcmanager_callbacks);
     coverloader_destroy(controller->coverloader);
 }
 

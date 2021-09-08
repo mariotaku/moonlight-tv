@@ -2,12 +2,7 @@
 #include "priv.h"
 #include "app.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 #include <SDL.h>
-#include <pthread.h>
-#include <signal.h>
 
 #include "libgamestream/errors.h"
 
@@ -92,7 +87,7 @@ void *_pcmanager_unpairing_action(cm_request_t *req) {
 }
 
 void *_manual_adding_action(cm_request_t *req) {
-    pcmanager_insert_by_address((const char *) req->arg1, true, req->callback, req->userdata);
+    pcmanager_insert_sync((const char *) req->arg1, req->callback, req->userdata);
     free(req);
     return NULL;
 }

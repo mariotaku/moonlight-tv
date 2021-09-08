@@ -16,20 +16,16 @@ static void discovery_callback(void *p_cookie, int status, const struct rr_entry
 
 static discovery_task_t *discovery_task = NULL;
 
-void pcmanager_auto_discovery_start() {
+void pcmanager_auto_discovery_start(pcmanager_t *manager) {
     discovery_task_t *task = SDL_malloc(sizeof(discovery_task_t));
     task->stop = false;
     task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
     discovery_task = task;
 }
 
-void pcmanager_auto_discovery_stop() {
+void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
     if (!discovery_task) return;
     discovery_task->stop = SDL_TRUE;
-}
-
-void computer_manager_auto_discovery_schedule(unsigned int ms) {
-
 }
 
 
@@ -73,10 +69,14 @@ static void discovery_callback(void *p_cookie, int status, const struct rr_entry
     for (const struct rr_entry *cur = entries; cur; cur = cur->next) {
         switch (cur->type) {
             case RR_A: {
-                if (pcmanager_is_known_host(cur->data.A.addr_str)) {
+                PSERVER_LIST found = pcmanager_find_by_address(cur->data.A.addr_str);
+                if (found && found->known) {
+                    if (found->state.code == SERVER_STATE_NONE) {
+                        pcmanager_update_sync(found, NULL, NULL);
+                    }
                     break;
                 }
-                pcmanager_insert_by_address(strdup(cur->data.A.addr_str), false, NULL, NULL);
+                pcmanager_insert_sync(cur->data.A.addr_str, NULL, NULL);
                 break;
             }
         }

@@ -161,7 +161,8 @@ set(SOURCES
     app/backend/pcmanager/wol.c
     app/backend/pcmanager/pcmanager_common.c
     app/backend/pcmanager/known_hosts.c
-        app/backend/pcmanager/discovery.c
+    app/backend/pcmanager/discovery.c
+    app/backend/pcmanager/pclist.c
     app/backend/gamecontrollerdb_updater.c
     app/backend/apploader/apploader.c
     app/stream/module/module.c

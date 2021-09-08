@@ -9,7 +9,7 @@
 
 static void strlower(char *p);
 
-void pcmanager_load_known_hosts() {
+void pcmanager_load_known_hosts(pcmanager_t *manager) {
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
     free(confdir);
     config_t config;
@@ -44,7 +44,7 @@ void pcmanager_load_known_hosts() {
         node->state.code = SERVER_STATE_NONE;
         node->server = server;
         node->known = true;
-        computer_list = serverlist_append(computer_list, node);
+        manager->servers = serverlist_append(manager->servers, node);
         if (!selected_set && config_setting_get_bool_simple(item, "selected")) {
             node->selected = true;
             selected_set = true;
@@ -55,7 +55,7 @@ void pcmanager_load_known_hosts() {
     free(conffile);
 }
 
-void pcmanager_save_known_hosts() {
+void pcmanager_save_known_hosts(pcmanager_t *manager) {
     config_t config;
     config_init(&config);
     int options = config_get_options(&config);
@@ -64,7 +64,7 @@ void pcmanager_save_known_hosts() {
     config_set_options(&config, options);
     config_setting_t *root = config_root_setting(&config);
     bool selected_set = false;
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
+    for (PSERVER_LIST cur = manager->servers; cur != NULL; cur = cur->next) {
         if (!cur->server || !cur->known) {
             continue;
         }
@@ -94,7 +94,7 @@ void pcmanager_save_known_hosts() {
     free(conffile);
 }
 
-static void strlower(char *p) {
+static inline void strlower(char *p) {
     for (; *p; ++p)
         *p = tolower(*p);
 }

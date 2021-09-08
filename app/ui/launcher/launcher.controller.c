@@ -35,7 +35,7 @@ static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
     controller->_pcmanager_callbacks.added = launcher_handle_server_updated;
     controller->_pcmanager_callbacks.updated = launcher_handle_server_updated;
     controller->_pcmanager_callbacks.userdata = controller;
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
+    for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
             controller->selected_server = cur;
             break;
@@ -49,27 +49,27 @@ static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
 
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
-    pcmanager_register_callbacks(&controller->_pcmanager_callbacks);
+    pcmanager_register_listener(&controller->_pcmanager_callbacks);
     controller->pane_manager = lv_controller_manager_create(controller->detail);
     lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_CLICKED, controller);
     update_pclist(controller);
 
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
+    for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (!cur->selected) continue;
         lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, cur);
         break;
     }
-    pcmanager_auto_discovery_start();
+    pcmanager_auto_discovery_start(pcmanager);
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
-    pcmanager_auto_discovery_stop();
+    pcmanager_auto_discovery_stop(pcmanager);
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
     lv_controller_manager_del(controller->pane_manager);
-    pcmanager_unregister_callbacks(&controller->_pcmanager_callbacks);
+    pcmanager_unregister_listener(&controller->_pcmanager_callbacks);
 }
 
 void launcher_handle_server_updated(void *userdata, PPCMANAGER_RESP resp) {
@@ -98,7 +98,7 @@ static void cb_pc_selected(lv_event_t *event) {
 
 static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);
-    for (PSERVER_LIST cur = computer_list; cur != NULL; cur = cur->next) {
+    for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, LV_SYMBOL_DUMMY, cur->server->hostname);
         lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_style_bg_color(pcitem, lv_palette_main(LV_PALETTE_BLUE), LV_STATE_CHECKED);

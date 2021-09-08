@@ -6,7 +6,7 @@
 
 #include "libgamestream/client.h"
 
-extern PSERVER_LIST computer_list;
+typedef struct pcmanager_t pcmanager_t;
 
 typedef struct PCMANAGER_RESP_T {
     union {
@@ -25,39 +25,34 @@ typedef struct PCMANAGER_RESP_T {
 
 typedef void (*pcmanager_callback_t)(PPCMANAGER_RESP, void *);
 
-typedef struct PCMANAGER_CALLBACKS {
+typedef struct pcmanager_listener {
     void (*added)(void *userdata, PPCMANAGER_RESP);
 
     void (*updated)(void *userdata, PPCMANAGER_RESP);
 
     void *userdata;
 
-    struct PCMANAGER_CALLBACKS *prev;
-    struct PCMANAGER_CALLBACKS *next;
-} PCMANAGER_CALLBACKS, *PPCMANAGER_CALLBACKS;
+    struct pcmanager_listener *prev;
+    struct pcmanager_listener *next;
+} pcmanager_listener;
 
 /**
  * @brief Initialize computer manager context
  * 
  */
-void computer_manager_init();
+pcmanager_t *computer_manager_new();
 
 /**
  * @brief Free all allocated memories, such as computer_list.
  * 
  */
-void computer_manager_destroy();
+void computer_manager_destroy(pcmanager_t *);
 
-/**
- * @brief Run scan task
- * 
- */
+void pcmanager_auto_discovery_start(pcmanager_t *manager);
 
-void computer_manager_auto_discovery_schedule(unsigned int ms);
+void pcmanager_auto_discovery_stop(pcmanager_t *manager);
 
-void pcmanager_auto_discovery_start();
-
-void pcmanager_auto_discovery_stop();
+PSERVER_LIST pcmanager_servers(pcmanager_t *self);
 
 /**
  * @brief Generates a PIN code, and start pairing process.
@@ -72,12 +67,12 @@ bool pcmanager_unpair(const SERVER_DATA *server, pcmanager_callback_t callback, 
 
 bool pcmanager_quitapp(const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
 
-bool pcmanager_manual_add(const char *address, pcmanager_callback_t callback, void *userdata);
-
 bool pcmanager_send_wol(const SERVER_DATA *server);
 
 void pcmanager_request_update(const SERVER_DATA *server);
 
-void pcmanager_register_callbacks(PPCMANAGER_CALLBACKS callbacks);
+bool pcmanager_manual_add(const char *address, pcmanager_callback_t callback, void *userdata);
 
-void pcmanager_unregister_callbacks(PPCMANAGER_CALLBACKS callbacks);
+void pcmanager_register_listener(pcmanager_listener *listener);
+
+void pcmanager_unregister_listener(pcmanager_listener *listener);
