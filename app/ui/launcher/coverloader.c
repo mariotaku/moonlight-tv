@@ -26,7 +26,7 @@
 
 #include "util/logging.h"
 #include "util/memlog.h"
-
+#include "res.h"
 
 typedef struct coverloader_request {
     coverloader_t *loader;
@@ -57,6 +57,8 @@ typedef struct coverloader_request {
 
 
 static char *coverloader_cache_dir();
+
+static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req);
 
 static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req);
 
@@ -104,7 +106,9 @@ static const img_loader_cb_t coverloader_cb = {
 struct coverloader_t {
     img_loader_t *base_loader;
     lv_lru_t *mem_cache;
+    GS_CLIENT client;
     coverloader_req_t *reqlist;
+    SDL_Texture *defcover;
 };
 
 
@@ -112,11 +116,21 @@ coverloader_t *coverloader_new() {
     coverloader_t *loader = malloc(sizeof(coverloader_t));
     loader->mem_cache = lv_lru_new(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
     loader->base_loader = img_loader_create(&coverloader_impl);
+    loader->client = app_gs_client_new();
     loader->reqlist = NULL;
+
+    lv_disp_t *disp = lv_disp_get_default();
+    SDL_Renderer *renderer = disp->driver->user_data;
+    loader->defcover = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_default_cover_data, res_default_cover_size),
+                                          1);
     return loader;
 }
 
 void coverloader_destroy(coverloader_t *loader) {
+    if (loader->defcover) {
+        SDL_DestroyTexture(loader->defcover);
+    }
+    gs_destroy(loader->client);
     img_loader_destroy(loader->base_loader);
     lv_lru_free(loader->mem_cache);
     free(loader);
@@ -143,7 +157,7 @@ void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_ob
     req->task = img_loader_load(loader->base_loader, req, &coverloader_cb);
 }
 
-char *coverloader_cache_dir() {
+static char *coverloader_cache_dir() {
     char *cachedir = SDL_getenv("XDG_CACHE_DIR"), *confdir = NULL;
     if (cachedir) {
         confdir = path_join(cachedir, "moonlight-tv");
@@ -157,6 +171,14 @@ char *coverloader_cache_dir() {
         }
     }
     return confdir;
+}
+
+static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req) {
+    char *cachedir = coverloader_cache_dir();
+    char basename[128];
+    SDL_snprintf(basename, 128, "%s_%d", req->node->server->uuid, req->id);
+    path_join_to(path, 4096, cachedir, basename);
+    free(cachedir);
 }
 
 static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
@@ -198,10 +220,8 @@ static void coverloader_memcache_put_wait(coverloader_req_t *req) {
 }
 
 static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
-    char *cachedir = coverloader_cache_dir();
     char path[4096];
-    SDL_snprintf(path, 4096, "%s/%d", cachedir, req->id);
-    free(cachedir);
+    coverloader_cache_item_path(path, req);
     SDL_Surface *decoded = IMG_Load(path);
     if (!decoded) return NULL;
     SDL_Surface *scaled = SDL_CreateRGBSurface(0, req->target_width, req->target_height,
@@ -233,11 +253,9 @@ static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cache
 }
 
 static SDL_Surface *coverloader_fetch(coverloader_req_t *req) {
-    char *cachedir = coverloader_cache_dir();
     char path[4096];
-    SDL_snprintf(path, 4096, "%s/%d", cachedir, req->id);
-    free(cachedir);
-    if (gs_download_cover(app_gs_client_obtain(), (PSERVER_DATA) req->node->server, req->id, path) == GS_OK) {
+    coverloader_cache_item_path(path, req);
+    if (gs_download_cover(req->loader->client, (PSERVER_DATA) req->node->server, req->id, path) == GS_OK) {
         return coverloader_filecache_get(req);
     }
     return NULL;
@@ -249,18 +267,37 @@ static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void
 }
 
 static void img_loader_start_cb(coverloader_req_t *req) {
-    lv_img_set_src(req->target, LV_SYMBOL_DUMMY);
+    appitem_viewholder_t *holder = req->target->user_data;
+    lv_sdl_img_src_t src = {
+            .w = req->target_width,
+            .h = req->target_height,
+            .type = LV_SDL_IMG_TYPE_TEXTURE,
+            .cf = LV_IMG_CF_TRUE_COLOR,
+            .data.texture = req->loader->defcover,
+    };
+    lv_sdl_img_src_stringify(&src, holder->cover_src);
+    lv_img_set_src(req->target, holder->cover_src);
+    lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
 }
 
 static void img_loader_result_cb(coverloader_req_t *req) {
     req->task = NULL;
+    appitem_viewholder_t *holder = req->target->user_data;
     if (req->result) {
-        appitem_viewholder_t *holder = req->target->user_data;
         lv_sdl_img_src_stringify(req->result, holder->cover_src);
-        lv_img_set_src(req->target, holder->cover_src);
+        lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_img_set_src(req->target, LV_SYMBOL_DUMMY);
+        lv_sdl_img_src_t src = {
+                .w = req->target_width,
+                .h = req->target_height,
+                .type = LV_SDL_IMG_TYPE_TEXTURE,
+                .cf = LV_IMG_CF_TRUE_COLOR,
+                .data.texture = req->loader->defcover,
+        };
+        lv_sdl_img_src_stringify(&src, holder->cover_src);
+                lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
+    lv_img_set_src(req->target, holder->cover_src);
     req->loader->reqlist = reqlist_remove(req->loader->reqlist, req);
     coverloader_req_free(req);
 }

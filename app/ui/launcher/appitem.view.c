@@ -28,11 +28,14 @@ lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
     lv_obj_set_style_bg_img_src(close_btn, LV_SYMBOL_CLOSE, 0);
     lv_obj_add_style(close_btn, &styles->btn, 0);
     lv_obj_align(close_btn, LV_ALIGN_CENTER, 0, lv_dpx(25));
+    lv_obj_t *title = lv_label_create(item);
+    lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -lv_dpx(20));
 
     appitem_viewholder_t *holder = (appitem_viewholder_t *) malloc(sizeof(appitem_viewholder_t));
     memset(holder, 0, sizeof(appitem_viewholder_t));
     holder->play_btn = play_btn;
     holder->close_btn = close_btn;
+    holder->title = title;
     lv_obj_set_user_data(item, holder);
     lv_obj_add_event_cb(item, appitem_holder_free_cb, LV_EVENT_DELETE, holder);
     return item;

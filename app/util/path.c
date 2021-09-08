@@ -20,3 +20,11 @@ char *path_join(const char *parent, const char *basename) {
     sprintf(joined, "%.*s%c%s", parentlen, parent, PATH_SEPARATOR, basename);
     return joined;
 }
+
+void path_join_to(char *dest, size_t maxlen, const char *parent, const char *basename) {
+    unsigned int parentlen = strlen(parent);
+    if (parentlen && parent[parentlen - 1] == PATH_SEPARATOR) {
+        parentlen -= 1;
+    }
+    snprintf(dest, maxlen, "%.*s%c%s", parentlen, parent, PATH_SEPARATOR, basename);
+}

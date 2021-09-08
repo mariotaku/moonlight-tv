@@ -3,7 +3,7 @@
 #include <SDL_image.h>
 #include <gpu/sdl/lv_gpu_sdl_texture_cache.h>
 
-static char img_fmt[LV_SDL_IMG_MAX_LEN] = "";
+static char img_fmt[LV_SDL_IMG_LEN] = "";
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header);
 
@@ -119,7 +119,7 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
 
 static void img_fmt_init() {
     if (img_fmt[0]) return;
-    SDL_snprintf(img_fmt, LV_SDL_IMG_MAX_LEN, "%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx", sizeof(lv_coord_t) * 2,
+    SDL_snprintf(img_fmt, LV_SDL_IMG_LEN, "%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx%%0%dx", sizeof(lv_coord_t) * 2,
                  sizeof(lv_coord_t) * 2, sizeof(lv_img_cf_t) * 2, sizeof(lv_sdl_img_src_type_t) * 2, sizeof(void *) * 2,
                  sizeof(int) * 2);
 }

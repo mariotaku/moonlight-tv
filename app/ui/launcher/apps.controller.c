@@ -18,7 +18,8 @@ typedef struct {
     apploader_t *apploader;
     coverloader_t *coverloader;
     PSERVER_LIST node;
-    lv_obj_t *applist, *appload;
+    lv_obj_t *applist, *appload, *apperror;
+    lv_obj_t *errorlabel;
 
     appitem_styles_t appitem_style;
     int col_count;
@@ -111,9 +112,16 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *appload = lv_spinner_create(parent, 1000, 60);
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
+    lv_obj_t *apperror = lv_obj_create(parent);
+    lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
+    lv_obj_center(apperror);
+    lv_obj_t *errorlabel = lv_label_create(apperror);
+    lv_obj_center(errorlabel);
 
     controller->applist = applist;
     controller->appload = appload;
+    controller->apperror = apperror;
+    controller->errorlabel = errorlabel;
     return NULL;
 }
 
@@ -140,9 +148,9 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_gridview_set_config(controller->applist, col_count, row_height);
     lv_obj_set_user_data(controller->applist, controller);
 
-    update_view_state(controller);
     pcmanager_request_update(pcmanager, controller->node->server, NULL, NULL);
     apploader_load(controller->apploader, appload_cb, controller);
+    update_view_state(controller);
 }
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
@@ -163,21 +171,49 @@ static void update_view_state(apps_controller_t *controller) {
     LV_ASSERT(node);
     lv_obj_t *applist = controller->applist;
     lv_obj_t *appload = controller->appload;
-    if (node->state.code == SERVER_STATE_NONE) {
-        lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
-    } else if (node->state.code == SERVER_STATE_ONLINE) {
-        if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
+    lv_obj_t *apperror = controller->apperror;
+    switch (node->state.code) {
+        case SERVER_STATE_NONE:
+        case SERVER_STATE_QUERYING: {
+            // waiting to load server info
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
-        } else {
-            lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            lv_grid_set_data(controller->applist, controller->apploader->apps);
+            break;
         }
-    } else {
-        lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+        case SERVER_STATE_ONLINE: {
+            if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
+                // is loading apps
+                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
+            } else if (controller->apploader->code == 0) {
+                // has apps
+                lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                lv_grid_set_data(controller->applist, controller->apploader->apps);
+            } else {
+                // apploader has error
+                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_label_set_text_static(controller->errorlabel, "Failed to load apps");
+            }
+            break;
+        }
+        case SERVER_STATE_ERROR:
+        case SERVER_STATE_OFFLINE: {
+            // server has error
+            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text_static(controller->errorlabel, "Failed to load server info");
+            break;
+        }
+        default: {
+            break;
+        }
     }
 }
 
@@ -186,6 +222,7 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST
 
     coverloader_display(controller->coverloader, controller->node, app->id, item, controller->col_width,
                         controller->col_height);
+    lv_label_set_text(holder->title, app->name);
 
     if (controller->node->server->currentGame == app->id) {
         lv_obj_clear_flag(holder->play_btn, LV_OBJ_FLAG_HIDDEN);

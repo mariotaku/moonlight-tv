@@ -20,11 +20,12 @@ typedef struct {
     lv_sdl_img_src_type_t type;
     union {
         void *pointer;
+        const void *constptr;
         const char *path;
         SDL_Surface *surface;
         SDL_Texture *texture;
     } data;
-    int data_len;
+    unsigned int data_len;
 } lv_sdl_img_src_t;
 
 #define LV_SDL_IMG_LEN (sizeof(lv_sdl_img_src_t) * 4 + 1)

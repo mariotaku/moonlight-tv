@@ -152,7 +152,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req) {
         gamepad_mask = (gamepad_mask << 1) + 1;
 
     applog_i("Session", "Launch app %d...", appId);
-    GS_CLIENT client = app_gs_client_obtain();
+    GS_CLIENT client = app_gs_client_new();
     int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0) {
         _streaming_set_status(STREAMING_ERROR);
@@ -207,6 +207,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req) {
     // Don't always reset status as error state should be kept
     _streaming_set_status(STREAMING_NONE);
     thread_cleanup:
+    gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
     free(req->server);
     free(req->config);

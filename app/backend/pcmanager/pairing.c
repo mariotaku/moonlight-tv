@@ -29,7 +29,9 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     }
     pcmanager_list_unlock(manager);
     PSERVER_DATA server = serverdata_new();
-    int ret = gs_init(app_gs_client_obtain(), server, strdup(address), app_configuration->unsupported);
+    GS_CLIENT client = app_gs_client_new();
+    int ret = gs_init(client, server, strdup(address), app_configuration->unsupported);
+    gs_destroy(client);
     if (existing) {
         pcmanager_list_lock(manager);
         existing->state.code = SERVER_STATE_NONE;

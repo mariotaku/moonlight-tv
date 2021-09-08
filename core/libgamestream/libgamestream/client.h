@@ -50,6 +50,8 @@ GS_CLIENT gs_new(const char *keydir, int log_level);
 
 void gs_destroy(GS_CLIENT);
 
+void gs_set_timeout(GS_CLIENT, int timeout);
+
 int gs_init(GS_CLIENT, PSERVER_DATA server, const char *address, bool unsupported);
 
 int gs_start_app(GS_CLIENT, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio,

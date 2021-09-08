@@ -33,10 +33,7 @@
 FILE *app_logfile = NULL;
 
 static bool running = true;
-static GS_CLIENT app_gs_client = NULL;
 static pthread_mutex_t app_gs_client_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-static void app_gs_client_destroy();
 
 static void lv_bg_draw(lv_area_t *area);
 
@@ -134,7 +131,6 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(window);
 
     backend_destroy();
-    app_gs_client_destroy();
     app_destroy();
     bus_destroy();
 
@@ -146,27 +142,13 @@ void app_request_exit() {
     running = false;
 }
 
-GS_CLIENT app_gs_client_obtain() {
+GS_CLIENT app_gs_client_new() {
     pthread_mutex_lock(&app_gs_client_mutex);
     assert(app_configuration);
-    if (!app_gs_client)
-        app_gs_client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
-    assert(app_gs_client);
+    GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+    assert(client);
     pthread_mutex_unlock(&app_gs_client_mutex);
-    return app_gs_client;
-}
-
-void app_gs_client_destroy() {
-    if (app_gs_client) {
-        gs_destroy(app_gs_client);
-        app_gs_client = NULL;
-    }
-    // Further calls to obtain gs client will be locked
-    pthread_mutex_lock(&app_gs_client_mutex);
-}
-
-bool app_gs_client_ready() {
-    return app_gs_client != NULL;
+    return client;
 }
 
 static void lv_bg_draw(lv_area_t *area) {

@@ -21,14 +21,16 @@
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
 
-typedef struct {
+struct apploader_task_t {
     apploader_t *loader;
     apploader_cb cb;
     void *userdata;
     int code;
     APP_LIST *result;
     int result_count;
-} apploader_task_t;
+    SDL_Thread *thread;
+    bool cancelled;
+};
 
 static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb cb, void *userdata);
 
@@ -50,11 +52,15 @@ apploader_t *apploader_new(const SERVER_LIST *node) {
 void apploader_load(apploader_t *loader, apploader_cb cb, void *userdata) {
     if (loader->status != APPLOADER_STATUS_IDLE) return;
     loader->status = APPLOADER_STATUS_LOADING;
-    SDL_CreateThread((SDL_ThreadFunction) apploader_task_execute, "loadapps",
-                     apploader_task_create(loader, cb, userdata));
+    apploader_task_t *task = apploader_task_create(loader, cb, userdata);
+    task->thread = SDL_CreateThread((SDL_ThreadFunction) apploader_task_execute, "loadapps", task);
+    loader->task = task;
 }
 
 void apploader_destroy(apploader_t *loader) {
+    if (loader->task) {
+        loader->task->cancelled = true;
+    }
     if (loader->apps) {
         for (int i = 0; i < loader->apps_count; i++) {
             SDL_free(loader->apps[i].name);
@@ -70,13 +76,15 @@ static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb
     task->loader = loader;
     task->cb = cb;
     task->userdata = userdata;
+    task->cancelled = false;
     return task;
 }
 
 static int apploader_task_execute(apploader_task_t *task) {
     PAPP_LIST ll = NULL;
     int ret;
-    if ((ret = gs_applist(app_gs_client_obtain(), task->loader->node->server, &ll)) != GS_OK) {
+    GS_CLIENT client = app_gs_client_new();
+    if ((ret = gs_applist(client, task->loader->node->server, &ll)) != GS_OK) {
         goto finish;
     }
     SDL_assert(ll);
@@ -94,6 +102,7 @@ static int apploader_task_execute(apploader_task_t *task) {
     task->result_count = result_count;
     finish:
     task->code = ret;
+    gs_destroy(client);
     bus_pushaction((bus_actionfunc) apploader_task_finish, task);
     return ret;
 }
@@ -106,7 +115,10 @@ static void apploader_task_finish(apploader_task_t *task) {
     }
     loader->code = task->code;
     loader->status = APPLOADER_STATUS_IDLE;
-    task->cb(loader, task->userdata);
+    loader->task = NULL;
+    if (!task->cancelled) {
+        task->cb(loader, task->userdata);
+    }
     SDL_free(task);
 }
 

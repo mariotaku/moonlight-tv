@@ -847,6 +847,7 @@ GS_CLIENT gs_new(const char *keydir, int log_level) {
     }
 
     hnd->http = http_init(keydir, log_level);
+    gs_set_timeout(hnd, 5);
     return hnd;
 }
 
@@ -855,6 +856,10 @@ void gs_destroy(GS_CLIENT hnd) {
     mbedtls_x509_crt_free(&hnd->cert);
     http_cleanup(hnd->http);
     free((void *) hnd);
+}
+
+void gs_set_timeout(GS_CLIENT hnd, int timeout) {
+    http_set_timeout(hnd->http, timeout);
 }
 
 int gs_init(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported) {

@@ -26,15 +26,19 @@
 
 typedef struct HTTP_T *HTTP;
 
-typedef struct _HTTP_DATA
-{
-  char *memory;
-  size_t size;
+typedef struct _HTTP_DATA {
+    char *memory;
+    size_t size;
 } HTTP_DATA, *PHTTP_DATA;
 
 HTTP http_init(const char *keydir, int verbosity);
+
 int http_request(HTTP, char *url, PHTTP_DATA data);
+
 void http_cleanup(HTTP);
 
+void http_set_timeout(HTTP, int timeout);
+
 PHTTP_DATA http_create_data();
+
 void http_free_data(PHTTP_DATA data);

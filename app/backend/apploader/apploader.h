@@ -3,6 +3,8 @@
 #include "../types.h"
 #include "client.h"
 
+typedef struct apploader_task_t apploader_task_t;
+
 typedef enum apploader_status_t {
     APPLOADER_STATUS_IDLE,
     APPLOADER_STATUS_LOADING
@@ -14,6 +16,7 @@ typedef struct apploader_t {
     int code;
     APP_LIST *apps;
     int apps_count;
+    apploader_task_t *task;
 } apploader_t;
 
 typedef void (*apploader_cb)(apploader_t *loader, void *userdata);

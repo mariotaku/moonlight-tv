@@ -16,7 +16,8 @@ typedef struct {
     APP_LIST *app;
     lv_obj_t *play_btn;
     lv_obj_t *close_btn;
-    char cover_src[LV_SDL_IMG_MAX_LEN];
+    lv_obj_t *title;
+    char cover_src[LV_SDL_IMG_LEN];
 } appitem_viewholder_t;
 
 
