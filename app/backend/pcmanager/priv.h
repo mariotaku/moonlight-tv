@@ -54,4 +54,5 @@ void pcmanager_list_lock(pcmanager_t *manager);
 
 void pcmanager_list_unlock(pcmanager_t *manager);
 
-int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata);
+int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
+                            void *userdata);

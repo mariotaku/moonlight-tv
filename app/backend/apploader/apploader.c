@@ -38,10 +38,10 @@ static void apploader_task_finish(apploader_task_t *task);
 
 static int applist_name_comparator(PAPP_LIST p1, PAPP_LIST p2);
 
-apploader_t *apploader_new(const SERVER_DATA *server) {
+apploader_t *apploader_new(const SERVER_LIST *node) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
-    loader->server = server;
+    loader->node = node;
     loader->apps = NULL;
     loader->apps_count = 0;
     return loader;
@@ -76,7 +76,7 @@ static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb
 static int apploader_task_execute(apploader_task_t *task) {
     PAPP_LIST ll = NULL;
     int ret;
-    if ((ret = gs_applist(app_gs_client_obtain(), task->loader->server, &ll)) != GS_OK) {
+    if ((ret = gs_applist(app_gs_client_obtain(), task->loader->node->server, &ll)) != GS_OK) {
         goto finish;
     }
     SDL_assert(ll);

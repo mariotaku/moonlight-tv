@@ -82,6 +82,7 @@ static void cb_pc_selected(lv_event_t *event) {
     struct _lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
+    lv_obj_add_state(controller->detail, LV_STATE_USER_1);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
     if (selected->selected) return;
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);

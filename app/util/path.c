@@ -12,7 +12,7 @@
 #endif
 
 char *path_join(const char *parent, const char *basename) {
-    int parentlen = strlen(parent);
+    unsigned int parentlen = strlen(parent);
     if (parentlen && parent[parentlen - 1] == PATH_SEPARATOR) {
         parentlen -= 1;
     }

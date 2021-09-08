@@ -202,7 +202,7 @@ void *_streaming_thread_action(STREAMING_REQUEST *req) {
         applog_i("Session", "Sending app quit request ...");
         gs_quit_app(client, server);
     }
-    pcmanager_upsert_worker(pcmanager, server->serverInfo.address, NULL, NULL);
+    pcmanager_upsert_worker(pcmanager, server->serverInfo.address, true, NULL, NULL);
 
     // Don't always reset status as error state should be kept
     _streaming_set_status(STREAMING_NONE);

@@ -53,12 +53,6 @@ void pcmanager_request_update(pcmanager_t *manager, const SERVER_DATA *server, p
 }
 
 
-PPCMANAGER_RESP serverinfo_resp_new() {
-    PPCMANAGER_RESP resp = malloc(sizeof(pcmanager_resp_t));
-    SDL_memset(resp, 0, sizeof(pcmanager_resp_t));
-    return resp;
-}
-
 void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg) {
     state->code = SERVER_STATE_ERROR;
     state->error.errcode = code;
@@ -76,7 +70,7 @@ PSERVER_LIST pcmanager_servers(pcmanager_t *manager) {
 }
 
 static int request_update_worker(cm_request_t *req) {
-    pcmanager_upsert_worker(req->manager, req->server->serverInfo.address, req->callback, req->userdata);
+    pcmanager_upsert_worker(req->manager, req->server->serverInfo.address, false, req->callback, req->userdata);
     free(req);
     return 0;
 }

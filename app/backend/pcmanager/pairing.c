@@ -12,11 +12,16 @@ static int pin_random(int min, int max) {
     return min + rand() / (RAND_MAX / (max - min + 1) + 1);
 }
 
-int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata) {
+int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
+                            void *userdata) {
     pcmanager_list_lock(manager);
     PSERVER_LIST existing = pcmanager_find_by_address(manager, address);
     if (existing) {
         if (existing->state.code == SERVER_STATE_QUERYING) {
+            pcmanager_list_unlock(manager);
+            return 0;
+        }
+        if (!refresh && existing->state.code == SERVER_STATE_ONLINE) {
             pcmanager_list_unlock(manager);
             return 0;
         }

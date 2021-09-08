@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../types.h"
 #include "client.h"
 
 typedef enum apploader_status_t {
@@ -8,7 +9,7 @@ typedef enum apploader_status_t {
 } apploader_status_t;
 
 typedef struct apploader_t {
-    const SERVER_DATA *server;
+    const SERVER_LIST *node;
     apploader_status_t status;
     int code;
     APP_LIST *apps;
@@ -17,7 +18,7 @@ typedef struct apploader_t {
 
 typedef void (*apploader_cb)(apploader_t *loader, void *userdata);
 
-apploader_t *apploader_new(const SERVER_DATA *server);
+apploader_t *apploader_new(const SERVER_LIST *node);
 
 void apploader_load(apploader_t *loader, apploader_cb cb, void *userdata);
 

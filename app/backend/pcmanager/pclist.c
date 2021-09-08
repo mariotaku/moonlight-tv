@@ -76,10 +76,14 @@ void pcmanager_list_unlock(pcmanager_t *manager) {
     SDL_UnlockMutex(manager->servers_lock);
 }
 
-void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t* resp) {
+void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp) {
     assert(resp->server);
     if (resp->state.code != SERVER_STATE_NONE) {
         memcpy(&node->state, &resp->state, sizeof(SERVER_STATE));
+    }
+    if (node->server) {
+        // Although it's const pointer, we free it and assign a new one.
+        serverdata_free((SERVER_DATA *) node->server);
     }
     node->server = resp->server;
     node->known |= resp->server->paired;
@@ -115,8 +119,11 @@ void upsert_perform(upsert_args_t *args) {
         node = serverlist_new();
         manager->servers = serverlist_append(manager->servers, node);
     }
+    pcmanager_list_lock(manager);
     pclist_node_apply(node, resp);
+    pcmanager_list_unlock(manager);
     pcmanager_listeners_notify(manager, resp, updated);
+    args->sent = true;
     if (!args->cond) return;
     SDL_CondSignal(args->cond);
 }

@@ -25,6 +25,7 @@ typedef union SERVER_STATE {
 typedef struct SERVER_LIST_T {
     bool known, selected;
     SERVER_STATE state;
+    /* DO NOT HOLD reference to this field*/
     const SERVER_DATA *server;
     struct SERVER_LIST_T *prev;
     struct SERVER_LIST_T *next;

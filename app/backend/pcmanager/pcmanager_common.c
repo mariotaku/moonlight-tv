@@ -1,12 +1,19 @@
 #include "priv.h"
 
+#include "util/memlog.h"
+
+PPCMANAGER_RESP serverinfo_resp_new() {
+    PPCMANAGER_RESP resp = malloc(sizeof(pcmanager_resp_t));
+    SDL_memset(resp, 0, sizeof(pcmanager_resp_t));
+    return resp;
+}
 
 void pcmanager_worker_finalize(pcmanager_finalizer_args *args) {
     if (args->callback) {
         args->callback(args->resp, args->userdata);
     }
-    SDL_free(args->resp);
-    SDL_free(args);
+    free(args->resp);
+    free(args);
 }
 
 pcmanager_finalizer_args *pcmanager_finalize_args(pcmanager_resp_t *resp, pcmanager_callback_t callback,

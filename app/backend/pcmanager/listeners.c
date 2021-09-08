@@ -51,6 +51,7 @@ void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listene
     if (!node)
         return;
     manager->listeners = listeners_remove(manager->listeners, node);
+    free(node);
 }
 
 static int pcmanager_callbacks_comparator(pcmanager_listener_list *p1, const void *p2) {

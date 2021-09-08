@@ -86,7 +86,7 @@ const lv_obj_controller_class_t apps_controller_class = {
 static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
     apps_controller_t *controller = (apps_controller_t *) self;
     controller->node = args;
-    controller->apploader = apploader_new(controller->node->server);
+    controller->apploader = apploader_new(controller->node);
 
     appitem_style_init(&controller->appitem_style);
 }
