@@ -21,30 +21,33 @@
 #define DEFAULT_ABSMOUSE false
 #endif
 
-static void settings_initialize(char *confdir, PCONFIGURATION config);
+static void settings_initialize(const char *confdir, PCONFIGURATION config);
+
 static bool settings_read(char *filename, PCONFIGURATION config);
+
 static void settings_write(char *filename, PCONFIGURATION config);
 
 static int find_ch_idx_by_config(int config);
+
 static int find_ch_idx_by_value(const char *value);
+
 static const char *serialize_audio_config(int config);
+
 static int parse_audio_config(const char *value);
 
-struct audio_config
-{
+struct audio_config {
     int configuration;
     const char *value;
 };
 
 static struct audio_config audio_configs[3] = {
-    {AUDIO_CONFIGURATION_STEREO, "stereo"},
-    {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch"},
-    {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch"},
+        {AUDIO_CONFIGURATION_STEREO,      "stereo"},
+        {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch"},
+        {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch"},
 };
 static const int audio_config_len = sizeof(audio_configs) / sizeof(struct audio_config);
 
-PCONFIGURATION settings_load()
-{
+PCONFIGURATION settings_load() {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
     settings_initialize(confdir, config);
@@ -54,16 +57,14 @@ PCONFIGURATION settings_load()
     return config;
 }
 
-void settings_save(PCONFIGURATION config)
-{
+void settings_save(PCONFIGURATION config) {
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
     settings_write(conffile, config);
     free(conffile);
     free(confdir);
 }
 
-void settings_initialize(char *confdir, PCONFIGURATION config)
-{
+void settings_initialize(const char *confdir, PCONFIGURATION config) {
     memset(config, 0, sizeof(CONFIGURATION));
     LiInitializeStreamConfiguration(&config->stream);
 
@@ -95,36 +96,32 @@ void settings_initialize(char *confdir, PCONFIGURATION config)
     config->absmouse = DEFAULT_ABSMOUSE;
 
     config->mapping = NULL;
-    sprintf(config->key_dir, "%s/%s", confdir, "key");
+    path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
-int settings_optimal_bitrate(int w, int h, int fps)
-{
-    if (fps <= 0)
-    {
+int settings_optimal_bitrate(int w, int h, int fps) {
+    if (fps <= 0) {
         fps = 60;
     }
     int kbps = w * h / 150;
-    switch (RES_MERGE(w, h))
-    {
-    case RES_720P:
-        kbps = 5000;
-        break;
-    case RES_1080P:
-        kbps = 10000;
-        break;
-    case RES_1440P:
-        kbps = 20000;
-        break;
-    case RES_4K:
-        kbps = 25000;
-        break;
+    switch (RES_MERGE(w, h)) {
+        case RES_720P:
+            kbps = 5000;
+            break;
+        case RES_1080P:
+            kbps = 10000;
+            break;
+        case RES_1440P:
+            kbps = 20000;
+            break;
+        case RES_4K:
+            kbps = 25000;
+            break;
     }
     return kbps * fps / 30;
 }
 
-bool settings_read(char *filename, PCONFIGURATION config)
-{
+bool settings_read(char *filename, PCONFIGURATION config) {
     struct config_t libconfig;
     config_init(&libconfig);
     int options = config_get_options(&libconfig);
@@ -132,8 +129,7 @@ bool settings_read(char *filename, PCONFIGURATION config)
     options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
     config_set_options(&libconfig, options);
 
-    if (config_read_file(&libconfig, filename) != CONFIG_TRUE)
-    {
+    if (config_read_file(&libconfig, filename) != CONFIG_TRUE) {
         config_destroy(&libconfig);
         applog_i("Settings", "Can't open configuration file: %s", filename);
         return false;
@@ -166,8 +162,7 @@ bool settings_read(char *filename, PCONFIGURATION config)
     return true;
 }
 
-void settings_write(char *filename, PCONFIGURATION config)
-{
+void settings_write(char *filename, PCONFIGURATION config) {
     struct config_t libconfig;
     config_init(&libconfig);
     int options = config_get_options(&libconfig);
@@ -204,45 +199,37 @@ void settings_write(char *filename, PCONFIGURATION config)
     config_setting_set_bool_simple(streaming, "hdr", config->stream.enableHdr);
     config_setting_set_int_simple(root, "debug_level", config->debug_level);
 
-    if (config_write_file(&libconfig, filename) != CONFIG_TRUE)
-    {
+    if (config_write_file(&libconfig, filename) != CONFIG_TRUE) {
         applog_e("Settings", "Can't open configuration file for writing: %s", filename);
     }
     config_destroy(&libconfig);
 }
 
-bool audio_config_valid(int config)
-{
+bool audio_config_valid(int config) {
     return find_ch_idx_by_config(config) >= 0;
 }
 
-const char *serialize_audio_config(int config)
-{
+const char *serialize_audio_config(int config) {
     return audio_configs[find_ch_idx_by_config(config)].value;
 }
 
-int parse_audio_config(const char *value)
-{
+int parse_audio_config(const char *value) {
     int index = value ? find_ch_idx_by_value(value) : -1;
     if (index < 0)
         index = 0;
     return audio_configs[index].configuration;
 }
 
-int find_ch_idx_by_config(int config)
-{
-    for (int i = 0; i < audio_config_len; i++)
-    {
+int find_ch_idx_by_config(int config) {
+    for (int i = 0; i < audio_config_len; i++) {
         if (audio_configs[i].configuration == config)
             return i;
     }
     return -1;
 }
 
-int find_ch_idx_by_value(const char *value)
-{
-    for (int i = 0; i < audio_config_len; i++)
-    {
+int find_ch_idx_by_value(const char *value) {
+    for (int i = 0; i < audio_config_len; i++) {
         if (strcmp(audio_configs[i].value, value) == 0)
             return i;
     }

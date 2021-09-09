@@ -15,9 +15,9 @@ static int quit_app_worker(cm_request_t *req);
 
 pcmanager_t *pcmanager_new() {
     pcmanager_t *manager = SDL_malloc(sizeof(pcmanager_t));
+    SDL_memset(manager, 0, sizeof(pcmanager_t));
     manager->thread_id = SDL_ThreadID();
     manager->servers_lock = SDL_CreateMutex();
-    manager->servers = NULL;
     pcmanager_load_known_hosts(manager);
     return manager;
 }

@@ -46,10 +46,9 @@ void pclist_upsert(pcmanager_t *manager, const pcmanager_resp_t *resp) {
     assert(manager);
     assert(resp);
     upsert_args_t *args = SDL_malloc(sizeof(upsert_args_t));
+    memset(args, 0, sizeof(upsert_args_t));
     args->manager = manager;
     args->resp = resp;
-    args->sent = false;
-    args->cond = NULL;
     if (SDL_ThreadID() == manager->thread_id) {
         upsert_perform(args);
     } else {
@@ -124,14 +123,15 @@ void upsert_perform(upsert_args_t *args) {
     pcmanager_list_unlock(manager);
     pcmanager_listeners_notify(manager, resp, updated);
     args->sent = true;
-    if (!args->cond) return;
-    SDL_CondSignal(args->cond);
+    if (args->cond) {
+        SDL_CondSignal(args->cond);
+    }
 }
 
 void upsert_wait(upsert_args_t *args) {
+    SDL_LockMutex(args->mutex);
     while (!args->sent) {
-        SDL_LockMutex(args->mutex);
         SDL_CondWait(args->cond, args->mutex);
-        SDL_UnlockMutex(args->mutex);
     }
+    SDL_UnlockMutex(args->mutex);
 }

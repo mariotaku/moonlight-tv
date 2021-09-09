@@ -4,7 +4,7 @@
 #include "client.h"
 #include "errors.h"
 #include "util/bus.h"
-
+#include "util/logging.h"
 static int pin_random(int min, int max);
 
 
@@ -18,10 +18,12 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     PSERVER_LIST existing = pcmanager_find_by_address(manager, address);
     if (existing) {
         if (existing->state.code == SERVER_STATE_QUERYING) {
+            applog_d("PCManager", "Skip upsert for querying node. address: %s", address);
             pcmanager_list_unlock(manager);
             return 0;
         }
         if (!refresh && existing->state.code == SERVER_STATE_ONLINE) {
+            applog_d("PCManager", "Skip upsert for online node. address: %s", address);
             pcmanager_list_unlock(manager);
             return 0;
         }

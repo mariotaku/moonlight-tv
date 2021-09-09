@@ -18,7 +18,7 @@ void pcmanager_worker_finalize(pcmanager_finalizer_args *args) {
 
 pcmanager_finalizer_args *pcmanager_finalize_args(pcmanager_resp_t *resp, pcmanager_callback_t callback,
                                                   void *userdata) {
-    pcmanager_finalizer_args *args = SDL_malloc(sizeof(pcmanager_finalizer_args));
+    pcmanager_finalizer_args *args = malloc(sizeof(pcmanager_finalizer_args));
     args->resp = resp;
     args->callback = callback;
     args->userdata = userdata;

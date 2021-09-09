@@ -43,12 +43,15 @@
 #include <mbedtls/error.h>
 
 #if __WIN32
-#include <windows.h>
-#else
 
+#include <windows.h>
+
+#define PATH_SEPARATOR '\\'
+#else
 #include <uuid/uuid.h>
 #include <arpa/inet.h>
 
+#define PATH_SEPARATOR '/'
 #endif
 
 #include <assert.h>
@@ -110,7 +113,7 @@ static int mkdirtree(const char *directory) {
 
 static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
     char uniqueFilePath[PATH_MAX];
-    snprintf(uniqueFilePath, PATH_MAX, "%s/%s", keyDirectory, UNIQUE_FILE_NAME);
+    snprintf(uniqueFilePath, PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, UNIQUE_FILE_NAME);
 
     FILE *fd = fopen(uniqueFilePath, "r");
     if (fd == NULL || fread(hnd->unique_id, UNIQUEID_CHARS, 1, fd) != UNIQUEID_CHARS) {
@@ -130,10 +133,10 @@ static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
 
 static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
     char certificateFilePath[PATH_MAX];
-    snprintf(certificateFilePath, PATH_MAX, "%s/%s", keyDirectory, CERTIFICATE_FILE_NAME);
+    snprintf(certificateFilePath, PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, CERTIFICATE_FILE_NAME);
 
     char keyFilePath[PATH_MAX];
-    snprintf(&keyFilePath[0], PATH_MAX, "%s/%s", keyDirectory, KEY_FILE_NAME);
+    snprintf(&keyFilePath[0], PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, KEY_FILE_NAME);
 
     FILE *fd = fopen(certificateFilePath, "r");
     if (fd == NULL) {
@@ -835,6 +838,7 @@ int gs_download_cover(GS_CLIENT hnd, PSERVER_DATA server, int appid, const char 
 
 GS_CLIENT gs_new(const char *keydir, int log_level) {
     struct GS_CLIENT_T *hnd = malloc(sizeof(struct GS_CLIENT_T));
+    memset(hnd, 0, sizeof(struct GS_CLIENT_T));
     mkdirtree(keydir);
     if (load_unique_id(hnd, keydir) != GS_OK) {
         free(hnd);
@@ -875,7 +879,12 @@ static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, co
 #if __WIN32
     UUID uuid;
     UuidCreate(&uuid);
-    UuidToStringA(&uuid, (RPC_CSTR *) uuid_str);
+    RPC_CSTR szUuid = NULL;
+    if (UuidToString(&uuid, &szUuid) != RPC_S_OK) {
+        return false;
+    }
+    strncpy(uuid_str, (char *) szUuid, sizeof(uuid_str));
+    RpcStringFree(&szUuid);
 #else
     uuid_t uuid;
     uuid_generate_random(uuid);

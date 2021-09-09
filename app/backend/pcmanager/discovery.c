@@ -36,7 +36,7 @@ static int discovery_worker(discovery_task_t *task) {
     struct mdns_ctx *ctx = NULL;
     mdns_init(&ctx, NULL, MDNS_PORT);
 
-    static const char *service_name[] = {"_nvstream._tcp.local"};
+    static const char *const service_name[] = {"_nvstream._tcp.local"};
 
     if ((r = mdns_init(&ctx, NULL, MDNS_PORT)) < 0)
         goto err;
@@ -63,12 +63,12 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
 
     if (status < 0) {
         mdns_strerror(status, err, sizeof(err));
-        applog_e("mDNS", "error: %s", err);
+        applog_e("Discovery", "error: %s", err);
         return;
     }
-
-    for (const struct rr_entry *cur = entries; cur; cur = cur->next) {
+    for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         if (cur->type != RR_A) continue;
+        applog_i("Discovery", "Found A record: %s", cur->data.A.addr_str);
         pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, false, NULL, NULL);
     }
 }

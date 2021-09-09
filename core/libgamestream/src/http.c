@@ -26,6 +26,12 @@
 
 #include <assert.h>
 
+#ifdef __WIN32
+#define PATH_SEPARATOR '\\'
+#else
+#define PATH_SEPARATOR '/'
+#endif
+
 struct HTTP_T {
     CURL *curl;
     int verbosity;
@@ -51,10 +57,10 @@ HTTP http_init(const char *keydir, int verbosity) {
     assert(curl);
 
     char certificateFilePath[4096];
-    sprintf(certificateFilePath, "%s/%s", keydir, CERTIFICATE_FILE_NAME);
+    sprintf(certificateFilePath, "%s%c%s", keydir, PATH_SEPARATOR, CERTIFICATE_FILE_NAME);
 
     char keyFilePath[4096];
-    sprintf(&keyFilePath[0], "%s/%s", keydir, KEY_FILE_NAME);
+    sprintf(&keyFilePath[0], "%s%c%s", keydir, PATH_SEPARATOR, KEY_FILE_NAME);
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L);

@@ -9,7 +9,6 @@ struct img_loader_task_t {
     void *request;
     img_loader_cb_t cb;
     int cancelled;
-    struct img_loader_task_t *prev;
     struct img_loader_task_t *next;
 };
 
@@ -31,7 +30,7 @@ typedef struct notify_cb_t {
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_TYPE struct img_loader_task_t
 #define LINKEDLIST_PREFIX tasklist
-#define LINKEDLIST_DOUBLE 1
+#define LINKEDLIST_DOUBLE 0
 
 #include "util/linked_list.h"
 
@@ -67,11 +66,13 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
 }
 
 void img_loader_destroy(img_loader_t *loader) {
+    SDL_assert(!loader->destroyed);
     loader->destroyed = SDL_TRUE;
     SDL_CondSignal(loader->queue_cond);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
+    SDL_assert(!loader->destroyed);
     cb->start_cb(request);
     void *cached = loader->impl.memcache_get(request);
     // Memory cache found, finish loading
@@ -79,16 +80,19 @@ img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const im
         cb->complete_cb(request, cached);
         return NULL;
     }
+    SDL_LockMutex(loader->queue_lock);
     img_loader_task_t *task = tasklist_new();
     task->request = request;
     task->cancelled = SDL_FALSE;
     SDL_memcpy(&task->cb, cb, sizeof(img_loader_cb_t));
     loader_task_push(loader, task);
+    SDL_UnlockMutex(loader->queue_lock);
     SDL_CondSignal(loader->queue_cond);
     return task;
 }
 
 void img_loader_cancel(img_loader_t *loader, img_loader_task_t *task) {
+    SDL_assert(!loader->destroyed);
     SDL_LockMutex(loader->queue_lock);
     if (task) {
         task->cancelled = SDL_TRUE;
@@ -99,15 +103,10 @@ void img_loader_cancel(img_loader_t *loader, img_loader_task_t *task) {
 static int loader_worker(img_loader_t *loader) {
     while (!loader->destroyed) {
         img_loader_task_t *task = loader_task_poll(loader);
-        if (!task) {
-            SDL_LockMutex(loader->queue_lock);
-            SDL_CondWait(loader->queue_cond, loader->queue_lock);
-            SDL_UnlockMutex(loader->queue_lock);
-            continue;
-        }
         loader_task_execute(loader, task);
         free(task);
     }
+
     SDL_LockMutex(loader->queue_lock);
     tasklist_free(loader->task_queue, task_destroy);
     loader->task_queue = NULL;
@@ -127,8 +126,12 @@ static void loader_task_push(img_loader_t *loader, img_loader_task_t *task) {
 
 static img_loader_task_t *loader_task_poll(img_loader_t *loader) {
     SDL_LockMutex(loader->queue_lock);
+    while (loader->task_queue == NULL) {
+        SDL_CondWait(loader->queue_cond, loader->queue_lock);
+    }
     img_loader_task_t *task = loader->task_queue;
-    loader->task_queue = task ? task->next : NULL;
+    SDL_assert(task);
+    loader->task_queue = task->next;
     SDL_UnlockMutex(loader->queue_lock);
     return task;
 }

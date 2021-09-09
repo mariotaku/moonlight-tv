@@ -84,7 +84,8 @@ int main(int argc, char *argv[]) {
         window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
 #endif
-    SDL_Window *window = SDL_CreateWindow("Moonlight", 0, 0, 1920, 1080, window_flags);
+    SDL_Window *window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                          1920, 1080, window_flags);
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     ui_display_size(w, h);

@@ -212,11 +212,11 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
 }
 
 static void coverloader_memcache_put_wait(coverloader_req_t *req) {
+    SDL_LockMutex(req->mutex);
     while (!req->finished) {
-        SDL_LockMutex(req->mutex);
         SDL_CondWait(req->cond, req->mutex);
-        SDL_UnlockMutex(req->mutex);
     }
+    SDL_UnlockMutex(req->mutex);
 }
 
 static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {

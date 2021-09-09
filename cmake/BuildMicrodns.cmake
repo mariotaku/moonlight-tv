@@ -2,6 +2,8 @@ set(MICRODNS_DEP '')
 
 include(CheckIncludeFile)
 include(CheckFunctionExists)
+include(CheckSymbolExists)
+include(CheckTypeExists)
 
 add_library(microdns
         ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/mdns.c
@@ -13,14 +15,60 @@ add_library(microdns
 target_include_directories(microdns SYSTEM PUBLIC third_party/libmicrodns/include)
 target_include_directories(microdns PRIVATE third_party/libmicrodns/compat)
 
-check_function_exists(inet_ntop HAVE_INET_NTOP)
+if (MINGW)
+    target_link_libraries(microdns PRIVATE ws2_32 iphlpapi)
+    list(APPEND CMAKE_REQUIRED_LIBRARIES ws2_32 iphlpapi)
+endif ()
+
+check_c_source_compiles("
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#include <windows.h>
+# if _WIN32_WINNT < 0x600
+#  error Needs vista+
+# endif
+#else
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#endif
+int main() {
+inet_ntop(AF_INET, NULL, NULL, 0);
+}
+" HAVE_INET_NTOP)
 if (HAVE_INET_NTOP)
     target_compile_definitions(microdns PRIVATE HAVE_INET_NTOP=1)
 endif ()
 
-check_function_exists(poll HAVE_POLL)
+check_c_source_compiles("
+#include <stddef.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+# if _WIN32_WINNT < 0x600
+#  error Needs vista+
+# endif
+# if defined(_MSC_VER)
+#   error
+# endif
+#else
+#include <poll.h>
+#endif
+int main() {
+  poll(NULL, 0, 0);
+}
+" HAVE_POLL)
 if (HAVE_POLL)
     target_compile_definitions(microdns PRIVATE HAVE_POLL=1)
+endif ()
+
+if (HAVE_POLL)
+    set(POLLFD_CHECK_INCLUDES "poll.h")
+elseif (MSVC OR MINGW)
+    set(POLLFD_CHECK_INCLUDES "winsock2.h")
+endif ()
+check_type_exists("struct pollfd" ${POLLFD_CHECK_INCLUDES} HAVE_STRUCT_POLLFD)
+if (HAVE_STRUCT_POLLFD)
+    target_compile_definitions(microdns PRIVATE HAVE_STRUCT_POLLFD=1)
 endif ()
 
 check_function_exists(getifaddrs HAVE_GETIFADDRS)
@@ -37,4 +85,3 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 if (HAVE_UNISTD_H)
     target_compile_definitions(microdns PRIVATE HAVE_UNISTD_H=1)
 endif ()
-
