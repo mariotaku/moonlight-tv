@@ -156,6 +156,7 @@ bool settings_read(char *filename, PCONFIGURATION config) {
     config_lookup_string_dup(&libconfig, "decoder.audio_backend", &config->audio_backend);
     config_lookup_string_dup(&libconfig, "decoder.audio_device", &config->audio_device);
 
+    config_lookup_bool_std(&libconfig, "fullscreen", &config->fullscreen);
     config_lookup_int(&libconfig, "debug_level", &config->debug_level);
 
     config_destroy(&libconfig);
@@ -197,6 +198,7 @@ void settings_write(char *filename, PCONFIGURATION config) {
     config_setting_set_enum_simple(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
 
     config_setting_set_bool_simple(streaming, "hdr", config->stream.enableHdr);
+    config_setting_set_bool_simple(root, "fullscreen", config->fullscreen);
     config_setting_set_int_simple(root, "debug_level", config->debug_level);
 
     if (config_write_file(&libconfig, filename) != CONFIG_TRUE) {

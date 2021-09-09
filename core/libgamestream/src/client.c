@@ -48,6 +48,7 @@
 
 #define PATH_SEPARATOR '\\'
 #else
+
 #include <uuid/uuid.h>
 #include <arpa/inet.h>
 
@@ -120,7 +121,9 @@ static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
     FILE *fd = fopen(uniqueFilePath, "r");
     if (fd == NULL || fread(hnd->unique_id, UNIQUEID_CHARS, 1, fd) != UNIQUEID_CHARS) {
         snprintf(hnd->unique_id, UNIQUEID_CHARS + 1, "0123456789ABCDEF");
-
+        if (fd) {
+            fclose(fd);
+        }
         fd = fopen(uniqueFilePath, "w");
         if (fd == NULL)
             return GS_FAILED;
