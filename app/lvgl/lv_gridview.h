@@ -54,7 +54,7 @@ void lv_grid_set_adapter(lv_obj_t *obj, const lv_grid_adapter_t *adapter);
 
 void lv_grid_set_data(lv_obj_t *obj, void *data);
 
-void lv_gridview_focus(lv_obj_t *obj, int index);
+void lv_gridview_focus(lv_obj_t *obj, int position);
 
 int lv_gridview_get_focused_index(lv_obj_t *obj);
 /**********************

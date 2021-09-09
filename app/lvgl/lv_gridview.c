@@ -22,16 +22,11 @@
  *      TYPEDEFS
  **********************/
 
-typedef struct view_pool_item_t {
-    int key;
+typedef struct view_pool_ll_t {
+    int id, position;
     lv_obj_t *item;
-} view_pool_item_t;
-
-typedef struct view_pool_t {
-    view_pool_item_t *data;
-    int capacity;
-    int size;
-} view_pool_t;
+    struct view_pool_ll_t *prev, *next;
+} view_pool_ll_t;
 
 typedef struct lv_grid_t {
     lv_obj_t obj;
@@ -51,7 +46,7 @@ typedef struct lv_grid_t {
     lv_coord_t content_height;
     lv_coord_t pad_row, pad_top, pad_bottom;
 
-    view_pool_t pool_inuse, pool_free;
+    view_pool_ll_t *pool_inuse, *pool_free;
     lv_style_t style_scrollbar, style_scrollbar_scrolled;
 } lv_grid_t;
 
@@ -71,19 +66,21 @@ static void fill_rows(lv_grid_t *grid, int row_start, int row_end);
 
 static void update_grid(lv_grid_t *grid);
 
-static void adapter_recycle_item(lv_grid_t *adapter, int index);
+static void adapter_recycle_item(lv_grid_t *adapter, int position);
 
-static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int index);
+static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int position);
 
-static lv_obj_t *view_pool_take(view_pool_t *pool, int key);
+static lv_obj_t *view_pool_take_by_position(view_pool_ll_t **pool, int position);
 
-static lv_obj_t *view_pool_find(view_pool_t *pool, int key);
+static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id);
 
-static lv_obj_t *view_pool_pop(view_pool_t *pool);
+static view_pool_ll_t *view_pool_node_by_position(view_pool_ll_t *pool, int position);
 
-static void view_pool_put(view_pool_t *pool, int key, lv_obj_t *value);
+static lv_obj_t *view_pool_poll(view_pool_ll_t **pool);
 
-static void view_pool_reset(view_pool_t *pool);
+static void view_pool_put(view_pool_ll_t **pool, int id, int position, lv_obj_t *value);
+
+static void view_pool_reset(view_pool_ll_t **pool);
 
 static void lv_gridview_constructor(const lv_obj_class_t *class_p, lv_obj_t *obj);
 
@@ -96,6 +93,10 @@ static void key_cb(lv_grid_t *grid, lv_event_t *e);
 static void press_cb(lv_grid_t *grid, lv_event_t *e);
 
 static void update_sizes(lv_grid_t *grid);
+
+static int adapter_item_id(lv_grid_t *grid, int position);
+
+static view_pool_ll_t *view_pool_remove_item(view_pool_ll_t *head, view_pool_ll_t *cur);
 
 /**********************
  *  STATIC VARIABLES
@@ -161,26 +162,27 @@ void lv_grid_set_data(lv_obj_t *obj, void *data) {
     update_grid(grid);
 }
 
-void lv_gridview_focus(lv_obj_t *obj, int index) {
+void lv_gridview_focus(lv_obj_t *obj, int position) {
     lv_grid_t *grid = (lv_grid_t *) obj;
-    if (index < -1 || index >= grid->item_count) return;
-    if (grid->focused_index >= 0 && index != grid->focused_index) {
-        lv_obj_t *defocused = view_pool_find(&grid->pool_inuse, grid->focused_index);
-        if (defocused) {
-            lv_event_send(defocused, LV_EVENT_DEFOCUSED, lv_indev_get_act());
+    if (position < -1 || position >= grid->item_count) return;
+    if (grid->focused_index >= 0 && position != grid->focused_index) {
+        view_pool_ll_t *node = view_pool_node_by_position(grid->pool_inuse, grid->focused_index);
+        if (node) {
+            lv_event_send(node->item, LV_EVENT_DEFOCUSED, lv_indev_get_act());
         }
     }
-    lv_obj_t *focused = view_pool_find(&grid->pool_inuse, index);
-    if (!focused && index >= 0) {
-        lv_obj_t *item = adapter_obtain_item(grid, index);
-        int row_idx = index / grid->column_count, col_idx = index % grid->column_count;
+    view_pool_ll_t *node = view_pool_node_by_position(grid->pool_inuse, position);
+    lv_obj_t *focused = node ? node->item : NULL;
+    if (!focused && position >= 0) {
+        lv_obj_t *item = adapter_obtain_item(grid, position);
+        int row_idx = position / grid->column_count, col_idx = position % grid->column_count;
         lv_obj_set_grid_cell(item, LV_GRID_ALIGN_STRETCH, col_idx, 1, LV_GRID_ALIGN_STRETCH, row_idx, 1);
-        grid->adapter.bind_view(&grid->obj, item, grid->data, index);
+        grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         focused = item;
     }
     if (!focused) return;
     lv_event_send(focused, LV_EVENT_FOCUSED, lv_indev_get_act());
-    grid->focused_index = index;
+    grid->focused_index = position;
 }
 
 int lv_gridview_get_focused_index(lv_obj_t *obj) {
@@ -279,7 +281,7 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
 
 static void update_col_dsc(lv_grid_t *adapter) {
     int column_count = adapter->column_count;
-    lv_coord_t *col_dsc = lv_mem_alloc((column_count + 1) * sizeof(lv_coord_t));
+    lv_coord_t *col_dsc = lv_mem_realloc(adapter->col_dsc, (column_count + 1) * sizeof(lv_coord_t));
     for (int i = 0; i < column_count; i++) {
         col_dsc[i] = LV_GRID_FR(1);
     }
@@ -288,7 +290,7 @@ static void update_col_dsc(lv_grid_t *adapter) {
 }
 
 static void update_row_dsc(lv_grid_t *adapter, int row_count) {
-    lv_coord_t *row_dsc = lv_mem_alloc((row_count + 1) * sizeof(lv_coord_t));
+    lv_coord_t *row_dsc = lv_mem_realloc(adapter->row_dsc, (row_count + 1) * sizeof(lv_coord_t));
     for (int i = 0; i < row_count; i++) {
         row_dsc[i] = adapter->row_height;
     }
@@ -340,9 +342,9 @@ static void press_cb(lv_grid_t *grid, lv_event_t *e) {
     }
     int index = grid->focused_index;
     if (index < 0) return;
-    lv_obj_t *focused = view_pool_find(&grid->pool_inuse, index);
-    if (!focused) return;
-    lv_event_send(focused, e->code, indev);
+    view_pool_ll_t *node = view_pool_node_by_position(grid->pool_inuse, index);
+    if (!node) return;
+    lv_event_send(node->item, e->code, indev);
 }
 
 
@@ -396,115 +398,145 @@ static void fill_rows(lv_grid_t *grid, int row_start, int row_end) {
     // Put excess items to recycler
     for (int row_idx = LV_MAX(0, old_start); row_idx < row_start; row_idx++) {
         for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
-            int index = row_idx * grid->column_count + col_idx;
-            if (index >= grid->item_count) continue;
-            adapter_recycle_item(grid, index);
+            int position = row_idx * grid->column_count + col_idx;
+            if (position >= grid->item_count) continue;
+            adapter_recycle_item(grid, position);
         }
     }
     for (int row_idx = LV_MAX(0, row_end + 1); row_idx <= old_end; row_idx++) {
         for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
-            int index = row_idx * grid->column_count + col_idx;
-            if (index >= grid->item_count) continue;
-            adapter_recycle_item(grid, index);
+            int position = row_idx * grid->column_count + col_idx;
+            if (position >= grid->item_count) continue;
+            adapter_recycle_item(grid, position);
         }
     }
     // Get needed items
     for (int row_idx = LV_MAX(0, row_start); row_idx < old_start; row_idx++) {
         for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
-            int index = row_idx * grid->column_count + col_idx;
-            if (index >= grid->item_count) continue;
-            lv_obj_t *item = adapter_obtain_item(grid, index);
+            int position = row_idx * grid->column_count + col_idx;
+            if (position >= grid->item_count) continue;
+            lv_obj_t *item = adapter_obtain_item(grid, position);
             lv_obj_set_grid_cell(item, LV_GRID_ALIGN_STRETCH, col_idx, 1, LV_GRID_ALIGN_STRETCH, row_idx, 1);
-            grid->adapter.bind_view(&grid->obj, item, grid->data, index);
+            grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         }
     }
     for (int row_idx = LV_MAX(0, old_end + 1); row_idx <= row_end; row_idx++) {
         for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
-            int index = row_idx * grid->column_count + col_idx;
-            if (index >= grid->item_count) continue;
-            lv_obj_t *item = adapter_obtain_item(grid, index);
+            int position = row_idx * grid->column_count + col_idx;
+            if (position >= grid->item_count) continue;
+            lv_obj_t *item = adapter_obtain_item(grid, position);
             lv_obj_set_grid_cell(item, LV_GRID_ALIGN_STRETCH, col_idx, 1, LV_GRID_ALIGN_STRETCH, row_idx, 1);
-            grid->adapter.bind_view(&grid->obj, item, grid->data, index);
+            grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         }
     }
 }
 
-static void adapter_recycle_item(lv_grid_t *adapter, int index) {
-    // Move item from inuse pool to free pool
-    lv_obj_t *item = view_pool_take(&adapter->pool_inuse, index);
-    LV_ASSERT_MSG(item, "should never recycle invalid item");
-    if (!item) return;
-    lv_obj_add_flag(item, LV_OBJ_FLAG_HIDDEN);
-    view_pool_put(&adapter->pool_free, -1, item);
+static int adapter_item_id(lv_grid_t *grid, int position) {
+    if (!grid->adapter.item_id) return position;
+    int id = grid->adapter.item_id(&grid->obj, grid->data, position);
+    LV_ASSERT(id >= 0);
+    return id;
 }
 
-static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int index) {
+static void adapter_recycle_item(lv_grid_t *adapter, int position) {
+    // Move item from inuse pool to free pool
+    lv_obj_t *item = view_pool_take_by_position(&adapter->pool_inuse, position);
+    LV_ASSERT_MSG(item, "should never recycle invalid item");
+    lv_obj_add_flag(item, LV_OBJ_FLAG_HIDDEN);
+    view_pool_put(&adapter->pool_free, -1, -1, item);
+}
+
+static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int position) {
+    int id = adapter_item_id(grid, position);
     // Move item from free pool to inuse pool, or create one
-    lv_obj_t *item = view_pool_find(&grid->pool_inuse, index);
+    view_pool_ll_t *cur = view_pool_node_by_id(grid->pool_inuse, id);
+    lv_obj_t *item = cur ? cur->item : NULL;
     if (item) return item;
-    item = view_pool_pop(&grid->pool_free);
+    item = view_pool_poll(&grid->pool_free);
     if (!item) {
         item = grid->adapter.create_view((lv_obj_t *) grid);
     }
     lv_obj_clear_flag(item, LV_OBJ_FLAG_HIDDEN);
-    view_pool_put(&grid->pool_inuse, index, item);
+    view_pool_put(&grid->pool_inuse, id, position, item);
     return item;
 }
 
-static lv_obj_t *view_pool_take(view_pool_t *pool, int key) {
-    for (int i = 0; i < pool->size; i++) {
-        view_pool_item_t *data = pool->data;
-        if (data[i].key == key) {
-            lv_obj_t *result = data[i].item;
-            pool->size--;
-            if (pool->size - i > 0) {
-                memmove(&data[i], &data[i + 1], (pool->size - i) * sizeof(view_pool_item_t));
-            }
-            return result;
+static lv_obj_t *view_pool_take_by_position(view_pool_ll_t **pool, int position) {
+    view_pool_ll_t *node = view_pool_node_by_position(*pool, position);
+    if (!node) return NULL;
+    lv_obj_t *item = node->item;
+    (*pool) = view_pool_remove_item(*pool, node);
+    lv_mem_free(node);
+    return item;
+}
+
+static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id) {
+    for (view_pool_ll_t *cur = pool; cur != NULL; cur = cur->next) {
+        if (cur->id == id) {
+            return cur;
         }
     }
     return NULL;
 }
 
-static lv_obj_t *view_pool_find(view_pool_t *pool, int key) {
-    for (int i = 0; i < pool->size; i++) {
-        view_pool_item_t *data = pool->data;
-        if (data[i].key == key) {
-            return data[i].item;
+static view_pool_ll_t *view_pool_node_by_position(view_pool_ll_t *pool, int position) {
+    for (view_pool_ll_t *cur = pool; cur != NULL; cur = cur->next) {
+        if (cur->position == position) {
+            return cur;
         }
     }
     return NULL;
 }
 
-static lv_obj_t *view_pool_pop(view_pool_t *pool) {
-    if (!pool->size) return NULL;
-    pool->size--;
-    return pool->data[pool->size].item;
+static lv_obj_t *view_pool_poll(view_pool_ll_t **pool) {
+    view_pool_ll_t *head = *pool;
+    if (!head) return NULL;
+    lv_obj_t *item = head->item;
+    if (head->next) {
+        head->next->prev = NULL;
+    }
+    *pool = head->next;
+    lv_mem_free(head);
+    return item;
 }
 
-static void view_pool_put(view_pool_t *pool, int key, lv_obj_t *value) {
-    if (!pool->data) {
-        pool->capacity = 16;
-        pool->data = lv_mem_alloc(pool->capacity * sizeof(view_pool_item_t));
-        LV_ASSERT_MALLOC(pool->data);
-    } else if (pool->size + 1 > pool->capacity) {
-        pool->capacity *= 2;
-        pool->data = lv_mem_realloc(pool->data, pool->capacity * sizeof(view_pool_item_t));
-        LV_ASSERT_MALLOC(pool->data);
+static void view_pool_put(view_pool_ll_t **pool, int id, int position, lv_obj_t *value) {
+    view_pool_ll_t *head = lv_mem_alloc(sizeof(view_pool_ll_t));
+    lv_memset_00(head, sizeof(view_pool_ll_t));
+    head->item = value;
+    head->id = id;
+    head->position = position;
+    view_pool_ll_t *old_head = *pool;
+    head->next = old_head;
+    if (old_head) {
+        old_head->prev = head;
     }
-    int index = pool->size;
-    pool->data[index].key = key;
-    pool->data[index].item = value;
-    pool->size++;
+    *pool = head;
 }
 
-static void view_pool_reset(view_pool_t *pool) {
-    if (pool->data) {
-        lv_mem_free(pool->data);
-        pool->data = NULL;
+static view_pool_ll_t *view_pool_remove_item(view_pool_ll_t *head, view_pool_ll_t *cur) {
+    LV_ASSERT(head);
+    LV_ASSERT(cur);
+    view_pool_ll_t *prev = cur->prev;
+    if (prev) {
+        prev->next = cur->next;
+    } else {
+        head = cur->next;
     }
-    pool->size = 0;
-    pool->capacity = 0;
+    if (cur->next) {
+        cur->next->prev = prev;
+    }
+    return head;
+}
+
+static void view_pool_reset(view_pool_ll_t **pool) {
+    view_pool_ll_t *cur = *pool;
+    while (cur) {
+        view_pool_ll_t *tmp = cur;
+        cur = cur->next;
+        lv_mem_free(tmp);
+    }
+    *pool = NULL;
 }
 
 #endif /* LV_USE_GRIDVIEW */
