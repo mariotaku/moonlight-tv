@@ -33,8 +33,6 @@ typedef struct coverloader_request {
     PSERVER_LIST node;
     lv_obj_t *target;
     lv_coord_t target_width, target_height;
-    SDL_mutex *mutex;
-    SDL_cond *cond;
     lv_sdl_img_src_t *result;
     bool finished;
     img_loader_task_t *task;
@@ -88,7 +86,6 @@ static int reqlist_find_by_target(coverloader_req_t *p, const void *v);
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
         .memcache_put = (img_loader_fn2) coverloader_memcache_put,
-        .memcache_put_wait = (img_loader_fn) coverloader_memcache_put_wait,
         .filecache_get = (img_loader_get_fn) coverloader_filecache_get,
         .filecache_put = (img_loader_fn2) coverloader_filecache_put,
         .fetch = (img_loader_get_fn) coverloader_fetch,
@@ -150,8 +147,6 @@ void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_ob
     req->target_width = target_width;
     req->target_height = target_height;
     req->finished = false;
-    req->mutex = SDL_CreateMutex();
-    req->cond = SDL_CreateCond();
     loader->reqlist = reqlist_append(loader->reqlist, req);
     req->task = img_loader_load(loader->base_loader, req, &coverloader_cb);
 }
@@ -206,16 +201,7 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     }
     req->result = result;
     req->finished = true;
-    SDL_CondSignal(req->cond);
     SDL_FreeSurface(cached);
-}
-
-static void coverloader_memcache_put_wait(coverloader_req_t *req) {
-    SDL_LockMutex(req->mutex);
-    while (!req->finished) {
-        SDL_CondWait(req->cond, req->mutex);
-    }
-    SDL_UnlockMutex(req->mutex);
 }
 
 static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
@@ -313,8 +299,6 @@ static void memcache_item_free(lv_sdl_img_src_t *item) {
 }
 
 static void coverloader_req_free(coverloader_req_t *req) {
-    SDL_DestroyMutex(req->mutex);
-    SDL_DestroyCond(req->cond);
     free(req);
 }
 

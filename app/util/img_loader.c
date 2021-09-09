@@ -4,6 +4,7 @@
 
 #include "img_loader.h"
 #include <SDL.h>
+#include <stdbool.h>
 
 struct img_loader_task_t {
     void *request;
@@ -18,13 +19,17 @@ struct img_loader_t {
     SDL_mutex *queue_lock;
     SDL_cond *queue_cond;
     SDL_Thread *worker_thread;
-    int destroyed;
+    bool destroyed;
 };
 
 typedef struct notify_cb_t {
     img_loader_fn2 fn;
     void *arg1;
     void *arg2;
+    bool notified;
+    SDL_mutex *mutex;
+    SDL_cond *cond;
+    const bool *destroyed;
 } notify_cb_t;
 
 #define LINKEDLIST_IMPL
@@ -60,14 +65,14 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
     loader->task_queue = NULL;
     loader->queue_lock = SDL_CreateMutex();
     loader->queue_cond = SDL_CreateCond();
-    loader->destroyed = SDL_FALSE;
+    loader->destroyed = false;
     loader->worker_thread = SDL_CreateThread((SDL_ThreadFunction) loader_worker, "img_loader", loader);
     return loader;
 }
 
 void img_loader_destroy(img_loader_t *loader) {
     SDL_assert(!loader->destroyed);
-    loader->destroyed = SDL_TRUE;
+    loader->destroyed = true;
     SDL_CondSignal(loader->queue_cond);
 }
 
@@ -153,9 +158,6 @@ static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
     }
     if (loader->destroyed) return;
     run_on_main(loader, loader->impl.memcache_put, request, cached);
-    if (loader->impl.memcache_put_wait) {
-        loader->impl.memcache_put_wait(request);
-    }
     if (loader->destroyed) return;
     img_loader_fn2 cb = task->cancelled ? (img_loader_fn2) task->cb.cancel_cb : task->cb.complete_cb;
     run_on_main(loader, cb, request, cached);
@@ -167,12 +169,26 @@ static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, voi
     args->arg1 = arg1;
     args->arg2 = arg2;
     args->fn = fn;
+    args->mutex = SDL_CreateMutex();
+    args->cond = SDL_CreateCond();
+    args->destroyed = &loader->destroyed;
     loader->impl.run_on_main(loader, (img_loader_fn) notify_cb, args);
+    SDL_LockMutex(args->mutex);
+    while (!args->notified) {
+        SDL_CondWait(args->cond, args->mutex);
+    }
+    SDL_UnlockMutex(args->mutex);
+    SDL_DestroyMutex(args->mutex);
+    SDL_DestroyCond(args->cond);
+    free(args);
 }
 
 static void notify_cb(notify_cb_t *args) {
-    args->fn(args->arg1, args->arg2);
-    free(args);
+    if (!*args->destroyed) {
+        args->fn(args->arg1, args->arg2);
+    }
+    args->notified = true;
+    SDL_CondSignal(args->cond);
 }
 
 static void task_destroy(img_loader_task_t *task) {

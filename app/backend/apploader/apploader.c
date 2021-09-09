@@ -81,6 +81,10 @@ static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb
 }
 
 static int apploader_task_execute(apploader_task_t *task) {
+    if (task->cancelled) {
+        SDL_free(task);
+        return -1;
+    }
     PAPP_LIST ll = NULL;
     int ret;
     GS_CLIENT client = app_gs_client_new();
@@ -108,6 +112,10 @@ static int apploader_task_execute(apploader_task_t *task) {
 }
 
 static void apploader_task_finish(apploader_task_t *task) {
+    if (task->cancelled) {
+        SDL_free(task);
+        return;
+    }
     apploader_t *loader = task->loader;
     if (task->code == GS_OK) {
         loader->apps = task->result;
@@ -116,9 +124,7 @@ static void apploader_task_finish(apploader_task_t *task) {
     loader->code = task->code;
     loader->status = APPLOADER_STATUS_IDLE;
     loader->task = NULL;
-    if (!task->cancelled) {
-        task->cb(loader, task->userdata);
-    }
+    task->cb(loader, task->userdata);
     SDL_free(task);
 }
 

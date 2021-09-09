@@ -51,6 +51,9 @@
 
 #include <uuid/uuid.h>
 #include <arpa/inet.h>
+#if __linux
+#include <linux/limits.h>
+#endif
 
 #define PATH_SEPARATOR '/'
 #endif
@@ -466,7 +469,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
         goto cleanup;
     }
 
-    char server_cert_str[8192];
+    unsigned char server_cert_str[8192];
     size_t plaincert_len = 0;
     hex_to_bytes(result, server_cert_str, &plaincert_len);
     server_cert_str[plaincert_len] = 0;

@@ -82,10 +82,15 @@ int main(int argc, char *argv[]) {
 #else
     if (app_configuration->fullscreen) {
         window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    } else {
+        window_flags |= SDL_WINDOW_RESIZABLE;
     }
 #endif
     SDL_Window *window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                           1920, 1080, window_flags);
+    if (window_flags & SDL_WINDOW_RESIZABLE) {
+        SDL_SetWindowMinimumSize(window, 960, 540);
+    }
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
     ui_display_size(w, h);

@@ -9,6 +9,7 @@
 #if TARGET_DESKTOP || TARGET_RASPI
 
 #include <SDL_image.h>
+#include <gpu/lv_gpu_sdl.h>
 
 #endif
 
@@ -148,6 +149,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     window_focus_gained = false;
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    lv_sdl_display_resize(lv_disp_get_default(), event->window.data1, event->window.data2);
                     ui_display_size(event->window.data1, event->window.data2);
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:
