@@ -33,7 +33,7 @@
 FILE *app_logfile = NULL;
 
 static bool running = true;
-static pthread_mutex_t app_gs_client_mutex = PTHREAD_MUTEX_INITIALIZER;
+static SDL_mutex *app_gs_client_mutex = NULL;
 
 static void lv_bg_draw(lv_area_t *area);
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
-    bus_init();
+    app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
     if (ret != 0) {
@@ -133,7 +133,8 @@ int main(int argc, char *argv[]) {
 
     backend_destroy();
     app_destroy();
-    bus_destroy();
+
+    SDL_DestroyMutex(app_gs_client_mutex);
 
     applog_d("APP", "Quitted gracefully :)");
     return 0;
@@ -144,11 +145,11 @@ void app_request_exit() {
 }
 
 GS_CLIENT app_gs_client_new() {
-    pthread_mutex_lock(&app_gs_client_mutex);
-    assert(app_configuration);
+    SDL_LockMutex(app_gs_client_mutex);
+    SDL_assert(app_configuration);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
-    assert(client);
-    pthread_mutex_unlock(&app_gs_client_mutex);
+    SDL_assert(client);
+    SDL_LockMutex(app_gs_client_mutex);
     return client;
 }
 

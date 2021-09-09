@@ -2,16 +2,7 @@
 
 #include <SDL.h>
 
-void bus_init()
-{
-}
-
-void bus_destroy()
-{
-}
-
-bool bus_pushevent(int which, void *data1, void *data2)
-{
+bool bus_pushevent(int which, void *data1, void *data2) {
     SDL_Event ev;
     ev.type = SDL_USEREVENT;
     ev.user.code = which;
@@ -21,13 +12,7 @@ bool bus_pushevent(int which, void *data1, void *data2)
     return true;
 }
 
-bool bus_pollevent(int *which, void **data1, void **data2)
-{
-    return false;
-}
-
-bool bus_pushaction(bus_actionfunc action, void *data)
-{
+bool bus_pushaction(bus_actionfunc action, void *data) {
     SDL_assert(action);
     return bus_pushevent(BUS_INT_EVENT_ACTION, action, data);
 }

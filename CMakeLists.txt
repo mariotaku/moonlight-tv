@@ -242,18 +242,17 @@ target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" AP
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
-target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/message_queue)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
-if (TARGET_WINDOWS)
-    pkg_check_modules(MICRODNS REQUIRED microdns)
-    target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
-else()
+#if (TARGET_WINDOWS)
+#    pkg_check_modules(MICRODNS REQUIRED microdns)
+#    target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
+#else()
     include(BuildMicrodns)
     target_link_libraries(moonlight PRIVATE microdns)
-endif()
+#endif()
 
 
 target_link_libraries(moonlight PRIVATE

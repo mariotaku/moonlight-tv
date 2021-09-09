@@ -7,12 +7,6 @@
 
 typedef void(*bus_actionfunc)(void *);
 
-void bus_init();
-
-void bus_destroy();
-
 bool bus_pushevent(int which, void *data1, void *data2);
-
-bool bus_pollevent(int *which, void **data1, void **data2);
 
 bool bus_pushaction(bus_actionfunc action, void *data);

@@ -73,6 +73,8 @@ struct GS_CLIENT_T {
 
 const char *gs_error;
 
+static char mbed_err[1024];
+
 static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action,
                           const char *fmt, ...);
 
@@ -138,26 +140,24 @@ static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
     char keyFilePath[PATH_MAX];
     snprintf(&keyFilePath[0], PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, KEY_FILE_NAME);
 
-    FILE *fd = fopen(certificateFilePath, "r");
-    if (fd == NULL) {
+    int mbedret;
+    mbedtls_x509_crt_init(&hnd->cert);
+    if ((mbedret = mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath)) != 0) {
         printf("Generating certificate...");
-        if (mkcert_generate(certificateFilePath, keyFilePath) == 0) {
-            printf("done\n");
-        } else {
-            printf("\n");
+        if (mkcert_generate(certificateFilePath, keyFilePath) != 0) {
+            printf("failed.\n");
+            mbedtls_x509_crt_free(&hnd->cert);
             return GS_FAILED;
         }
-
-        fd = fopen(certificateFilePath, "r");
+        if ((mbedret = mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath)) != 0) {
+            mbedtls_strerror(mbedret, mbed_err, sizeof(mbed_err));
+            gs_error = mbed_err;
+            mbedtls_x509_crt_free(&hnd->cert);
+            return GS_FAILED;
+        }
     }
-
-    mbedtls_x509_crt_init(&hnd->cert);
-    if (fd == NULL || mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath) != 0) {
-        mbedtls_x509_crt_free(&hnd->cert);
-        gs_error = "Can't open certificate file";
-        return GS_FAILED;
-    }
-
+    FILE *fd = fopen(certificateFilePath, "r");
+    assert(fd);
     int c;
     int length = 0;
     while ((c = fgetc(fd)) != EOF) {
