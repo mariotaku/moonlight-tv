@@ -1,5 +1,7 @@
 #include "priv.h"
 
+#include <assert.h>
+
 typedef struct pcmanager_listener_list {
     const pcmanager_listener_t *listener;
 

@@ -11,6 +11,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/core/moonlight-common-c/cmake
 )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -g3 -O0")
 
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 

@@ -12,7 +12,6 @@
 
 #include "util/path.h"
 #include "util/logging.h"
-#include "util/memlog.h"
 #include "util/libconfig_ext.h"
 
 #if TARGET_WEBOS

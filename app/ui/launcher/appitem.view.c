@@ -3,7 +3,6 @@
 //
 
 #include "appitem.view.h"
-#include "util/memlog.h"
 
 static void appitem_holder_free_cb(lv_event_t *event);
 

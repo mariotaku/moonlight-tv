@@ -31,10 +31,6 @@ void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
 
 
 static int discovery_worker(discovery_task_t *task) {
-    while (1) {
-        pcmanager_upsert_worker(task->manager, "192.168.4.16", false, NULL, NULL);
-        SDL_Delay(1);
-    }
     int r = 0;
     char err[128];
     struct mdns_ctx *ctx = NULL;
@@ -50,7 +46,7 @@ static int discovery_worker(discovery_task_t *task) {
     err:
     if (r < 0) {
         mdns_strerror(r, err, sizeof(err));
-        applog_e("mDNS", "fatal: %s", err);
+        applog_e("Discovery", "fatal: %s", err);
     }
     mdns_destroy(ctx);
     SDL_free(task);

@@ -2,12 +2,8 @@
 #include "backend/pcmanager.h"
 #include "priv.h"
 
-#include "util/memlog.h"
 #include "pclist.h"
 #include "app.h"
-
-cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
-                             void *userdata);
 
 static int request_update_worker(cm_request_t *req);
 

@@ -15,7 +15,7 @@ struct pcmanager_t {
 typedef struct CM_PIN_REQUEST_T {
     pcmanager_t *manager;
     const SERVER_DATA *server;
-    const void *arg1;
+    void *arg1;
     void *userdata;
 
     pcmanager_callback_t callback;
@@ -34,6 +34,8 @@ void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg);
 void pcmanager_resp_setgserror(PPCMANAGER_RESP resp, int code, const char *msg);
 
 PSERVER_DATA serverdata_new();
+
+PSERVER_DATA serverdata_clone(const SERVER_DATA *src);
 
 PPCMANAGER_RESP serverinfo_resp_new();
 
@@ -56,3 +58,6 @@ void pcmanager_list_unlock(pcmanager_t *manager);
 
 int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
                             void *userdata);
+
+cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+                             void *userdata);

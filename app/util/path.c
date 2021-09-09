@@ -2,8 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
-
-#include "util/memlog.h"
+#include <stdlib.h>
 
 #if __WIN32
 #define PATH_SEPARATOR '\\'

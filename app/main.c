@@ -149,7 +149,7 @@ GS_CLIENT app_gs_client_new() {
     SDL_assert(app_configuration);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
     SDL_assert(client);
-    SDL_LockMutex(app_gs_client_mutex);
+    SDL_UnlockMutex(app_gs_client_mutex);
     return client;
 }
 

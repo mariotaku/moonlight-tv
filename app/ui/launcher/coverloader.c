@@ -25,7 +25,6 @@
 #include "util/compat.h"
 
 #include "util/logging.h"
-#include "util/memlog.h"
 #include "res.h"
 
 typedef struct coverloader_request {

@@ -314,9 +314,18 @@ static void bytes_to_hex(const unsigned char *in, char *out, size_t len) {
 }
 
 static void hex_to_bytes(const char *in, unsigned char *out, size_t *len) {
+    static const uint8_t map_table[] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, /* 0x30(0)-0x3F(?) */
+            0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0x40(@)-0x4F(O) */
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0x50(P)-0x4F(_) */
+            0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, /* 0x60(`)-0x66(f) */
+    };
     size_t inl = strlen(in);
+    if (inl % 2) return;
     for (int count = 0; count < inl; count += 2) {
-        sscanf(&in[count], "%2hhx", &out[count / 2]);
+        char ch1 = in[count], ch2 = in[count + 1];
+        if (ch1 < 0x30 || ch1 > 0x66 || ch2 < 0x30 || ch2 > 0x66) return;
+        out[count / 2] = map_table[ch1 - 0x30] << 8 | map_table[ch2 - 0x30];
     }
     if (len) {
         *len = inl / 2;

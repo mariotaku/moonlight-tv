@@ -2,6 +2,7 @@
 // Created by Mariotaku on 2021/08/31.
 //
 
+#include <errors.h>
 #include "app.h"
 
 #include "coverloader.h"
@@ -27,11 +28,20 @@ typedef struct {
     int focus_backup;
 } apps_controller_t;
 
+typedef struct {
+    apps_controller_t *controller;
+    lv_obj_t *msgbox;
+    char pin[8];
+    char message[1024];
+} pair_state_t;
+
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent);
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view);
+
+static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
 
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata);
 
@@ -64,6 +74,10 @@ static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
 static void apps_controller_dtor(lv_obj_controller_t *self);
 
 static void appload_cb(apploader_t *loader, void *userdata);
+
+static void open_pair(apps_controller_t *controller);
+
+static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state);
 
 const static lv_grid_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
@@ -148,7 +162,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_gridview_set_config(controller->applist, col_count, row_height);
     lv_obj_set_user_data(controller->applist, controller);
 
-    pcmanager_request_update(pcmanager, controller->node->server, NULL, NULL);
+    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
     apploader_load(controller->apploader, appload_cb, controller);
     update_view_state(controller);
 }
@@ -164,6 +178,15 @@ static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
     update_view_state(controller);
+}
+
+static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
+    apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (resp->result.code == GS_OK) {
+        if (!resp->server->paired) {
+            open_pair(controller);
+        }
+    }
 }
 
 static void update_view_state(apps_controller_t *controller) {
@@ -240,6 +263,28 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST
     holder->app = app;
 }
 
+static void open_pair(apps_controller_t *controller) {
+    pair_state_t *state = SDL_malloc(sizeof(pair_state_t));
+    SDL_memset(state, 0, sizeof(pair_state_t));
+    if (!pcmanager_pair(pcmanager, controller->node->server, state->pin, (pcmanager_callback_t) pair_result_cb,
+                        state)) {
+        SDL_free(state);
+        return;
+    }
+    SDL_snprintf(state->message, sizeof(state->message), "Enter PIN code on your computer.\n%s", state->pin);
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, "Pairing", state->message, NULL, false);
+    lv_obj_center(msgbox);
+    state->msgbox = msgbox;
+}
+
+static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state) {
+    apps_controller_t *controller = state->controller;
+    lv_msgbox_close(state->msgbox);
+    free(state);
+    if (resp->result.code == GS_OK) {
+        pcmanager_request_update(pcmanager, controller->node->server, NULL, NULL);
+    }
+}
 
 static void launcher_open_game(lv_event_t *event) {
     apps_controller_t *controller = lv_event_get_user_data(event);

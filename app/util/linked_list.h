@@ -1,6 +1,5 @@
 #include <string.h>
 #include <stdlib.h>
-#include "util/memlog.h"
 
 #ifndef LINKEDLIST_TYPE
 #error "Please define LINKEDLIST_TYPE before include"
