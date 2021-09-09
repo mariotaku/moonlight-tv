@@ -62,7 +62,7 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
     loader->queue_lock = SDL_CreateMutex();
     loader->queue_cond = SDL_CreateCond();
     loader->destroyed = SDL_FALSE;
-    loader->worker_thread = SDL_CreateThread((SDL_ThreadFunction) loader_worker, "ilworker", loader);
+    loader->worker_thread = SDL_CreateThread((SDL_ThreadFunction) loader_worker, "img_loader", loader);
     return loader;
 }
 

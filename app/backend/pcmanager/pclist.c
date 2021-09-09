@@ -81,7 +81,7 @@ void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp) {
     if (resp->state.code != SERVER_STATE_NONE) {
         memcpy(&node->state, &resp->state, sizeof(SERVER_STATE));
     }
-    if (node->server) {
+    if (node->server && node->server != resp->server) {
         // Although it's const pointer, we free it and assign a new one.
         serverdata_free((SERVER_DATA *) node->server);
     }

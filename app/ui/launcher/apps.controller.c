@@ -202,13 +202,19 @@ static void update_view_state(apps_controller_t *controller) {
             }
             break;
         }
-        case SERVER_STATE_ERROR:
-        case SERVER_STATE_OFFLINE: {
+        case SERVER_STATE_ERROR: {
             // server has error
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_label_set_text_static(controller->errorlabel, "Failed to load server info");
+        }
+        case SERVER_STATE_OFFLINE: {
+            // server has error
+            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text_static(controller->errorlabel, "Host is offline");
             break;
         }
         default: {
@@ -282,9 +288,10 @@ static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
     return item;
 }
 
-static void adapter_bind_view(lv_obj_t *obj, lv_obj_t *item_view, void *data, int position) {
+static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, int position) {
     APP_LIST *apps = (APP_LIST *) data;
-    appitem_bind(lv_obj_get_user_data(obj), item_view, &apps[position]);
+    apps_controller_t *controller = lv_obj_get_user_data(grid);
+    appitem_bind(controller, item_view, &apps[position]);
 }
 
 static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
