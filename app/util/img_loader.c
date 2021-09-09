@@ -53,6 +53,8 @@ static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, voi
 
 static int tasklist_find_id(struct img_loader_task_t *p, const void *fv);
 
+static void task_destroy(img_loader_task_t *);
+
 img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
     img_loader_t *loader = SDL_malloc(sizeof(img_loader_t));
     SDL_memcpy(&loader->impl, impl, sizeof(img_loader_impl_t));
@@ -67,10 +69,6 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
 void img_loader_destroy(img_loader_t *loader) {
     loader->destroyed = SDL_TRUE;
     SDL_CondSignal(loader->queue_cond);
-    SDL_DetachThread(loader->worker_thread);
-    SDL_DestroyCond(loader->queue_cond);
-    SDL_DestroyMutex(loader->queue_lock);
-    SDL_free(loader);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
@@ -110,6 +108,16 @@ static int loader_worker(img_loader_t *loader) {
         loader_task_execute(loader, task);
         free(task);
     }
+    SDL_LockMutex(loader->queue_lock);
+    tasklist_free(loader->task_queue, task_destroy);
+    loader->task_queue = NULL;
+    SDL_UnlockMutex(loader->queue_lock);
+
+    SDL_DestroyCond(loader->queue_cond);
+    SDL_DestroyMutex(loader->queue_lock);
+    loader->queue_cond = NULL;
+    loader->queue_lock = NULL;
+    SDL_free(loader);
     return 0;
 }
 
@@ -128,8 +136,10 @@ static img_loader_task_t *loader_task_poll(img_loader_t *loader) {
 static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
     void *request = task->request;
     void *cached = loader->impl.filecache_get(request);
+    if (loader->destroyed) return;
     if (!cached) {
         cached = loader->impl.fetch(request);
+        if (loader->destroyed) return;
         if (!cached) {
             // call fail_cb
             img_loader_fn cb = task->cancelled ? task->cb.cancel_cb : task->cb.fail_cb;
@@ -138,15 +148,18 @@ static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
         }
         loader->impl.filecache_put(request, cached);
     }
+    if (loader->destroyed) return;
     run_on_main(loader, loader->impl.memcache_put, request, cached);
     if (loader->impl.memcache_put_wait) {
         loader->impl.memcache_put_wait(request);
     }
+    if (loader->destroyed) return;
     img_loader_fn2 cb = task->cancelled ? (img_loader_fn2) task->cb.cancel_cb : task->cb.complete_cb;
     run_on_main(loader, cb, request, cached);
 }
 
 static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2) {
+    if (loader->destroyed) return;
     notify_cb_t *args = malloc(sizeof(notify_cb_t));
     args->arg1 = arg1;
     args->arg2 = arg2;
@@ -157,4 +170,8 @@ static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, voi
 static void notify_cb(notify_cb_t *args) {
     args->fn(args->arg1, args->arg2);
     free(args);
+}
+
+static void task_destroy(img_loader_task_t *task) {
+    free(task);
 }
