@@ -184,6 +184,10 @@ set(SOURCES
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
     app/ui/settings/panes/basic.pane.c
+    app/ui/settings/panes/host.pane.c
+    app/ui/settings/panes/input.pane.c
+    app/ui/settings/panes/about.pane.c
+    app/ui/settings/panes/pref_obj.c
     app/lvgl/lv_disp_drv_app.c
     app/lvgl/lv_sdl_drv_key_input.c
     app/lvgl/lv_sdl_drv_pointer_input.c

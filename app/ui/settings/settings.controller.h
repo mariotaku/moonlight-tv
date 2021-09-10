@@ -21,3 +21,7 @@ typedef struct {
 lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent);
 
 extern const lv_obj_controller_class_t settings_controller_cls;
+extern const lv_obj_controller_class_t settings_pane_basic_cls;
+extern const lv_obj_controller_class_t settings_pane_host_cls;
+extern const lv_obj_controller_class_t settings_pane_input_cls;
+extern const lv_obj_controller_class_t settings_pane_about_cls;

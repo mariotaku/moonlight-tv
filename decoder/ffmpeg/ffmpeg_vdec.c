@@ -20,16 +20,22 @@
 #include "common.h"
 #include "ffmpeg.h"
 
+#ifdef __WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
 static unsigned char *ffmpeg_buffer;
 
+static int num_cores();
+
 static int setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags) {
     int avc_flags = SLICE_THREADING;
 
-    if (ffmpeg_init(videoFormat, width, height, avc_flags, SDL_BUFFER_FRAMES, sysconf(_SC_NPROCESSORS_ONLN)) < 0) {
+    if (ffmpeg_init(videoFormat, width, height, avc_flags, SDL_BUFFER_FRAMES, num_cores()) < 0) {
         fprintf(stderr, "Couldn't initialize video decoding\n");
         return -1;
     }
@@ -72,6 +78,18 @@ static int decode_submit(PDECODE_UNIT decodeUnit) {
         fprintf(stderr, "Couldn't lock mutex\n");
     }
     return DR_OK;
+}
+
+static int num_cores() {
+#ifdef __WIN32
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return (int) sysinfo.dwNumberOfProcessors;
+#elif __linux
+    return (int) sysconf(_SC_NPROCESSORS_ONLN);
+#else
+    return 1;
+#endif
 }
 
 DECODER_RENDERER_CALLBACKS decoder_callbacks_ffmpeg = {

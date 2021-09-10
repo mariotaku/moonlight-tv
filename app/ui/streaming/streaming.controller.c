@@ -24,7 +24,7 @@ static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
 
     const STREAMING_SCENE_ARGS *req = (STREAMING_SCENE_ARGS *) args;
-    streaming_begin(req->server, req->app);
+//    streaming_begin(req->server, req->app);
 
     streaming_overlay_init();
 }

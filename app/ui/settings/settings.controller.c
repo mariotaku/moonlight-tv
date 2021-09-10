@@ -1,6 +1,4 @@
 #include "settings.controller.h"
-#include <stdlib.h>
-#include "panes/basic.pane.h"
 
 typedef struct {
     const char *icon;
@@ -9,11 +7,11 @@ typedef struct {
 } settings_entry_t;
 
 static const settings_entry_t entries[] = {
-        {LV_SYMBOL_DUMMY,    "Basic Settings",   &settings_pane_basic_cls},
-        {LV_SYMBOL_DUMMY,    "Host Settings",    &settings_pane_basic_cls},
-        {LV_SYMBOL_KEYBOARD, "Input Settings",   &settings_pane_basic_cls},
-        {LV_SYMBOL_VIDEO,    "Decoder Settings", &settings_pane_basic_cls},
-        {LV_SYMBOL_DUMMY,    "About",            &settings_pane_basic_cls},
+        {LV_SYMBOL_DUMMY, "Basic Settings",   &settings_pane_basic_cls},
+        {LV_SYMBOL_DUMMY, "Host Settings",    &settings_pane_host_cls},
+        {LV_SYMBOL_DUMMY, "Input Settings",   &settings_pane_input_cls},
+        {LV_SYMBOL_DUMMY, "Decoder Settings", &settings_pane_basic_cls},
+        {LV_SYMBOL_DUMMY, "About",            &settings_pane_about_cls},
 };
 static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
