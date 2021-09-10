@@ -13,7 +13,7 @@
 #include "ui/config.h"
 
 #include "lvgl.h"
-#include "gpu/lv_gpu_sdl.h"
+#include "lvgl/lv_disp_drv_app.h"
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_sdl_drv_pointer_input.h"
 #include "lvgl/lv_sdl_img.h"
@@ -34,8 +34,6 @@ FILE *app_logfile = NULL;
 
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
-
-static void lv_bg_draw(lv_area_t *area);
 
 lv_controller_manager_t *app_uimanager;
 
@@ -91,15 +89,13 @@ int main(int argc, char *argv[]) {
     if (window_flags & SDL_WINDOW_RESIZABLE) {
         SDL_SetWindowMinimumSize(window, 960, 540);
     }
-    int w, h;
+    int w = 0, h = 0;
     SDL_GetWindowSize(window, &w, &h);
+    SDL_assert(w > 0 && h > 0);
     ui_display_size(w, h);
 
     lv_init();
-    lv_disp_t *disp = lv_sdl_display_init(window);
-    disp->bg_color = lv_color_make(0, 0, 0);
-    disp->bg_opa = 0;
-    disp->bg_fn = lv_bg_draw;
+    lv_disp_t *disp = lv_app_display_init(window);
     disp->theme->font_small = &lv_font_montserrat_24;
     disp->theme->font_large = &lv_font_montserrat_32;
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
@@ -131,8 +127,8 @@ int main(int argc, char *argv[]) {
 
     lv_sdl_deinit_pointer(indev_pointer);
     lv_sdl_deinit_key_input(indev_key);
-    lv_sdl_display_deinit(disp);
-//    lv_deinit();
+    lv_app_display_deinit(disp);
+    lv_deinit();
 
     SDL_DestroyWindow(window);
 
@@ -156,16 +152,4 @@ GS_CLIENT app_gs_client_new() {
     SDL_assert(client);
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;
-}
-
-static void lv_bg_draw(lv_area_t *area) {
-    SDL_Rect rect = {.x=area->x1, .y= area->y1, .w = lv_area_get_width(area), .h = lv_area_get_height(area)};
-    lv_disp_t *disp = lv_disp_get_default();
-    lv_disp_drv_t *driver = disp->driver;
-    SDL_Renderer *renderer = driver->user_data;
-    SDL_assert(SDL_GetRenderTarget(renderer) == lv_disp_get_draw_buf(disp)->buf_act);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-    SDL_RenderSetClipRect(renderer, NULL);
-    SDL_RenderFillRect(renderer, &rect);
 }

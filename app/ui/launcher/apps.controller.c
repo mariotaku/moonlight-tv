@@ -266,6 +266,7 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST
 static void open_pair(apps_controller_t *controller) {
     pair_state_t *state = SDL_malloc(sizeof(pair_state_t));
     SDL_memset(state, 0, sizeof(pair_state_t));
+    state->controller = controller;
     if (!pcmanager_pair(pcmanager, controller->node->server, state->pin, (pcmanager_callback_t) pair_result_cb,
                         state)) {
         SDL_free(state);

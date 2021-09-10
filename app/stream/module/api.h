@@ -33,13 +33,11 @@
 #define DECODER_EXPORTED __attribute__((visibility("default")))
 #endif
 
-typedef struct HOST_CONTEXT
-{
+typedef struct HOST_CONTEXT {
     void (*logvprintf)(const char *, const char *, const char *, va_list);
 } HOST_CONTEXT, *PHOST_CONTEXT;
 
-typedef struct DECODER_INFO
-{
+typedef struct DECODER_INFO {
     /* Decoder passes the check */
     bool valid;
     /* Decoder supports hardware acceleration */
@@ -54,31 +52,41 @@ typedef struct DECODER_INFO
     int colorRange;
     int maxBitrate;
     int audioConfig;
-} * PDECODER_INFO, DECODER_INFO;
+} *PDECODER_INFO, DECODER_INFO;
 
-typedef struct AUDIO_INFO
-{
+typedef struct AUDIO_INFO {
     bool valid;
     int configuration;
-} * PAUDIO_INFO, AUDIO_INFO;
+} *PAUDIO_INFO, AUDIO_INFO;
+
+typedef struct SDL_Renderer HOST_RENDERER;
+
+typedef struct HOST_RENDER_CONTEXT {
+    bool (*const queueSubmit)(void * data, unsigned int pts);
+
+    HOST_RENDERER *renderer;
+} HOST_RENDER_CONTEXT;
 
 typedef void (*PresenterEnterFullScreen)(void);
+
 typedef void (*PresenterEnterOverlay)(int x, int y, int w, int h);
 
 typedef bool (*RenderQueueSubmit)(void *);
-typedef bool (*RenderSetup)(PSTREAM_CONFIGURATION conf, RenderQueueSubmit queueSubmit);
+
+typedef bool (*RenderSetup)(PSTREAM_CONFIGURATION conf, HOST_RENDER_CONTEXT *host_ctx);
+
 typedef bool (*RenderSubmit)(void *);
+
 typedef bool (*RenderDraw)();
+
 typedef void (*RenderCleanup)();
 
-typedef struct _VIDEO_PRESENTER_CALLBACKS
-{
+typedef struct _VIDEO_PRESENTER_CALLBACKS {
     PresenterEnterFullScreen enterFullScreen;
     PresenterEnterOverlay enterOverlay;
 } VIDEO_PRESENTER_CALLBACKS, *PVIDEO_PRESENTER_CALLBACKS;
 
-typedef struct _VIDEO_RENDER_CALLBACKS
-{
+typedef struct _VIDEO_RENDER_CALLBACKS {
     RenderSetup renderSetup;
     RenderSubmit renderSubmit;
     RenderDraw renderDraw;

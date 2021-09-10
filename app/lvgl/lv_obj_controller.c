@@ -33,7 +33,11 @@ struct lv_controller_manager_t {
  *  STATIC PROTOTYPES
  **********************/
 
-static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent, void *args);
+static manager_stack_t *item_new(const lv_obj_controller_class_t *cls);
+
+static lv_obj_controller_t *item_create_controller(lv_controller_manager_t *manager, manager_stack_t *item, void *args);
+
+static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent);
 
 static void item_destroy_view(lv_controller_manager_t *manager, manager_stack_t *item);
 
@@ -48,7 +52,6 @@ static void view_cb_delete(lv_event_t *event);
 /**********************
  *      MACROS
  **********************/
-
 
 
 /**********************
@@ -79,14 +82,14 @@ void lv_controller_manager_del(lv_controller_manager_t *manager) {
 void lv_controller_manager_push(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args) {
     LV_ASSERT(manager);
     LV_ASSERT(cls);
+    manager_stack_t *item = item_new(cls);
+    lv_obj_t *parent = manager->parent;
+    item_create_controller(manager, item, args);
+    /* Destroy view of previous screen */
     if (manager->top) {
         item_destroy_view(manager, manager->top);
     }
-    manager_stack_t *item = lv_mem_alloc(sizeof(manager_stack_t));
-    lv_memset_00(item, sizeof(manager_stack_t));
-    item->cls = cls;
-    lv_obj_t *parent = manager->parent;
-    item_create_view(manager, item, parent, args);
+    item_create_view(manager, item, parent);
     manager_stack_t *top = manager->top;
     item->prev = top;
     manager->top = item;
@@ -95,16 +98,16 @@ void lv_controller_manager_push(lv_controller_manager_t *manager, const lv_obj_c
 void lv_controller_manager_replace(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args) {
     LV_ASSERT(manager);
     LV_ASSERT(cls);
-    manager_stack_t *top = manager->top;
-    if (top) {
-        item_destroy_view(manager, top);
-        item_destroy_controller(top);
-    } else {
-        top = manager->top = lv_mem_alloc(sizeof(manager_stack_t));
-        lv_memset_00(top, sizeof(manager_stack_t));
+    manager_stack_t *top = item_new(cls);
+    item_create_controller(manager, top, args);
+    manager_stack_t *old = manager->top;
+    if (old) {
+        item_destroy_view(manager, old);
+        item_destroy_controller(old);
+        lv_mem_free(old);
     }
-    top->cls = cls;
-    item_create_view(manager, top, manager->parent, args);
+    manager->top = top;
+    item_create_view(manager, top, manager->parent);
 }
 
 
@@ -112,13 +115,15 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     LV_ASSERT(manager);
     manager_stack_t *top = manager->top;
     if (!top) return;
-
+    manager_stack_t *prev = top->prev;
+    if (prev) {
+        item_create_controller(manager, prev, NULL);
+    }
     item_destroy_view(manager, top);
     item_destroy_controller(top);
-    manager_stack_t *prev = top->prev;
     lv_mem_free(top);
     if (prev) {
-        item_create_view(manager, prev, manager->parent, NULL);
+        item_create_view(manager, prev, manager->parent);
     }
     manager->top = prev;
 }
@@ -136,17 +141,32 @@ bool lv_controller_manager_dispatch_event(lv_controller_manager_t *manager, int 
  *   STATIC FUNCTIONS
  **********************/
 
-static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent, void *args) {
+static manager_stack_t *item_new(const lv_obj_controller_class_t *cls) {
+    LV_ASSERT(cls->instance_size);
+    manager_stack_t *item = lv_mem_alloc(sizeof(manager_stack_t));
+    lv_memset_00(item, sizeof(manager_stack_t));
+    item->cls = cls;
+    return item;
+}
+
+static lv_obj_controller_t *item_create_controller(lv_controller_manager_t *manager, manager_stack_t *item,
+                                                   void *args) {
+    if (item->controller) return item->controller;
+    const lv_obj_controller_class_t *cls = item->cls;
+    LV_ASSERT(cls->instance_size);
+    lv_obj_controller_t *controller = lv_mem_alloc(cls->instance_size);
+    lv_memset_00(controller, cls->instance_size);
+    controller->cls = cls;
+    controller->manager = manager;
+    cls->constructor_cb(controller, args);
+    item->controller = controller;
+    return controller;
+}
+
+static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent) {
+    LV_ASSERT(item->controller);
     const lv_obj_controller_class_t *cls = item->cls;
     lv_obj_controller_t *controller = item->controller;
-    if (!controller) {
-        LV_ASSERT(cls->instance_size);
-        controller = item->controller = lv_mem_alloc(cls->instance_size);
-        lv_memset_00(controller, cls->instance_size);
-        controller->cls = cls;
-        controller->manager = manager;
-        cls->constructor_cb(controller, args);
-    }
     lv_obj_t *view = cls->create_obj_cb(controller, parent);
     item->view = controller->obj = view;
     if (cls->obj_created_cb) {

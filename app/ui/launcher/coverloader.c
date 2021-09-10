@@ -148,7 +148,10 @@ void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_ob
     req->target_height = target_height;
     req->finished = false;
     loader->reqlist = reqlist_append(loader->reqlist, req);
-    req->task = img_loader_load(loader->base_loader, req, &coverloader_cb);
+    img_loader_task_t *task = img_loader_load(loader->base_loader, req, &coverloader_cb);
+    /* If no task returned, then the request has been freed already */
+    if (!task) return;
+    req->task = task;
 }
 
 static char *coverloader_cache_dir() {
@@ -280,7 +283,7 @@ static void img_loader_result_cb(coverloader_req_t *req) {
                 .data.texture = req->loader->defcover,
         };
         lv_sdl_img_src_stringify(&src, holder->cover_src);
-                lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
     lv_img_set_src(req->target, holder->cover_src);
     req->loader->reqlist = reqlist_remove(req->loader->reqlist, req);

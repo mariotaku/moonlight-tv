@@ -110,7 +110,6 @@ if (TARGET_WEBOS)
     add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
     add_subdirectory(system/webos/prebuilts)
 
-    pkg_check_modules(GLES REQUIRED egl glesv2)
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
@@ -124,13 +123,10 @@ elseif (TARGET_RASPI)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(GLES REQUIRED glesv2)
     pkg_check_modules(OPUS REQUIRED opus)
 
     set(BUILD_SHARED_CORE_LIBS ON)
 elseif (TARGET_DESKTOP)
-    set(OpenGL_GL_PREFERENCE "GLVND")
-    find_package(OpenGL REQUIRED)
     find_package(MbedTLS REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -188,6 +184,7 @@ set(SOURCES
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
     app/ui/settings/panes/basic.pane.c
+    app/lvgl/lv_disp_drv_app.c
     app/lvgl/lv_sdl_drv_key_input.c
     app/lvgl/lv_sdl_drv_pointer_input.c
     app/lvgl/lv_ext_utils.c
@@ -249,13 +246,13 @@ target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_pa
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
-#if (TARGET_WINDOWS)
-#    pkg_check_modules(MICRODNS REQUIRED microdns)
-#    target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
-#else()
+if (TARGET_WINDOWS)
+    pkg_check_modules(MICRODNS REQUIRED microdns)
+    target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
+else()
     include(BuildMicrodns)
     target_link_libraries(moonlight PRIVATE microdns)
-#endif()
+endif()
 
 
 target_link_libraries(moonlight PRIVATE
@@ -287,11 +284,9 @@ if (TARGET_WEBOS)
         APPID="${WEBOS_APPINFO_ID}"
         APPLOG_FILE=app_logfile
     )
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
-    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
     moonlight_add_module(TARGETS moonlight-smp moonlight-smp-webos4 moonlight-smp-webos3)
     moonlight_add_module(TARGETS moonlight-dile-legacy)
     moonlight_add_module(TARGETS moonlight-ndl-webos5 moonlight-ndl)
@@ -309,25 +304,18 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
 elseif(TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI)
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GLES2 HAVE_GLES2 _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
     target_compile_definitions(moonlight PUBLIC HAVE_SURROUND_SOUND)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
 
-    target_compile_options(moonlight PRIVATE ${GLES_CFLAGS})
-    target_include_directories(moonlight SYSTEM PRIVATE ${GLES_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${GLES_LIBRARIES})
-    target_link_options(moonlight PRIVATE ${GLES_LDFLAGS})
 
     moonlight_add_module(TARGETS moonlight-pi LINK)
     moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
     moonlight_add_module(TARGETS moonlight-alsa LINK)
     moonlight_add_module(TARGETS moonlight-pulse LINK)
-
-    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GLES2)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
@@ -337,10 +325,9 @@ elseif(TARGET_RASPI)
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
-    target_compile_definitions(moonlight PUBLIC NK_SDL_GL2 HAVE_GL2)
 
     if(TARGET_DARWIN)
-        target_compile_definitions(moonlight PUBLIC OS_DARWIN GL_SILENCE_DEPRECATION)
+        target_compile_definitions(moonlight PUBLIC OS_DARWIN)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif(TARGET_LINUX)
         target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
@@ -353,10 +340,8 @@ elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
     target_link_libraries(moonlight PRIVATE mbedtls)
-    target_link_libraries(moonlight PRIVATE OpenGL::GL)
 
-#    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
-#    target_compile_definitions(moonlight-ffmpeg PRIVATE HAVE_GL2)
+    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
@@ -436,7 +421,6 @@ elseif (TARGET_RASPI)
         "libc6 (>= 2.28)"
         "libsdl2-2.0-0 (>= 2.0.4)"
         "libsdl2-image-2.0-0 (>= 2.0.1)"
-        "libgles2"
         "libopus0 (>= 1.1)"
         "libcurl4 (>= 7.16.2)"
         "libuuid1 (>= 2.16)"

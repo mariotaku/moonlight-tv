@@ -4,12 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if __WIN32
-#define PATH_SEPARATOR '\\'
-#else
-#define PATH_SEPARATOR '/'
-#endif
-
 char *path_join(const char *parent, const char *basename) {
     unsigned int parentlen = strlen(parent);
     if (parentlen && parent[parentlen - 1] == PATH_SEPARATOR) {

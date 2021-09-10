@@ -84,7 +84,7 @@ static void cb_pc_selected(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_add_state(controller->detail, LV_STATE_USER_1);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
-//    if (selected->selected) return;
+    if (selected->selected) return;
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
     uint32_t pclen = lv_obj_get_child_cnt(controller->pclist);
     for (int i = 0; i < pclen; i++) {

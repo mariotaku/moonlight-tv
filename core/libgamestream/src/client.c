@@ -51,8 +51,11 @@
 
 #include <uuid/uuid.h>
 #include <arpa/inet.h>
+
 #if __linux
+
 #include <linux/limits.h>
+
 #endif
 
 #define PATH_SEPARATOR '/'
@@ -316,7 +319,7 @@ static void bytes_to_hex(const unsigned char *in, char *out, size_t len) {
     out[len * 2] = 0;
 }
 
-static void hex_to_bytes(const char *in, unsigned char *out, size_t *len) {
+static void hex_to_bytes(const char *in, unsigned char *out, size_t maxlen, size_t *len) {
     static const uint8_t map_table[] = {
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0, /* 0x30(0)-0x3F(?) */
             0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* 0x40(@)-0x4F(O) */
@@ -325,10 +328,11 @@ static void hex_to_bytes(const char *in, unsigned char *out, size_t *len) {
     };
     size_t inl = strlen(in);
     if (inl % 2) return;
+    assert (maxlen >= inl / 2);
     for (int count = 0; count < inl; count += 2) {
         char ch1 = in[count], ch2 = in[count + 1];
         if (ch1 < 0x30 || ch1 > 0x66 || ch2 < 0x30 || ch2 > 0x66) return;
-        out[count / 2] = map_table[ch1 - 0x30] << 8 | map_table[ch2 - 0x30];
+        out[count / 2] = (map_table[ch1 - 0x30] << 4 | map_table[ch2 - 0x30]) & 0xFF;
     }
     if (len) {
         *len = inl / 2;
@@ -471,7 +475,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
 
     unsigned char server_cert_str[8192];
     size_t plaincert_len = 0;
-    hex_to_bytes(result, server_cert_str, &plaincert_len);
+    hex_to_bytes(result, server_cert_str, sizeof(server_cert_str) - 1, &plaincert_len);
     server_cert_str[plaincert_len] = 0;
 
     if ((ret = mbedtls_x509_crt_parse(&server_cert, server_cert_str, plaincert_len + 1)) != 0) {
@@ -527,11 +531,13 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
         goto cleanup;
     }
 
-    unsigned char enc_server_challenge_response[48];
-    hex_to_bytes(result, enc_server_challenge_response, NULL);
+    unsigned char enc_server_challenge_response[128];
+    size_t challenge_resp_len;
+    hex_to_bytes(result, enc_server_challenge_response, sizeof(enc_server_challenge_response), &challenge_resp_len);
 
-    unsigned char dec_server_challenge_response[48];
-    crypt_data(&aes_dec, MBEDTLS_AES_DECRYPT, enc_server_challenge_response, dec_server_challenge_response, 48);
+    unsigned char dec_server_challenge_response[128];
+    crypt_data(&aes_dec, MBEDTLS_AES_DECRYPT, enc_server_challenge_response, dec_server_challenge_response,
+               challenge_resp_len);
 
     // Using another 16 bytes secret, compute a challenge response hash using the secret, our cert sig, and the challenge
     unsigned char client_secret[16];
@@ -581,7 +587,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     }
 
     struct pairing_secret_t pairing_secret;
-    hex_to_bytes(result, (unsigned char *) &pairing_secret, NULL);
+    hex_to_bytes(result, (unsigned char *) &pairing_secret, sizeof(pairing_secret), NULL);
 
     // Ensure the authenticity of the data
     if (!verifySignature(pairing_secret.secret, sizeof(pairing_secret.secret),

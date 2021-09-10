@@ -68,7 +68,6 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
     }
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         if (cur->type != RR_A) continue;
-        applog_i("Discovery", "Found A record: %s", cur->data.A.addr_str);
         pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, false, NULL, NULL);
     }
 }

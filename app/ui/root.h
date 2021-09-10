@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <SDL.h>
+
 #include "ui/config.h"
 
 #include "util/navkey.h"
@@ -21,6 +23,15 @@ enum UI_INPUT_MODE {
 extern short ui_display_width, ui_display_height;
 extern short ui_logic_width, ui_logic_height;
 extern enum UI_INPUT_MODE ui_input_mode;
+
+typedef struct render_frame_req_t {
+    void *data;
+    unsigned int pts;
+    SDL_cond *cond;
+    bool sent;
+} render_frame_req_t;
+
+bool ui_render_background();
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2);
 
