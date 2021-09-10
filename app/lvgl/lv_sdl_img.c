@@ -22,13 +22,18 @@ void lv_sdl_img_decoder_init(lv_img_decoder_t *decoder) {
 void lv_sdl_img_src_stringify(const lv_sdl_img_src_t *src, char *str) {
     SDL_memcpy(str, LV_SDL_IMG_HEAD, 8);
     size_t olen;
-    mbedtls_base64_encode((unsigned char *) &str[8], LV_SDL_IMG_LEN - 8, &olen, (const unsigned char *) src,
-                          sizeof(lv_sdl_img_src_t));
+    int ret = mbedtls_base64_encode((unsigned char *) &str[8], LV_SDL_IMG_LEN - 8, &olen,
+                                    (const unsigned char *) src, sizeof(lv_sdl_img_src_t));
+    LV_ASSERT(ret == 0);
+    (void) ret;
 }
 
 void lv_sdl_img_src_parse(const char *str, lv_sdl_img_src_t *src) {
     size_t olen, slen = SDL_strlen(str) - 8;
-    mbedtls_base64_decode((unsigned char *) src, sizeof(lv_sdl_img_src_t), &olen, (unsigned char *) &str[8], slen);
+    int ret = mbedtls_base64_decode((unsigned char *) src, sizeof(lv_sdl_img_src_t), &olen,
+                                    (unsigned char *) &str[8], slen);
+    LV_ASSERT(ret == 0);
+    (void) ret;
 }
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header) {
