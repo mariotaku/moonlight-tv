@@ -2,8 +2,7 @@
 
 #include <SDL_image.h>
 #include <gpu/sdl/lv_gpu_sdl_texture_cache.h>
-
-static char img_fmt[LV_SDL_IMG_LEN] = "";
+#include <mbedtls/base64.h>
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header);
 
@@ -11,7 +10,7 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
 
 void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_decoder_dsc_t *dsc);
 
-static void img_fmt_init();
+static bool is_sdl_img_src(const void *src);
 
 void lv_sdl_img_decoder_init(lv_img_decoder_t *decoder) {
     IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
@@ -21,19 +20,19 @@ void lv_sdl_img_decoder_init(lv_img_decoder_t *decoder) {
 }
 
 void lv_sdl_img_src_stringify(const lv_sdl_img_src_t *src, char *str) {
-    img_fmt_init();
     SDL_memcpy(str, LV_SDL_IMG_HEAD, 8);
-    SDL_snprintf(&str[8], LV_SDL_IMG_LEN - 8, img_fmt, src->w, src->h, src->cf, src->type,
-                 src->data.pointer, src->data_len);
+    size_t olen;
+    mbedtls_base64_encode((unsigned char *) &str[8], LV_SDL_IMG_LEN - 8, &olen, (const unsigned char *) src,
+                          sizeof(lv_sdl_img_src_t));
 }
 
 void lv_sdl_img_src_parse(const char *str, lv_sdl_img_src_t *src) {
-    img_fmt_init();
-    SDL_sscanf(&str[8], img_fmt, &src->w, &src->h, &src->cf, &src->type, &src->data.pointer, &src->data_len);
+    size_t olen, slen = SDL_strlen(str) - 8;
+    mbedtls_base64_decode((unsigned char *) src, sizeof(lv_sdl_img_src_t), &olen, (unsigned char *) &str[8], slen);
 }
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header) {
-    if (((char *) src)[0] == '!' && SDL_memcmp(src, LV_SDL_IMG_HEAD, 8) != 0) {
+    if (!is_sdl_img_src(src)) {
         return LV_RES_INV;
     }
     lv_sdl_img_src_t sdl_src;
@@ -45,7 +44,7 @@ lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src
 }
 
 lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_decoder_dsc_t *dsc) {
-    if (SDL_memcmp(dsc->src, LV_SDL_IMG_HEAD, 8) != 0) {
+    if (!is_sdl_img_src(dsc->src)) {
         return LV_RES_INV;
     }
     lv_sdl_img_src_t sdl_src;
@@ -94,7 +93,7 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
 }
 
 void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_decoder_dsc_t *dsc) {
-    if (SDL_memcmp(dsc->src, LV_SDL_IMG_HEAD, 8) != 0) {
+    if (!is_sdl_img_src(dsc->src)) {
         return;
     }
     lv_sdl_img_src_t sdl_src;
@@ -116,11 +115,6 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
     }
 }
 
-#define NUMSEG "%%0%lullx"
-
-static void img_fmt_init() {
-    if (img_fmt[0]) return;
-    SDL_snprintf(img_fmt, LV_SDL_IMG_LEN, NUMSEG NUMSEG NUMSEG NUMSEG NUMSEG NUMSEG, sizeof(lv_coord_t) * 2,
-                 sizeof(lv_coord_t) * 2, sizeof(lv_img_cf_t) * 2, sizeof(lv_sdl_img_src_type_t) * 2, sizeof(void *) * 2,
-                 sizeof(int) * 2);
+static inline bool is_sdl_img_src(const void *src) {
+    return ((char *) src)[0] == '!' && SDL_memcmp(src, LV_SDL_IMG_HEAD, 8) == 0;
 }
