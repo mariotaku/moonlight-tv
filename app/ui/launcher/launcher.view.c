@@ -5,6 +5,8 @@
 
 #include "launcher.controller.h"
 
+static void open_manual_add(lv_event_t *event);
+
 static void open_settings(lv_event_t *event);
 
 lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
@@ -71,6 +73,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_grow(exit_btn, 0);
     lv_obj_set_style_border_side(exit_btn, LV_BORDER_SIDE_NONE, 0);
 
+    lv_obj_add_event_cb(add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(exit_btn, app_request_exit, LV_EVENT_CLICKED, NULL);
 
@@ -83,4 +86,16 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void open_settings(lv_event_t *event) {
     lv_obj_controller_t *controller = event->user_data;
     lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
+}
+
+static void manual_add_cb(const pcmanager_resp_t *resp, void *userdata);
+
+static void manual_add_cb(const pcmanager_resp_t *resp, void *userdata) {
+
+}
+
+static void open_manual_add(lv_event_t *event) {
+    lv_obj_controller_t *controller = event->user_data;
+//    lv_obj_t *popup = lv_obj_create(controller->obj);
+    pcmanager_manual_add(pcmanager, "192.168.4.16", manual_add_cb, controller);
 }

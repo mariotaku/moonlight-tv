@@ -155,19 +155,7 @@ void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_ob
 }
 
 static char *coverloader_cache_dir() {
-    char *cachedir = SDL_getenv("XDG_CACHE_DIR"), *confdir = NULL;
-    if (cachedir) {
-        confdir = path_join(cachedir, "moonlight-tv");
-    } else {
-        cachedir = SDL_getenv("HOME");
-        confdir = path_join(cachedir, ".moonlight-tv-covers");
-    }
-    if (access(confdir, F_OK) == -1) {
-        if (errno == ENOENT) {
-            MKDIR(confdir, 0755);
-        }
-    }
-    return confdir;
+    return path_cache();
 }
 
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req) {

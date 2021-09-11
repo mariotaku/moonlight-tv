@@ -13,3 +13,7 @@ char *path_join(const char *parent, const char *basename);
 void path_join_to(char *dest, size_t maxlen, const char *parent, const char *basename);
 
 char *path_pref();
+
+char *path_cache();
+
+void path_dir_ensure(const char *dir);

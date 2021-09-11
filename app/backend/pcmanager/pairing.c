@@ -11,6 +11,8 @@ static int pin_random(int min, int max);
 
 int pair_worker(cm_request_t *req);
 
+int manual_add_worker(cm_request_t *req);
+
 
 bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
                     void *userdata) {
@@ -20,6 +22,13 @@ bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, 
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
     req->arg1 = strdup(pin);
     SDL_CreateThread((SDL_ThreadFunction) pair_worker, "pairing", req);
+    return true;
+}
+
+bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata) {
+    cm_request_t *req = cm_request_new(manager, NULL, callback, userdata);
+    req->arg1 = strdup(address);
+    SDL_CreateThread((SDL_ThreadFunction) manual_add_worker, "add_svr", req);
     return true;
 }
 
@@ -73,8 +82,8 @@ static int pin_random(int min, int max) {
 int pair_worker(cm_request_t *req) {
     pcmanager_t *manager = req->manager;
     GS_CLIENT client = app_gs_client_new();
-    gs_set_timeout(client, 60);
     PSERVER_DATA server = serverdata_clone(req->server);
+    gs_set_timeout(client, 60);
     int ret = gs_pair(client, server, req->arg1);
     gs_destroy(client);
 
@@ -89,6 +98,14 @@ int pair_worker(cm_request_t *req) {
         serverdata_free(server);
     }
     pcmanager_worker_finalize(resp, req->callback, req->userdata);
+    SDL_free(req->arg1);
+    SDL_free(req);
+    return 0;
+}
+
+int manual_add_worker(cm_request_t *req) {
+    pcmanager_t *manager = req->manager;
+    pcmanager_upsert_worker(manager, req->arg1, true, req->callback, req->userdata);
     SDL_free(req->arg1);
     SDL_free(req);
     return 0;

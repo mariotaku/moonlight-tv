@@ -9,14 +9,9 @@
 #include <dlfcn.h>
 #endif
 
-#include "util/logging.h"
+#include "symbols.h"
 
-#if TARGET_LGNC
-extern DECODER_SYMBOLS decoder_lgnc;
-#define LGNC_SYMBOLS &decoder_lgnc
-#else
-#define LGNC_SYMBOLS NULL
-#endif
+#include "util/logging.h"
 
 static MODULE_LIB_DEFINITION _ffmpeg_lib = {"ffmpeg", "ffmpeg"};
 static MODULE_LIB_DEFINITION _ndl_libs[2] = {{"ndl_webos5", "ndl-webos5"},
@@ -30,9 +25,9 @@ static MODULE_LIB_DEFINITION _pi_lib = {"pi", "pi"};
 
 MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
         {"No codec", NULL, NULL, 0, NULL},
-        {"FFMPEG (SW codec)", "ffmpeg", &_ffmpeg_lib, 1, NULL},
+        {"FFMPEG (SW codec)", "ffmpeg", &_ffmpeg_lib, 1, DECODER_SYMBOLS_FFMPEG},
         {"webOS NDL", "ndl", _ndl_libs, 2, NULL},
-        {"NetCast Legacy", "lgnc", &_lgnc_lib, 1, LGNC_SYMBOLS},
+        {"NetCast Legacy", "lgnc", &_lgnc_lib, 1, NULL},
         {"webOS SMP", "smp", _smp_libs, 3, NULL},
         {"webOS DILE", "dile", _dile_libs, 2, NULL},
         {"Raspberry Pi", "pi", &_pi_lib, 1, NULL},

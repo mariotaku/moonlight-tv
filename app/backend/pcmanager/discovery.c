@@ -40,6 +40,7 @@ static int discovery_worker(discovery_task_t *task) {
 
     if ((r = mdns_init(&ctx, NULL, MDNS_PORT)) < 0)
         goto err;
+    applog_i("Discovery", "Start mDNS discovery");
     if ((r = mdns_listen(ctx, service_name, 1, RR_PTR, 10, (mdns_stop_func) discovery_stop,
                          (mdns_listen_callback) discovery_callback, task)) < 0)
         goto err;
@@ -48,6 +49,7 @@ static int discovery_worker(discovery_task_t *task) {
         mdns_strerror(r, err, sizeof(err));
         applog_e("Discovery", "fatal: %s", err);
     }
+    applog_i("Discovery", "Stop mDNS discovery");
     mdns_destroy(ctx);
     SDL_free(task);
     discovery_task = NULL;
@@ -67,6 +69,7 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
         return;
     }
     if (task->stop) return;
+    mdns_entries_print(entries);
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         if (cur->type != RR_A) continue;
         pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, false, NULL, NULL);

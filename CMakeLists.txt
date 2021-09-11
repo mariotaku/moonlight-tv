@@ -144,6 +144,9 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_CORE_LIBS})
     endif()
 unset(BUILD_SHARED_LIBS)
 
+if (TARGET_DESKTOP)
+    set(DECODER_FFMPEG_STATIC ON)
+endif()
 add_subdirectory(decoder)
 add_subdirectory(audio)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
@@ -168,8 +171,9 @@ set(SOURCES
     app/stream/module/module.c
     app/stream/module/audio.c
     app/stream/module/decoder.c
-        app/stream/session/session.c
-        app/stream/session/connection.c
+    app/stream/module/symbols.c
+    app/stream/session/session.c
+    app/stream/session/connection.c
     app/stream/settings.c
     app/stream/video/delegate.c
     app/stream/video/dummy.c
@@ -179,7 +183,7 @@ set(SOURCES
     app/ui/launcher/apps.controller.c
     app/ui/launcher/appitem.view.c
     app/ui/launcher/coverloader.c
-        app/ui/streaming/streaming.view.c
+    app/ui/streaming/streaming.view.c
     app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c
@@ -245,6 +249,8 @@ target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENG
 target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST=1)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/decoder)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/audio)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 
@@ -337,7 +343,7 @@ elseif (TARGET_DESKTOP)
         target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
     elseif(TARGET_WINDOWS)
-        target_compile_definitions(moonlight PUBLIC OS_WINDOWS)
+        target_compile_definitions(moonlight PUBLIC OS_WINDOWS TARGET_WINDOWS)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Windows")
     endif()
 
