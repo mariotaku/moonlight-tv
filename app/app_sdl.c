@@ -152,6 +152,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     lv_app_display_resize(lv_disp_get_default(), event->window.data1, event->window.data2);
                     ui_display_size(event->window.data1, event->window.data2);
+                    bus_pushevent(USER_SIZE_CHANGED, NULL, NULL);
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");

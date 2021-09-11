@@ -22,8 +22,10 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_pad_all(content, 0, 0);
 
     lv_obj_t *nav = lv_obj_create(content);
+    lv_obj_t *nav_shade = lv_obj_create(content);
     lv_obj_t *detail = lv_obj_create(content);
     lv_obj_set_size(nav, lv_dpx(200), LV_PCT(100));
+    lv_obj_set_size(nav_shade, lv_dpx(200), LV_PCT(100));
     lv_obj_set_size(detail, lv_obj_get_width(parent) - lv_dpx(40), LV_PCT(100));
     lv_obj_align(detail, LV_ALIGN_RIGHT_MID, 0, 0);
     lv_obj_clear_flag(detail, LV_OBJ_FLAG_SCROLLABLE);
@@ -36,6 +38,17 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_pad_all(nav, 0, 0);
     lv_obj_set_style_radius(nav, 0, 0);
     lv_obj_set_style_border_width(nav, 0, 0);
+
+    lv_obj_set_style_pad_all(nav_shade, 0, 0);
+    lv_obj_set_style_radius(nav_shade, 0, 0);
+    lv_obj_set_style_border_width(nav_shade, 0, 0);
+    lv_obj_set_style_bg_color(nav_shade, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(nav_shade, LV_OPA_0, 0);
+    lv_obj_set_style_bg_opa(nav_shade, LV_OPA_40, LV_STATE_USER_1);
+    lv_obj_clear_flag(nav_shade, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(nav_shade, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_transition(nav_shade, &controller->tr_nav, 0);
+    lv_obj_set_style_transition(nav_shade, &controller->tr_detail, LV_STATE_USER_1);
 
     lv_obj_set_style_pad_all(detail, 0, 0);
     lv_obj_set_style_radius(detail, 0, 0);
@@ -78,6 +91,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(exit_btn, app_request_exit, LV_EVENT_CLICKED, NULL);
 
     controller->nav = nav;
+    controller->nav_shade = nav_shade;
     controller->detail = detail;
     controller->pclist = pclist;
     return win;

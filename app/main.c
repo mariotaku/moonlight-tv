@@ -111,6 +111,7 @@ int main(int argc, char *argv[]) {
     app_indev_key = indev_key;
 
     lv_obj_t *scr = lv_scr_act();
+    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_opa(scr, 0, 0);
     app_uimanager = lv_controller_manager_create(scr);
     lv_controller_manager_push(app_uimanager, &launcher_controller_class, NULL);

@@ -1,3 +1,4 @@
+#include <util/user_event.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -9,6 +10,8 @@ static void launcher_controller(struct lv_obj_controller_t *self, void *args);
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view);
+
+static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2);
 
 static void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata);
 
@@ -26,6 +29,7 @@ const lv_obj_controller_class_t launcher_controller_class = {
         .create_obj_cb = launcher_win_create,
         .obj_created_cb = launcher_view_init,
         .obj_deleted_cb = launcher_view_destroy,
+        .event_cb = launcher_event_cb,
         .instance_size = sizeof(launcher_controller_t),
 };
 
@@ -42,7 +46,9 @@ static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
             break;
         }
     }
-    static const lv_style_prop_t props[] = {LV_STYLE_OPA, LV_STYLE_TRANSLATE_X, LV_STYLE_TRANSLATE_Y, 0};
+    static const lv_style_prop_t props[] = {
+            LV_STYLE_OPA, LV_STYLE_BG_OPA, LV_STYLE_TRANSLATE_X, LV_STYLE_TRANSLATE_Y, 0
+    };
     lv_style_transition_dsc_init(&controller->tr_detail, props, lv_anim_path_ease_out, 200, 5, NULL);
     lv_style_transition_dsc_init(&controller->tr_nav, props, lv_anim_path_ease_out, 250, 5, NULL);
 }
@@ -73,6 +79,15 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);
 }
 
+static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+    switch (which) {
+        case USER_SIZE_CHANGED: {
+            break;
+        }
+    }
+    return false;
+}
+
 void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata) {
     launcher_controller_t *controller = userdata;
     update_pclist(controller);
@@ -83,6 +98,7 @@ static void cb_pc_selected(lv_event_t *event) {
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_add_state(controller->detail, LV_STATE_USER_1);
+    lv_obj_add_state(controller->nav_shade, LV_STATE_USER_1);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
     if (selected->selected) return;
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
@@ -120,6 +136,7 @@ static void cb_detail_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     if (lv_obj_get_parent(event->target) != controller->detail) return;
     lv_obj_add_state(controller->detail, LV_STATE_USER_1);
+    lv_obj_add_state(controller->nav_shade, LV_STATE_USER_1);
     applog_i("Launcher", "Focused content");
 }
 
@@ -131,5 +148,6 @@ static void cb_nav_focused(lv_event_t *event) {
     }
     if (!target) return;
     lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
+    lv_obj_clear_state(controller->nav_shade, LV_STATE_USER_1);
     applog_i("Launcher", "Focused navigation");
 }
