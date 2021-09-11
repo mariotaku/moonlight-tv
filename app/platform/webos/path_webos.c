@@ -1,24 +1,19 @@
 #include "util/path.h"
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/stat.h>
-
 #include <SDL.h>
 
-char *path_pref()
-{
+char *path_pref() {
     char *basedir = SDL_GetPrefPath("com.limelight", "moonlight-tv");
     char *confdir = path_join(basedir, "conf");
-    if (access(confdir, F_OK) == -1)
-    {
-        if (errno == ENOENT)
-        {
-            mkdir(confdir, 0755);
-        }
-    }
-    free(basedir);
+    SDL_free(basedir);
+    path_dir_ensure(confdir);
     return confdir;
+}
+
+char *path_cache() {
+    char *basedir = SDL_GetPrefPath("com.limelight", "moonlight-tv");
+    char *cachedir = path_join(basedir, "cache");
+    SDL_free(basedir);
+    path_dir_ensure(cachedir);
+    return cachedir;
 }
