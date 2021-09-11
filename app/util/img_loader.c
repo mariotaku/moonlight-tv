@@ -72,8 +72,10 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
 
 void img_loader_destroy(img_loader_t *loader) {
     SDL_assert(!loader->destroyed);
+    SDL_LockMutex(loader->queue_lock);
     loader->destroyed = true;
     SDL_CondSignal(loader->queue_cond);
+    SDL_UnlockMutex(loader->queue_lock);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
@@ -91,8 +93,8 @@ img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const im
     task->cancelled = SDL_FALSE;
     SDL_memcpy(&task->cb, cb, sizeof(img_loader_cb_t));
     loader_task_push(loader, task);
-    SDL_UnlockMutex(loader->queue_lock);
     SDL_CondSignal(loader->queue_cond);
+    SDL_UnlockMutex(loader->queue_lock);
     return task;
 }
 
@@ -165,30 +167,29 @@ static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
 
 static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2) {
     if (loader->destroyed) return;
-    notify_cb_t *args = malloc(sizeof(notify_cb_t));
-    args->arg1 = arg1;
-    args->arg2 = arg2;
-    args->fn = fn;
-    args->mutex = SDL_CreateMutex();
-    args->cond = SDL_CreateCond();
-    args->destroyed = &loader->destroyed;
-    loader->impl.run_on_main(loader, (img_loader_fn) notify_cb, args);
-    SDL_LockMutex(args->mutex);
-    while (!args->notified) {
-        SDL_CondWait(args->cond, args->mutex);
+    notify_cb_t args = {
+            .arg1 = arg1, .arg2 = arg2, .fn = fn,
+            .mutex = SDL_CreateMutex(), .cond = SDL_CreateCond(),
+            .destroyed = &loader->destroyed
+    };
+    loader->impl.run_on_main(loader, (img_loader_fn) notify_cb, &args);
+    SDL_LockMutex(args.mutex);
+    while (!args.notified) {
+        SDL_CondWait(args.cond, args.mutex);
     }
-    SDL_UnlockMutex(args->mutex);
-    SDL_DestroyMutex(args->mutex);
-    SDL_DestroyCond(args->cond);
-    free(args);
+    SDL_UnlockMutex(args.mutex);
+    SDL_DestroyMutex(args.mutex);
+    SDL_DestroyCond(args.cond);
 }
 
 static void notify_cb(notify_cb_t *args) {
+    SDL_LockMutex(args->mutex);
     if (!*args->destroyed) {
         args->fn(args->arg1, args->arg2);
     }
     args->notified = true;
     SDL_CondSignal(args->cond);
+    SDL_UnlockMutex(args->mutex);
 }
 
 static void task_destroy(img_loader_task_t *task) {

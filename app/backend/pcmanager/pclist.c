@@ -45,21 +45,12 @@ SERVER_LIST *pclist_insert_known(pcmanager_t *manager, SERVER_DATA *server) {
 void pclist_upsert(pcmanager_t *manager, const pcmanager_resp_t *resp) {
     assert(manager);
     assert(resp);
-    upsert_args_t *args = SDL_malloc(sizeof(upsert_args_t));
-    memset(args, 0, sizeof(upsert_args_t));
-    args->manager = manager;
-    args->resp = resp;
+    upsert_args_t args = {.manager = manager, .resp = resp};
     if (SDL_ThreadID() == manager->thread_id) {
-        upsert_perform(args);
+        upsert_perform(&args);
     } else {
-        args->mutex = SDL_CreateMutex();
-        args->cond = SDL_CreateCond();
-        bus_pushaction((bus_actionfunc) upsert_perform, args);
-        upsert_wait(args);
-        SDL_DestroyCond(args->cond);
-        SDL_DestroyMutex(args->mutex);
+        bus_pushaction_sync((bus_actionfunc) upsert_perform, &args);
     }
-    free(args);
 }
 
 void pclist_free(pcmanager_t *manager) {
@@ -110,6 +101,7 @@ PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr
 }
 
 void upsert_perform(upsert_args_t *args) {
+    SDL_LockMutex(args->mutex);
     pcmanager_t *manager = args->manager;
     const pcmanager_resp_t *resp = args->resp;
     SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_compare_uuid);
@@ -126,6 +118,7 @@ void upsert_perform(upsert_args_t *args) {
     if (args->cond) {
         SDL_CondSignal(args->cond);
     }
+    SDL_UnlockMutex(args->mutex);
 }
 
 void upsert_wait(upsert_args_t *args) {

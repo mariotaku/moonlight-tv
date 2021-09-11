@@ -4,8 +4,7 @@
 
 #include "backend/pcmanager.h"
 
-enum STREAMING_STATUS
-{
+enum STREAMING_STATUS {
     STREAMING_NONE,
     STREAMING_CONNECTING,
     STREAMING_STREAMING,
@@ -14,8 +13,7 @@ enum STREAMING_STATUS
 };
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
-struct VIDEO_STATS
-{
+struct VIDEO_STATS {
     uint32_t totalFrames;
     uint32_t receivedFrames;
     uint32_t networkDroppedFrames;
@@ -29,8 +27,7 @@ struct VIDEO_STATS
     uint32_t rtt, rttVariance;
 };
 
-struct VIDEO_INFO
-{
+struct VIDEO_INFO {
     const char *format;
     int width;
     int height;
@@ -40,11 +37,12 @@ extern STREAMING_STATUS streaming_status;
 extern int streaming_errno;
 extern char streaming_errmsg[];
 extern short streaming_display_width, streaming_display_height;
-extern bool streaming_running;
 
 void streaming_init();
 
 void streaming_destroy();
+
+bool streaming_running();
 
 int streaming_begin(const SERVER_DATA *server, const APP_LIST *app);
 
@@ -56,8 +54,6 @@ void streaming_display_size(short width, short height);
 
 void streaming_enter_fullscreen();
 
-void streaming_end();
-
 void streaming_enter_overlay(int x, int y, int w, int h);
 
-void _streaming_errmsg_write(const char *fmt, ...);
+void streaming_error(int code, const char *fmt, ...);

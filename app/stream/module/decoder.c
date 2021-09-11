@@ -9,7 +9,6 @@
 #include <dlfcn.h>
 #endif
 
-#include "stream/util.h"
 #include "util/logging.h"
 
 #if TARGET_LGNC

@@ -224,32 +224,6 @@ void app_stop_text_input() {
     SDL_StopTextInput();
 }
 
-bool app_render_queue_submit(void *data, unsigned int pts) {
-//    applog_d("Stream", "Submit frame. pts: %d", pts);
-    render_frame_req_t *req = SDL_malloc(sizeof(render_frame_req_t));
-    SDL_mutex *mutex = SDL_CreateMutex();
-    req->data = data;
-    req->cond = SDL_CreateCond();
-    req->sent = false;
-    req->pts = pts;
-    SDL_Event event;
-    event.type = SDL_USEREVENT;
-    event.user.code = USER_SDL_FRAME;
-    event.user.data1 = req;
-    SDL_PushEvent(&event);
-
-    SDL_LockMutex(mutex);
-    while (!req->sent) {
-        SDL_CondWait(req->cond, mutex);
-    }
-    SDL_UnlockMutex(mutex);
-    SDL_DestroyMutex(mutex);
-
-    SDL_DestroyCond(req->cond);
-    free(req);
-    return true;
-}
-
 void app_set_mouse_grab(bool grab) {
     SDL_SetRelativeMouseMode(grab ? SDL_TRUE : SDL_FALSE);
     if (!grab) {

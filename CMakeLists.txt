@@ -168,8 +168,8 @@ set(SOURCES
     app/stream/module/module.c
     app/stream/module/audio.c
     app/stream/module/decoder.c
-    app/stream/session.c
-    app/stream/connection.c
+        app/stream/session/session.c
+        app/stream/session/connection.c
     app/stream/settings.c
     app/stream/video/delegate.c
     app/stream/video/dummy.c
@@ -179,7 +179,7 @@ set(SOURCES
     app/ui/launcher/apps.controller.c
     app/ui/launcher/appitem.view.c
     app/ui/launcher/coverloader.c
-    app/ui/streaming/overlay.c
+        app/ui/streaming/streaming.view.c
     app/ui/streaming/streaming.controller.c
     app/ui/settings/settings.controller.c
     app/ui/settings/settings.view.c

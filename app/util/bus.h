@@ -10,3 +10,5 @@ typedef void(*bus_actionfunc)(void *);
 bool bus_pushevent(int which, void *data1, void *data2);
 
 bool bus_pushaction(bus_actionfunc action, void *data);
+
+bool bus_pushaction_sync(bus_actionfunc action, void *data);

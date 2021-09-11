@@ -41,10 +41,8 @@ PPCMANAGER_RESP serverinfo_resp_new();
 
 void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp);
 
-void pcmanager_worker_finalize(pcmanager_finalizer_args *args);
-
-pcmanager_finalizer_args *pcmanager_finalize_args(pcmanager_resp_t *resp, pcmanager_callback_t callback,
-                                                  void *userdata);
+void pcmanager_worker_finalize(pcmanager_resp_t *resp, pcmanager_callback_t callback,
+                               void *userdata);
 
 PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr);
 

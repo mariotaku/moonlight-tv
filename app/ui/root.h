@@ -24,12 +24,8 @@ extern short ui_display_width, ui_display_height;
 extern short ui_logic_width, ui_logic_height;
 extern enum UI_INPUT_MODE ui_input_mode;
 
-typedef struct render_frame_req_t {
-    void *data;
-    unsigned int pts;
-    SDL_cond *cond;
-    bool sent;
-} render_frame_req_t;
+
+bool ui_has_stream_renderer();
 
 bool ui_render_background();
 

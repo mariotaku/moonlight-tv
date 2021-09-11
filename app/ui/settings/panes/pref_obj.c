@@ -4,9 +4,37 @@
 
 #include "pref_obj.h"
 
+typedef union pref_attrs_t {
+    struct {
+        bool *ref;
+        bool reverse;
+    } checkbox;
+    struct {
+        int *ref;
+        int step;
+    } slider;
+    struct {
+        int *ref;
+        const pref_dropdown_int_entry_t *entries;
+    } dropdown_int;
+} pref_attrs_t;
+
+static void pref_attrs_free(lv_event_t *event);
+
+static void pref_checkbox_value_write_back(lv_event_t *event);
+
+static void pref_dropdown_int_change_cb(lv_event_t *event);
+
+static void pref_slider_value_write_back(lv_event_t *event);
+
 lv_obj_t *pref_checkbox(lv_obj_t *parent, const char *title, bool *value, bool reverse) {
     lv_obj_t *checkbox = lv_checkbox_create(parent);
     lv_checkbox_set_text(checkbox, title);
+    pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
+    attrs->checkbox.ref = value;
+    attrs->checkbox.reverse = reverse;
+    lv_obj_add_event_cb(checkbox, pref_checkbox_value_write_back, LV_EVENT_CLICKED, attrs);
+    lv_obj_add_event_cb(checkbox, pref_attrs_free, LV_EVENT_DELETE, attrs);
     if (*value ^ reverse) {
         lv_obj_add_state(checkbox, LV_STATE_CHECKED);
     } else {
@@ -37,6 +65,12 @@ lv_obj_t *pref_dropdown_int(lv_obj_t *parent, const pref_dropdown_int_entry_t *e
     } else {
         lv_dropdown_set_selected(dropdown, 0);
     }
+
+    pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
+    attrs->dropdown_int.ref = value;
+    attrs->dropdown_int.entries = entries;
+    lv_obj_add_event_cb(dropdown, pref_dropdown_int_change_cb, LV_EVENT_VALUE_CHANGED, attrs);
+    lv_obj_add_event_cb(dropdown, pref_attrs_free, LV_EVENT_DELETE, attrs);
     return dropdown;
 }
 
@@ -69,5 +103,33 @@ lv_obj_t *pref_slider(lv_obj_t *parent, int *value, int min, int max, int step) 
     lv_obj_t *slider = lv_slider_create(parent);
     lv_slider_set_range(slider, min / step, max / step);
     lv_slider_set_value(slider, *value / step, LV_ANIM_OFF);
+
+    pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
+    attrs->slider.ref = value;
+    attrs->slider.step = step;
+    lv_obj_add_event_cb(slider, pref_slider_value_write_back, LV_EVENT_VALUE_CHANGED, attrs);
+    lv_obj_add_event_cb(slider, pref_attrs_free, LV_EVENT_DELETE, attrs);
     return slider;
+}
+
+static void pref_attrs_free(lv_event_t *event) {
+    lv_mem_free(lv_event_get_user_data(event));
+}
+
+static void pref_checkbox_value_write_back(lv_event_t *event) {
+    pref_attrs_t *attrs = lv_event_get_user_data(event);
+    bool checked = lv_obj_has_state(lv_event_get_current_target(event), LV_STATE_CHECKED);
+    *attrs->checkbox.ref = checked ^ attrs->checkbox.reverse;
+}
+
+static void pref_dropdown_int_change_cb(lv_event_t *event) {
+    pref_attrs_t *attrs = lv_event_get_user_data(event);
+    int index = lv_dropdown_get_selected(lv_event_get_current_target(event));
+    *attrs->dropdown_int.ref = attrs->dropdown_int.entries[index].value;
+}
+
+static void pref_slider_value_write_back(lv_event_t *event) {
+    pref_attrs_t *attrs = lv_event_get_user_data(event);
+    int value = lv_slider_get_value(lv_event_get_current_target(event));
+    *attrs->slider.ref = value * attrs->slider.step;
 }

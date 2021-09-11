@@ -62,7 +62,7 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
         pcmanager_resp_setgserror(resp, ret, gs_error);
         serverdata_free(server);
     }
-    bus_pushaction((bus_actionfunc) pcmanager_worker_finalize, pcmanager_finalize_args(resp, callback, userdata));
+    pcmanager_worker_finalize(resp, callback, userdata);
     return ret;
 }
 
@@ -88,8 +88,7 @@ int pair_worker(cm_request_t *req) {
         pcmanager_resp_setgserror(resp, ret, gs_error);
         serverdata_free(server);
     }
-    bus_pushaction((bus_actionfunc) pcmanager_worker_finalize,
-                   pcmanager_finalize_args(resp, req->callback, req->userdata));
+    pcmanager_worker_finalize(resp, req->callback, req->userdata);
     SDL_free(req->arg1);
     SDL_free(req);
     return 0;

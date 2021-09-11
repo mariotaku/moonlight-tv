@@ -9,7 +9,7 @@
 #include "backend/apploader/apploader.h"
 #include "lvgl/lv_gridview.h"
 #include "lvgl/lv_ext_utils.h"
-#include "ui/streaming/overlay.h"
+#include "ui/streaming/streaming.view.h"
 #include "ui/streaming/streaming.controller.h"
 #include "apps.controller.h"
 #include "appitem.view.h"

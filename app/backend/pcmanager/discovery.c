@@ -66,6 +66,7 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
         applog_e("Discovery", "error: %s", err);
         return;
     }
+    if (task->stop) return;
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         if (cur->type != RR_A) continue;
         pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, false, NULL, NULL);

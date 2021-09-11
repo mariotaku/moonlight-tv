@@ -1,3 +1,4 @@
+#include <util/bus.h>
 #include "priv.h"
 
 static inline void free_nullable(void *p);
@@ -10,21 +11,12 @@ PPCMANAGER_RESP serverinfo_resp_new() {
     return resp;
 }
 
-void pcmanager_worker_finalize(pcmanager_finalizer_args *args) {
-    if (args->callback) {
-        args->callback(args->resp, args->userdata);
-    }
-    free(args->resp);
-    free(args);
-}
+static void finalizer_notify(pcmanager_finalizer_args *args);
 
-pcmanager_finalizer_args *pcmanager_finalize_args(pcmanager_resp_t *resp, pcmanager_callback_t callback,
-                                                  void *userdata) {
-    pcmanager_finalizer_args *args = malloc(sizeof(pcmanager_finalizer_args));
-    args->resp = resp;
-    args->callback = callback;
-    args->userdata = userdata;
-    return args;
+void pcmanager_worker_finalize(pcmanager_resp_t *resp, pcmanager_callback_t callback, void *userdata) {
+    pcmanager_finalizer_args args = {.resp=resp, .callback=callback, .userdata=userdata};
+    bus_pushaction_sync((bus_actionfunc) finalizer_notify, &args);
+    free(args.resp);
 }
 
 
@@ -89,4 +81,10 @@ static inline void free_nullable(void *p) {
 static inline char *strdup_nullable(const char *p) {
     if (!p) return NULL;
     return strdup(p);
+}
+
+static void finalizer_notify(pcmanager_finalizer_args *args) {
+    if (args->callback) {
+        args->callback(args->resp, args->userdata);
+    }
 }

@@ -52,6 +52,8 @@ typedef struct DECODER_INFO {
     int colorRange;
     int maxBitrate;
     int audioConfig;
+    /* Handles video renderer on screen */
+    bool hasRenderer;
 } *PDECODER_INFO, DECODER_INFO;
 
 typedef struct AUDIO_INFO {

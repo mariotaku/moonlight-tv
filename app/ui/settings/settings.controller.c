@@ -48,6 +48,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 }
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
+    settings_save(app_configuration);
+
     settings_controller_t *controller = (settings_controller_t *) self;
     lv_controller_manager_del(controller->pane_manager);
 }

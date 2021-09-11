@@ -5,6 +5,7 @@
 typedef struct {
     lv_obj_controller_t base;
     lv_obj_t *progress;
+    lv_obj_t *progress_label;
     lv_obj_t *suspend_btn;
     lv_obj_t *quit_btn;
 } streaming_controller_t;

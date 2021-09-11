@@ -1,77 +1,69 @@
-#include "session.h"
-#include "settings.h"
+#include "stream/session.h"
+#include "stream/settings.h"
 #include "app.h"
 
-#include <stdarg.h>
-#include <string.h>
-
-#include "connection.h"
-#include "platform.h"
+#include "stream/platform.h"
 #include "util/bus.h"
 #include "util/user_event.h"
-#include "input/absinput.h"
-#include "video/delegate.h"
+#include "stream/input/absinput.h"
+#include "stream/video/delegate.h"
 #include "backend/pcmanager/priv.h"
 
 #include <Limelight.h>
-#include <pthread.h>
 
-#include "libgamestream/client.h"
 #include "libgamestream/errors.h"
 
-#include "backend/pcmanager.h"
-
 #include "util/logging.h"
+
+extern CONNECTION_LISTENER_CALLBACKS connection_callbacks;
 
 STREAMING_STATUS streaming_status = STREAMING_NONE;
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
 
-bool streaming_running = false, session_interrupted = false;
-
 short streaming_display_width, streaming_display_height;
-bool streaming_quitapp_requested;
 
-pthread_mutex_t streaming_errmsg_lock, streaming_interrupt_lock, streaming_status_lock;
-pthread_cond_t streaming_interrupt_cond;
-pthread_t streaming_thread;
-
-static PVIDEO_PRESENTER_CALLBACKS video_presenter_cb = NULL;
+static SDL_mutex *streaming_state_lock;
+static SDL_Thread *streaming_thread;
 
 typedef struct {
     SERVER_DATA *server;
     CONFIGURATION *config;
     int appId;
-} STREAMING_REQUEST;
+    bool interrupted;
+    bool quitapp;
+    SDL_cond *cond;
+    SDL_mutex *mutex;
+    SDL_Thread *thread;
+    PVIDEO_PRESENTER_CALLBACKS pres;
+} session_t;
 
-static void *_streaming_thread_action(STREAMING_REQUEST *req);
+static session_t *session_active;
 
-static void _streaming_set_status(STREAMING_STATUS status);
+static int streaming_worker(session_t *session);
 
-static bool _streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps);
+static void streaming_set_status(STREAMING_STATUS status);
+
+static bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps);
 
 void streaming_init() {
     streaming_status = STREAMING_NONE;
-    streaming_quitapp_requested = false;
-    session_interrupted = false;
-    pthread_mutex_init(&streaming_errmsg_lock, NULL);
-    pthread_mutex_init(&streaming_interrupt_lock, NULL);
-    pthread_mutex_init(&streaming_status_lock, NULL);
-    pthread_cond_init(&streaming_interrupt_cond, NULL);
+    streaming_state_lock = SDL_CreateMutex();
 }
 
 void streaming_destroy() {
     streaming_interrupt(false);
     streaming_wait_for_stop();
 
-    pthread_cond_destroy(&streaming_interrupt_cond);
-    pthread_mutex_destroy(&streaming_interrupt_lock);
-    pthread_mutex_destroy(&streaming_status_lock);
-    pthread_mutex_destroy(&streaming_errmsg_lock);
+    SDL_DestroyMutex(streaming_state_lock);
+}
+
+bool streaming_running() {
+    return streaming_status == STREAMING_STREAMING;
 }
 
 int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
-    if (streaming_status != STREAMING_NONE) {
+    if (session_active != NULL) {
         return -1;
     }
     PCONFIGURATION config = settings_load();
@@ -82,8 +74,8 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
     // Cap framerate to platform request
     if (decoder_info.maxBitrate && config->stream.bitrate > decoder_info.maxBitrate)
         config->stream.bitrate = decoder_info.maxBitrate;
-    config->sops &= _streaming_sops_supported(server->modes, config->stream.width, config->stream.height,
-                                              config->stream.fps);
+    config->sops &= streaming_sops_supported(server->modes, config->stream.width, config->stream.height,
+                                             config->stream.fps);
     config->stream.supportsHevc = decoder_info.hevc;
     config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server->supportsHdr &&
                                 (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
@@ -99,28 +91,31 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
 #endif
     config->stream.encryptionFlags = ENCFLG_AUDIO;
 
-    STREAMING_REQUEST *req = malloc(sizeof(STREAMING_REQUEST));
-    req->server = serverdata_new();
-    memcpy(req->server, server, sizeof(SERVER_DATA));
+    session_t *req = malloc(sizeof(session_t));
+    SDL_memset(req, 0, sizeof(session_t));
+    req->server = serverdata_clone(server);
     req->config = config;
     req->appId = app->id;
-    return pthread_create(&streaming_thread, NULL, (void *(*)(void *)) _streaming_thread_action, req);
+    req->thread = SDL_CreateThread((SDL_ThreadFunction) streaming_worker, "session", req);
+    session_active = req;
+    return 0;
 }
 
 void streaming_interrupt(bool quitapp) {
-    if (session_interrupted) {
+    session_t *session = session_active;
+    if (!session) {
         return;
     }
-    pthread_mutex_lock(&streaming_interrupt_lock);
-    streaming_quitapp_requested = quitapp;
-    session_interrupted = true;
-    pthread_cond_signal(&streaming_interrupt_cond);
-    pthread_mutex_unlock(&streaming_interrupt_lock);
+    SDL_LockMutex(session->mutex);
+    session->quitapp = quitapp;
+    session->interrupted = true;
+    SDL_CondSignal(session->cond);
+    SDL_UnlockMutex(session->mutex);
 }
 
 void streaming_wait_for_stop() {
-    if (streaming_status != STREAMING_NONE) {
-        pthread_join(streaming_thread, NULL);
+    if (streaming_thread && streaming_status != STREAMING_NONE) {
+        SDL_WaitThread(streaming_thread, NULL);
     }
 }
 
@@ -129,21 +124,14 @@ void streaming_display_size(short width, short height) {
     streaming_display_height = height;
 }
 
-void *_streaming_thread_action(STREAMING_REQUEST *req) {
-    pthread_mutex_lock(&streaming_interrupt_lock);
-    session_interrupted = false;
-    pthread_mutex_unlock(&streaming_interrupt_lock);
-#if _GNU_SOURCE
-    pthread_setname_np(pthread_self(), "session");
-#endif
-    _streaming_set_status(STREAMING_CONNECTING);
-    streaming_errno = GS_OK;
-
-    _streaming_errmsg_write("");
-    PSERVER_DATA server = req->server;
-    PCONFIGURATION config = req->config;
+int streaming_worker(session_t *session) {
+    streaming_set_status(STREAMING_CONNECTING);
+    bus_pushevent(USER_STREAM_CONNECTING, NULL, NULL);
+    streaming_error(GS_OK, "");
+    PSERVER_DATA server = session->server;
+    PCONFIGURATION config = session->config;
     absinput_no_control = config->viewonly;
-    int appId = req->appId;
+    int appId = session->appId;
 
     int gamepads = absinput_gamepads();
     int gamepad_mask = 0;
@@ -154,8 +142,8 @@ void *_streaming_thread_action(STREAMING_REQUEST *req) {
     GS_CLIENT client = app_gs_client_new();
     int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret < 0) {
-        _streaming_set_status(STREAMING_ERROR);
-        streaming_errno = ret;
+        streaming_set_status(STREAMING_ERROR);
+        streaming_error(ret, "Failed to launch session: gamestream returned %d", ret);
         applog_e("Session", "Failed to launch session: gamestream returned %d", ret);
         goto thread_cleanup;
     }
@@ -174,74 +162,74 @@ void *_streaming_thread_action(STREAMING_REQUEST *req) {
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &vdec_delegate, adec, vdec, drFlags, (void *) config->audio_device, 0);
     if (startResult != 0) {
-        _streaming_set_status(STREAMING_ERROR);
-        streaming_errno = GS_WRONG_STATE;
+        streaming_set_status(STREAMING_ERROR);
+        streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d", startResult);
         applog_e("Session", "Failed to start connection: Limelight returned %d", startResult);
         goto thread_cleanup;
     }
-    streaming_running = true;
-    _streaming_set_status(STREAMING_STREAMING);
-    video_presenter_cb = pres;
+    streaming_set_status(STREAMING_STREAMING);
+    session->pres = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
-    pthread_mutex_lock(&streaming_interrupt_lock);
-    while (!session_interrupted) {
+    SDL_LockMutex(session->mutex);
+    while (!session->interrupted) {
         // Wait until interrupted
-        pthread_cond_wait(&streaming_interrupt_cond, &streaming_interrupt_lock);
+        SDL_CondWait(session->cond, session->mutex);
     }
-    video_presenter_cb = NULL;
-    session_interrupted = false;
-    pthread_mutex_unlock(&streaming_interrupt_lock);
-    streaming_running = false;
+    SDL_UnlockMutex(session->mutex);
+    session->pres = NULL;
     bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
 
-    _streaming_set_status(STREAMING_DISCONNECTING);
+    streaming_set_status(STREAMING_DISCONNECTING);
     LiStopConnection();
 
-    if (streaming_quitapp_requested) {
+    if (session->quitapp) {
         applog_i("Session", "Sending app quit request ...");
         gs_quit_app(client, server);
     }
     pcmanager_upsert_worker(pcmanager, server->serverInfo.address, true, NULL, NULL);
 
     // Don't always reset status as error state should be kept
-    _streaming_set_status(STREAMING_NONE);
+    streaming_set_status(STREAMING_NONE);
     thread_cleanup:
     gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
-    free(req->server);
-    free(req->config);
-    free(req);
-    return NULL;
+    session->pres = NULL;
+    serverdata_free(session->server);
+    free(session->config);
+    free(session);
+    session_active = NULL;
+    return 0;
 }
 
 void streaming_enter_fullscreen() {
     app_set_mouse_grab(!app_configuration->absmouse);
-    if (video_presenter_cb)
-        video_presenter_cb->enterFullScreen();
+    if (session_active->pres)
+        session_active->pres->enterFullScreen();
 }
 
 void streaming_enter_overlay(int x, int y, int w, int h) {
     app_set_mouse_grab(false);
-    if (video_presenter_cb)
-        video_presenter_cb->enterOverlay(x, y, w, h);
+    if (session_active->pres)
+        session_active->pres->enterOverlay(x, y, w, h);
 }
 
-void _streaming_set_status(STREAMING_STATUS status) {
-    pthread_mutex_lock(&streaming_status_lock);
+void streaming_set_status(STREAMING_STATUS status) {
+    SDL_LockMutex(streaming_state_lock);
     streaming_status = status;
-    pthread_mutex_unlock(&streaming_status_lock);
+    SDL_UnlockMutex(streaming_state_lock);
 }
 
-void _streaming_errmsg_write(const char *fmt, ...) {
-    pthread_mutex_lock(&streaming_errmsg_lock);
+void streaming_error(int code, const char *fmt, ...) {
+    SDL_LockMutex(streaming_state_lock);
+    streaming_errno = code;
     va_list arglist;
     va_start(arglist, fmt);
     vsnprintf(streaming_errmsg, sizeof(streaming_errmsg) / sizeof(char), fmt, arglist);
     va_end(arglist);
-    pthread_mutex_unlock(&streaming_errmsg_lock);
+    SDL_UnlockMutex(streaming_state_lock);
 }
 
-bool _streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
+bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
     for (PDISPLAY_MODE cur = modes; cur != NULL; cur = cur->next) {
         if (cur->width == w && cur->height == h && cur->refresh == fps)
             return true;

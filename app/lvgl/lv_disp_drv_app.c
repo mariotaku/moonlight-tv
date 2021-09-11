@@ -4,6 +4,7 @@
 
 #include <ui/root.h>
 #include <util/logging.h>
+#include <stream/platform.h>
 #include "lv_disp_drv_app.h"
 
 static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *src);
@@ -53,8 +54,13 @@ void lv_app_redraw_now(lv_disp_drv_t *disp_drv) {
     SDL_Texture *texture = disp_drv->draw_buf->buf_act;
     SDL_SetRenderTarget(renderer, NULL);
     if (!ui_render_background()) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-        SDL_RenderClear(renderer);
+        if (decoder_info.hasRenderer) {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+            SDL_RenderFillRect(renderer, NULL);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+            SDL_RenderClear(renderer);
+        }
     }
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     SDL_RenderCopy(renderer, texture, NULL, NULL);

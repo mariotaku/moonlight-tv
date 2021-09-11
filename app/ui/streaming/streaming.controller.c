@@ -1,6 +1,6 @@
 #include <util/user_event.h>
 #include "streaming.controller.h"
-#include "overlay.h"
+#include "streaming.view.h"
 
 static void exit_streaming(lv_event_t *event);
 
@@ -24,7 +24,7 @@ static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
 
     const STREAMING_SCENE_ARGS *req = (STREAMING_SCENE_ARGS *) args;
-//    streaming_begin(req->server, req->app);
+    streaming_begin(req->server, req->app);
 
     streaming_overlay_init();
 }
@@ -32,6 +32,13 @@ static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
 static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     switch (which) {
+        case USER_STREAM_CONNECTING: {
+            lv_obj_clear_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(controller->progress_label, "Starting session.");
+            lv_obj_add_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->suspend_btn, LV_OBJ_FLAG_HIDDEN);
+            break;
+        }
         case USER_STREAM_OPEN: {
             lv_obj_add_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
@@ -40,6 +47,9 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
         }
         case USER_STREAM_CLOSE: {
             lv_obj_clear_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text(controller->progress_label, "Disconnecting.");
+            lv_obj_add_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->suspend_btn, LV_OBJ_FLAG_HIDDEN);
             break;
         }
         case USER_STREAM_FINISHED: {
