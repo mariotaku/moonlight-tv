@@ -3,7 +3,7 @@ set(MICRODNS_DEP '')
 include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(CheckSymbolExists)
-include(CheckTypeExists)
+include(CheckTypeSize)
 
 add_library(microdns
         ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/mdns.c
@@ -17,7 +17,6 @@ target_include_directories(microdns PRIVATE third_party/libmicrodns/compat)
 
 if (MINGW)
     target_link_libraries(microdns PRIVATE ws2_32 iphlpapi)
-    list(APPEND CMAKE_REQUIRED_LIBRARIES ws2_32 iphlpapi)
 endif ()
 
 check_c_source_compiles("
@@ -62,11 +61,12 @@ if (HAVE_POLL)
 endif ()
 
 if (HAVE_POLL)
-    set(POLLFD_CHECK_INCLUDES "poll.h")
+    set(CMAKE_EXTRA_INCLUDE_FILES "poll.h")
 elseif (MSVC OR MINGW)
-    set(POLLFD_CHECK_INCLUDES "winsock2.h")
+    set(CMAKE_EXTRA_INCLUDE_FILES "winsock2.h")
 endif ()
-check_type_exists("struct pollfd" ${POLLFD_CHECK_INCLUDES} HAVE_STRUCT_POLLFD)
+check_type_size("struct pollfd" HAVE_STRUCT_POLLFD BUILTIN_TYPES_ONLY)
+unset(CMAKE_EXTRA_INCLUDE_FILES)
 if (HAVE_STRUCT_POLLFD)
     target_compile_definitions(microdns PRIVATE HAVE_STRUCT_POLLFD=1)
 endif ()
