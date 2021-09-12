@@ -18,6 +18,7 @@ typedef struct {
     lv_controller_manager_t *pane_manager;
     lv_style_transition_dsc_t tr_nav;
     lv_style_transition_dsc_t tr_detail;
+    lv_coord_t col_dsc[4], row_dsc[2];
 } launcher_controller_t;
 
 

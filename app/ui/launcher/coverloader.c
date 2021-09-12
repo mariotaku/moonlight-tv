@@ -40,6 +40,11 @@ typedef struct coverloader_request {
     struct coverloader_request *next;
 } coverloader_req_t;
 
+typedef struct coverloader_memcache_key_t {
+    int id;
+    lv_coord_t target_width, target_height;
+} coverloader_memcache_key_t;
+
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_TYPE coverloader_req_t
 #define LINKEDLIST_PREFIX reqlist
@@ -169,7 +174,12 @@ static void coverloader_cache_item_path(char path[4096], const coverloader_req_t
 static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
     // Uses result cache instead
     lv_sdl_img_src_t *result = NULL;
-    lv_lru_get(req->loader->mem_cache, &req->id, sizeof(int), (void **) &result);
+    coverloader_memcache_key_t key = {
+            .id = req->id,
+            .target_width = req->target_width,
+            .target_height = req->target_height
+    };
+    lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
     req->result = result;
     // Must return something not falsy or loader will think this is a cache miss
     return (SDL_Surface *) (size_t) (result != NULL);
@@ -177,7 +187,12 @@ static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
     lv_sdl_img_src_t *result = NULL;
-    lv_lru_get(req->loader->mem_cache, &req->id, sizeof(int), (void **) &result);
+    coverloader_memcache_key_t key = {
+            .id = req->id,
+            .target_width = req->target_width,
+            .target_height = req->target_height
+    };
+    lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
     if (!result) {
         lv_disp_t *disp = lv_disp_get_default();
         SDL_Renderer *renderer = disp->driver->user_data;
@@ -188,7 +203,7 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
         result->w = cached->w;
         result->h = cached->h;
         result->data.texture = SDL_CreateTextureFromSurface(renderer, cached);
-        lv_lru_set(req->loader->mem_cache, &req->id, sizeof(int), result, result->w * result->h);
+        lv_lru_set(req->loader->mem_cache, &key, sizeof(key), result, result->w * result->h);
     }
     req->result = result;
     req->finished = true;

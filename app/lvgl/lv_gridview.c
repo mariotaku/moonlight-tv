@@ -131,9 +131,19 @@ lv_obj_t *lv_gridview_create(lv_obj_t *parent) {
 
 void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height) {
     lv_grid_t *grid = (lv_grid_t *) obj;
+    bool column_count_changed = grid->column_count != col_count;
+    if (column_count_changed) {
+        // Scrap all views
+        fill_rows(grid, 0, -1);
+    }
     grid->column_count = col_count;
     grid->row_height = row_height;
     update_col_dsc(grid);
+    update_row_dsc(grid, grid->row_count);
+    lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
+    if (column_count_changed) {
+        update_grid(grid);
+    }
 }
 
 void lv_grid_set_adapter(lv_obj_t *obj, const lv_grid_adapter_t *adapter) {
@@ -188,6 +198,19 @@ void lv_gridview_focus(lv_obj_t *obj, int position) {
 int lv_gridview_get_focused_index(lv_obj_t *obj) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     return grid->focused_index;
+}
+
+void lv_grid_rebind(lv_obj_t *obj) {
+    lv_grid_t *grid = (lv_grid_t *) obj;
+    for (int row_idx = grid->row_start; row_idx <= grid->row_end; row_idx++) {
+        for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
+            int position = row_idx * grid->column_count + col_idx;
+            if (position >= grid->item_count) continue;
+            view_pool_ll_t *node = view_pool_node_by_position(grid->pool_inuse, position);
+            if (!node)return;
+            grid->adapter.bind_view(&grid->obj, node->item, grid->data, position);
+        }
+    }
 }
 
 /**********************
@@ -290,6 +313,9 @@ static void update_col_dsc(lv_grid_t *adapter) {
 }
 
 static void update_row_dsc(lv_grid_t *adapter, int row_count) {
+    if (!row_count) {
+        row_count = 1;
+    }
     lv_coord_t *row_dsc = lv_mem_realloc(adapter->row_dsc, (row_count + 1) * sizeof(lv_coord_t));
     for (int i = 0; i < row_count; i++) {
         row_dsc[i] = adapter->row_height;
@@ -387,8 +413,6 @@ static void update_grid(lv_grid_t *grid) {
     }
     if (grid->row_start != row_start || grid->row_end != row_end) {
         fill_rows(grid, row_start, row_end);
-        grid->row_start = row_start;
-        grid->row_end = row_end;
     }
 }
 
@@ -429,6 +453,8 @@ static void fill_rows(lv_grid_t *grid, int row_start, int row_end) {
             grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         }
     }
+    grid->row_start = row_start;
+    grid->row_end = row_end;
 }
 
 static int adapter_item_id(lv_grid_t *grid, int position) {

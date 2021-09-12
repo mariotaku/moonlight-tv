@@ -131,7 +131,7 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager) {
 bool lv_controller_manager_dispatch_event(lv_controller_manager_t *manager, int which, void *data1, void *data2) {
     LV_ASSERT(manager);
     manager_stack_t *top = manager->top;
-    if (!top || !top->view) return false;
+    if (!top) return false;
     lv_obj_controller_t *controller = top->controller;
     if (!controller || !top->cls->event_cb) return false;
     return top->cls->event_cb(controller, which, data1, data2);

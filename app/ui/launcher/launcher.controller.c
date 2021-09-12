@@ -1,4 +1,5 @@
 #include <util/user_event.h>
+#include <ui/root.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -80,12 +81,14 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
 }
 
 static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+    launcher_controller_t *controller = (launcher_controller_t *) self;
     switch (which) {
         case USER_SIZE_CHANGED: {
+            lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
             break;
         }
     }
-    return false;
+    return lv_controller_manager_dispatch_event(controller->pane_manager, which, data1, data2);
 }
 
 void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata) {

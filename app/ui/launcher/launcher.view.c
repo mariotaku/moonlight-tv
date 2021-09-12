@@ -19,15 +19,24 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_t *content = lv_win_get_content(win);
     lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_layout(content, LV_LAYOUT_GRID);
+    controller->col_dsc[0] = lv_dpx(40);
+    controller->col_dsc[1] = lv_dpx(160);
+    controller->col_dsc[2] = LV_GRID_FR(1);
+    controller->col_dsc[3] = LV_GRID_TEMPLATE_LAST;
+    controller->row_dsc[0] = LV_GRID_FR(1);
+    controller->row_dsc[1] = LV_GRID_TEMPLATE_LAST;
     lv_obj_set_style_pad_all(content, 0, 0);
+    lv_obj_set_style_pad_gap(content, 0, 0);
+    lv_obj_set_grid_dsc_array(content, controller->col_dsc, controller->row_dsc);
 
     lv_obj_t *nav = lv_obj_create(content);
     lv_obj_t *nav_shade = lv_obj_create(content);
     lv_obj_t *detail = lv_obj_create(content);
-    lv_obj_set_size(nav, lv_dpx(200), LV_PCT(100));
-    lv_obj_set_size(nav_shade, lv_dpx(200), LV_PCT(100));
-    lv_obj_set_size(detail, lv_obj_get_width(parent) - lv_dpx(40), LV_PCT(100));
-    lv_obj_align(detail, LV_ALIGN_RIGHT_MID, 0, 0);
+
+    lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
+    lv_obj_set_grid_cell(nav_shade, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
+    lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_clear_flag(detail, LV_OBJ_FLAG_SCROLLABLE);
 
     lv_obj_set_style_pad_row(nav, 0, 0);
