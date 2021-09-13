@@ -10,8 +10,10 @@
 #include "pref_obj.h"
 
 #if TARGET_WEBOS
+
 #include <SDL_webOS.h>
 #include "platform/webos/os_info.h"
+
 #endif
 
 #define MAXIMUM_ROWS 32
@@ -20,7 +22,7 @@ typedef struct about_pane_t {
     lv_obj_controller_t base;
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
 #if TARGET_WEBOS
-    char webos_release[32];
+    webos_os_info_t webos_os_info;
     struct {
         int w, h;
         int rate;
@@ -33,7 +35,9 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
 static void pane_ctor(lv_obj_controller_t *self, void *args);
 
 #if TARGET_WEBOS
-static void load_webos_info(about_pane_t* controller);
+
+static void load_webos_info(about_pane_t *controller);
+
 #endif
 
 const lv_obj_controller_class_t settings_pane_about_cls = {
@@ -71,10 +75,23 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     const char *audio_name = audio_current == AUDIO_DECODER ? "Use decoder" : audio_definitions[audio_current].name;
     about_line(parent, "Audio backend", audio_name, rowcount++, 2);
 #if TARGET_WEBOS
-    about_line(parent, "webOS version", "none", rowcount++, 1);
-    about_line(parent, "Firmware version", "none", rowcount++, 1);
-    about_line(parent, "Panel resolution", "none", rowcount++, 1);
-    about_line(parent, "Refresh rate", "none", rowcount++, 1);
+    if (strlen(controller->webos_os_info.release)) {
+        about_line(parent, "webOS version", controller->webos_os_info.release, rowcount++, 1);
+    }
+    if (strlen(controller->webos_os_info.manufacturing_version)) {
+        about_line(parent, "Firmware version", controller->webos_os_info.manufacturing_version, rowcount++, 1);
+    }
+    if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
+        char resolution_text[16];
+        SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", controller->webos_panel_info.w,
+                     controller->webos_panel_info.h);
+        about_line(parent, "Panel resolution", resolution_text, rowcount++, 1);
+    }
+    if (controller->webos_panel_info.rate) {
+        char fps_text[16];
+        SDL_snprintf(fps_text, sizeof(fps_text), "%4dFPS", controller->webos_panel_info.rate);
+        about_line(parent, "Refresh rate", fps_text, rowcount++, 1);
+    }
 #endif
     LV_ASSERT(rowcount <= MAXIMUM_ROWS);
     for (int i = 0; i < rowcount; i++) {
@@ -86,9 +103,11 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 }
 
 #if TARGET_WEBOS
-static void load_webos_info(about_pane_t* controller) {
-    webos_os_info_get_release(controller->webos_release, sizeof(controller->webos_release));
-    SDL_webOSGetPanelResolution(&webos_panel_info.w, &webos_panel_info.h);
-    SDL_webOSGetRefreshRate(&webos_panel_info.rate);
+
+static void load_webos_info(about_pane_t *controller) {
+    webos_os_info_get_release(&controller->webos_os_info);
+    SDL_webOSGetPanelResolution(&controller->webos_panel_info.w, &controller->webos_panel_info.h);
+    SDL_webOSGetRefreshRate(&controller->webos_panel_info.rate);
 }
+
 #endif

@@ -14,8 +14,10 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_set_style_pad_ver(header, 15, 0);
 
     lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, 50);
+    lv_obj_add_flag(close_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_size(close_btn, 50, 0);
     lv_obj_set_style_radius(close_btn, LV_RADIUS_CIRCLE, 0);
+    lv_group_remove_obj(close_btn);
 
     lv_obj_add_event_cb(close_btn, settings_close, LV_EVENT_CLICKED, controller);
 

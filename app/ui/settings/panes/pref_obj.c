@@ -17,6 +17,14 @@ typedef union pref_attrs_t {
         int *ref;
         const pref_dropdown_int_entry_t *entries;
     } dropdown_int;
+    struct {
+        int *ref_a, *ref_b;
+        const pref_dropdown_int_pair_entry_t *entries;
+    } dropdown_int_pair;
+    struct {
+        char **ref;
+        const pref_dropdown_string_entry_t *entries;
+    } dropdown_string;
 } pref_attrs_t;
 
 static void pref_attrs_free(lv_event_t *event);
@@ -24,6 +32,10 @@ static void pref_attrs_free(lv_event_t *event);
 static void pref_checkbox_value_write_back(lv_event_t *event);
 
 static void pref_dropdown_int_change_cb(lv_event_t *event);
+
+static void pref_dropdown_int_pair_change_cb(lv_event_t *event);
+
+static void pref_dropdown_string_change_cb(lv_event_t *event);
 
 static void pref_slider_value_write_back(lv_event_t *event);
 
@@ -96,6 +108,44 @@ lv_obj_t *pref_dropdown_int_pair(lv_obj_t *parent, const pref_dropdown_int_pair_
     } else {
         lv_dropdown_set_selected(dropdown, 0);
     }
+
+    pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
+    attrs->dropdown_int_pair.ref_a = value_a;
+    attrs->dropdown_int_pair.ref_b = value_b;
+    attrs->dropdown_int_pair.entries = entries;
+    lv_obj_add_event_cb(dropdown, pref_dropdown_int_pair_change_cb, LV_EVENT_VALUE_CHANGED, attrs);
+    lv_obj_add_event_cb(dropdown, pref_attrs_free, LV_EVENT_DELETE, attrs);
+    return dropdown;
+}
+
+lv_obj_t *pref_dropdown_string(lv_obj_t *parent, const pref_dropdown_string_entry_t *entries, int num_entries,
+                               char **value) {
+    lv_obj_t *dropdown = lv_dropdown_create(parent);
+    lv_dropdown_clear_options(dropdown);
+    int match_index = -1, fallback_index = -1;
+    for (int i = 0; i < num_entries; ++i) {
+        pref_dropdown_string_entry_t entry = entries[i];
+        lv_dropdown_add_option(dropdown, entry.name, LV_DROPDOWN_POS_LAST);
+        if (fallback_index < 0 && entry.fallback) {
+            fallback_index = i;
+        }
+        if (strcmp(*value, entry.value) == 0) {
+            match_index = i;
+        }
+    }
+    if (match_index >= 0) {
+        lv_dropdown_set_selected(dropdown, match_index);
+    } else if (fallback_index) {
+        lv_dropdown_set_selected(dropdown, fallback_index);
+    } else {
+        lv_dropdown_set_selected(dropdown, 0);
+    }
+
+    pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
+    attrs->dropdown_string.ref = value;
+    attrs->dropdown_string.entries = entries;
+    lv_obj_add_event_cb(dropdown, pref_dropdown_string_change_cb, LV_EVENT_VALUE_CHANGED, attrs);
+    lv_obj_add_event_cb(dropdown, pref_attrs_free, LV_EVENT_DELETE, attrs);
     return dropdown;
 }
 
@@ -112,6 +162,13 @@ lv_obj_t *pref_slider(lv_obj_t *parent, int *value, int min, int max, int step) 
     return slider;
 }
 
+lv_obj_t *pref_title_label(lv_obj_t *parent, const char *title) {
+    lv_obj_t *label = lv_label_create(parent);
+    lv_label_set_text(label, title);
+    lv_obj_set_size(label, LV_PCT(100), LV_SIZE_CONTENT);
+    return label;
+}
+
 static void pref_attrs_free(lv_event_t *event) {
     lv_mem_free(lv_event_get_user_data(event));
 }
@@ -126,6 +183,22 @@ static void pref_dropdown_int_change_cb(lv_event_t *event) {
     pref_attrs_t *attrs = lv_event_get_user_data(event);
     int index = lv_dropdown_get_selected(lv_event_get_current_target(event));
     *attrs->dropdown_int.ref = attrs->dropdown_int.entries[index].value;
+}
+
+static void pref_dropdown_int_pair_change_cb(lv_event_t *event) {
+    pref_attrs_t *attrs = lv_event_get_user_data(event);
+    int index = lv_dropdown_get_selected(lv_event_get_current_target(event));
+    *attrs->dropdown_int_pair.ref_a = attrs->dropdown_int_pair.entries[index].value_a;
+    *attrs->dropdown_int_pair.ref_b = attrs->dropdown_int_pair.entries[index].value_b;
+}
+
+static void pref_dropdown_string_change_cb(lv_event_t *event) {
+    pref_attrs_t *attrs = lv_event_get_user_data(event);
+    int index = lv_dropdown_get_selected(lv_event_get_current_target(event));
+    const char *new_value = attrs->dropdown_string.entries[index].value;
+    size_t dst_size = strlen(new_value) + 1;
+    *attrs->dropdown_string.ref = realloc(*attrs->dropdown_string.ref, dst_size);
+    strncpy(*attrs->dropdown_string.ref, new_value, dst_size);
 }
 
 static void pref_slider_value_write_back(lv_event_t *event) {

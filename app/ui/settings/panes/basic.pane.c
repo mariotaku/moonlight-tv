@@ -38,20 +38,13 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
 
 }
 
-static inline lv_obj_t *title_label(lv_obj_t *parent, const char *title) {
-    lv_obj_t *label = lv_label_create(parent);
-    lv_label_set_text(label, title);
-    lv_obj_set_size(label, LV_PCT(100), LV_SIZE_CONTENT);
-    return label;
-}
-
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_layout(parent, LV_LAYOUT_GRID);
     static const lv_coord_t col_dsc[] = {LV_GRID_FR(2), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static const lv_coord_t row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_CONTENT,
                                          LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(parent, col_dsc, row_dsc);
-    lv_obj_t *resolution_label = title_label(parent, "Resolution and FPS");
+    lv_obj_t *resolution_label = pref_title_label(parent, "Resolution and FPS");
     lv_obj_set_grid_cell(resolution_label, LV_GRID_ALIGN_STRETCH, 0, 2,
                          LV_GRID_ALIGN_CENTER, 0, 1);
     lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(parent, supported_resolutions, supported_resolutions_len,
@@ -63,7 +56,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
                                                &app_configuration->stream.fps);
     lv_obj_set_grid_cell(fps_dropdown, LV_GRID_ALIGN_STRETCH, 1, 1,
                          LV_GRID_ALIGN_CENTER, 1, 1);
-    lv_obj_t *bitrate_label = title_label(parent, "Video bitrate");
+    lv_obj_t *bitrate_label = pref_title_label(parent, "Video bitrate");
     lv_obj_set_grid_cell(bitrate_label, LV_GRID_ALIGN_STRETCH, 0, 2,
                          LV_GRID_ALIGN_CENTER, 2, 1);
     lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, 60000, 1000);

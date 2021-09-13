@@ -190,6 +190,7 @@ set(SOURCES
     app/ui/settings/panes/basic.pane.c
     app/ui/settings/panes/host.pane.c
     app/ui/settings/panes/input.pane.c
+    app/ui/settings/panes/decoder.pane.c
     app/ui/settings/panes/about.pane.c
     app/ui/settings/panes/pref_obj.c
     app/lvgl/lv_disp_drv_app.c

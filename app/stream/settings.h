@@ -34,9 +34,9 @@ typedef struct _CONFIGURATION {
     STREAM_CONFIGURATION stream;
     int debug_level;
     char *mapping;
-    const char *decoder;
-    const char *audio_backend;
-    const char *audio_device;
+    char *decoder;
+    char *audio_backend;
+    char *audio_device;
     char *config_file;
     char key_dir[4096];
     bool sops;
