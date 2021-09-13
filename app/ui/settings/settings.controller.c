@@ -1,3 +1,5 @@
+#include <ui/root.h>
+#include <util/user_event.h>
 #include "settings.controller.h"
 
 typedef struct {
@@ -23,11 +25,14 @@ static void on_entry_click(lv_event_t *event);
 
 static void settings_controller_ctor(lv_obj_controller_t *self, void *args);
 
+static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2);
+
 const lv_obj_controller_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
         .create_obj_cb = settings_win_create,
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,
+        .event_cb = on_event,
         .instance_size = sizeof(settings_controller_t),
 };
 
@@ -52,6 +57,17 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
 
     settings_controller_t *controller = (settings_controller_t *) self;
     lv_controller_manager_del(controller->pane_manager);
+}
+
+static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+    settings_controller_t *controller = (settings_controller_t *) self;
+    switch (which) {
+        case USER_SIZE_CHANGED: {
+            lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
+            break;
+        }
+    }
+    return lv_controller_manager_dispatch_event(controller->pane_manager, which, data1, data2);
 }
 
 static void on_entry_click(lv_event_t *event) {

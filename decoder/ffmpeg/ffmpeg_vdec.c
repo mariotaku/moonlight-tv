@@ -75,7 +75,7 @@ static int decode_submit(PDECODE_UNIT decodeUnit) {
             host_render_context_ffmpeg->queueSubmit(frame, decodeUnit->presentationTimeMs);
         }
     } else {
-        fprintf(stderr, "Couldn't lock mutex\n");
+        fprintf(stderr, "Render context isn't available\n");
     }
     return DR_OK;
 }

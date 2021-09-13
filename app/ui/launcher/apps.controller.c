@@ -3,6 +3,7 @@
 //
 
 #include <errors.h>
+#include <util/user_event.h>
 #include "app.h"
 
 #include "coverloader.h"
@@ -40,6 +41,8 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent);
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view);
+
+static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2);
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
 
@@ -79,6 +82,8 @@ static void open_pair(apps_controller_t *controller);
 
 static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state);
 
+static void update_grid_config(apps_controller_t *controller);
+
 const static lv_grid_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
@@ -95,6 +100,7 @@ const lv_obj_controller_class_t apps_controller_class = {
         .create_obj_cb = apps_view,
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,
+        .event_cb = on_event,
         .instance_size = sizeof(apps_controller_t),
 };
 
@@ -150,16 +156,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_LEAVE, controller);
     lv_group_add_obj(lv_group_get_default(), applist);
 
-    int col_count = 5;
-    lv_coord_t applist_width = lv_measure_width(applist);
-    lv_coord_t col_width = (applist_width - lv_obj_get_style_pad_left(applist, 0) -
-                            lv_obj_get_style_pad_right(applist, 0) -
-                            lv_obj_get_style_pad_column(applist, 0) * (col_count - 1)) / col_count;
-    controller->col_count = col_count;
-    controller->col_width = col_width;
-    lv_coord_t row_height = col_width / 3 * 4;
-    controller->col_height = row_height;
-    lv_gridview_set_config(controller->applist, col_count, row_height);
+    update_grid_config(controller);
     lv_obj_set_user_data(controller->applist, controller);
 
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
@@ -167,11 +164,38 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     update_view_state(controller);
 }
 
+static void update_grid_config(apps_controller_t *controller) {
+    lv_obj_t *applist = controller->applist;
+    lv_obj_update_layout(applist);
+    lv_coord_t applist_width = lv_obj_get_width(applist);
+    int col_count = LV_CLAMP(2, applist_width / lv_dpx(160), 5);
+    lv_coord_t col_width = (applist_width - lv_obj_get_style_pad_left(applist, 0) -
+                            lv_obj_get_style_pad_right(applist, 0) -
+                            lv_obj_get_style_pad_column(applist, 0) * (col_count - 1)) / col_count;
+    controller->col_count = col_count;
+    controller->col_width = col_width;
+    lv_coord_t row_height = col_width / 3 * 4;
+    controller->col_height = row_height;
+    lv_gridview_set_config(applist, col_count, row_height);
+}
+
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
     pcmanager_unregister_listener(pcmanager, &pc_listeners);
     coverloader_destroy(controller->coverloader);
+}
+
+static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+    apps_controller_t *controller = (apps_controller_t *) self;
+    switch (which) {
+        case USER_SIZE_CHANGED: {
+            update_grid_config(controller);
+            lv_grid_rebind(controller->applist);
+            break;
+        }
+    }
+    return false;
 }
 
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {

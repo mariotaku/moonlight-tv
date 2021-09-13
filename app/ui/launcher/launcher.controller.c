@@ -1,4 +1,5 @@
 #include <util/user_event.h>
+#include <ui/root.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -23,6 +24,10 @@ static void cb_nav_focused(lv_event_t *event);
 
 static void cb_detail_focused(lv_event_t *event);
 
+
+static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected);
+
+static void set_detail_opened(launcher_controller_t *controller, bool opened);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -65,7 +70,8 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
 
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (!cur->selected) continue;
-        lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, cur);
+        select_pc(controller, cur);
+        set_detail_opened(controller, true);
         break;
     }
     pcmanager_auto_discovery_start(pcmanager);
@@ -80,12 +86,14 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
 }
 
 static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+    launcher_controller_t *controller = (launcher_controller_t *) self;
     switch (which) {
         case USER_SIZE_CHANGED: {
+            lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
             break;
         }
     }
-    return false;
+    return lv_controller_manager_dispatch_event(controller->pane_manager, which, data1, data2);
 }
 
 void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata) {
@@ -97,10 +105,13 @@ static void cb_pc_selected(lv_event_t *event) {
     struct _lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
-    lv_obj_add_state(controller->detail, LV_STATE_USER_1);
-    lv_obj_add_state(controller->nav_shade, LV_STATE_USER_1);
+    set_detail_opened(controller, true);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
     if (selected->selected) return;
+    select_pc(controller, selected);
+}
+
+static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected) {
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
     uint32_t pclen = lv_obj_get_child_cnt(controller->pclist);
     for (int i = 0; i < pclen; i++) {
@@ -135,8 +146,7 @@ static void update_pclist(launcher_controller_t *controller) {
 static void cb_detail_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     if (lv_obj_get_parent(event->target) != controller->detail) return;
-    lv_obj_add_state(controller->detail, LV_STATE_USER_1);
-    lv_obj_add_state(controller->nav_shade, LV_STATE_USER_1);
+    set_detail_opened(controller, true);
     applog_i("Launcher", "Focused content");
 }
 
@@ -147,7 +157,18 @@ static void cb_nav_focused(lv_event_t *event) {
         target = lv_obj_get_parent(target);
     }
     if (!target) return;
-    lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
-    lv_obj_clear_state(controller->nav_shade, LV_STATE_USER_1);
+    set_detail_opened(controller, false);
     applog_i("Launcher", "Focused navigation");
+}
+
+static void set_detail_opened(launcher_controller_t *controller, bool opened) {
+    if (opened) {
+        lv_obj_add_state(controller->detail, LV_STATE_USER_1);
+        lv_obj_add_state(controller->nav_shade, LV_STATE_USER_1);
+        lv_obj_add_state(controller->detail_shade, LV_STATE_USER_1);
+    } else {
+        lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
+        lv_obj_clear_state(controller->nav_shade, LV_STATE_USER_1);
+        lv_obj_clear_state(controller->detail_shade, LV_STATE_USER_1);
+    }
 }
