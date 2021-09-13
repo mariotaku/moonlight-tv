@@ -12,7 +12,7 @@
 typedef struct {
     lv_obj_controller_t base;
     lv_obj_t *nav, *nav_shade;
-    lv_obj_t *detail;
+    lv_obj_t *detail, *detail_shade;
     lv_obj_t *pclist;
     PSERVER_LIST selected_server;
     lv_controller_manager_t *pane_manager;

@@ -140,7 +140,7 @@ int module_audio_configuration();
 
 static const DECODER decoder_orders[] = {
 #if TARGET_WEBOS
-    DECODER_SMP, DECODER_NDL, DECODER_LGNC
+    DECODER_NDL, DECODER_LGNC, DECODER_SMP
 #elif TARGET_LGNC
     DECODER_LGNC
 #elif TARGET_RASPI

@@ -9,16 +9,32 @@
 #include "lvgl/lv_obj_controller.h"
 #include "pref_obj.h"
 
+#if TARGET_WEBOS
+#include <SDL_webOS.h>
+#include "platform/webos/os_info.h"
+#endif
+
 #define MAXIMUM_ROWS 32
 
 typedef struct about_pane_t {
     lv_obj_controller_t base;
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
+#if TARGET_WEBOS
+    char webos_release[32];
+    struct {
+        int w, h;
+        int rate;
+    } webos_panel_info;
+#endif
 } about_pane_t;
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
 
 static void pane_ctor(lv_obj_controller_t *self, void *args);
+
+#if TARGET_WEBOS
+static void load_webos_info(about_pane_t* controller);
+#endif
 
 const lv_obj_controller_class_t settings_pane_about_cls = {
         .constructor_cb = pane_ctor,
@@ -28,6 +44,9 @@ const lv_obj_controller_class_t settings_pane_about_cls = {
 
 static void pane_ctor(lv_obj_controller_t *self, void *args) {
     about_pane_t *controller = (about_pane_t *) self;
+#if TARGET_WEBOS
+    load_webos_info(controller);
+#endif
 }
 
 static inline void about_line(lv_obj_t *parent, const char *title, const char *text, int row, int text_span) {
@@ -65,3 +84,11 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     return NULL;
 }
+
+#if TARGET_WEBOS
+static void load_webos_info(about_pane_t* controller) {
+    webos_os_info_get_release(controller->webos_release, sizeof(controller->webos_release));
+    SDL_webOSGetPanelResolution(&webos_panel_info.w, &webos_panel_info.h);
+    SDL_webOSGetRefreshRate(&webos_panel_info.rate);
+}
+#endif
