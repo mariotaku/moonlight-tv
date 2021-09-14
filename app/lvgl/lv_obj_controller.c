@@ -20,7 +20,8 @@
 typedef struct manager_stack_t {
     const lv_obj_controller_class_t *cls;
     lv_obj_controller_t *controller;
-    lv_obj_t *view;
+    lv_obj_t *obj;
+    bool obj_created;
     struct manager_stack_t *prev;
 } manager_stack_t;
 
@@ -70,6 +71,7 @@ void lv_controller_manager_del(lv_controller_manager_t *manager) {
     LV_ASSERT(manager);
     manager_stack_t *top = manager->top;
     while (top) {
+        LV_ASSERT(top->cls);
         item_destroy_view(manager, top);
         item_destroy_controller(top);
         struct manager_stack_t *prev = top->prev;
@@ -168,7 +170,8 @@ static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *
     const lv_obj_controller_class_t *cls = item->cls;
     lv_obj_controller_t *controller = item->controller;
     lv_obj_t *view = cls->create_obj_cb(controller, parent);
-    item->view = controller->obj = view;
+    item->obj = controller->obj = view;
+    item->obj_created = true;
     if (cls->obj_created_cb) {
         cls->obj_created_cb(controller, view);
     }
@@ -178,17 +181,18 @@ static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *
 }
 
 static void item_destroy_view(lv_controller_manager_t *manager, manager_stack_t *item) {
-    lv_obj_t *view = item->view;
+    if (!item->obj_created) return;
     lv_obj_controller_t *controller = item->controller;
-    if (view) {
-        lv_obj_del(view);
+    if (item->obj) {
+        lv_obj_del(item->obj);
     } else {
         lv_obj_clean(manager->parent);
         if (item->cls->obj_deleted_cb) {
             item->cls->obj_deleted_cb(controller, NULL);
         }
     }
-    item->view = controller->obj = NULL;
+    item->obj_created = false;
+    item->obj = controller->obj = NULL;
 }
 
 static void item_destroy_controller(manager_stack_t *item) {

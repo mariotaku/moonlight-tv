@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
         setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
+    SDL_setenv("DISPLAY", ":0", 1);
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
@@ -84,6 +85,7 @@ int main(int argc, char *argv[]) {
 #endif
     SDL_Window *window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                           1920, 1080, window_flags);
+    SDL_assert(window);
     if (window_flags & SDL_WINDOW_RESIZABLE) {
         SDL_SetWindowMinimumSize(window, 960, 540);
     }

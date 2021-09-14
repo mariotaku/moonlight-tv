@@ -20,6 +20,9 @@ pcmanager_t *pcmanager_new() {
 
 void pcmanager_destroy(pcmanager_t *manager) {
     pcmanager_auto_discovery_stop(manager);
+#if DEBUG
+    pcmanager_auto_discovery_join(manager);
+#endif
     pcmanager_save_known_hosts(manager);
     pclist_free(manager);
     SDL_DestroyMutex(manager->servers_lock);

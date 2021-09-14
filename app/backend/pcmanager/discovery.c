@@ -29,6 +29,10 @@ void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
     discovery_task->stop = SDL_TRUE;
 }
 
+void pcmanager_auto_discovery_join(pcmanager_t *manager) {
+    if (!discovery_task) return;
+    SDL_WaitThread(discovery_task->thread, NULL);
+}
 
 static int discovery_worker(discovery_task_t *task) {
     int r = 0;
@@ -69,7 +73,6 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
         return;
     }
     if (task->stop) return;
-    mdns_entries_print(entries);
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         if (cur->type != RR_A) continue;
         pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, false, NULL, NULL);

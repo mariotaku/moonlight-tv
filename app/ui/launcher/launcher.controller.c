@@ -74,7 +74,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
         set_detail_opened(controller, true);
         break;
     }
-    pcmanager_auto_discovery_start(pcmanager);
+//    pcmanager_auto_discovery_start(pcmanager);
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
@@ -82,6 +82,7 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
     lv_controller_manager_del(controller->pane_manager);
+    controller->pane_manager = NULL;
     pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);
 }
 

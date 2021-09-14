@@ -45,6 +45,8 @@ void pcmanager_auto_discovery_start(pcmanager_t *manager);
 
 void pcmanager_auto_discovery_stop(pcmanager_t *manager);
 
+void pcmanager_auto_discovery_join(pcmanager_t *manager);
+
 PSERVER_LIST pcmanager_servers(pcmanager_t *manager);
 
 /**

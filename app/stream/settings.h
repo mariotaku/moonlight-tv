@@ -30,13 +30,13 @@ enum codecs {
     CODEC_HEVC
 };
 
-typedef struct _CONFIGURATION {
+typedef struct configuration_t {
     STREAM_CONFIGURATION stream;
     int debug_level;
     char *mapping;
-    char *decoder;
-    char *audio_backend;
-    char *audio_device;
+    const char *decoder;
+    const char *audio_backend;
+    const char *audio_device;
     char *config_file;
     char key_dir[4096];
     bool sops;
@@ -54,14 +54,12 @@ typedef struct _CONFIGURATION {
 #define CONF_NAME_MOONLIGHT "moonlight.conf"
 #define CONF_NAME_HOSTS "hosts.conf"
 
-#define RES_MERGE(w, h) ((w & 0xFFFF) << 16 | (h & 0xFFFF))
+#define RES_MERGE(w, h) (((w) & 0xFFFF) << 16 | ((h) & 0xFFFF))
 
 #define RES_720P RES_MERGE(1280, 720)
 #define RES_1080P RES_MERGE(1920, 1080)
 #define RES_1440P RES_MERGE(2560, 1440)
 #define RES_4K RES_MERGE(3840, 2160)
-
-void config_save(char *filename, PCONFIGURATION config);
 
 PCONFIGURATION settings_load();
 
