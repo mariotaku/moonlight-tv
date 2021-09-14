@@ -195,7 +195,7 @@ int streaming_worker(session_t *session) {
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
     session->pres = NULL;
     serverdata_free(session->server);
-    free(session->config);
+    settings_free(config);
     free(session);
     session_active = NULL;
     return 0;

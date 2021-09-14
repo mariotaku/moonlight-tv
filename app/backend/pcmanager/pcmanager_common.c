@@ -1,9 +1,6 @@
 #include <util/bus.h>
+#include <util/nullable.h>
 #include "priv.h"
-
-static inline void free_nullable(void *p);
-
-static inline char *strdup_nullable(const char *p);
 
 PPCMANAGER_RESP serverinfo_resp_new() {
     PPCMANAGER_RESP resp = malloc(sizeof(pcmanager_resp_t));
@@ -71,16 +68,6 @@ void serverdata_free(PSERVER_DATA data) {
     free_nullable((void *) data->serverInfo.serverInfoGfeVersion);
     free_nullable((void *) data->serverInfo.address);
     free(data);
-}
-
-static inline void free_nullable(void *p) {
-    if (!p) return;
-    free(p);
-}
-
-static inline char *strdup_nullable(const char *p) {
-    if (!p) return NULL;
-    return strdup(p);
 }
 
 static void finalizer_notify(pcmanager_finalizer_args *args) {

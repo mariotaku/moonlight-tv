@@ -293,6 +293,9 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
         if (currentGameText != NULL)
             free(currentGameText);
 
+        if (stateText != NULL)
+            free(stateText);
+
         if (serverCodecModeSupportText != NULL)
             free(serverCodecModeSupportText);
 

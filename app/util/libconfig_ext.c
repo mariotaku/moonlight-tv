@@ -21,10 +21,11 @@ int config_lookup_enum(const config_t *config, const char *path, int *value, int
     return ret;
 }
 
-int config_lookup_string_dup(const config_t *config, const char *path, const char **value) {
+int config_lookup_string_dup(const config_t *config, const char *path, char **value) {
     int ret;
-    if ((ret = config_lookup_string(config, path, value)) == CONFIG_TRUE && *value) {
-        *value = strdup(*value);
+    const char *str = NULL;
+    if ((ret = config_lookup_string(config, path, &str)) == CONFIG_TRUE && *str) {
+        *value = strdup(str);
     }
     return ret;
 }

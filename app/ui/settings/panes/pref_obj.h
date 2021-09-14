@@ -28,7 +28,7 @@ lv_obj_t *pref_dropdown_int_pair(lv_obj_t *parent, const pref_dropdown_int_pair_
                                  int *value_a, int *value_b);
 
 lv_obj_t *pref_dropdown_string(lv_obj_t *parent, const pref_dropdown_string_entry_t *entries, int num_entries,
-                               const char **value);
+                               char **value);
 
 lv_obj_t *pref_slider(lv_obj_t *parent, int *value, int min, int max, int step);
 

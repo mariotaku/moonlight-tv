@@ -17,6 +17,7 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
 static discovery_task_t *discovery_task = NULL;
 
 void pcmanager_auto_discovery_start(pcmanager_t *manager) {
+    if (discovery_task) return;
     discovery_task_t *task = SDL_malloc(sizeof(discovery_task_t));
     task->manager = manager;
     task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
@@ -37,11 +38,9 @@ void pcmanager_auto_discovery_join(pcmanager_t *manager) {
 static int discovery_worker(discovery_task_t *task) {
     int r = 0;
     char err[128];
-    struct mdns_ctx *ctx = NULL;
-    mdns_init(&ctx, NULL, MDNS_PORT);
-
     static const char *const service_name[] = {"_nvstream._tcp.local"};
 
+    struct mdns_ctx *ctx = NULL;
     if ((r = mdns_init(&ctx, NULL, MDNS_PORT)) < 0)
         goto err;
     applog_i("Discovery", "Start mDNS discovery");

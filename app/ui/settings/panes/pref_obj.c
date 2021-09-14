@@ -22,7 +22,7 @@ typedef union pref_attrs_t {
         const pref_dropdown_int_pair_entry_t *entries;
     } dropdown_int_pair;
     struct {
-        const char **ref;
+        char **ref;
         const pref_dropdown_string_entry_t *entries;
     } dropdown_string;
 } pref_attrs_t;
@@ -119,7 +119,7 @@ lv_obj_t *pref_dropdown_int_pair(lv_obj_t *parent, const pref_dropdown_int_pair_
 }
 
 lv_obj_t *pref_dropdown_string(lv_obj_t *parent, const pref_dropdown_string_entry_t *entries, int num_entries,
-                               const char **value) {
+                               char **value) {
     lv_obj_t *dropdown = lv_dropdown_create(parent);
     lv_dropdown_clear_options(dropdown);
     int match_index = -1, fallback_index = -1;
@@ -195,7 +195,8 @@ static void pref_dropdown_int_pair_change_cb(lv_event_t *event) {
 static void pref_dropdown_string_change_cb(lv_event_t *event) {
     pref_attrs_t *attrs = lv_event_get_user_data(event);
     int index = lv_dropdown_get_selected(lv_event_get_current_target(event));
-    const char *new_value = attrs->dropdown_string.entries[index].value;
+    pref_dropdown_string_entry_t entry = attrs->dropdown_string.entries[index];
+    char *new_value = entry.value ? strdup(entry.value) : NULL;
     *attrs->dropdown_string.ref = new_value;
 }
 

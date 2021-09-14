@@ -123,7 +123,7 @@ void app_destroy() {
     SDL_GL_DeleteContext(gl);
     SDL_DestroyWindow(win);
     SDL_Quit();
-    free(app_configuration);
+    settings_free(app_configuration);
 }
 
 void inputmgr_sdl_handle_event(SDL_Event *ev);

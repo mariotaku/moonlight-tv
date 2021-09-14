@@ -9,6 +9,7 @@
 #include <libconfig.h>
 
 #include <sys/stat.h>
+#include <util/nullable.h>
 
 #include "util/path.h"
 #include "util/logging.h"
@@ -63,6 +64,13 @@ void settings_save(PCONFIGURATION config) {
     free(confdir);
 }
 
+void settings_free(PCONFIGURATION config) {
+    free_nullable(config->decoder);
+    free_nullable(config->audio_backend);
+    free_nullable(config->audio_device);
+    free(config);
+}
+
 void settings_initialize(const char *confdir, PCONFIGURATION config) {
     memset(config, 0, sizeof(CONFIGURATION));
     LiInitializeStreamConfiguration(&config->stream);
@@ -77,9 +85,8 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.supportsHevc = false;
 
     config->debug_level = 0;
-    config->audio_backend = "auto";
-    config->decoder = "auto";
-    config->config_file = NULL;
+    config->audio_backend = strdup("auto");
+    config->decoder = strdup("auto");
     config->audio_device = NULL;
     config->sops = true;
     config->localaudio = false;
@@ -93,8 +100,6 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->rotate = 0;
     config->codec = CODEC_UNSPECIFIED;
     config->absmouse = DEFAULT_ABSMOUSE;
-
-    config->mapping = NULL;
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
@@ -151,9 +156,19 @@ bool settings_read(char *filename, PCONFIGURATION config) {
     config_lookup_bool_std(&libconfig, "input.absmouse", &config->absmouse);
     config_lookup_bool_std(&libconfig, "input.swap_abxy", &config->swap_abxy);
 
-    config_lookup_string_dup(&libconfig, "decoder.platform", &config->decoder);
-    config_lookup_string_dup(&libconfig, "decoder.audio_backend", &config->audio_backend);
-    config_lookup_string_dup(&libconfig, "decoder.audio_device", &config->audio_device);
+    char *str_tmp = NULL;
+    if (config_lookup_string_dup(&libconfig, "decoder.platform", &str_tmp)) {
+        free_nullable(config->decoder);
+        config->decoder = str_tmp;
+    }
+    if (config_lookup_string_dup(&libconfig, "decoder.audio_backend", &str_tmp)) {
+        free_nullable(config->audio_backend);
+        config->audio_backend = str_tmp;
+    }
+    if (config_lookup_string_dup(&libconfig, "decoder.audio_device", &str_tmp)) {
+        free_nullable(config->audio_device);
+        config->audio_device = str_tmp;
+    }
 
     config_lookup_bool_std(&libconfig, "fullscreen", &config->fullscreen);
     config_lookup_int(&libconfig, "debug_level", &config->debug_level);

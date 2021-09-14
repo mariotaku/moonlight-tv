@@ -8,7 +8,7 @@ int config_setting_set_enum(config_setting_t *setting, int value, const char *(*
 
 int config_lookup_enum(const config_t *config, const char *path, int *value, int (*converter)(const char *));
 
-int config_lookup_string_dup(const config_t *config, const char *path, const char **value);
+int config_lookup_string_dup(const config_t *config, const char *path, char **value);
 
 const char *config_setting_get_string_simple(config_setting_t *setting, const char *name);
 

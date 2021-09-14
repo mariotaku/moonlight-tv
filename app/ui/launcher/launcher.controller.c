@@ -74,7 +74,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
         set_detail_opened(controller, true);
         break;
     }
-//    pcmanager_auto_discovery_start(pcmanager);
+    pcmanager_auto_discovery_start(pcmanager);
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {

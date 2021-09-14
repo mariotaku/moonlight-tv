@@ -33,11 +33,9 @@ enum codecs {
 typedef struct configuration_t {
     STREAM_CONFIGURATION stream;
     int debug_level;
-    char *mapping;
-    const char *decoder;
-    const char *audio_backend;
-    const char *audio_device;
-    char *config_file;
+    char *decoder;
+    char *audio_backend;
+    char *audio_device;
     char key_dir[4096];
     bool sops;
     bool localaudio;
@@ -64,6 +62,8 @@ typedef struct configuration_t {
 PCONFIGURATION settings_load();
 
 void settings_save(PCONFIGURATION config);
+
+void settings_free(PCONFIGURATION config);
 
 int settings_optimal_bitrate(int w, int h, int fps);
 
