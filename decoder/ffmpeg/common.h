@@ -1,5 +1,4 @@
 #pragma once
-#include <pthread.h>
 
 #include "stream/module/api.h"
 

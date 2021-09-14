@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <assert.h>
-#include <pthread.h>
 
 #include "app.h"
 
@@ -49,7 +47,7 @@ int main(int argc, char *argv[]) {
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
         REDIR_STDOUT(APPID);
 #else
-    setvbuf(stdout, NULL, _IONBF, 0);
+        setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
     app_gs_client_mutex = SDL_CreateMutex();

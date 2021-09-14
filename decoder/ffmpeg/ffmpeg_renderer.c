@@ -3,7 +3,6 @@
 #include <assert.h>
 
 #include <Limelight.h>
-#include <pthread.h>
 
 #include "common.h"
 

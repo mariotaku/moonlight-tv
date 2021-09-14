@@ -27,7 +27,6 @@
 #include <libavcodec/avcodec.h>
 
 #include <stdlib.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdbool.h>
 
