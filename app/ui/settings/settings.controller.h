@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "ui/config.h"
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 #include "util/navkey.h"
 
 #include "lvgl.h"

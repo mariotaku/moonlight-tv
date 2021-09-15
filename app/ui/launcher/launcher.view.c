@@ -1,4 +1,6 @@
-#include <ui/settings/settings.controller.h>
+#include "ui/settings/settings.controller.h"
+#include "lvgl/util/lv_app_utils.h"
+#include "lvgl/font/symbols_material_icon.h"
 #include "app.h"
 
 #include "lvgl.h"
@@ -11,10 +13,14 @@ static void open_settings(lv_event_t *event);
 
 static void setup_shade(const launcher_controller_t *controller, lv_obj_t *shade, bool invert);
 
+#define NAV_WIDTH_EXPANDED 240
+#define NAV_WIDTH_COLLAPSED 44
+#define NAV_TRANSLATE_OFFSET (NAV_WIDTH_EXPANDED - NAV_WIDTH_COLLAPSED)
+
 lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     /*Create a window*/
-    lv_obj_t *win = lv_win_create(parent, lv_dpx(40));
+    lv_obj_t *win = lv_win_create(parent, lv_dpx(NAV_WIDTH_COLLAPSED));
 
     lv_obj_t *header = lv_win_get_header(win);
     lv_obj_add_flag(header, LV_OBJ_FLAG_HIDDEN);
@@ -22,8 +28,8 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *content = lv_win_get_content(win);
     lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_layout(content, LV_LAYOUT_GRID);
-    controller->col_dsc[0] = lv_dpx(40);
-    controller->col_dsc[1] = lv_dpx(160);
+    controller->col_dsc[0] = lv_dpx(NAV_WIDTH_COLLAPSED);
+    controller->col_dsc[1] = lv_dpx(NAV_TRANSLATE_OFFSET);
     controller->col_dsc[2] = LV_GRID_FR(1);
     controller->col_dsc[3] = LV_GRID_TEMPLATE_LAST;
     controller->row_dsc[0] = LV_GRID_FR(1);
@@ -62,12 +68,12 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_shadow_opa(detail, LV_OPA_MAX, 0);
     lv_obj_set_style_shadow_width(detail, lv_dpx(5), 0);
     lv_obj_set_style_border_width(detail, 0, 0);
-    lv_obj_set_style_translate_x(detail, lv_dpx(200 - 40), 0);
+    lv_obj_set_style_translate_x(detail, lv_dpx(NAV_TRANSLATE_OFFSET), 0);
     lv_obj_set_style_translate_x(detail, 0, LV_STATE_USER_1);
     lv_obj_set_style_transition(detail, &controller->tr_nav, 0);
     lv_obj_set_style_transition(detail, &controller->tr_detail, LV_STATE_USER_1);
 
-    lv_obj_set_style_translate_x(detail_shade, lv_dpx(200 - 40), 0);
+    lv_obj_set_style_translate_x(detail_shade, lv_dpx(NAV_TRANSLATE_OFFSET), 0);
     lv_obj_set_style_translate_x(detail_shade, 0, LV_STATE_USER_1);
 
     lv_obj_t *pclist = lv_list_create(nav);
@@ -81,15 +87,18 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_grow(pclist, 1);
 
     // Use list button for normal container
-    lv_obj_t *add_btn = lv_list_add_btn(nav, LV_SYMBOL_PLUS, "Add");
+    lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, "Add");
+    lv_obj_set_icon_font(add_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(add_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(add_btn, 0);
     lv_obj_set_style_border_side(add_btn, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_t *pref_btn = lv_list_add_btn(nav, LV_SYMBOL_SETTINGS, "Settings");
+    lv_obj_t *pref_btn = lv_list_add_btn(nav, MAT_SYMBOL_SETTINGS, "Settings");
+    lv_obj_set_icon_font(pref_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(pref_btn, 0);
     lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_t *exit_btn = lv_list_add_btn(nav, LV_SYMBOL_CLOSE, "Exit");
+    lv_obj_t *exit_btn = lv_list_add_btn(nav, MAT_SYMBOL_CLOSE, "Exit");
+    lv_obj_set_icon_font(exit_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(exit_btn, 0);
     lv_obj_set_style_border_side(exit_btn, LV_BORDER_SIDE_NONE, 0);

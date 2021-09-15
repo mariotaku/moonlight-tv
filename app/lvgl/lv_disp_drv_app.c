@@ -15,7 +15,7 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     int width, height;
     SDL_GetWindowSize(window, &width, &height);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     lv_disp_draw_buf_t *draw_buf = malloc(sizeof(lv_disp_draw_buf_t));
     SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, width,
                                              height);

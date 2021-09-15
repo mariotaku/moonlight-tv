@@ -55,7 +55,7 @@ struct lv_obj_controller_class_t {
  * GLOBAL PROTOTYPES
  **********************/
 
-lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *parent);
+lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *container);
 
 void lv_controller_manager_del(lv_controller_manager_t *manager);
 

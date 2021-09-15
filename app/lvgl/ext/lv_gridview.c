@@ -58,7 +58,7 @@ static void update_col_dsc(lv_grid_t *adapter);
 
 static void update_row_dsc(lv_grid_t *adapter, int row_count);
 
-static void update_placeholder(lv_grid_t *adapter, int row_count);
+static void update_row_count(lv_grid_t *adapter, int row_count);
 
 static void scroll_cb(lv_event_t *event);
 
@@ -139,6 +139,13 @@ void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height)
     grid->column_count = col_count;
     grid->row_height = row_height;
     update_col_dsc(grid);
+    if (column_count_changed) {
+        int row_count = grid->item_count / grid->column_count;
+        if (grid->column_count * row_count < grid->item_count) {
+            row_count++;
+        }
+        update_row_count(grid, row_count);
+    }
     update_row_dsc(grid, grid->row_count);
     lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
     if (column_count_changed) {
@@ -167,7 +174,7 @@ void lv_grid_set_data(lv_obj_t *obj, void *data) {
         }
         update_row_dsc(grid, row_count);
         lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
-        update_placeholder(grid, row_count);
+        update_row_count(grid, row_count);
     }
     update_grid(grid);
 }
@@ -324,7 +331,8 @@ static void update_row_dsc(lv_grid_t *adapter, int row_count) {
     adapter->row_dsc = row_dsc;
 }
 
-static void update_placeholder(lv_grid_t *adapter, int row_count) {
+static void update_row_count(lv_grid_t *adapter, int row_count) {
+    if (row_count <= 0) return;
     lv_obj_set_grid_cell(adapter->placeholder, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, row_count - 1, 1);
     adapter->row_count = row_count;
 }

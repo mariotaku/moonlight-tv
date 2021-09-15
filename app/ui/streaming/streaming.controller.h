@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 
 typedef struct {
     lv_obj_controller_t base;

@@ -6,7 +6,7 @@
 #include <lvgl.h>
 #include <app.h>
 #include <stream/platform.h>
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 #include "pref_obj.h"
 
 typedef struct decoder_pane_t {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lvgl.h"
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 #include "stream/module/api.h"
 #include "stream/settings.h"
 #include "backend/pcmanager.h"

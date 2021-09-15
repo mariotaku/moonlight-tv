@@ -61,7 +61,25 @@ static bool renderer_draw() {
     if (!frame_arrived || !renderer_ready) {
         return false;
     }
-    SDL_RenderCopy(host_render_context_ffmpeg->renderer, frame_texture, NULL, NULL);
+    HOST_RENDERER *renderer = host_render_context_ffmpeg->renderer;
+    SDL_Rect viewport;
+    SDL_RenderGetViewport(renderer, &viewport);
+    double srcratio = width / (double) height, dstratio = viewport.w / (double) viewport.h;
+    SDL_Rect dstrect;
+    if (srcratio > dstratio) {
+        // Source is wider than destination
+        dstrect.w = viewport.w;
+        dstrect.h = viewport.w / srcratio;
+        dstrect.x = 0;
+        dstrect.y = (viewport.h - dstrect.h) / 2;
+    } else {
+        // Destination is wider than source
+        dstrect.h = viewport.h;
+        dstrect.w = viewport.h * srcratio;
+        dstrect.y = 0;
+        dstrect.x = (viewport.w - dstrect.w) / 2;
+    }
+    SDL_RenderCopy(renderer, frame_texture, NULL, &dstrect);
     return true;
 }
 

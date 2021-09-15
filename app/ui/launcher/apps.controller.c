@@ -8,7 +8,7 @@
 
 #include "coverloader.h"
 #include "backend/apploader/apploader.h"
-#include "lvgl/lv_gridview.h"
+#include "lvgl/ext/lv_gridview.h"
 #include "lvgl/lv_ext_utils.h"
 #include "ui/streaming/streaming.view.h"
 #include "ui/streaming/streaming.controller.h"
@@ -29,12 +29,6 @@ typedef struct {
     int focus_backup;
 } apps_controller_t;
 
-typedef struct {
-    apps_controller_t *controller;
-    lv_obj_t *msgbox;
-    char pin[8];
-    char message[1024];
-} pair_state_t;
 
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent);
 
@@ -77,10 +71,6 @@ static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
 static void apps_controller_dtor(lv_obj_controller_t *self);
 
 static void appload_cb(apploader_t *loader, void *userdata);
-
-static void open_pair(apps_controller_t *controller);
-
-static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state);
 
 static void update_grid_config(apps_controller_t *controller);
 
@@ -168,7 +158,7 @@ static void update_grid_config(apps_controller_t *controller) {
     lv_obj_t *applist = controller->applist;
     lv_obj_update_layout(applist);
     lv_coord_t applist_width = lv_obj_get_width(applist);
-    int col_count = LV_CLAMP(2, applist_width / lv_dpx(160), 5);
+    int col_count = LV_CLAMP(2, applist_width / lv_dpx(120), 5);
     lv_coord_t col_width = (applist_width - lv_obj_get_style_pad_left(applist, 0) -
                             lv_obj_get_style_pad_right(applist, 0) -
                             lv_obj_get_style_pad_column(applist, 0) * (col_count - 1)) / col_count;
@@ -201,16 +191,13 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
+    apploader_load(controller->apploader, appload_cb, controller);
     update_view_state(controller);
 }
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
-    if (resp->result.code == GS_OK) {
-        if (!resp->server->paired) {
-            open_pair(controller);
-        }
-    }
+
 }
 
 static void update_view_state(apps_controller_t *controller) {
@@ -229,7 +216,12 @@ static void update_view_state(apps_controller_t *controller) {
             break;
         }
         case SERVER_STATE_ONLINE: {
-            if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
+            if (!node->server->paired) {
+                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_label_set_text_static(controller->errorlabel, "Not paired");
+            } else if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
                 // is loading apps
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
@@ -285,30 +277,6 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST
         lv_obj_add_flag(holder->close_btn, LV_OBJ_FLAG_HIDDEN);
     }
     holder->app = app;
-}
-
-static void open_pair(apps_controller_t *controller) {
-    pair_state_t *state = SDL_malloc(sizeof(pair_state_t));
-    SDL_memset(state, 0, sizeof(pair_state_t));
-    state->controller = controller;
-    if (!pcmanager_pair(pcmanager, controller->node->server, state->pin, (pcmanager_callback_t) pair_result_cb,
-                        state)) {
-        SDL_free(state);
-        return;
-    }
-    SDL_snprintf(state->message, sizeof(state->message), "Enter PIN code on your computer.\n%s", state->pin);
-    lv_obj_t *msgbox = lv_msgbox_create(NULL, "Pairing", state->message, NULL, false);
-    lv_obj_center(msgbox);
-    state->msgbox = msgbox;
-}
-
-static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state) {
-    apps_controller_t *controller = state->controller;
-    lv_msgbox_close(state->msgbox);
-    free(state);
-    if (resp->result.code == GS_OK) {
-        pcmanager_request_update(pcmanager, controller->node->server, NULL, NULL);
-    }
 }
 
 static void launcher_open_game(lv_event_t *event) {

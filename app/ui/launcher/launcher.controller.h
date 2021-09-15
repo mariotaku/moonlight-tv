@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "ui/config.h"
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 
 #include "lvgl.h"
 

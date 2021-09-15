@@ -198,8 +198,12 @@ set(SOURCES
     app/lvgl/lv_sdl_drv_pointer_input.c
     app/lvgl/lv_ext_utils.c
     app/lvgl/lv_sdl_img.c
-    app/lvgl/lv_gridview.c
-    app/lvgl/lv_obj_controller.c
+    app/lvgl/ext/lv_gridview.c
+    app/lvgl/ext/lv_obj_controller.c
+    app/lvgl/util/lv_app_utils.c
+    app/lvgl/font/material_icon_regular_28.c
+    app/lvgl/font/material_icon_regular_32.c
+    app/lvgl/theme/lv_theme_moonlight.c
     app/util/path.c
     app/util/navkey.c
     app/util/debugprint.c
@@ -249,6 +253,7 @@ target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
 target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
 target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST=1)
+target_compile_definitions(moonlight PRIVATE LV_LVGL_H_INCLUDE_SIMPLE=1)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/decoder)

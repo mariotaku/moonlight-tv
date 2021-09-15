@@ -26,7 +26,7 @@ typedef struct manager_stack_t {
 } manager_stack_t;
 
 struct lv_controller_manager_t {
-    lv_obj_t *parent;
+    lv_obj_t *container;
     manager_stack_t *top;
 };
 
@@ -59,10 +59,10 @@ static void view_cb_delete(lv_event_t *event);
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *parent) {
-    LV_ASSERT(parent);
+lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *container) {
+    LV_ASSERT(container);
     lv_controller_manager_t *instance = lv_mem_alloc(sizeof(lv_controller_manager_t));
-    instance->parent = parent;
+    instance->container = container;
     instance->top = NULL;
     return instance;
 }
@@ -85,7 +85,7 @@ void lv_controller_manager_push(lv_controller_manager_t *manager, const lv_obj_c
     LV_ASSERT(manager);
     LV_ASSERT(cls);
     manager_stack_t *item = item_new(cls);
-    lv_obj_t *parent = manager->parent;
+    lv_obj_t *parent = manager->container;
     item_create_controller(manager, item, args);
     /* Destroy view of previous screen */
     if (manager->top) {
@@ -109,7 +109,7 @@ void lv_controller_manager_replace(lv_controller_manager_t *manager, const lv_ob
         lv_mem_free(old);
     }
     manager->top = top;
-    item_create_view(manager, top, manager->parent);
+    item_create_view(manager, top, manager->container);
 }
 
 
@@ -125,7 +125,7 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     item_destroy_controller(top);
     lv_mem_free(top);
     if (prev) {
-        item_create_view(manager, prev, manager->parent);
+        item_create_view(manager, prev, manager->container);
     }
     manager->top = prev;
 }
@@ -186,7 +186,7 @@ static void item_destroy_view(lv_controller_manager_t *manager, manager_stack_t 
     if (item->obj) {
         lv_obj_del(item->obj);
     } else {
-        lv_obj_clean(manager->parent);
+        lv_obj_clean(manager->container);
         if (item->cls->obj_deleted_cb) {
             item->cls->obj_deleted_cb(controller, NULL);
         }

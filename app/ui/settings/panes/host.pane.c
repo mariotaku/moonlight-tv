@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include <lvgl.h>
 #include <app.h>
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 #include "pref_obj.h"
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);

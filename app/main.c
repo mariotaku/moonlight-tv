@@ -20,13 +20,14 @@
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/logging.h"
 
 #include <fontconfig/fontconfig.h>
 #include <ui/launcher/launcher.controller.h>
+#include <lvgl/theme/lv_theme_moonlight.h>
 
 FILE *app_logfile = NULL;
 
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]) {
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
         REDIR_STDOUT(APPID);
 #else
-        setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
     SDL_setenv("DISPLAY", ":0", 1);
@@ -96,8 +97,11 @@ int main(int argc, char *argv[]) {
 
     lv_init();
     lv_disp_t *disp = lv_app_display_init(window);
-    disp->theme->font_small = &lv_font_montserrat_24;
-    disp->theme->font_large = &lv_font_montserrat_32;
+    lv_theme_t *parent_theme = lv_disp_get_theme(disp);
+    lv_theme_t theme_app = *parent_theme;
+    lv_theme_set_parent(&theme_app, parent_theme);
+    lv_theme_moonlight_init(&theme_app);
+    lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
     lv_img_decoder_t *img_decoder = lv_img_decoder_create();

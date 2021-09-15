@@ -1,21 +1,22 @@
 #include "settings.controller.h"
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 
 static void settings_close(lv_event_t *e);
 
 lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
     /*Create a window*/
-    lv_obj_t *win = lv_win_create(parent, 80);
-    lv_win_add_title(win, "Settings");
+    lv_obj_t *win = lv_win_create(parent, lv_dpx(50));
+    lv_obj_t *title = lv_win_add_title(win, "Settings");
+    lv_obj_set_style_text_font(title, lv_theme_get_font_large(win), 0);
 
     lv_obj_t *header = lv_win_get_header(win);
     lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_pad_ver(header, 15, 0);
 
-    lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, 50);
+    lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, lv_dpx(25));
     lv_obj_add_flag(close_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_style_size(close_btn, 50, 0);
+    lv_obj_set_style_size(close_btn, lv_dpx(25), 0);
     lv_obj_set_style_radius(close_btn, LV_RADIUS_CIRCLE, 0);
     lv_group_remove_obj(close_btn);
 

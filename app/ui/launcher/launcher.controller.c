@@ -1,10 +1,21 @@
 #include <util/user_event.h>
 #include <ui/root.h>
+#include <lvgl/font/symbols_material_icon.h>
+#include <lvgl/util/lv_app_utils.h>
+#include <errors.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
 
 #include "util/logging.h"
+
+typedef struct {
+    launcher_controller_t *controller;
+    PSERVER_LIST node;
+    lv_obj_t *msgbox;
+    char pin[8];
+    char message[1024];
+} pair_state_t;
 
 static void launcher_controller(struct lv_obj_controller_t *self, void *args);
 
@@ -14,7 +25,9 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view);
 
 static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2);
 
-static void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata);
+static void on_pc_added(const pcmanager_resp_t *resp, void *userdata);
+
+static void on_pc_updated(const pcmanager_resp_t *resp, void *userdata);
 
 static void update_pclist(launcher_controller_t *controller);
 
@@ -24,10 +37,17 @@ static void cb_nav_focused(lv_event_t *event);
 
 static void cb_detail_focused(lv_event_t *event);
 
+static void open_pair(launcher_controller_t *controller, PSERVER_LIST node);
 
 static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected);
 
 static void set_detail_opened(launcher_controller_t *controller, bool opened);
+
+static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_LIST cur);
+
+static const char *server_item_icon(const SERVER_LIST *node);
+
+static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -39,7 +59,8 @@ const lv_obj_controller_class_t launcher_controller_class = {
 };
 
 static const pcmanager_listener_t pcmanager_callbacks = {
-        .added = launcher_handle_server_updated,
+        .added = on_pc_added,
+        .updated = on_pc_updated,
 };
 
 static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
@@ -97,17 +118,48 @@ static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1,
     return lv_controller_manager_dispatch_event(controller->pane_manager, which, data1, data2);
 }
 
-void launcher_handle_server_updated(const pcmanager_resp_t *resp, void *userdata) {
+void on_pc_added(const pcmanager_resp_t *resp, void *userdata) {
     launcher_controller_t *controller = userdata;
-    update_pclist(controller);
+    if (!resp->server) return;
+    PSERVER_LIST cur = NULL;
+    for (cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+        const SERVER_DATA *server = cur->server;
+        if (SDL_strcasecmp(server->uuid, resp->server->uuid) == 0) {
+            break;
+        }
+    }
+    if (!cur) return;
+    pclist_item_create(controller, cur);
+}
+
+void on_pc_updated(const pcmanager_resp_t *resp, void *userdata) {
+    launcher_controller_t *controller = userdata;
+    if (!resp->server) return;
+    PSERVER_LIST cur = NULL;
+    int index = 0;
+    for (cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next, index++) {
+        const SERVER_DATA *server = cur->server;
+        if (SDL_strcasecmp(server->uuid, resp->server->uuid) == 0) {
+            break;
+        }
+    }
+    if (!cur) return;
+    lv_obj_t *child = lv_obj_get_child(controller->pclist, index);
+    if (!child) return;
+    const char *icon = server_item_icon(cur);
+    lv_btn_set_icon(child, icon);
 }
 
 static void cb_pc_selected(lv_event_t *event) {
     struct _lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
-    set_detail_opened(controller, true);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
+    if (selected->state.code == SERVER_STATE_ONLINE && !selected->server->paired) {
+        open_pair(controller, selected);
+        return;
+    }
+    set_detail_opened(controller, true);
     if (selected->selected) return;
     select_pc(controller, selected);
 }
@@ -130,10 +182,7 @@ static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected) 
 static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
-        lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, LV_SYMBOL_DUMMY, cur->server->hostname);
-        lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
-        lv_obj_set_style_bg_color(pcitem, lv_palette_main(LV_PALETTE_BLUE), LV_STATE_CHECKED);
-        lv_obj_set_user_data(pcitem, cur);
+        lv_obj_t *pcitem = pclist_item_create(controller, cur);
 
         if (!cur->selected) {
             lv_obj_clear_state(pcitem, LV_STATE_CHECKED);
@@ -143,6 +192,34 @@ static void update_pclist(launcher_controller_t *controller) {
     }
 }
 
+static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_LIST cur) {
+    const SERVER_DATA *server = cur->server;
+    const char *icon = server_item_icon(cur);
+    lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
+    lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_icon_font(pcitem, LV_ICON_FONT_DEFAULT);
+    lv_obj_set_style_bg_color(pcitem, lv_palette_main(LV_PALETTE_BLUE), LV_STATE_CHECKED);
+    lv_obj_set_user_data(pcitem, cur);
+    return pcitem;
+}
+
+static const char *server_item_icon(const SERVER_LIST *node) {
+    switch (node->state.code) {
+        case SERVER_STATE_NONE:
+        case SERVER_STATE_QUERYING:
+            return MAT_SYMBOL_TV;
+        case SERVER_STATE_ONLINE:
+            if (!node->server->paired) {
+                return MAT_SYMBOL_LOCK;
+            } else if (node->server->currentGame) {
+                return MAT_SYMBOL_ONDEMAND_VIDEO;
+            } else {
+                return MAT_SYMBOL_TV;
+            }
+        default:
+            return MAT_SYMBOL_TV;
+    }
+}
 
 static void cb_detail_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
@@ -172,4 +249,30 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
         lv_obj_clear_state(controller->nav_shade, LV_STATE_USER_1);
         lv_obj_clear_state(controller->detail_shade, LV_STATE_USER_1);
     }
+}
+
+/** Pairing functions */
+
+static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
+    pair_state_t *state = SDL_malloc(sizeof(pair_state_t));
+    SDL_memset(state, 0, sizeof(pair_state_t));
+    state->controller = controller;
+    state->node = node;
+    if (!pcmanager_pair(pcmanager, node->server, state->pin, (pcmanager_callback_t) pair_result_cb, state)) {
+        SDL_free(state);
+        return;
+    }
+    SDL_snprintf(state->message, sizeof(state->message), "Enter PIN code on your computer.\n%s", state->pin);
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, "Pairing", state->message, NULL, false);
+    lv_obj_center(msgbox);
+    state->msgbox = msgbox;
+}
+
+static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state) {
+    launcher_controller_t *controller = state->controller;
+    lv_msgbox_close(state->msgbox);
+    if (resp->result.code == GS_OK) {
+        pcmanager_request_update(pcmanager, state->node->server, NULL, NULL);
+    }
+    free(state);
 }

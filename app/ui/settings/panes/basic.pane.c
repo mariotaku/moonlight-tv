@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include <lvgl.h>
 #include <app.h>
-#include "lvgl/lv_obj_controller.h"
+#include "lvgl/ext/lv_obj_controller.h"
 #include "pref_obj.h"
 
 static void pane_ctor(lv_obj_controller_t *self, void *args);

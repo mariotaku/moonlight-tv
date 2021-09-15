@@ -1,4 +1,4 @@
-#include <lvgl/lv_obj_controller.h>
+#include <lvgl/ext/lv_obj_controller.h>
 #include "streaming.view.h"
 #include "ui/root.h"
 #include "ui/messages.h"
