@@ -42,6 +42,8 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
 
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata);
 
+static void on_host_removed(const pcmanager_resp_t *resp, void *userdata);
+
 static void launcher_open_game(lv_event_t *event);
 
 static void launcher_resume_game(lv_event_t *event);
@@ -82,6 +84,7 @@ const static lv_grid_adapter_t apps_adapter = {
 };
 const static pcmanager_listener_t pc_listeners = {
         .updated = on_host_updated,
+        .removed = on_host_removed,
 };
 
 const lv_obj_controller_class_t apps_controller_class = {
@@ -195,9 +198,14 @@ static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     update_view_state(controller);
 }
 
+static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
+    apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (resp->server != controller->node->server) return;
+    lv_controller_manager_pop(controller->base.manager);
+}
+
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
-
 }
 
 static void update_view_state(apps_controller_t *controller) {

@@ -27,6 +27,8 @@ typedef struct pcmanager_listener_t {
     void (*added)(const pcmanager_resp_t *, void *userdata);
 
     void (*updated)(const pcmanager_resp_t *, void *userdata);
+
+    void (*removed)(const pcmanager_resp_t *, void *userdata);
 } pcmanager_listener_t;
 
 /**

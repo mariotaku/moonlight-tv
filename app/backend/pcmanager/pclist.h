@@ -16,4 +16,6 @@ SERVER_LIST *pclist_insert_known(pcmanager_t *manager, SERVER_DATA *server);
  */
 void pclist_upsert(pcmanager_t *manager, const pcmanager_resp_t *resp);
 
+void pclist_remove(pcmanager_t *manager, const SERVER_DATA *server);
+
 void pclist_free(pcmanager_t *manager);

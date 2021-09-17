@@ -201,6 +201,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERAXISMOTION:
+        case SDL_TEXTINPUT:
             return 1;
         default:
             return 0;

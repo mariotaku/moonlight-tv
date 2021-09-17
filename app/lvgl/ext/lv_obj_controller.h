@@ -63,7 +63,21 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager);
 
 void lv_controller_manager_push(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args);
 
+/**
+ * Replace top-most controller. Old item in the stack will be removed.
+ * @param manager
+ * @param cls
+ * @param args
+ */
 void lv_controller_manager_replace(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args);
+
+/**
+ * Show lv_dialog
+ * @param manager Controller manager instance
+ * @param cls Controller class which must return valid lv_dialog instance
+ * @param args
+ */
+void lv_controller_manager_show(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args);
 
 bool lv_controller_manager_dispatch_event(lv_controller_manager_t *manager, int which, void *data1, void *data2);
 

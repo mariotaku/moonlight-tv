@@ -283,7 +283,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_FONT_MONTSERRAT_42    0
 #define LV_FONT_MONTSERRAT_44    0
 #define LV_FONT_MONTSERRAT_46    0
-#define LV_FONT_MONTSERRAT_48    0
+#define LV_FONT_MONTSERRAT_48    1
 
 /*Demonstrate special features*/
 #define LV_FONT_MONTSERRAT_12_SUBPX      0
@@ -442,9 +442,13 @@ LV_FONT_DECLARE(material_icon_regular_32)
 
 #define LV_USE_COLORWHEEL   0
 
+#define LV_USE_DIALOG       1
+
+#define LV_USE_GRIDVIEW     1
+
 #define LV_USE_IMGBTN       1
 
-#define LV_USE_KEYBOARD     1
+#define LV_USE_KEYBOARD     0
 
 #define LV_USE_LED          1
 
@@ -452,7 +456,7 @@ LV_FONT_DECLARE(material_icon_regular_32)
 
 #define LV_USE_METER        0
 
-#define LV_USE_MSGBOX       1
+#define LV_USE_MSGBOX       0
 
 #define LV_USE_SPINBOX      1
 
@@ -461,8 +465,6 @@ LV_FONT_DECLARE(material_icon_regular_32)
 #define LV_USE_TABVIEW      1
 
 #define LV_USE_TILEVIEW     1
-
-#define LV_USE_GRIDVIEW     1
 
 #define LV_USE_WIN          1
 

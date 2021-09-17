@@ -22,6 +22,7 @@ typedef struct manager_stack_t {
     lv_obj_controller_t *controller;
     lv_obj_t *obj;
     bool obj_created;
+    bool is_dialog;
     struct manager_stack_t *prev;
 } manager_stack_t;
 
@@ -38,7 +39,8 @@ static manager_stack_t *item_new(const lv_obj_controller_class_t *cls);
 
 static lv_obj_controller_t *item_create_controller(lv_controller_manager_t *manager, manager_stack_t *item, void *args);
 
-static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent);
+static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent,
+                             const lv_obj_class_t *check_type);
 
 static void item_destroy_view(lv_controller_manager_t *manager, manager_stack_t *item);
 
@@ -91,7 +93,7 @@ void lv_controller_manager_push(lv_controller_manager_t *manager, const lv_obj_c
     if (manager->top) {
         item_destroy_view(manager, manager->top);
     }
-    item_create_view(manager, item, parent);
+    item_create_view(manager, item, parent, NULL);
     manager_stack_t *top = manager->top;
     item->prev = top;
     manager->top = item;
@@ -109,14 +111,27 @@ void lv_controller_manager_replace(lv_controller_manager_t *manager, const lv_ob
         lv_mem_free(old);
     }
     manager->top = top;
-    item_create_view(manager, top, manager->container);
+    item_create_view(manager, top, manager->container, NULL);
 }
 
+void lv_controller_manager_show(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args) {
+    LV_ASSERT(manager);
+    LV_ASSERT(cls);
+    manager_stack_t *item = item_new(cls);
+    item_create_controller(manager, item, args);
+    item_create_view(manager, item, NULL, &lv_dialog_class);
+    item->is_dialog = true;
+    manager_stack_t *top = manager->top;
+    item->prev = top;
+    manager->top = item;
+}
 
 void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     LV_ASSERT(manager);
     manager_stack_t *top = manager->top;
     if (!top) return;
+    LV_ASSERT(!top->is_dialog);
+    if (top->is_dialog) return;
     manager_stack_t *prev = top->prev;
     if (prev) {
         item_create_controller(manager, prev, NULL);
@@ -125,7 +140,7 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     item_destroy_controller(top);
     lv_mem_free(top);
     if (prev) {
-        item_create_view(manager, prev, manager->container);
+        item_create_view(manager, prev, manager->container, NULL);
     }
     manager->top = prev;
 }
@@ -160,16 +175,23 @@ static lv_obj_controller_t *item_create_controller(lv_controller_manager_t *mana
     lv_memset_00(controller, cls->instance_size);
     controller->cls = cls;
     controller->manager = manager;
-    cls->constructor_cb(controller, args);
+    if (cls->constructor_cb) {
+        cls->constructor_cb(controller, args);
+    }
     item->controller = controller;
     return controller;
 }
 
-static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent) {
+static void item_create_view(lv_controller_manager_t *manager, manager_stack_t *item, lv_obj_t *parent,
+                             const lv_obj_class_t *check_type) {
     LV_ASSERT(item->controller);
     const lv_obj_controller_class_t *cls = item->cls;
+    LV_ASSERT(cls->create_obj_cb);
     lv_obj_controller_t *controller = item->controller;
     lv_obj_t *view = cls->create_obj_cb(controller, parent);
+    if (check_type) {
+        LV_ASSERT(lv_obj_has_class(view, check_type));
+    }
     item->obj = controller->obj = view;
     item->obj_created = true;
     if (cls->obj_created_cb) {

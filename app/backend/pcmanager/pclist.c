@@ -8,9 +8,6 @@
 typedef struct {
     pcmanager_t *manager;
     const pcmanager_resp_t *resp;
-    SDL_mutex *mutex;
-    SDL_cond *cond;
-    bool sent;
 } upsert_args_t;
 
 #define LINKEDLIST_IMPL
@@ -28,7 +25,7 @@ typedef struct {
 
 static void upsert_perform(upsert_args_t *args);
 
-static void upsert_wait(upsert_args_t *args);
+static void remove_perform(upsert_args_t *args);
 
 static void serverlist_nodefree(PSERVER_LIST node);
 
@@ -50,6 +47,23 @@ void pclist_upsert(pcmanager_t *manager, const pcmanager_resp_t *resp) {
         upsert_perform(&args);
     } else {
         bus_pushaction_sync((bus_actionfunc) upsert_perform, &args);
+    }
+}
+
+void pclist_remove(pcmanager_t *manager, const SERVER_DATA *server) {
+    assert(manager);
+    assert(server);
+    pcmanager_resp_t resp = {
+            .result.code = GS_OK,
+            .server = server,
+            .state.code = SERVER_STATE_NONE,
+            .known = false,
+    };
+    upsert_args_t args = {.manager = manager, .resp = &resp};
+    if (SDL_ThreadID() == manager->thread_id) {
+        remove_perform(&args);
+    } else {
+        bus_pushaction_sync((bus_actionfunc) remove_perform, &args);
     }
 }
 
@@ -101,30 +115,30 @@ PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr
 }
 
 void upsert_perform(upsert_args_t *args) {
-    SDL_LockMutex(args->mutex);
     pcmanager_t *manager = args->manager;
     const pcmanager_resp_t *resp = args->resp;
+    pcmanager_list_lock(manager);
     SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_compare_uuid);
     bool updated = node != NULL;
     if (!node) {
         node = serverlist_new();
         manager->servers = serverlist_append(manager->servers, node);
     }
-    pcmanager_list_lock(manager);
     pclist_node_apply(node, resp);
     pcmanager_list_unlock(manager);
-    pcmanager_listeners_notify(manager, resp, updated);
-    args->sent = true;
-    if (args->cond) {
-        SDL_CondSignal(args->cond);
-    }
-    SDL_UnlockMutex(args->mutex);
+    pcmanager_listeners_notify(manager, resp, updated ? PCMANAGER_NOTIFY_UPDATED : PCMANAGER_NOTIFY_ADDED);
 }
 
-void upsert_wait(upsert_args_t *args) {
-    SDL_LockMutex(args->mutex);
-    while (!args->sent) {
-        SDL_CondWait(args->cond, args->mutex);
-    }
-    SDL_UnlockMutex(args->mutex);
+
+static void remove_perform(upsert_args_t *args) {
+    pcmanager_t *manager = args->manager;
+    const pcmanager_resp_t *resp = args->resp;
+    pcmanager_list_lock(manager);
+    SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_compare_uuid);
+    if (!node) return;
+    manager->servers = serverlist_remove(manager->servers, node);
+    pcmanager_list_unlock(manager);
+    pcmanager_listeners_notify(manager, resp, PCMANAGER_NOTIFY_REMOVED);
+    serverlist_nodefree(node);
 }
+

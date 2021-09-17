@@ -47,8 +47,6 @@ int main(int argc, char *argv[]) {
     setvbuf(app_logfile, NULL, _IONBF, 0);
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
         REDIR_STDOUT(APPID);
-#else
-    setvbuf(stdout, NULL, _IONBF, 0);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
     SDL_setenv("DISPLAY", ":0", 1);

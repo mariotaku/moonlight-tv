@@ -37,12 +37,13 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     pcmanager_list_lock(manager);
     PSERVER_LIST existing = pcmanager_find_by_address(manager, address);
     if (existing) {
-        if (existing->state.code == SERVER_STATE_QUERYING) {
+        SERVER_STATE_ENUM state = existing->state.code;
+        if (state == SERVER_STATE_QUERYING) {
             applog_v("PCManager", "Skip upsert for querying node. address: %s", address);
             pcmanager_list_unlock(manager);
             return 0;
         }
-        if (!refresh && existing->state.code == SERVER_STATE_ONLINE) {
+        if (!refresh && state == SERVER_STATE_ONLINE) {
             pcmanager_list_unlock(manager);
             return 0;
         }
@@ -55,8 +56,16 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     gs_destroy(client);
     if (existing) {
         pcmanager_list_lock(manager);
-        existing->state.code = SERVER_STATE_NONE;
+        bool should_remove = ret == GS_OK && SDL_strcasecmp(existing->server->uuid, server->uuid) != 0;
         pcmanager_list_unlock(manager);
+        if (should_remove) {
+            pclist_remove(manager, existing->server);
+            existing = NULL;
+        } else {
+            pcmanager_list_lock(manager);
+            existing->state.code = SERVER_STATE_NONE;
+            pcmanager_list_unlock(manager);
+        }
     }
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     if (ret == GS_OK) {

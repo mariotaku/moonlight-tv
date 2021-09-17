@@ -5,6 +5,12 @@
 
 typedef struct pcmanager_listener_list pcmanager_listener_list;
 
+typedef enum pcmanager_notify_type_t {
+    PCMANAGER_NOTIFY_ADDED,
+    PCMANAGER_NOTIFY_UPDATED,
+    PCMANAGER_NOTIFY_REMOVED,
+} pcmanager_notify_type_t;
+
 struct pcmanager_t {
     SDL_threadID thread_id;
     SERVER_LIST *servers;
