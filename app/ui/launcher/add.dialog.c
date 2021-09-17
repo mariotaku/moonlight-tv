@@ -96,6 +96,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void dialog_cb(lv_event_t *event) {
     add_dialog_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *dialog = lv_event_get_current_target(event);
+    if (dialog != controller->base.obj) return;
     uint16_t btn = lv_dialog_get_active_btn(dialog);
     if (btn == 1) {
         const char *address = lv_textarea_get_text(controller->input);

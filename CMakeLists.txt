@@ -182,6 +182,7 @@ set(SOURCES
     app/ui/launcher/launcher.controller.c
     app/ui/launcher/apps.controller.c
     app/ui/launcher/add.dialog.c
+    app/ui/launcher/pair.dialog.c
     app/ui/launcher/appitem.view.c
     app/ui/launcher/coverloader.c
     app/ui/streaming/streaming.view.c

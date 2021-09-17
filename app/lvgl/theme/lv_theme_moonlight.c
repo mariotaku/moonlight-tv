@@ -7,8 +7,6 @@ static void lv_start_text_input(lv_event_t *event);
 
 static void lv_dialog_destroy(lv_event_t *event);
 
-static void dialog_group_focus_cb(lv_group_t *group);
-
 void lv_theme_moonlight_init(lv_theme_t *theme) {
     lv_theme_set_apply_cb(theme, apply_cb);
     theme->font_small = &lv_font_montserrat_28;
@@ -44,8 +42,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_flex_cross_place(obj, LV_FLEX_ALIGN_END, 0);
         lv_group_t *group = lv_group_create();
         group->user_data = obj;
-        lv_group_add_obj(group, obj);
-        lv_group_set_focus_cb(group, dialog_group_focus_cb);
+        lv_obj_set_child_group(obj, group);
         lv_indev_set_group(app_indev_key, group);
         lv_obj_add_event_cb(obj, lv_dialog_destroy, LV_EVENT_DELETE, group);
     }
@@ -62,10 +59,4 @@ static void lv_dialog_destroy(lv_event_t *event) {
     lv_group_t *group = lv_event_get_user_data(event);
     lv_group_remove_all_objs(group);
     lv_group_del(group);
-}
-
-static void dialog_group_focus_cb(lv_group_t *group) {
-    if (lv_group_get_focused(group) == group->user_data) {
-        lv_group_focus_next(group);
-    }
 }

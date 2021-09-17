@@ -1,5 +1,6 @@
 #pragma
 
+#define MAT_SYMBOL_WARNING "\xEE\x80\x82" /*e002*/
 #define MAT_SYMBOL_ADD_TO_QUEUE "\xEE\x81\x9C" /*e05c*/
 #define MAT_SYMBOL_TV "\xEE\x8C\xB3" /*e333*/
 #define MAT_SYMBOL_CLOSE "\xEE\x97\x8D" /*e5cd*/

@@ -53,7 +53,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             break;
         }
         case USER_STREAM_FINISHED: {
-            lv_controller_manager_pop(controller->base.manager);
+            lv_obj_controller_pop((lv_obj_controller_t *) controller);
             break;
         }
         case USER_ST_QUITAPP_CONFIRM: {

@@ -110,7 +110,7 @@ static void on_key(lv_event_t *event) {
         return;
     }
     if (lv_event_get_current_target(event) == content) {
-        lv_controller_manager_pop(controller->base.manager);
+        lv_obj_controller_pop((lv_obj_controller_t *) controller);
     }
 }
 

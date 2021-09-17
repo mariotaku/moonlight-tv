@@ -33,6 +33,7 @@ struct lv_obj_controller_t {
     const lv_obj_controller_class_t *cls;
     lv_controller_manager_t *manager;
     lv_obj_t *obj;
+    bool dialog;
 };
 
 struct lv_obj_controller_class_t {
@@ -81,6 +82,7 @@ void lv_controller_manager_show(lv_controller_manager_t *manager, const lv_obj_c
 
 bool lv_controller_manager_dispatch_event(lv_controller_manager_t *manager, int which, void *data1, void *data2);
 
+void lv_obj_controller_pop(lv_obj_controller_t *controller);
 /**********************
  *      MACROS
  **********************/

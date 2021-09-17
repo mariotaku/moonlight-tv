@@ -9,13 +9,7 @@
 
 #include "util/logging.h"
 #include "add.dialog.h"
-
-typedef struct {
-    launcher_controller_t *controller;
-    PSERVER_LIST node;
-    lv_obj_t *dialog;
-    char pin[8];
-} pair_state_t;
+#include "pair.dialog.h"
 
 static void launcher_controller(struct lv_obj_controller_t *self, void *args);
 
@@ -50,8 +44,6 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened);
 static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_LIST cur);
 
 static const char *server_item_icon(const SERVER_LIST *node);
-
-static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -96,10 +88,12 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     update_pclist(controller);
 
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
-        if (!cur->selected) continue;
-        select_pc(controller, cur);
-        set_detail_opened(controller, true);
-        break;
+        if (cur->selected) {
+            select_pc(controller, cur);
+            set_detail_opened(controller, true);
+            continue;
+        }
+        pcmanager_request_update(pcmanager, cur->server, NULL, NULL);
     }
     pcmanager_auto_discovery_start(pcmanager);
 }
@@ -231,6 +225,9 @@ static const char *server_item_icon(const SERVER_LIST *node) {
             } else {
                 return MAT_SYMBOL_TV;
             }
+        case SERVER_STATE_ERROR:
+        case SERVER_STATE_OFFLINE:
+            return MAT_SYMBOL_WARNING;
         default:
             return MAT_SYMBOL_TV;
     }
@@ -263,41 +260,9 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
 /** Pairing functions */
 
 static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
-    pair_state_t *state = SDL_malloc(sizeof(pair_state_t));
-    SDL_memset(state, 0, sizeof(pair_state_t));
-    state->controller = controller;
-    state->node = node;
-    if (!pcmanager_pair(pcmanager, node->server, state->pin, (pcmanager_callback_t) pair_result_cb, state)) {
-        SDL_free(state);
-        return;
-    }
-    lv_obj_t *dialog = lv_dialog_create(NULL, "Pairing", NULL, false);
-    lv_obj_t *content = lv_dialog_get_content(dialog);
-    lv_obj_set_layout(content, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(content, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-
-    lv_obj_t *message_label = lv_label_create(content);
-    lv_obj_set_size(message_label, LV_PCT(100), LV_SIZE_CONTENT);
-    lv_label_set_long_mode(message_label, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(message_label, "Enter PIN code on your computer.");
-
-    lv_obj_t *pin_label = lv_label_create(content);
-    lv_obj_set_style_text_font(pin_label, &lv_font_montserrat_48, 0);
-    lv_obj_set_style_pad_all(pin_label, lv_dpx(15), 0);
-    lv_label_set_text(pin_label, state->pin);
-    lv_obj_center(dialog);
-    state->dialog = dialog;
+    lv_controller_manager_show(controller->pane_manager, &pair_dialog_class, node);
 }
 
-static void pair_result_cb(pcmanager_resp_t *resp, pair_state_t *state) {
-    launcher_controller_t *controller = state->controller;
-    lv_dialog_close(state->dialog);
-    if (resp->result.code == GS_OK) {
-        pcmanager_request_update(pcmanager, state->node->server, NULL, NULL);
-    }
-    free(state);
-}
 
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
