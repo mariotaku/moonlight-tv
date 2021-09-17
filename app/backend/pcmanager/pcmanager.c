@@ -82,15 +82,17 @@ static int quit_app_worker(cm_request_t *req) {
     pcmanager_list_lock(req->manager);
     int ret = gs_quit_app(client, (SERVER_DATA *) req->server);
     pcmanager_list_unlock(req->manager);
+    pcmanager_resp_t *resp = serverinfo_resp_new();
+    resp->known = true;
+    resp->result.code = ret;
+    resp->server = req->server;
     if (ret == GS_OK) {
-        pcmanager_resp_t resp = {
-                .result.code = ret,
-                .state.code = SERVER_STATE_ONLINE,
-                .known = true,
-                .server = req->server,
-        };
-        pclist_upsert(req->manager, &resp);
+        resp->state.code = SERVER_STATE_ONLINE;
+        pclist_upsert(req->manager, resp);
+    } else {
+        resp->result.error.message = gs_error;
     }
-    free(req);
+    pcmanager_worker_finalize(resp, req->callback, req->userdata);
+    SDL_free(req);
     return 0;
 }
