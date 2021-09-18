@@ -10,6 +10,7 @@ typedef struct {
     uint32_t key;
     lv_indev_state_t state;
     char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+    uint32_t text_len;
     uint8_t text_remain;
     uint32_t text_next;
 } indev_key_state_t;
@@ -27,7 +28,9 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             state->text_remain--;
             data->continue_reading = state->text_remain > 0;
         } else {
-            state->key = *((uint32_t *) &state->text[state->text_next]);
+            state->key = 0;
+            memcpy(&state->key, &state->text[state->text_next],
+                   _lv_txt_encoded_size(&state->text[state->text_next]));
             _lv_txt_encoded_next(state->text, &state->text_next);
             state->state = LV_INDEV_STATE_PRESSED;
             data->continue_reading = true;
@@ -52,12 +55,12 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         } else {
             uint8_t size = _lv_txt_get_encoded_length(e.text.text);
             if (size > 0) {
+                state->text_len = strlen(e.text.text);
                 state->text_remain = size;
                 state->text_next = 0;
                 SDL_memcpy(state->text, e.text.text, SDL_TEXTINPUTEVENT_TEXT_SIZE);
-                state->key = *((uint32_t *) e.text.text);
-                _lv_txt_encoded_next(e.text.text, &state->text_next);
-                state->state = LV_INDEV_STATE_PRESSED;
+                state->key = 0;
+                state->state = LV_INDEV_STATE_RELEASED;
             }
         }
         data->continue_reading = true;
