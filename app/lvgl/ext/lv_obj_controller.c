@@ -161,6 +161,13 @@ void lv_obj_controller_pop(lv_obj_controller_t *controller) {
     lv_controller_manager_pop(manager);
 }
 
+lv_obj_controller_t *lv_controller_manager_top_controller(lv_controller_manager_t *manager) {
+    LV_ASSERT(manager);
+    manager_stack_t *top = manager->top;
+    if (!top)return NULL;
+    return top->controller;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/

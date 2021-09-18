@@ -84,6 +84,8 @@ static void on_entry_click(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
+    lv_obj_controller_t *pane = lv_controller_manager_top_controller(controller->pane_manager);
+    if (pane && pane->cls == target->user_data) return;
     lv_controller_manager_replace(controller->pane_manager, target->user_data, NULL);
     uint32_t child_cnt = lv_obj_get_child_cnt(controller->detail);
     for (int i = 0; i < child_cnt; i++) {
