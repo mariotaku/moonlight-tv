@@ -20,10 +20,12 @@ lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
     lv_obj_set_style_transition(item, &styles->tr_released, LV_STATE_DEFAULT);
 
     lv_obj_t *play_btn = lv_btn_create(item);
+    lv_obj_add_flag(play_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_bg_img_src(play_btn, LV_SYMBOL_PLAY, 0);
     lv_obj_add_style(play_btn, &styles->btn, 0);
     lv_obj_align(play_btn, LV_ALIGN_CENTER, 0, -lv_dpx(25));
     lv_obj_t *close_btn = lv_btn_create(item);
+    lv_obj_add_flag(close_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_bg_img_src(close_btn, LV_SYMBOL_CLOSE, 0);
     lv_obj_add_style(close_btn, &styles->btn, 0);
     lv_obj_align(close_btn, LV_ALIGN_CENTER, 0, lv_dpx(25));

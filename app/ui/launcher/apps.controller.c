@@ -44,11 +44,11 @@ static void on_host_updated(const pcmanager_resp_t *resp, void *userdata);
 
 static void on_host_removed(const pcmanager_resp_t *resp, void *userdata);
 
-static void launcher_open_game(lv_event_t *event);
+static void item_click_cb(lv_event_t *event);
 
-static void launcher_resume_game(lv_event_t *event);
+static void launcher_launch_game(apps_controller_t *controller, const APP_LIST *app);
 
-static void launcher_quit_game(lv_event_t *event);
+static void launcher_quit_game(apps_controller_t *controller);
 
 static void applist_focus_enter(lv_event_t *event);
 
@@ -145,7 +145,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
-    lv_obj_add_event_cb(applist, launcher_open_game, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_LEAVE, controller);
@@ -289,32 +289,34 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST
     holder->app = app;
 }
 
-static void launcher_open_game(lv_event_t *event) {
+static void item_click_cb(lv_event_t *event) {
     apps_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *target = lv_event_get_target(event);
-    if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) {
+    lv_obj_t *target_parent = lv_obj_get_parent(target);
+    if (target_parent != controller->applist) {
+        if (lv_obj_get_parent(target_parent) == controller->applist) {
+            appitem_viewholder_t *holder = lv_obj_get_user_data(target_parent);
+            if (target == holder->play_btn) {
+                launcher_launch_game(controller, holder->app);
+            } else if (target == holder->close_btn) {
+                launcher_quit_game(controller);
+            }
+        }
         return;
     }
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
+    launcher_launch_game(controller, holder->app);
+}
+
+static void launcher_launch_game(apps_controller_t *controller, const APP_LIST *app) {
     STREAMING_SCENE_ARGS args = {
             .server = controller->node->server,
-            .app = holder->app
+            .app = app,
     };
     lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
 }
 
-static void launcher_resume_game(lv_event_t *event) {
-    apps_controller_t *controller = lv_event_get_user_data(event);
-    lv_obj_t *item = lv_obj_get_parent(lv_event_get_current_target(event));
-    STREAMING_SCENE_ARGS args = {
-            .server = controller->node->server,
-            .app = ((appitem_viewholder_t *) lv_obj_get_user_data(item))->app
-    };
-    lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
-}
-
-static void launcher_quit_game(lv_event_t *event) {
-    apps_controller_t *controller = event->user_data;
+static void launcher_quit_game(apps_controller_t *controller) {
     pcmanager_quitapp(pcmanager, controller->node->server, quitgame_cb, controller);
 }
 
@@ -326,14 +328,7 @@ static int adapter_item_count(lv_obj_t *grid, void *data) {
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
     apps_controller_t *controller = lv_obj_get_user_data(parent);
-    lv_obj_t *item = appitem_view(parent, &controller->appitem_style);
-    // Remove from original group
-    lv_group_remove_obj(item);
-
-    appitem_viewholder_t *holder = item->user_data;
-    lv_obj_add_event_cb(holder->play_btn, launcher_resume_game, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(holder->close_btn, launcher_quit_game, LV_EVENT_CLICKED, controller);
-    return item;
+    return appitem_view(parent, &controller->appitem_style);
 }
 
 static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, int position) {
