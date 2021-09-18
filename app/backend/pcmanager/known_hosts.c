@@ -34,7 +34,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         }
         const char *key = config_setting_name(item);
         int keyoff = key[0] == '*' ? 1 : 0;
-        char *uuid = strdup(&key[keyoff]);
+        char *uuid = SDL_strdup(&key[keyoff]);
         PSERVER_DATA server = serverdata_new();
         server->uuid = uuid;
         server->mac = SDL_strdup(mac);
@@ -93,5 +93,5 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
 
 static inline void strlower(char *p) {
     for (; *p; ++p)
-        *p = tolower(*p);
+        *p = SDL_tolower(*p);
 }

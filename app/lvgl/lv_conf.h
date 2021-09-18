@@ -62,7 +62,7 @@
 #define LV_DISP_DEF_REFR_PERIOD     17      /*[ms]*/
 
 /*Input device read period in milliseconds*/
-#define LV_INDEV_DEF_READ_PERIOD    17      /*[ms]*/
+#define LV_INDEV_DEF_READ_PERIOD    3      /*[ms]*/
 
 /*Use a custom tick source that tells the elapsed time in milliseconds.
  *It removes the need to manually update the tick with `lv_tick_inc()`)*/
@@ -132,6 +132,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 /*Use SDL render API*/
 #define LV_USE_GPU_SDL    1
+
+#define LV_GPU_SDL_INCLUDE_PATH <SDL.h>
 
 /*-------------
  * Logging

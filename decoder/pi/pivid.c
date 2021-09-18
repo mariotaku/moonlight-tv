@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ilclient.h>
 #include <bcm_host.h>
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #define MAX_DECODE_UNIT_SIZE 262144
 
