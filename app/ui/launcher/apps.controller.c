@@ -363,12 +363,15 @@ static void applist_focus_leave(lv_event_t *event) {
 
 static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = userdata;
-    if (resp->result.code == GS_OK) return;
+    lv_grid_rebind(controller->applist);
+    if (resp->result.code == GS_OK) {
+        return;
+    }
     static const char *btn_texts[] = {"OK", ""};
     lv_obj_t *dialog = lv_msgbox_create(NULL, "Unable to quit game",
                                         "Please make sure you are quitting with the same client.",
                                         btn_texts, false);
-    lv_obj_add_event_cb(dialog, quit_dialog_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(dialog, quit_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_center(dialog);
 }
 
