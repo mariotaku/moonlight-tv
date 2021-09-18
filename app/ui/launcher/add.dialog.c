@@ -45,10 +45,10 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     add_dialog_controller_t *controller = (add_dialog_controller_t *) self;
     const static char *btn_texts[] = {"Cancel", "OK", ""};
-    lv_obj_t *dialog = lv_dialog_create(NULL, "Add device", btn_texts, false);
+    lv_obj_t *dialog = lv_msgbox_create(NULL, "Add device", NULL, btn_texts, false);
     lv_obj_add_event_cb(dialog, dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
-    lv_obj_t *content = lv_dialog_get_content(dialog);
-    lv_obj_set_style_pad_ver(content, lv_dpx(8), 0);
+    lv_obj_t *content = lv_msgbox_get_content(dialog);
+    lv_obj_set_style_pad_all(content, lv_dpx(8), 0);
     lv_obj_set_style_pad_gap(content, lv_dpx(8), 0);
     lv_obj_set_layout(content, LV_LAYOUT_GRID);
     static lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_CONTENT, 1, LV_GRID_TEMPLATE_LAST};
@@ -62,7 +62,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_label_set_text_static(ip_label, "IP address");
 
     lv_obj_t *ip_input = lv_textarea_create(content);
-    lv_obj_set_grid_cell(ip_input, LV_GRID_ALIGN_CENTER, 0, 3, LV_GRID_ALIGN_STRETCH, 1, 1);
+    lv_obj_set_grid_cell(ip_input, LV_GRID_ALIGN_STRETCH, 0, 3, LV_GRID_ALIGN_STRETCH, 1, 1);
     lv_textarea_set_placeholder_text(ip_input, "IPv4 address only");
     lv_textarea_set_one_line(ip_input, true);
     lv_textarea_set_accepted_chars(ip_input, "0123456789.");
@@ -82,7 +82,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_label_set_long_mode(add_error, LV_LABEL_LONG_WRAP);
     lv_label_set_text_static(add_error, "Failed to add computer.");
 
-    lv_obj_t *btns = lv_dialog_get_btns(dialog);
+    lv_obj_t *btns = lv_msgbox_get_btns(dialog);
     lv_btnmatrix_set_btn_ctrl(btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
 
     controller->progress = add_progress;
@@ -97,7 +97,7 @@ static void dialog_cb(lv_event_t *event) {
     add_dialog_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *dialog = lv_event_get_current_target(event);
     if (dialog != controller->base.obj) return;
-    uint16_t btn = lv_dialog_get_active_btn(dialog);
+    uint16_t btn = lv_msgbox_get_active_btn(dialog);
     if (btn == 1) {
         const char *address = lv_textarea_get_text(controller->input);
         if (!validate_ip4(address))return;
@@ -107,7 +107,7 @@ static void dialog_cb(lv_event_t *event) {
         lv_obj_add_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
         pcmanager_manual_add(pcmanager, address, add_cb, controller);
     } else {
-        lv_dialog_close_async(dialog);
+        lv_msgbox_close_async(dialog);
     }
 }
 
@@ -123,12 +123,12 @@ static void input_changed_cb(lv_event_t *event) {
 
 static void add_cb(const pcmanager_resp_t *resp, void *userdata) {
     add_dialog_controller_t *controller = userdata;
-    lv_obj_t *btns = lv_dialog_get_btns(controller->base.obj);
+    lv_obj_t *btns = lv_msgbox_get_btns(controller->base.obj);
     lv_obj_clear_state(btns, LV_STATE_DISABLED);
     lv_obj_clear_state(controller->input, LV_STATE_DISABLED);
     lv_obj_add_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
     if (resp->result.code == GS_OK) {
-        lv_dialog_close_async(controller->base.obj);
+        lv_msgbox_close_async(controller->base.obj);
     } else {
         lv_obj_clear_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
     }

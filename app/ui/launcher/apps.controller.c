@@ -365,13 +365,10 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = userdata;
     if (resp->result.code == GS_OK) return;
     static const char *btn_texts[] = {"OK", ""};
-    lv_obj_t *dialog = lv_dialog_create(NULL, "Unable to quit game", btn_texts, false);
+    lv_obj_t *dialog = lv_msgbox_create(NULL, "Unable to quit game",
+                                        "Please make sure you are quitting with the same client.",
+                                        btn_texts, false);
     lv_obj_add_event_cb(dialog, quit_dialog_cb, LV_EVENT_VALUE_CHANGED, NULL);
-    lv_obj_t *content = lv_dialog_get_content(dialog);
-    lv_obj_t *label = lv_label_create(content);
-    lv_obj_set_size(label, LV_PCT(100), LV_SIZE_CONTENT);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(label, "Please make sure you are quitting with the same client.");
     lv_obj_center(dialog);
 }
 
@@ -382,5 +379,5 @@ static void appload_cb(apploader_t *loader, void *userdata) {
 
 static void quit_dialog_cb(lv_event_t *event) {
     lv_obj_t *dialog = lv_event_get_current_target(event);
-    lv_dialog_close_async(dialog);
+    lv_msgbox_close_async(dialog);
 }

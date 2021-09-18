@@ -119,7 +119,7 @@ void lv_controller_manager_show(lv_controller_manager_t *manager, const lv_obj_c
     LV_ASSERT(cls);
     manager_stack_t *item = item_new(cls);
     item_create_controller(manager, item, args);
-    item_create_obj(manager, item, NULL, &lv_dialog_class);
+    item_create_obj(manager, item, NULL, &lv_msgbox_class);
     item->controller->dialog = true;
     manager_stack_t *top = manager->top;
     item->prev = top;

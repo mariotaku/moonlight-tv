@@ -442,8 +442,6 @@ LV_FONT_DECLARE(material_icon_regular_32)
 
 #define LV_USE_COLORWHEEL   0
 
-#define LV_USE_DIALOG       1
-
 #define LV_USE_GRIDVIEW     1
 
 #define LV_USE_IMGBTN       1
@@ -456,7 +454,7 @@ LV_FONT_DECLARE(material_icon_regular_32)
 
 #define LV_USE_METER        0
 
-#define LV_USE_MSGBOX       0
+#define LV_USE_MSGBOX       1
 
 #define LV_USE_SPINBOX      1
 

@@ -24,7 +24,6 @@ static MODULE_LIB_DEFINITION _dile_libs[2] = {{"dile",        "dile"},
 static MODULE_LIB_DEFINITION _pi_lib = {"pi", "pi"};
 
 MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
-        {"No codec", NULL, NULL, 0, NULL},
         {"FFMPEG (SW codec)", "ffmpeg", &_ffmpeg_lib, 1, DECODER_SYMBOLS_FFMPEG},
         {"webOS NDL", "ndl", _ndl_libs, 2, NULL},
         {"NetCast Legacy", "lgnc", &_lgnc_lib, 1, NULL},

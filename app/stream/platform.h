@@ -30,8 +30,8 @@
 enum DECODER_T
 {
     DECODER_AUTO = -1,
-    DECODER_NONE = 0,
-    DECODER_FFMPEG,
+    DECODER_FIRST = 0,
+    DECODER_FFMPEG = DECODER_FIRST,
     DECODER_NDL,
     DECODER_LGNC,
     DECODER_SMP,
@@ -41,6 +41,7 @@ enum DECODER_T
     DECODER_EMPTY,
 #endif
     DECODER_COUNT,
+    DECODER_NONE = -10,
 };
 typedef enum DECODER_T DECODER;
 
@@ -48,7 +49,8 @@ enum AUDIO_T
 {
     AUDIO_DECODER = -2,
     AUDIO_AUTO = -1,
-    AUDIO_SDL = 0,
+    AUDIO_FIRST = 0,
+    AUDIO_SDL = AUDIO_FIRST,
     AUDIO_PULSE,
     AUDIO_ALSA,
     AUDIO_NDL,
@@ -149,13 +151,15 @@ static const DECODER decoder_orders[] = {
     DECODER_FFMPEG
 #endif
 };
-static const size_t decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER);
+static const int decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER);
 
 static const AUDIO audio_orders[] = {
 #if TARGET_WEBOS
     AUDIO_NDL, AUDIO_PULSE, AUDIO_SDL
-#else
+#elif TARGET_LINUX
     AUDIO_ALSA, AUDIO_PULSE, AUDIO_SDL
+#else
+    AUDIO_SDL
 #endif
 };
-static const size_t audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);
+static const int audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);

@@ -73,9 +73,9 @@ void lv_controller_manager_push(lv_controller_manager_t *manager, const lv_obj_c
 void lv_controller_manager_replace(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args);
 
 /**
- * Show lv_dialog
+ * Show lv_msgbox
  * @param manager Controller manager instance
- * @param cls Controller class which must return valid lv_dialog instance
+ * @param cls Controller class which must return valid lv_msgbox instance
  * @param args
  */
 void lv_controller_manager_show(lv_controller_manager_t *manager, const lv_obj_controller_class_t *cls, void *args);

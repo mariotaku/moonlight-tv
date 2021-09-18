@@ -55,7 +55,7 @@ lv_obj_t *pref_checkbox(lv_obj_t *parent, const char *title, bool *value, bool r
     return checkbox;
 }
 
-lv_obj_t *pref_dropdown_int(lv_obj_t *parent, const pref_dropdown_int_entry_t *entries, int num_entries,
+lv_obj_t *pref_dropdown_int(lv_obj_t *parent, const pref_dropdown_int_entry_t *entries, size_t num_entries,
                             int *value) {
     lv_obj_t *dropdown = lv_dropdown_create(parent);
     lv_dropdown_clear_options(dropdown);
@@ -86,7 +86,7 @@ lv_obj_t *pref_dropdown_int(lv_obj_t *parent, const pref_dropdown_int_entry_t *e
     return dropdown;
 }
 
-lv_obj_t *pref_dropdown_int_pair(lv_obj_t *parent, const pref_dropdown_int_pair_entry_t *entries, int num_entries,
+lv_obj_t *pref_dropdown_int_pair(lv_obj_t *parent, const pref_dropdown_int_pair_entry_t *entries, size_t num_entries,
                                  int *value_a, int *value_b) {
     lv_obj_t *dropdown = lv_dropdown_create(parent);
     lv_dropdown_clear_options(dropdown);
@@ -118,7 +118,7 @@ lv_obj_t *pref_dropdown_int_pair(lv_obj_t *parent, const pref_dropdown_int_pair_
     return dropdown;
 }
 
-lv_obj_t *pref_dropdown_string(lv_obj_t *parent, const pref_dropdown_string_entry_t *entries, int num_entries,
+lv_obj_t *pref_dropdown_string(lv_obj_t *parent, const pref_dropdown_string_entry_t *entries, size_t num_entries,
                                char **value) {
     lv_obj_t *dropdown = lv_dropdown_create(parent);
     lv_dropdown_clear_options(dropdown);
