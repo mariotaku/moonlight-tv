@@ -72,9 +72,13 @@ static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int position);
 
 static lv_obj_t *view_pool_take_by_position(view_pool_ll_t **pool, int position);
 
+static bool view_pool_remove_by_instance(view_pool_ll_t **pool, const lv_obj_t *obj);
+
 static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id);
 
 static view_pool_ll_t *view_pool_node_by_position(view_pool_ll_t *pool, int position);
+
+static view_pool_ll_t *view_pool_node_by_instance(view_pool_ll_t *pool, const lv_obj_t *obj);
 
 static lv_obj_t *view_pool_poll(view_pool_ll_t **pool);
 
@@ -97,6 +101,8 @@ static void update_sizes(lv_grid_t *grid);
 static int adapter_item_id(lv_grid_t *grid, int position);
 
 static view_pool_ll_t *view_pool_remove_item(view_pool_ll_t *head, view_pool_ll_t *cur);
+
+static void item_delete_cb(lv_event_t *event);
 
 /**********************
  *  STATIC VARIABLES
@@ -489,6 +495,7 @@ static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int position) {
     item = view_pool_poll(&grid->pool_free);
     if (!item) {
         item = grid->adapter.create_view((lv_obj_t *) grid);
+        lv_obj_add_event_cb(item, item_delete_cb, LV_EVENT_DELETE, grid);
     }
     lv_obj_clear_flag(item, LV_OBJ_FLAG_HIDDEN);
     view_pool_put(&grid->pool_inuse, id, position, item);
@@ -504,6 +511,15 @@ static lv_obj_t *view_pool_take_by_position(view_pool_ll_t **pool, int position)
     return item;
 }
 
+static bool view_pool_remove_by_instance(view_pool_ll_t **pool, const lv_obj_t *obj) {
+    view_pool_ll_t *node = view_pool_node_by_instance(*pool, obj);
+    if (!node) return false;
+    lv_obj_t *item = node->item;
+    (*pool) = view_pool_remove_item(*pool, node);
+    lv_mem_free(node);
+    return true;
+}
+
 static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id) {
     for (view_pool_ll_t *cur = pool; cur != NULL; cur = cur->next) {
         if (cur->id == id) {
@@ -516,6 +532,15 @@ static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id) {
 static view_pool_ll_t *view_pool_node_by_position(view_pool_ll_t *pool, int position) {
     for (view_pool_ll_t *cur = pool; cur != NULL; cur = cur->next) {
         if (cur->position == position) {
+            return cur;
+        }
+    }
+    return NULL;
+}
+
+static view_pool_ll_t *view_pool_node_by_instance(view_pool_ll_t *pool, const lv_obj_t *obj) {
+    for (view_pool_ll_t *cur = pool; cur != NULL; cur = cur->next) {
+        if (cur->item == obj) {
             return cur;
         }
     }
@@ -571,6 +596,12 @@ static void view_pool_reset(view_pool_ll_t **pool) {
         lv_mem_free(tmp);
     }
     *pool = NULL;
+}
+
+static void item_delete_cb(lv_event_t *event) {
+    lv_grid_t *grid = lv_event_get_user_data(event);
+    view_pool_remove_by_instance(&grid->pool_inuse, lv_event_get_current_target(event));
+    view_pool_remove_by_instance(&grid->pool_free, lv_event_get_current_target(event));
 }
 
 #endif /* LV_USE_GRIDVIEW */

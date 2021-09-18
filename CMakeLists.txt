@@ -12,7 +12,8 @@ set(CMAKE_MODULE_PATH
 )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if (WITH_SANITIZE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=${WITH_SANITIZE} -g3 -O0")
+    add_compile_options(-fsanitize=${WITH_SANITIZE} -g3 -O0)
+    link_libraries(-fsanitize=${WITH_SANITIZE} -static-libasan)
 endif()
 
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
