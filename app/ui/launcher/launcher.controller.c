@@ -96,6 +96,7 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
             .data.texture = controller->logo_texture,
     };
     lv_sdl_img_src_stringify(&logo_src, controller->logo_src);
+    controller->detail_opened = true;
 }
 
 static void controller_dtor(lv_obj_controller_t *self) {
@@ -118,12 +119,15 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
             select_pc(controller, cur);
-            set_detail_opened(controller, true);
+            set_detail_opened(controller, controller->detail_opened);
             continue;
         }
         pcmanager_request_update(pcmanager, cur->server, NULL, NULL);
     }
     pcmanager_auto_discovery_start(pcmanager);
+
+    lv_obj_set_style_transition(controller->detail, &controller->tr_nav, 0);
+    lv_obj_set_style_transition(controller->detail, &controller->tr_detail, LV_STATE_USER_1);
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
@@ -308,6 +312,10 @@ static void cb_nav_key(lv_event_t *event) {
             lv_group_focus_next(group);
             break;
         }
+        case LV_KEY_ESC: {
+            app_quit_confirm();
+            break;
+        }
     }
 }
 
@@ -319,6 +327,7 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
         lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->nav));
     }
+    controller->detail_opened = opened;
 }
 
 /** Pairing functions */

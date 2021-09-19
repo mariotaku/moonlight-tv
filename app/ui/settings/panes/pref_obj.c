@@ -44,6 +44,9 @@ static void pref_slider_value_write_back(lv_event_t *event);
 lv_obj_t *pref_checkbox(lv_obj_t *parent, const char *title, bool *value, bool reverse) {
     lv_obj_t *checkbox = lv_checkbox_create(parent);
     lv_checkbox_set_text(checkbox, title);
+    lv_obj_set_size(checkbox, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_all(checkbox, LV_DPX(10), 0);
+    lv_obj_set_style_radius(checkbox, LV_DPX(4), 0);
     pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
     attrs->checkbox.ref = value;
     attrs->checkbox.reverse = reverse;

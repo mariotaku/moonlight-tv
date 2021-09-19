@@ -26,6 +26,8 @@ void app_process_events();
 
 void app_request_exit();
 
+void app_quit_confirm();
+
 void app_start_text_input(int x, int y, int w, int h);
 
 void app_stop_text_input();

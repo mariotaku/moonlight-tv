@@ -114,7 +114,7 @@ void performPendingSpecialKeyCombo()
     case KeyComboToggleStatsOverlay:
         SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
                     "Detected stats toggle combo");
-        bus_pushevent(USER_ST_QUITAPP_CONFIRM, NULL, NULL);
+        bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
         break;
 
     case KeyComboToggleMouseMode:

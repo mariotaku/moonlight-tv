@@ -64,8 +64,6 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_border_width(detail, 0, 0);
     lv_obj_set_style_translate_x(detail, lv_dpx(NAV_TRANSLATE_OFFSET), 0);
     lv_obj_set_style_translate_x(detail, 0, LV_STATE_USER_1);
-    lv_obj_set_style_transition(detail, &controller->tr_nav, 0);
-    lv_obj_set_style_transition(detail, &controller->tr_detail, LV_STATE_USER_1);
 
     lv_obj_t *title = lv_obj_create(nav);
     lv_obj_remove_style_all(title);
@@ -95,7 +93,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_grow(pclist, 1);
 
     // Use list button for normal container
-    lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, "Add");
+    lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, "Add computer");
     lv_obj_set_icon_font(add_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(add_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(add_btn, 0);
@@ -105,14 +103,8 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(pref_btn, 0);
     lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_t *exit_btn = lv_list_add_btn(nav, MAT_SYMBOL_CLOSE, "Exit");
-    lv_obj_set_icon_font(exit_btn, LV_ICON_FONT_DEFAULT);
-    lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_flex_grow(exit_btn, 0);
-    lv_obj_set_style_border_side(exit_btn, LV_BORDER_SIDE_NONE, 0);
 
     lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(exit_btn, app_request_exit, LV_EVENT_CLICKED, NULL);
 
     controller->nav = nav;
     controller->detail = detail;

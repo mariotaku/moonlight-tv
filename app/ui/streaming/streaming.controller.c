@@ -118,7 +118,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             lv_obj_controller_pop((lv_obj_controller_t *) controller);
             break;
         }
-        case USER_ST_QUITAPP_CONFIRM: {
+        case USER_OPEN_OVERLAY: {
             show_overlay(controller);
             break;
         }

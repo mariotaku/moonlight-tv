@@ -82,7 +82,7 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event)
         if (gamepad->buttons == 0)
         {
             quit_combo_pressed = false;
-            bus_pushevent(USER_ST_QUITAPP_CONFIRM, NULL, NULL);
+            bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
         }
         return;
     }

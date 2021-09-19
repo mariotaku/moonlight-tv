@@ -47,9 +47,9 @@ static char wintitle[32];
 
 static bool window_focus_gained;
 
-static void fps_cap(int diff);
-
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
+
+static void quit_confirm_cb(lv_event_t *e);
 
 int app_init(int argc, char *argv[]) {
     app_configuration = settings_load();
@@ -241,11 +241,11 @@ void app_set_keep_awake(bool awake) {
     }
 }
 
-void fps_cap(int start) {
-    int tickdiff = SDL_GetTicks() - start;
-    if (tickdiff > 0 && tickdiff < 16) {
-        SDL_Delay(16 - tickdiff);
-    }
+void app_quit_confirm() {
+    static const char *btn_txts[] = {"Cancel", "OK", ""};
+    lv_obj_t *mbox = lv_msgbox_create(NULL, "Quit", "Do you want to quit Moonlight?", btn_txts, false);
+    lv_obj_add_event_cb(mbox, quit_confirm_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_center(mbox);
 }
 
 void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
@@ -255,4 +255,13 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
         return;
 #endif
     applog(priority_name[priority], "SDL", message);
+}
+
+static void quit_confirm_cb(lv_event_t *e) {
+    lv_obj_t *mbox = lv_event_get_current_target(e);
+    if (lv_msgbox_get_active_btn(mbox) == 1) {
+        app_request_exit();
+    } else {
+        lv_msgbox_close_async(mbox);
+    }
 }

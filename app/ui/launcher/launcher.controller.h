@@ -24,6 +24,7 @@ typedef struct {
 
     SDL_Texture *logo_texture;
     char logo_src[LV_SDL_IMG_LEN];
+    bool detail_opened;
 } launcher_controller_t;
 
 #define NAV_LOGO_SIZE 32
