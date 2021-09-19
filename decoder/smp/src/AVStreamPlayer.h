@@ -44,7 +44,7 @@ namespace SMP_DECODER_NS
             UNLOADED,
             LOADED,
             PLAYING,
-            EOS
+            EOS,
         };
 
         std::string makeLoadPayload(VideoConfig &videoConfig, AudioConfig &audioConfig, uint64_t time);
@@ -63,6 +63,7 @@ namespace SMP_DECODER_NS
         char *video_buffer_;
         unsigned long long video_pts_;
         bool request_idr_;
+        bool request_interrupt_;
 #ifdef USE_ACB
         void AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply);
         std::unique_ptr<Acb> acb_client_;

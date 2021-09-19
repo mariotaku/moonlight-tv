@@ -1,6 +1,7 @@
 #include "AVStreamPlayer.h"
 #include "util/logging.h"
 #include "opus_constants.h"
+#include "stream/module/api.h"
 
 #include <pbnjson.hpp>
 
@@ -99,6 +100,10 @@ bool AVStreamPlayer::load()
 
 int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
 {
+    if (request_interrupt_)
+    {
+        return DR_INTERRUPT;
+    }
     if (decodeUnit->fullLength > DECODER_BUFFER_SIZE)
     {
         applog_w("SMP", "Video decode buffer too small, skip this frame");
@@ -335,8 +340,7 @@ void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strVal
         applog_w("SMP", "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
         if (player_state_ == PLAYING)
         {
-            request_idr_ = true;
-            load();
+            request_interrupt_ = true;
         }
         break;
     }

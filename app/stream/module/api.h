@@ -22,6 +22,8 @@
 #define ERROR_AUDIO_CLOSE_FAILED 22
 #define ERROR_AUDIO_OPUS_INIT_FAILED 23
 
+#define DR_INTERRUPT -99
+
 #ifdef PLUGIN_SYMBOL_SUFFIX
 // Coming from https://stackoverflow.com/a/1489985/859190
 #define SYMBOL_DECL_PASTER(x, y) x##_##y

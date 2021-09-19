@@ -1,4 +1,3 @@
-
 #include "AVStreamPlayer.h"
 #include "util/logging.h"
 

@@ -1,11 +1,14 @@
 #include "delegate.h"
-#include "stream/session.h"
 
 #include <stddef.h>
 #include <memory.h>
 #include <time.h>
-#include <ui/streaming/streaming.controller.h>
-#include <util/bus.h>
+
+#include "stream/session.h"
+#include "stream/module/api.h"
+
+#include "util/bus.h"
+#include "ui/streaming/streaming.controller.h"
 
 static PDECODER_RENDERER_CALLBACKS vdec;
 static int lastFrameNumber;
@@ -92,6 +95,9 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     if (err == 0) {
         vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
         vdec_temp_stats.decodedFrames++;
+    } else if (err == DR_INTERRUPT) {
+        streaming_interrupt(false);
+        err = DR_OK;
     }
     return err;
 }
