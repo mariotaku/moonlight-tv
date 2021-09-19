@@ -1,3 +1,4 @@
+#include <lvgl/lv_sdl_img.h>
 #include "ui/settings/settings.controller.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/font/symbols_material_icon.h"
@@ -18,7 +19,7 @@ static void setup_shade(const launcher_controller_t *controller, lv_obj_t *shade
 lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     /*Create a window*/
-    lv_obj_t *win = lv_win_create(parent, lv_dpx(NAV_WIDTH_COLLAPSED));
+    lv_obj_t *win = lv_win_create(parent, LV_DPX(NAV_WIDTH_COLLAPSED));
 
     lv_obj_t *header = lv_win_get_header(win);
     lv_obj_add_flag(header, LV_OBJ_FLAG_HIDDEN);
@@ -26,8 +27,8 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *content = lv_win_get_content(win);
     lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_layout(content, LV_LAYOUT_GRID);
-    controller->col_dsc[0] = lv_dpx(NAV_WIDTH_COLLAPSED);
-    controller->col_dsc[1] = lv_dpx(NAV_TRANSLATE_OFFSET);
+    controller->col_dsc[0] = LV_DPX(NAV_WIDTH_COLLAPSED);
+    controller->col_dsc[1] = LV_DPX(NAV_TRANSLATE_OFFSET);
     controller->col_dsc[2] = LV_GRID_FR(1);
     controller->col_dsc[3] = LV_GRID_TEMPLATE_LAST;
     controller->row_dsc[0] = LV_GRID_FR(1);
@@ -63,6 +64,23 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_translate_x(detail, 0, LV_STATE_USER_1);
     lv_obj_set_style_transition(detail, &controller->tr_nav, 0);
     lv_obj_set_style_transition(detail, &controller->tr_detail, LV_STATE_USER_1);
+
+    lv_obj_t *title = lv_obj_create(nav);
+    lv_obj_remove_style_all(title);
+    lv_obj_set_size(title, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(title, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(title, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+
+    lv_obj_t *title_logo = lv_img_create(title);
+    lv_obj_set_size(title_logo, LV_DPX(NAV_WIDTH_COLLAPSED), LV_DPX(NAV_WIDTH_COLLAPSED));
+    lv_obj_set_style_pad_all(title_logo, LV_DPX((NAV_WIDTH_COLLAPSED - NAV_LOGO_SIZE) / 2), 0);
+    lv_img_set_src(title_logo, controller->logo_src);
+
+    lv_obj_t *title_label = lv_label_create(title);
+    lv_obj_set_style_pad_hor(title_label, LV_DPX(10), 0);
+    lv_obj_set_style_text_font(title_label, lv_theme_get_font_large(title), 0);
+    lv_label_set_text_static(title_label, "Moonlight");
+    lv_obj_get_style_flex_grow(title_label, 1);
 
     lv_obj_t *pclist = lv_list_create(nav);
     lv_obj_add_flag(pclist, LV_OBJ_FLAG_EVENT_BUBBLE);

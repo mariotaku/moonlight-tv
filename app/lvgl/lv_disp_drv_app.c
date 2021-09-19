@@ -82,6 +82,10 @@ void lv_app_redraw_now(lv_disp_drv_t *disp_drv) {
     SDL_SetRenderTarget(renderer, texture);
 }
 
+SDL_Renderer *lv_app_disp_renderer(lv_disp_t *disp) {
+    return disp->driver->user_data;
+}
+
 static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *src) {
     (void) src;
     if (area->x2 < 0 || area->y2 < 0 ||

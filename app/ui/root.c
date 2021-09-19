@@ -8,7 +8,6 @@
 #include "stream/session.h"
 
 #include "launcher/launcher.controller.h"
-#include "streaming/streaming.view.h"
 
 #include "util/bus.h"
 #include "util/user_event.h"

@@ -150,7 +150,7 @@ int streaming_worker(session_t *session) {
 
     int drFlags = 0;
 
-    applog_i("Session", "Video %d x %d, %d fps, %d kbps", config->stream.width, config->stream.height,
+    applog_i("Session", "Video %d x %d, %d net_fps, %d kbps", config->stream.width, config->stream.height,
              config->stream.fps, config->stream.bitrate);
     applog_i("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 

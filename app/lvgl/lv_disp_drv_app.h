@@ -10,3 +10,5 @@ void lv_app_display_deinit(lv_disp_t *disp);
 void lv_app_display_resize(lv_disp_t *disp, int width, int height);
 
 void lv_app_redraw_now(lv_disp_drv_t *disp_drv);
+
+SDL_Renderer *lv_app_disp_renderer(lv_disp_t *disp);

@@ -3,6 +3,9 @@
 #include <lvgl/font/symbols_material_icon.h>
 #include <lvgl/util/lv_app_utils.h>
 #include <errors.h>
+#include <res.h>
+#include <lvgl/lv_disp_drv_app.h>
+#include <SDL_image.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -11,7 +14,9 @@
 #include "add.dialog.h"
 #include "pair.dialog.h"
 
-static void launcher_controller(struct lv_obj_controller_t *self, void *args);
+static void launcher_controller(lv_obj_controller_t *self, void *args);
+
+static void controller_dtor(lv_obj_controller_t *self);
 
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view);
 
@@ -47,6 +52,7 @@ static const char *server_item_icon(const SERVER_LIST *node);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
+        .destructor_cb = controller_dtor,
         .create_obj_cb = launcher_win_create,
         .obj_created_cb = launcher_view_init,
         .obj_deleted_cb = launcher_view_destroy,
@@ -60,7 +66,7 @@ static const pcmanager_listener_t pcmanager_callbacks = {
         .removed = on_pc_removed,
 };
 
-static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
+static void launcher_controller(lv_obj_controller_t *self, void *args) {
     (void) args;
     launcher_controller_t *controller = (launcher_controller_t *) self;
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
@@ -74,8 +80,22 @@ static void launcher_controller(struct lv_obj_controller_t *self, void *args) {
     };
     lv_style_transition_dsc_init(&controller->tr_detail, props, lv_anim_path_ease_out, 300, 0, NULL);
     lv_style_transition_dsc_init(&controller->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
+
+    SDL_Renderer *renderer = lv_app_disp_renderer(lv_disp_get_default());
+    controller->logo_texture = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_logo_96_data, res_logo_96_size), 1);
+    lv_sdl_img_src_t logo_src = {
+            .w = LV_DPX(NAV_LOGO_SIZE),
+            .h = LV_DPX(NAV_LOGO_SIZE),
+            .type = LV_SDL_IMG_TYPE_TEXTURE,
+            .data.texture = controller->logo_texture,
+    };
+    lv_sdl_img_src_stringify(&logo_src, controller->logo_src);
 }
 
+static void controller_dtor(lv_obj_controller_t *self) {
+    launcher_controller_t *controller = (launcher_controller_t *) self;
+    SDL_DestroyTexture(controller->logo_texture);
+}
 
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     launcher_controller_t *controller = (launcher_controller_t *) self;

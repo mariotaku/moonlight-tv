@@ -72,7 +72,7 @@ APP_WINDOW_CONTEXT app_window_create() {
     applog_d("SDL", "SDL_GetCurrentDisplayMode");
     if (SDL_GetCurrentDisplayMode(0, &dm) != 0) {
         applog_w("SDL", "SDL_GetCurrentDisplayMode failed. %s", SDL_GetError());
-        // Fix low fps for rpi4
+        // Fix low net_fps for rpi4
         dm.w = 1920;
         dm.h = 1080;
     }

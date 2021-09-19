@@ -141,7 +141,7 @@ bool settings_read(char *filename, PCONFIGURATION config) {
 
     config_lookup_int(&libconfig, "streaming.width", &config->stream.width);
     config_lookup_int(&libconfig, "streaming.height", &config->stream.height);
-    config_lookup_int(&libconfig, "streaming.fps", &config->stream.fps);
+    config_lookup_int(&libconfig, "streaming.net_fps", &config->stream.fps);
     config_lookup_int(&libconfig, "streaming.bitrate", &config->stream.bitrate);
     config_lookup_int(&libconfig, "streaming.packetsize", &config->stream.packetSize);
     config_lookup_int(&libconfig, "streaming.rotate", &config->rotate);
@@ -193,7 +193,7 @@ void settings_write(char *filename, PCONFIGURATION config) {
 
     config_setting_set_int_simple(streaming, "width", config->stream.width);
     config_setting_set_int_simple(streaming, "height", config->stream.height);
-    config_setting_set_int_simple(streaming, "fps", config->stream.fps);
+    config_setting_set_int_simple(streaming, "net_fps", config->stream.fps);
     config_setting_set_int_simple(streaming, "bitrate", config->stream.bitrate);
     config_setting_set_int_simple(streaming, "packetsize", config->stream.packetSize);
     config_setting_set_bool_simple(host, "sops", config->sops);

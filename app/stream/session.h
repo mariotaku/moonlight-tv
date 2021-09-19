@@ -13,7 +13,7 @@ enum STREAMING_STATUS {
 };
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
-struct VIDEO_STATS {
+typedef struct VIDEO_STATS {
     uint32_t totalFrames;
     uint32_t receivedFrames;
     uint32_t networkDroppedFrames;
@@ -25,7 +25,7 @@ struct VIDEO_STATS {
     float receivedFps;
     float decodedFps;
     uint32_t rtt, rttVariance;
-};
+} VIDEO_STATS;
 
 struct VIDEO_INFO {
     const char *format;
