@@ -37,6 +37,8 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
 
 static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown);
 
+static bool detail_item_needs_lrkey(lv_obj_t *obj);
+
 const lv_obj_controller_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
         .create_obj_cb = settings_win_create,
@@ -177,18 +179,29 @@ static void on_detail_key(lv_event_t *e) {
             break;
         }
         case LV_KEY_LEFT: {
+            lv_obj_t *target = lv_event_get_target(e);
+            if (detail_item_needs_lrkey(target)) return;
             detail_defocus(controller, e, false);
             break;
         }
         case LV_KEY_RIGHT: {
-            if (controller->active_dropdown) return;
             lv_obj_t *target = lv_event_get_target(e);
+            if (detail_item_needs_lrkey(target)) return;
+            if (controller->active_dropdown) return;
             if (lv_obj_has_class(target, &lv_dropdown_class)) {
                 lv_dropdown_close(target);
                 controller->active_dropdown = NULL;
             }
             break;
         }
+    }
+}
+
+static bool detail_item_needs_lrkey(lv_obj_t *obj) {
+    if (lv_obj_has_class(obj, &lv_slider_class)) {
+        return true;
+    } else {
+        return false;
     }
 }
 
