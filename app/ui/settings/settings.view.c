@@ -27,12 +27,10 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     static lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(content, col_dsc, row_dsc);
     lv_obj_t *nav = lv_list_create(content);
-    lv_obj_set_child_group(nav, lv_group_create());
     controller->nav = nav;
     lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
     lv_obj_t *detail = lv_obj_create(content);
-    lv_obj_set_child_group(detail, lv_group_create());
     lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     controller->detail = detail;
 
