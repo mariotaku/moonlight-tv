@@ -19,6 +19,14 @@ static bool read_event(const SDL_Event *event, indev_key_state_t *state);
 
 static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *state);
 
+#if TARGET_WEBOS
+
+static bool read_webos_key(const SDL_KeyboardEvent *event, indev_key_state_t *state);
+
+static void webos_key_input_mode(const SDL_KeyboardEvent *event);
+
+#endif
+
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     indev_key_state_t *state = drv->user_data;
     SDL_Event e;
@@ -147,6 +155,9 @@ static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
 }
 
 static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *state) {
+#if TARGET_WEBOS
+    webos_key_input_mode(event);
+#endif
     switch (event->keysym.sym) {
         case SDLK_UP:
             state->key = LV_KEY_UP;
@@ -184,9 +195,43 @@ static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *sta
             state->key = LV_KEY_END;
             break;
         default:
+#if TARGET_WEBOS
+            if (!read_webos_key(event, state)) {
+                return false;
+            }
+#else
             return false;
+#endif
     }
-    bool pressed = event->state == SDL_PRESSED;
+    bool pressed = event->type == SDL_KEYDOWN;
     state->state = pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
     return true;
 }
+
+#if TARGET_WEBOS
+
+static bool read_webos_key(const SDL_KeyboardEvent *event, indev_key_state_t *state) {
+    switch ((int) event->keysym.scancode) {
+        case SDL_WEBOS_SCANCODE_BACK:
+            state->key = LV_KEY_ESC;
+            return true;
+        default:
+            return false;
+    }
+}
+
+static void webos_key_input_mode(const SDL_KeyboardEvent *event) {
+    switch (event->keysym.sym) {
+        case SDLK_UP:
+        case SDLK_DOWN:
+        case SDLK_LEFT:
+        case SDLK_RIGHT: {
+            SDL_webOSCursorVisibility(SDL_FALSE);
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+#endif

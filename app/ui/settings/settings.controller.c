@@ -54,6 +54,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_flag(controller->nav, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_flag(controller->detail, LV_OBJ_FLAG_EVENT_BUBBLE);
 
+    lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->nav));
+
     for (int i = 0; i < entries_len; ++i) {
         settings_entry_t entry = entries[i];
         lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, entry.name);
@@ -63,6 +65,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 }
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
+    lv_indev_set_group(app_indev_key, lv_group_get_default());
+
     settings_save(app_configuration);
 
     settings_controller_t *controller = (settings_controller_t *) self;
