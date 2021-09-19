@@ -64,7 +64,7 @@ static void scroll_cb(lv_event_t *event);
 
 static void fill_rows(lv_grid_t *grid, int row_start, int row_end);
 
-static void update_grid(lv_grid_t *grid);
+static void update_grid(lv_grid_t *grid, bool rebind);
 
 static void adapter_recycle_item(lv_grid_t *adapter, int position);
 
@@ -155,7 +155,7 @@ void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height)
     update_row_dsc(grid, grid->row_count);
     lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
     if (column_count_changed) {
-        update_grid(grid);
+        update_grid(grid, false);
     }
 }
 
@@ -182,7 +182,7 @@ void lv_grid_set_data(lv_obj_t *obj, void *data) {
         lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
         update_row_count(grid, row_count);
     }
-    update_grid(grid);
+    update_grid(grid, true);
 }
 
 void lv_gridview_focus(lv_obj_t *obj, int position) {
@@ -215,7 +215,7 @@ int lv_gridview_get_focused_index(lv_obj_t *obj) {
 
 void lv_grid_rebind(lv_obj_t *obj) {
     lv_grid_t *grid = (lv_grid_t *) obj;
-    for (int row_idx = grid->row_start; row_idx <= grid->row_end; row_idx++) {
+    for (int row_idx = LV_MAX(0, grid->row_start); row_idx <= grid->row_end; row_idx++) {
         for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
             int position = row_idx * grid->column_count + col_idx;
             if (position >= grid->item_count) continue;
@@ -305,7 +305,7 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
             break;
         case LV_EVENT_SIZE_CHANGED:
             update_sizes(grid);
-            update_grid(grid);
+            update_grid(grid, false);
             break;
         case LV_EVENT_STYLE_CHANGED:
             update_sizes(grid);
@@ -344,7 +344,7 @@ static void update_row_count(lv_grid_t *adapter, int row_count) {
 }
 
 static void scroll_cb(lv_event_t *event) {
-    update_grid((lv_grid_t *) lv_event_get_current_target(event));
+    update_grid((lv_grid_t *) lv_event_get_current_target(event), false);
 }
 
 static void key_cb(lv_grid_t *grid, lv_event_t *e) {
@@ -396,7 +396,7 @@ static void update_sizes(lv_grid_t *grid) {
     grid->pad_bottom = lv_obj_get_style_pad_bottom(obj, 0);
 }
 
-static void update_grid(lv_grid_t *grid) {
+static void update_grid(lv_grid_t *grid, bool rebind) {
     lv_obj_t *obj = &grid->obj;
     int content_height = grid->content_height;
     if (content_height <= 0) return;
@@ -427,6 +427,8 @@ static void update_grid(lv_grid_t *grid) {
     }
     if (grid->row_start != row_start || grid->row_end != row_end) {
         fill_rows(grid, row_start, row_end);
+    } else if (rebind) {
+        lv_grid_rebind(obj);
     }
 }
 
@@ -514,7 +516,6 @@ static lv_obj_t *view_pool_take_by_position(view_pool_ll_t **pool, int position)
 static bool view_pool_remove_by_instance(view_pool_ll_t **pool, const lv_obj_t *obj) {
     view_pool_ll_t *node = view_pool_node_by_instance(*pool, obj);
     if (!node) return false;
-    lv_obj_t *item = node->item;
     (*pool) = view_pool_remove_item(*pool, node);
     lv_mem_free(node);
     return true;

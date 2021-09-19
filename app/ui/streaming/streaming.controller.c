@@ -1,10 +1,16 @@
 #include <util/user_event.h>
+#include <ui/root.h>
 #include "streaming.controller.h"
 #include "streaming.view.h"
+
 
 static void exit_streaming(lv_event_t *event);
 
 static void suspend_streaming(lv_event_t *event);
+
+static void hide_overlay(lv_event_t *event);
+
+static bool show_overlay(streaming_controller_t *controller);
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
 
@@ -24,13 +30,19 @@ const lv_obj_controller_class_t streaming_controller_class = {
         .instance_size = sizeof(streaming_controller_t),
 };
 
+static bool stream_overlay_showing;
+
+bool streaming_overlay_shown() {
+    return stream_overlay_showing;
+}
+
 static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
 
-    const STREAMING_SCENE_ARGS *req = (STREAMING_SCENE_ARGS *) args;
+    const streaming_scene_arg_t *req = (streaming_scene_arg_t *) args;
     streaming_begin(req->server, req->app);
 
-    streaming_overlay_init();
+    stream_overlay_showing = false;
 }
 
 static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
@@ -68,9 +80,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             break;
         }
         case USER_ST_QUITAPP_CONFIRM: {
-            lv_obj_clear_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(controller->suspend_btn, LV_OBJ_FLAG_HIDDEN);
-            streaming_overlay_show();
+            show_overlay(controller);
             break;
         }
         default: {
@@ -84,6 +94,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
+    lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
 }
 
 static void exit_streaming(lv_event_t *event) {
@@ -92,6 +103,27 @@ static void exit_streaming(lv_event_t *event) {
 
 static void suspend_streaming(lv_event_t *event) {
     streaming_interrupt(false);
+}
+
+bool show_overlay(streaming_controller_t *controller) {
+    if (stream_overlay_showing)
+        return false;
+    stream_overlay_showing = true;
+    lv_obj_clear_flag(controller->quit_btn, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(controller->suspend_btn, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_CLICKABLE);
+
+    streaming_enter_overlay(0, 0, ui_display_width / 2, ui_display_height / 2);
+    return true;
+}
+
+static void hide_overlay(lv_event_t *event) {
+    streaming_controller_t *controller = (streaming_controller_t *) lv_event_get_user_data(event);
+    lv_obj_clear_flag(controller->base.obj, LV_OBJ_FLAG_CLICKABLE);
+    if (!stream_overlay_showing)
+        return;
+    stream_overlay_showing = false;
+    streaming_enter_fullscreen();
 }
 
 static void session_error(streaming_controller_t *controller) {

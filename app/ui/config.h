@@ -1,7 +1,5 @@
 #pragma once
 
-extern float ui_scale;
-
 #if TARGET_WEBOS || TARGET_RASPI
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080

@@ -1,10 +1,9 @@
 #include "sdlinput.h"
 #include "absinput.h"
 
-#include <string.h>
+#include <ui/root.h>
 
 #include "stream/session.h"
-#include "util/user_event.h"
 #include "util/logging.h"
 
 #if TARGET_WEBOS
@@ -87,7 +86,7 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
 }
 
 bool absinput_dispatch_event(SDL_Event *event) {
-    if (streaming_status != STREAMING_STREAMING) {
+    if (streaming_status != STREAMING_STREAMING || ui_should_block_input()) {
         return false;
     }
     switch (event->type) {

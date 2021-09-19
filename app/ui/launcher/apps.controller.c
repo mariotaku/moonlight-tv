@@ -309,7 +309,7 @@ static void item_click_cb(lv_event_t *event) {
 }
 
 static void launcher_launch_game(apps_controller_t *controller, const APP_LIST *app) {
-    STREAMING_SCENE_ARGS args = {
+    streaming_scene_arg_t args = {
             .server = controller->node->server,
             .app = app,
     };

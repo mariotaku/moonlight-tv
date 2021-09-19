@@ -1,49 +1,13 @@
-#include <lvgl/ext/lv_obj_controller.h>
+#include "lvgl/ext/lv_obj_controller.h"
 #include "streaming.view.h"
 #include "ui/root.h"
-#include "ui/messages.h"
 
-#include "stream/platform.h"
-#include "stream/session.h"
-#include "stream/video/delegate.h"
-#include "util/bus.h"
-#include "util/user_event.h"
 #include "streaming.controller.h"
-
-bool stream_overlay_showing;
-
-
-void streaming_overlay_init() {
-    stream_overlay_showing = false;
-}
-
-bool streaming_overlay_should_block_input() {
-    return stream_overlay_showing;
-}
-
-bool streaming_overlay_hide() {
-    if (!stream_overlay_showing)
-        return false;
-    stream_overlay_showing = false;
-    streaming_enter_fullscreen();
-    return true;
-}
-
-bool streaming_overlay_show() {
-    if (stream_overlay_showing)
-        return false;
-    stream_overlay_showing = true;
-
-    streaming_enter_overlay(0, 0, ui_display_width / 2, ui_display_height / 2);
-    return true;
-}
 
 lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
-    lv_obj_set_style_radius(scene, 0, 0);
-    lv_obj_set_style_border_side(scene, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_set_style_bg_opa(scene, 0, 0);
+    lv_obj_remove_style_all(scene);
     lv_obj_set_size(scene, LV_PCT(100), LV_PCT(100));
     lv_obj_t *progress_dialog = lv_obj_create(scene);
     lv_obj_set_size(progress_dialog, LV_PCT(40), LV_SIZE_CONTENT);

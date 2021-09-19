@@ -21,7 +21,6 @@ enum UI_INPUT_MODE {
 #define UI_TITLE_BAR_HEIGHT_DP 25
 
 extern short ui_display_width, ui_display_height;
-extern short ui_logic_width, ui_logic_height;
 extern enum UI_INPUT_MODE ui_input_mode;
 
 
