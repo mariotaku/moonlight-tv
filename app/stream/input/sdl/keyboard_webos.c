@@ -18,7 +18,7 @@ bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode)
     {
         if (event->state == SDL_PRESSED)
         {
-            bus_pushevent(USER_ST_QUITAPP_CONFIRM, NULL, NULL);
+            bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
         }
         return true;
     }
