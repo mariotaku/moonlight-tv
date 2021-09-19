@@ -12,6 +12,8 @@ static void pane_ctor(lv_obj_controller_t *self, void *args);
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
 
+static void update_bitrate_label(lv_event_t *e);
+
 const lv_obj_controller_class_t settings_pane_basic_cls = {
         .constructor_cb = pane_ctor,
         .create_obj_cb = create_obj,
@@ -33,6 +35,7 @@ static const pref_dropdown_int_entry_t supported_fps[] = {
         {"120 FPS", 120},
 };
 static const int supported_fps_len = sizeof(supported_fps) / sizeof(pref_dropdown_int_entry_t);
+#define BITRATE_STEP 1000
 
 static void pane_ctor(lv_obj_controller_t *self, void *args) {
 
@@ -57,10 +60,17 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_grid_cell(fps_dropdown, LV_GRID_ALIGN_STRETCH, 1, 1,
                          LV_GRID_ALIGN_CENTER, 1, 1);
     lv_obj_t *bitrate_label = pref_title_label(parent, "Video bitrate");
+    lv_label_set_text_fmt(bitrate_label, "Video bitrate - %d kbps", app_configuration->stream.bitrate);
     lv_obj_set_grid_cell(bitrate_label, LV_GRID_ALIGN_STRETCH, 0, 2,
                          LV_GRID_ALIGN_CENTER, 2, 1);
-    lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, 60000, 1000);
+    lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, 60000, BITRATE_STEP);
     lv_obj_set_grid_cell(bitrate_slider, LV_GRID_ALIGN_STRETCH, 0, 2,
                          LV_GRID_ALIGN_CENTER, 3, 1);
+    lv_obj_add_event_cb(bitrate_slider, update_bitrate_label, LV_EVENT_VALUE_CHANGED, bitrate_label);
     return NULL;
+}
+
+static void update_bitrate_label(lv_event_t *e) {
+    lv_obj_t *bitrate_label = lv_event_get_user_data(e);
+    lv_label_set_text_fmt(bitrate_label, "Video bitrate - %d kbps", app_configuration->stream.bitrate);
 }

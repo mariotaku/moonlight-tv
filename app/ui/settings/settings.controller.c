@@ -39,6 +39,8 @@ static void detail_defocus(settings_controller_t *controller, lv_event_t *e, boo
 
 static bool detail_item_needs_lrkey(lv_obj_t *obj);
 
+static void show_pane(settings_controller_t *controller, const lv_obj_controller_class_t *cls);
+
 const lv_obj_controller_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
         .create_obj_cb = settings_win_create,
@@ -67,10 +69,11 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     for (int i = 0; i < entries_len; ++i) {
         settings_entry_t entry = entries[i];
         lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, entry.name);
-        lv_obj_set_style_bg_color_filtered(item_view, lv_palette_main(LV_PALETTE_BLUE), LV_STATE_CHECKED);
+        lv_obj_set_style_bg_opa(item_view, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
         lv_obj_add_flag(item_view, LV_OBJ_FLAG_EVENT_BUBBLE);
         item_view->user_data = (void *) entry.cls;
     }
+    show_pane(controller, entries[0].cls);
 }
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
@@ -99,7 +102,8 @@ static void on_entry_focus(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
     lv_obj_controller_t *pane = lv_controller_manager_top_controller(controller->pane_manager);
-    if (pane && pane->cls == target->user_data) {
+    lv_obj_controller_class_t *cls = target->user_data;
+    if (pane && pane->cls == cls) {
         return;
     }
     for (int i = 0, j = (int) lv_obj_get_child_cnt(controller->nav); i < j; i++) {
@@ -110,23 +114,41 @@ static void on_entry_focus(lv_event_t *event) {
             lv_obj_clear_state(child, LV_STATE_CHECKED);
         }
     }
-    lv_controller_manager_replace(controller->pane_manager, target->user_data, NULL);
+    show_pane(controller, cls);
+}
+
+static void show_pane(settings_controller_t *controller, const lv_obj_controller_class_t *cls) {
+    lv_controller_manager_replace(controller->pane_manager, cls, NULL);
     for (int i = 0, j = (int) lv_obj_get_child_cnt(controller->detail); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->detail, i);
-        if (lv_obj_get_group(child)) {
-            lv_obj_add_event_cb(child, on_detail_key, LV_EVENT_KEY, controller);
-            if (lv_obj_has_class(child, &lv_dropdown_class)) {
-                lv_obj_add_event_cb(child, on_dropdown_clicked, LV_EVENT_CLICKED, controller);
-            }
+        if (!lv_obj_get_group(child)) continue;
+        lv_obj_add_event_cb(child, on_detail_key, LV_EVENT_KEY, controller);
+        if (lv_obj_has_class(child, &lv_dropdown_class)) {
+            lv_obj_add_event_cb(child, on_dropdown_clicked, LV_EVENT_CLICKED, controller);
         }
     }
+    lv_group_t *group = lv_obj_get_child_group(controller->detail);
+    lv_obj_t *focused = lv_group_get_focused(group);
+    lv_event_send(focused, LV_EVENT_DEFOCUSED, NULL);
 }
 
 static void on_entry_click(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
+    lv_obj_t *first_focusable = NULL;
+    for (int i = 0, j = (int) lv_obj_get_child_cnt(controller->detail); i < j; i++) {
+        lv_obj_t *child = lv_obj_get_child(controller->detail, i);
+        if (lv_obj_get_group(child)) {
+            first_focusable = child;
+            break;
+        }
+    }
+    if (!first_focusable) return;
     lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->detail));
+    lv_indev_t *indev = lv_indev_get_act();
+    if (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_KEYPAD) return;
+    lv_group_focus_obj(first_focusable);
 }
 
 static void on_nav_key(lv_event_t *event) {

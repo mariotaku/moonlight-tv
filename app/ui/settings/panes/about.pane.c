@@ -57,7 +57,6 @@ static inline void about_line(lv_obj_t *parent, const char *title, const char *t
     LV_ASSERT(text_span < 4);
     lv_obj_t *title_label = lv_label_create(parent);
     lv_obj_t *text_label = lv_label_create(parent);
-    lv_group_add_obj(lv_obj_get_child_group(parent), text_label);
     lv_label_set_text(title_label, title);
     lv_obj_set_grid_cell(title_label, LV_GRID_ALIGN_START, 0, 4 - text_span, LV_GRID_ALIGN_CENTER, row, 1);
     lv_label_set_text(text_label, text);

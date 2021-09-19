@@ -160,7 +160,8 @@ lv_obj_t *pref_slider(lv_obj_t *parent, int *value, int min, int max, int step) 
     pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
     attrs->slider.ref = value;
     attrs->slider.step = step;
-    lv_obj_add_event_cb(slider, pref_slider_value_write_back, LV_EVENT_VALUE_CHANGED, attrs);
+    lv_obj_add_event_cb(slider, pref_slider_value_write_back, LV_EVENT_PRESSING, attrs);
+    lv_obj_add_event_cb(slider, pref_slider_value_write_back, LV_EVENT_KEY, attrs);
     lv_obj_add_event_cb(slider, pref_attrs_free, LV_EVENT_DELETE, attrs);
     return slider;
 }
@@ -219,6 +220,19 @@ static void pref_dropdown_string_change_cb(lv_event_t *event) {
 
 static void pref_slider_value_write_back(lv_event_t *event) {
     pref_attrs_t *attrs = lv_event_get_user_data(event);
-    int value = lv_slider_get_value(lv_event_get_current_target(event));
+    lv_obj_t *target = lv_event_get_current_target(event);
+    int value = lv_slider_get_value(target);
+    if (lv_event_get_code(event) == LV_EVENT_KEY) {
+        uint32_t key = lv_event_get_key(event);
+        if (key == LV_KEY_UP || key == LV_KEY_DOWN) {
+            // TODO: make this a patch to LVGL
+            _lv_bar_anim_t *var = &((lv_slider_t *) target)->bar.cur_value_anim;
+            var->anim_state = -1;
+            lv_anim_del(var, NULL);
+            lv_slider_set_value(target, *attrs->slider.ref / attrs->slider.step, LV_ANIM_OFF);
+            return;
+        }
+    }
     *attrs->slider.ref = value * attrs->slider.step;
+    lv_event_send(target, LV_EVENT_VALUE_CHANGED, NULL);
 }
