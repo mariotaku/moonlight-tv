@@ -115,7 +115,7 @@ jobs:
       run: ctest -C $BUILD_TYPE
 
   build-raspi:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       SYSROOT: "/opt/pi-sysroot"
 

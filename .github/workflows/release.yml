@@ -90,7 +90,7 @@ jobs:
         artifacts: build/${{env.RELEASE_IPK_FILENAME}},build/${{env.RELEASE_MANIFEST_FILENAME}}
 
   release-raspi:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       SYSROOT: "/opt/pi-sysroot"
 
