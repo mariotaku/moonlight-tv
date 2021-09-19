@@ -111,7 +111,7 @@ jobs:
           /opt/pi-sysroot/lib
           /opt/pi-sysroot/opt
           /opt/pi-sysroot/usr
-        key: ${{ runner.os }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
+        key: ${{ runner.os }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}-${{ hashFiles('./.github/workflows/release.yml') }}
 
     - name: Update packages
       run: sudo apt-get -qq update || true
