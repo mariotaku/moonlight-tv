@@ -5,3 +5,5 @@
 void lv_obj_set_icon_font(lv_obj_t *obj, const lv_font_t *font);
 
 void lv_btn_set_icon(lv_obj_t *obj, const char *symbol);
+
+lv_obj_t *lv_btn_find_img(lv_obj_t *obj);

@@ -362,6 +362,9 @@ static void key_cb(lv_grid_t *grid, lv_event_t *e) {
         case LV_KEY_DOWN:
             offset = grid->column_count;
             break;
+        case LV_KEY_ESC:
+            lv_gridview_focus((lv_obj_t *) grid, -1);
+            return;
         default:
             return;
     }

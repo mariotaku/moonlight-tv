@@ -38,7 +38,9 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_grid_dsc_array(content, controller->col_dsc, controller->row_dsc);
 
     lv_obj_t *nav = lv_obj_create(content);
+    lv_obj_set_child_group(nav, lv_group_create());
     lv_obj_t *detail = lv_obj_create(content);
+    lv_obj_set_child_group(detail, lv_group_create());
 
     lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 0, 1);

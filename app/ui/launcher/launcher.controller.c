@@ -36,7 +36,11 @@ static void cb_pc_selected(lv_event_t *event);
 
 static void cb_nav_focused(lv_event_t *event);
 
+static void cb_nav_key(lv_event_t *event);
+
 static void cb_detail_focused(lv_event_t *event);
+
+static void cb_detail_key(lv_event_t *event);
 
 static void open_pair(launcher_controller_t *controller, PSERVER_LIST node);
 
@@ -49,6 +53,8 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened);
 static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_LIST cur);
 
 static const char *server_item_icon(const SERVER_LIST *node);
+
+static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -102,7 +108,9 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     pcmanager_register_listener(pcmanager, &pcmanager_callbacks, controller);
     controller->pane_manager = lv_controller_manager_create(controller->detail);
     lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
+    lv_obj_add_event_cb(controller->nav, cb_nav_key, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
+    lv_obj_add_event_cb(controller->detail, cb_detail_key, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
     update_pclist(controller);
@@ -119,6 +127,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
+    lv_indev_set_group(app_indev_key, lv_group_get_default());
     pcmanager_auto_discovery_stop(pcmanager);
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
@@ -195,16 +204,11 @@ static void cb_pc_selected(lv_event_t *event) {
 
 static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected) {
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
-    uint32_t pclen = lv_obj_get_child_cnt(controller->pclist);
-    for (int i = 0; i < pclen; i++) {
+    for (int i = 0, pclen = (int) lv_obj_get_child_cnt(controller->pclist); i < pclen; i++) {
         lv_obj_t *pcitem = lv_obj_get_child(controller->pclist, i);
         PSERVER_LIST cur = (PSERVER_LIST) lv_obj_get_user_data(pcitem);
         cur->selected = cur == selected;
-        if (!cur->selected) {
-            lv_obj_clear_state(pcitem, LV_STATE_CHECKED);
-        } else {
-            lv_obj_add_state(pcitem, LV_STATE_CHECKED);
-        }
+        pcitem_set_selected(pcitem, cur->selected);
     }
 }
 
@@ -212,12 +216,18 @@ static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         lv_obj_t *pcitem = pclist_item_create(controller, cur);
+        pcitem_set_selected(pcitem, cur->selected);
+    }
+}
 
-        if (!cur->selected) {
-            lv_obj_clear_state(pcitem, LV_STATE_CHECKED);
-        } else {
-            lv_obj_add_state(pcitem, LV_STATE_CHECKED);
-        }
+static void pcitem_set_selected(lv_obj_t *pcitem, bool selected) {
+    lv_obj_t *icon = lv_btn_find_img(pcitem);
+    if (selected) {
+        lv_obj_add_state(pcitem, LV_STATE_CHECKED);
+        lv_obj_add_state(icon, LV_STATE_CHECKED);
+    } else {
+        lv_obj_clear_state(pcitem, LV_STATE_CHECKED);
+        lv_obj_clear_state(icon, LV_STATE_CHECKED);
     }
 }
 
@@ -226,8 +236,14 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
     const char *icon = server_item_icon(cur);
     lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
     lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_icon_font(pcitem, LV_ICON_FONT_DEFAULT);
-    lv_obj_set_style_bg_color(pcitem, lv_palette_main(LV_PALETTE_BLUE), LV_STATE_CHECKED);
+    lv_obj_t *btn_img = lv_btn_find_img(pcitem);
+    lv_obj_set_style_text_font(btn_img, LV_ICON_FONT_DEFAULT, 0);
+    lv_obj_set_style_bg_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
+    lv_obj_set_style_text_color(btn_img, lv_color_black(), LV_STATE_CHECKED);
+    lv_obj_set_style_radius(btn_img, LV_DPX(1), LV_STATE_CHECKED);
+    lv_obj_set_style_outline_color(btn_img, lv_color_white(), LV_STATE_CHECKED);
+    lv_obj_set_style_outline_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
+    lv_obj_set_style_outline_width(btn_img, LV_DPX(2), LV_STATE_CHECKED);
     lv_obj_set_user_data(pcitem, cur);
     return pcitem;
 }
@@ -259,6 +275,16 @@ static void cb_detail_focused(lv_event_t *event) {
     set_detail_opened(controller, true);
 }
 
+static void cb_detail_key(lv_event_t *event) {
+    launcher_controller_t *controller = lv_event_get_user_data(event);
+    switch (lv_event_get_key(event)) {
+        case LV_KEY_ESC: {
+            set_detail_opened(controller, false);
+            break;
+        }
+    }
+}
+
 static void cb_nav_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *target = event->target;
@@ -269,11 +295,29 @@ static void cb_nav_focused(lv_event_t *event) {
     set_detail_opened(controller, false);
 }
 
+static void cb_nav_key(lv_event_t *event) {
+    launcher_controller_t *controller = lv_event_get_user_data(event);
+    switch (lv_event_get_key(event)) {
+        case LV_KEY_UP: {
+            lv_group_t *group = lv_group_get_child_group(controller->nav);
+            lv_group_focus_prev(group);
+            break;
+        }
+        case LV_KEY_DOWN: {
+            lv_group_t *group = lv_group_get_child_group(controller->nav);
+            lv_group_focus_next(group);
+            break;
+        }
+    }
+}
+
 static void set_detail_opened(launcher_controller_t *controller, bool opened) {
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
+        lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->detail));
     } else {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
+        lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->nav));
     }
 }
 
