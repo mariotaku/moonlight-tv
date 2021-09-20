@@ -1,10 +1,11 @@
 #!/bin/sh
 
-# Use Google DNS for a consistant name solution 
+# Use Google DNS for a consistent name solution
 echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 echo 'nameserver 8.8.4.4' >> /etc/resolv.conf
 
 # Add archive.raspberrypi.org to APT sources
+echo 'deb http://raspbian.raspberrypi.org/raspbian/ buster main' > /etc/apt/sources.list
 echo 'deb http://archive.raspberrypi.org/debian/ buster main' > /etc/apt/sources.list.d/raspi.list
 # Trust source from above repository
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 82B129927FA3303E
