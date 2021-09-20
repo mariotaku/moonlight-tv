@@ -24,6 +24,8 @@ static void dialog_cb(lv_event_t *event);
 
 static void input_changed_cb(lv_event_t *event);
 
+static void input_key_cb(lv_event_t *event);
+
 static void add_cb(const pcmanager_resp_t *resp, void *userdata);
 
 static bool validate_ip4(const char *addr);
@@ -67,6 +69,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_textarea_set_one_line(ip_input, true);
     lv_textarea_set_accepted_chars(ip_input, "0123456789.");
     lv_obj_add_event_cb(ip_input, input_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(ip_input, input_key_cb, LV_EVENT_KEY, controller);
 
     lv_obj_t *add_progress = lv_spinner_create(content, 1000, 60);
     lv_obj_add_flag(add_progress, LV_OBJ_FLAG_HIDDEN);
@@ -118,6 +121,31 @@ static void input_changed_cb(lv_event_t *event) {
         lv_btnmatrix_clear_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
     } else {
         lv_btnmatrix_set_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
+    }
+}
+
+static void input_key_cb(lv_event_t *event) {
+    add_dialog_controller_t *controller = lv_event_get_user_data(event);
+    switch (lv_event_get_key(event)) {
+        case LV_KEY_UP: {
+            lv_group_t *group = lv_obj_get_child_group(controller->base.obj);
+            lv_group_focus_prev(group);
+            break;
+        }
+        case LV_KEY_DOWN: {
+            lv_group_t *group = lv_obj_get_child_group(controller->base.obj);
+            lv_group_focus_next(group);
+            break;
+        }
+        case LV_KEY_ESC: {
+            lv_obj_t *target = lv_event_get_current_target(event);
+            if (lv_obj_has_state(target, LV_EVENT_FOCUSED)) {
+                lv_event_send(target, LV_EVENT_DEFOCUSED, NULL);
+            } else {
+                lv_msgbox_close_async(controller->base.obj);
+            }
+            break;
+        }
     }
 }
 
