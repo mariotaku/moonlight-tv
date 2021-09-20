@@ -44,6 +44,9 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             data->continue_reading = true;
         }
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP) > 0) {
+#if TARGET_WEBOS
+        webos_key_input_mode(&e.key);
+#endif
         if (absinput_dispatch_event(&e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
@@ -155,9 +158,6 @@ static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
 }
 
 static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *state) {
-#if TARGET_WEBOS
-    webos_key_input_mode(event);
-#endif
     switch (event->keysym.sym) {
         case SDLK_UP:
             state->key = LV_KEY_UP;
