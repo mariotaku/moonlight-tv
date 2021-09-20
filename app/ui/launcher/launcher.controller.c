@@ -46,7 +46,7 @@ static void open_pair(launcher_controller_t *controller, PSERVER_LIST node);
 
 static void open_manual_add(lv_event_t *event);
 
-static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected);
+static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus);
 
 static void set_detail_opened(launcher_controller_t *controller, bool opened);
 
@@ -75,12 +75,6 @@ static const pcmanager_listener_t pcmanager_callbacks = {
 static void launcher_controller(lv_obj_controller_t *self, void *args) {
     (void) args;
     launcher_controller_t *controller = (launcher_controller_t *) self;
-    for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
-        if (cur->selected) {
-            controller->selected_server = cur;
-            break;
-        }
-    }
     static const lv_style_prop_t props[] = {
             LV_STYLE_OPA, LV_STYLE_BG_OPA, LV_STYLE_TRANSLATE_X, LV_STYLE_TRANSLATE_Y, 0
     };
@@ -97,6 +91,7 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
     };
     lv_sdl_img_src_stringify(&logo_src, controller->logo_src);
     controller->detail_opened = true;
+    controller->pane_initialized = false;
 }
 
 static void controller_dtor(lv_obj_controller_t *self) {
@@ -118,12 +113,13 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
 
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
-            select_pc(controller, cur);
-            set_detail_opened(controller, controller->detail_opened);
+            select_pc(controller, cur, true);
             continue;
         }
         pcmanager_request_update(pcmanager, cur->server, NULL, NULL);
     }
+    controller->pane_initialized = true;
+    set_detail_opened(controller, controller->detail_opened);
     pcmanager_auto_discovery_start(pcmanager);
 
     lv_obj_set_style_transition(controller->detail, &controller->tr_nav, 0);
@@ -203,16 +199,19 @@ static void cb_pc_selected(lv_event_t *event) {
     }
     set_detail_opened(controller, true);
     if (selected->selected) return;
-    select_pc(controller, selected);
+    select_pc(controller, selected, false);
 }
 
-static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected) {
+static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus) {
     lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
     for (int i = 0, pclen = (int) lv_obj_get_child_cnt(controller->pclist); i < pclen; i++) {
         lv_obj_t *pcitem = lv_obj_get_child(controller->pclist, i);
         PSERVER_LIST cur = (PSERVER_LIST) lv_obj_get_user_data(pcitem);
         cur->selected = cur == selected;
         pcitem_set_selected(pcitem, cur->selected);
+        if (refocus && cur->selected) {
+            lv_group_focus_obj(pcitem);
+        }
     }
 }
 
@@ -275,6 +274,7 @@ static const char *server_item_icon(const SERVER_LIST *node) {
 
 static void cb_detail_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
+    if (!controller->pane_initialized) return;
     if (lv_obj_get_parent(event->target) != controller->detail) return;
     set_detail_opened(controller, true);
 }
@@ -291,6 +291,7 @@ static void cb_detail_key(lv_event_t *event) {
 
 static void cb_nav_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
+    if (!controller->pane_initialized) return;
     lv_obj_t *target = event->target;
     while (target && target != controller->nav) {
         target = lv_obj_get_parent(target);

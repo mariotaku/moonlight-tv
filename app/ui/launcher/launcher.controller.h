@@ -16,7 +16,6 @@ typedef struct {
     lv_obj_t *detail;
     lv_obj_t *pclist;
     lv_obj_t *add_btn;
-    PSERVER_LIST selected_server;
     lv_controller_manager_t *pane_manager;
     lv_style_transition_dsc_t tr_nav;
     lv_style_transition_dsc_t tr_detail;
@@ -25,6 +24,7 @@ typedef struct {
     SDL_Texture *logo_texture;
     char logo_src[LV_SDL_IMG_LEN];
     bool detail_opened;
+    bool pane_initialized;
 } launcher_controller_t;
 
 #define NAV_LOGO_SIZE 32
