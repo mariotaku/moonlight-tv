@@ -33,7 +33,6 @@ struct lv_obj_controller_t {
     const lv_obj_controller_class_t *cls;
     lv_controller_manager_t *manager;
     lv_obj_t *obj;
-    bool dialog;
 };
 
 struct lv_obj_controller_class_t {
@@ -44,6 +43,8 @@ struct lv_obj_controller_class_t {
     lv_obj_t *(*create_obj_cb)(struct lv_obj_controller_t *self, lv_obj_t *parent);
 
     void (*obj_created_cb)(struct lv_obj_controller_t *self, lv_obj_t *view);
+
+    void (*obj_will_delete_cb)(struct lv_obj_controller_t *self, lv_obj_t *view);
 
     void (*obj_deleted_cb)(struct lv_obj_controller_t *self, lv_obj_t *view);
 

@@ -61,7 +61,7 @@ const lv_obj_controller_class_t launcher_controller_class = {
         .destructor_cb = controller_dtor,
         .create_obj_cb = launcher_win_create,
         .obj_created_cb = launcher_view_init,
-        .obj_deleted_cb = launcher_view_destroy,
+        .obj_will_delete_cb = launcher_view_destroy,
         .event_cb = launcher_event_cb,
         .instance_size = sizeof(launcher_controller_t),
 };
@@ -131,6 +131,7 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     pcmanager_auto_discovery_stop(pcmanager);
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
+    controller->pane_initialized = false;
     lv_controller_manager_del(controller->pane_manager);
     controller->pane_manager = NULL;
     pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);

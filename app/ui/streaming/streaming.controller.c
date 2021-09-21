@@ -94,7 +94,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
         }
         case USER_STREAM_OPEN: {
             if (controller->progress) {
-                lv_msgbox_close_async(controller->progress);
+                lv_msgbox_close(controller->progress);
                 controller->progress = NULL;
             }
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
@@ -107,7 +107,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
         }
         case USER_STREAM_FINISHED: {
             if (controller->progress) {
-                lv_msgbox_close_async(controller->progress);
+                lv_msgbox_close(controller->progress);
                 controller->progress = NULL;
             }
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);

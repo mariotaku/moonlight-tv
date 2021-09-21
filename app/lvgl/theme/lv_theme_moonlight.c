@@ -81,7 +81,9 @@ static void msgbox_key(lv_event_t *event) {
 
 static void msgbox_destroy(lv_event_t *event) {
     lv_group_t *group = lv_obj_get_child_group(lv_event_get_current_target(event));
-    app_input_set_group(group->user_data);
+    if (app_input_get_group() == group) {
+        app_input_set_group(group->user_data);
+    }
     lv_group_remove_all_objs(group);
     lv_group_del(group);
 }

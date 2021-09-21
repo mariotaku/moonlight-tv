@@ -23,6 +23,7 @@ typedef struct manager_stack_t {
     lv_obj_t *obj;
     bool obj_created;
     bool destroying_obj;
+    bool dialog;
     struct manager_stack_t *prev;
 } manager_stack_t;
 
@@ -120,7 +121,7 @@ void lv_controller_manager_show(lv_controller_manager_t *manager, const lv_obj_c
     manager_stack_t *item = item_new(cls);
     item_create_controller(manager, item, args);
     item_create_obj(manager, item, NULL, &lv_msgbox_class);
-    item->controller->dialog = true;
+    item->dialog = true;
     manager_stack_t *top = manager->top;
     item->prev = top;
     manager->top = item;
@@ -131,7 +132,7 @@ void lv_controller_manager_pop(lv_controller_manager_t *manager) {
     manager_stack_t *top = manager->top;
     if (!top) return;
     manager_stack_t *prev = top->prev;
-    bool dialog = top->controller->dialog;
+    bool dialog = top->dialog;
     if (!dialog && prev) {
         item_create_controller(manager, prev, NULL);
     }
@@ -221,8 +222,14 @@ static void item_destroy_obj(lv_controller_manager_t *manager, manager_stack_t *
     item->destroying_obj = true;
     lv_obj_controller_t *controller = item->controller;
     if (item->obj) {
+        if (item->cls->obj_will_delete_cb) {
+            item->cls->obj_will_delete_cb(controller, item->obj);
+        }
         lv_obj_del(item->obj);
     } else {
+        if (item->cls->obj_will_delete_cb) {
+            item->cls->obj_will_delete_cb(controller, NULL);
+        }
         lv_obj_clean(manager->container);
         if (item->cls->obj_deleted_cb) {
             item->cls->obj_deleted_cb(controller, NULL);
