@@ -115,7 +115,7 @@ jobs:
       run: ctest -C $BUILD_TYPE
 
   build-raspi:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     env:
       SYSROOT: "/opt/pi-sysroot"
 
@@ -148,7 +148,7 @@ jobs:
         sudo apt-get -y -qq install debootstrap qemu-user-static
         sudo update-binfmts --enable qemu-arm
         sudo mkdir -p ${SYSROOT}
-        sudo qemu-debootstrap --arch=armhf --no-check-gpg buster ${SYSROOT} http://raspbian.raspberrypi.org/raspbian/
+        sudo qemu-debootstrap --arch=armhf --no-check-gpg bullseye ${SYSROOT} http://raspbian.raspberrypi.org/raspbian/
         sudo chroot ${SYSROOT} bash < ${{github.workspace}}/scripts/raspi/pi-sysroot-setup.sh
 
     - name: Create Build Environment
