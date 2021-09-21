@@ -35,6 +35,8 @@
 #define DECODER_EXPORTED __attribute__((visibility("default")))
 #endif
 
+#define MODULE_API __attribute__((unused))
+
 typedef struct HOST_CONTEXT {
     void (*logvprintf)(const char *, const char *, const char *, va_list);
 } HOST_CONTEXT, *PHOST_CONTEXT;

@@ -22,6 +22,7 @@ static MODULE_LIB_DEFINITION _smp_libs[2] = {{"smp",        "smp"},
 static MODULE_LIB_DEFINITION _dile_libs[2] = {{"dile",        "dile"},
                                               {"dile_legacy", "dile-legacy"}};
 static MODULE_LIB_DEFINITION _pi_lib = {"pi", "pi"};
+static MODULE_LIB_DEFINITION lib_mmal = {"mmal", "mmal"};
 
 MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
         {"FFMPEG (SW codec)", "ffmpeg", &_ffmpeg_lib, 1, DECODER_SYMBOLS_FFMPEG},
@@ -30,6 +31,7 @@ MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
         {"webOS SMP", "smp", _smp_libs, 3, NULL},
         {"webOS DILE", "dile", _dile_libs, 2, NULL},
         {"Raspberry Pi", "pi", &_pi_lib, 1, NULL},
+        {"MMAL", "mmal", &lib_mmal, 1, NULL},
 #if DEBUG
         {"Null", "null", NULL, 0, NULL},
 #endif
