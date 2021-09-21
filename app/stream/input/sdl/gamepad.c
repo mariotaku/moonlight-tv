@@ -15,7 +15,7 @@ static bool quit_combo_pressed = false;
 static void release_buttons(PGAMEPAD_STATE gamepad);
 
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
-    int button = 0;
+    short button = 0;
     PGAMEPAD_STATE gamepad = get_gamepad(event->which);
     switch (event->button) {
         case SDL_CONTROLLER_BUTTON_A:
@@ -103,13 +103,13 @@ void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event) {
             // could actually cause the value to overflow and
             // wrap around to be negative again. Avoid that by
             // capping the value at 32767.
-            gamepad->leftStickY = -SDL_max(event->value, (short) -32767);
+            gamepad->leftStickY = (short) -SDL_max(event->value, (short) -32767);
             break;
         case SDL_CONTROLLER_AXIS_RIGHTX:
             gamepad->rightStickX = event->value;
             break;
         case SDL_CONTROLLER_AXIS_RIGHTY:
-            gamepad->rightStickY = -SDL_max(event->value, (short) -32767);
+            gamepad->rightStickY = (short) -SDL_max(event->value, (short) -32767);
             break;
         case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
             gamepad->leftTrigger = (unsigned char) (event->value * 255UL / 32767);

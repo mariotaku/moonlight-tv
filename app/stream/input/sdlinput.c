@@ -32,7 +32,7 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 bool absinput_no_control;
 
 GAMEPAD_STATE gamepads[4];
-int activeGamepadMask = 0;
+short activeGamepadMask = 0;
 int sdl_gamepads = 0;
 
 void absinput_init() {

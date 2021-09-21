@@ -8,7 +8,7 @@ typedef struct _GAMEPAD_STATE {
     char leftTrigger, rightTrigger;
     short leftStickX, leftStickY;
     short rightStickX, rightStickY;
-    int buttons;
+    short buttons;
     SDL_JoystickID sdl_id;
     SDL_Haptic *haptic;
     int haptic_effect_id;
@@ -17,7 +17,7 @@ typedef struct _GAMEPAD_STATE {
 } GAMEPAD_STATE, *PGAMEPAD_STATE;
 
 extern GAMEPAD_STATE gamepads[4];
-extern int activeGamepadMask;
+extern short activeGamepadMask;
 
 bool absinput_dispatch_event(SDL_Event *event);
 
