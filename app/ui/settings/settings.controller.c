@@ -161,14 +161,14 @@ static void on_nav_key(lv_event_t *event) {
         case LV_KEY_DOWN: {
             lv_obj_t *target = lv_event_get_target(event);
             if (lv_obj_get_parent(target) != controller->nav) return;
-            lv_group_t *group = lv_group_get_child_group(controller->nav);
+            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
             lv_group_focus_next(group);
             break;
         }
         case LV_KEY_UP: {
             lv_obj_t *target = lv_event_get_target(event);
             if (lv_obj_get_parent(target) != controller->nav) return;
-            lv_group_t *group = lv_group_get_child_group(controller->nav);
+            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
             lv_group_focus_prev(group);
             break;
         }
@@ -190,13 +190,13 @@ static void on_detail_key(lv_event_t *e) {
         }
         case LV_KEY_UP: {
             if (controller->active_dropdown) return;
-            lv_group_t *group = lv_group_get_child_group(controller->detail);
+            lv_group_t *group = lv_obj_find_top_child_group(controller->detail);
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_DOWN: {
             if (controller->active_dropdown) return;
-            lv_group_t *group = lv_group_get_child_group(controller->detail);
+            lv_group_t *group = lv_obj_find_top_child_group(controller->detail);
             lv_group_focus_next(group);
             break;
         }

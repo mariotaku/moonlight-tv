@@ -175,6 +175,9 @@ GS_CLIENT app_gs_client_new() {
 }
 
 void app_input_set_group(lv_group_t *group) {
+    if (!group) {
+        group = lv_group_get_default();
+    }
     lv_indev_set_group(app_indev_key, group);
     lv_indev_set_group(app_indev_wheel, group);
 }

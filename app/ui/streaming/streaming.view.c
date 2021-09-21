@@ -4,9 +4,13 @@
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title);
 
+static void overlay_key_cb(lv_event_t *e);
+
 lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
+    lv_obj_add_event_cb(scene, overlay_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_set_child_group(scene, lv_group_create());
     lv_obj_remove_style_all(scene);
     lv_obj_set_size(scene, LV_PCT(100), LV_PCT(100));
 
@@ -17,11 +21,13 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_clear_flag(video, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t *exit_btn = lv_btn_create(scene);
+    lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_t *exit_lbl = lv_label_create(exit_btn);
     lv_label_set_text(exit_lbl, "Quit game");
     lv_obj_align(exit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
 
     lv_obj_t *suspend_btn = lv_btn_create(scene);
+    lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_t *suspend_lbl = lv_label_create(suspend_btn);
     lv_label_set_text(suspend_lbl, "Suspend");
     lv_obj_align_to(suspend_btn, exit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
@@ -86,4 +92,19 @@ static lv_obj_t *stat_label(lv_obj_t *parent, const char *title) {
     lv_obj_t *value = lv_label_create(container);
     lv_obj_set_style_text_font(value, lv_theme_get_font_small(container), 0);
     return value;
+}
+
+static void overlay_key_cb(lv_event_t *e) {
+    streaming_controller_t *controller = lv_event_get_user_data(e);
+    lv_group_t *group = lv_obj_get_child_group(controller->base.obj);
+    switch (lv_event_get_key(e)) {
+        case LV_KEY_LEFT:
+            lv_group_focus_prev(group);
+            break;
+        case LV_KEY_RIGHT:
+            lv_group_focus_next(group);
+            break;
+        default:
+            break;
+    }
 }

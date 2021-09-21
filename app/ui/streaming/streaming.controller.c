@@ -2,6 +2,7 @@
 #include <ui/root.h>
 #include <stream/video/delegate.h>
 #include <stream/platform.h>
+#include <app.h>
 #include "streaming.controller.h"
 
 lv_obj_t *progress_dialog_create(const char *message);
@@ -15,6 +16,8 @@ static void hide_overlay(lv_event_t *event);
 static bool show_overlay(streaming_controller_t *controller);
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
+
+static void on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view);
 
 static bool on_event(lv_obj_controller_t *, int, void *, void *);
 
@@ -31,6 +34,7 @@ const lv_obj_controller_class_t streaming_controller_class = {
         .destructor_cb = controller_dtor,
         .create_obj_cb = streaming_scene_create,
         .obj_created_cb = on_view_created,
+        .obj_will_delete_cb = on_delete_obj,
         .event_cb = on_event,
         .instance_size = sizeof(streaming_controller_t),
 };
@@ -48,7 +52,8 @@ bool streaming_refresh_stats() {
     if (!streaming_overlay_shown()) {
         return false;
     }
-    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name, vdec_stream_info.format);
+    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name,
+                          vdec_stream_info.format);
     if (audio_current == AUDIO_DECODER) {
         lv_label_set_text_static(controller->stats_items.audio, "Use decoder");
     } else {
@@ -131,9 +136,14 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
+    app_input_set_group(lv_obj_get_child_group(controller->base.obj));
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
+}
+
+static void on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view) {
+    app_input_set_group(NULL);
 }
 
 static void exit_streaming(lv_event_t *event) {

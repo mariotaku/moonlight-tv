@@ -305,12 +305,12 @@ static void cb_nav_key(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     switch (lv_event_get_key(event)) {
         case LV_KEY_UP: {
-            lv_group_t *group = lv_group_get_child_group(controller->nav);
+            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_DOWN: {
-            lv_group_t *group = lv_group_get_child_group(controller->nav);
+            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
             lv_group_focus_next(group);
             break;
         }
