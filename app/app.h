@@ -13,7 +13,6 @@ extern FILE *app_logfile;
 extern PCONFIGURATION app_configuration;
 extern int app_window_width, app_window_height;
 extern lv_controller_manager_t *app_uimanager;
-extern lv_indev_t *app_indev_key;
 extern pcmanager_t *pcmanager;
 
 int app_init(int argc, char *argv[]);
@@ -39,3 +38,7 @@ GS_CLIENT app_gs_client_new();
 void app_set_mouse_grab(bool);
 
 void app_set_keep_awake(bool);
+
+void app_input_set_group(lv_group_t *group);
+
+lv_group_t *app_input_get_group();

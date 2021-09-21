@@ -25,7 +25,7 @@ void lv_sdl_deinit_pointer(lv_indev_t *dev) {
 static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     (void) drv;
     SDL_Event e;
-    data->continue_reading = SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEWHEEL) > 0;
+    data->continue_reading = SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEBUTTONUP) > 0;
     if (!data->continue_reading) {
         indev_point_def(data);
         return;
@@ -34,8 +34,6 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     if (e.type == SDL_MOUSEMOTION) {
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
-    } else if (e.type == SDL_MOUSEWHEEL) {
-        indev_point_def(data);
     } else {
         data->state = e.button.state;
         data->point = (lv_point_t) {.x = e.button.x, .y = e.button.y};

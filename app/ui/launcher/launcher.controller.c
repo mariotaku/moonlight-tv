@@ -127,7 +127,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
-    lv_indev_set_group(app_indev_key, lv_group_get_default());
+    app_input_set_group(lv_group_get_default());
     pcmanager_auto_discovery_stop(pcmanager);
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
@@ -323,10 +323,10 @@ static void cb_nav_key(lv_event_t *event) {
 static void set_detail_opened(launcher_controller_t *controller, bool opened) {
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
-        lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->detail));
+        app_input_set_group(lv_obj_get_child_group(controller->detail));
     } else {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
-        lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->nav));
+        app_input_set_group(lv_obj_get_child_group(controller->nav));
     }
     controller->detail_opened = opened;
 }

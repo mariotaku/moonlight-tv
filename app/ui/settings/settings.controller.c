@@ -64,7 +64,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->nav, on_entry_click, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->nav, on_nav_key, LV_EVENT_KEY, controller);
 
-    lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->nav));
+    app_input_set_group(lv_obj_get_child_group(controller->nav));
 
     for (int i = 0; i < entries_len; ++i) {
         settings_entry_t entry = entries[i];
@@ -79,7 +79,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     lv_obj_remove_event_cb(controller->nav, on_entry_focus);
-    lv_indev_set_group(app_indev_key, lv_group_get_default());
+    app_input_set_group(lv_group_get_default());
 
     settings_save(app_configuration);
 
@@ -145,7 +145,7 @@ static void on_entry_click(lv_event_t *event) {
         }
     }
     if (!first_focusable) return;
-    lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->detail));
+    app_input_set_group(lv_obj_get_child_group(controller->detail));
     lv_indev_t *indev = lv_indev_get_act();
     if (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_KEYPAD) return;
     lv_group_focus_obj(first_focusable);
@@ -239,7 +239,7 @@ static void detail_defocus(settings_controller_t *controller, lv_event_t *e, boo
         }
     }
     lv_event_send(target, LV_EVENT_DEFOCUSED, lv_indev_get_act());
-    lv_indev_set_group(app_indev_key, lv_obj_get_child_group(controller->nav));
+    app_input_set_group(lv_obj_get_child_group(controller->nav));
 }
 
 static void on_dropdown_clicked(lv_event_t *event) {

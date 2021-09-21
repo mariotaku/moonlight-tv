@@ -215,17 +215,6 @@ void app_process_events() {
     SDL_FilterEvents(app_event_filter, NULL);
 }
 
-void app_start_text_input(int x, int y, int w, int h) {
-    if (w > 0 && h > 0) {
-        struct SDL_Rect rect = {x, y, w, h};
-        SDL_SetTextInputRect(&rect);
-    } else {
-        SDL_SetTextInputRect(NULL);
-    }
-    lv_sdl_key_input_release_key(app_indev_key);
-    if (SDL_IsTextInputActive()) return;
-    SDL_StartTextInput();
-}
 
 void app_stop_text_input() {
     SDL_StopTextInput();

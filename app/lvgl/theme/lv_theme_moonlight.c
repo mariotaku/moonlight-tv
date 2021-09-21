@@ -37,9 +37,9 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_max_width(obj, LV_PCT(60), 0);
         lv_obj_set_style_flex_main_place(obj, LV_FLEX_ALIGN_END, 0);
         lv_group_t *group = lv_group_create();
-        group->user_data = app_indev_key->group;
+        group->user_data = app_input_get_group();
         lv_obj_set_child_group(obj, group);
-        lv_indev_set_group(app_indev_key, group);
+        app_input_set_group(group);
         lv_obj_add_event_cb(obj, msgbox_key, LV_EVENT_KEY, NULL);
         lv_obj_add_event_cb(obj, msgbox_destroy, LV_EVENT_DELETE, NULL);
     } else if (lv_obj_check_type(obj, &lv_msgbox_backdrop_class)) {
@@ -81,7 +81,7 @@ static void msgbox_key(lv_event_t *event) {
 
 static void msgbox_destroy(lv_event_t *event) {
     lv_group_t *group = lv_obj_get_child_group(lv_event_get_current_target(event));
-    lv_indev_set_group(app_indev_key, group->user_data);
+    app_input_set_group(group->user_data);
     lv_group_remove_all_objs(group);
     lv_group_del(group);
 }

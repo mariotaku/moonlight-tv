@@ -26,3 +26,4 @@ bool absinput_init_gamepad(int which);
 void absinput_close_gamepad(SDL_JoystickID sdl_id);
 
 PGAMEPAD_STATE get_gamepad(SDL_JoystickID sdl_id);
+

@@ -10,7 +10,6 @@
 #include <SDL_webOS.h>
 #endif
 
-static void release_gamecontroller_buttons(int which);
 
 static void release_keyboard_keys(SDL_Event ev);
 
@@ -118,21 +117,6 @@ bool absinput_dispatch_event(SDL_Event *event) {
             return false;
     }
     return true;
-}
-
-void release_gamecontroller_buttons(int which) {
-    PGAMEPAD_STATE gamepad;
-    gamepad = get_gamepad(which);
-    gamepad->buttons = 0;
-    gamepad->leftTrigger = 0;
-    gamepad->rightTrigger = 0;
-    gamepad->leftStickX = 0;
-    gamepad->leftStickY = 0;
-    gamepad->rightStickX = 0;
-    gamepad->rightStickY = 0;
-    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
-                               gamepad->rightTrigger,
-                               gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX, gamepad->rightStickY);
 }
 
 void release_keyboard_keys(SDL_Event ev) {

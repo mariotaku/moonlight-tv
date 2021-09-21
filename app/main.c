@@ -28,6 +28,7 @@
 #include <fontconfig/fontconfig.h>
 #include <ui/launcher/launcher.controller.h>
 #include <lvgl/theme/lv_theme_moonlight.h>
+#include <lvgl/lv_sdl_drv_wheel_input.h>
 
 FILE *app_logfile = NULL;
 
@@ -36,7 +37,7 @@ static SDL_mutex *app_gs_client_mutex = NULL;
 
 lv_controller_manager_t *app_uimanager;
 
-lv_indev_t *app_indev_key;
+static lv_indev_t *app_indev_key, *app_indev_wheel;
 
 int main(int argc, char *argv[]) {
     app_loginit();
@@ -109,8 +110,10 @@ int main(int argc, char *argv[]) {
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
     lv_indev_t *indev_key = lv_sdl_init_key_input();
+    lv_indev_t *indev_wheel = lv_sdl_init_wheel();
     lv_indev_t *indev_pointer = lv_sdl_init_pointer();
     app_indev_key = indev_key;
+    app_indev_wheel = indev_wheel;
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
@@ -129,6 +132,7 @@ int main(int argc, char *argv[]) {
     lv_controller_manager_del(app_uimanager);
 
     lv_sdl_deinit_pointer(indev_pointer);
+    lv_sdl_deinit_wheel(indev_wheel);
     lv_sdl_deinit_key_input(indev_key);
     lv_app_display_deinit(disp);
     lv_deinit();
@@ -155,4 +159,25 @@ GS_CLIENT app_gs_client_new() {
     SDL_assert(client);
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;
+}
+
+void app_input_set_group(lv_group_t *group) {
+    lv_indev_set_group(app_indev_key, group);
+    lv_indev_set_group(app_indev_wheel, group);
+}
+
+lv_group_t *app_input_get_group() {
+    return app_indev_key->group;
+}
+
+void app_start_text_input(int x, int y, int w, int h) {
+    if (w > 0 && h > 0) {
+        struct SDL_Rect rect = {x, y, w, h};
+        SDL_SetTextInputRect(&rect);
+    } else {
+        SDL_SetTextInputRect(NULL);
+    }
+    lv_sdl_key_input_release_key(app_indev_key);
+    if (SDL_IsTextInputActive()) return;
+    SDL_StartTextInput();
 }
