@@ -204,7 +204,6 @@ set(SOURCES
         app/lvgl/font/material_icon_regular_32.c
         app/lvgl/theme/lv_theme_moonlight.c
         app/util/path.c
-        app/util/navkey.c
         app/util/debugprint.c
         app/util/logging.c
         app/util/libconfig_ext.c

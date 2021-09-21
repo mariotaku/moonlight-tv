@@ -8,27 +8,22 @@
 
 #undef RES_IMPL
 
-#include "ui/config.h"
-
 #include "lvgl.h"
 #include "lvgl/lv_disp_drv_app.h"
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_sdl_drv_pointer_input.h"
 #include "lvgl/lv_sdl_img.h"
 
-#include "debughelper.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
-#include "lvgl/ext/lv_obj_controller.h"
 #include "ui/root.h"
-#include "util/bus.h"
 #include "util/logging.h"
 
-#include <fontconfig/fontconfig.h>
 #include <ui/launcher/launcher.controller.h>
 #include <lvgl/theme/lv_theme_moonlight.h>
 #include <lvgl/lv_sdl_drv_wheel_input.h>
+#include <SDL_image.h>
 
 FILE *app_logfile = NULL;
 
@@ -39,8 +34,11 @@ lv_controller_manager_t *app_uimanager;
 
 static lv_indev_t *app_indev_key, *app_indev_wheel;
 
+static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
+
 int main(int argc, char *argv[]) {
     app_loginit();
+    SDL_LogSetOutputFunction(applog_logoutput, NULL);
 #if TARGET_WEBOS || TARGET_LGNC
     app_logfile = fopen("/tmp/" APPID ".log", "a+");
     if (!app_logfile)
@@ -86,6 +84,12 @@ int main(int argc, char *argv[]) {
     SDL_Window *window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                           1920, 1080, window_flags);
     SDL_assert(window);
+#if TARGET_DESKTOP || TARGET_RASPI
+    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
+    SDL_SetWindowIcon(window, winicon);
+    SDL_FreeSurface(winicon);
+    SDL_SetWindowMinimumSize(window, 640, 400);
+#endif
     if (window_flags & SDL_WINDOW_RESIZABLE) {
         SDL_SetWindowMinimumSize(window, 960, 540);
     }
@@ -140,7 +144,10 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(window);
 
     backend_destroy();
-    app_destroy();
+    decoder_finalize(decoder_current);
+    audio_finalize(decoder_current);
+    SDL_Quit();
+    settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);
 
@@ -180,4 +187,13 @@ void app_start_text_input(int x, int y, int w, int h) {
     lv_sdl_key_input_release_key(app_indev_key);
     if (SDL_IsTextInputActive()) return;
     SDL_StartTextInput();
+}
+
+void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+    const char *priority_name[SDL_NUM_LOG_PRIORITIES] = {"VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+#ifndef DEBUG
+    if (priority <= SDL_LOG_PRIORITY_INFO)
+        return;
+#endif
+    applog(priority_name[priority], "SDL", message);
 }

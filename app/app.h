@@ -7,19 +7,12 @@
 #include "backend/pcmanager.h"
 #include "libgamestream/client.h"
 
-typedef void *APP_WINDOW_CONTEXT;
-
 extern FILE *app_logfile;
 extern PCONFIGURATION app_configuration;
-extern int app_window_width, app_window_height;
 extern lv_controller_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
 
 int app_init(int argc, char *argv[]);
-
-APP_WINDOW_CONTEXT app_window_create();
-
-void app_destroy();
 
 void app_process_events();
 
