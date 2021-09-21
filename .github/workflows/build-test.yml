@@ -118,6 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SYSROOT: "/opt/pi-sysroot"
+      RASPBIAN_VERSION: "bullseye"
 
     steps:
     - uses: actions/checkout@v2
@@ -133,7 +134,7 @@ jobs:
           /opt/pi-sysroot/lib
           /opt/pi-sysroot/opt
           /opt/pi-sysroot/usr
-        key: ${{ runner.os }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}-${{ hashFiles('./.github/workflows/build-test.yml') }}
+        key: ${{ runner.os }}-${RASPBIAN_VERSION}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
 
     - name: Update packages
       run: sudo apt-get -qq update || true

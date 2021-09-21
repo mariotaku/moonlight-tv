@@ -1,12 +1,17 @@
 #!/bin/sh
 
+if [ -z ${RASPBIAN_VERSION} ]; then
+  echo "RASPBIAN_VERSION not set."
+  exit 1
+fi
+
 # Use Google DNS for a consistent name solution
 echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 echo 'nameserver 8.8.4.4' >> /etc/resolv.conf
 
 # Add archive.raspberrypi.org to APT sources
-echo 'deb http://raspbian.raspberrypi.org/raspbian/ bullseye main' > /etc/apt/sources.list
-echo 'deb http://archive.raspberrypi.org/debian/ bullseye main' > /etc/apt/sources.list.d/raspi.list
+echo "deb http://raspbian.raspberrypi.org/raspbian/ ${RASPBIAN_VERSION} main" > /etc/apt/sources.list
+echo "deb http://archive.raspberrypi.org/debian/ ${RASPBIAN_VERSION} main" > /etc/apt/sources.list.d/raspi.list
 # Trust source from above repository
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 82B129927FA3303E
 
