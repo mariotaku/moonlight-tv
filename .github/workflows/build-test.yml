@@ -134,7 +134,7 @@ jobs:
           /opt/pi-sysroot/lib
           /opt/pi-sysroot/opt
           /opt/pi-sysroot/usr
-        key: ${{ runner.os }}-${RASPBIAN_VERSION}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
+        key: ${{ runner.os }}-${{ env.RASPBIAN_VERSION }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
 
     - name: Update packages
       run: sudo apt-get -qq update || true
