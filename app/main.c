@@ -25,6 +25,12 @@
 #include <lvgl/lv_sdl_drv_wheel_input.h>
 #include <SDL_image.h>
 
+#if TARGET_WEBOS
+
+#include "debughelper.h"
+
+#endif
+
 FILE *app_logfile = NULL;
 
 static bool running = true;
