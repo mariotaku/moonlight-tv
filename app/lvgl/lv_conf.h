@@ -403,21 +403,21 @@ LV_FONT_DECLARE(material_icon_regular_32)
 
 #define LV_USE_LINE         1
 
-#define LV_USE_ROLLER       1   /*Requires: lv_label*/
+#define LV_USE_ROLLER       0   /*Requires: lv_label*/
 #if LV_USE_ROLLER
 #  define LV_ROLLER_INF_PAGES       7   /*Number of extra "pages" when the roller is infinite*/
 #endif
 
 #define LV_USE_SLIDER       1   /*Requires: lv_bar*/
 
-#define LV_USE_SWITCH    1
+#define LV_USE_SWITCH    0
 
 #define LV_USE_TEXTAREA   1     /*Requires: lv_label*/
 #if LV_USE_TEXTAREA != 0
 #  define LV_TEXTAREA_DEF_PWD_SHOW_TIME     1500    /*ms*/
 #endif
 
-#define LV_USE_TABLE  1
+#define LV_USE_TABLE  0
 
 /*==================
  * EXTRA COMPONENTS
@@ -458,13 +458,13 @@ LV_FONT_DECLARE(material_icon_regular_32)
 
 #define LV_USE_MSGBOX       1
 
-#define LV_USE_SPINBOX      1
+#define LV_USE_SPINBOX      0
 
 #define LV_USE_SPINNER      1
 
-#define LV_USE_TABVIEW      1
+#define LV_USE_TABVIEW      0
 
-#define LV_USE_TILEVIEW     1
+#define LV_USE_TILEVIEW     0
 
 #define LV_USE_WIN          1
 
@@ -492,10 +492,10 @@ LV_FONT_DECLARE(material_icon_regular_32)
 #endif /*LV_USE_THEME_DEFAULT*/
 
 /*An very simple them that is a good starting point for a custom theme*/
- #define LV_USE_THEME_BASIC    1
+ #define LV_USE_THEME_BASIC    0
 
 /*A theme designed for monochrome displays*/
-#define LV_USE_THEME_MONO       1
+#define LV_USE_THEME_MONO       0
 
 /*-----------
  * Layouts

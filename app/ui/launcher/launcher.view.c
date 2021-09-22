@@ -10,8 +10,6 @@
 
 static void open_settings(lv_event_t *event);
 
-static void setup_shade(const launcher_controller_t *controller, lv_obj_t *shade, bool invert);
-
 #define NAV_WIDTH_EXPANDED 240
 #define NAV_WIDTH_COLLAPSED 44
 #define NAV_TRANSLATE_OFFSET (NAV_WIDTH_EXPANDED - NAV_WIDTH_COLLAPSED)
@@ -111,19 +109,6 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     controller->pclist = pclist;
     controller->add_btn = add_btn;
     return win;
-}
-
-static void setup_shade(const launcher_controller_t *controller, lv_obj_t *shade, bool invert) {
-    lv_obj_set_style_pad_all(shade, 0, 0);
-    lv_obj_set_style_radius(shade, 0, 0);
-    lv_obj_set_style_border_width(shade, 0, 0);
-    lv_obj_set_style_bg_color(shade, lv_color_black(), 0);
-    lv_obj_set_style_bg_opa(shade, LV_OPA_0, invert ? LV_STATE_USER_1 : 0);
-    lv_obj_set_style_bg_opa(shade, LV_OPA_40, invert ? 0 : LV_STATE_USER_1);
-    lv_obj_clear_flag(shade, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_clear_flag(shade, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_transition(shade, &controller->tr_nav, invert ? LV_STATE_USER_1 : 0);
-    lv_obj_set_style_transition(shade, &controller->tr_detail, invert ? 0 : LV_STATE_USER_1);
 }
 
 static void open_settings(lv_event_t *event) {
