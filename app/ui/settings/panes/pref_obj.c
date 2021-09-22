@@ -29,9 +29,9 @@ typedef union pref_attrs_t {
 
 static void pref_attrs_free(lv_event_t *event);
 
-static void pref_checkbox_value_write_back(lv_event_t *event);
+static void pref_checkable_value_write_back(lv_event_t *event);
 
-static void pref_checkbox_dpad_check_restore(lv_event_t *event);
+static void pref_checkable_dpad_check_restore(lv_event_t *event);
 
 static void pref_dropdown_int_change_cb(lv_event_t *event);
 
@@ -50,8 +50,8 @@ lv_obj_t *pref_checkbox(lv_obj_t *parent, const char *title, bool *value, bool r
     pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
     attrs->checkbox.ref = value;
     attrs->checkbox.reverse = reverse;
-    lv_obj_add_event_cb(checkbox, pref_checkbox_value_write_back, LV_EVENT_CLICKED, attrs);
-    lv_obj_add_event_cb(checkbox, pref_checkbox_dpad_check_restore, LV_EVENT_KEY, attrs);
+    lv_obj_add_event_cb(checkbox, pref_checkable_value_write_back, LV_EVENT_CLICKED, attrs);
+    lv_obj_add_event_cb(checkbox, pref_checkable_dpad_check_restore, LV_EVENT_KEY, attrs);
     lv_obj_add_event_cb(checkbox, pref_attrs_free, LV_EVENT_DELETE, attrs);
     if (*value ^ reverse) {
         lv_obj_add_state(checkbox, LV_STATE_CHECKED);
@@ -180,13 +180,13 @@ static void pref_attrs_free(lv_event_t *event) {
     lv_mem_free(lv_event_get_user_data(event));
 }
 
-static void pref_checkbox_value_write_back(lv_event_t *event) {
+static void pref_checkable_value_write_back(lv_event_t *event) {
     pref_attrs_t *attrs = lv_event_get_user_data(event);
     bool checked = lv_obj_has_state(lv_event_get_current_target(event), LV_STATE_CHECKED);
     *attrs->checkbox.ref = checked ^ attrs->checkbox.reverse;
 }
 
-static void pref_checkbox_dpad_check_restore(lv_event_t *event) {
+static void pref_checkable_dpad_check_restore(lv_event_t *event) {
     uint32_t key = lv_event_get_key(event);
     if (key != LV_KEY_UP && key != LV_KEY_DOWN && key != LV_KEY_LEFT && key != LV_KEY_RIGHT) {
         return;
