@@ -6,7 +6,9 @@
 #include <pbnjson.hpp>
 
 #ifdef USE_SDL_WEBOS
+
 #include <SDL.h>
+
 #endif
 
 // 2MB decode size should be fairly enough for everything
@@ -17,10 +19,10 @@ namespace pj = pbnjson;
 
 std::string base64_encode(const unsigned char *src, size_t len);
 
-AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), video_pts_(0), videoConfig({0}), audioConfig({0})
-{
+AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), video_pts_(0), videoConfig({0}),
+                                   audioConfig({0}), request_interrupt_(false) {
     app_id_ = getenv("APPID");
-    video_buffer_ = (char *)malloc(DECODER_BUFFER_SIZE);
+    video_buffer_ = (char *) malloc(DECODER_BUFFER_SIZE);
 #ifdef USE_ACB
     acb_client_.reset(new Acb());
     if (!acb_client_)
@@ -41,8 +43,7 @@ AVStreamPlayer::AVStreamPlayer() : player_state_(PlayerState::UNINITIALIZED), vi
     player_state_ = PlayerState::UNLOADED;
 }
 
-AVStreamPlayer::~AVStreamPlayer()
-{
+AVStreamPlayer::~AVStreamPlayer() {
 #ifdef USE_ACB
     acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::UNLOADED);
     acb_client_->finalize();
@@ -55,12 +56,9 @@ AVStreamPlayer::~AVStreamPlayer()
 #endif
 }
 
-bool AVStreamPlayer::load()
-{
-    if (player_state_ != PlayerState::UNLOADED)
-    {
-        if (player_state_ == PlayerState::PLAYING)
-        {
+bool AVStreamPlayer::load() {
+    if (player_state_ != PlayerState::UNLOADED) {
+        if (player_state_ == PlayerState::PLAYING) {
             sendEOS();
             starfish_media_apis_->Unload();
         }
@@ -73,8 +71,7 @@ bool AVStreamPlayer::load()
     starfish_media_apis_->notifyForeground();
     std::string payload = makeLoadPayload(videoConfig, audioConfig, video_pts_);
     applog_d("SMP", "StarfishMediaAPIs::Load(%s)", payload.c_str());
-    if (!starfish_media_apis_->Load(payload.c_str(), &LoadCallback, this))
-    {
+    if (!starfish_media_apis_->Load(payload.c_str(), &LoadCallback, this)) {
         applog_e("SMP", "StarfishMediaAPIs::Load() failed!");
         return false;
     }
@@ -98,14 +95,11 @@ bool AVStreamPlayer::load()
     return true;
 }
 
-int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
-{
-    if (request_interrupt_)
-    {
+int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit) {
+    if (request_interrupt_) {
         return DR_INTERRUPT;
     }
-    if (decodeUnit->fullLength > DECODER_BUFFER_SIZE)
-    {
+    if (decodeUnit->fullLength > DECODER_BUFFER_SIZE) {
         applog_w("SMP", "Video decode buffer too small, skip this frame");
         return DR_NEED_IDR;
     }
@@ -114,8 +108,7 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
     video_pts_ = ms * 1000000ULL;
 
     int length = 0;
-    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next)
-    {
+    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
         memcpy(&video_buffer_[length], entry->data, entry->length);
         length += entry->length;
     }
@@ -123,28 +116,18 @@ int AVStreamPlayer::submitVideo(PDECODE_UNIT decodeUnit)
     if (!submitBuffer(video_buffer_, length, video_pts_, 1))
         return DR_NEED_IDR;
 
-    if (request_idr_)
-    {
-        request_idr_ = false;
-        return DR_NEED_IDR;
-    }
     return DR_OK;
 }
 
-void AVStreamPlayer::submitAudio(char *sampleData, int sampleLength)
-{
+void AVStreamPlayer::submitAudio(char *sampleData, int sampleLength) {
     submitBuffer(sampleData, sampleLength, 0, 2);
 }
 
-bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, int esData)
-{
-    if (player_state_ == EOS)
-    {
+bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, int esData) {
+    if (player_state_ == EOS) {
         // Player has marked as end of stream, ignore all data
         return true;
-    }
-    else if (player_state_ != LOADED && player_state_ != PLAYING)
-    {
+    } else if (player_state_ != LOADED && player_state_ != PLAYING) {
         applog_e("SMP", "Player not ready to feed");
         return false;
     }
@@ -153,19 +136,16 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
              data, size, pts, esData);
     std::string result = starfish_media_apis_->Feed(payload);
     std::size_t found = result.find(std::string("Ok"));
-    if (found == std::string::npos)
-    {
+    if (found == std::string::npos) {
         found = result.find(std::string("BufferFull"));
-        if (found != std::string::npos)
-        {
-        applog_w("SMP", "Buffer is full");
+        if (found != std::string::npos) {
+            applog_w("SMP", "Buffer is full");
             return true;
         }
         applog_w("SMP", "Buffer submit returned error: %s", result.c_str());
         return false;
     }
-    if (player_state_ == LOADED)
-    {
+    if (player_state_ == LOADED) {
 #ifdef USE_ACB
         if (!acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::SEAMLESS_LOADED))
             applog_e("SMP", "Acb::setState(FOREGROUND, SEAMLESS_LOADED) failed!");
@@ -175,16 +155,14 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
     return true;
 }
 
-void AVStreamPlayer::sendEOS()
-{
+void AVStreamPlayer::sendEOS() {
     if (player_state_ != PLAYING)
         return;
     player_state_ = PlayerState::EOS;
     starfish_media_apis_->pushEOS();
 }
 
-std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfig &audioConfig, uint64_t time)
-{
+std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfig &audioConfig, uint64_t time) {
     pj::JValue payload = pj::Object();
     pj::JValue args = pj::Array();
     pj::JValue arg = pj::Object();
@@ -210,8 +188,7 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     else if (videoConfig.format & VIDEO_FORMAT_MASK_H265)
         codec.put("video", "H265");
 
-    if (audioConfig.type)
-    {
+    if (audioConfig.type) {
         pj::JValue audioSink = pj::Object();
         audioSink.put("type", "main_sound");
         avSink.put("audioSink", audioSink);
@@ -274,8 +251,7 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     return pbnjson::JGenerator::serialize(payload, pbnjson::JSchemaFragment("{}"));
 }
 
-std::string AVStreamPlayer::makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusConfig)
-{
+std::string AVStreamPlayer::makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusConfig) {
     unsigned char opusHead[sizeof(unsigned char) * OPUS_EXTRADATA_SIZE + 2 + OPUS_MAX_VORBIS_CHANNELS];
     // See https://wiki.xiph.org/OggOpus#ID_Header.
     // Set magic signature.
@@ -283,7 +259,7 @@ std::string AVStreamPlayer::makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusC
     // Set Opus version.
     opusHead[OPUS_EXTRADATA_VERSION_OFFSET] = 1;
     // Set channel count.
-    opusHead[OPUS_EXTRADATA_CHANNELS_OFFSET] = (uint8_t)opusConfig.channelCount;
+    opusHead[OPUS_EXTRADATA_CHANNELS_OFFSET] = (uint8_t) opusConfig.channelCount;
     // Set pre-skip
     uint16_t skip = 0;
     memcpy(&opusHead[OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET], &skip, sizeof(uint16_t));
@@ -295,79 +271,71 @@ std::string AVStreamPlayer::makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusC
     memcpy(&opusHead[OPUS_EXTRADATA_GAIN_OFFSET], &gain, sizeof(int16_t));
 
     size_t headSize = OPUS_EXTRADATA_SIZE;
-    if (opusConfig.streams > 1)
-    {
+    if (opusConfig.streams > 1) {
         // Channel mapping family 1 covers 1 to 8 channels in one or more streams,
         // using the Vorbis speaker assignments.
         opusHead[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 1;
         opusHead[OPUS_EXTRADATA_NUM_STREAMS_OFFSET] = opusConfig.streams;
         opusHead[OPUS_EXTRADATA_NUM_COUPLED_OFFSET] = opusConfig.coupledStreams;
-        memcpy(&opusHead[OPUS_EXTRADATA_STREAM_MAP_OFFSET], opusConfig.mapping, sizeof(unsigned char) * opusConfig.streams);
+        memcpy(&opusHead[OPUS_EXTRADATA_STREAM_MAP_OFFSET], opusConfig.mapping,
+               sizeof(unsigned char) * opusConfig.streams);
         headSize = headSize + 2 + opusConfig.streams;
-    }
-    else
-    {
+    } else {
         // Channel mapping family 0 covers mono or stereo in a single stream.
         opusHead[OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET] = 0;
     }
     return base64_encode(opusHead, headSize);
 }
 
-void AVStreamPlayer::SetMediaAudioData(const char *data)
-{
+void AVStreamPlayer::SetMediaAudioData(const char *data) {
     applog_d("SMP", "AVStreamPlayer::SetMediaAudioData %s", data);
 }
 
-void AVStreamPlayer::SetMediaVideoData(const char *data)
-{
+void AVStreamPlayer::SetMediaVideoData(const char *data) {
     applog_d("SMP", "AVStreamPlayer::SetMediaVideoData %s", data);
 #ifdef USE_ACB
     acb_client_->setMediaVideoData(data);
 #endif
 }
 
-void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue)
-{
-    switch (type)
-    {
-    case 0:
-        break;
-    case PF_EVENT_TYPE_STR_ERROR:
-        applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
-        break;
-    case PF_EVENT_TYPE_INT_ERROR:
-    {
-        applog_w("SMP", "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
-        if (player_state_ == PLAYING)
-        {
-            request_interrupt_ = true;
+void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue) {
+    switch (type) {
+        case 0:
+            break;
+        case PF_EVENT_TYPE_STR_ERROR:
+            applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
+            break;
+        case PF_EVENT_TYPE_INT_ERROR: {
+            applog_w("SMP", "LoadCallback PF_EVENT_TYPE_INT_ERROR, numValue: %d, strValue: %p\n", numValue, strValue);
+            if (player_state_ == PLAYING) {
+                request_interrupt_ = true;
+            }
+            break;
         }
-        break;
-    }
-    case PF_EVENT_TYPE_STR_BUFFERFULL:
-        applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_BUFFERFULL\n");
-        break;
-    case PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED:
+        case PF_EVENT_TYPE_STR_BUFFERFULL:
+            applog_w("SMP", "LoadCallback PF_EVENT_TYPE_STR_BUFFERFULL\n");
+            break;
+        case PF_EVENT_TYPE_STR_STATE_UPDATE__LOADCOMPLETED:
 #ifdef USE_ACB
-        acb_client_->setSinkType(ACB::StateSinkType::SINK_AUTO);
-        acb_client_->setMediaId(starfish_media_apis_->getMediaID());
-        acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::LOADED);
+            acb_client_->setSinkType(ACB::StateSinkType::SINK_AUTO);
+            acb_client_->setMediaId(starfish_media_apis_->getMediaID());
+            acb_client_->setState(ACB::AppState::FOREGROUND, ACB::PlayState::LOADED);
 #endif
-        starfish_media_apis_->Play();
-        break;
-    case PF_EVENT_TYPE_STR_STATE_UPDATE__PLAYING:
-        break;
-    case PF_EVENT_TYPE_STR_AUDIO_INFO:
-        SetMediaAudioData(strValue);
-        break;
-    case PF_EVENT_TYPE_STR_VIDEO_INFO:
-        SetMediaVideoData(strValue);
-        break;
-    case PF_EVENT_TYPE_INT_SVP_VDEC_READY:
-        break;
-    default:
-        applog_w("SMP", "LoadCallback unhandled 0x%02x\n", type);
-        break;
+            starfish_media_apis_->Play();
+            break;
+        case PF_EVENT_TYPE_STR_STATE_UPDATE__PLAYING:
+            break;
+        case PF_EVENT_TYPE_STR_AUDIO_INFO:
+            SetMediaAudioData(strValue);
+            break;
+        case PF_EVENT_TYPE_STR_VIDEO_INFO:
+            SetMediaVideoData(strValue);
+            break;
+        case PF_EVENT_TYPE_INT_SVP_VDEC_READY:
+            break;
+        default:
+            applog_w("SMP", "LoadCallback unhandled 0x%02x\n", type);
+            break;
     }
 }
 
@@ -379,8 +347,7 @@ void AVStreamPlayer::AcbHandler(long acb_id, long task_id, long event_type, long
 }
 #endif
 
-void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue, void *data)
-{
+void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue, void *data) {
     AVStreamPlayer *player = static_cast<AVStreamPlayer *>(data);
     player->LoadCallback(type, numValue, strValue);
 }
