@@ -62,7 +62,7 @@ static int alsa_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGUR
 
   char *audio_device = (char *)context;
   if (!audio_device) {
-    audio_device = "sysdefault";
+    audio_device = "default";
   }
   /* Open PCM device for playback. */
   CHECK_RETURN(snd_pcm_open(&handle, audio_device, SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK))
@@ -104,10 +104,10 @@ static void alsa_renderer_cleanup() {
 }
 
 static void alsa_renderer_decode_and_play_sample(char* data, int length) {
-  int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
+  int decodeLen = opus_multistream_decode(decoder, (unsigned char*) data, length, pcmBuffer, FRAME_SIZE, 0);
   if (decodeLen > 0) {
     int rc;
-    if (rc = snd_pcm_writei(handle, pcmBuffer, decodeLen) == -EPIPE) {
+    if ((rc = snd_pcm_writei(handle, pcmBuffer, decodeLen) == -EPIPE)) {
       snd_pcm_prepare(handle);
     } else if (rc < 0)
       applog_w("ALSA", "ALSA error from writei: %d\n", rc);

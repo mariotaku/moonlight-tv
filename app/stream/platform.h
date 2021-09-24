@@ -157,7 +157,7 @@ static const int decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER);
 
 static const AUDIO audio_orders[] = {
 #if TARGET_WEBOS
-        AUDIO_NDL, AUDIO_PULSE, AUDIO_SDL
+        AUDIO_ALSA, AUDIO_NDL, AUDIO_PULSE, AUDIO_SDL
 #elif TARGET_LINUX
         AUDIO_ALSA, AUDIO_PULSE, AUDIO_SDL
 #else

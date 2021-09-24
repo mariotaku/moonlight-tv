@@ -92,7 +92,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
 
     vdec_temp_stats.totalReassemblyTime += decodeUnit->enqueueTimeMs - decodeUnit->receiveTimeMs;
     int err = vdec->submitDecodeUnit(decodeUnit);
-    if (err == 0) {
+    if (err == DR_OK) {
         vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
         vdec_temp_stats.decodedFrames++;
     } else if (err == DR_INTERRUPT) {

@@ -62,7 +62,6 @@ namespace SMP_DECODER_NS
         PlayerState player_state_;
         char *video_buffer_;
         unsigned long long video_pts_;
-        bool request_idr_;
         bool request_interrupt_;
 #ifdef USE_ACB
         void AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply);
