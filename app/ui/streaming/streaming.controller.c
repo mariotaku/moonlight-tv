@@ -95,7 +95,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
         case USER_STREAM_CONNECTING: {
             controller->progress = progress_dialog_create("Starting session.");
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
-            break;
+            return true;
         }
         case USER_STREAM_OPEN: {
             if (controller->progress) {
@@ -121,11 +121,11 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
                 break;
             }
             lv_obj_controller_pop((lv_obj_controller_t *) controller);
-            break;
+            return true;
         }
         case USER_OPEN_OVERLAY: {
             show_overlay(controller);
-            break;
+            return true;
         }
         default: {
             break;
