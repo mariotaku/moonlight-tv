@@ -190,7 +190,7 @@ void on_pc_removed(const pcmanager_resp_t *resp, void *userdata) {
 }
 
 static void cb_pc_selected(lv_event_t *event) {
-    struct _lv_obj_t *target = lv_event_get_target(event);
+    lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
@@ -316,6 +316,16 @@ static void cb_nav_key(lv_event_t *event) {
         }
         case LV_KEY_ESC: {
             app_quit_confirm();
+            break;
+        }
+        case LV_KEY_RIGHT: {
+            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
+            lv_obj_t *focused = lv_group_get_focused(group);
+            if (lv_obj_get_parent(focused) == controller->pclist) {
+                lv_event_send(focused, LV_EVENT_CLICKED, NULL);
+            } else {
+                set_detail_opened(controller, true);
+            }
             break;
         }
     }

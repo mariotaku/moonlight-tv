@@ -30,6 +30,10 @@ lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
     lv_obj_add_style(close_btn, &styles->btn, 0);
     lv_obj_align(close_btn, LV_ALIGN_CENTER, 0, lv_dpx(25));
     lv_obj_t *title = lv_label_create(item);
+    lv_obj_set_size(title, LV_PCT(100), LV_DPX(20));
+    lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
+    lv_label_set_long_mode(title, LV_LABEL_LONG_DOT);
+    lv_obj_set_style_pad_hor(title, LV_DPX(5), 0);
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -lv_dpx(20));
 
     appitem_viewholder_t *holder = (appitem_viewholder_t *) malloc(sizeof(appitem_viewholder_t));

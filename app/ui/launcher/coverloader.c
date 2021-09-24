@@ -88,6 +88,8 @@ static void coverloader_req_free(coverloader_req_t *req);
 
 static int reqlist_find_by_target(coverloader_req_t *p, const void *v);
 
+static bool cover_is_placeholder(const SDL_Surface *surface);
+
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
         .memcache_put = (img_loader_fn2) coverloader_memcache_put,
@@ -215,6 +217,10 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
     coverloader_cache_item_path(path, req);
     SDL_Surface *decoded = IMG_Load(path);
     if (!decoded) return NULL;
+    if (cover_is_placeholder(decoded)) {
+        SDL_FreeSurface(decoded);
+        return NULL;
+    }
     SDL_Surface *scaled = SDL_CreateRGBSurface(0, req->target_width, req->target_height,
                                                decoded->format->BitsPerPixel, decoded->format->Rmask,
                                                decoded->format->Gmask, decoded->format->Bmask,
@@ -239,6 +245,10 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
     return scaled;
 }
 
+static bool cover_is_placeholder(const SDL_Surface *surface) {
+    return (surface->w == 130 && surface->h == 180) || (surface->w == 628 && surface->h == 888);
+}
+
 static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cached) {
     // This was done in fetch step
 }
@@ -246,10 +256,10 @@ static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cache
 static SDL_Surface *coverloader_fetch(coverloader_req_t *req) {
     char path[4096];
     coverloader_cache_item_path(path, req);
-    if (gs_download_cover(req->loader->client, (PSERVER_DATA) req->node->server, req->id, path) == GS_OK) {
-        return coverloader_filecache_get(req);
+    if (gs_download_cover(req->loader->client, (PSERVER_DATA) req->node->server, req->id, path) != GS_OK) {
+        return NULL;
     }
-    return NULL;
+    return coverloader_filecache_get(req);
 }
 
 static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void *args) {

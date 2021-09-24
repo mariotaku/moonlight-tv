@@ -28,11 +28,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->state = LV_INDEV_STATE_RELEASED;
     if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEWHEEL, SDL_MOUSEWHEEL)) {
         absinput_dispatch_event(&e);
-#if TARGET_WEBOS
-        data->enc_diff = (short) e.wheel.y;
-#else
         data->enc_diff = 0;
-#endif
         data->continue_reading = true;
     } else {
         data->enc_diff = 0;
