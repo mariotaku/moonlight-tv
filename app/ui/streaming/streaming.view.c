@@ -50,6 +50,7 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     controller->stats_items.drop_rate = stat_label(stats, "Network frame drop");
     controller->stats_items.decode_time = stat_label(stats, "Decode time");
 
+
     lv_obj_add_flag(scene, LV_OBJ_FLAG_HIDDEN);
 
     controller->video = video;

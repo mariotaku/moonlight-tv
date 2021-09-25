@@ -19,6 +19,7 @@ typedef struct {
         lv_obj_t *drop_rate;
         lv_obj_t *decode_time;
     } stats_items;
+    lv_obj_t *notice;
 } streaming_controller_t;
 
 typedef struct {
@@ -33,3 +34,5 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent);
 bool streaming_overlay_shown();
 
 bool streaming_refresh_stats();
+
+void streaming_notice_show(const char* message);

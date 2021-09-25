@@ -26,13 +26,15 @@
 #include <SDL_image.h>
 
 #if TARGET_WEBOS
-
 #include "debughelper.h"
-
+#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
+#else
+#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
 #endif
 
 FILE *app_logfile = NULL;
 
+static SDL_Window *window = NULL;
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
 
@@ -54,7 +56,6 @@ int main(int argc, char *argv[]) {
         REDIR_STDOUT(APPID);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
-    SDL_setenv("DISPLAY", ":0", 1);
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
@@ -78,23 +79,25 @@ int main(int argc, char *argv[]) {
 
     backend_init();
     Uint32 window_flags = 0;
-#ifdef TARGET_WEBOS
-    window_flags |= SDL_WINDOW_FULLSCREEN;
-#else
+    int window_width = 1920, window_height = 1080;
     if (app_configuration->fullscreen) {
-        window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        window_flags |= APP_FULLSCREEN_FLAG;
+        SDL_DisplayMode mode;
+        SDL_GetDisplayMode(0, 0, &mode);
+        if (mode.w && mode.h) {
+            window_width = mode.w;
+            window_height = mode.h;
+        }
     } else {
         window_flags |= SDL_WINDOW_RESIZABLE;
     }
-#endif
-    SDL_Window *window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                          1920, 1080, window_flags);
+    window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              window_width, window_height, window_flags);
     SDL_assert(window);
 #if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_window_icon_32_data, res_window_icon_32_size), SDL_TRUE);
     SDL_SetWindowIcon(window, winicon);
     SDL_FreeSurface(winicon);
-    SDL_SetWindowMinimumSize(window, 640, 400);
 #endif
     if (window_flags & SDL_WINDOW_RESIZABLE) {
         SDL_SetWindowMinimumSize(window, 960, 540);
@@ -205,4 +208,8 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
         return;
 #endif
     applog(priority_name[priority], "SDL", message);
+}
+
+void app_set_fullscreen(bool fullscreen) {
+    SDL_SetWindowFullscreen(window, fullscreen ? APP_FULLSCREEN_FLAG : SDL_WINDOW_RESIZABLE);
 }

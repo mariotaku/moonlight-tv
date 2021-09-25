@@ -35,3 +35,5 @@ void app_set_keep_awake(bool);
 void app_input_set_group(lv_group_t *group);
 
 lv_group_t *app_input_get_group();
+
+void app_set_fullscreen(bool);

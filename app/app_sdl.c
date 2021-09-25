@@ -50,36 +50,36 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             break;
         }
 #if TARGET_DESKTOP || TARGET_RASPI
-            case SDL_WINDOWEVENT: {
-                switch (event->window.event) {
-                    case SDL_WINDOWEVENT_FOCUS_GAINED:
-                        window_focus_gained = true;
-                        break;
-                    case SDL_WINDOWEVENT_FOCUS_LOST:
-                        applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
+        case SDL_WINDOWEVENT: {
+            switch (event->window.event) {
+                case SDL_WINDOWEVENT_FOCUS_GAINED:
+                    window_focus_gained = true;
+                    break;
+                case SDL_WINDOWEVENT_FOCUS_LOST:
+                    applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
 #if TARGET_RASPI
-                        // Interrupt streaming because app will go to background
-                        streaming_interrupt(false);
+                    // Interrupt streaming because app will go to background
+                    streaming_interrupt(false);
 #endif
-                        window_focus_gained = false;
-                        break;
-                    case SDL_WINDOWEVENT_SIZE_CHANGED:
-                        lv_app_display_resize(lv_disp_get_default(), event->window.data1, event->window.data2);
-                        ui_display_size(event->window.data1, event->window.data2);
-                        bus_pushevent(USER_SIZE_CHANGED, NULL, NULL);
-                        break;
-                    case SDL_WINDOWEVENT_HIDDEN:
-                        applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
+                    window_focus_gained = false;
+                    break;
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    lv_app_display_resize(lv_disp_get_default(), event->window.data1, event->window.data2);
+                    ui_display_size(event->window.data1, event->window.data2);
+                    bus_pushevent(USER_SIZE_CHANGED, NULL, NULL);
+                    break;
+                case SDL_WINDOWEVENT_HIDDEN:
+                    applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
 #if TARGET_RASPI
-                        // Interrupt streaming because app will go to background
-                        streaming_interrupt(false);
+                    // Interrupt streaming because app will go to background
+                    streaming_interrupt(false);
 #endif
-                        break;
-                    default:
-                        break;
-                }
-                break;
+                    break;
+                default:
+                    break;
             }
+            break;
+        }
 #endif
         case SDL_USEREVENT: {
             if (event->user.code == BUS_INT_EVENT_ACTION) {

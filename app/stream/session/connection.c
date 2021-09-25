@@ -1,3 +1,4 @@
+#include <ui/streaming/streaming.controller.h>
 #include "stream/session.h"
 #include "stream/input/absinput.h"
 #include "util/logging.h"
@@ -19,9 +20,11 @@ static void connection_status_update(int status) {
     switch (status) {
         case CONN_STATUS_OKAY:
             applog_i("Session", "Connection is okay");
+            streaming_notice_show(NULL);
             break;
         case CONN_STATUS_POOR:
             applog_w("Session", "Connection is poor");
+            streaming_notice_show("Connection is poor");
             break;
     }
 }

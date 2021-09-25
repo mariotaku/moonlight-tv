@@ -75,6 +75,12 @@ bool streaming_refresh_stats() {
     return true;
 }
 
+void streaming_notice_show(const char *message) {
+    streaming_controller_t *controller = current_controller;
+    if (!controller) return;
+//    lv_obj_clear_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
+}
+
 static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     LV_ASSERT(current_controller == NULL);
@@ -140,9 +146,22 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
+
+    lv_obj_t *notice = lv_obj_create(lv_layer_top());
+    lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_align(notice, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
+    lv_obj_t *notice_label = lv_label_create(notice);
+    lv_obj_set_size(notice_label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_add_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
+
+    controller->notice = notice;
 }
 
 static void on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view) {
+    streaming_controller_t *controller = (streaming_controller_t *) self;
+    if (controller->notice) {
+        lv_obj_del(controller->notice);
+    }
     app_input_set_group(NULL);
 }
 

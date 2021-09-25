@@ -184,6 +184,8 @@ static void pref_checkable_value_write_back(lv_event_t *event) {
     pref_attrs_t *attrs = lv_event_get_user_data(event);
     bool checked = lv_obj_has_state(lv_event_get_current_target(event), LV_STATE_CHECKED);
     *attrs->checkbox.ref = checked ^ attrs->checkbox.reverse;
+    lv_obj_t *target = lv_event_get_current_target(event);
+    lv_event_send(target, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
 static void pref_checkable_dpad_check_restore(lv_event_t *event) {

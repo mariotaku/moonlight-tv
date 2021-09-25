@@ -170,7 +170,11 @@ bool settings_read(char *filename, PCONFIGURATION config) {
         config->audio_device = str_tmp;
     }
 
+#if TARGET_WEBOS
+    config->fullscreen = true;
+#else
     config_lookup_bool_std(&libconfig, "fullscreen", &config->fullscreen);
+#endif
     config_lookup_int(&libconfig, "debug_level", &config->debug_level);
 
     config_destroy(&libconfig);

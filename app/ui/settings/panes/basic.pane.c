@@ -24,6 +24,8 @@ static void on_bitrate_changed(lv_event_t *e);
 
 static void on_res_fps_updated(lv_event_t *e);
 
+static void on_fullscreen_updated(lv_event_t *e);
+
 static void update_bitrate_label(basic_pane_t *pane);
 
 const lv_obj_controller_class_t settings_pane_basic_cls = {
@@ -88,6 +90,8 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     if (decoder_info.hdr != DECODER_HDR_NONE) {
         pref_checkbox(parent, "HDR (experimental)", &app_configuration->stream.enableHdr, false);
     }
+    lv_obj_t *checkbox = pref_checkbox(parent, "Fullscreen UI", &app_configuration->fullscreen, false);
+    lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
     return NULL;
 }
 
@@ -111,6 +115,10 @@ static void on_res_fps_updated(lv_event_t *e) {
     } else {
         lv_obj_add_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
     }
+}
+
+static void on_fullscreen_updated(lv_event_t *e) {
+    app_set_fullscreen(app_configuration->fullscreen);
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {
