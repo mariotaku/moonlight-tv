@@ -1,5 +1,4 @@
 #include <lvgl/lv_sdl_img.h>
-#include <lvgl/ext/lv_toast.h>
 #include "ui/settings/settings.controller.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/font/symbols_material_icon.h"
