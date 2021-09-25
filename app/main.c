@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         window_flags |= APP_FULLSCREEN_FLAG;
         SDL_DisplayMode mode;
         SDL_GetDisplayMode(0, 0, &mode);
-        if (mode.w && mode.h) {
+        if (mode.w > 0 && mode.h > 0) {
             window_width = mode.w;
             window_height = mode.h;
         }

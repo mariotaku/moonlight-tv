@@ -152,7 +152,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_align(notice, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
     lv_obj_t *notice_label = lv_label_create(notice);
     lv_obj_set_size(notice_label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_add_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(notice, LV_OBJ_FLAG_HIDDEN);
 
     controller->notice = notice;
 }
