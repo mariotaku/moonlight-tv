@@ -103,11 +103,6 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_grow(pref_btn, 0);
     lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
 
-    lv_obj_t *toast_btn = lv_list_add_btn(nav, LV_SYMBOL_NEXT, "Settings");
-    lv_obj_add_flag(toast_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_flex_grow(toast_btn, 0);
-    lv_obj_set_style_border_side(toast_btn, LV_BORDER_SIDE_NONE, 0);
-
     lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
 
     controller->nav = nav;

@@ -150,7 +150,7 @@ void app_set_keep_awake(bool awake) {
 
 void app_quit_confirm() {
     static const char *btn_txts[] = {"Cancel", "OK", ""};
-    lv_obj_t *mbox = lv_msgbox_create(NULL, "Quit", "Do you want to quit Moonlight?", btn_txts, false);
+    lv_obj_t *mbox = lv_msgbox_create(NULL, NULL, "Do you want to quit Moonlight?", btn_txts, false);
     lv_obj_add_event_cb(mbox, quit_confirm_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
 }

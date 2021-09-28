@@ -41,6 +41,10 @@ static bool detail_item_needs_lrkey(lv_obj_t *obj);
 
 static void show_pane(settings_controller_t *controller, const lv_obj_controller_class_t *cls);
 
+static void settings_close(lv_event_t *e);
+
+static void restart_confirm_cb(lv_event_t *e);
+
 const lv_obj_controller_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
         .create_obj_cb = settings_win_create,
@@ -56,13 +60,15 @@ static void settings_controller_ctor(lv_obj_controller_t *self, void *args) {
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
-    controller->pane_manager = lv_controller_manager_create(controller->detail);
+    controller->pane_manager = lv_controller_manager_create(controller->detail, self);
     lv_obj_set_child_group(controller->nav, lv_group_create());
     lv_obj_set_child_group(controller->detail, lv_group_create());
 
     lv_obj_add_event_cb(controller->nav, on_entry_focus, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->nav, on_entry_click, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->nav, on_nav_key, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->close_btn, settings_close, LV_EVENT_CLICKED, controller);
+
 
     app_input_set_group(lv_obj_get_child_group(controller->nav));
 
@@ -155,7 +161,7 @@ static void on_nav_key(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     switch (lv_event_get_key(event)) {
         case LV_KEY_ESC: {
-            lv_async_call((lv_async_cb_t) lv_obj_controller_pop, controller);
+            settings_close(event);
             break;
         }
         case LV_KEY_DOWN: {
@@ -249,5 +255,30 @@ static void on_dropdown_clicked(lv_event_t *event) {
         controller->active_dropdown = target;
     } else {
         controller->active_dropdown = NULL;
+    }
+}
+
+static void settings_close(lv_event_t *e) {
+    settings_controller_t *controller = lv_event_get_user_data(e);
+    if (controller->needs_restart) {
+        static const char *btn_txts[] = {"Later", "Quit", ""};
+        lv_obj_t *msgbox = lv_msgbox_create(NULL, NULL, "Some settings change requires restart to take effect.",
+                                            btn_txts, false);
+        lv_obj_center(msgbox);
+        lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, controller);
+        return;
+    }
+    lv_async_call((lv_async_cb_t) lv_obj_controller_pop, controller);
+}
+
+static void restart_confirm_cb(lv_event_t *e) {
+    settings_controller_t *controller = lv_event_get_user_data(e);
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+    uint16_t selected = lv_msgbox_get_active_btn(msgbox);
+    if (selected == 1) {
+        app_request_exit();
+    } else {
+        lv_msgbox_close_async(msgbox);
+        lv_async_call((lv_async_cb_t) lv_obj_controller_pop, controller);
     }
 }

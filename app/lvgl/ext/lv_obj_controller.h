@@ -57,7 +57,7 @@ struct lv_obj_controller_class_t {
  * GLOBAL PROTOTYPES
  **********************/
 
-lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *container);
+lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *container, lv_obj_controller_t *parent);
 
 void lv_controller_manager_del(lv_controller_manager_t *manager);
 
@@ -86,6 +86,8 @@ bool lv_controller_manager_dispatch_event(lv_controller_manager_t *manager, int 
 void lv_obj_controller_pop(lv_obj_controller_t *controller);
 
 lv_obj_controller_t *lv_controller_manager_top_controller(lv_controller_manager_t *manager);
+
+lv_obj_controller_t *lv_controller_manager_parent(lv_controller_manager_t *manager);
 /**********************
  *      MACROS
  **********************/

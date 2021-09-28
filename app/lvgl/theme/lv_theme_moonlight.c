@@ -22,9 +22,14 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
     if (lv_obj_has_class(obj, &lv_label_class)) {
         lv_obj_t *parent = lv_obj_get_parent(obj);
         if (parent) {
-            lv_obj_t *parent2 = lv_obj_get_parent(parent);
-            if (parent2 && lv_obj_has_class(parent2, &lv_win_class) && lv_win_get_header(parent2) == parent) {
+            // Assume this is title
+            if (lv_obj_check_type(parent, &lv_msgbox_class) && lv_msgbox_get_title(parent) == NULL) {
                 lv_obj_set_style_text_font(obj, theme->font_large, 0);
+            } else {
+                lv_obj_t *parent2 = lv_obj_get_parent(parent);
+                if (parent2 && lv_obj_has_class(parent2, &lv_win_class) && lv_win_get_header(parent2) == parent) {
+                    lv_obj_set_style_text_font(obj, theme->font_large, 0);
+                }
             }
         }
     }

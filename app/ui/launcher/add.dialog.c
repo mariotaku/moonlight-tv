@@ -47,7 +47,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     add_dialog_controller_t *controller = (add_dialog_controller_t *) self;
     const static char *btn_texts[] = {"Cancel", "OK", ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, "Add device", NULL, btn_texts, false);
+    lv_obj_t *dialog = lv_msgbox_create(NULL, NULL, NULL, btn_texts, false);
     lv_obj_add_event_cb(dialog, dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_t *content = lv_msgbox_get_content(dialog);
     lv_obj_set_style_pad_all(content, lv_dpx(8), 0);

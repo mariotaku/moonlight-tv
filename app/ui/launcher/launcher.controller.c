@@ -102,7 +102,7 @@ static void controller_dtor(lv_obj_controller_t *self) {
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     pcmanager_register_listener(pcmanager, &pcmanager_callbacks, controller);
-    controller->pane_manager = lv_controller_manager_create(controller->detail);
+    controller->pane_manager = lv_controller_manager_create(controller->detail, self);
     lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->nav, cb_nav_key, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);

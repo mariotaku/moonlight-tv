@@ -1,7 +1,6 @@
 #include "lvgl/font/symbols_material_icon.h"
 #include "settings.controller.h"
 
-static void settings_close(lv_event_t *e);
 
 lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
@@ -28,8 +27,6 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_set_style_radius(close_btn, LV_RADIUS_CIRCLE, 0);
     lv_group_remove_obj(close_btn);
 
-    lv_obj_add_event_cb(close_btn, settings_close, LV_EVENT_CLICKED, controller);
-
     lv_obj_t *content = lv_win_get_content(win);
     lv_obj_set_style_pad_ver(content, 0, 0);
     lv_obj_set_style_bg_color(content, lv_color_lighten(lv_color_black(), 30), 0);
@@ -49,12 +46,8 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_set_style_border_width(detail, 0, 0);
     lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     controller->detail = detail;
+    controller->close_btn = close_btn;
 
     return win;
 }
 
-
-static void settings_close(lv_event_t *e) {
-    lv_obj_controller_t *controller = e->user_data;
-    lv_obj_controller_pop(controller);
-}

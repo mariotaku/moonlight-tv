@@ -16,8 +16,10 @@ typedef struct {
     lv_obj_controller_t base;
     lv_controller_manager_t *pane_manager;
     lv_obj_t *nav, *detail;
+    lv_obj_t *close_btn;
 
     lv_obj_t *active_dropdown;
+    bool needs_restart;
 } settings_controller_t;
 
 lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent);

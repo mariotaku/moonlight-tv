@@ -29,6 +29,7 @@ typedef struct manager_stack_t {
 
 struct lv_controller_manager_t {
     lv_obj_t *container;
+    lv_obj_controller_t *parent;
     manager_stack_t *top;
 };
 
@@ -62,9 +63,10 @@ static void obj_cb_delete(lv_event_t *event);
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *container) {
+lv_controller_manager_t *lv_controller_manager_create(lv_obj_t *container, lv_obj_controller_t *parent) {
     LV_ASSERT(container);
     lv_controller_manager_t *instance = lv_mem_alloc(sizeof(lv_controller_manager_t));
+    instance->parent = parent;
     instance->container = container;
     instance->top = NULL;
     return instance;
@@ -167,6 +169,11 @@ lv_obj_controller_t *lv_controller_manager_top_controller(lv_controller_manager_
     manager_stack_t *top = manager->top;
     if (!top)return NULL;
     return top->controller;
+}
+
+lv_obj_controller_t *lv_controller_manager_parent(lv_controller_manager_t *manager) {
+    LV_ASSERT(manager);
+    return manager->parent;
 }
 
 /**********************
