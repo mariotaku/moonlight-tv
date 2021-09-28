@@ -37,7 +37,11 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_add_event_cb(obj, lv_start_text_input, LV_EVENT_FOCUSED, NULL);
         lv_obj_add_event_cb(obj, (lv_event_cb_t) app_stop_text_input, LV_EVENT_DEFOCUSED, NULL);
     } else if (lv_obj_check_type(obj, &lv_msgbox_class)) {
-        lv_obj_set_width(obj, LV_PCT(40));
+        if (lv_obj_get_width(lv_scr_act()) / 10 * 4 > LV_DPI_DEF * 2) {
+            lv_obj_set_width(obj, LV_PCT(40));
+        } else {
+            lv_obj_set_width(obj, LV_DPI_DEF * 2);
+        }
         lv_obj_set_style_min_width(obj, LV_PCT(40), 0);
         lv_obj_set_style_max_width(obj, LV_PCT(60), 0);
         lv_obj_set_style_flex_main_place(obj, LV_FLEX_ALIGN_END, 0);

@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     }
 
     backend_init();
-    Uint32 window_flags = 0;
+    Uint32 window_flags = SDL_WINDOW_RESIZABLE;
     int window_width = 1920, window_height = 1080;
     if (app_configuration->fullscreen) {
         window_flags |= APP_FULLSCREEN_FLAG;
@@ -88,8 +88,6 @@ int main(int argc, char *argv[]) {
             window_width = mode.w;
             window_height = mode.h;
         }
-    } else {
-        window_flags |= SDL_WINDOW_RESIZABLE;
     }
     window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                               window_width, window_height, window_flags);
@@ -211,5 +209,5 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
 }
 
 void app_set_fullscreen(bool fullscreen) {
-    SDL_SetWindowFullscreen(window, fullscreen ? APP_FULLSCREEN_FLAG : SDL_WINDOW_RESIZABLE);
+    SDL_SetWindowFullscreen(window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
