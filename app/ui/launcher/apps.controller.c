@@ -107,7 +107,7 @@ static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
 
 static void apps_controller_dtor(lv_obj_controller_t *self) {
     apps_controller_t *controller = (apps_controller_t *) self;
-    apploader_destroy(controller->apploader);
+    apploader_unref(controller->apploader);
 }
 
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
@@ -175,7 +175,7 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
     pcmanager_unregister_listener(pcmanager, &pc_listeners);
-    coverloader_destroy(controller->coverloader);
+    coverloader_unref(controller->coverloader);
 }
 
 static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {

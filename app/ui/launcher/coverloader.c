@@ -2,18 +2,9 @@
 #include "app.h"
 #include "appitem.view.h"
 
-#include <errno.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
-
-#include <sys/stat.h>
 
 #include "util/bus.h"
-#include "util/user_event.h"
 #include "util/path.h"
 
 #include "libgamestream/client.h"
@@ -22,7 +13,7 @@
 #include <SDL_image.h>
 #include "util/img_loader.h"
 #include <gpu/sdl/lv_gpu_sdl_lru.h>
-#include "util/compat.h"
+#include "util/refcounter.h"
 
 #include "util/logging.h"
 #include "res.h"
@@ -90,6 +81,8 @@ static int reqlist_find_by_target(coverloader_req_t *p, const void *v);
 
 static bool cover_is_placeholder(const SDL_Surface *surface);
 
+static void target_deleted_cb(lv_event_t *e);
+
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
         .memcache_put = (img_loader_fn2) coverloader_memcache_put,
@@ -112,11 +105,13 @@ struct coverloader_t {
     GS_CLIENT client;
     coverloader_req_t *reqlist;
     SDL_Texture *defcover;
+    refcounter_t refcounter;
 };
 
 
 coverloader_t *coverloader_new() {
     coverloader_t *loader = malloc(sizeof(coverloader_t));
+    refcounter_init(&loader->refcounter);
     loader->mem_cache = lv_lru_new(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
     loader->base_loader = img_loader_create(&coverloader_impl);
     loader->client = app_gs_client_new();
@@ -129,13 +124,17 @@ coverloader_t *coverloader_new() {
     return loader;
 }
 
-void coverloader_destroy(coverloader_t *loader) {
+void coverloader_unref(coverloader_t *loader) {
+    if (!refcounter_unref(&loader->refcounter)) {
+        return;
+    }
     if (loader->defcover) {
         SDL_DestroyTexture(loader->defcover);
     }
     gs_destroy(loader->client);
     img_loader_destroy(loader->base_loader);
     lv_lru_free(loader->mem_cache);
+    refcounter_destroy(&loader->refcounter);
     free(loader);
 }
 
@@ -154,7 +153,9 @@ void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_ob
     req->target_width = target_width;
     req->target_height = target_height;
     req->finished = false;
+    lv_obj_add_event_cb(target, target_deleted_cb, LV_EVENT_DELETE, req);
     loader->reqlist = reqlist_append(loader->reqlist, req);
+    refcounter_ref(&loader->refcounter);
     img_loader_task_t *task = img_loader_load(loader->base_loader, req, &coverloader_cb);
     /* If no task returned, then the request has been freed already */
     if (!task) return;
@@ -283,6 +284,12 @@ static void img_loader_start_cb(coverloader_req_t *req) {
 
 static void img_loader_result_cb(coverloader_req_t *req) {
     req->task = NULL;
+    coverloader_t *loader = req->loader;
+    if (req->target) {
+        lv_obj_remove_event_cb(req->target, target_deleted_cb);
+    } else {
+        goto done;
+    }
     appitem_viewholder_t *holder = req->target->user_data;
     if (req->result) {
         lv_sdl_img_src_stringify(req->result, holder->cover_src);
@@ -293,20 +300,27 @@ static void img_loader_result_cb(coverloader_req_t *req) {
                 .h = req->target_height,
                 .type = LV_SDL_IMG_TYPE_TEXTURE,
                 .cf = LV_IMG_CF_TRUE_COLOR,
-                .data.texture = req->loader->defcover,
+                .data.texture = loader->defcover,
         };
         lv_sdl_img_src_stringify(&src, holder->cover_src);
         lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
     lv_img_set_src(req->target, holder->cover_src);
-    req->loader->reqlist = reqlist_remove(req->loader->reqlist, req);
+    done:
+    loader->reqlist = reqlist_remove(loader->reqlist, req);
     coverloader_req_free(req);
+    coverloader_unref(loader);
 }
 
 static void img_loader_cancel_cb(coverloader_req_t *req) {
+    if (req->target) {
+        lv_obj_remove_event_cb(req->target, target_deleted_cb);
+    }
     req->task = NULL;
-    req->loader->reqlist = reqlist_remove(req->loader->reqlist, req);
+    coverloader_t *loader = req->loader;
+    loader->reqlist = reqlist_remove(loader->reqlist, req);
     coverloader_req_free(req);
+    coverloader_unref(loader);
 }
 
 static void memcache_item_free(lv_sdl_img_src_t *item) {
@@ -314,10 +328,15 @@ static void memcache_item_free(lv_sdl_img_src_t *item) {
     free(item);
 }
 
-static void coverloader_req_free(coverloader_req_t *req) {
+static inline void coverloader_req_free(coverloader_req_t *req) {
     free(req);
 }
 
 static int reqlist_find_by_target(coverloader_req_t *p, const void *v) {
     return p->target != v;
+}
+
+static void target_deleted_cb(lv_event_t *e) {
+    coverloader_req_t *req = lv_event_get_user_data(e);
+    req->target = NULL;
 }

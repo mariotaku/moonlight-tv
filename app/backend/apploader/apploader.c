@@ -45,6 +45,7 @@ static int applist_name_comparator(PAPP_LIST p1, PAPP_LIST p2);
 apploader_t *apploader_new(const SERVER_LIST *node) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
+    refcounter_init(&loader->refcounter);
     loader->node = node;
     loader->apps = NULL;
     loader->apps_count = 0;
@@ -55,15 +56,21 @@ void apploader_load(apploader_t *loader, apploader_cb cb, void *userdata) {
     if (loader->status != APPLOADER_STATUS_IDLE) return;
     loader->status = APPLOADER_STATUS_LOADING;
     apploader_task_t *task = apploader_task_create(loader, cb, userdata);
+    refcounter_ref(&loader->refcounter);
     task->thread = SDL_CreateThread((SDL_ThreadFunction) apploader_task_execute, "loadapps", task);
     loader->task = task;
 }
 
-void apploader_destroy(apploader_t *loader) {
+void apploader_unref(apploader_t *loader) {
     if (loader->task) {
+        SDL_assert(!loader->task->cancelled);
         loader->task->cancelled = true;
     }
+    if (!refcounter_unref(&loader->refcounter)) {
+        return;
+    }
     apploader_apps_free(loader);
+    refcounter_destroy(&loader->refcounter);
     SDL_free(loader);
 }
 
@@ -79,14 +86,17 @@ static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb
 }
 
 static int apploader_task_execute(apploader_task_t *task) {
+    int ret = GS_OK;
+    GS_CLIENT client = NULL;
     if (task->cancelled) {
-        SDL_free(task);
-        return -1;
+        goto finish;
     }
     PAPP_LIST ll = NULL;
-    int ret;
-    GS_CLIENT client = app_gs_client_new();
+    client = app_gs_client_new();
     if ((ret = gs_applist(client, task->loader->node->server, &ll)) != GS_OK) {
+        goto finish;
+    }
+    if (task->cancelled) {
         goto finish;
     }
     SDL_assert(ll);
@@ -110,11 +120,12 @@ static int apploader_task_execute(apploader_task_t *task) {
 }
 
 static void apploader_task_finish(apploader_task_t *task) {
+    apploader_t *loader = task->loader;
     if (task->cancelled) {
-        SDL_free(task);
+        loader->task = NULL;
+        apploader_unref(loader);
         return;
     }
-    apploader_t *loader = task->loader;
     if (task->code == GS_OK) {
         apploader_apps_free(loader);
         loader->apps = task->result;
@@ -125,6 +136,7 @@ static void apploader_task_finish(apploader_task_t *task) {
     loader->task = NULL;
     task->cb(loader, task->userdata);
     SDL_free(task);
+    apploader_unref(loader);
 }
 
 static void apploader_apps_free(apploader_t *loader) {

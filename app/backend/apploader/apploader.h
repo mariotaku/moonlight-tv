@@ -2,6 +2,7 @@
 
 #include "../types.h"
 #include "client.h"
+#include "util/refcounter.h"
 
 typedef struct apploader_task_t apploader_task_t;
 
@@ -17,6 +18,7 @@ typedef struct apploader_t {
     APP_LIST *apps;
     int apps_count;
     apploader_task_t *task;
+    refcounter_t refcounter;
 } apploader_t;
 
 typedef void (*apploader_cb)(apploader_t *loader, void *userdata);
@@ -25,4 +27,4 @@ apploader_t *apploader_new(const SERVER_LIST *node);
 
 void apploader_load(apploader_t *loader, apploader_cb cb, void *userdata);
 
-void apploader_destroy(apploader_t *loader);
+void apploader_unref(apploader_t *loader);

@@ -146,6 +146,7 @@ int main(int argc, char *argv[]) {
     lv_sdl_deinit_wheel(indev_wheel);
     lv_sdl_deinit_key_input(indev_key);
     lv_app_display_deinit(disp);
+    lv_img_decoder_delete(img_decoder);
     lv_deinit();
 
     SDL_DestroyWindow(window);
