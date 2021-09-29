@@ -65,7 +65,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_grid_cell(ip_input, LV_GRID_ALIGN_STRETCH, 0, 3, LV_GRID_ALIGN_STRETCH, 1, 1);
     lv_textarea_set_placeholder_text(ip_input, "IPv4 address only");
     lv_textarea_set_one_line(ip_input, true);
-    lv_textarea_set_accepted_chars(ip_input, ".0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    lv_textarea_set_accepted_chars(ip_input, ".-_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     lv_obj_add_event_cb(ip_input, input_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(ip_input, input_key_cb, LV_EVENT_KEY, controller);
 
