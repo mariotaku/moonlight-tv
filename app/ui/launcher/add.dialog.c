@@ -101,7 +101,7 @@ static void dialog_cb(lv_event_t *event) {
     uint16_t btn = lv_msgbox_get_active_btn(dialog);
     if (btn == 1) {
         const char *address = lv_textarea_get_text(controller->input);
-        if (!address)return;
+        if (!address && !address[0])return;
         lv_obj_add_state(controller->btns, LV_STATE_DISABLED);
         lv_obj_add_state(controller->input, LV_STATE_DISABLED);
         lv_obj_clear_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
