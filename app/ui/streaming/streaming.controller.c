@@ -142,7 +142,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    app_input_set_group(lv_obj_get_child_group(controller->base.obj));
+    app_input_set_group(controller->group);
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
@@ -163,6 +163,7 @@ static void on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view) {
         lv_obj_del(controller->notice);
     }
     app_input_set_group(NULL);
+    lv_group_del(controller->group);
 }
 
 static void exit_streaming(lv_event_t *event) {

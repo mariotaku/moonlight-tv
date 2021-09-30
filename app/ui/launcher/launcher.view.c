@@ -1,4 +1,5 @@
 #include <lvgl/lv_sdl_img.h>
+#include <lvgl/ext/lv_child_group.h>
 #include "ui/settings/settings.controller.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/font/symbols_material_icon.h"
@@ -35,10 +36,12 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_pad_gap(content, 0, 0);
     lv_obj_set_grid_dsc_array(content, controller->col_dsc, controller->row_dsc);
 
+    controller->nav_group = lv_group_create();
+    controller->detail_group = lv_group_create();
     lv_obj_t *nav = lv_obj_create(content);
-    lv_obj_set_child_group(nav, lv_group_create());
     lv_obj_t *detail = lv_obj_create(content);
-    lv_obj_set_child_group(detail, lv_group_create());
+    lv_obj_add_event_cb(nav, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->nav_group);
+    lv_obj_add_event_cb(detail, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->detail_group);
 
     lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
@@ -116,3 +119,4 @@ static void open_settings(lv_event_t *event) {
     lv_obj_controller_t *controller = event->user_data;
     lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
 }
+

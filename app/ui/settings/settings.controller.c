@@ -1,5 +1,6 @@
 #include <ui/root.h>
 #include <util/user_event.h>
+#include <lvgl/ext/lv_child_group.h>
 #include "settings.controller.h"
 
 typedef struct {
@@ -61,16 +62,18 @@ static void settings_controller_ctor(lv_obj_controller_t *self, void *args) {
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     controller->pane_manager = lv_controller_manager_create(controller->detail, self);
-    lv_obj_set_child_group(controller->nav, lv_group_create());
-    lv_obj_set_child_group(controller->detail, lv_group_create());
+    controller->nav_group = lv_group_create();
+    controller->detail_group = lv_group_create();
+
+    lv_obj_add_event_cb(controller->nav, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->nav_group);
+    lv_obj_add_event_cb(controller->detail, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->detail_group);
 
     lv_obj_add_event_cb(controller->nav, on_entry_focus, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->nav, on_entry_click, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->nav, on_nav_key, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->close_btn, settings_close, LV_EVENT_CLICKED, controller);
 
-
-    app_input_set_group(lv_obj_get_child_group(controller->nav));
+    app_input_set_group(controller->nav_group);
 
     for (int i = 0; i < entries_len; ++i) {
         settings_entry_t entry = entries[i];
@@ -86,6 +89,9 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     lv_obj_remove_event_cb(controller->nav, on_entry_focus);
     app_input_set_group(lv_group_get_default());
+
+    lv_group_del(controller->nav_group);
+    lv_group_del(controller->detail_group);
 
     settings_save(app_configuration);
 
@@ -133,8 +139,7 @@ static void show_pane(settings_controller_t *controller, const lv_obj_controller
             lv_obj_add_event_cb(child, on_dropdown_clicked, LV_EVENT_CLICKED, controller);
         }
     }
-    lv_group_t *group = lv_obj_get_child_group(controller->detail);
-    lv_obj_t *focused = lv_group_get_focused(group);
+    lv_obj_t *focused = lv_group_get_focused(controller->detail_group);
     lv_event_send(focused, LV_EVENT_DEFOCUSED, NULL);
 }
 
@@ -151,7 +156,7 @@ static void on_entry_click(lv_event_t *event) {
         }
     }
     if (!first_focusable) return;
-    app_input_set_group(lv_obj_get_child_group(controller->detail));
+    app_input_set_group(controller->detail_group);
     lv_indev_t *indev = lv_indev_get_act();
     if (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_KEYPAD) return;
     lv_group_focus_obj(first_focusable);
@@ -167,14 +172,14 @@ static void on_nav_key(lv_event_t *event) {
         case LV_KEY_DOWN: {
             lv_obj_t *target = lv_event_get_target(event);
             if (lv_obj_get_parent(target) != controller->nav) return;
-            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
+            lv_group_t *group = controller->nav_group;
             lv_group_focus_next(group);
             break;
         }
         case LV_KEY_UP: {
             lv_obj_t *target = lv_event_get_target(event);
             if (lv_obj_get_parent(target) != controller->nav) return;
-            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
+            lv_group_t *group = controller->nav_group;
             lv_group_focus_prev(group);
             break;
         }
@@ -196,13 +201,13 @@ static void on_detail_key(lv_event_t *e) {
         }
         case LV_KEY_UP: {
             if (controller->active_dropdown) return;
-            lv_group_t *group = lv_obj_find_top_child_group(controller->detail);
+            lv_group_t *group = controller->detail_group;
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_DOWN: {
             if (controller->active_dropdown) return;
-            lv_group_t *group = lv_obj_find_top_child_group(controller->detail);
+            lv_group_t *group = controller->detail_group;
             lv_group_focus_next(group);
             break;
         }
@@ -245,7 +250,7 @@ static void detail_defocus(settings_controller_t *controller, lv_event_t *e, boo
         }
     }
     lv_event_send(target, LV_EVENT_DEFOCUSED, lv_indev_get_act());
-    app_input_set_group(lv_obj_get_child_group(controller->nav));
+    app_input_set_group(controller->nav_group);
 }
 
 static void on_dropdown_clicked(lv_event_t *event) {

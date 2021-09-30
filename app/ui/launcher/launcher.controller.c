@@ -2,7 +2,6 @@
 #include <ui/root.h>
 #include <lvgl/font/symbols_material_icon.h>
 #include <lvgl/util/lv_app_utils.h>
-#include <errors.h>
 #include <res.h>
 #include <lvgl/lv_disp_drv_app.h>
 #include <SDL_image.h>
@@ -134,6 +133,10 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->pane_initialized = false;
     lv_controller_manager_del(controller->pane_manager);
     controller->pane_manager = NULL;
+
+    lv_group_del(controller->nav_group);
+    lv_group_del(controller->detail_group);
+
     pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);
 }
 
@@ -305,12 +308,12 @@ static void cb_nav_key(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     switch (lv_event_get_key(event)) {
         case LV_KEY_UP: {
-            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
+            lv_group_t *group = controller->nav_group;
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_DOWN: {
-            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
+            lv_group_t *group = controller->nav_group;
             lv_group_focus_next(group);
             break;
         }
@@ -319,7 +322,7 @@ static void cb_nav_key(lv_event_t *event) {
             break;
         }
         case LV_KEY_RIGHT: {
-            lv_group_t *group = lv_obj_find_top_child_group(controller->nav);
+            lv_group_t *group = controller->nav_group;
             lv_obj_t *focused = lv_group_get_focused(group);
             if (lv_obj_get_parent(focused) == controller->pclist) {
                 lv_event_send(focused, LV_EVENT_CLICKED, NULL);
@@ -334,10 +337,10 @@ static void cb_nav_key(lv_event_t *event) {
 static void set_detail_opened(launcher_controller_t *controller, bool opened) {
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
-        app_input_set_group(lv_obj_get_child_group(controller->detail));
+        app_input_set_group(controller->detail_group);
     } else {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
-        app_input_set_group(lv_obj_get_child_group(controller->nav));
+        app_input_set_group(controller->nav_group);
     }
     controller->detail_opened = opened;
 }

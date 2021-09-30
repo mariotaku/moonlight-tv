@@ -1,3 +1,4 @@
+#include <lvgl/ext/lv_child_group.h>
 #include "lvgl/ext/lv_obj_controller.h"
 
 #include "streaming.controller.h"
@@ -9,8 +10,10 @@ static void overlay_key_cb(lv_event_t *e);
 lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
+    controller->group = lv_group_create();
+    lv_obj_add_event_cb(scene, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->group);
     lv_obj_add_event_cb(scene, overlay_key_cb, LV_EVENT_KEY, controller);
-    lv_obj_set_child_group(scene, lv_group_create());
+
     lv_obj_remove_style_all(scene);
     lv_obj_set_size(scene, LV_PCT(100), LV_PCT(100));
 
@@ -97,7 +100,7 @@ static lv_obj_t *stat_label(lv_obj_t *parent, const char *title) {
 
 static void overlay_key_cb(lv_event_t *e) {
     streaming_controller_t *controller = lv_event_get_user_data(e);
-    lv_group_t *group = lv_obj_get_child_group(controller->base.obj);
+    lv_group_t *group = controller->group;
     switch (lv_event_get_key(e)) {
         case LV_KEY_LEFT:
             lv_group_focus_prev(group);

@@ -218,7 +218,7 @@ set(SOURCES
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdlaud.c
-        )
+        app/lvgl/ext/lv_child_group.c app/lvgl/ext/lv_child_group.h)
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
