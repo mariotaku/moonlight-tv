@@ -87,11 +87,9 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
 
-    if (decoder_info.hdr != DECODER_HDR_NONE) {
-        pref_checkbox(parent, "HDR (experimental)", &app_configuration->stream.enableHdr, false);
-    }
     lv_obj_t *checkbox = pref_checkbox(parent, "Fullscreen UI", &app_configuration->fullscreen, false);
     lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
+
     return NULL;
 }
 

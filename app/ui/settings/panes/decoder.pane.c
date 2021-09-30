@@ -80,6 +80,22 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(decoder_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(audio_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_set_width(audio_dropdown, LV_PCT(100));
+
+    lv_obj_t *hdr_checkbox = pref_checkbox(parent, "HDR (experimental)", &app_configuration->stream.enableHdr, false);
+    lv_obj_t *hdr_hint = lv_label_create(parent);
+    lv_obj_set_width(hdr_hint, LV_PCT(100));
+    lv_obj_set_style_pad_left(hdr_hint, LV_DPX(30), 0);
+    lv_obj_set_style_text_font(hdr_hint, lv_theme_get_font_small(parent), 0);
+    lv_label_set_long_mode(hdr_hint, LV_LABEL_LONG_WRAP);
+    if (decoder_info.hdr == DECODER_HDR_NONE) {
+        lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text_fmt(hdr_hint, "%s decoder doesn't support HDR.", decoder_definitions[decoder_current].name);
+    } else {
+        lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text_fmt(hdr_hint, "HDR is only supported on certain games and "
+                                        "when connecting to supported monitor.");
+    }
+
     return NULL;
 }
 
