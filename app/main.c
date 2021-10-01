@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
         REDIR_STDOUT(APPID);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
+    SDL_Init(SDL_INIT_VIDEO);
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
@@ -154,10 +155,10 @@ int main(int argc, char *argv[]) {
     backend_destroy();
     decoder_finalize(decoder_current);
     audio_finalize(decoder_current);
-    SDL_Quit();
     settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);
+    SDL_Quit();
 
     applog_d("APP", "Quitted gracefully :)");
     return 0;
