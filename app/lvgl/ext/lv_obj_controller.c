@@ -241,9 +241,9 @@ static void item_destroy_obj(lv_controller_manager_t *manager, manager_stack_t *
         if (item->cls->obj_deleted_cb) {
             item->cls->obj_deleted_cb(controller, NULL);
         }
-        item->obj_created = false;
-        item->obj = controller->obj = NULL;
     }
+    item->obj_created = false;
+    item->obj = controller->obj = NULL;
     LV_ASSERT(!item->obj_created);
     LV_ASSERT(!item->obj);
     LV_ASSERT(!controller->obj);
