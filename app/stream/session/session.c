@@ -163,7 +163,9 @@ int streaming_worker(session_t *session) {
                                         &vdec_delegate, adec, vdec, drFlags, (void *) config->audio_device, 0);
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
-        streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d", startResult);
+        if (!streaming_errno) {
+            streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d", startResult);
+        }
         applog_e("Session", "Failed to start connection: Limelight returned %d", startResult);
         goto thread_cleanup;
     }
