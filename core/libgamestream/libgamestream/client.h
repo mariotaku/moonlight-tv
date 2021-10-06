@@ -55,7 +55,7 @@ void gs_set_timeout(GS_CLIENT, int timeout);
 int gs_init(GS_CLIENT, PSERVER_DATA server, const char *address, bool unsupported);
 
 int gs_start_app(GS_CLIENT, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops, bool localaudio,
-                 int gamepad_mask);
+                 int gamepad_mask, char **rtsp_session_url);
 
 int gs_applist(GS_CLIENT, const SERVER_DATA *server, PAPP_LIST *app_list);
 

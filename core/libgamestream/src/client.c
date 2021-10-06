@@ -708,7 +708,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
 
 int
 gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio,
-             int gamepad_mask) {
+             int gamepad_mask, char **rtsp_session_url) {
     int ret = GS_OK;
     char *result = NULL;
 
@@ -750,7 +750,6 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
     memcpy(&rikeyid, config->remoteInputAesIv, 4);
     rikeyid = htonl(rikeyid);
 
-    srand(time(NULL));
     char url[4096];
     char rikey_hex[33];
     bytes_to_hex((unsigned char *) config->remoteInputAesKey, rikey_hex, 16);
@@ -787,6 +786,10 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
     if (!strcmp(result, "0")) {
         ret = GS_FAILED;
         goto cleanup;
+    }
+
+    if (xml_search(data->memory, data->size, "sessionUrl0", rtsp_session_url) != GS_OK) {
+        *rtsp_session_url = NULL;
     }
 
     cleanup:

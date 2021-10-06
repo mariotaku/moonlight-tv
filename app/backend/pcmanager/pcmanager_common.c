@@ -67,6 +67,7 @@ void serverdata_free(PSERVER_DATA data) {
     free_nullable((void *) data->serverInfo.serverInfoAppVersion);
     free_nullable((void *) data->serverInfo.serverInfoGfeVersion);
     free_nullable((void *) data->serverInfo.address);
+    free_nullable((void *) data->serverInfo.rtspSessionUrl);
     free(data);
 }
 

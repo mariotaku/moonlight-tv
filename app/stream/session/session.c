@@ -140,15 +140,16 @@ int streaming_worker(session_t *session) {
 
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
-    int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
+    char *rtsp_session_url = NULL;
+    int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask,
+                           &rtsp_session_url);
+    server->serverInfo.rtspSessionUrl = rtsp_session_url;
     if (ret < 0) {
         streaming_set_status(STREAMING_ERROR);
         streaming_error(ret, "Failed to launch session: gamestream returned %d", ret);
         applog_e("Session", "Failed to launch session: gamestream returned %d", ret);
         goto thread_cleanup;
     }
-
-    int drFlags = 0;
 
     applog_i("Session", "Video %d x %d, %d net_fps, %d kbps", config->stream.width, config->stream.height,
              config->stream.fps, config->stream.bitrate);
@@ -160,7 +161,7 @@ int streaming_worker(session_t *session) {
     DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
-                                        &vdec_delegate, adec, vdec, drFlags, (void *) config->audio_device, 0);
+                                        &vdec_delegate, adec, vdec, 0, (void *) config->audio_device, 0);
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         if (!streaming_errno) {
