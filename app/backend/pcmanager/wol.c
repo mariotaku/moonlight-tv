@@ -21,7 +21,7 @@ static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
 bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
                         void *userdata) {
-    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
+    cm_request_t *req = cm_request_new(manager, serverdata_clone(server), callback, userdata);
     SDL_CreateThread((SDL_ThreadFunction) pcmanager_send_wol_action, "wol", req);
     return true;
 }
@@ -65,14 +65,23 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
         ret = -1;
         goto finish;
     }
+
 #endif
     finish:
     {
+        Uint32 timeout = SDL_GetTicks() + 30000;
+        while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+            ret = LiTestClientConnectivity(req->server->serverInfo.address, 0, ML_PORT_FLAG_ALL);
+            if (errno != ETIMEDOUT) {
+                break;
+            }
+        }
         pcmanager_resp_t *resp = serverinfo_resp_new();
         resp->server = req->server;
         resp->result.code = ret;
         pcmanager_worker_finalize(resp, req->callback, req->userdata);
     }
+    serverdata_free((SERVER_DATA *) req->server);
     free(req);
     return ret;
 }
