@@ -20,6 +20,8 @@ typedef struct {
     PSERVER_LIST node;
     lv_obj_t *applist, *appload, *apperror;
     lv_obj_t *errorlabel;
+    lv_obj_t *wol_btn;
+    lv_obj_t *retry_btn;
 
     appitem_styles_t appitem_style;
     int col_count;
@@ -37,6 +39,8 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view);
 static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2);
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
+
+static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata);
 
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata);
 
@@ -73,6 +77,10 @@ static void apps_controller_dtor(lv_obj_controller_t *self);
 static void appload_cb(apploader_t *loader, void *userdata);
 
 static void quit_dialog_cb(lv_event_t *event);
+
+static void wol_click_cb(lv_event_t *event);
+
+static void retry_click_cb(lv_event_t *event);
 
 static void update_grid_config(apps_controller_t *controller);
 
@@ -128,8 +136,12 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *apperror = lv_obj_create(parent);
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
     lv_obj_center(apperror);
+    lv_obj_set_flex_flow(apperror, LV_FLEX_FLOW_COLUMN);
     lv_obj_t *errorlabel = lv_label_create(apperror);
-    lv_obj_center(errorlabel);
+    controller->wol_btn = lv_btn_create(apperror);
+    controller->retry_btn = lv_btn_create(apperror);
+    lv_label_set_text_static(lv_label_create(controller->wol_btn), "Send Wake-On-LAN");
+    lv_label_set_text_static(lv_label_create(controller->retry_btn), "Retry");
 
     controller->applist = applist;
     controller->appload = appload;
@@ -147,6 +159,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_LEAVE, controller);
+    lv_obj_add_event_cb(controller->wol_btn, wol_click_cb, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(controller->retry_btn, retry_click_cb, LV_EVENT_CLICKED, controller);
 
     update_grid_config(controller);
     lv_obj_set_user_data(controller->applist, controller);
@@ -205,6 +219,14 @@ static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (resp->state.code == SERVER_STATE_ONLINE && !controller->apploader->apps) {
+        apploader_load(controller->apploader, appload_cb, controller);
+    }
+}
+
+static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
+    apps_controller_t *controller = (apps_controller_t *) userdata;
+    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 
 static void update_view_state(apps_controller_t *controller) {
@@ -375,4 +397,14 @@ static void appload_cb(apploader_t *loader, void *userdata) {
 static void quit_dialog_cb(lv_event_t *event) {
     lv_obj_t *dialog = lv_event_get_current_target(event);
     lv_msgbox_close_async(dialog);
+}
+
+static void wol_click_cb(lv_event_t *event) {
+    apps_controller_t *controller = lv_event_get_user_data(event);
+    pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
+}
+
+static void retry_click_cb(lv_event_t *event) {
+    apps_controller_t *controller = lv_event_get_user_data(event);
+    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }

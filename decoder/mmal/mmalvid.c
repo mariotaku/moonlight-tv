@@ -289,6 +289,7 @@ static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {
         if ((status = mmal_port_send_buffer(decoder->output[0], buf)) != MMAL_SUCCESS)
             mmal_buffer_header_release(buf);
     }
+    (void) status;
 
     return DR_OK;
 }

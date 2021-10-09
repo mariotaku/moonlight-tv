@@ -68,7 +68,8 @@ bool pcmanager_quitapp(pcmanager_t *manager, const SERVER_DATA *server, pcmanage
 void pcmanager_request_update(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
                               void *userdata);
 
-bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server);
+bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+                        void *userdata);
 
 bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata);
 

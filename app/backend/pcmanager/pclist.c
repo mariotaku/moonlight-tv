@@ -5,10 +5,6 @@
 #include <assert.h>
 #include <util/bus.h>
 
-typedef struct {
-    pcmanager_t *manager;
-    const pcmanager_resp_t *resp;
-} upsert_args_t;
 
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_MODIFIER static
@@ -114,7 +110,7 @@ PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr
     return serverlist_find_by(manager->servers, srvaddr, serverlist_find_address);
 }
 
-void upsert_perform(upsert_args_t *args) {
+static void upsert_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;
     const pcmanager_resp_t *resp = args->resp;
     pcmanager_list_lock(manager);
@@ -128,7 +124,6 @@ void upsert_perform(upsert_args_t *args) {
     pcmanager_list_unlock(manager);
     pcmanager_listeners_notify(manager, resp, updated ? PCMANAGER_NOTIFY_UPDATED : PCMANAGER_NOTIFY_ADDED);
 }
-
 
 static void remove_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;

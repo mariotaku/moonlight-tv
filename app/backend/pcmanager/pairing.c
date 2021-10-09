@@ -5,9 +5,11 @@
 #include "errors.h"
 #include "util/bus.h"
 #include "util/logging.h"
+#include "listeners.h"
 
 static int pin_random(int min, int max);
 
+static void notify_querying(upsert_args_t *args);
 
 int pair_worker(cm_request_t *req);
 
@@ -48,6 +50,14 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
             return 0;
         }
         existing->state.code = SERVER_STATE_QUERYING;
+        pcmanager_resp_t resp = {
+                .result.code = GS_OK,
+                .state = SERVER_STATE_QUERYING,
+                .known = existing->known,
+                .server = existing->server,
+        };
+        upsert_args_t args = {.manager = manager, .resp = &resp};
+        bus_pushaction_sync((bus_actionfunc) notify_querying, &args);
     }
     pcmanager_list_unlock(manager);
     PSERVER_DATA server = serverdata_new();
@@ -118,4 +128,8 @@ int manual_add_worker(cm_request_t *req) {
     SDL_free(req->arg1);
     SDL_free(req);
     return 0;
+}
+
+static void notify_querying(upsert_args_t *args) {
+    pcmanager_listeners_notify(args->manager, args->resp, PCMANAGER_NOTIFY_UPDATED);
 }

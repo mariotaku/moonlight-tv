@@ -11,6 +11,11 @@ typedef enum pcmanager_notify_type_t {
     PCMANAGER_NOTIFY_REMOVED,
 } pcmanager_notify_type_t;
 
+typedef struct {
+    pcmanager_t *manager;
+    const pcmanager_resp_t *resp;
+} upsert_args_t;
+
 struct pcmanager_t {
     SDL_threadID thread_id;
     SERVER_LIST *servers;
