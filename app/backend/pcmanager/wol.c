@@ -71,21 +71,21 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
     finish:
     {
         Uint32 timeout = SDL_GetTicks() + 30000;
-        GS_CLIENT client = app_gs_client_new();
+        GS_CLIENT gs = app_gs_client_new();
         while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
             SERVER_LIST *list = pcmanager_find_by_address(pcmanager, req->server->serverInfo.address);
             if (list && list->state.code != SERVER_STATE_NONE) {
                 break;
             }
             PSERVER_DATA tmpserver = serverdata_new();
-            ret = gs_init(client, tmpserver, strdup(req->server->serverInfo.address), false);
+            ret = gs_init(gs, tmpserver, strdup(req->server->serverInfo.address), false);
             serverdata_free(tmpserver);
             applog_d("WoL", "gs_init returned %d, errno=%d", (int) ret, errno);
             if (ret == 0 || errno == ECONNREFUSED) {
                 break;
             }
         }
-        gs_destroy(client);
+        gs_destroy(gs);
         pcmanager_resp_t *resp = serverinfo_resp_new();
         resp->server = req->server;
         resp->result.code = ret;
