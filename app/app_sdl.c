@@ -44,8 +44,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             streaming_interrupt(false);
             break;
         }
-        case SDL_APP_DIDENTERFOREGROUND:
-        case SDL_WINDOWEVENT_EXPOSED: {
+        case SDL_APP_DIDENTERFOREGROUND: {
             lv_obj_invalidate(lv_scr_act());
             break;
         }
@@ -74,6 +73,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     // Interrupt streaming because app will go to background
                     streaming_interrupt(false);
 #endif
+                    break;
+                case SDL_WINDOWEVENT_EXPOSED:
+                    lv_obj_invalidate(lv_scr_act());
                     break;
                 default:
                     break;

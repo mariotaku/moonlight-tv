@@ -12,8 +12,9 @@
 
 #include <SDL.h>
 
-#include "util/logging.h"
+#include "app.h"
 #include "priv.h"
+#include "util/logging.h"
 
 static int pcmanager_send_wol_action(cm_request_t *req);
 
@@ -70,12 +71,17 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
     finish:
     {
         Uint32 timeout = SDL_GetTicks() + 30000;
+        GS_CLIENT client = app_gs_client_new();
         while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-            ret = LiTestClientConnectivity(req->server->serverInfo.address, 0, ML_PORT_FLAG_ALL);
-            if (errno != ETIMEDOUT) {
+            PSERVER_DATA tmpserver = serverdata_new();
+            ret = gs_init(client, tmpserver, strdup(req->server->serverInfo.address), false);
+            serverdata_free(tmpserver);
+            applog_d("WoL", "gs_init returned %d, errno=%d", (int) ret, errno);
+            if (ret == 0 || errno == ECONNREFUSED) {
                 break;
             }
         }
+        gs_destroy(client);
         pcmanager_resp_t *resp = serverinfo_resp_new();
         resp->server = req->server;
         resp->result.code = ret;
