@@ -12,6 +12,7 @@
 #include "lvgl/lv_ext_utils.h"
 #include "ui/streaming/streaming.controller.h"
 #include "appitem.view.h"
+#include "launcher.controller.h"
 
 typedef struct {
     lv_obj_controller_t base;
@@ -19,10 +20,10 @@ typedef struct {
     coverloader_t *coverloader;
     PSERVER_LIST node;
     lv_obj_t *applist, *appload, *apperror;
-    lv_obj_t *errorlabel;
+    lv_obj_t *errortitle, *errorlabel;
     lv_obj_t *wol_btn;
-    lv_obj_t *retry_btn;
 
+    lv_obj_t *retry_btn;
     appitem_styles_t appitem_style;
     int col_count;
     lv_coord_t col_width, col_height;
@@ -134,18 +135,24 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
     lv_obj_t *apperror = lv_obj_create(parent);
+    lv_obj_add_flag(apperror, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
     lv_obj_center(apperror);
     lv_obj_set_flex_flow(apperror, LV_FLEX_FLOW_COLUMN);
+    lv_obj_t *errortitle = lv_label_create(apperror);
+    lv_obj_set_style_text_font(errortitle, lv_theme_get_font_large(apperror), 0);
     lv_obj_t *errorlabel = lv_label_create(apperror);
     controller->wol_btn = lv_btn_create(apperror);
+    lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     controller->retry_btn = lv_btn_create(apperror);
+    lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_label_set_text_static(lv_label_create(controller->wol_btn), "Send Wake-On-LAN");
     lv_label_set_text_static(lv_label_create(controller->retry_btn), "Retry");
 
     controller->applist = applist;
     controller->appload = appload;
     controller->apperror = apperror;
+    controller->errortitle = errortitle;
     controller->errorlabel = errorlabel;
     return NULL;
 }
@@ -226,11 +233,14 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
 
 static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
-    if (controller->node->state.code == SERVER_STATE_ONLINE) return;
+    lv_obj_clear_state(controller->wol_btn, LV_STATE_DISABLED);
+    if (controller->node->state.code == SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 
 static void update_view_state(apps_controller_t *controller) {
+    launcher_controller_t *parent_controller = (launcher_controller_t *) lv_controller_manager_parent(
+            controller->base.manager);
     PSERVER_LIST node = controller->node;
     LV_ASSERT(node);
     lv_obj_t *applist = controller->applist;
@@ -250,24 +260,36 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_label_set_text_static(controller->errortitle, "Unable to open games");
                 lv_label_set_text_static(controller->errorlabel, "Not paired");
             } else if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
                 // is loading apps
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            } else if (controller->apploader->code == 0) {
+            } else if (controller->apploader->code != 0) {
+                // apploader has error
+                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_label_set_text_static(controller->errortitle, "Unable to open games");
+                lv_label_set_text_static(controller->errorlabel, "Failed to load apps");
+            } else {
                 // has apps
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_grid_set_data(controller->applist, controller->apploader->apps);
-            } else {
-                // apploader has error
-                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_label_set_text_static(controller->errorlabel, "Failed to load apps");
+                lv_group_focus_obj(controller->applist);
+                return;
+            }
+            lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
+            if (!focused || lv_obj_has_flag(focused, LV_OBJ_FLAG_HIDDEN)) {
+                lv_group_focus_next(parent_controller->detail_group);
             }
             break;
         }
@@ -276,14 +298,32 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text_static(controller->errortitle, "Unable to open games");
             lv_label_set_text_static(controller->errorlabel, "Failed to load server info");
+
+            lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
+            if (!focused || lv_obj_has_flag(focused, LV_OBJ_FLAG_HIDDEN)) {
+                lv_group_focus_next(parent_controller->detail_group);
+            }
+
+            break;
         }
         case SERVER_STATE_OFFLINE: {
             // server has error
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text_static(controller->errortitle, "Unable to open games");
             lv_label_set_text_static(controller->errorlabel, "Host is offline");
+
+            lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
+            if (!focused || lv_obj_has_flag(focused, LV_OBJ_FLAG_HIDDEN)) {
+                lv_group_focus_next(parent_controller->detail_group);
+            }
             break;
         }
         default: {
@@ -402,6 +442,7 @@ static void quit_dialog_cb(lv_event_t *event) {
 
 static void wol_click_cb(lv_event_t *event) {
     apps_controller_t *controller = lv_event_get_user_data(event);
+    lv_obj_add_state(controller->wol_btn, LV_STATE_DISABLED);
     pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
 }
 

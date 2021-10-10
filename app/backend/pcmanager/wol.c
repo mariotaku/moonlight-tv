@@ -70,7 +70,7 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
 #endif
     finish:
     {
-        Uint32 timeout = SDL_GetTicks() + 30000;
+        Uint32 timeout = SDL_GetTicks() + 15000;
         GS_CLIENT gs = app_gs_client_new();
         while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
             PSERVER_DATA tmpserver = serverdata_new();
@@ -80,6 +80,7 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
             if (ret == 0 || errno == ECONNREFUSED) {
                 break;
             }
+            SDL_Delay(3000);
         }
         gs_destroy(gs);
         pcmanager_resp_t *resp = serverinfo_resp_new();

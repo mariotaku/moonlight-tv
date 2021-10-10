@@ -286,6 +286,20 @@ static void cb_detail_focused(lv_event_t *event) {
 static void cb_detail_key(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     switch (lv_event_get_key(event)) {
+        case LV_KEY_DOWN: {
+            lv_obj_t *target = lv_event_get_target(event);
+            if (lv_obj_has_class(target, &lv_btn_class)) {
+                lv_group_focus_next(controller->detail_group);
+            }
+            break;
+        }
+        case LV_KEY_UP: {
+            lv_obj_t *target = lv_event_get_target(event);
+            if (lv_obj_has_class(target, &lv_btn_class)) {
+                lv_group_focus_prev(controller->detail_group);
+            }
+            break;
+        }
         case LV_KEY_ESC: {
             set_detail_opened(controller, false);
             break;
