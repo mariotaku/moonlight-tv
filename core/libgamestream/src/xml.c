@@ -52,6 +52,7 @@ static void XMLCALL write_cdata(void *userData, const XML_Char *s, int len);
 
 int xml_search(char *data, size_t len, char *node, char **result) {
     struct xml_query search = {0};
+    search.memory = strdup("");
     search.data = node;
     XML_Parser parser = XML_ParserCreate("UTF-8");
     XML_SetUserData(parser, &search);

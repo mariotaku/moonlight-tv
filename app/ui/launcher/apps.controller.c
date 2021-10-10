@@ -226,6 +226,7 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
 
 static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (controller->node->state.code == SERVER_STATE_ONLINE) return;
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 

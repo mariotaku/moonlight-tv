@@ -73,10 +73,6 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
         Uint32 timeout = SDL_GetTicks() + 30000;
         GS_CLIENT gs = app_gs_client_new();
         while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-            SERVER_LIST *list = pcmanager_find_by_address(pcmanager, req->server->serverInfo.address);
-            if (list && list->state.code != SERVER_STATE_NONE) {
-                break;
-            }
             PSERVER_DATA tmpserver = serverdata_new();
             ret = gs_init(gs, tmpserver, strdup(req->server->serverInfo.address), false);
             serverdata_free(tmpserver);
