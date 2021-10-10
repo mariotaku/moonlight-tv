@@ -8,8 +8,11 @@
 #include "lvgl.h"
 
 #include "launcher.controller.h"
+#include "apps.controller.h"
 
 static void open_settings(lv_event_t *event);
+
+static void detail_group_add(lv_event_t *event);
 
 #define NAV_WIDTH_EXPANDED 240
 #define NAV_WIDTH_COLLAPSED 44
@@ -41,7 +44,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *nav = lv_obj_create(content);
     lv_obj_t *detail = lv_obj_create(content);
     lv_obj_add_event_cb(nav, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->nav_group);
-    lv_obj_add_event_cb(detail, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->detail_group);
+    lv_obj_add_event_cb(detail, detail_group_add, LV_EVENT_CHILD_CREATED, controller);
 
     lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 2, LV_GRID_ALIGN_STRETCH, 0, 1);
@@ -120,3 +123,13 @@ static void open_settings(lv_event_t *event) {
     lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
 }
 
+static void detail_group_add(lv_event_t *event) {
+    lv_obj_t *child = lv_event_get_param(event);
+    launcher_controller_t *controller = lv_event_get_user_data(event);
+    apps_controller_t *pane_controller = (apps_controller_t *) lv_controller_manager_top_controller(
+            controller->pane_manager);
+    if (!pane_controller) return;
+    if (!child || !lv_obj_is_group_def(child)) return;
+    if (child->parent != controller->detail && child->parent != pane_controller->apperror) return;
+    lv_group_add_obj(controller->detail_group, child);
+}

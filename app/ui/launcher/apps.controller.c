@@ -13,22 +13,7 @@
 #include "ui/streaming/streaming.controller.h"
 #include "appitem.view.h"
 #include "launcher.controller.h"
-
-typedef struct {
-    lv_obj_controller_t base;
-    apploader_t *apploader;
-    coverloader_t *coverloader;
-    PSERVER_LIST node;
-    lv_obj_t *applist, *appload, *apperror;
-    lv_obj_t *errortitle, *errorlabel;
-    lv_obj_t *wol_btn;
-
-    lv_obj_t *retry_btn;
-    appitem_styles_t appitem_style;
-    int col_count;
-    lv_coord_t col_width, col_height;
-    int focus_backup;
-} apps_controller_t;
+#include "apps.controller.h"
 
 
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent);
@@ -122,7 +107,7 @@ static void apps_controller_dtor(lv_obj_controller_t *self) {
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
-    lv_obj_t *applist = lv_gridview_create(parent);
+    lv_obj_t *applist = controller->applist = lv_gridview_create(parent);
     lv_obj_add_flag(applist, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_pad_all(applist, lv_dpx(24), 0);
     lv_obj_set_style_pad_gap(applist, lv_dpx(24), 0);
@@ -131,10 +116,10 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_bg_opa(applist, 0, 0);
     lv_obj_set_size(applist, LV_PCT(100), LV_PCT(100));
     lv_grid_set_adapter(applist, &apps_adapter);
-    lv_obj_t *appload = lv_spinner_create(parent, 1000, 60);
+    lv_obj_t *appload = controller->appload = lv_spinner_create(parent, 1000, 60);
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
-    lv_obj_t *apperror = lv_obj_create(parent);
+    lv_obj_t *apperror = controller->apperror = lv_obj_create(parent);
     lv_obj_add_flag(apperror, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
     lv_obj_center(apperror);
@@ -149,9 +134,6 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_label_set_text_static(lv_label_create(controller->wol_btn), "Send Wake-On-LAN");
     lv_label_set_text_static(lv_label_create(controller->retry_btn), "Retry");
 
-    controller->applist = applist;
-    controller->appload = appload;
-    controller->apperror = apperror;
     controller->errortitle = errortitle;
     controller->errorlabel = errorlabel;
     return NULL;
@@ -283,6 +265,8 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
                 lv_grid_set_data(controller->applist, controller->apploader->apps);
                 lv_group_focus_obj(controller->applist);
                 return;
