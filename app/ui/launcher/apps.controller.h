@@ -12,9 +12,8 @@ typedef struct {
     PSERVER_LIST node;
     lv_obj_t *applist, *appload, *apperror;
     lv_obj_t *errortitle, *errorlabel;
-    lv_obj_t *wol_btn;
+    lv_obj_t *actions;
 
-    lv_obj_t *retry_btn;
     appitem_styles_t appitem_style;
     int col_count;
     lv_coord_t col_width, col_height;

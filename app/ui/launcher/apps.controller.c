@@ -64,9 +64,7 @@ static void appload_cb(apploader_t *loader, void *userdata);
 
 static void quit_dialog_cb(lv_event_t *event);
 
-static void wol_click_cb(lv_event_t *event);
-
-static void retry_click_cb(lv_event_t *event);
+static void actions_click_cb(lv_event_t *event);
 
 static void update_grid_config(apps_controller_t *controller);
 
@@ -124,18 +122,20 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
     lv_obj_center(apperror);
     lv_obj_set_flex_flow(apperror, LV_FLEX_FLOW_COLUMN);
-    lv_obj_t *errortitle = lv_label_create(apperror);
+    lv_obj_set_flex_align(apperror, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
+    lv_obj_t *errortitle = controller->errortitle = lv_label_create(apperror);
     lv_obj_set_style_text_font(errortitle, lv_theme_get_font_large(apperror), 0);
-    lv_obj_t *errorlabel = lv_label_create(apperror);
-    controller->wol_btn = lv_btn_create(apperror);
-    lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    controller->retry_btn = lv_btn_create(apperror);
-    lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_label_set_text_static(lv_label_create(controller->wol_btn), "Send Wake-On-LAN");
-    lv_label_set_text_static(lv_label_create(controller->retry_btn), "Retry");
-
-    controller->errortitle = errortitle;
-    controller->errorlabel = errorlabel;
+    lv_obj_t *errorlabel = controller->errorlabel = lv_label_create(apperror);
+    lv_obj_set_flex_grow(errorlabel, 1);
+    controller->actions = lv_btnmatrix_create(apperror);
+    lv_obj_set_style_border_side(controller->actions, LV_BORDER_SIDE_NONE, 0);
+    lv_obj_set_size(controller->actions, LV_DPX(500), LV_SIZE_CONTENT);
+    lv_obj_set_style_min_height(controller->actions, LV_DPX(80), 0);
+    lv_obj_set_style_max_width(controller->actions, LV_PCT(100), 0);
+    lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_CLICK_TRIG | LV_BTNMATRIX_CTRL_NO_REPEAT);
+    static const char *actions_map[] = {"Send Wake-On-LAN", "Retry", ""};
+    lv_btnmatrix_set_map(controller->actions, actions_map);
+    lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_EVENT_BUBBLE);
     return NULL;
 }
 
@@ -148,8 +148,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_LEAVE, controller);
-    lv_obj_add_event_cb(controller->wol_btn, wol_click_cb, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(controller->retry_btn, retry_click_cb, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(controller->actions, actions_click_cb, LV_EVENT_VALUE_CHANGED, controller);
 
     update_grid_config(controller);
     lv_obj_set_user_data(controller->applist, controller);
@@ -215,7 +214,7 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
 
 static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
-    lv_obj_clear_state(controller->wol_btn, LV_STATE_DISABLED);
+    lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     if (controller->node->state.code == SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
@@ -242,8 +241,7 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_label_set_text_static(controller->errortitle, "Unable to open games");
                 lv_label_set_text_static(controller->errorlabel, "Not paired");
             } else if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
@@ -256,8 +254,8 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+                lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
                 lv_label_set_text_static(controller->errortitle, "Unable to open games");
                 lv_label_set_text_static(controller->errorlabel, "Failed to load apps");
             } else {
@@ -265,8 +263,7 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_grid_set_data(controller->applist, controller->apploader->apps);
                 lv_group_focus_obj(controller->applist);
                 return;
@@ -282,8 +279,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+            lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, "Unable to open games");
             lv_label_set_text_static(controller->errorlabel, "Failed to load server info");
 
@@ -299,8 +296,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(controller->wol_btn, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(controller->retry_btn, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+            lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, "Unable to open games");
             lv_label_set_text_static(controller->errorlabel, "Host is offline");
 
@@ -424,13 +421,17 @@ static void quit_dialog_cb(lv_event_t *event) {
     lv_msgbox_close_async(dialog);
 }
 
-static void wol_click_cb(lv_event_t *event) {
+static void actions_click_cb(lv_event_t *event) {
     apps_controller_t *controller = lv_event_get_user_data(event);
-    lv_obj_add_state(controller->wol_btn, LV_STATE_DISABLED);
-    pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
-}
-
-static void retry_click_cb(lv_event_t *event) {
-    apps_controller_t *controller = lv_event_get_user_data(event);
-    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
+    switch (lv_btnmatrix_get_selected_btn(controller->actions)) {
+        case 0: {
+            lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
+            pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
+            break;
+        }
+        case 1: {
+            pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
+            break;
+        }
+    }
 }
