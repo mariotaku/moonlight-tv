@@ -78,7 +78,12 @@ bool streaming_refresh_stats() {
 void streaming_notice_show(const char *message) {
     streaming_controller_t *controller = current_controller;
     if (!controller) return;
-//    lv_obj_clear_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
+    lv_label_set_text(controller->notice_label, message);
+    if (message && message[0]) {
+        lv_obj_clear_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
@@ -155,6 +160,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_flag(notice, LV_OBJ_FLAG_HIDDEN);
 
     controller->notice = notice;
+    controller->notice_label = notice_label;
 }
 
 static void on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view) {

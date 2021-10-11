@@ -20,7 +20,7 @@ typedef struct {
         lv_obj_t *drop_rate;
         lv_obj_t *decode_time;
     } stats_items;
-    lv_obj_t *notice;
+    lv_obj_t *notice, *notice_label;
 } streaming_controller_t;
 
 typedef struct {
