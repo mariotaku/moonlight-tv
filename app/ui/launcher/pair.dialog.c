@@ -4,8 +4,7 @@
 
 #include <app.h>
 #include <errors.h>
-#include "pair.dialog.h"
-#include "backend/pcmanager.h"
+#include "launcher.controller.h"
 
 typedef struct {
     lv_obj_controller_t base;
@@ -73,7 +72,10 @@ static lv_obj_t *pair_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) userdata;
     if (resp->result.code == GS_OK) {
-        pcmanager_request_update(pcmanager, controller->node->server, NULL, NULL);
+        launcher_controller_t *launcher_controller = launcher_instance();
+        if (launcher_controller) {
+            launcher_select_server(launcher_controller, controller->node);
+        }
         lv_msgbox_close_async(controller->base.obj);
         return;
     }

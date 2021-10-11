@@ -32,4 +32,8 @@ typedef struct {
 
 lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent);
 
+launcher_controller_t *launcher_instance();
+
+void launcher_select_server(launcher_controller_t *controller, SERVER_LIST *node);
+
 extern const lv_obj_controller_class_t launcher_controller_class;

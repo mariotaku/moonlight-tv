@@ -71,6 +71,22 @@ static const pcmanager_listener_t pcmanager_callbacks = {
         .removed = on_pc_removed,
 };
 
+static launcher_controller_t *current_instance = NULL;
+
+launcher_controller_t *launcher_instance() {
+    return current_instance;
+}
+
+void launcher_select_server(launcher_controller_t *controller, SERVER_LIST *node) {
+    if (node->state.code == SERVER_STATE_ONLINE && !node->server->paired) {
+        open_pair(controller, node);
+        return;
+    }
+    set_detail_opened(controller, true);
+    if (node->selected) return;
+    select_pc(controller, node, false);
+}
+
 static void launcher_controller(lv_obj_controller_t *self, void *args) {
     (void) args;
     launcher_controller_t *controller = (launcher_controller_t *) self;
@@ -89,7 +105,7 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
             .data.texture = controller->logo_texture,
     };
     lv_sdl_img_src_stringify(&logo_src, controller->logo_src);
-    controller->detail_opened = true;
+    controller->detail_opened = false;
     controller->pane_initialized = false;
 }
 
@@ -113,6 +129,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
             select_pc(controller, cur, true);
+            controller->detail_opened = true;
             continue;
         }
         pcmanager_request_update(pcmanager, cur->server, NULL, NULL);
@@ -123,9 +140,11 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
 
     lv_obj_set_style_transition(controller->detail, &controller->tr_nav, 0);
     lv_obj_set_style_transition(controller->detail, &controller->tr_detail, LV_STATE_USER_1);
+    current_instance = controller;
 }
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
+    current_instance = NULL;
     app_input_set_group(lv_group_get_default());
     pcmanager_auto_discovery_stop(pcmanager);
 
@@ -197,13 +216,7 @@ static void cb_pc_selected(lv_event_t *event) {
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
-    if (selected->state.code == SERVER_STATE_ONLINE && !selected->server->paired) {
-        open_pair(controller, selected);
-        return;
-    }
-    set_detail_opened(controller, true);
-    if (selected->selected) return;
-    select_pc(controller, selected, false);
+    launcher_select_server(controller, selected);
 }
 
 static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus) {
@@ -348,11 +361,11 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
 /** Pairing functions */
 
 static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
-    lv_controller_manager_show(controller->pane_manager, &pair_dialog_class, node);
+    lv_controller_manager_show(app_uimanager, &pair_dialog_class, node);
 }
 
 
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
-    lv_controller_manager_show(controller->pane_manager, &add_dialog_class, NULL);
+    lv_controller_manager_show(app_uimanager, &add_dialog_class, NULL);
 }
