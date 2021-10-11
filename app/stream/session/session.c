@@ -146,8 +146,12 @@ int streaming_worker(session_t *session) {
     server->serverInfo.rtspSessionUrl = rtsp_session_url;
     if (ret < 0) {
         streaming_set_status(STREAMING_ERROR);
-        streaming_error(ret, "Failed to launch session: gamestream returned %d", ret);
-        applog_e("Session", "Failed to launch session: gamestream returned %d", ret);
+        if (gs_error) {
+            streaming_error(ret, "Failed to launch session: gamestream returned %d. (%s)", ret, gs_error);
+        } else {
+            streaming_error(ret, "Failed to launch session: gamestream returned %d", ret);
+        }
+        applog_e("Session", "Failed to launch session: gamestream returned %d, gs_error=%s", ret, gs_error);
         goto thread_cleanup;
     }
 
@@ -165,7 +169,8 @@ int streaming_worker(session_t *session) {
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         if (!streaming_errno) {
-            streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d", startResult);
+            streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d (%s)", startResult,
+                            strerror(startResult));
         }
         applog_e("Session", "Failed to start connection: Limelight returned %d", startResult);
         goto thread_cleanup;

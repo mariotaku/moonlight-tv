@@ -31,8 +31,10 @@ static void connection_status_update(int status) {
 
 static void connection_stage_failed(int stage, int errorCode) {
     const char *stageName = LiGetStageName(stage);
-    applog_e("Session", "Connection failed at %s, errorCode = %d", stageName, errorCode);
-    streaming_error(0, "Connection failed at %s, errorCode = %d", stageName, errorCode);
+    applog_e("Session", "Connection failed at stage %d (%s), errorCode = %d (%s)", stage, stageName, errorCode,
+             strerror(errorCode));
+    streaming_error(errorCode, "Connection failed at stage %d (%s), errorCode = %d (%s)", stage, stageName,
+                    errorCode, strerror(errorCode));
 }
 
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {

@@ -124,8 +124,10 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(apperror, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(apperror, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
     lv_obj_t *errortitle = controller->errortitle = lv_label_create(apperror);
+    lv_obj_set_width(errortitle, LV_PCT(100));
     lv_obj_set_style_text_font(errortitle, lv_theme_get_font_large(apperror), 0);
     lv_obj_t *errorlabel = controller->errorlabel = lv_label_create(apperror);
+    lv_obj_set_width(errorlabel, LV_PCT(100));
     lv_obj_set_flex_grow(errorlabel, 1);
     controller->actions = lv_btnmatrix_create(apperror);
     lv_obj_set_style_border_side(controller->actions, LV_BORDER_SIDE_NONE, 0);
