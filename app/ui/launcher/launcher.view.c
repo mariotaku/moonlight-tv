@@ -130,6 +130,9 @@ static void detail_group_add(lv_event_t *event) {
             controller->pane_manager);
     if (!pane_controller) return;
     if (!child || !lv_obj_is_group_def(child)) return;
-    if (child->parent != controller->detail && child->parent != pane_controller->apperror) return;
+    if (child->parent != controller->detail && child->parent != pane_controller->apperror) {
+        lv_group_remove_obj(child);
+        return;
+    }
     lv_group_add_obj(controller->detail_group, child);
 }

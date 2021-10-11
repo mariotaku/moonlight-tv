@@ -29,6 +29,8 @@ static void session_error(streaming_controller_t *controller);
 
 static void session_error_dialog_cb(lv_event_t *event);
 
+static void overlay_key_cb(lv_event_t *e);
+
 const lv_obj_controller_class_t streaming_controller_class = {
         .constructor_cb = streaming_controller_ctor,
         .destructor_cb = controller_dtor,
@@ -151,6 +153,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
+    lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
 
     lv_obj_t *notice = lv_obj_create(lv_layer_top());
     lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -214,4 +217,22 @@ static void session_error_dialog_cb(lv_event_t *event) {
     lv_obj_t *dialog = lv_event_get_current_target(event);
     lv_msgbox_close_async(dialog);
     lv_obj_controller_pop((lv_obj_controller_t *) controller);
+}
+
+static void overlay_key_cb(lv_event_t *e) {
+    streaming_controller_t *controller = lv_event_get_user_data(e);
+    lv_group_t *group = controller->group;
+    switch (lv_event_get_key(e)) {
+        case LV_KEY_LEFT:
+            lv_group_focus_prev(group);
+            break;
+        case LV_KEY_RIGHT:
+            lv_group_focus_next(group);
+            break;
+        case LV_KEY_ESC:
+            hide_overlay(e);
+            break;
+        default:
+            break;
+    }
 }
