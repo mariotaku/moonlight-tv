@@ -383,14 +383,15 @@ static void open_manual_add(lv_event_t *event) {
 
 static void analytics_prompt(launcher_controller_t *controller) {
     static const char *btn_txts[] = {"No", "OK, I'm in", ""};
-    static const char *msg = "Would you mind to let me know what kind of device "
-                             "is running Moonlight? Only a small amount of data "
-                             "might be logged, such as:\n\n"
+    static const char *msg = "Is it OK for me to know what kind of device is running "
+                             "Moonlight? Only a small amount of data might be logged, "
+                             "such as:\n\n"
                              " - App version\n"
                              " - System version\n"
                              " - Device model\n"
                              " - Country or region\n"
-                             " - Duration of game sessions";
+                             " - Duration of game sessions\n"
+                             " - Error info";
     lv_obj_t *msgbox = lv_msgbox_create(NULL, "Enable Anonymous Stats?", msg, btn_txts, false);
     lv_obj_t *btns = lv_msgbox_get_btns(msgbox);
     lv_btnmatrix_set_selected_btn(btns, 1);
