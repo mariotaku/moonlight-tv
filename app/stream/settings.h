@@ -47,6 +47,8 @@ typedef struct configuration_t {
     bool absmouse;
     bool swap_abxy;
     enum codecs codec;
+    int analytics;
+    bool analytics_defined;
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_MOONLIGHT "moonlight.conf"

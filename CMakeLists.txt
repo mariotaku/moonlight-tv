@@ -218,7 +218,8 @@ set(SOURCES
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/stream/audio/sdlaud.c
-        app/lvgl/ext/lv_child_group.c app/lvgl/ext/lv_child_group.h)
+        app/lvgl/ext/lv_child_group.c
+        app/util/analytics.c)
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
@@ -231,6 +232,7 @@ if (TARGET_WEBOS)
 else ()
     list(APPEND SOURCES
             app/platform/sdl/path_sdl.c
+            app/platform/linux/os_info_linux.c
             )
 endif ()
 
@@ -370,6 +372,13 @@ elseif (TARGET_DESKTOP)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
+
+if (TARGET_WINDOWS)
+    target_link_libraries(moonlight PRIVATE rpcrt4)
+else()
+    pkg_check_modules(UUID REQUIRED uuid)
+    target_link_libraries(moonlight PRIVATE ${UUID_LIBRARIES})
+endif()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 

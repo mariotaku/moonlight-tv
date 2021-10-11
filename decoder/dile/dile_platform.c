@@ -5,7 +5,7 @@
 #include <string.h>
 #include <dlfcn.h>
 
-#include "platform/webos/os_info.h"
+#include "util/os_info.h"
 #include "stream/module/api.h"
 #include "media_services.h"
 

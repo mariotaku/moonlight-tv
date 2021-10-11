@@ -5,6 +5,7 @@
 #include <res.h>
 #include <lvgl/lv_disp_drv_app.h>
 #include <SDL_image.h>
+#include <util/analytics.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -54,6 +55,10 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
 static const char *server_item_icon(const SERVER_LIST *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
+
+static void analytics_prompt(launcher_controller_t *controller);
+
+static void analytics_prompt_cb(lv_event_t *e);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -141,7 +146,13 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_set_style_transition(controller->detail, &controller->tr_nav, 0);
     lv_obj_set_style_transition(controller->detail, &controller->tr_detail, LV_STATE_USER_1);
     current_instance = controller;
+
+    if (!app_configuration->analytics_defined ||
+        (app_configuration->analytics && app_configuration->analytics < ANALYTICS_AGREEMENT_VERSION)) {
+        analytics_prompt(controller);
+    }
 }
+
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     current_instance = NULL;
@@ -368,4 +379,32 @@ static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_controller_manager_show(app_uimanager, &add_dialog_class, NULL);
+}
+
+static void analytics_prompt(launcher_controller_t *controller) {
+    static const char *btn_txts[] = {"No", "OK, I'm in", ""};
+    static const char *msg = "Would you mind to let me know what kind of device "
+                             "is running Moonlight? Only a small amount of data "
+                             "might be logged, such as:\n\n"
+                             " - App version\n"
+                             " - System version\n"
+                             " - Device model\n"
+                             " - Country or region\n"
+                             " - Duration of game sessions";
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, "Enable Anonymous Stats?", msg, btn_txts, false);
+    lv_obj_t *btns = lv_msgbox_get_btns(msgbox);
+    lv_btnmatrix_set_selected_btn(btns, 1);
+    lv_obj_add_event_cb(msgbox, analytics_prompt_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_center(msgbox);
+}
+
+static void analytics_prompt_cb(lv_event_t *e) {
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+    app_configuration->analytics_defined = true;
+    if (lv_msgbox_get_active_btn(msgbox)) {
+        app_configuration->analytics = ANALYTICS_AGREEMENT_VERSION;
+    } else {
+        app_configuration->analytics = 0;
+    }
+    lv_msgbox_close_async(msgbox);
 }

@@ -24,9 +24,12 @@
 #include <lvgl/theme/lv_theme_moonlight.h>
 #include <lvgl/lv_sdl_drv_wheel_input.h>
 #include <SDL_image.h>
+#include <util/analytics.h>
 
 #if TARGET_WEBOS
+
 #include "debughelper.h"
+
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
 #else
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
@@ -53,7 +56,7 @@ int main(int argc, char *argv[]) {
         app_logfile = stdout;
     setvbuf(app_logfile, NULL, _IONBF, 0);
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
-        REDIR_STDOUT(APPID);
+            REDIR_STDOUT(APPID);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
     SDL_Init(SDL_INIT_VIDEO);
@@ -133,6 +136,8 @@ int main(int argc, char *argv[]) {
     app_uimanager = lv_controller_manager_create(scr, NULL);
     lv_controller_manager_push(app_uimanager, &launcher_controller_class, NULL);
 
+    analytics_start();
+
     while (running) {
         app_process_events();
         lv_task_handler();
@@ -177,16 +182,26 @@ GS_CLIENT app_gs_client_new() {
     return client;
 }
 
+static void app_input_populate_group();
+
+static lv_group_t *app_group = NULL, *app_modal_group = NULL;
+
 void app_input_set_group(lv_group_t *group) {
-    if (!group) {
-        group = lv_group_get_default();
-    }
-    lv_indev_set_group(app_indev_key, group);
-    lv_indev_set_group(app_indev_wheel, group);
+    app_group = group;
+    app_input_populate_group();
 }
 
 lv_group_t *app_input_get_group() {
-    return app_indev_key->group;
+    return app_group;
+}
+
+lv_group_t *app_input_get_modal_group() {
+    return app_modal_group;
+}
+
+void app_input_set_modal_group(lv_group_t *group) {
+    app_modal_group = group;
+    app_input_populate_group();
 }
 
 void app_start_text_input(int x, int y, int w, int h) {
@@ -212,4 +227,16 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
 
 void app_set_fullscreen(bool fullscreen) {
     SDL_SetWindowFullscreen(window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
+}
+
+static void app_input_populate_group() {
+    lv_group_t *group = app_modal_group;
+    if (!group) {
+        group = app_group;
+    }
+    if (!group) {
+        group = lv_group_get_default();
+    }
+    lv_indev_set_group(app_indev_key, group);
+    lv_indev_set_group(app_indev_wheel, group);
 }

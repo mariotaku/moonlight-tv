@@ -22,7 +22,7 @@ typedef struct about_pane_t {
     lv_obj_controller_t base;
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
 #if TARGET_WEBOS
-    webos_os_info_t webos_os_info;
+    os_info_t webos_os_info;
     struct {
         int w, h;
         int rate;
@@ -105,7 +105,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 #if TARGET_WEBOS
 
 static void load_webos_info(about_pane_t *controller) {
-    webos_os_info_get_release(&controller->webos_os_info);
+    os_info_get(&controller->webos_os_info);
     SDL_webOSGetPanelResolution(&controller->webos_panel_info.w, &controller->webos_panel_info.h);
     SDL_webOSGetRefreshRate(&controller->webos_panel_info.rate);
 }
