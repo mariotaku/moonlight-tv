@@ -27,7 +27,9 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     pref_checkbox(parent, "Disable input (view-only mode)", &app_configuration->viewonly, false);
+#ifndef HAVE_FORCED_ABSMOUSE
     pref_checkbox(parent, "Absolute mouse", &app_configuration->absmouse, false);
+#endif
     pref_checkbox(parent, "Swap ABXY buttons", &app_configuration->swap_abxy, false);
     return NULL;
 }

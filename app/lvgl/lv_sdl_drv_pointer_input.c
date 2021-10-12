@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <stream/input/sdlinput.h>
+#include <util/logging.h>
 
 #include "lvgl.h"
 #include "lv_sdl_drv_pointer_input.h"
