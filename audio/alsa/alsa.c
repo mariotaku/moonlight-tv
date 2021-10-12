@@ -26,7 +26,7 @@
 #include <opus_multistream.h>
 #include <alsa/asoundlib.h>
 
-#define CHECK_RETURN(f) if ((rc = f) < 0) { applog_e("ALSA", "ALSA error code %d\n", rc); return -1; }
+#define CHECK_RETURN(f) if ((rc = f) < 0) { applog_e("ALSA", "ALSA error code %d\n", rc); return ERROR_AUDIO_OPEN_FAILED; }
 #define MAX_CHANNEL_COUNT 6
 #define FRAME_SIZE 240
 #define FRAME_BUFFER 12

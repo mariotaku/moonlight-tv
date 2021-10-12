@@ -80,7 +80,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
     if (videoFormat != VIDEO_FORMAT_H264) {
         fprintf(stderr, "Video format not supported\n");
-        return -1;
+        return ERROR_UNKNOWN_CODEC;
     }
 
     bcm_host_init();
@@ -90,7 +90,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
     vcos_semaphore_create(&semaphore, "video_decoder", 1);
     if (mmal_component_create(MMAL_COMPONENT_DEFAULT_VIDEO_DECODER, &decoder) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't create decoder\n");
-        return -2;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     MMAL_ES_FORMAT_T *format_in = decoder->input[0]->format;
@@ -108,7 +108,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
     if (mmal_port_format_commit(decoder->input[0]) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't commit input format to decoder\n");
-        return -3;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     decoder->input[0]->buffer_num = 5;
@@ -119,7 +119,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
     format_out->encoding = MMAL_ENCODING_OPAQUE;
     if (mmal_port_format_commit(decoder->output[0]) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't commit output format to decoder\n");
-        return -3;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     decoder->output[0]->buffer_num = 3;
@@ -129,12 +129,12 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
     if (mmal_port_enable(decoder->control, control_callback) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable control port\n");
-        return -4;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_component_create(MMAL_COMPONENT_DEFAULT_VIDEO_RENDERER, &renderer) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't create renderer\n");
-        return -5;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     format_in = renderer->input[0]->format;
@@ -147,7 +147,7 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
     format_in->es->video.crop.height = height;
     if (mmal_port_format_commit(renderer->input[0]) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't set output format\n");
-        return -6;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     MMAL_DISPLAYREGION_T param;
@@ -181,37 +181,37 @@ static int decoder_renderer_setup(int videoFormat, int width, int height, int re
 
     if (mmal_port_parameter_set(renderer->input[0], &param.hdr) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't set parameters\n");
-        return -7;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_port_enable(renderer->control, control_callback) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable control port\n");
-        return -8;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_component_enable(renderer) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable renderer\n");
-        return -9;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_port_enable(renderer->input[0], input_callback) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable renderer input port\n");
-        return -10;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_port_enable(decoder->input[0], input_callback) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable decoder input port\n");
-        return -11;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_port_enable(decoder->output[0], output_callback) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable decoder output port\n");
-        return -12;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     if (mmal_component_enable(decoder) != MMAL_SUCCESS) {
         fprintf(stderr, "Can't enable decoder\n");
-        return -13;
+        return ERROR_DECODER_OPEN_FAILED;
     }
 
     return 0;

@@ -168,9 +168,26 @@ int streaming_worker(session_t *session) {
                                         &vdec_delegate, adec, vdec, 0, (void *) config->audio_device, 0);
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
-        if (!streaming_errno) {
-            streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d (%s)", startResult,
-                            strerror(startResult));
+        switch (startResult) {
+            case ERROR_UNKNOWN_CODEC:
+                streaming_error(GS_WRONG_STATE, "Unsupported codec.");
+                break;
+            case ERROR_DECODER_OPEN_FAILED:
+                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
+                break;
+            case ERROR_AUDIO_OPEN_FAILED:
+                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
+                break;
+            case ERROR_AUDIO_OPUS_INIT_FAILED:
+                streaming_error(GS_WRONG_STATE, "Opus init failed.");
+                break;
+            default: {
+                if (!streaming_errno) {
+                    streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d (%s)",
+                                    startResult, strerror(startResult));
+                }
+                break;
+            }
         }
         applog_e("Session", "Failed to start connection: Limelight returned %d", startResult);
         goto thread_cleanup;

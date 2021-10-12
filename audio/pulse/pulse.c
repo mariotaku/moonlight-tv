@@ -84,7 +84,7 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
     if (!dev)
     {
         applog_e("PulseAudio", "Failed to create device: %s\n", pa_strerror(error));
-        return -1;
+        return ERROR_AUDIO_OPEN_FAILED;
     }
     applog_d("PulseAudio", "Audio device created.");
 
