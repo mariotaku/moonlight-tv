@@ -12,7 +12,7 @@
 #if TARGET_WEBOS
 
 #include <SDL_webOS.h>
-#include "platform/webos/os_info.h"
+#include "util/os_info.h"
 
 #endif
 

@@ -390,8 +390,9 @@ static void analytics_prompt(launcher_controller_t *controller) {
                              " - System version\n"
                              " - Device model\n"
                              " - Country or region\n"
-                             " - Duration of game sessions\n"
-                             " - Error info";
+                             " - Coarse duration of sessions\n"
+                             " - Error info\n\n"
+                             "No personal data will be collected.";
     lv_obj_t *msgbox = lv_msgbox_create(NULL, "Enable Anonymous Stats?", msg, btn_txts, false);
     lv_obj_t *btns = lv_msgbox_get_btns(msgbox);
     lv_btnmatrix_set_selected_btn(btns, 1);
