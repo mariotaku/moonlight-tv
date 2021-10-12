@@ -53,7 +53,7 @@ void analytics_start() {
     event->type = ANALYTICS_TYPE_PAGEVIEW;
     SDL_strlcpy(event->pageview.dp, "/", sizeof(event->pageview.dp));
     SDL_CreateThread((SDL_ThreadFunction) event_send, "analytics", event);
-    SDL_AddTimer(15 * 60 * 1000, analytics_heartbeat, NULL);
+    SDL_AddTimer(27 * 60 * 1000, analytics_heartbeat, NULL);
 }
 
 static void init_cid() {
