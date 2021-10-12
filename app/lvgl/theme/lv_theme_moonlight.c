@@ -48,11 +48,10 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_flex_main_place(obj, LV_FLEX_ALIGN_END, 0);
         lv_group_t *group = lv_group_create();
         group->user_data = app_input_get_modal_group();
-        lv_obj_set_user_data(obj, group);
         app_input_set_modal_group(group);
         lv_obj_add_event_cb(obj, cb_child_group_add, LV_EVENT_CHILD_CREATED, group);
         lv_obj_add_event_cb(obj, msgbox_key, LV_EVENT_KEY, NULL);
-        lv_obj_add_event_cb(obj, msgbox_destroy, LV_EVENT_DELETE, NULL);
+        lv_obj_add_event_cb(obj, msgbox_destroy, LV_EVENT_DELETE, group);
     } else if (lv_obj_check_type(obj, &lv_msgbox_backdrop_class)) {
         lv_obj_set_style_bg_color(obj, lv_color_black(), 0);
         lv_obj_set_style_bg_opa(obj, LV_OPA_50, 0);
@@ -67,7 +66,9 @@ static void lv_start_text_input(lv_event_t *event) {
 
 static void msgbox_key(lv_event_t *event) {
     lv_obj_t *mbox = lv_event_get_current_target(event);
-    lv_group_t *group = lv_obj_get_user_data(mbox);
+    lv_obj_t *target = lv_event_get_target(event);
+    lv_group_t *group = lv_obj_get_group(target);
+    if (!group) return;
     switch (lv_event_get_key(event)) {
         case LV_KEY_ESC: {
             lv_obj_t *btns = lv_msgbox_get_btns(mbox);
@@ -91,7 +92,7 @@ static void msgbox_key(lv_event_t *event) {
 }
 
 static void msgbox_destroy(lv_event_t *event) {
-    lv_group_t *group = lv_obj_get_user_data(lv_event_get_current_target(event));
+    lv_group_t *group = lv_event_get_user_data(event);
     if (app_input_get_modal_group() == group) {
         app_input_set_modal_group(group->user_data);
     }

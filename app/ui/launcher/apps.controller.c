@@ -442,10 +442,10 @@ static void actions_click_cb(lv_event_t *event) {
 
 static void open_context_menu(apps_controller_t *controller, APP_LIST *app) {
     lv_obj_t *msgbox = lv_msgbox_create(NULL, app->name, NULL, NULL, false);
+    lv_obj_set_user_data(msgbox, app);
     lv_obj_t *content = lv_msgbox_get_content(msgbox);
     lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_user_data(content, app);
 
     lv_obj_add_event_cb(content, context_menu_key_cb, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_CLICKED, controller);
@@ -475,11 +475,12 @@ static void context_menu_click_cb(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     lv_obj_t *current_target = lv_event_get_current_target(e);
     if (target->parent != current_target) return;
+    lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
     apps_controller_t *controller = lv_event_get_user_data(e);
     if (lv_obj_get_user_data(target) == launcher_quit_game) {
         launcher_quit_game(controller);
     } else if (lv_obj_get_user_data(target) == launcher_launch_game) {
-        launcher_launch_game(controller, lv_obj_get_user_data(current_target));
+        launcher_launch_game(controller, lv_obj_get_user_data(mbox));
     }
-    lv_msgbox_close_async(lv_event_get_current_target(e)->parent);
+    lv_msgbox_close_async(mbox);
 }
