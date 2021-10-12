@@ -34,7 +34,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
 
     lv_obj_add_event_cb(content, context_menu_key_cb, LV_EVENT_KEY, controller);
-    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_SHORT_CLICKED, controller);
 
 //    lv_obj_set_user_data(resume_btn, launcher_launch_game);
 

@@ -5,6 +5,7 @@
 #include <res.h>
 #include <lvgl/lv_disp_drv_app.h>
 #include <SDL_image.h>
+#include <lvgl/lv_sdl_drv_key_input.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -57,6 +58,8 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
 static const char *server_item_icon(const SERVER_LIST *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
+
+static void show_server_menu(SERVER_LIST *selected);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -382,4 +385,8 @@ static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_controller_manager_show(app_uimanager, &add_dialog_class, NULL);
+}
+
+static void show_server_menu(SERVER_LIST *selected) {
+    lv_controller_manager_show(app_uimanager, &server_menu_class, selected);
 }
