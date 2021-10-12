@@ -59,8 +59,6 @@ static const char *server_item_icon(const SERVER_LIST *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 
-static void show_server_menu(SERVER_LIST *selected);
-
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
         .destructor_cb = controller_dtor,
@@ -84,6 +82,11 @@ launcher_controller_t *launcher_instance() {
 }
 
 void launcher_select_server(launcher_controller_t *controller, SERVER_LIST *node) {
+    if (!node) {
+        set_detail_opened(controller, false);
+        select_pc(controller, NULL, false);
+        return;
+    }
     if (node->state.code == SERVER_STATE_ONLINE && !node->server->paired) {
         open_pair(controller, node);
         return;
@@ -129,7 +132,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_key, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
+//    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
     update_pclist(controller);
 
@@ -237,7 +240,11 @@ static void cb_pc_longpress(lv_event_t *event) {
 }
 
 static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus) {
-    lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
+    if (selected) {
+        lv_controller_manager_replace(controller->pane_manager, &apps_controller_class, selected);
+    } else {
+        lv_controller_manager_pop(controller->pane_manager);
+    }
     for (int i = 0, pclen = (int) lv_obj_get_child_cnt(controller->pclist); i < pclen; i++) {
         lv_obj_t *pcitem = lv_obj_get_child(controller->pclist, i);
         PSERVER_LIST cur = (PSERVER_LIST) lv_obj_get_user_data(pcitem);
@@ -385,8 +392,4 @@ static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_controller_manager_show(app_uimanager, &add_dialog_class, NULL);
-}
-
-static void show_server_menu(SERVER_LIST *selected) {
-    lv_controller_manager_show(app_uimanager, &server_menu_class, selected);
 }

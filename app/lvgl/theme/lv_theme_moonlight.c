@@ -72,7 +72,8 @@ static void msgbox_key(lv_event_t *event) {
     switch (lv_event_get_key(event)) {
         case LV_KEY_ESC: {
             lv_obj_t *btns = lv_msgbox_get_btns(mbox);
-            if (btns && !lv_btnmatrix_has_btn_ctrl(btns, 0, LV_BTNMATRIX_CTRL_DISABLED)) {
+            if (btns && !lv_obj_has_flag(btns, LV_OBJ_FLAG_HIDDEN) &&
+                !lv_btnmatrix_has_btn_ctrl(btns, 0, LV_BTNMATRIX_CTRL_DISABLED)) {
                 lv_msgbox_close_async(mbox);
             }
             break;

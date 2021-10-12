@@ -15,7 +15,7 @@ set(SRC
 )
 
 add_library(gamestream ${HEADERS} ${SRC})
-
+set_target_properties(gamestream PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED TRUE)
 
 if (TARGET_WINDOWS)
     target_link_libraries(gamestream PRIVATE rpcrt4)

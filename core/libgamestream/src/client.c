@@ -351,6 +351,8 @@ int gs_unpair(GS_CLIENT hnd, PSERVER_DATA server) {
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
     ret = http_request(hnd->http, url, data);
+    if (ret != GS_OK)
+        goto cleanup;
 
     if (xml_status(data->memory, data->size) == GS_ERROR) {
         ret = GS_ERROR;
@@ -361,8 +363,7 @@ int gs_unpair(GS_CLIENT hnd, PSERVER_DATA server) {
     server->paired = false;
 
     cleanup:
-    if (data != NULL)
-        http_free_data(data);
+    http_free_data(data);
 
     return ret;
 }
@@ -393,6 +394,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     int ret = GS_OK;
     char *result = NULL;
     char url[4096];
+    PHTTP_DATA data = NULL;
 
     mbedtls_entropy_context entropy;
     mbedtls_entropy_init(&entropy);
@@ -442,10 +444,10 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     // because the user must enter the PIN before the server responds
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                   "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, hnd->cert_hex);
-    PHTTP_DATA data = http_create_data();
-    if (data == NULL)
-        return GS_OUT_OF_MEMORY;
-    else if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    data = http_create_data();
+    assert(data);
+
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
         goto cleanup;
 
     if ((ret = xml_status(data->memory, data->size) != GS_OK))
@@ -676,7 +678,8 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     if (result != NULL)
         free(result);
 
-    http_free_data(data);
+    if (data != NULL)
+        http_free_data(data);
 
     mbedtls_aes_free(&aes_enc);
     mbedtls_aes_free(&aes_dec);
@@ -711,6 +714,7 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
              int gamepad_mask, char **rtsp_session_url) {
     int ret = GS_OK;
     char *result = NULL;
+    PHTTP_DATA data = NULL;
 
     mbedtls_entropy_context entropy;
     mbedtls_entropy_init(&entropy);
@@ -754,9 +758,8 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
     char rikey_hex[33];
     bytes_to_hex((unsigned char *) config->remoteInputAesKey, rikey_hex, 16);
 
-    PHTTP_DATA data = http_create_data();
-    if (data == NULL)
-        return GS_OUT_OF_MEMORY;
+    data = http_create_data();
+    assert(data);
 
     int surround_info = SURROUNDAUDIOINFO_FROM_AUDIO_CONFIGURATION(config->audioConfiguration);
     if (server->currentGame == 0) {
@@ -796,7 +799,8 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
     if (result != NULL)
         free(result);
 
-    http_free_data(data);
+    if (data != NULL)
+        http_free_data(data);
 
     mbedtls_ctr_drbg_free(&ctr_drbg);
     return ret;
