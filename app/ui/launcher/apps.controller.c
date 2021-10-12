@@ -68,6 +68,12 @@ static void actions_click_cb(lv_event_t *event);
 
 static void update_grid_config(apps_controller_t *controller);
 
+static void open_context_menu(apps_controller_t *controller, APP_LIST *app);
+
+static void context_menu_key_cb(lv_event_t *event);
+
+static void context_menu_click_cb(lv_event_t *event);
+
 const static lv_grid_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
@@ -323,11 +329,9 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST
     lv_label_set_text(holder->title, app->name);
 
     if (controller->node->server->currentGame == app->id) {
-        lv_obj_clear_flag(holder->play_btn, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(holder->close_btn, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_obj_add_flag(holder->play_btn, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(holder->close_btn, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     }
     holder->app = app;
 }
@@ -337,17 +341,15 @@ static void item_click_cb(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
     lv_obj_t *target_parent = lv_obj_get_parent(target);
     if (target_parent != controller->applist) {
-        if (lv_obj_get_parent(target_parent) == controller->applist) {
-            appitem_viewholder_t *holder = lv_obj_get_user_data(target_parent);
-            if (target == holder->play_btn) {
-                launcher_launch_game(controller, holder->app);
-            } else if (target == holder->close_btn) {
-                launcher_quit_game(controller);
-            }
-        }
         return;
     }
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
+    if (controller->node->server->currentGame) {
+        if (holder->app->id == controller->node->server->currentGame) {
+            open_context_menu(controller, holder->app);
+        }
+        return;
+    }
     launcher_launch_game(controller, holder->app);
 }
 
@@ -436,4 +438,48 @@ static void actions_click_cb(lv_event_t *event) {
             break;
         }
     }
+}
+
+static void open_context_menu(apps_controller_t *controller, APP_LIST *app) {
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, app->name, NULL, NULL, false);
+    lv_obj_t *content = lv_msgbox_get_content(msgbox);
+    lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_user_data(content, app);
+
+    lv_obj_add_event_cb(content, context_menu_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_CLICKED, controller);
+
+    lv_obj_t *resume_btn = lv_list_add_btn(content, NULL, "Resume");
+    lv_obj_add_flag(resume_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_user_data(resume_btn, launcher_launch_game);
+
+    lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, "Quit Session");
+    lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_user_data(quit_btn, launcher_quit_game);
+
+    lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, "Cancel");
+    lv_obj_add_flag(cancel_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_center(msgbox);
+}
+
+static void context_menu_key_cb(lv_event_t *e) {
+    lv_obj_t *target = lv_event_get_target(e);
+    if (target->parent != lv_event_get_current_target(e)) return;
+    if (lv_event_get_key(e) == LV_KEY_ESC) {
+        lv_msgbox_close_async(lv_event_get_current_target(e)->parent);
+    }
+}
+
+static void context_menu_click_cb(lv_event_t *e) {
+    lv_obj_t *target = lv_event_get_target(e);
+    lv_obj_t *current_target = lv_event_get_current_target(e);
+    if (target->parent != current_target) return;
+    apps_controller_t *controller = lv_event_get_user_data(e);
+    if (lv_obj_get_user_data(target) == launcher_quit_game) {
+        launcher_quit_game(controller);
+    } else if (lv_obj_get_user_data(target) == launcher_launch_game) {
+        launcher_launch_game(controller, lv_obj_get_user_data(current_target));
+    }
+    lv_msgbox_close_async(lv_event_get_current_target(e)->parent);
 }

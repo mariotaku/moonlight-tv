@@ -19,16 +19,12 @@ lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
     lv_obj_set_style_transition(item, &styles->tr_pressed, LV_STATE_PRESSED | LV_STATE_FOCUS_KEY);
     lv_obj_set_style_transition(item, &styles->tr_released, LV_STATE_DEFAULT);
 
-    lv_obj_t *play_btn = lv_btn_create(item);
-    lv_obj_add_flag(play_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_style_bg_img_src(play_btn, LV_SYMBOL_PLAY, 0);
-    lv_obj_add_style(play_btn, &styles->btn, 0);
-    lv_obj_align(play_btn, LV_ALIGN_CENTER, 0, -lv_dpx(25));
-    lv_obj_t *close_btn = lv_btn_create(item);
-    lv_obj_add_flag(close_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_style_bg_img_src(close_btn, LV_SYMBOL_CLOSE, 0);
-    lv_obj_add_style(close_btn, &styles->btn, 0);
-    lv_obj_align(close_btn, LV_ALIGN_CENTER, 0, lv_dpx(25));
+    lv_obj_t *play_indicator = lv_obj_create(item);
+    lv_obj_remove_style_all(play_indicator);
+    lv_obj_clear_flag(play_indicator, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_style(play_indicator, &styles->btn, 0);
+    lv_obj_set_style_bg_img_src(play_indicator, LV_SYMBOL_PLAY, 0);
+    lv_obj_center(play_indicator);
     lv_obj_t *title = lv_label_create(item);
     lv_obj_set_size(title, LV_PCT(100), LV_DPX(20));
     lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
@@ -38,8 +34,7 @@ lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
 
     appitem_viewholder_t *holder = (appitem_viewholder_t *) malloc(sizeof(appitem_viewholder_t));
     memset(holder, 0, sizeof(appitem_viewholder_t));
-    holder->play_btn = play_btn;
-    holder->close_btn = close_btn;
+    holder->play_indicator = play_indicator;
     holder->title = title;
     lv_obj_set_user_data(item, holder);
     lv_obj_add_event_cb(item, appitem_holder_free_cb, LV_EVENT_DELETE, holder);
@@ -62,6 +57,7 @@ void appitem_style_init(appitem_styles_t *style) {
     lv_style_set_size(&style->btn, lv_dpx(40));
     lv_style_set_radius(&style->btn, LV_RADIUS_CIRCLE);
     lv_style_set_bg_color(&style->btn, lv_color_white());
+    lv_style_set_bg_opa(&style->btn, LV_OPA_COVER);
     lv_style_set_text_color(&style->btn, lv_color_black());
 
     static const lv_style_prop_t trans_props[] = {
