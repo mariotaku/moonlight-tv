@@ -24,7 +24,6 @@
 #include <lvgl/theme/lv_theme_moonlight.h>
 #include <lvgl/lv_sdl_drv_wheel_input.h>
 #include <SDL_image.h>
-#include <util/analytics.h>
 
 #if TARGET_WEBOS
 
@@ -135,8 +134,6 @@ int main(int argc, char *argv[]) {
     lv_obj_set_style_bg_opa(scr, 0, 0);
     app_uimanager = lv_controller_manager_create(scr, NULL);
     lv_controller_manager_push(app_uimanager, &launcher_controller_class, NULL);
-
-    analytics_start();
 
     while (running) {
         app_process_events();
