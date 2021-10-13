@@ -6,6 +6,7 @@
 #include <lvgl/lv_disp_drv_app.h>
 #include <SDL_image.h>
 #include <lvgl/lv_sdl_drv_key_input.h>
+#include <ui/settings/settings.controller.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -48,6 +49,10 @@ static void cb_detail_key(lv_event_t *event);
 static void open_pair(launcher_controller_t *controller, PSERVER_LIST node);
 
 static void open_manual_add(lv_event_t *event);
+
+static void open_settings(lv_event_t *event);
+
+static void open_help(lv_event_t *event);
 
 static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus);
 
@@ -134,6 +139,9 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_CLICKED, controller);
 //    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(controller->pref_btn, open_settings, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(controller->help_btn, open_help, LV_EVENT_CLICKED, controller);
+
     update_pclist(controller);
 
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
@@ -392,4 +400,21 @@ static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_controller_manager_show(app_uimanager, &add_dialog_class, NULL);
+}
+
+static void open_settings(lv_event_t *event) {
+    lv_obj_controller_t *controller = event->user_data;
+    lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
+}
+
+static void open_help(lv_event_t *event) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    SDL_OpenURL("https://github.com/mariotaku/moonlight-tv/wiki");
+#elif TARGET_WEBOS
+    system("luna-send-pub -n 1 'luna://com.webos.applicationManager/launch' "
+           "'{\"id\": \"com.webos.app.browser\", "
+           "\"params\":{\"target\": \"https://github.com/mariotaku/moonlight-tv/wiki\"}}'");
+#elif TARGET_DESKTOP || TARGET_RASPI
+    system("xdg-open 'https://github.com/mariotaku/moonlight-tv/wiki'&");
+#endif
 }

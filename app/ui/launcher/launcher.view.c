@@ -10,8 +10,6 @@
 #include "launcher.controller.h"
 #include "apps.controller.h"
 
-static void open_settings(lv_event_t *event);
-
 static void detail_group_add(lv_event_t *event);
 
 #define NAV_WIDTH_EXPANDED 240
@@ -103,24 +101,26 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_grow(add_btn, 0);
     lv_obj_set_style_border_side(add_btn, LV_BORDER_SIDE_NONE, 0);
 
+    lv_obj_t *help_btn = lv_list_add_btn(nav, MAT_SYMBOL_HELP, "Help");
+    lv_obj_set_icon_font(help_btn, LV_ICON_FONT_DEFAULT);
+    lv_obj_add_flag(help_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_flex_grow(help_btn, 0);
+    lv_obj_set_style_border_side(help_btn, LV_BORDER_SIDE_NONE, 0);
+
     lv_obj_t *pref_btn = lv_list_add_btn(nav, MAT_SYMBOL_SETTINGS, "Settings");
+
     lv_obj_set_icon_font(pref_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(pref_btn, 0);
     lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
 
-    lv_obj_add_event_cb(pref_btn, open_settings, LV_EVENT_CLICKED, controller);
-
     controller->nav = nav;
     controller->detail = detail;
     controller->pclist = pclist;
     controller->add_btn = add_btn;
+    controller->pref_btn = pref_btn;
+    controller->help_btn = help_btn;
     return win;
-}
-
-static void open_settings(lv_event_t *event) {
-    lv_obj_controller_t *controller = event->user_data;
-    lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
 }
 
 static void detail_group_add(lv_event_t *event) {
