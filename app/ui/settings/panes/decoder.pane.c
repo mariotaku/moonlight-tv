@@ -82,11 +82,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_width(audio_dropdown, LV_PCT(100));
 
     lv_obj_t *hdr_checkbox = pref_checkbox(parent, "HDR (experimental)", &app_configuration->stream.enableHdr, false);
-    lv_obj_t *hdr_hint = lv_label_create(parent);
-    lv_obj_set_width(hdr_hint, LV_PCT(100));
-    lv_obj_set_style_pad_left(hdr_hint, LV_DPX(30), 0);
-    lv_obj_set_style_text_font(hdr_hint, lv_theme_get_font_small(parent), 0);
-    lv_label_set_long_mode(hdr_hint, LV_LABEL_LONG_WRAP);
+    lv_obj_t *hdr_hint = pref_desc_label(parent, NULL);
     if (decoder_info.hdr == DECODER_HDR_NONE) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, "%s decoder doesn't support HDR.", decoder_definitions[decoder_current].name);

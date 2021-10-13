@@ -33,3 +33,5 @@ lv_obj_t *pref_dropdown_string(lv_obj_t *parent, const pref_dropdown_string_entr
 lv_obj_t *pref_slider(lv_obj_t *parent, int *value, int min, int max, int step);
 
 lv_obj_t *pref_title_label(lv_obj_t *parent, const char *title);
+
+lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title);

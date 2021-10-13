@@ -28,8 +28,10 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     pref_checkbox(parent, "Disable input (view-only mode)", &app_configuration->viewonly, false);
 #ifndef HAVE_FORCED_ABSMOUSE
-    pref_checkbox(parent, "Absolute mouse", &app_configuration->absmouse, false);
+    pref_checkbox(parent, "Absolute mouse event", &app_configuration->absmouse, false);
+    pref_desc_label(parent, "Better for remote desktop. For some games, mouse will not work properly.");
 #endif
     pref_checkbox(parent, "Swap ABXY buttons", &app_configuration->swap_abxy, false);
+    pref_desc_label(parent, "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts.");
     return NULL;
 }

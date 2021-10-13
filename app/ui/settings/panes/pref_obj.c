@@ -176,6 +176,18 @@ lv_obj_t *pref_title_label(lv_obj_t *parent, const char *title) {
     return label;
 }
 
+lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title) {
+    lv_obj_t *label = lv_label_create(parent);
+    lv_obj_set_width(label, LV_PCT(100));
+    lv_obj_set_style_pad_left(label, LV_DPX(30), 0);
+    lv_obj_set_style_text_font(label, lv_theme_get_font_small(parent), 0);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    if (title) {
+        lv_label_set_text(label, title);
+    }
+    return label;
+}
+
 static void pref_attrs_free(lv_event_t *event) {
     lv_mem_free(lv_event_get_user_data(event));
 }
