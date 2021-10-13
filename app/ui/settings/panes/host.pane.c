@@ -27,7 +27,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     pref_checkbox(parent, "Optimize game settings for streaming", &app_configuration->sops, false);
-    pref_desc_label(parent, "This will limit resolution and FPS to standard defaults (720p, 1080p, 4K etc). "
+    pref_desc_label(parent, "This will limit resolution and FPS to standard presets like 720p, 1080p or 4K. "
                             "Turn off if you want to try unsupported resolution and FPS.");
     pref_checkbox(parent, "Mute host PC while streaming", &app_configuration->localaudio, true);
     return NULL;
