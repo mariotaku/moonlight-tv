@@ -74,6 +74,8 @@ static void context_menu_key_cb(lv_event_t *event);
 
 static void context_menu_click_cb(lv_event_t *event);
 
+static apps_controller_t *current_instance = NULL;
+
 const static lv_grid_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
@@ -164,6 +166,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
     apploader_load(controller->apploader, appload_cb, controller);
     update_view_state(controller);
+
+    current_instance = controller;
 }
 
 static void update_grid_config(apps_controller_t *controller) {
@@ -182,6 +186,7 @@ static void update_grid_config(apps_controller_t *controller) {
 }
 
 static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
+    current_instance = NULL;
     apps_controller_t *controller = (apps_controller_t *) self;
 
     pcmanager_unregister_listener(pcmanager, &pc_listeners);
@@ -215,6 +220,7 @@ static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (controller != current_instance) return;
     if (resp->state.code == SERVER_STATE_ONLINE && !controller->apploader->apps) {
         apploader_load(controller->apploader, appload_cb, controller);
     }
@@ -222,6 +228,7 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
 
 static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (controller != current_instance) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     if (controller->node->state.code == SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
