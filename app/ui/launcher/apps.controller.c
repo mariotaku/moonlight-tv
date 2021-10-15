@@ -207,6 +207,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
 
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
+    if (controller != current_instance) return;
     if (resp->server != controller->node->server) return;
     apploader_load(controller->apploader, appload_cb, controller);
     update_view_state(controller);
@@ -424,6 +425,7 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
 
 static void appload_cb(apploader_t *loader, void *userdata) {
     apps_controller_t *controller = userdata;
+    if (controller != current_instance) return;
     update_view_state(controller);
 }
 
