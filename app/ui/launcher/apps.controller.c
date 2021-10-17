@@ -159,7 +159,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
-    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_SHORT_CLICKED, controller);
+    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(applist, item_longpress_cb, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
