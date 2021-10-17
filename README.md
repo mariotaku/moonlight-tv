@@ -7,7 +7,7 @@ It was originally designed for LG webOS TVs, but may support running on more dev
 
 * Supports up to 4 controllers
 * Utilizes system hardware decoder to get best performance (webOS 2/3/4/5)
-* Easy to port to other OSes (Now runs on macOS, Linux, Raspberry Pi)
+* Easy to port to other OSes (Now runs on macOS, Arch, Debian, Raspbian and Windows)
 
 ## Screenshots
 
