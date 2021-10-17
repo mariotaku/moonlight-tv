@@ -11,6 +11,7 @@ typedef struct {
     lv_style_t btn;
     lv_style_transition_dsc_t tr_pressed;
     lv_style_transition_dsc_t tr_released;
+    char fav_indicator_src[LV_SDL_IMG_LEN];
 } appitem_styles_t;
 
 typedef struct {
@@ -24,3 +25,5 @@ typedef struct {
 lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles);
 
 void appitem_style_init(appitem_styles_t *style);
+
+void appitem_style_deinit(appitem_styles_t *style);

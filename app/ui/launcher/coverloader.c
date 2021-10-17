@@ -119,8 +119,8 @@ coverloader_t *coverloader_new() {
 
     lv_disp_t *disp = lv_disp_get_default();
     SDL_Renderer *renderer = disp->driver->user_data;
-    loader->defcover = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_default_cover_data, res_default_cover_size),
-                                          1);
+    loader->defcover = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_default_cover_data,
+                                                                       (int) res_default_cover_size), 1);
     return loader;
 }
 

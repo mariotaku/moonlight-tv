@@ -111,6 +111,7 @@ static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
 
 static void apps_controller_dtor(lv_obj_controller_t *self) {
     apps_controller_t *controller = (apps_controller_t *) self;
+    appitem_style_deinit(&controller->appitem_style);
     apploader_unref(controller->apploader);
 }
 
@@ -386,7 +387,7 @@ static void launcher_launch_game(apps_controller_t *controller, const apploader_
 }
 
 static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app) {
-    pcmanager_bookmark_app(controller->node, app->base.id, !app->bookmarked);
+    pcmanager_favorite_app(controller->node, app->base.id, !app->fav);
     apploader_load(controller->apploader, appload_cb, controller);
 }
 
@@ -493,7 +494,7 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
         lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(quit_btn, launcher_quit_game);
     }
-    lv_obj_t *fav_btn = lv_list_add_btn(content, NULL, app->bookmarked ? "Remove bookmark" : "Bookmark");
+    lv_obj_t *fav_btn = lv_list_add_btn(content, NULL, app->fav ? "Remove star" : "Star");
     lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 

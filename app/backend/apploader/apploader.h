@@ -13,7 +13,7 @@ typedef enum apploader_status_t {
 
 typedef struct apploader_item_t {
     APP_LIST base;
-    bool bookmarked;
+    bool fav;
 } apploader_item_t;
 
 typedef struct apploader_t {

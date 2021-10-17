@@ -84,9 +84,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->audio_device = NULL;
     config->sops = true;
     config->localaudio = false;
-#if TARGET_RASPI
     config->fullscreen = true;
-#endif
     // TODO make this automatic
     config->unsupported = true;
     config->quitappafter = false;

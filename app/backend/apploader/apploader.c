@@ -107,7 +107,7 @@ static int apploader_task_execute(apploader_task_t *task) {
         apploader_item_t *item = &result[index];
         SDL_memcpy(item, cur, sizeof(APP_LIST));
         item->base.next = NULL;
-        item->bookmarked = pcmanager_is_bookmarked(task->loader->node, cur->id);
+        item->fav = pcmanager_is_favorite(task->loader->node, cur->id);
         index++;
     }
     applist_free(ll, (void (*)(APP_LIST *)) SDL_free);
@@ -153,7 +153,7 @@ static void apploader_apps_free(apploader_t *loader) {
 }
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2) {
-    int extra = p2->bookmarked * 1000 - p1->bookmarked * 1000;
+    int extra = p2->fav * 1000 - p1->fav * 1000;
     int namecmp = strcmp(p1->base.name, p2->base.name);
     if (namecmp > 0) {
         return 1 + extra;

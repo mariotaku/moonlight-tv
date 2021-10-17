@@ -56,10 +56,10 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
-#if TARGET_RASPI
-                    // Interrupt streaming because app will go to background
-                    streaming_interrupt(false);
-#endif
+                    if (app_configuration->fullscreen) {
+                        // Interrupt streaming because app will go to background
+                        streaming_interrupt(false);
+                    }
                     window_focus_gained = false;
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -69,10 +69,10 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
-#if TARGET_RASPI
-                    // Interrupt streaming because app will go to background
-                    streaming_interrupt(false);
-#endif
+                    if (app_configuration->fullscreen) {
+                        // Interrupt streaming because app will go to background
+                        streaming_interrupt(false);
+                    }
                     break;
                 case SDL_WINDOWEVENT_EXPOSED:
                     lv_obj_invalidate(lv_scr_act());
