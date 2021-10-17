@@ -374,6 +374,7 @@ static void item_longpress_cb(lv_event_t *event) {
     if (target_parent != controller->applist) {
         return;
     }
+    lv_event_send(target, LV_EVENT_RELEASED, lv_event_get_indev(event));
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
     open_context_menu(controller, holder->app);
 }

@@ -43,7 +43,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
 
         SERVER_LIST *node = pclist_insert_known(manager, server);
 
-        config_setting_t *favs = config_setting_get_member(item, "favs");
+        config_setting_t *favs = config_setting_get_member(item, "favorites");
         if (favs) {
             for (int bi = 0, bj = config_setting_length(favs); bi < bj; bi++) {
                 int appid = config_setting_get_int_elem(favs, bi);
@@ -89,7 +89,7 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
         config_setting_set_string_simple(item, "hostname", server->hostname);
         config_setting_set_string_simple(item, "address", server->serverInfo.address);
         if (cur->favs) {
-            config_setting_t *favs = config_setting_add(item, "favs", CONFIG_TYPE_ARRAY);
+            config_setting_t *favs = config_setting_add(item, "favorites", CONFIG_TYPE_ARRAY);
             for (appid_list_t *idcur = cur->favs; idcur; idcur = idcur->next) {
                 config_setting_t *elem = config_setting_add(favs, NULL, CONFIG_TYPE_INT);
                 config_setting_set_int(elem, idcur->id);

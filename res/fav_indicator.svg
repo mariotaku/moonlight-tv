@@ -136,8 +136,8 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:#ffab00;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1;filter:url(#filter907)"
-       d="M 0,0 H 12.7 L 0,12.7 Z"
+       style="fill:#ffab00;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter907)"
+       d="m -0.79375,-1.0583333 h 12.7 l -12.7,12.7000003 z"
        id="path841"
        inkscape:export-xdpi="192"
        inkscape:export-ydpi="192" />
@@ -156,7 +156,8 @@
        inkscape:rounded="0"
        inkscape:randomized="0"
        d="M 5.0458405,5.4992313 3.5273396,4.3962207 1.9894495,5.4720326 2.5692323,3.6870034 1.0708402,2.5568271 2.9476666,2.556629 3.5594995,0.78232974 4.1396592,2.5672365 6.0161848,2.6008355 4.4979168,3.7041667 Z"
-       inkscape:transform-center-x="-0.023763206"
-       inkscape:transform-center-y="-0.15944363" />
+       inkscape:transform-center-x="-0.018905904"
+       inkscape:transform-center-y="-0.12685267"
+       transform="matrix(0.79559569,0,0,0.79559569,0.21888435,0.15991157)" />
   </g>
 </svg>
