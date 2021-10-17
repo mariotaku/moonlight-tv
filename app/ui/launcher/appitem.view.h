@@ -1,5 +1,6 @@
 #pragma once
 
+#include <backend/apploader/apploader.h>
 #include "lvgl.h"
 #include "client.h"
 
@@ -13,7 +14,7 @@ typedef struct {
 } appitem_styles_t;
 
 typedef struct {
-    APP_LIST *app;
+    apploader_item_t *app;
     lv_obj_t *play_indicator;
     lv_obj_t *title;
     char cover_src[LV_SDL_IMG_LEN];

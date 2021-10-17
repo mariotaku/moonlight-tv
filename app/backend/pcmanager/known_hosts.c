@@ -42,6 +42,16 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->serverInfo.address = SDL_strdup(address);
 
         SERVER_LIST *node = pclist_insert_known(manager, server);
+
+        config_setting_t *bookmarks = config_setting_get_member(item, "bookmarks");
+        if (bookmarks) {
+            for (int bi = 0, bj = config_setting_length(bookmarks); bi < bj; bi++) {
+                int appid = config_setting_get_int_elem(bookmarks, bi);
+                if (!appid) continue;
+                pcmanager_bookmark_app(node, appid, true);
+            }
+        }
+
         if (!selected_set && config_setting_get_bool_simple(item, "selected")) {
             node->selected = true;
             selected_set = true;
@@ -78,6 +88,13 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
         config_setting_set_string_simple(item, "mac", server->mac);
         config_setting_set_string_simple(item, "hostname", server->hostname);
         config_setting_set_string_simple(item, "address", server->serverInfo.address);
+        if (cur->bookmarks) {
+            config_setting_t *bookmarks = config_setting_add(item, "bookmarks", CONFIG_TYPE_ARRAY);
+            for (appid_list_t *idcur = cur->bookmarks; idcur; idcur = idcur->next) {
+                config_setting_t *elem = config_setting_add(bookmarks, NULL, CONFIG_TYPE_INT);
+                config_setting_set_int(elem, idcur->id);
+            }
+        }
         if (!selected_set && cur->selected) {
             config_setting_set_bool_simple(item, "selected", true);
             selected_set = true;

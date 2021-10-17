@@ -34,7 +34,11 @@ static void on_host_removed(const pcmanager_resp_t *resp, void *userdata);
 
 static void item_click_cb(lv_event_t *event);
 
-static void launcher_launch_game(apps_controller_t *controller, const APP_LIST *app);
+static void item_longpress_cb(lv_event_t *event);
+
+static void launcher_launch_game(apps_controller_t *controller, const apploader_item_t *app);
+
+static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app);
 
 static void launcher_quit_game(apps_controller_t *controller);
 
@@ -44,7 +48,7 @@ static void applist_focus_leave(lv_event_t *event);
 
 static void update_view_state(apps_controller_t *controller);
 
-static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST *app);
+static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploader_item_t *app);
 
 static int adapter_item_count(lv_obj_t *, void *data);
 
@@ -68,7 +72,7 @@ static void actions_click_cb(lv_event_t *event);
 
 static void update_grid_config(apps_controller_t *controller);
 
-static void open_context_menu(apps_controller_t *controller, APP_LIST *app);
+static void open_context_menu(apps_controller_t *controller, apploader_item_t *app);
 
 static void context_menu_key_cb(lv_event_t *event);
 
@@ -154,7 +158,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
-    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_SHORT_CLICKED, controller);
+    lv_obj_add_event_cb(applist, item_longpress_cb, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_LEAVE, controller);
@@ -329,14 +334,14 @@ static void update_view_state(apps_controller_t *controller) {
     }
 }
 
-static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, APP_LIST *app) {
+static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploader_item_t *app) {
     appitem_viewholder_t *holder = lv_obj_get_user_data(item);
 
-    coverloader_display(controller->coverloader, controller->node, app->id, item, controller->col_width,
+    coverloader_display(controller->coverloader, controller->node, app->base.id, item, controller->col_width,
                         controller->col_height);
-    lv_label_set_text(holder->title, app->name);
+    lv_label_set_text(holder->title, app->base.name);
 
-    if (controller->node->server->currentGame == app->id) {
+    if (controller->node->server->currentGame == app->base.id) {
         lv_obj_clear_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
@@ -353,7 +358,7 @@ static void item_click_cb(lv_event_t *event) {
     }
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
     if (controller->node->server->currentGame) {
-        if (holder->app->id == controller->node->server->currentGame) {
+        if (holder->app->base.id == controller->node->server->currentGame) {
             open_context_menu(controller, holder->app);
         }
         return;
@@ -361,12 +366,28 @@ static void item_click_cb(lv_event_t *event) {
     launcher_launch_game(controller, holder->app);
 }
 
-static void launcher_launch_game(apps_controller_t *controller, const APP_LIST *app) {
+static void item_longpress_cb(lv_event_t *event) {
+    apps_controller_t *controller = lv_event_get_user_data(event);
+    lv_obj_t *target = lv_event_get_target(event);
+    lv_obj_t *target_parent = lv_obj_get_parent(target);
+    if (target_parent != controller->applist) {
+        return;
+    }
+    appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
+    open_context_menu(controller, holder->app);
+}
+
+static void launcher_launch_game(apps_controller_t *controller, const apploader_item_t *app) {
     streaming_scene_arg_t args = {
             .server = controller->node->server,
-            .app = app,
+            .app = &app->base,
     };
     lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
+}
+
+static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app) {
+    pcmanager_bookmark_app(controller->node, app->base.id, !app->bookmarked);
+    apploader_load(controller->apploader, appload_cb, controller);
 }
 
 static void launcher_quit_game(apps_controller_t *controller) {
@@ -385,14 +406,14 @@ static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
 }
 
 static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, int position) {
-    APP_LIST *apps = (APP_LIST *) data;
+    apploader_item_t *apps = (apploader_item_t *) data;
     apps_controller_t *controller = lv_obj_get_user_data(grid);
     appitem_bind(controller, item_view, &apps[position]);
 }
 
 static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
-    APP_LIST *apps = (APP_LIST *) data;
-    return apps[position].id;
+    apploader_item_t *apps = (apploader_item_t *) data;
+    return apps[position].base.id;
 }
 
 
@@ -449,23 +470,32 @@ static void actions_click_cb(lv_event_t *event) {
     }
 }
 
-static void open_context_menu(apps_controller_t *controller, APP_LIST *app) {
-    lv_obj_t *msgbox = lv_msgbox_create(NULL, app->name, NULL, NULL, false);
+static void open_context_menu(apps_controller_t *controller, apploader_item_t *app) {
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, NULL, NULL, false);
     lv_obj_set_user_data(msgbox, app);
     lv_obj_t *content = lv_msgbox_get_content(msgbox);
     lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
 
     lv_obj_add_event_cb(content, context_menu_key_cb, LV_EVENT_KEY, controller);
-    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_SHORT_CLICKED, controller);
 
-    lv_obj_t *resume_btn = lv_list_add_btn(content, NULL, "Resume");
-    lv_obj_add_flag(resume_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_user_data(resume_btn, launcher_launch_game);
+    int currentId = controller->node->server->currentGame;
 
-    lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, "Quit Session");
-    lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_user_data(quit_btn, launcher_quit_game);
+    if (!currentId || currentId == app->base.id) {
+        lv_obj_t *start_btn = lv_list_add_btn(content, NULL, currentId == app->base.id ? "Resume" : "Start");
+        lv_obj_add_flag(start_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+        lv_obj_set_user_data(start_btn, launcher_launch_game);
+    }
+
+    if (currentId) {
+        lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, "Quit Session");
+        lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+        lv_obj_set_user_data(quit_btn, launcher_quit_game);
+    }
+    lv_obj_t *fav_btn = lv_list_add_btn(content, NULL, app->bookmarked ? "Remove bookmark" : "Bookmark");
+    lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 
     lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, "Cancel");
     lv_obj_add_flag(cancel_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
@@ -490,6 +520,8 @@ static void context_menu_click_cb(lv_event_t *e) {
         launcher_quit_game(controller);
     } else if (lv_obj_get_user_data(target) == launcher_launch_game) {
         launcher_launch_game(controller, lv_obj_get_user_data(mbox));
+    } else if (lv_obj_get_user_data(target) == launcher_toggle_fav) {
+        launcher_toggle_fav(controller, lv_obj_get_user_data(mbox));
     }
     lv_msgbox_close_async(mbox);
 }

@@ -75,6 +75,10 @@ bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanag
 
 bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata);
 
+void pcmanager_bookmark_app(SERVER_LIST *node, int appid, bool bookmarked);
+
+bool pcmanager_is_bookmarked(const SERVER_LIST *node, int appid);
+
 void pcmanager_register_listener(pcmanager_t *manager, const pcmanager_listener_t *listener, void *userdata);
 
 void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listener_t *listener);

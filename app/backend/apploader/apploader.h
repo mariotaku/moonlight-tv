@@ -11,11 +11,16 @@ typedef enum apploader_status_t {
     APPLOADER_STATUS_LOADING
 } apploader_status_t;
 
+typedef struct apploader_item_t {
+    APP_LIST base;
+    bool bookmarked;
+} apploader_item_t;
+
 typedef struct apploader_t {
     const SERVER_LIST *node;
     apploader_status_t status;
     int code;
-    APP_LIST *apps;
+    apploader_item_t *apps;
     int apps_count;
     apploader_task_t *task;
     refcounter_t refcounter;

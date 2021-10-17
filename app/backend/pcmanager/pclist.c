@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <util/bus.h>
 
+#include "listeners.h"
 
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_MODIFIER static
@@ -13,7 +14,18 @@
 #define LINKEDLIST_DOUBLE 1
 
 #include "util/linked_list.h"
-#include "listeners.h"
+
+#undef LINKEDLIST_DOUBLE
+#undef LINKEDLIST_TYPE
+#undef LINKEDLIST_PREFIX
+
+#define LINKEDLIST_IMPL
+#define LINKEDLIST_MODIFIER static
+#define LINKEDLIST_TYPE appid_list_t
+#define LINKEDLIST_PREFIX favlist
+#define LINKEDLIST_DOUBLE 1
+
+#include "util/linked_list.h"
 
 #undef LINKEDLIST_DOUBLE
 #undef LINKEDLIST_TYPE
@@ -74,6 +86,26 @@ void pcmanager_list_lock(pcmanager_t *manager) {
 
 void pcmanager_list_unlock(pcmanager_t *manager) {
     SDL_UnlockMutex(manager->servers_lock);
+}
+
+static int favlist_find_id(appid_list_t *other, const void *v) {
+    return other->id - *((const int *) v);
+}
+
+void pcmanager_bookmark_app(SERVER_LIST *node, int appid, bool bookmarked) {
+    appid_list_t *existing = favlist_find_by(node->bookmarks, &appid, favlist_find_id);
+    if (bookmarked) {
+        if (existing) return;
+        appid_list_t *item = favlist_new();
+        item->id = appid;
+        node->bookmarks = favlist_append(node->bookmarks, item);
+    } else if (existing) {
+        node->bookmarks = favlist_remove(node->bookmarks, existing);
+    }
+}
+
+bool pcmanager_is_bookmarked(const SERVER_LIST *node, int appid) {
+    return favlist_find_by(node->bookmarks, &appid, favlist_find_id) != NULL;
 }
 
 void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp) {
