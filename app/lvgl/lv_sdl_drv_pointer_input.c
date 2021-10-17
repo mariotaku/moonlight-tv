@@ -42,7 +42,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 #if HAVE_RELATIVE_MOUSE_HACK
         if (warped) {
             warped = false;
-        } else if (app_get_mouse_grab()) {
+        } else if (app_get_mouse_relative()) {
             int w, h;
             SDL_GetWindowSize(app_window, &w, &h);
             SDL_WarpMouseInWindow(app_window, w / 2, h / 2);

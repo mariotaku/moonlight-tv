@@ -227,7 +227,7 @@ int streaming_worker(session_t *session) {
 }
 
 void streaming_enter_fullscreen() {
-    app_set_mouse_grab(!app_configuration->absmouse);
+    app_set_mouse_grab(true);
     if (session_active->pres)
         session_active->pres->enterFullScreen();
 }

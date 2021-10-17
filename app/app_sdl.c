@@ -22,7 +22,6 @@
 PCONFIGURATION app_configuration = NULL;
 
 static bool window_focus_gained;
-static bool mouse_grab = false;
 static SDL_Cursor *blank_cursor = NULL;
 
 static void quit_confirm_cb(lv_event_t *e);
@@ -140,7 +139,6 @@ void app_stop_text_input() {
 }
 
 void app_set_mouse_grab(bool grab) {
-    mouse_grab = grab;
 #if HAVE_RELATIVE_MOUSE_HACK
     if (grab) {
         SDL_SetCursor(blank_cursor);
@@ -148,16 +146,16 @@ void app_set_mouse_grab(bool grab) {
         SDL_SetCursor(SDL_GetDefaultCursor());
     }
 #else
-    SDL_SetRelativeMouseMode(grab ? SDL_TRUE : SDL_FALSE);
+    SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
     if (!grab) {
         SDL_ShowCursor(SDL_TRUE);
     }
 #endif
 }
 
-bool app_get_mouse_grab() {
+bool app_get_mouse_relative() {
 #if HAVE_RELATIVE_MOUSE_HACK
-    return mouse_grab;
+    return !app_configuration->absmouse;
 #else
     return SDL_GetRelativeMouseMode() == SDL_TRUE;
 #endif

@@ -48,7 +48,7 @@ void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event) {
 
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event) {
     if (absinput_no_control) return;
-    if (app_get_mouse_grab()) {
+    if (app_get_mouse_relative()) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
     } else {
         LiSendMousePositionEvent((short) event->x, (short) event->y, streaming_display_width, streaming_display_height);

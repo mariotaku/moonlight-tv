@@ -32,7 +32,7 @@ GS_CLIENT app_gs_client_new();
 
 void app_set_mouse_grab(bool);
 
-bool app_get_mouse_grab();
+bool app_get_mouse_relative();
 
 void app_set_keep_awake(bool);
 
