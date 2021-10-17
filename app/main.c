@@ -35,8 +35,8 @@
 #endif
 
 FILE *app_logfile = NULL;
+SDL_Window *app_window = NULL;
 
-static SDL_Window *window = NULL;
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
 
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
         app_logfile = stdout;
     setvbuf(app_logfile, NULL, _IONBF, 0);
     if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
-            REDIR_STDOUT(APPID);
+        REDIR_STDOUT(APPID);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
     SDL_Init(SDL_INIT_VIDEO);
@@ -92,24 +92,24 @@ int main(int argc, char *argv[]) {
             window_height = mode.h;
         }
     }
-    window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              window_width, window_height, window_flags);
-    SDL_assert(window);
+    app_window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                  window_width, window_height, window_flags);
+    SDL_assert(app_window);
 #if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
     SDL_SetWindowIcon(window, winicon);
     SDL_FreeSurface(winicon);
 #endif
     if (window_flags & SDL_WINDOW_RESIZABLE) {
-        SDL_SetWindowMinimumSize(window, 960, 540);
+        SDL_SetWindowMinimumSize(app_window, 960, 540);
     }
     int w = 0, h = 0;
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSize(app_window, &w, &h);
     SDL_assert(w > 0 && h > 0);
     ui_display_size(w, h);
 
     lv_init();
-    lv_disp_t *disp = lv_app_display_init(window);
+    lv_disp_t *disp = lv_app_display_init(app_window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
     lv_theme_t theme_app = *parent_theme;
     lv_theme_set_parent(&theme_app, parent_theme);
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
     lv_img_decoder_delete(img_decoder);
     lv_deinit();
 
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(app_window);
 
     backend_destroy();
     decoder_finalize(decoder_current);
@@ -223,7 +223,7 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
 }
 
 void app_set_fullscreen(bool fullscreen) {
-    SDL_SetWindowFullscreen(window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
+    SDL_SetWindowFullscreen(app_window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
 
 static void app_input_populate_group() {

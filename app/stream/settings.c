@@ -91,9 +91,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->viewonly = false;
     config->rotate = 0;
     config->codec = CODEC_UNSPECIFIED;
-#ifdef HAVE_FORCED_ABSMOUSE
     config->absmouse = true;
-#endif
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
@@ -147,9 +145,7 @@ bool settings_read(char *filename, PCONFIGURATION config) {
     config_lookup_bool_std(&libconfig, "host.quitappafter", &config->quitappafter);
 
     config_lookup_bool_std(&libconfig, "host.viewonly", &config->viewonly);
-#ifndef HAVE_FORCED_ABSMOUSE
     config_lookup_bool_std(&libconfig, "input.absmouse", &config->absmouse);
-#endif
     config_lookup_bool_std(&libconfig, "input.swap_abxy", &config->swap_abxy);
 
     char *str_tmp = NULL;

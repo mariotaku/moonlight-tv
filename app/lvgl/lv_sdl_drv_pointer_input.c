@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <stream/input/sdlinput.h>
 #include <util/logging.h>
+#include <app.h>
 
 #include "lvgl.h"
 #include "lv_sdl_drv_pointer_input.h"
@@ -31,11 +32,25 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         indev_point_def(data);
         return;
     }
-    absinput_dispatch_event(&e);
+    static bool warped = false;
     if (e.type == SDL_MOUSEMOTION) {
+        if (!warped) {
+            absinput_dispatch_event(&e);
+        }
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
+#if HAVE_RELATIVE_MOUSE_HACK
+        if (warped) {
+            warped = false;
+        } else if (app_get_mouse_grab()) {
+            int w, h;
+            SDL_GetWindowSize(app_window, &w, &h);
+            SDL_WarpMouseInWindow(app_window, w / 2, h / 2);
+            warped = true;
+        }
+#endif
     } else {
+        absinput_dispatch_event(&e);
         data->state = e.button.state;
         data->point = (lv_point_t) {.x = e.button.x, .y = e.button.y};
     }

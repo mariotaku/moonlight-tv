@@ -1,4 +1,3 @@
-#include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 
 #include "app.h"
@@ -9,60 +8,49 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event)
-{
+void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
     if (absinput_no_control)
         return;
     int button = 0;
-    switch (event->button)
-    {
-    case SDL_BUTTON_LEFT:
-        button = BUTTON_LEFT;
-        break;
-    case SDL_BUTTON_MIDDLE:
-        button = BUTTON_MIDDLE;
-        break;
-    case SDL_BUTTON_RIGHT:
-        button = BUTTON_RIGHT;
-        break;
-    case SDL_BUTTON_X1:
-        button = BUTTON_X1;
-        break;
-    case SDL_BUTTON_X2:
-        button = BUTTON_X2;
-        break;
-    default:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Unhandled button event: %d",
-                    event->button);
-        return;
+    switch (event->button) {
+        case SDL_BUTTON_LEFT:
+            button = BUTTON_LEFT;
+            break;
+        case SDL_BUTTON_MIDDLE:
+            button = BUTTON_MIDDLE;
+            break;
+        case SDL_BUTTON_RIGHT:
+            button = BUTTON_RIGHT;
+            break;
+        case SDL_BUTTON_X1:
+            button = BUTTON_X1;
+            break;
+        case SDL_BUTTON_X2:
+            button = BUTTON_X2;
+            break;
+        default:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Unhandled button event: %d",
+                        event->button);
+            return;
     }
 
-    if (button != 0)
-    {
-        LiSendMouseButtonEvent(event->type == SDL_MOUSEBUTTONDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, button);
+    if (button != 0) {
+        LiSendMouseButtonEvent(event->type == SDL_MOUSEBUTTONDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
+                               button);
     }
 }
 
-void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event)
-{
-    if (absinput_no_control)
-        return;
-    LiSendScrollEvent(event->y);
+void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event) {
+    if (absinput_no_control) return;
+    LiSendScrollEvent((signed char) event->y);
 }
 
-void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event)
-{
-    if (absinput_no_control)
-        return;
-    // TODO https://github.com/mariotaku/moonlight-tv/issues/1
-    // TODO https://github.com/mariotaku/moonlight-tv/issues/2
-    if (SDL_GetRelativeMouseMode())
-    {
-        LiSendMouseMoveEvent(event->xrel, event->yrel);
-    }
-    else
-    {
-        LiSendMousePositionEvent(event->x, event->y, streaming_display_width, streaming_display_height);
+void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event) {
+    if (absinput_no_control) return;
+    if (app_get_mouse_grab()) {
+        LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
+    } else {
+        LiSendMousePositionEvent((short) event->x, (short) event->y, streaming_display_width, streaming_display_height);
     }
 }

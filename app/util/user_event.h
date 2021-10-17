@@ -1,7 +1,5 @@
 #pragma once
 
-#define USER_QUIT_CONFIRM 100
-
 #define USER_STREAM_CONNECTING 110
 #define USER_STREAM_OPEN 111
 #define USER_STREAM_CLOSE 118

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL.h>
 #include "lvgl.h"
 #include "lvgl/ext/lv_obj_controller.h"
 #include "stream/module/api.h"
@@ -11,6 +12,7 @@ extern FILE *app_logfile;
 extern PCONFIGURATION app_configuration;
 extern lv_controller_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
+extern SDL_Window *app_window;
 
 int app_init(int argc, char *argv[]);
 
@@ -29,6 +31,8 @@ bool ui_render_queue_submit(void *data, unsigned int pts);
 GS_CLIENT app_gs_client_new();
 
 void app_set_mouse_grab(bool);
+
+bool app_get_mouse_grab();
 
 void app_set_keep_awake(bool);
 
