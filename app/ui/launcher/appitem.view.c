@@ -11,7 +11,8 @@ static void appitem_holder_free_cb(lv_event_t *event);
 
 static void appitem_draw_decor(lv_event_t *e);
 
-lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
+lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
+    appitem_styles_t *styles = &controller->appitem_style;
     lv_obj_t *item = lv_img_create(parent);
     lv_obj_add_flag(item, LV_OBJ_FLAG_EVENT_BUBBLE | LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_clear_flag(item, LV_OBJ_FLAG_SCROLLABLE);
@@ -40,6 +41,7 @@ lv_obj_t *appitem_view(lv_obj_t *parent, appitem_styles_t *styles) {
 
     appitem_viewholder_t *holder = (appitem_viewholder_t *) malloc(sizeof(appitem_viewholder_t));
     memset(holder, 0, sizeof(appitem_viewholder_t));
+    holder->controller = controller;
     holder->play_indicator = play_indicator;
     holder->title = title;
     lv_obj_set_user_data(item, holder);

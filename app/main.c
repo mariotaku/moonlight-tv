@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     SDL_assert(app_window);
 #if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
-    SDL_SetWindowIcon(window, winicon);
+    SDL_SetWindowIcon(app_window, winicon);
     SDL_FreeSurface(winicon);
 #endif
     if (window_flags & SDL_WINDOW_RESIZABLE) {

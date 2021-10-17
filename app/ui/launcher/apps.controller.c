@@ -38,6 +38,8 @@ static void item_longpress_cb(lv_event_t *event);
 
 static void launcher_launch_game(apps_controller_t *controller, const apploader_item_t *app);
 
+static void launcher_launch_game_async(appitem_viewholder_t *holder);
+
 static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app);
 
 static void launcher_quit_game(apps_controller_t *controller);
@@ -159,7 +161,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
-    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_SHORT_CLICKED, controller);
     lv_obj_add_event_cb(applist, item_longpress_cb, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_enter, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(applist, applist_focus_leave, LV_EVENT_DEFOCUSED, controller);
@@ -364,7 +366,7 @@ static void item_click_cb(lv_event_t *event) {
         }
         return;
     }
-    launcher_launch_game(controller, holder->app);
+    lv_async_call((lv_async_cb_t) launcher_launch_game_async, holder);
 }
 
 static void item_longpress_cb(lv_event_t *event) {
@@ -387,6 +389,10 @@ static void launcher_launch_game(apps_controller_t *controller, const apploader_
     lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
 }
 
+static void launcher_launch_game_async(appitem_viewholder_t *holder) {
+    launcher_launch_game(holder->controller, holder->app);
+}
+
 static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app) {
     pcmanager_favorite_app(controller->node, app->base.id, !app->fav);
     apploader_load(controller->apploader, appload_cb, controller);
@@ -404,7 +410,7 @@ static int adapter_item_count(lv_obj_t *grid, void *data) {
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
     apps_controller_t *controller = lv_obj_get_user_data(parent);
-    return appitem_view(parent, &controller->appitem_style);
+    return appitem_view(controller, parent);
 }
 
 static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, int position) {
