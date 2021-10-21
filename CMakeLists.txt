@@ -300,10 +300,8 @@ macro(moonlight_add_module)
 endmacro()
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE
-            APPID="${WEBOS_APPINFO_ID}"
-            APPLOG_FILE=app_logfile
-            )
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}"
+            APPLOG_FILE=app_logfile)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
@@ -320,8 +318,8 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES})
+    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${PMLOG_LIBRARIES})
 elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
@@ -374,10 +372,10 @@ endif ()
 
 if (TARGET_WINDOWS)
     target_link_libraries(moonlight PRIVATE rpcrt4)
-else()
+else ()
     pkg_check_modules(UUID REQUIRED uuid)
     target_link_libraries(moonlight PRIVATE ${UUID_LIBRARIES})
-endif()
+endif ()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 

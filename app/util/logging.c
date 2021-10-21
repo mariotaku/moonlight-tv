@@ -18,19 +18,16 @@ static struct timespec app_start_time;
  * @param b the subtrahend
  * @param result a - b
  */
-static inline void timespec_diff(struct timespec *a, struct timespec *b, struct timespec *result)
-{
+static inline void timespec_diff(struct timespec *a, struct timespec *b, struct timespec *result) {
     result->tv_sec = a->tv_sec - b->tv_sec;
     result->tv_nsec = a->tv_nsec - b->tv_nsec;
-    if (result->tv_nsec < 0)
-    {
+    if (result->tv_nsec < 0) {
         --result->tv_sec;
         result->tv_nsec += 1000000000L;
     }
 }
 
-void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list args)
-{
+void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list args) {
     struct timespec ts, delta;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     timespec_diff(&ts, &app_start_time, &delta);
@@ -41,15 +38,13 @@ void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list a
         fputs("\n", APPLOG_FILE);
 }
 
-void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...)
-{
+void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     app_logvprintf(lvl, tag, fmt, args);
     va_end(args);
 }
 
-void app_loginit()
-{
+void app_loginit() {
     clock_gettime(CLOCK_MONOTONIC, &app_start_time);
 }

@@ -48,19 +48,20 @@ static void applog_logoutput(void *, int category, SDL_LogPriority priority, con
 
 SDL_Window *app_create_window();
 
+bool should_redir_output();
+
 int main(int argc, char *argv[]) {
     app_loginit();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
-#if TARGET_WEBOS || TARGET_LGNC
+#if TARGET_WEBOS
     app_logfile = fopen("/tmp/" APPID ".log", "a+");
     if (!app_logfile)
         app_logfile = stdout;
     setvbuf(app_logfile, NULL, _IONBF, 0);
-    if (getenv("MOONLIGHT_OUTPUT_NOREDIR") == NULL)
+    if (should_redir_output())
         REDIR_STDOUT(APPID);
 #endif
     applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
-    SDL_Init(SDL_INIT_VIDEO);
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
@@ -77,13 +78,15 @@ int main(int argc, char *argv[]) {
              app_configuration->decoder);
     if (audio_current == AUDIO_DECODER) {
         applog_i("APP", "Audio module: decoder implementation (%s requested)\n", app_configuration->audio_backend);
-    } else if (audio_current >= 0) {
+    } else if (audio_current >= AUDIO_FIRST) {
         applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name,
                  app_configuration->audio_backend);
     }
 
     backend_init();
 
+    // DO not init video subsystem before NDL/LGNC initialization
+    SDL_Init(SDL_INIT_VIDEO);
     app_window = app_create_window();
 
     lv_init();
@@ -142,6 +145,11 @@ int main(int argc, char *argv[]) {
 
     applog_d("APP", "Quitted gracefully :)");
     return 0;
+}
+
+bool should_redir_output() {
+    const char *noredir = getenv("MOONLIGHT_OUTPUT_NOREDIR");
+    return noredir == NULL || SDL_strncmp(noredir, "1", 1) != 0;
 }
 
 SDL_Window *app_create_window() {
@@ -222,12 +230,23 @@ void app_start_text_input(int x, int y, int w, int h) {
 }
 
 void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-    const char *priority_name[SDL_NUM_LOG_PRIORITIES] = {"VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+    static const char *priority_name[SDL_NUM_LOG_PRIORITIES] = {"VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+    static const char *category_name[SDL_LOG_CATEGORY_TEST + 1] = {
+            "SDL.APPLICATION",
+            "SDL.ERROR",
+            "SDL.ASSERT",
+            "SDL.SYSTEM",
+            "SDL.AUDIO",
+            "SDL.VIDEO",
+            "SDL.RENDER",
+            "SDL.INPUT",
+            "SDL.TEST",
+    };
 #ifndef DEBUG
     if (priority <= SDL_LOG_PRIORITY_INFO)
         return;
 #endif
-    applog(priority_name[priority], "SDL", message);
+    applog(priority_name[priority], category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], message);
 }
 
 void app_set_fullscreen(bool fullscreen) {

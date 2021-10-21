@@ -6,7 +6,9 @@
 #include <Limelight.h>
 
 #ifndef __WIN32
+
 #include <dlfcn.h>
+
 #endif
 
 #include "symbols.h"
@@ -32,9 +34,7 @@ MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
         {"webOS DILE", "dile", _dile_libs, 2, NULL},
         {"Raspberry Pi", "pi", &_pi_lib, 1, NULL},
         {"MMAL", "mmal", &lib_mmal, 1, NULL},
-#if DEBUG
         {"Null", "null", NULL, 0, NULL},
-#endif
 };
 DECODER decoder_pref_requested;
 DECODER decoder_current;
@@ -74,6 +74,7 @@ static bool decoder_try_init(DECODER ptype, int argc, char *argv[]) {
         }
 #endif
     }
+    decoder_current = DECODER_EMPTY;
     return false;
 }
 

@@ -37,9 +37,7 @@ enum DECODER_T {
     DECODER_DILE,
     DECODER_PI,
     DECODER_MMAL,
-#if DEBUG
     DECODER_EMPTY,
-#endif
     DECODER_COUNT,
     DECODER_NONE = -10,
 };
@@ -145,8 +143,6 @@ int module_audio_configuration();
 static const DECODER decoder_orders[] = {
 #if TARGET_WEBOS
         DECODER_NDL, DECODER_LGNC, DECODER_SMP
-#elif TARGET_LGNC
-        DECODER_LGNC
 #elif TARGET_RASPI
         DECODER_MMAL, DECODER_PI, DECODER_FFMPEG
 #else
