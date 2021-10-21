@@ -300,7 +300,7 @@ macro(moonlight_add_module)
 endmacro()
 
 if (TARGET_WEBOS)
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS _GNU_SOURCE
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE
             APPID="${WEBOS_APPINFO_ID}"
             APPLOG_FILE=app_logfile
             )
