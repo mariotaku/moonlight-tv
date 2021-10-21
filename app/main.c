@@ -46,6 +46,8 @@ static lv_indev_t *app_indev_key, *app_indev_wheel;
 
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
+SDL_Window *app_create_window();
+
 int main(int argc, char *argv[]) {
     app_loginit();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
@@ -81,32 +83,8 @@ int main(int argc, char *argv[]) {
     }
 
     backend_init();
-    Uint32 window_flags = SDL_WINDOW_RESIZABLE;
-    int window_width = 1920, window_height = 1080;
-    if (app_configuration->fullscreen) {
-        window_flags |= APP_FULLSCREEN_FLAG;
-        SDL_DisplayMode mode;
-        SDL_GetDisplayMode(0, 0, &mode);
-        if (mode.w > 0 && mode.h > 0) {
-            window_width = mode.w;
-            window_height = mode.h;
-        }
-    }
-    app_window = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                  window_width, window_height, window_flags);
-    SDL_assert(app_window);
-#if TARGET_DESKTOP || TARGET_RASPI
-    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
-    SDL_SetWindowIcon(app_window, winicon);
-    SDL_FreeSurface(winicon);
-#endif
-    if (window_flags & SDL_WINDOW_RESIZABLE) {
-        SDL_SetWindowMinimumSize(app_window, 960, 540);
-    }
-    int w = 0, h = 0;
-    SDL_GetWindowSize(app_window, &w, &h);
-    SDL_assert(w > 0 && h > 0);
-    ui_display_size(w, h);
+
+    app_window = app_create_window();
 
     lv_init();
     lv_disp_t *disp = lv_app_display_init(app_window);
@@ -164,6 +142,36 @@ int main(int argc, char *argv[]) {
 
     applog_d("APP", "Quitted gracefully :)");
     return 0;
+}
+
+SDL_Window *app_create_window() {
+    Uint32 window_flags = SDL_WINDOW_RESIZABLE;
+    int window_width = 1920, window_height = 1080;
+    if (app_configuration->fullscreen) {
+        window_flags |= APP_FULLSCREEN_FLAG;
+        SDL_DisplayMode mode;
+        SDL_GetDisplayMode(0, 0, &mode);
+        if (mode.w > 0 && mode.h > 0) {
+            window_width = mode.w;
+            window_height = mode.h;
+        }
+    }
+    SDL_Window *win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                       window_width, window_height, window_flags);
+    SDL_assert(win);
+#if TARGET_DESKTOP || TARGET_RASPI
+    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
+    SDL_SetWindowIcon(win, winicon);
+    SDL_FreeSurface(winicon);
+#endif
+    if (window_flags & SDL_WINDOW_RESIZABLE) {
+        SDL_SetWindowMinimumSize(win, 960, 540);
+    }
+    int w = 0, h = 0;
+    SDL_GetWindowSize(win, &w, &h);
+    SDL_assert(w > 0 && h > 0);
+    ui_display_size(w, h);
+    return win;
 }
 
 void app_request_exit() {
