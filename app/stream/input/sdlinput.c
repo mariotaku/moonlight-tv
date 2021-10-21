@@ -84,8 +84,12 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
 }
 
+bool absinput_should_accept() {
+    return streaming_status == STREAMING_STREAMING && !ui_should_block_input();
+}
+
 bool absinput_dispatch_event(SDL_Event *event) {
-    if (streaming_status != STREAMING_STREAMING || ui_should_block_input()) {
+    if (!absinput_should_accept()) {
         return false;
     }
     switch (event->type) {

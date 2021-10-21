@@ -73,7 +73,7 @@ lv_obj_t *progress_dialog_create(const char *message) {
     lv_obj_set_size(spinner, lv_dpx(50), lv_dpx(50));
     lv_obj_set_flex_grow(spinner, 0);
     lv_obj_t *label = lv_label_create(content);
-    lv_obj_set_style_pad_hor(label, LV_DPX(10), 0);
+    lv_obj_set_style_pad_hor(label, LV_DPX(20), 0);
     lv_label_set_text(label, message);
     lv_obj_set_flex_grow(label, 1);
 

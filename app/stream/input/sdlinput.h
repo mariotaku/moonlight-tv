@@ -21,6 +21,8 @@ extern short activeGamepadMask;
 
 bool absinput_dispatch_event(SDL_Event *event);
 
+bool absinput_should_accept();
+
 bool absinput_init_gamepad(int which);
 
 void absinput_close_gamepad(SDL_JoystickID sdl_id);
