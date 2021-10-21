@@ -7,6 +7,7 @@
 #include <SDL_image.h>
 #include <lvgl/lv_sdl_drv_key_input.h>
 #include <ui/settings/settings.controller.h>
+#include <stream/platform.h>
 #include "app.h"
 #include "launcher.controller.h"
 #include "apps.controller.h"
@@ -63,6 +64,10 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
 static const char *server_item_icon(const SERVER_LIST *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
+
+static void show_decoder_error(launcher_controller_t *controller);
+
+static void decoder_error_cb(lv_event_t *e);
 
 const lv_obj_controller_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -121,6 +126,7 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
     lv_sdl_img_src_stringify(&logo_src, controller->logo_src);
     controller->detail_opened = false;
     controller->pane_initialized = false;
+    controller->first_created = true;
 }
 
 static void controller_dtor(lv_obj_controller_t *self) {
@@ -159,8 +165,12 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_set_style_transition(controller->detail, &controller->tr_nav, 0);
     lv_obj_set_style_transition(controller->detail, &controller->tr_detail, LV_STATE_USER_1);
     current_instance = controller;
-}
 
+    if (decoder_current == DECODER_EMPTY && controller->first_created) {
+        show_decoder_error(controller);
+    }
+    controller->first_created = false;
+}
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     current_instance = NULL;
@@ -405,6 +415,22 @@ static void open_manual_add(lv_event_t *event) {
 static void open_settings(lv_event_t *event) {
     lv_obj_controller_t *controller = event->user_data;
     lv_controller_manager_push(controller->manager, &settings_controller_cls, NULL);
+}
+
+static void show_decoder_error(launcher_controller_t *controller) {
+    static const char *btn_txts[] = {"OK", ""};
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, "Decoder not working", "placeholder", btn_txts, false);
+    lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
+    lv_label_set_text_fmt(msgview, "Unable to initialize decoder %s. Please try other decoders.",
+                          decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
+                                                                  : app_configuration->decoder);
+    lv_obj_center(msgbox);
+}
+
+static void decoder_error_cb(lv_event_t *e) {
+    lv_obj_t *msgbox = lv_event_get_current_target(e);
+    lv_msgbox_close_async(msgbox);
 }
 
 static void open_help(lv_event_t *event) {
