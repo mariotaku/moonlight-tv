@@ -30,9 +30,9 @@ bool audio_init(int argc, char *argv[], PHOST_CONTEXT hctx)
     else
     {
         media_initialized = false;
-        applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
+        applog_e("NDLAud", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
     }
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     memset(&media_info, 0, sizeof(media_info));
 #endif
     return media_initialized;

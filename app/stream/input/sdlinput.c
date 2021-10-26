@@ -152,7 +152,7 @@ bool absinput_init_gamepad(int joystick_index) {
         SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
         char guidstr[33];
         SDL_JoystickGetGUIDString(guid, guidstr, 33);
-        applog_w("Input", "Unrecognized game controller. GUID: %s", guidstr);
+        applog_w("Input", "Unrecognized game controller %s. GUID: %s", SDL_JoystickNameForIndex(joystick_index), guidstr);
     }
     return false;
 }

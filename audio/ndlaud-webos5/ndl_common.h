@@ -10,7 +10,7 @@
 #define media_unload PLUGIN_SYMBOL_NAME(audio_media_unload)
 
 extern bool media_initialized;
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
 extern bool media_loaded;
 extern NDL_DIRECTMEDIA_DATA_INFO media_info;
 int media_reload();

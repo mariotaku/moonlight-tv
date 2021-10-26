@@ -73,7 +73,7 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
   int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
   if (decodeLen > 0)
   {
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short), 0);
 #else
     NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short));

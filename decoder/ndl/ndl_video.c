@@ -20,7 +20,7 @@ static char *ndl_buffer;
 
 static int ndl_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
 {
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
   switch (videoFormat)
   {
   case VIDEO_FORMAT_H264:
@@ -54,7 +54,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
   if (ndl_buffer == NULL)
   {
     applog_e("NDL", "Not enough memory");
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     media_unload();
 #else
     NDL_DirectVideoClose();
@@ -66,7 +66,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
 
 static void ndl_cleanup()
 {
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
   media_unload();
   memset(&media_info.video, 0, sizeof(media_info.video));
 #else
@@ -80,7 +80,7 @@ static void ndl_cleanup()
 
 static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
 {
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
   if (!media_loaded)
     return DR_NEED_IDR;
 #endif
@@ -93,7 +93,7 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit)
       length += entry->length;
     }
 
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     if (NDL_DirectVideoPlay(ndl_buffer, length, 0) != 0)
 #else
     if (NDL_DirectVideoPlay(ndl_buffer, length) != 0)

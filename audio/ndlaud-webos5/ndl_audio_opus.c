@@ -52,11 +52,11 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
     media_info.audio.opus.streamHeader = base64_encode(opusHead, headSize, NULL);
   }
 #endif
-  applog_d("NDL", "Reloading audio: channelCount=%d, sampleRate=%d, header=%s", opusConfig->channelCount, opusConfig->sampleRate,
+  applog_d("NDLAud", "Reloading audio: channelCount=%d, sampleRate=%d, header=%s", opusConfig->channelCount, opusConfig->sampleRate,
            media_info.audio.opus.streamHeader);
   if (media_reload() != 0)
   {
-    applog_e("NDL", "Failed to open audio: %s", NDL_DirectMediaGetError());
+    applog_e("NDLAud", "Failed to open audio: %s", NDL_DirectMediaGetError());
     return ERROR_AUDIO_OPEN_FAILED;
   }
   return 0;
@@ -75,7 +75,7 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
     return;
   if (NDL_DirectAudioPlay(data, length, 0) != 0)
   {
-    applog_e("NDL", "Error playing sample");
+    applog_e("NDLAud", "Error playing sample");
   }
 }
 

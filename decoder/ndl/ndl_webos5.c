@@ -11,7 +11,7 @@ NDL_DIRECTMEDIA_DATA_INFO media_info;
 
 static void media_load_callback(int type, long long numValue, const char *strValue)
 {
-    applog_d("NDL", "MediaLoadCallback type=%d, numValue=%x, strValue=%p", type, numValue, strValue);
+    applog_i("NDL", "MediaLoadCallback type=%d, numValue=%x, strValue=%p", type, numValue, strValue);
 }
 
 int media_reload()

@@ -44,7 +44,7 @@ static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURA
     return ERROR_AUDIO_OPUS_INIT_FAILED;
 
   channelCount = opusConfig->channelCount;
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
   media_info.audio.type = NDL_AUDIO_TYPE_PCM;
   media_info.audio.pcm.channelMode = NDL_DIRECTMEDIA_AUDIO_PCM_MODE_STEREO;
   media_info.audio.pcm.format = NDL_DIRECTMEDIA_AUDIO_PCM_FORMAT_S16LE;
@@ -83,7 +83,7 @@ static void ndl_renderer_cleanup()
   if (decoder != NULL)
     opus_multistream_decoder_destroy(decoder);
 
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
   media_unload();
   memset(&media_info.audio, 0, sizeof(media_info.audio));
 #else
@@ -96,7 +96,7 @@ static void ndl_renderer_decode_and_play_sample(char *data, int length)
   int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
   if (decodeLen > 0)
   {
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short), 0);
 #else
     NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short));

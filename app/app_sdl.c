@@ -33,9 +33,16 @@ int app_init(int argc, char *argv[]) {
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
 #endif
+    return 0;
+}
+
+void app_init_video() {
+    SDL_Init(SDL_INIT_VIDEO);
     SDL_Surface *surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
     blank_cursor = SDL_CreateColorCursor(surface, 0, 0);
-    return 0;
+    if (!blank_cursor) {
+        applog_w("Input", "Failed to create blank cursor: %s", SDL_GetError());
+    }
 }
 
 void inputmgr_sdl_handle_event(SDL_Event *ev);
@@ -141,6 +148,7 @@ void app_stop_text_input() {
 void app_set_mouse_grab(bool grab) {
 #if HAVE_RELATIVE_MOUSE_HACK
     if (grab) {
+        applog_d("Input", "Set cursor to blank bitmap: %p", blank_cursor);
         SDL_SetCursor(blank_cursor);
     } else {
         SDL_SetCursor(SDL_GetDefaultCursor());

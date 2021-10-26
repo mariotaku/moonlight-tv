@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     if (should_redir_output())
         REDIR_STDOUT(APPID);
 #endif
-    applog_d("APP", "Start Moonlight. Version %s", APP_VERSION);
+    applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     backend_init();
 
     // DO not init video subsystem before NDL/LGNC initialization
-    SDL_Init(SDL_INIT_VIDEO);
+    app_init_video();
     app_window = app_create_window();
 
     lv_init();
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]) {
     SDL_DestroyMutex(app_gs_client_mutex);
     SDL_Quit();
 
-    applog_d("APP", "Quitted gracefully :)");
+    applog_i("APP", "Quitted gracefully :)");
     return 0;
 }
 

@@ -55,14 +55,14 @@ MODULE_API bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
         media_initialized = false;
         applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
     }
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     memset(&media_info, 0, sizeof(media_info));
 #endif
     return media_initialized;
 }
 
 MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
-#ifndef NDL_WEBOS5
+#ifndef WEBOS_TARGET_VERSION_MAJOR >= 5
     // On webOS 5, loading video requires SDL window to be created. This can cause a lot trouble.
     // So we cheese it and assume it's supported.
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
@@ -74,7 +74,7 @@ MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->valid = true;
     dinfo->accelerated = true;
     dinfo->audio = true;
-#if NDL_WEBOS5
+#if WEBOS_TARGET_VERSION_MAJOR >= 5
     dinfo->hevc = true;
     dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
 #endif
