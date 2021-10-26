@@ -152,7 +152,8 @@ bool absinput_init_gamepad(int joystick_index) {
         SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
         char guidstr[33];
         SDL_JoystickGetGUIDString(guid, guidstr, 33);
-        applog_w("Input", "Unrecognized game controller %s. GUID: %s", SDL_JoystickNameForIndex(joystick_index), guidstr);
+        const char *name = SDL_JoystickNameForIndex(joystick_index);
+        applog_w("Input", "Unrecognized game controller %s. GUID: %s", name, guidstr);
     }
     return false;
 }
@@ -178,4 +179,11 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id) {
     applog_i("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
     // Release the state so it can be reused later
     memset(state, 0, sizeof(GAMEPAD_STATE));
+}
+
+bool absinput_gamepad_known(SDL_JoystickID sdl_id) {
+    for (short i = 0; i < 4; i++) {
+        if (gamepads[i].initialized && gamepads[i].sdl_id == sdl_id) return true;
+    }
+    return false;
 }

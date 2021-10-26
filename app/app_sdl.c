@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <SDL.h>
+#include <stream/input/sdlinput.h>
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_disp_drv_app.h"
 
