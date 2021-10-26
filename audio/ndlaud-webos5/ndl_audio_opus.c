@@ -34,13 +34,10 @@
 
 #define FRAME_SIZE 240
 
-static int channelCount;
-
 static size_t write_opus_header(POPUS_MULTISTREAM_CONFIGURATION opusConfig, unsigned char *out);
 
 static int ndl_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
 {
-  channelCount = opusConfig->channelCount;
   media_info.audio.type = NDL_AUDIO_TYPE_OPUS;
   media_info.audio.opus.channels = opusConfig->channelCount;
   media_info.audio.opus.sampleRate = (double)opusConfig->sampleRate / 1000.0f;
@@ -119,7 +116,7 @@ static size_t write_opus_header(POPUS_MULTISTREAM_CONFIGURATION opusConfig, unsi
   }
 }
 
-AUDIO_RENDERER_CALLBACKS audio_callbacks = {
+MODULE_API AUDIO_RENDERER_CALLBACKS audio_callbacks = {
     .init = ndl_renderer_init,
     .cleanup = ndl_renderer_cleanup,
     .decodeAndPlaySample = ndl_renderer_decode_and_play_sample,

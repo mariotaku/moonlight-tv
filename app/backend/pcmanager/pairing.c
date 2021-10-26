@@ -145,7 +145,7 @@ int unpair_worker(cm_request_t *req) {
     pcmanager_t *manager = req->manager;
     GS_CLIENT client = app_gs_client_new();
     PSERVER_DATA server = serverdata_clone(req->server);
-    gs_set_timeout(client, 60);
+    gs_set_timeout(client, 5);
     int ret = gs_unpair(client, server);
     gs_destroy(client);
 

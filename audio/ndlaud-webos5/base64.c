@@ -8,6 +8,7 @@
 
 #include "base64.h"
 #include <string.h>
+#include <stdlib.h>
 
 static const unsigned char base64_table[65] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -24,10 +25,10 @@ static const unsigned char base64_table[65] =
  * nul terminated to make it easier to use as a C string. The nul terminator is
  * not included in out_len.
  */
-unsigned char * base64_encode(const unsigned char *src, size_t len,
+char * base64_encode(const unsigned char *src, size_t len,
 			      size_t *out_len)
 {
-	unsigned char *out, *pos;
+	char *out, *pos;
 	const unsigned char *end, *in;
 	size_t olen;
 	int line_len;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <NDL_directmedia.h>
 
 #include "stream/module/api.h"
@@ -10,9 +11,9 @@
 #define media_unload PLUGIN_SYMBOL_NAME(audio_media_unload)
 
 extern bool media_initialized;
-#if WEBOS_TARGET_VERSION_MAJOR >= 5
 extern bool media_loaded;
 extern NDL_DIRECTMEDIA_DATA_INFO media_info;
+
 int media_reload();
+
 void media_unload();
-#endif
