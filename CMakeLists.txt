@@ -3,6 +3,8 @@ project(moonlight
         VERSION 1.1.3
         LANGUAGES C
         )
+# To suppress warnings for MbedTLS
+set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH
