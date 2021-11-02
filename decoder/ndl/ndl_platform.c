@@ -62,7 +62,7 @@ MODULE_API bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
 }
 
 MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
-#ifndef WEBOS_TARGET_VERSION_MAJOR >= 5
+#if WEBOS_TARGET_VERSION_MAJOR < 5
     // On webOS 5, loading video requires SDL window to be created. This can cause a lot trouble.
     // So we cheese it and assume it's supported.
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};

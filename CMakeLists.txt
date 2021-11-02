@@ -92,8 +92,7 @@ find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(CURL REQUIRED libcurl)
-pkg_check_modules(EXPAT REQUIRED expat)
+find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Config REQUIRED)
