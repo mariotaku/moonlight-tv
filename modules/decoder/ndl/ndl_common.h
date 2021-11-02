@@ -1,22 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
+#pragma once
 
 #include <NDL_directmedia.h>
 
-#define MODULE_IMPL
-
-#include "ndl_common.h"
 #include "stream/module/api.h"
-#include "util/logging.h"
 
-bool media_initialized = false;
-logvprintf_fn module_logvprintf;
-
-#define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
-#define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
-#define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
+#define media_initialized PLUGIN_SYMBOL_NAME(decoder_media_initialized)
+#define media_loaded PLUGIN_SYMBOL_NAME(decoder_media_loaded)
+#define media_info PLUGIN_SYMBOL_NAME(decoder_media_info)
+#define media_reload PLUGIN_SYMBOL_NAME(decoder_media_reload)
+#define media_unload PLUGIN_SYMBOL_NAME(decoder_media_unload)
 
 const static uint8_t h264_test_frame[] = {
         0x00, 0x00, 0x00, 0x01, 0x67, 0x64, 0x00, 0x20, 0xac, 0x2b, 0x40, 0x28, 0x02, 0xdd, 0x80, 0xb5, 0x06, 0x06,
@@ -45,47 +37,4 @@ const static uint8_t h264_test_frame[] = {
         0xa0, 0x00, 0x20, 0x00, 0x02, 0x16, 0xb8, 0x00, 0x08, 0x08
 };
 
-MODULE_API bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
-    if (hctx) {
-        module_logvprintf = hctx->logvprintf;
-    }
-    if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0) {
-        media_initialized = true;
-    } else {
-        media_initialized = false;
-        applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
-    }
-#if WEBOS_TARGET_VERSION_MAJOR >= 5
-    memset(&media_info, 0, sizeof(media_info));
-#endif
-    return media_initialized;
-}
-
-MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
-#if WEBOS_TARGET_VERSION_MAJOR < 5
-    // On webOS 5, loading video requires SDL window to be created. This can cause a lot trouble.
-    // So we cheese it and assume it's supported.
-    NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
-    if (NDL_DirectVideoOpen(&info) != 0)
-        return false;
-    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame));
-    NDL_DirectVideoClose();
-#endif
-    dinfo->valid = true;
-    dinfo->accelerated = true;
-    dinfo->audio = true;
-#if WEBOS_TARGET_VERSION_MAJOR >= 5
-    dinfo->hevc = true;
-    dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
-#endif
-    dinfo->colorSpace = COLORSPACE_REC_709;
-    dinfo->maxBitrate = 50000;
-    return true;
-}
-
-MODULE_API void decoder_finalize() {
-    if (media_initialized) {
-        NDL_DirectMediaQuit();
-        media_initialized = false;
-    }
-}
+extern bool media_initialized;

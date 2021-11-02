@@ -18,8 +18,8 @@ if (DECODER_DILE_CURRENT_ENABLED)
 
 add_library(moonlight-dile SHARED ${COMMON_SRC} current/services_current.c current/VideoOutputService.c)
 
-target_include_directories(moonlight-dile PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+target_include_directories(moonlight-dile PRIVATE
+        .
     ${CMAKE_SOURCE_DIR}/app/stream/audio
     ${CMAKE_SOURCE_DIR}/app/stream/video
     ${CMAKE_SOURCE_DIR}/app
@@ -43,8 +43,8 @@ add_library(moonlight-dile-legacy SHARED ${COMMON_SRC}
     legacy/TVService.c
 )
 
-target_include_directories(moonlight-dile-legacy PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+target_include_directories(moonlight-dile-legacy PRIVATE
+        .
     ${CMAKE_SOURCE_DIR}/app/stream/audio
     ${CMAKE_SOURCE_DIR}/app/stream/video
     ${CMAKE_SOURCE_DIR}/app

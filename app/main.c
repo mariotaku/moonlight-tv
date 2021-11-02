@@ -54,11 +54,14 @@ int main(int argc, char *argv[]) {
     app_loginit();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
 #if TARGET_WEBOS
-    app_logfile = fopen("/tmp/" APPID ".log", "a+");
+    bool should_redir = should_redir_output();
+    if (should_redir) {
+        app_logfile = fopen("/tmp/" APPID ".log", "a+");
+    }
     if (!app_logfile)
         app_logfile = stdout;
     setvbuf(app_logfile, NULL, _IONBF, 0);
-    if (should_redir_output())
+    if (should_redir)
         REDIR_STDOUT(APPID);
 #endif
     applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
@@ -70,24 +73,15 @@ int main(int argc, char *argv[]) {
     }
     module_host_context.logvprintf = &app_logvprintf;
 
-    // LGNC requires init before window created, don't put this after app_window_create!
-    decoder_init(app_configuration->decoder, argc, argv);
-    audio_init(app_configuration->audio_backend, argc, argv);
-
-    applog_i("APP", "Decoder module: %s (%s requested)", decoder_definitions[decoder_current].name,
-             app_configuration->decoder);
-    if (audio_current == AUDIO_DECODER) {
-        applog_i("APP", "Audio module: decoder implementation (%s requested)\n", app_configuration->audio_backend);
-    } else if (audio_current >= AUDIO_FIRST) {
-        applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name,
-                 app_configuration->audio_backend);
-    }
+    module_init(argc, argv);
 
     backend_init();
 
     // DO not init video subsystem before NDL/LGNC initialization
     app_init_video();
     app_window = app_create_window();
+
+    module_post_init(argc, argv);
 
     lv_init();
     lv_disp_t *disp = lv_app_display_init(app_window);

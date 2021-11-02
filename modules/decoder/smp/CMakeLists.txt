@@ -16,7 +16,7 @@ target_include_directories(moonlight-smp-webos3 PRIVATE
     ${CMAKE_SOURCE_DIR}/app/stream/video
 )
 target_include_directories(moonlight-smp-webos3 PRIVATE ${GLIB_INCLUDE_DIRS})
-target_include_directories(moonlight-smp-webos3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(moonlight-smp-webos3 PRIVATE src)
 target_include_directories(moonlight-smp-webos3 PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp-webos3 PRIVATE moonlight-common-c playerAPIs Acb)
 target_compile_definitions(moonlight-smp-webos3 PRIVATE USE_ACB PLUGIN_SYMBOL_SUFFIX=smp_webos3 SMP_DECODER_NS=MoonlightStarfish_webOS3)
@@ -37,7 +37,7 @@ target_include_directories(moonlight-smp-webos4 PRIVATE
     ${CMAKE_SOURCE_DIR}/app/stream/video
 )
 target_include_directories(moonlight-smp-webos4 PRIVATE ${GLIB_INCLUDE_DIRS})
-target_include_directories(moonlight-smp-webos4 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(moonlight-smp-webos4 PRIVATE src)
 target_include_directories(moonlight-smp-webos4 PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp-webos4 PRIVATE moonlight-common-c playerAPIs Acb)
 target_compile_definitions(moonlight-smp-webos4 PRIVATE USE_ACB PLUGIN_SYMBOL_SUFFIX=smp_webos4 SMP_DECODER_NS=MoonlightStarfish_webOS4)
@@ -58,7 +58,7 @@ target_include_directories(moonlight-smp PRIVATE
     ${CMAKE_SOURCE_DIR}/app/stream/video
 )
 target_include_directories(moonlight-smp PRIVATE ${SDL2_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS})
-target_include_directories(moonlight-smp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(moonlight-smp PRIVATE src)
 target_include_directories(moonlight-smp PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_link_libraries(moonlight-smp PRIVATE moonlight-common-c playerAPIs ${SDL2_LIBRARIES})
 target_compile_definitions(moonlight-smp PRIVATE USE_SDL_WEBOS PLUGIN_SYMBOL_SUFFIX=smp SMP_DECODER_NS=MoonlightStarfish)

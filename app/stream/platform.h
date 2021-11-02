@@ -30,14 +30,14 @@
 enum DECODER_T {
     DECODER_AUTO = -1,
     DECODER_FIRST = 0,
-    DECODER_FFMPEG = DECODER_FIRST,
+    DECODER_EMPTY = DECODER_FIRST,
+    DECODER_FFMPEG,
     DECODER_NDL,
     DECODER_LGNC,
     DECODER_SMP,
     DECODER_DILE,
     DECODER_PI,
     DECODER_MMAL,
-    DECODER_EMPTY,
     DECODER_COUNT,
     DECODER_NONE = -10,
 };
@@ -47,14 +47,13 @@ enum AUDIO_T {
     AUDIO_DECODER = -2,
     AUDIO_AUTO = -1,
     AUDIO_FIRST = 0,
-    AUDIO_SDL = AUDIO_FIRST,
+    AUDIO_EMPTY = AUDIO_FIRST,
+    AUDIO_SDL,
     AUDIO_PULSE,
     AUDIO_ALSA,
     AUDIO_NDL,
-#if DEBUG
-    AUDIO_EMPTY,
-#endif
     AUDIO_COUNT,
+    AUDIO_NONE = -10,
 };
 typedef enum AUDIO_T AUDIO;
 
@@ -69,6 +68,7 @@ typedef void (*MODULE_FINALIZE_FN)();
 typedef struct DECODER_SYMBOLS_T {
     bool valid;
     MODULE_INIT_FN init;
+    MODULE_INIT_FN post_init;
     DECODER_CHECK_FN check;
     MODULE_FINALIZE_FN finalize;
     PAUDIO_RENDERER_CALLBACKS adec;
@@ -116,6 +116,10 @@ DECODER decoder_by_id(const char *id);
 
 DECODER decoder_init(const char *name, int argc, char *argv[]);
 
+bool decoder_post_init(DECODER decoder, int libidx, int argc, char *argv[]);
+
+bool decoder_check_info(DECODER platform, int libidx);
+
 PDECODER_RENDERER_CALLBACKS decoder_get_video();
 
 PVIDEO_PRESENTER_CALLBACKS decoder_get_presenter();
@@ -161,3 +165,8 @@ static const AUDIO audio_orders[] = {
         AUDIO_SDL,
 };
 static const int audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);
+
+
+void module_init(int argc, char *argv[]);
+
+void module_post_init(int argc, char *argv[]);

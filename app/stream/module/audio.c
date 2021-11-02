@@ -3,7 +3,9 @@
 #include <string.h>
 
 #ifndef __WIN32
+
 #include <dlfcn.h>
+
 #endif
 
 #include "util/logging.h"
@@ -23,7 +25,7 @@ bool audio_check_sdl(PAUDIO_INFO ainfo);
 
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 
-AUDIO_SYMBOLS audio_sdl = {
+const static AUDIO_SYMBOLS audio_sdl = {
         true,
         NULL,
         &audio_check_sdl,
@@ -36,17 +38,15 @@ AUDIO_SYMBOLS audio_sdl = {
 #endif
 
 MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
+        {"Null", "null", NULL, 0, NULL},
         {"SDL Audio", "sdl", NULL, 0, AUDIO_SYMBOLS_SDL},
         {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
         {"ALSA", "alsa", &_alsa_lib, 1, NULL},
         {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
-#if DEBUG
-        {"Null", "null", NULL, 0, NULL},
-#endif
 };
 
 AUDIO audio_pref_requested;
-AUDIO audio_current;
+AUDIO audio_current = AUDIO_NONE;
 int audio_current_libidx;
 AUDIO_INFO audio_info;
 
