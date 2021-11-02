@@ -4,10 +4,15 @@ TOPDIR=$(git rev-parse --show-toplevel)
 
 if [ $TOPDIR != $PWD ]; then
     echo "Please invoke this script in project root directory"
-    return 1
+    exit 1
 fi
 
-CMAKE_BIN=/usr/bin/cmake
+CMAKE_BIN=$(which cmake)
+
+if [ -z $CMAKE_BIN ]; then
+    echo "Please install CMake."
+    exit 1
+fi
 
 echo "Update submodules"
 git submodule update --init --recursive
