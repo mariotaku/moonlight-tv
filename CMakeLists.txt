@@ -260,8 +260,7 @@ target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" AP
 target_compile_definitions(moonlight PRIVATE LV_LVGL_H_INCLUDE_SIMPLE=1)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/decoder)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/audio)
+target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/modules)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
 target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 

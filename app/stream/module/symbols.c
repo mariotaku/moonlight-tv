@@ -6,7 +6,7 @@
 
 #if DECODER_FFMPEG_STATIC
 
-#include "ffmpeg/ffmpeg_symbols.h"
+#include "decoder/ffmpeg/ffmpeg_symbols.h"
 
 const DECODER_SYMBOLS decoder_ffmpeg = {
         .valid = true,
