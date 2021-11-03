@@ -96,6 +96,8 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
     req->server = serverdata_clone(server);
     req->config = config;
     req->appId = app->id;
+    req->mutex = SDL_CreateMutex();
+    req->cond = SDL_CreateCond();
     req->thread = SDL_CreateThread((SDL_ThreadFunction) streaming_worker, "session", req);
     session_active = req;
     return 0;
@@ -103,7 +105,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
 
 void streaming_interrupt(bool quitapp) {
     session_t *session = session_active;
-    if (!session) {
+    if (!session || session->interrupted) {
         return;
     }
     SDL_LockMutex(session->mutex);
@@ -222,6 +224,8 @@ int streaming_worker(session_t *session) {
     session->pres = NULL;
     serverdata_free(session->server);
     settings_free(config);
+    SDL_DestroyCond(session->cond);
+    SDL_DestroyMutex(session->mutex);
     free(session);
     session_active = NULL;
     return 0;
