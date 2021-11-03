@@ -35,13 +35,13 @@ MODULE_API bool decoder_post_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
 
 MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     if (!media_initialized) return false;
-    NDL_DIRECTMEDIA_DATA_INFO info = {
-            .audio = {.type = 0},
-            .video = {.width = 1280, .height = 720, .type = NDL_VIDEO_TYPE_H264},
-    };
-    NDL_DirectMediaLoad(&info, NULL);
-    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame), 0);
-    NDL_DirectMediaUnload();
+//    NDL_DIRECTMEDIA_DATA_INFO info = {
+//            .audio = {.type = 0},
+//            .video = {.width = 1280, .height = 720, .type = NDL_VIDEO_TYPE_H264},
+//    };
+//    NDL_DirectMediaLoad(&info, NULL);
+//    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame), 0);
+//    NDL_DirectMediaUnload();
     dinfo->valid = true;
     dinfo->accelerated = true;
     dinfo->audio = true;
