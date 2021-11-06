@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.6)
 
-add_library(moonlight-ndl-webos5 SHARED 
-    ndl_platform_v2.c
+add_library(moonlight-ndl-webos5 SHARED
+    ndl_platform.c
     ndl_audio_opus.c
     ndl_video.c
     ndl_webos5.c

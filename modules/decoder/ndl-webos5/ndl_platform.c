@@ -46,7 +46,17 @@ MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->accelerated = true;
     dinfo->audio = true;
     dinfo->hevc = true;
-    dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
+#if DEBUG
+    int support_multi_channel = 0;
+    if (NDL_DirectAudioSupportMultiChannel(&support_multi_channel) == 0 && support_multi_channel) {
+        dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
+    } else {
+        dinfo->audioConfig = AUDIO_CONFIGURATION_STEREO;
+    }
+    dinfo->hdr = DECODER_HDR_ALWAYS;
+#else
+    dinfo->audioConfig = AUDIO_CONFIGURATION_STEREO;
+#endif
     dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->maxBitrate = 50000;
     return true;
