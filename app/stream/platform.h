@@ -128,6 +128,8 @@ PVIDEO_RENDER_CALLBACKS decoder_get_render();
 
 void decoder_finalize();
 
+int decoder_max_framerate();
+
 extern AUDIO audio_pref_requested;
 extern AUDIO audio_current;
 extern int audio_current_libidx;

@@ -14,12 +14,6 @@
 #include "util/user_event.h"
 #include "util/logging.h"
 
-#if TARGET_WEBOS
-#define FORCE_FULLSCREEN
-#elif TARGET_RASPI
-#define FORCE_FULLSCREEN
-#endif
-
 PCONFIGURATION app_configuration = NULL;
 
 static bool window_focus_gained;

@@ -34,6 +34,8 @@ option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" OFF)
 
+set(FEATURE_FORCE_FULLSCREEN 0)
+
 include(LintOptions)
 
 if (TARGET_WEBOS)
@@ -300,6 +302,7 @@ macro(moonlight_add_module)
 endmacro()
 
 if (TARGET_WEBOS)
+    set(FEATURE_FORCE_FULLSCREEN 1)
     target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}"
             APPLOG_FILE=app_logfile)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_RELATIVE_MOUSE_HACK)
@@ -369,6 +372,8 @@ elseif (TARGET_DESKTOP)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
+
+target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=${FEATURE_FORCE_FULLSCREEN})
 
 if (TARGET_WINDOWS)
     target_link_libraries(moonlight PRIVATE rpcrt4)

@@ -185,7 +185,7 @@ lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title) {
     lv_obj_set_style_outline_color(label, lv_theme_get_color_primary(label), LV_STATE_FOCUS_KEY);
     lv_obj_set_style_outline_width(label, LV_DPX(3), LV_STATE_FOCUS_KEY);
     lv_obj_set_style_outline_pad(label, LV_DPX(3), LV_STATE_FOCUS_KEY);
-    lv_obj_set_style_radius(label, LV_DPX(12), 0);
+    lv_obj_set_style_radius(label, LV_DPX(4), 0);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
     if (title) {
         lv_label_set_text(label, title);

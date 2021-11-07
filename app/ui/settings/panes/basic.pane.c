@@ -46,6 +46,7 @@ static const int supported_resolutions_len = sizeof(supported_resolutions) / siz
 static const pref_dropdown_int_entry_t supported_fps[] = {
         {"30 FPS",  30},
         {"60 FPS",  60, true},
+        {"90 FPS",  90},
         {"120 FPS", 120},
 };
 static const int supported_fps_len = sizeof(supported_fps) / sizeof(pref_dropdown_int_entry_t);
@@ -67,8 +68,12 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_width(resolution_dropdown, LV_PCT(60));
     lv_obj_add_event_cb(resolution_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
-    lv_obj_t *fps_dropdown = pref_dropdown_int(parent, supported_fps, supported_fps_len,
-                                               &app_configuration->stream.fps);
+    int max_fps = decoder_max_framerate();
+    int fps_len;
+    for (fps_len = supported_fps_len; fps_len > 0; fps_len--) {
+        if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) break;
+    }
+    lv_obj_t *fps_dropdown = pref_dropdown_int(parent, supported_fps, fps_len, &app_configuration->stream.fps);
     lv_obj_set_flex_grow(fps_dropdown, 1);
     lv_obj_add_event_cb(fps_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
@@ -88,8 +93,10 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
 
+#if !FEATURE_FORCE_FULLSCREEN
     lv_obj_t *checkbox = pref_checkbox(parent, "Fullscreen UI", &app_configuration->fullscreen, false);
     lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
+#endif
 
     return NULL;
 }
