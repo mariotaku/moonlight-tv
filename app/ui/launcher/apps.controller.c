@@ -80,6 +80,10 @@ static void context_menu_key_cb(lv_event_t *event);
 
 static void context_menu_click_cb(lv_event_t *event);
 
+static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app);
+
+static void app_detail_click_cb(lv_event_t *event);
+
 static apps_controller_t *current_instance = NULL;
 
 const static lv_grid_adapter_t apps_adapter = {
@@ -505,6 +509,10 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
     lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 
+    lv_obj_t *info_btn = lv_list_add_btn(content, NULL, "Info");
+    lv_obj_add_flag(info_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_user_data(info_btn, app_detail_dialog);
+
     lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, "Cancel");
     lv_obj_add_flag(cancel_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_center(msgbox);
@@ -530,6 +538,24 @@ static void context_menu_click_cb(lv_event_t *e) {
         launcher_launch_game(controller, lv_obj_get_user_data(mbox));
     } else if (lv_obj_get_user_data(target) == launcher_toggle_fav) {
         launcher_toggle_fav(controller, lv_obj_get_user_data(mbox));
+    } else if (lv_obj_get_user_data(target) == app_detail_dialog) {
+        app_detail_dialog(controller, lv_obj_get_user_data(mbox));
     }
     lv_msgbox_close_async(mbox);
+}
+
+static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app) {
+    static const char *btn_txts[] = {"OK", ""};
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, "text", btn_txts, false);
+    lv_obj_t *msgobj = lv_msgbox_get_text(msgbox);
+    lv_label_set_text_fmt(msgobj,
+                          "ID: %d\n"
+                          "Support HDR: %s",
+                          app->base.id, app->base.hdr ? "Yes" : "No");
+    lv_obj_center(msgbox);
+    lv_obj_add_event_cb(msgbox, app_detail_click_cb, LV_EVENT_VALUE_CHANGED, NULL);
+}
+
+static void app_detail_click_cb(lv_event_t *event) {
+    lv_msgbox_close_async(lv_event_get_current_target(event));
 }
