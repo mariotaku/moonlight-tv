@@ -14,6 +14,12 @@
 
 #include "util/logging.h"
 
+#if TARGET_WEBOS
+
+#include <SDL.h>
+
+#endif
+
 static MODULE_LIB_DEFINITION ffmpeg_libs[] = {
         {"ffmpeg", "ffmpeg"}
 };
@@ -264,6 +270,20 @@ DECODER decoder_by_id(const char *id) {
             return i;
     }
     return DECODER_NONE;
+}
+
+int decoder_max_framerate() {
+    int framerate = decoder_info.maxFramerate;
+#if TARGET_WEBOS
+    int panel_fps = 0;
+    SDL_webOSGetRefreshRate(&panel_fps);
+    if (framerate <= 0) {
+        framerate = panel_fps;
+    } else if (panel_fps > 0) {
+        framerate = SDL_min(panel_fps, framerate);
+    }
+#endif
+    return framerate;
 }
 
 void dlerror_log() {
