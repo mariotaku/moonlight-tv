@@ -153,7 +153,9 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
             select_pc(controller, cur, true);
-            controller->detail_opened = true;
+            if (controller->first_created) {
+                controller->detail_opened = true;
+            }
             continue;
         }
         pcmanager_request_update(pcmanager, cur->server, NULL, NULL);
