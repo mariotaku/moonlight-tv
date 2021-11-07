@@ -82,7 +82,8 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     pane->bitrate_label = pref_title_label(parent, "Video bitrate");
     update_bitrate_label(pane);
 
-    lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, 60000, BITRATE_STEP);
+    int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 50000;
+    lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
