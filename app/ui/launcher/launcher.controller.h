@@ -27,6 +27,7 @@ typedef struct {
     bool detail_opened;
     bool pane_initialized;
     bool first_created;
+    bool detail_changing;
 } launcher_controller_t;
 
 #define NAV_LOGO_SIZE 32

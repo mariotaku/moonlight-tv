@@ -333,7 +333,7 @@ static const char *server_item_icon(const SERVER_LIST *node) {
 
 static void cb_detail_focused(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
-    if (!controller->pane_initialized) return;
+    if (!controller->pane_initialized || controller->detail_changing) return;
     if (lv_obj_get_parent(event->target) != controller->detail) return;
     set_detail_opened(controller, true);
 }

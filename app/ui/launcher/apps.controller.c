@@ -250,6 +250,7 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
 static void update_view_state(apps_controller_t *controller) {
     launcher_controller_t *parent_controller = (launcher_controller_t *) lv_controller_manager_parent(
             controller->base.manager);
+    parent_controller->detail_changing = true;
     PSERVER_LIST node = controller->node;
     LV_ASSERT(node);
     lv_obj_t *applist = controller->applist;
@@ -294,6 +295,7 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_grid_set_data(controller->applist, controller->apploader->apps);
                 lv_group_focus_obj(controller->applist);
+                parent_controller->detail_changing = false;
                 return;
             }
             lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
@@ -339,6 +341,7 @@ static void update_view_state(apps_controller_t *controller) {
             break;
         }
     }
+    parent_controller->detail_changing = false;
 }
 
 static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploader_item_t *app) {
