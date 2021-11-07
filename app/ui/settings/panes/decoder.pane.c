@@ -22,6 +22,8 @@ static void pane_ctor(lv_obj_controller_t *self, void *args);
 
 static void pref_mark_restart_cb(lv_event_t *e);
 
+static void hdr_more_click_cb(lv_event_t *e);
+
 const lv_obj_controller_class_t settings_pane_decoder_cls = {
         .constructor_cb = pane_ctor,
         .create_obj_cb = create_obj,
@@ -91,6 +93,13 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
         lv_label_set_text_fmt(hdr_hint, "HDR is only supported on certain games and "
                                         "when connecting to supported monitor.");
     }
+    lv_obj_t *hdr_more = pref_desc_label(parent, "Learn more about HDR feature.");
+    lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
+    lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
+    settings_controller_t *parent_controller = (settings_controller_t *) lv_controller_manager_parent(
+            controller->base.manager);
+    lv_group_add_obj(parent_controller->detail_group, hdr_more);
+    lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
 
     return NULL;
 }
@@ -100,4 +109,8 @@ static void pref_mark_restart_cb(lv_event_t *e) {
     settings_controller_t *parent = (settings_controller_t *) lv_controller_manager_parent(controller->base.manager);
     parent->needs_restart |= decoder_current != decoder_by_id(app_configuration->decoder);
     parent->needs_restart |= audio_current != audio_by_id(app_configuration->audio_backend);
+}
+
+static void hdr_more_click_cb(lv_event_t *e) {
+    app_open_url("https://github.com/mariotaku/moonlight-tv/wiki/HDR-Support");
 }

@@ -185,6 +185,26 @@ void app_quit_confirm() {
     lv_obj_center(mbox);
 }
 
+void app_open_url(const char *url) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    SDL_OpenURL(url);
+#elif TARGET_WEBOS
+    char command[8192];
+    snprintf(command, sizeof(command), "luna-send-pub -n 1 'luna://com.webos.applicationManager/launch' "
+                                       "'{\"id\": \"com.webos.app.browser\", "
+                                       "\"params\":{\"target\": \"%s\"}}'", url);
+    system(command);
+#elif OS_LINUX
+    char command[8192];
+    snprintf(command, sizeof(command), "xdg-open '%s'", url);
+    system(command);
+#elif OS_DARWIN
+    char command[8192];
+    snprintf(command, sizeof(command), "open '%s'", url);
+    system(command);
+#endif
+}
+
 static void quit_confirm_cb(lv_event_t *e) {
     lv_obj_t *mbox = lv_event_get_current_target(e);
     if (lv_msgbox_get_active_btn(mbox) == 1) {

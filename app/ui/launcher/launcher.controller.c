@@ -434,15 +434,5 @@ static void decoder_error_cb(lv_event_t *e) {
 }
 
 static void open_help(lv_event_t *event) {
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-    SDL_OpenURL("https://github.com/mariotaku/moonlight-tv/wiki");
-#elif TARGET_WEBOS
-    system("luna-send-pub -n 1 'luna://com.webos.applicationManager/launch' "
-           "'{\"id\": \"com.webos.app.browser\", "
-           "\"params\":{\"target\": \"https://github.com/mariotaku/moonlight-tv/wiki\"}}'");
-#elif OS_LINUX
-    system("xdg-open 'https://github.com/mariotaku/moonlight-tv/wiki'&");
-#elif OS_DARWIN
-    system("open 'https://github.com/mariotaku/moonlight-tv/wiki'");
-#endif
+    app_open_url("https://github.com/mariotaku/moonlight-tv/wiki");
 }

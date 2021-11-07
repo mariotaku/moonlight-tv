@@ -47,3 +47,5 @@ lv_group_t *app_input_get_group();
 lv_group_t *app_input_get_modal_group();
 
 void app_set_fullscreen(bool);
+
+void app_open_url(const char *url);
