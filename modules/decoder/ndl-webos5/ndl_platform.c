@@ -35,18 +35,28 @@ MODULE_API bool decoder_post_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
 
 MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     if (!media_initialized) return false;
-    NDL_DIRECTMEDIA_DATA_INFO info = {
-            .audio = {.type = 0},
-            .video = {.width = 1280, .height = 720, .type = NDL_VIDEO_TYPE_H264},
-    };
-    NDL_DirectMediaLoad(&info, NULL);
-    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame), 0);
-    NDL_DirectMediaUnload();
+//    NDL_DIRECTMEDIA_DATA_INFO info = {
+//            .audio = {.type = 0},
+//            .video = {.width = 1280, .height = 720, .type = NDL_VIDEO_TYPE_H264},
+//    };
+//    NDL_DirectMediaLoad(&info, NULL);
+//    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame), 0);
+//    NDL_DirectMediaUnload();
     dinfo->valid = true;
     dinfo->accelerated = true;
     dinfo->audio = true;
     dinfo->hevc = true;
-    dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
+#if DEBUG
+    int support_multi_channel = 0;
+    if (NDL_DirectAudioSupportMultiChannel(&support_multi_channel) == 0 && support_multi_channel) {
+        dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
+    } else {
+        dinfo->audioConfig = AUDIO_CONFIGURATION_STEREO;
+    }
+    dinfo->hdr = DECODER_HDR_ALWAYS;
+#else
+    dinfo->audioConfig = AUDIO_CONFIGURATION_STEREO;
+#endif
     dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->maxBitrate = 50000;
     return true;
