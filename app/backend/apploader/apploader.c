@@ -99,7 +99,12 @@ static int apploader_task_execute(apploader_task_t *task) {
     if (task->cancelled) {
         goto finish;
     }
-    SDL_assert(ll);
+    // The app list is empty
+    if (ll == NULL) {
+        task->result = NULL;
+        task->result_count = 0;
+        goto finish;
+    }
     int result_count = applist_len(ll);
     apploader_item_t *result = SDL_malloc(result_count * sizeof(apploader_item_t));
     int index = 0;
@@ -111,7 +116,8 @@ static int apploader_task_execute(apploader_task_t *task) {
         index++;
     }
     applist_free(ll, (void (*)(APP_LIST *)) SDL_free);
-    SDL_qsort(result, result_count, sizeof(apploader_item_t), (int (*)(const void *, const void *)) applist_name_comparator);
+    SDL_qsort(result, result_count, sizeof(apploader_item_t),
+              (int (*)(const void *, const void *)) applist_name_comparator);
     task->result = result;
     task->result_count = result_count;
     finish:
