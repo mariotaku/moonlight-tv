@@ -175,8 +175,12 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     update_grid_config(controller);
     lv_obj_set_user_data(controller->applist, controller);
 
-    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
-    apploader_load(controller->apploader, appload_cb, controller);
+    if (controller->node->state.code == SERVER_STATE_NONE) {
+        pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
+        apploader_load(controller->apploader, appload_cb, controller);
+    } else if (controller->node->state.code == SERVER_STATE_ONLINE) {
+        apploader_load(controller->apploader, appload_cb, controller);
+    }
     update_view_state(controller);
 
     current_instance = controller;
@@ -295,12 +299,6 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_grid_set_data(controller->applist, controller->apploader->apps);
                 lv_group_focus_obj(controller->applist);
-                parent_controller->detail_changing = false;
-                return;
-            }
-            lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
-            if (!focused || lv_obj_has_flag(focused, LV_OBJ_FLAG_HIDDEN)) {
-                lv_group_focus_next(parent_controller->detail_group);
             }
             break;
         }
@@ -313,12 +311,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, "Unable to open games");
             lv_label_set_text_static(controller->errorlabel, "Failed to load server info");
-
-            lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
-            if (!focused || lv_obj_has_flag(focused, LV_OBJ_FLAG_HIDDEN)) {
-                lv_group_focus_next(parent_controller->detail_group);
-            }
-
+            lv_group_focus_obj(controller->actions);
+            lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
         }
         case SERVER_STATE_OFFLINE: {
@@ -330,11 +324,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, "Unable to open games");
             lv_label_set_text_static(controller->errorlabel, "Host is offline");
-
-            lv_obj_t *focused = lv_group_get_focused(parent_controller->detail_group);
-            if (!focused || lv_obj_has_flag(focused, LV_OBJ_FLAG_HIDDEN)) {
-                lv_group_focus_next(parent_controller->detail_group);
-            }
+            lv_group_focus_obj(controller->actions);
+            lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
         }
         default: {
