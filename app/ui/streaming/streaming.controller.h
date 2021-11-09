@@ -8,8 +8,9 @@ typedef struct {
     lv_obj_controller_t base;
     lv_group_t *group;
     lv_obj_t *progress;
-    lv_obj_t *suspend_btn;
     lv_obj_t *video;
+    lv_obj_t *kbd_btn;
+    lv_obj_t *suspend_btn;
     lv_obj_t *quit_btn;
     lv_obj_t *stats;
     struct {

@@ -19,8 +19,7 @@
 #define VK_NUMPAD0 0x60
 #endif
 
-enum KeyCombo
-{
+enum KeyCombo {
     KeyComboQuit,
     KeyComboUngrabInput,
     KeyComboToggleFullScreen,
@@ -31,8 +30,7 @@ enum KeyCombo
     KeyComboMax
 };
 
-struct SpecialKeyCombo
-{
+struct SpecialKeyCombo {
     enum KeyCombo keyCombo;
     SDL_Keycode keyCode;
     SDL_Scancode scanCode;
@@ -40,19 +38,18 @@ struct SpecialKeyCombo
 };
 
 static struct SpecialKeyCombo m_SpecialKeyCombos[KeyComboMax] = {
-    {KeyComboQuit, SDLK_q, SDL_SCANCODE_Q, true},
-    {KeyComboUngrabInput, SDLK_z, SDL_SCANCODE_Z, true},
-    {KeyComboToggleFullScreen, SDLK_x, SDL_SCANCODE_X, true},
-    {KeyComboToggleStatsOverlay, SDLK_s, SDL_SCANCODE_S, true},
-    {KeyComboToggleMouseMode, SDLK_m, SDL_SCANCODE_M, true},
-    {KeyComboToggleCursorHide, SDLK_c, SDL_SCANCODE_C, true},
-    {KeyComboToggleMinimize, SDLK_d, SDL_SCANCODE_D, true},
+        {KeyComboQuit,               SDLK_q, SDL_SCANCODE_Q, true},
+        {KeyComboUngrabInput,        SDLK_z, SDL_SCANCODE_Z, true},
+        {KeyComboToggleFullScreen,   SDLK_x, SDL_SCANCODE_X, true},
+        {KeyComboToggleStatsOverlay, SDLK_s, SDL_SCANCODE_S, true},
+        {KeyComboToggleMouseMode,    SDLK_m, SDL_SCANCODE_M, true},
+        {KeyComboToggleCursorHide,   SDLK_c, SDL_SCANCODE_C, true},
+        {KeyComboToggleMinimize,     SDLK_d, SDL_SCANCODE_D, true},
 };
 
 enum KeyCombo _pending_key_combo = KeyComboMax;
 
-struct KeysDown
-{
+struct KeysDown {
     short keyCode;
     struct KeysDown *prev;
     struct KeysDown *next;
@@ -66,6 +63,7 @@ static struct KeysDown *_pressed_keys;
 #define LINKEDLIST_TYPE struct KeysDown
 #define LINKEDLIST_PREFIX keys
 #define LINKEDLIST_DOUBLE 1
+
 #include "util/linked_list.h"
 
 #undef LINKEDLIST_TYPE
@@ -75,83 +73,70 @@ static struct KeysDown *_pressed_keys;
 static int keydown_count = 0;
 
 #if TARGET_WEBOS
+
 bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode);
+
 #endif
 
-static int keys_code_comparator(struct KeysDown *p, const void *fv)
-{
-    return p->keyCode - *((short *)fv);
+static int keys_code_comparator(struct KeysDown *p, const void *fv) {
+    return p->keyCode - *((short *) fv);
 }
 
-static bool isSystemKeyCaptureActive()
-{
+static bool isSystemKeyCaptureActive() {
     return false;
 }
 
-void performPendingSpecialKeyCombo()
-{
+void performPendingSpecialKeyCombo() {
     // The caller must ensure all keys are up
     SDL_assert(keys_len(_pressed_keys) == 0);
 
-    switch (_pending_key_combo)
-    {
-    case KeyComboQuit:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected quit key combo");
-        streaming_interrupt(false);
-        break;
+    switch (_pending_key_combo) {
+        case KeyComboQuit:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected quit key combo");
+            streaming_interrupt(false);
+            break;
 
-    case KeyComboUngrabInput:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected mouse capture toggle combo");
-        break;
+        case KeyComboUngrabInput:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected mouse capture toggle combo");
+            break;
 
-    case KeyComboToggleFullScreen:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected full-screen toggle combo");
-        break;
+        case KeyComboToggleFullScreen:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected full-screen toggle combo");
+            break;
 
-    case KeyComboToggleStatsOverlay:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected stats toggle combo");
-        bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
-        break;
+        case KeyComboToggleStatsOverlay:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected stats toggle combo");
+            bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
+            break;
 
-    case KeyComboToggleMouseMode:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected mouse mode toggle combo");
-        break;
-    case KeyComboToggleCursorHide:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected show mouse combo");
-        break;
-    case KeyComboToggleMinimize:
-        SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                    "Detected minimize combo");
-        break;
-    default:
-        break;
+        case KeyComboToggleMouseMode:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected mouse mode toggle combo");
+            break;
+        case KeyComboToggleCursorHide:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected show mouse combo");
+            break;
+        case KeyComboToggleMinimize:
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                        "Detected minimize combo");
+            break;
+        default:
+            break;
     }
 
     // Reset pending key combo
     _pending_key_combo = KeyComboMax;
 }
 
-void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
-{
-    if (event->state == SDL_PRESSED)
-    {
-        keydown_count++;
-    }
-    else if (event->state == SDL_RELEASED)
-    {
-        keydown_count--;
-    }
-
+void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
     short keyCode = 0;
 #if TARGET_WEBOS
-    if (webos_intercept_remote_keys(event, &keyCode))
-    {
+    if (webos_intercept_remote_keys(event, &keyCode)) {
         return;
     }
 #endif
@@ -161,8 +146,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
     if ((event->state == SDL_PRESSED) &&
         (event->keysym.mod & KMOD_CTRL) &&
         (event->keysym.mod & KMOD_ALT) &&
-        (event->keysym.mod & KMOD_SHIFT))
-    {
+        (event->keysym.mod & KMOD_SHIFT)) {
         // First we test the SDLK combos for matches,
         // that way we ensure that latin keyboard users
         // can match to the key they see on their keyboards.
@@ -174,24 +158,18 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
         // where the SDLK for one shortcut collides with
         // the scancode of another.
 
-        if (_pending_key_combo == KeyComboMax)
-        {
-            for (int i = 0; i < KeyComboMax; i++)
-            {
-                if (m_SpecialKeyCombos[i].enabled && event->keysym.sym == m_SpecialKeyCombos[i].keyCode)
-                {
+        if (_pending_key_combo == KeyComboMax) {
+            for (int i = 0; i < KeyComboMax; i++) {
+                if (m_SpecialKeyCombos[i].enabled && event->keysym.sym == m_SpecialKeyCombos[i].keyCode) {
                     _pending_key_combo = m_SpecialKeyCombos[i].keyCombo;
                     break;
                 }
             }
         }
 
-        if (_pending_key_combo == KeyComboMax)
-        {
-            for (int i = 0; i < KeyComboMax; i++)
-            {
-                if (m_SpecialKeyCombos[i].enabled && event->keysym.scancode == m_SpecialKeyCombos[i].scanCode)
-                {
+        if (_pending_key_combo == KeyComboMax) {
+            for (int i = 0; i < KeyComboMax; i++) {
+                if (m_SpecialKeyCombos[i].enabled && event->keysym.scancode == m_SpecialKeyCombos[i].scanCode) {
                     _pending_key_combo = m_SpecialKeyCombos[i].keyCombo;
                     break;
                 }
@@ -199,14 +177,12 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
         }
     }
 
-    if (event->state == SDL_PRESSED && _pending_key_combo != KeyComboMax)
-    {
+    if (event->state == SDL_PRESSED && _pending_key_combo != KeyComboMax) {
         // Ignore further key presses until the special combo is raised
         return;
     }
 
-    if (event->repeat)
-    {
+    if (event->repeat) {
         // Ignore repeat key down events
         SDL_assert(event->state == SDL_PRESSED);
         return;
@@ -214,22 +190,17 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
 
     // Set modifier flags
     modifiers = 0;
-    if (event->keysym.mod & KMOD_CTRL)
-    {
+    if (event->keysym.mod & KMOD_CTRL) {
         modifiers |= MODIFIER_CTRL;
     }
-    if (event->keysym.mod & KMOD_ALT)
-    {
+    if (event->keysym.mod & KMOD_ALT) {
         modifiers |= MODIFIER_ALT;
     }
-    if (event->keysym.mod & KMOD_SHIFT)
-    {
+    if (event->keysym.mod & KMOD_SHIFT) {
         modifiers |= MODIFIER_SHIFT;
     }
-    if (event->keysym.mod & KMOD_GUI)
-    {
-        if (isSystemKeyCaptureActive())
-        {
+    if (event->keysym.mod & KMOD_GUI) {
+        if (isSystemKeyCaptureActive()) {
             modifiers |= MODIFIER_META;
         }
     }
@@ -237,265 +208,247 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
     // Set keycode. We explicitly use scancode here because GFE will try to correct
     // for AZERTY layouts on the host but it depends on receiving VK_ values matching
     // a QWERTY layout to work.
-    if (event->keysym.scancode >= SDL_SCANCODE_1 && event->keysym.scancode <= SDL_SCANCODE_9)
-    {
+    if (event->keysym.scancode >= SDL_SCANCODE_1 && event->keysym.scancode <= SDL_SCANCODE_9) {
         // SDL defines SDL_SCANCODE_0 > SDL_SCANCODE_9, so we need to handle that manually
         keyCode = (event->keysym.scancode - SDL_SCANCODE_1) + VK_0 + 1;
-    }
-    else if (event->keysym.scancode >= SDL_SCANCODE_A && event->keysym.scancode <= SDL_SCANCODE_Z)
-    {
+    } else if (event->keysym.scancode >= SDL_SCANCODE_A && event->keysym.scancode <= SDL_SCANCODE_Z) {
         keyCode = (event->keysym.scancode - SDL_SCANCODE_A) + VK_A;
-    }
-    else if (event->keysym.scancode >= SDL_SCANCODE_F1 && event->keysym.scancode <= SDL_SCANCODE_F12)
-    {
+    } else if (event->keysym.scancode >= SDL_SCANCODE_F1 && event->keysym.scancode <= SDL_SCANCODE_F12) {
         keyCode = (event->keysym.scancode - SDL_SCANCODE_F1) + VK_F1;
-    }
-    else if (event->keysym.scancode >= SDL_SCANCODE_F13 && event->keysym.scancode <= SDL_SCANCODE_F24)
-    {
+    } else if (event->keysym.scancode >= SDL_SCANCODE_F13 && event->keysym.scancode <= SDL_SCANCODE_F24) {
         keyCode = (event->keysym.scancode - SDL_SCANCODE_F13) + VK_F13;
-    }
-    else if (event->keysym.scancode >= SDL_SCANCODE_KP_1 && event->keysym.scancode <= SDL_SCANCODE_KP_9)
-    {
+    } else if (event->keysym.scancode >= SDL_SCANCODE_KP_1 && event->keysym.scancode <= SDL_SCANCODE_KP_9) {
         // SDL defines SDL_SCANCODE_KP_0 > SDL_SCANCODE_KP_9, so we need to handle that manually
         keyCode = (event->keysym.scancode - SDL_SCANCODE_KP_1) + VK_NUMPAD0 + 1;
-    }
-    else
-    {
-        switch (event->keysym.scancode)
-        {
-        case SDL_SCANCODE_BACKSPACE:
-            keyCode = 0x08;
-            break;
-        case SDL_SCANCODE_TAB:
-            keyCode = 0x09;
-            break;
-        case SDL_SCANCODE_CLEAR:
-            keyCode = 0x0C;
-            break;
-        case SDL_SCANCODE_KP_ENTER: // FIXME: Is this correct?
-        case SDL_SCANCODE_RETURN:
-            keyCode = 0x0D;
-            break;
-        case SDL_SCANCODE_PAUSE:
-            keyCode = 0x13;
-            break;
-        case SDL_SCANCODE_CAPSLOCK:
-            keyCode = 0x14;
-            break;
-        case SDL_SCANCODE_ESCAPE:
-            keyCode = 0x1B;
-            break;
-        case SDL_SCANCODE_SPACE:
-            keyCode = 0x20;
-            break;
-        case SDL_SCANCODE_PAGEUP:
-            keyCode = 0x21;
-            break;
-        case SDL_SCANCODE_PAGEDOWN:
-            keyCode = 0x22;
-            break;
-        case SDL_SCANCODE_END:
-            keyCode = 0x23;
-            break;
-        case SDL_SCANCODE_HOME:
-            keyCode = 0x24;
-            break;
-        case SDL_SCANCODE_LEFT:
-            keyCode = 0x25;
-            break;
-        case SDL_SCANCODE_UP:
-            keyCode = 0x26;
-            break;
-        case SDL_SCANCODE_RIGHT:
-            keyCode = 0x27;
-            break;
-        case SDL_SCANCODE_DOWN:
-            keyCode = 0x28;
-            break;
-        case SDL_SCANCODE_SELECT:
-            keyCode = 0x29;
-            break;
-        case SDL_SCANCODE_EXECUTE:
-            keyCode = 0x2B;
-            break;
-        case SDL_SCANCODE_PRINTSCREEN:
-            keyCode = 0x2C;
-            break;
-        case SDL_SCANCODE_INSERT:
-            keyCode = 0x2D;
-            break;
-        case SDL_SCANCODE_DELETE:
-            keyCode = 0x2E;
-            break;
-        case SDL_SCANCODE_HELP:
-            keyCode = 0x2F;
-            break;
-        case SDL_SCANCODE_KP_0:
-            // See comment above about why we only handle SDL_SCANCODE_KP_0 here
-            keyCode = VK_NUMPAD0;
-            break;
-        case SDL_SCANCODE_0:
-            // See comment above about why we only handle SDL_SCANCODE_0 here
-            keyCode = VK_0;
-            break;
-        case SDL_SCANCODE_KP_MULTIPLY:
-            keyCode = 0x6A;
-            break;
-        case SDL_SCANCODE_KP_PLUS:
-            keyCode = 0x6B;
-            break;
-        case SDL_SCANCODE_KP_COMMA:
-            keyCode = 0x6C;
-            break;
-        case SDL_SCANCODE_KP_MINUS:
-            keyCode = 0x6D;
-            break;
-        case SDL_SCANCODE_KP_PERIOD:
-            keyCode = 0x6E;
-            break;
-        case SDL_SCANCODE_KP_DIVIDE:
-            keyCode = 0x6F;
-            break;
-        case SDL_SCANCODE_NUMLOCKCLEAR:
-            keyCode = 0x90;
-            break;
-        case SDL_SCANCODE_SCROLLLOCK:
-            keyCode = 0x91;
-            break;
-        case SDL_SCANCODE_LSHIFT:
-            keyCode = 0xA0;
-            break;
-        case SDL_SCANCODE_RSHIFT:
-            keyCode = 0xA1;
-            break;
-        case SDL_SCANCODE_LCTRL:
-            keyCode = 0xA2;
-            break;
-        case SDL_SCANCODE_RCTRL:
-            keyCode = 0xA3;
-            break;
-        case SDL_SCANCODE_LALT:
-            keyCode = 0xA4;
-            break;
-        case SDL_SCANCODE_RALT:
-            keyCode = 0xA5;
-            break;
-        case SDL_SCANCODE_LGUI:
-            if (!isSystemKeyCaptureActive())
-            {
-                return;
-            }
-            keyCode = 0x5B;
-            break;
-        case SDL_SCANCODE_RGUI:
-            if (!isSystemKeyCaptureActive())
-            {
-                return;
-            }
-            keyCode = 0x5C;
-            break;
-        case SDL_SCANCODE_AC_BACK:
-            keyCode = 0xA6;
-            break;
-        case SDL_SCANCODE_AC_FORWARD:
-            keyCode = 0xA7;
-            break;
-        case SDL_SCANCODE_AC_REFRESH:
-            keyCode = 0xA8;
-            break;
-        case SDL_SCANCODE_AC_STOP:
-            keyCode = 0xA9;
-            break;
-        case SDL_SCANCODE_AC_SEARCH:
-            keyCode = 0xAA;
-            break;
-        case SDL_SCANCODE_AC_BOOKMARKS:
-            keyCode = 0xAB;
-            break;
-        case SDL_SCANCODE_AC_HOME:
-            keyCode = 0xAC;
-            break;
-        case SDL_SCANCODE_SEMICOLON:
-            keyCode = 0xBA;
-            break;
-        case SDL_SCANCODE_EQUALS:
-            keyCode = 0xBB;
-            break;
-        case SDL_SCANCODE_COMMA:
-            keyCode = 0xBC;
-            break;
-        case SDL_SCANCODE_MINUS:
-            keyCode = 0xBD;
-            break;
-        case SDL_SCANCODE_PERIOD:
-            keyCode = 0xBE;
-            break;
-        case SDL_SCANCODE_SLASH:
-            keyCode = 0xBF;
-            break;
-        case SDL_SCANCODE_GRAVE:
-            keyCode = 0xC0;
-            break;
-        case SDL_SCANCODE_LEFTBRACKET:
-            keyCode = 0xDB;
-            break;
-        case SDL_SCANCODE_BACKSLASH:
-            keyCode = 0xDC;
-            break;
-        case SDL_SCANCODE_RIGHTBRACKET:
-            keyCode = 0xDD;
-            break;
-        case SDL_SCANCODE_APOSTROPHE:
-            keyCode = 0xDE;
-            break;
-        case SDL_SCANCODE_NONUSBACKSLASH:
-            keyCode = 0xE2;
-            break;
-        default:
-            if (!keyCode)
-            {
-                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                            "Unhandled button event: %d",
-                            event->keysym.scancode);
-                return;
-            }
+    } else {
+        switch (event->keysym.scancode) {
+            case SDL_SCANCODE_BACKSPACE:
+                keyCode = 0x08;
+                break;
+            case SDL_SCANCODE_TAB:
+                keyCode = 0x09;
+                break;
+            case SDL_SCANCODE_CLEAR:
+                keyCode = 0x0C;
+                break;
+            case SDL_SCANCODE_KP_ENTER: // FIXME: Is this correct?
+            case SDL_SCANCODE_RETURN:
+                keyCode = 0x0D;
+                break;
+            case SDL_SCANCODE_PAUSE:
+                keyCode = 0x13;
+                break;
+            case SDL_SCANCODE_CAPSLOCK:
+                keyCode = 0x14;
+                break;
+            case SDL_SCANCODE_ESCAPE:
+                keyCode = 0x1B;
+                break;
+            case SDL_SCANCODE_SPACE:
+                keyCode = 0x20;
+                break;
+            case SDL_SCANCODE_PAGEUP:
+                keyCode = 0x21;
+                break;
+            case SDL_SCANCODE_PAGEDOWN:
+                keyCode = 0x22;
+                break;
+            case SDL_SCANCODE_END:
+                keyCode = 0x23;
+                break;
+            case SDL_SCANCODE_HOME:
+                keyCode = 0x24;
+                break;
+            case SDL_SCANCODE_LEFT:
+                keyCode = 0x25;
+                break;
+            case SDL_SCANCODE_UP:
+                keyCode = 0x26;
+                break;
+            case SDL_SCANCODE_RIGHT:
+                keyCode = 0x27;
+                break;
+            case SDL_SCANCODE_DOWN:
+                keyCode = 0x28;
+                break;
+            case SDL_SCANCODE_SELECT:
+                keyCode = 0x29;
+                break;
+            case SDL_SCANCODE_EXECUTE:
+                keyCode = 0x2B;
+                break;
+            case SDL_SCANCODE_PRINTSCREEN:
+                keyCode = 0x2C;
+                break;
+            case SDL_SCANCODE_INSERT:
+                keyCode = 0x2D;
+                break;
+            case SDL_SCANCODE_DELETE:
+                keyCode = 0x2E;
+                break;
+            case SDL_SCANCODE_HELP:
+                keyCode = 0x2F;
+                break;
+            case SDL_SCANCODE_KP_0:
+                // See comment above about why we only handle SDL_SCANCODE_KP_0 here
+                keyCode = VK_NUMPAD0;
+                break;
+            case SDL_SCANCODE_0:
+                // See comment above about why we only handle SDL_SCANCODE_0 here
+                keyCode = VK_0;
+                break;
+            case SDL_SCANCODE_KP_MULTIPLY:
+                keyCode = 0x6A;
+                break;
+            case SDL_SCANCODE_KP_PLUS:
+                keyCode = 0x6B;
+                break;
+            case SDL_SCANCODE_KP_COMMA:
+                keyCode = 0x6C;
+                break;
+            case SDL_SCANCODE_KP_MINUS:
+                keyCode = 0x6D;
+                break;
+            case SDL_SCANCODE_KP_PERIOD:
+                keyCode = 0x6E;
+                break;
+            case SDL_SCANCODE_KP_DIVIDE:
+                keyCode = 0x6F;
+                break;
+            case SDL_SCANCODE_NUMLOCKCLEAR:
+                keyCode = 0x90;
+                break;
+            case SDL_SCANCODE_SCROLLLOCK:
+                keyCode = 0x91;
+                break;
+            case SDL_SCANCODE_LSHIFT:
+                keyCode = 0xA0;
+                break;
+            case SDL_SCANCODE_RSHIFT:
+                keyCode = 0xA1;
+                break;
+            case SDL_SCANCODE_LCTRL:
+                keyCode = 0xA2;
+                break;
+            case SDL_SCANCODE_RCTRL:
+                keyCode = 0xA3;
+                break;
+            case SDL_SCANCODE_LALT:
+                keyCode = 0xA4;
+                break;
+            case SDL_SCANCODE_RALT:
+                keyCode = 0xA5;
+                break;
+            case SDL_SCANCODE_LGUI:
+                if (!isSystemKeyCaptureActive()) {
+                    return;
+                }
+                keyCode = 0x5B;
+                break;
+            case SDL_SCANCODE_RGUI:
+                if (!isSystemKeyCaptureActive()) {
+                    return;
+                }
+                keyCode = 0x5C;
+                break;
+            case SDL_SCANCODE_AC_BACK:
+                keyCode = 0xA6;
+                break;
+            case SDL_SCANCODE_AC_FORWARD:
+                keyCode = 0xA7;
+                break;
+            case SDL_SCANCODE_AC_REFRESH:
+                keyCode = 0xA8;
+                break;
+            case SDL_SCANCODE_AC_STOP:
+                keyCode = 0xA9;
+                break;
+            case SDL_SCANCODE_AC_SEARCH:
+                keyCode = 0xAA;
+                break;
+            case SDL_SCANCODE_AC_BOOKMARKS:
+                keyCode = 0xAB;
+                break;
+            case SDL_SCANCODE_AC_HOME:
+                keyCode = 0xAC;
+                break;
+            case SDL_SCANCODE_SEMICOLON:
+                keyCode = 0xBA;
+                break;
+            case SDL_SCANCODE_EQUALS:
+                keyCode = 0xBB;
+                break;
+            case SDL_SCANCODE_COMMA:
+                keyCode = 0xBC;
+                break;
+            case SDL_SCANCODE_MINUS:
+                keyCode = 0xBD;
+                break;
+            case SDL_SCANCODE_PERIOD:
+                keyCode = 0xBE;
+                break;
+            case SDL_SCANCODE_SLASH:
+                keyCode = 0xBF;
+                break;
+            case SDL_SCANCODE_GRAVE:
+                keyCode = 0xC0;
+                break;
+            case SDL_SCANCODE_LEFTBRACKET:
+                keyCode = 0xDB;
+                break;
+            case SDL_SCANCODE_BACKSLASH:
+                keyCode = 0xDC;
+                break;
+            case SDL_SCANCODE_RIGHTBRACKET:
+                keyCode = 0xDD;
+                break;
+            case SDL_SCANCODE_APOSTROPHE:
+                keyCode = 0xDE;
+                break;
+            case SDL_SCANCODE_NONUSBACKSLASH:
+                keyCode = 0xE2;
+                break;
+            default:
+                if (!keyCode) {
+                    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
+                                "Unhandled button event: %d",
+                                event->keysym.scancode);
+                    return;
+                }
         }
     }
 
     // Track the key state so we always know which keys are down
-    if (event->state == SDL_PRESSED)
-    {
+    if (event->state == SDL_PRESSED) {
         struct KeysDown *node = keys_new();
         node->keyCode = keyCode;
         _pressed_keys = keys_append(_pressed_keys, node);
-    }
-    else
-    {
+    } else {
         struct KeysDown *node = keys_find_by(_pressed_keys, &keyCode, &keys_code_comparator);
-        if (node)
-        {
+        if (node) {
             _pressed_keys = keys_remove(_pressed_keys, node);
             free(node);
         }
     }
 
-    if (!absinput_no_control)
-    {
+    if (!absinput_no_control) {
+        if (event->state == SDL_PRESSED) {
+            keydown_count++;
+        } else if (event->state == SDL_RELEASED) {
+            keydown_count--;
+        }
         LiSendKeyboardEvent(0x8000 | keyCode,
                             event->state == SDL_PRESSED ? KEY_ACTION_DOWN : KEY_ACTION_UP,
                             modifiers);
     }
 
-    if (_pending_key_combo != KeyComboMax && keys_len(_pressed_keys) == 0)
-    {
+    if (_pending_key_combo != KeyComboMax && keys_len(_pressed_keys) == 0) {
         int keys;
         const Uint8 *keyState = SDL_GetKeyboardState(&keys);
 
         // Make sure all client keys are up before we process the special key combo
-        for (int i = 0; i < keys; i++)
-        {
-            if (keyState[i] == SDL_PRESSED)
-            {
+        for (int i = 0; i < keys; i++) {
+            if (keyState[i] == SDL_PRESSED) {
                 return;
             }
         }
@@ -505,10 +458,8 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event)
     }
 }
 
-void sdlinput_handle_text_event(SDL_TextInputEvent *event)
-{
-    if (keydown_count)
-    {
+void sdlinput_handle_text_event(SDL_TextInputEvent *event) {
+    if (keydown_count) {
         applog_v("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
         return;
     }

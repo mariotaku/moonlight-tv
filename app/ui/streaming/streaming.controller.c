@@ -11,6 +11,8 @@ static void exit_streaming(lv_event_t *event);
 
 static void suspend_streaming(lv_event_t *event);
 
+static void open_keyboard(lv_event_t *event);
+
 static void hide_overlay(lv_event_t *event);
 
 static bool show_overlay(streaming_controller_t *controller);
@@ -152,6 +154,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     app_input_set_group(controller->group);
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
+    lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
 
@@ -181,6 +184,10 @@ static void exit_streaming(lv_event_t *event) {
 
 static void suspend_streaming(lv_event_t *event) {
     streaming_interrupt(false);
+}
+
+static void open_keyboard(lv_event_t *event) {
+    app_start_text_input(0, 0, ui_display_width, ui_display_height);
 }
 
 bool show_overlay(streaming_controller_t *controller) {
