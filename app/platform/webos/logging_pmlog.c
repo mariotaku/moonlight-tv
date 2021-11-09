@@ -10,6 +10,7 @@ void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_lis
     PmLogGetContext("moonlight", &context);
     char msg[1024];
     vsnprintf(msg, sizeof(msg), fmt, args);
+    printf("[%s][%s] %s\n", applog_level_str[lvl], tag, msg);
     switch (lvl) {
         case APPLOG_INFO:
             PmLogInfo(context, tag, 0, "%s", msg);
@@ -32,4 +33,5 @@ void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_lis
 }
 
 void app_loginit() {
+
 }

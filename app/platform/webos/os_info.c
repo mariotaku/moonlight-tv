@@ -27,6 +27,7 @@ int os_info_get(os_info_t *info) {
     jvalue_ref os_info = jdomparser_get_result(parser);
     read_field(info->release, os_info, "webos_release");
     read_field(info->manufacturing_version, os_info, "webos_manufacturing_version");
+    jdomparser_release(&parser);
     return 0;
 }
 

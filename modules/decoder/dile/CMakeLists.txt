@@ -3,6 +3,7 @@ cmake_minimum_required (VERSION 3.6)
 pkg_check_modules(UMEDIA_API REQUIRED umedia_api_c)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(MEDIARESCALC REQUIRED media-resource-calculator)
+pkg_check_modules(LUNA_SERVICE REQUIRED luna-service2)
 
 set(COMMON_SRC
     dile_platform.c

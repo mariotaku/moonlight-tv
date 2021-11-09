@@ -113,7 +113,6 @@ if (TARGET_WEBOS)
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
-    pkg_check_modules(LUNA_SERVICE REQUIRED luna-service2)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
 elseif (TARGET_RASPI)
     add_subdirectory(third_party/h264bitstream)
@@ -184,6 +183,7 @@ set(SOURCES
         app/ui/launcher/add.dialog.c
         app/ui/launcher/pair.dialog.c
         app/ui/launcher/appitem.view.c
+        app/ui/launcher/server.context_menu.c
         app/ui/launcher/coverloader.c
         app/ui/streaming/streaming.view.c
         app/ui/streaming/streaming.controller.c
@@ -203,6 +203,7 @@ set(SOURCES
         app/lvgl/lv_sdl_img.c
         app/lvgl/ext/lv_gridview.c
         app/lvgl/ext/lv_obj_controller.c
+        app/lvgl/ext/lv_child_group.c
         app/lvgl/util/lv_app_utils.c
         app/lvgl/font/material_icon_regular_28.c
         app/lvgl/font/material_icon_regular_32.c
@@ -221,8 +222,7 @@ set(SOURCES
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
-        app/stream/audio/sdlaud.c
-        app/lvgl/ext/lv_child_group.c app/ui/launcher/server.context_menu.c)
+        app/stream/audio/sdlaud.c)
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
@@ -232,12 +232,15 @@ if (TARGET_WEBOS)
             app/platform/webos/os_info.c
             app/platform/webos/SDL_webOS_compat.c
             app/platform/webos/logging_pmlog.c
+            app/platform/webos/app_webos.c
+            app/platform/webos/lunasynccall.c
             )
 else ()
     list(APPEND SOURCES
             app/platform/sdl/path_sdl.c
             app/platform/linux/os_info_linux.c
             app/platform/common/logging_stdio.c
+            app/platform/common/app_common.c
             )
 endif ()
 
@@ -324,7 +327,7 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${PMLOG_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${PMLOG_LIBRARIES} helpers)
 elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)

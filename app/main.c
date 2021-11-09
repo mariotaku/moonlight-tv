@@ -50,6 +50,7 @@ SDL_Window *app_create_window();
 
 int main(int argc, char *argv[]) {
     app_loginit();
+    app_init_locale();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
     applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
     app_gs_client_mutex = SDL_CreateMutex();

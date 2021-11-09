@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include <SDL.h>
-#include <stream/input/sdlinput.h>
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_disp_drv_app.h"
 
@@ -53,7 +52,6 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             lv_obj_invalidate(lv_scr_act());
             break;
         }
-#if TARGET_DESKTOP || TARGET_RASPI
         case SDL_WINDOWEVENT: {
             switch (event->window.event) {
                 case SDL_WINDOWEVENT_FOCUS_GAINED:
@@ -61,10 +59,12 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
+#if TARGET_DESKTOP || TARGET_RASPI
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
                         streaming_interrupt(false);
                     }
+#endif
                     window_focus_gained = false;
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -87,7 +87,6 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             }
             break;
         }
-#endif
         case SDL_USEREVENT: {
             if (event->user.code == BUS_INT_EVENT_ACTION) {
                 bus_actionfunc actionfn = event->user.data1;
@@ -177,26 +176,6 @@ void app_quit_confirm() {
     lv_obj_t *mbox = lv_msgbox_create(NULL, NULL, "Do you want to quit Moonlight?", btn_txts, false);
     lv_obj_add_event_cb(mbox, quit_confirm_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
-}
-
-void app_open_url(const char *url) {
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-    SDL_OpenURL(url);
-#elif TARGET_WEBOS
-    char command[8192];
-    snprintf(command, sizeof(command), "luna-send-pub -n 1 'luna://com.webos.applicationManager/launch' "
-                                       "'{\"id\": \"com.webos.app.browser\", "
-                                       "\"params\":{\"target\": \"%s\"}}'", url);
-    system(command);
-#elif OS_LINUX
-    char command[8192];
-    snprintf(command, sizeof(command), "xdg-open '%s'", url);
-    system(command);
-#elif OS_DARWIN
-    char command[8192];
-    snprintf(command, sizeof(command), "open '%s'", url);
-    system(command);
-#endif
 }
 
 static void quit_confirm_cb(lv_event_t *e) {

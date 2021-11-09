@@ -1,5 +1,5 @@
 #include "app.h"
-#include "logging.h"
+#include "util/logging.h"
 
 #include <stdarg.h>
 #include <stdio.h>
