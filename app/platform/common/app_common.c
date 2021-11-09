@@ -1,5 +1,9 @@
 #include "app.h"
 
+#include <libintl.h>
+#include <locale.h>
+
+#include "util/logging.h"
 
 void app_open_url(const char *url) {
 #if SDL_VERSION_ATLEAST(2, 0, 14)
@@ -16,5 +20,6 @@ void app_open_url(const char *url) {
 }
 
 void app_init_locale() {
-
+    textdomain("moonlight-tv");
+    applog_i("APP", "UI locale: %s (%s)", setlocale(LC_MESSAGES, NULL), gettext("[Localized Language]"));
 }

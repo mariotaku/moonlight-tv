@@ -35,10 +35,10 @@ void app_init_locale() {
         strncpy(locale_str, buf.m_str, len);
         locale_str[len] = '\0';
         jstring_free_buffer(buf);
-        setlocale(LC_ALL, "ja");
+        setlocale(LC_ALL, locale_str);
         bindtextdomain("moonlight-tv", "i18n");
         textdomain("moonlight-tv");
-        applog_d("APP", "UI locale: %s (%s)", locale_str, gettext("[Localized Language]"));
+        applog_i("APP", "UI locale: %s (%s)", locale_str, gettext("[Localized Language]"));
     }
     jdomparser_release(&parser);
 }
