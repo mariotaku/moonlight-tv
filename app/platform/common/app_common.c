@@ -21,5 +21,6 @@ void app_open_url(const char *url) {
 
 void app_init_locale() {
     textdomain("moonlight-tv");
+    setlocale(LC_ALL, "");
     applog_i("APP", "UI locale: %s (%s)", setlocale(LC_MESSAGES, NULL), gettext("[Localized Language]"));
 }
