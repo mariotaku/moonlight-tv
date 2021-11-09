@@ -35,7 +35,7 @@ static int ndl_setup(int videoFormat, int width, int height, int redrawRate, voi
     }
     ndl_buffer = malloc(DECODER_BUFFER_SIZE);
     if (ndl_buffer == NULL) {
-        applog_e("NDL", "Not enough memory");
+        applog_f("NDL", "Not enough memory");
         media_unload();
         return ERROR_OUT_OF_MEMORY;
     }

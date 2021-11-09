@@ -24,7 +24,7 @@ static int setup(int videoFormat, int width, int height, int redrawRate, void *c
     applog_d("NDL", "NDL_DirectVideoOpen %d * %d", width, height);
     ndl_buffer = malloc(DECODER_BUFFER_SIZE);
     if (ndl_buffer == NULL) {
-        applog_e("NDL", "Not enough memory");
+        applog_f("NDL", "Not enough memory");
 
         NDL_DirectVideoClose();
         return ERROR_OUT_OF_MEMORY;

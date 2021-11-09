@@ -49,7 +49,7 @@ static int lgnc_setup(int videoFormat, int width, int height, int redrawRate, vo
   lgnc_buffer = malloc(DECODER_BUFFER_SIZE);
   if (lgnc_buffer == NULL)
   {
-    applog_e("LGNC", "Not enough memory");
+    applog_f("LGNC", "Not enough memory");
     LGNC_DIRECTVIDEO_Close();
     return ERROR_OUT_OF_MEMORY;
   }

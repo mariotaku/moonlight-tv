@@ -114,6 +114,7 @@ if (TARGET_WEBOS)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
     pkg_check_modules(LUNA_SERVICE REQUIRED luna-service2)
+    pkg_check_modules(PMLOG REQUIRED PmLogLib)
 elseif (TARGET_RASPI)
     add_subdirectory(third_party/h264bitstream)
 
@@ -230,11 +231,13 @@ if (TARGET_WEBOS)
             app/platform/webos/path_webos.c
             app/platform/webos/os_info.c
             app/platform/webos/SDL_webOS_compat.c
+            app/platform/webos/logging_pmlog.c
             )
 else ()
     list(APPEND SOURCES
             app/platform/sdl/path_sdl.c
             app/platform/linux/os_info_linux.c
+            app/platform/common/logging_stdio.c
             )
 endif ()
 
@@ -303,8 +306,7 @@ endmacro()
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN 1)
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}"
-            APPLOG_FILE=app_logfile)
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 

@@ -7,17 +7,40 @@ extern "C"
 
 #include <stdarg.h>
 
+typedef enum applog_level_t {
+    APPLOG_VERBOSE = 0,
+    APPLOG_DEBUG,
+    APPLOG_INFO,
+    APPLOG_WARN,
+    APPLOG_ERROR,
+    APPLOG_FATAL,
+    APPLOG_MAX = 0x7FFFFFFF,
+} applog_level_t;
+
+static const char *applog_level_str[] = {
+        "VERBOSE",
+        "DEBUG",
+        "INFO",
+        "WARN",
+        "ERROR",
+        "FATAL",
+};
+
 #ifdef APPLOG_HOST
-void app_logvprintf(const char *lvl, const char *tag, const char *fmt, va_list args);
-void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...);
+
+void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_list args);
+
+void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...);
+
 void app_loginit();
+
 #else
 
-typedef void (*logvprintf_fn)(const char *, const char *, const char *, va_list);
+typedef void (*logvprintf_fn)(int, const char *, const char *, va_list);
 
 extern logvprintf_fn module_logvprintf;
-static void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...)
-{
+
+static void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...) {
     if (!module_logvprintf)
         return;
     va_list args;
@@ -25,16 +48,17 @@ static void app_logprintf(const char *lvl, const char *tag, const char *fmt, ...
     module_logvprintf(lvl, tag, fmt, args);
     va_end(args);
 }
+
 #endif
 
 #define applog(level, ...) app_logprintf(level, __VA_ARGS__)
-#define applog_f(...) app_logprintf("FATAL", __VA_ARGS__)
-#define applog_e(...) app_logprintf("ERROR", __VA_ARGS__)
-#define applog_w(...) app_logprintf("WARN", __VA_ARGS__)
-#define applog_i(...) app_logprintf("INFO", __VA_ARGS__)
+#define applog_f(...) app_logprintf(APPLOG_FATAL, __VA_ARGS__)
+#define applog_e(...) app_logprintf(APPLOG_ERROR, __VA_ARGS__)
+#define applog_w(...) app_logprintf(APPLOG_WARN, __VA_ARGS__)
+#define applog_i(...) app_logprintf(APPLOG_INFO, __VA_ARGS__)
 #ifdef DEBUG
-#define applog_d(...) app_logprintf("DEBUG", __VA_ARGS__)
-#define applog_v(...) app_logprintf("VERBOSE", __VA_ARGS__)
+#define applog_d(...) app_logprintf(APPLOG_DEBUG, __VA_ARGS__)
+#define applog_v(...) app_logprintf(APPLOG_VERBOSE, __VA_ARGS__)
 #else
 #define applog_d(...)
 #define applog_v(...)

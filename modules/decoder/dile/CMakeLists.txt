@@ -56,6 +56,5 @@ target_include_directories(moonlight-dile-legacy SYSTEM PRIVATE
     ${GLIB_INCLUDE_DIRS} ${PBNJSON_INCLUDE_DIRS} ${LUNA_SERVICE_INCLUDE_DIRS} ${UMEDIA_API_INCLUDE_DIRS} ${MEDIARESCALC_INCLUDE_DIRS})
 
 target_compile_definitions(moonlight-dile-legacy PRIVATE
-    PLUGIN_SYMBOL_SUFFIX=dile_legacy 
-    APPLOG_FILE=decoder_host_context_dile_legacy->logfile)
+    PLUGIN_SYMBOL_SUFFIX=dile_legacy)
 install(TARGETS moonlight-dile-legacy LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

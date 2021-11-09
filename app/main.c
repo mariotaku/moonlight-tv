@@ -48,22 +48,9 @@ static void applog_logoutput(void *, int category, SDL_LogPriority priority, con
 
 SDL_Window *app_create_window();
 
-bool should_redir_output();
-
 int main(int argc, char *argv[]) {
     app_loginit();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
-#if TARGET_WEBOS
-    bool should_redir = should_redir_output();
-    if (should_redir) {
-        app_logfile = fopen("/tmp/" APPID ".log", "a+");
-    }
-    if (!app_logfile)
-        app_logfile = stdout;
-    setvbuf(app_logfile, NULL, _IONBF, 0);
-    if (should_redir)
-        REDIR_STDOUT(APPID);
-#endif
     applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
     app_gs_client_mutex = SDL_CreateMutex();
 
@@ -71,7 +58,7 @@ int main(int argc, char *argv[]) {
     if (ret != 0) {
         return ret;
     }
-    module_host_context.logvprintf = &app_logvprintf;
+    module_host_context.logvprintf = (void (*)(int, const char *, const char *, va_list)) &app_logvprintf;
 
     module_init(argc, argv);
 
@@ -139,11 +126,6 @@ int main(int argc, char *argv[]) {
 
     applog_i("APP", "Quitted gracefully :)");
     return 0;
-}
-
-bool should_redir_output() {
-    const char *noredir = getenv("MOONLIGHT_OUTPUT_NOREDIR");
-    return noredir == NULL || SDL_strncmp(noredir, "1", 1) != 0;
 }
 
 SDL_Window *app_create_window() {
@@ -224,7 +206,8 @@ void app_start_text_input(int x, int y, int w, int h) {
 }
 
 void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-    static const char *priority_name[SDL_NUM_LOG_PRIORITIES] = {"VERBOSE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
+    static const applog_level_t priority_name[SDL_NUM_LOG_PRIORITIES] = {APPLOG_VERBOSE, APPLOG_DEBUG, APPLOG_INFO,
+                                                                         APPLOG_WARN, APPLOG_ERROR, APPLOG_FATAL};
     static const char *category_name[SDL_LOG_CATEGORY_TEST + 1] = {
             "SDL.APPLICATION",
             "SDL.ERROR",
