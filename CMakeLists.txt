@@ -389,11 +389,28 @@ endif ()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+add_custom_command(TARGET moonlight POST_BUILD
+        COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES
+        COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES/moonlight-tv.mo i18n/ja/moonlight-tv.po
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        VERBATIM)
+
+add_custom_target(i18n-update-pot
+        COMMAND xgettext --add-comments --sort-output -o i18n/moonlight-tv.pot ${SOURCES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_custom_target(i18n-merge-po
+        COMMAND msgmerge --update i18n/ja/moonlight-tv.po i18n/moonlight-tv.pot
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+
 if (TARGET_WEBOS)
     # Copy asset dir to package root
     install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR} PATTERN ".*" EXCLUDE)
     # Copy all files under deploy/webos/ to package root
     install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
+    # Copy all .mo files
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/mo/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR}/i18n)
     # Copy manifest
     configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
 
@@ -441,6 +458,7 @@ if (TARGET_WEBOS)
 elseif (TARGET_RASPI)
     install(FILES deploy/linux/moonlight-tv.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
     install(FILES deploy/linux/moonlight-tv.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pixmaps)
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/mo/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale)
 
     set(CPACK_GENERATOR "DEB")
     set(CPACK_DEBIAN_PACKAGE_NAME "moonlight-tv")
