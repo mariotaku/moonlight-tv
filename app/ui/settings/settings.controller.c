@@ -2,6 +2,7 @@
 #include <util/user_event.h>
 #include <lvgl/ext/lv_child_group.h>
 #include "settings.controller.h"
+#include "util/i18n.h"
 
 typedef struct {
     const char *icon;
@@ -10,11 +11,11 @@ typedef struct {
 } settings_entry_t;
 
 static const settings_entry_t entries[] = {
-        {NULL, "Basic Settings",   &settings_pane_basic_cls},
-        {NULL, "Host Settings",    &settings_pane_host_cls},
-        {NULL, "Input Settings",   &settings_pane_input_cls},
-        {NULL, "Decoder Settings", &settings_pane_decoder_cls},
-        {NULL, "About",            &settings_pane_about_cls},
+        {NULL, translatable("Basic Settings"),   &settings_pane_basic_cls},
+        {NULL, translatable("Host Settings"),    &settings_pane_host_cls},
+        {NULL, translatable("Input Settings"),   &settings_pane_input_cls},
+        {NULL, translatable("Decoder Settings"), &settings_pane_decoder_cls},
+        {NULL, translatable("About"),            &settings_pane_about_cls},
 };
 static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
@@ -77,7 +78,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 
     for (int i = 0; i < entries_len; ++i) {
         settings_entry_t entry = entries[i];
-        lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, entry.name);
+        lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, locstr(entry.name));
         lv_obj_set_style_bg_opa(item_view, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
         lv_obj_add_flag(item_view, LV_OBJ_FLAG_EVENT_BUBBLE);
         item_view->user_data = (void *) entry.cls;

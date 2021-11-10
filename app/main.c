@@ -27,6 +27,9 @@
 
 #include <SDL_image.h>
 
+#include <fontconfig/fontconfig.h>
+
+
 #if TARGET_WEBOS
 
 #include "debughelper.h"
@@ -49,6 +52,8 @@ static lv_indev_t *app_indev_key, *app_indev_wheel;
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
 SDL_Window *app_create_window();
+
+bool app_load_font(lv_theme_t *theme);
 
 int main(int argc, char *argv[]) {
     app_loginit();
@@ -80,6 +85,7 @@ int main(int argc, char *argv[]) {
     lv_theme_t theme_app = *parent_theme;
     lv_theme_set_parent(&theme_app, parent_theme);
     lv_theme_moonlight_init(&theme_app);
+    app_load_font(&theme_app);
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
@@ -244,4 +250,50 @@ static void app_input_populate_group() {
     }
     lv_indev_set_group(app_indev_key, group);
     lv_indev_set_group(app_indev_wheel, group);
+}
+
+bool app_load_font(lv_theme_t *theme) {
+    FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
+    if (!config)
+        return false;
+
+    //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
+    FcPattern *pat = FcNameParse((const FcChar8 *) FONT_FAMILY);
+    if (!pat)
+        goto deconfig;
+
+    FcConfigSubstitute(config, pat, FcMatchPattern); //NECESSARY; it increases the scope of possible fonts
+    FcDefaultSubstitute(pat);                        //NECESSARY; it increases the scope of possible fonts
+
+    FcResult result;
+
+    FcPattern *font = FcFontMatch(config, pat, &result);
+    if (!font)
+        goto depat;
+    //The pointer stored in 'file' is tied to 'font'; therefore, when 'font' is freed, this pointer is freed automatically.
+    //If you want to return the filename of the selected font, pass a buffer and copy the file name into that buffer
+    FcChar8 *file = NULL;
+
+    if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch) {
+        lv_ft_info_t ft_info = {.name=(char *) file, .style = FT_FONT_STYLE_NORMAL, .weight = 32};
+        if (lv_ft_font_init(&ft_info)) {
+            theme->font_normal = ft_info.font;
+        }
+        lv_ft_info_t ft_info_lg = {.name=(char *) file, .style = FT_FONT_STYLE_NORMAL, .weight = 38};
+        if (lv_ft_font_init(&ft_info_lg)) {
+            theme->font_large = ft_info_lg.font;
+        }
+        lv_ft_info_t ft_info_sm = {.name=(char *) file, .style = FT_FONT_STYLE_NORMAL, .weight = 28};
+        if (lv_ft_font_init(&ft_info_sm)) {
+            theme->font_small = ft_info_sm.font;
+        }
+    }
+
+    //needs to be called for every pattern created; in this case, 'fontFile' / 'file' is also freed
+    FcPatternDestroy(font);
+    depat:
+    FcPatternDestroy(pat); //needs to be called for every pattern created
+    deconfig:
+    FcConfigDestroy(config); //needs to be called for every config created
+    return true;
 }

@@ -404,7 +404,8 @@ add_custom_command(TARGET moonlight POST_BUILD
         VERBATIM)
 
 add_custom_target(i18n-update-pot
-        COMMAND xgettext --keyword=locstr --add-comments --sort-output -o i18n/messages.pot ${SOURCES}
+        COMMAND xgettext --keyword=locstr --keyword=translatable --add-comments --sort-output -o i18n/messages.pot
+            ${SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(i18n-merge-po
