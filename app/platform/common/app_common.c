@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include <locale.h>
+#include <libintl.h>
 
 #include "util/i18n.h"
 #include "util/logging.h"
@@ -22,5 +23,4 @@ void app_open_url(const char *url) {
 void app_init_locale() {
     textdomain("moonlight-tv");
     setlocale(LC_ALL, "");
-    applog_i("APP", "UI locale: %s (%s)", setlocale(LC_MESSAGES, NULL), locstr("[Localized Language]"));
 }

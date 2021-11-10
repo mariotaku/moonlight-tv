@@ -17,3 +17,8 @@ void i18n_setlocale(const char *locale) {
     }
     bundle = resBundle_createWithRootPath(locale, "cstrings.json", SDL_GetBasePath());
 }
+
+const char *app_get_locale() {
+    if (!bundle) return "C";
+    return resBundle_getLocale(bundle);
+}

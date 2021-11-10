@@ -37,7 +37,6 @@ void app_init_locale() {
         locale_str[len] = '\0';
         jstring_free_buffer(buf);
         i18n_setlocale(locale_str);
-        applog_i("APP", "UI locale: %s (%s)", locale_str, locstr("[Localized Language]"));
     }
     jdomparser_release(&parser);
 }

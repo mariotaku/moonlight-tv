@@ -13,16 +13,18 @@
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_sdl_drv_pointer_input.h"
 #include "lvgl/lv_sdl_img.h"
+#include "lvgl/lv_sdl_drv_wheel_input.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
 #include "ui/root.h"
+#include "ui/launcher/launcher.controller.h"
+
+#include "util/i18n.h"
 #include "util/logging.h"
 
-#include <ui/launcher/launcher.controller.h>
-#include <lvgl/theme/lv_theme_moonlight.h>
-#include <lvgl/lv_sdl_drv_wheel_input.h>
 #include <SDL_image.h>
 
 #if TARGET_WEBOS
@@ -53,6 +55,7 @@ int main(int argc, char *argv[]) {
     app_init_locale();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
     applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
+    applog_i("APP", "UI locale: %s (%s)", app_get_locale(), locstr("[Localized Language]"));
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
