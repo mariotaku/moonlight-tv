@@ -11,3 +11,7 @@ const char *locstr(const char *msgid) {
 const char *app_get_locale() {
     return setlocale(LC_MESSAGES, NULL);
 }
+
+const char *app_get_locale_lang() {
+    return setlocale(LC_MESSAGES, NULL);
+}

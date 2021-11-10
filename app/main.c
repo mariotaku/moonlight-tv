@@ -263,15 +263,18 @@ bool app_load_font(lv_theme_t *theme) {
         goto deconfig;
 
     FcLangSet *ls = FcLangSetCreate();
+    FcLangSetAdd(ls, (const FcChar8 *) app_get_locale_lang());
     FcLangSetAdd(ls, (const FcChar8 *) app_get_locale());
     FcPatternAddLangSet(pat, FC_LANG, ls);
+    FcPatternPrint(pat);
 
-    FcConfigSubstitute(config, pat, FcMatchPattern); //NECESSARY; it increases the scope of possible fonts
-    FcDefaultSubstitute(pat);                        //NECESSARY; it increases the scope of possible fonts
+    FcConfigSubstitute(NULL, pat, FcMatchPattern);
+    FcDefaultSubstitute(pat);
+    FcPatternPrint(pat);
 
     FcResult result;
 
-    FcPattern *font = FcFontMatch(config, pat, &result);
+    FcPattern *font = FcFontMatch(NULL, pat, &result);
     if (!font)
         goto depat;
     //The pointer stored in 'file' is tied to 'font'; therefore, when 'font' is freed, this pointer is freed automatically.

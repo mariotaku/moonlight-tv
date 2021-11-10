@@ -4,7 +4,7 @@
 #include <webosi18n_C.h>
 
 static ResBundleC *bundle = NULL;
-static WebOSLocaleC *locale_ = NULL;
+static char language[4] = "\0";
 
 const char *locstr(const char *msgid) {
     if (!bundle) return msgid;
@@ -16,15 +16,19 @@ void i18n_setlocale(const char *locale) {
         resBundle_destroy(bundle);
         bundle = NULL;
     }
-    if (locale_) {
-        webOSLocale_destroy(locale_);
-        locale_ = NULL;
-    }
-    locale_ = webOSLocale_create(locale);
     bundle = resBundle_createWithRootPath(locale, "cstrings.json", SDL_GetBasePath());
+    if (SDL_strlen(locale) > 2) {
+        SDL_memcpy(language, locale, 2);
+        language[2] = '\0';
+    }
 }
 
 const char *app_get_locale() {
     if (!bundle) return "C";
     return resBundle_getLocale(bundle);
+}
+
+const char *app_get_locale_lang() {
+    if (!language[0]) return "C";
+    return language;
 }

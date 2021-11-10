@@ -53,3 +53,5 @@ void app_open_url(const char *url);
 void app_init_locale();
 
 const char *app_get_locale();
+
+const char *app_get_locale_lang();
