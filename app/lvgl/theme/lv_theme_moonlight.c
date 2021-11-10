@@ -12,8 +12,6 @@ static void msgbox_destroy(lv_event_t *event);
 
 void lv_theme_moonlight_init(lv_theme_t *theme) {
     lv_theme_set_apply_cb(theme, apply_cb);
-    theme->font_small = &lv_font_montserrat_28;
-    theme->font_large = &lv_font_montserrat_38;
 }
 
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {

@@ -19,7 +19,7 @@ void app_open_url(const char *url) {
 void app_init_locale() {
     char *payload = NULL;
     if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}", true,
-                              &payload)) {
+                              &payload) || !payload) {
         return;
     }
     JSchemaInfo schemaInfo;

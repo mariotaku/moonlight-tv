@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-10 23:37+0900\n"
+"POT-Creation-Date: 2021-11-11 02:21+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,30 +11,83 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: app/ui/settings/settings.controller.c:18
+msgid "About"
+msgstr "アプリ情報"
+
 #. Use list button for normal container
 #: app/ui/launcher/launcher.view.c:99
 msgid "Add computer"
 msgstr "PCを追加"
 
+#: app/ui/settings/panes/about.pane.c:78
+msgid "Audio backend"
+msgstr "オーディオデコーダー"
+
+#: app/ui/settings/settings.controller.c:14
+#, fuzzy
+msgid "Basic Settings"
+msgstr "基本設定"
+
 #: app/ui/launcher/server.context_menu.c:64
 msgid "Cancel"
 msgstr "キャンセル"
 
+#: app/ui/settings/settings.controller.c:17
+#, fuzzy
+msgid "Decoder Settings"
+msgstr "デコーダー設定"
+
+#: app/ui/settings/panes/about.pane.c:76
+#, fuzzy
+msgid "Decoder module"
+msgstr "ビデオデコーダー"
+
 #: app/ui/launcher/launcher.controller.c:428
 msgid "Decoder not working"
-msgstr ""
+msgstr "デコーダーが使えません"
 
 #: app/ui/launcher/pair.dialog.c:56
 msgid "Enter PIN code on your computer."
-msgstr ""
+msgstr "PCにPINコードを入力してください。"
+
+#: app/ui/settings/panes/about.pane.c:84
+msgid "Firmware version"
+msgstr "ファームウェアバージョン"
+
+#: app/ui/settings/panes/basic.pane.c:98
+msgid "Fullscreen UI"
+msgstr "全画面表示"
 
 #: app/ui/launcher/launcher.view.c:105
 msgid "Help"
 msgstr "ヘルプ"
 
+#: app/ui/settings/settings.controller.c:15
+#, fuzzy
+msgid "Host Settings"
+msgstr "PC設定"
+
+#: app/ui/settings/settings.controller.c:16
+#, fuzzy
+msgid "Input Settings"
+msgstr "入力設定"
+
 #: app/ui/launcher/pair.dialog.c:39
 msgid "Pairing"
 msgstr "ペアリング中"
+
+#: app/ui/settings/panes/about.pane.c:90
+msgid "Panel resolution"
+msgstr "パネル解像度"
+
+#: app/ui/settings/panes/about.pane.c:95
+msgid "Refresh rate"
+msgstr "リフレッシュレート"
+
+#: app/ui/settings/panes/basic.pane.c:64
+msgid "Resolution and FPS"
+msgstr "解像度とリフレッシュレート"
 
 #: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
 msgid "Settings"
@@ -42,18 +95,42 @@ msgstr "設定"
 
 #: app/ui/launcher/server.context_menu.c:54
 msgid "Test Connection"
+msgstr "接続テスト"
+
+#: app/ui/settings/panes/basic.pane.c:120
+msgid ""
+"The performance on your host may not be able to smoothly stream under this "
+"resolution and framerate."
 msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:431
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr ""
-"ビデオデコーダ「%s」を初期化できませんでした。他のデコーダをお試しください。"
+"ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しくださ"
+"い。"
 
 #: app/ui/launcher/server.context_menu.c:59
 msgid "Unpair"
-msgstr ""
+msgstr "ペアリング解除"
 
-#: app/main.c:56
+#: app/ui/settings/panes/about.pane.c:75
+msgid "Version"
+msgstr "バージョン"
+
+#: app/ui/settings/panes/basic.pane.c:88
+msgid "Video bitrate"
+msgstr "ビデオビットレート"
+
+#: app/ui/settings/panes/basic.pane.c:132
+#, c-format
+msgid "Video bitrate - %d kbps"
+msgstr "ビデオビットレート - %d kbps"
+
+#: app/main.c:63
 msgid "[Localized Language]"
 msgstr "日本語"
+
+#: app/ui/settings/panes/about.pane.c:81
+msgid "webOS version"
+msgstr "webOS バージョン"

@@ -23,6 +23,8 @@ for locale in locales:
     print(f'Reading {popath}')
     pofile = polib.pofile(popath)
     for entry in pofile:
+        if not entry.msgstr:
+            continue
         cstrings[entry.msgid] = entry.msgstr
     language = list(map(lambda x: x[1], langcodes.parse_tag(pofile.metadata['Language'])))
     lang_path = path.join(outdir, *language)

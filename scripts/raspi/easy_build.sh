@@ -14,7 +14,7 @@ echo "Update submodules"
 git submodule update --init --recursive
 
 echo "Install dependencies. You may be prompted to enter password"
-sudo apt-get install -y build-essential cmake
+sudo apt-get install -y build-essential cmake gettext
 sudo apt-get install -y libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev    \
      libcurl4-openssl-dev libavcodec-dev libavutil-dev libexpat1-dev          \
      libmbedtls-dev libfontconfig1-dev libraspberrypi-dev libconfig-dev

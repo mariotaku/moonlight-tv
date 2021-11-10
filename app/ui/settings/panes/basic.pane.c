@@ -8,6 +8,7 @@
 #include <stream/platform.h>
 #include "lvgl/ext/lv_obj_controller.h"
 #include "pref_obj.h"
+#include "util/i18n.h"
 
 typedef struct {
     lv_obj_controller_t base;
@@ -60,7 +61,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_layout(parent, LV_LAYOUT_GRID);
     basic_pane_t *pane = (basic_pane_t *) self;
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_ROW_WRAP);
-    pref_title_label(parent, "Resolution and FPS");
+    pref_title_label(parent, locstr("Resolution and FPS"));
 
     lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(parent, supported_resolutions, supported_resolutions_len,
                                                            &app_configuration->stream.width,
@@ -84,7 +85,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_text_color(pane->res_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_label_set_long_mode(pane->res_warning, LV_LABEL_LONG_WRAP);
 
-    pane->bitrate_label = pref_title_label(parent, "Video bitrate");
+    pane->bitrate_label = pref_title_label(parent, locstr("Video bitrate"));
     update_bitrate_label(pane);
 
     int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 50000;
@@ -94,7 +95,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     pane->bitrate_slider = bitrate_slider;
 
 #if !FEATURE_FORCE_FULLSCREEN
-    lv_obj_t *checkbox = pref_checkbox(parent, "Fullscreen UI", &app_configuration->fullscreen, false);
+    lv_obj_t *checkbox = pref_checkbox(parent, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
     lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
 #endif
 
@@ -116,8 +117,8 @@ static void on_res_fps_updated(lv_event_t *e) {
     if (app_configuration->stream.width > 1920 && app_configuration->stream.height > 1080 &&
         app_configuration->stream.fps > 60) {
         lv_obj_clear_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text_static(pane->res_warning, "The performance on your host may not be able to smoothly "
-                                                    "stream under this resolution and framerate.");
+        lv_label_set_text_static(pane->res_warning, locstr("The performance on your host may not be able to smoothly "
+                                                    "stream under this resolution and framerate."));
     } else {
         lv_obj_add_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
     }
@@ -128,5 +129,5 @@ static void on_fullscreen_updated(lv_event_t *e) {
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {
-    lv_label_set_text_fmt(pane->bitrate_label, "Video bitrate - %d kbps", app_configuration->stream.bitrate);
+    lv_label_set_text_fmt(pane->bitrate_label, locstr("Video bitrate - %d kbps"), app_configuration->stream.bitrate);
 }

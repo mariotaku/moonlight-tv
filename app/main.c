@@ -258,9 +258,13 @@ bool app_load_font(lv_theme_t *theme) {
         return false;
 
     //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
-    FcPattern *pat = FcNameParse((const FcChar8 *) FONT_FAMILY);
+    FcPattern *pat = FcNameParse((const FcChar8*) FONT_FAMILY);
     if (!pat)
         goto deconfig;
+
+    FcLangSet *ls = FcLangSetCreate();
+    FcLangSetAdd(ls, (const FcChar8 *) app_get_locale());
+    FcPatternAddLangSet(pat, FC_LANG, ls);
 
     FcConfigSubstitute(config, pat, FcMatchPattern); //NECESSARY; it increases the scope of possible fonts
     FcDefaultSubstitute(pat);                        //NECESSARY; it increases the scope of possible fonts
