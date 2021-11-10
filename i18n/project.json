@@ -1,0 +1,20 @@
+{
+    "name": "moonlight-tv",
+    "id": "moonlight-tv",
+    "sourceLocale": "en-US",
+    "pseudoLocale": "zxx-XX",
+    "resourceDirs": {
+        "po": "target"
+    },
+    "includes": [],
+    "settings": {
+        "locales": [
+            "en-GB",
+            "ja-JP"
+        ]
+    },
+    "projectType": "custom",
+    "plugins": [
+        "po"
+    ]
+}
