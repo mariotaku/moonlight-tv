@@ -1,8 +1,12 @@
-#include <backend/types.h>
-#include <app.h>
-#include <errors.h>
-#include "server.context_menu.h"
+#include "app.h"
+
 #include "launcher.controller.h"
+#include "server.context_menu.h"
+
+#include "errors.h"
+#include "backend/types.h"
+
+#include "util/i18n.h"
 
 typedef struct context_menu_t {
     lv_obj_controller_t base;
@@ -47,17 +51,17 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(content, context_menu_key_cb, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_SHORT_CLICKED, controller);
 
-    lv_obj_t *test_btn = lv_list_add_btn(content, NULL, "Test Connection");
+    lv_obj_t *test_btn = lv_list_add_btn(content, NULL, locstr("Test Connection"));
     lv_obj_add_flag(test_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_event_cb(test_btn, test_btn_cb, LV_EVENT_SHORT_CLICKED, controller);
 
     if (node->server->paired) {
-        lv_obj_t *unpair_btn = lv_list_add_btn(content, NULL, "Unpair");
+        lv_obj_t *unpair_btn = lv_list_add_btn(content, NULL, locstr("Unpair"));
         lv_obj_add_flag(unpair_btn, LV_OBJ_FLAG_EVENT_BUBBLE | LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_event_cb(unpair_btn, unpair_btn_cb, LV_EVENT_SHORT_CLICKED, controller);
     }
 
-    lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, "Cancel");
+    lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, locstr("Cancel"));
     lv_obj_add_flag(cancel_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_center(msgbox);
     return msgbox;

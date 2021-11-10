@@ -1,7 +1,7 @@
 #include "lvgl/font/symbols_material_icon.h"
 #include "settings.controller.h"
 
-#include <libintl.h>
+#include "util/i18n.h"
 
 lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
@@ -19,7 +19,7 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_set_style_text_font(icon, LV_ICON_FONT_DEFAULT, 0);
     lv_label_set_text_static(icon, MAT_SYMBOL_SETTINGS);
 
-    lv_obj_t *title = lv_win_add_title(win, gettext("Settings"));
+    lv_obj_t *title = lv_win_add_title(win, locstr("Settings"));
     lv_obj_set_style_text_font(title, lv_theme_get_font_large(win), 0);
 
     lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, lv_dpx(25));

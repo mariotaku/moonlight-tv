@@ -1,0 +1,58 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-11-10 23:12+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Use list button for normal container
+#: app/ui/launcher/launcher.view.c:99
+msgid "Add computer"
+msgstr "PCを追加"
+
+#: app/ui/launcher/server.context_menu.c:64
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: app/ui/launcher/launcher.controller.c:428
+msgid "Decoder not working"
+msgstr ""
+
+#: app/ui/launcher/pair.dialog.c:56
+msgid "Enter PIN code on your computer."
+msgstr ""
+
+#: app/ui/launcher/launcher.view.c:105
+msgid "Help"
+msgstr "ヘルプ"
+
+#: app/ui/launcher/pair.dialog.c:39
+msgid "Pairing"
+msgstr "ペアリング中"
+
+#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+msgid "Settings"
+msgstr "設定"
+
+#: app/ui/launcher/server.context_menu.c:54
+msgid "Test Connection"
+msgstr ""
+
+#: app/ui/launcher/launcher.controller.c:431
+#, c-format
+msgid "Unable to initialize decoder %s. Please try other decoders."
+msgstr "ビデオデコーダ「%s」を初期化できませんでした。他のデコーダをお試しください。"
+
+#: app/ui/launcher/server.context_menu.c:59
+msgid "Unpair"
+msgstr ""
+
+#: app/platform/webos/app_webos.c:40
+msgid "[Localized Language]"
+msgstr "日本語"

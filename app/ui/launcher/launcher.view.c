@@ -9,7 +9,7 @@
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/font/symbols_material_icon.h"
 
-#include <libintl.h>
+#include "util/i18n.h"
 
 static void detail_group_add(lv_event_t *event);
 
@@ -96,19 +96,19 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_grow(pclist, 1);
 
     // Use list button for normal container
-    lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, gettext("Add computer"));
+    lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, locstr("Add computer"));
     lv_obj_set_icon_font(add_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(add_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(add_btn, 0);
     lv_obj_set_style_border_side(add_btn, LV_BORDER_SIDE_NONE, 0);
 
-    lv_obj_t *help_btn = lv_list_add_btn(nav, MAT_SYMBOL_HELP, gettext("Help"));
+    lv_obj_t *help_btn = lv_list_add_btn(nav, MAT_SYMBOL_HELP, locstr("Help"));
     lv_obj_set_icon_font(help_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(help_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_grow(help_btn, 0);
     lv_obj_set_style_border_side(help_btn, LV_BORDER_SIDE_NONE, 0);
 
-    lv_obj_t *pref_btn = lv_list_add_btn(nav, MAT_SYMBOL_SETTINGS, gettext("Settings"));
+    lv_obj_t *pref_btn = lv_list_add_btn(nav, MAT_SYMBOL_SETTINGS, locstr("Settings"));
 
     lv_obj_set_icon_font(pref_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);

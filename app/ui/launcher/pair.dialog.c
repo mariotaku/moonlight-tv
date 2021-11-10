@@ -1,10 +1,8 @@
-//
-// Created by Mariotaku on 2021/09/17.
-//
-
-#include <app.h>
-#include <errors.h>
+#include "app.h"
 #include "launcher.controller.h"
+
+#include "errors.h"
+#include "util/i18n.h"
 
 typedef struct {
     lv_obj_controller_t base;
@@ -38,7 +36,7 @@ void pair_controller_ctor(lv_obj_controller_t *self, void *args) {
 static lv_obj_t *pair_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
     static const char *btn_texts[] = {"OK", ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, "Pairing", NULL, btn_texts, false);
+    lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Pairing"), NULL, btn_texts, false);
 
     controller->btns = lv_msgbox_get_btns(dialog);
     lv_obj_add_flag(controller->btns, LV_OBJ_FLAG_HIDDEN);
@@ -55,7 +53,7 @@ static lv_obj_t *pair_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *message_label = lv_label_create(content);
     lv_obj_set_size(message_label, LV_PCT(100), LV_SIZE_CONTENT);
     lv_label_set_long_mode(message_label, LV_LABEL_LONG_WRAP);
-    lv_label_set_text(message_label, "Enter PIN code on your computer.");
+    lv_label_set_text(message_label, locstr("Enter PIN code on your computer."));
     controller->message_label = message_label;
 
     lv_obj_t *pin_label = lv_label_create(content);

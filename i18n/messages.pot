@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-10 02:08+0900\n"
+"POT-Creation-Date: 2021-11-10 23:12+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,12 +22,41 @@ msgstr ""
 msgid "Add computer"
 msgstr ""
 
+#: app/ui/launcher/server.context_menu.c:64
+msgid "Cancel"
+msgstr ""
+
+#: app/ui/launcher/launcher.controller.c:428
+msgid "Decoder not working"
+msgstr ""
+
+#: app/ui/launcher/pair.dialog.c:56
+msgid "Enter PIN code on your computer."
+msgstr ""
+
 #: app/ui/launcher/launcher.view.c:105
 msgid "Help"
 msgstr ""
 
+#: app/ui/launcher/pair.dialog.c:39
+msgid "Pairing"
+msgstr ""
+
 #: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
 msgid "Settings"
+msgstr ""
+
+#: app/ui/launcher/server.context_menu.c:54
+msgid "Test Connection"
+msgstr ""
+
+#: app/ui/launcher/launcher.controller.c:431
+#, c-format
+msgid "Unable to initialize decoder %s. Please try other decoders."
+msgstr ""
+
+#: app/ui/launcher/server.context_menu.c:59
+msgid "Unpair"
 msgstr ""
 
 #: app/platform/webos/app_webos.c:40

@@ -114,6 +114,7 @@ if (TARGET_WEBOS)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
+    pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
 elseif (TARGET_RASPI)
     add_subdirectory(third_party/h264bitstream)
 
@@ -234,6 +235,7 @@ if (TARGET_WEBOS)
             app/platform/webos/logging_pmlog.c
             app/platform/webos/app_webos.c
             app/platform/webos/lunasynccall.c
+            app/platform/webos/i18n_webos.c
             )
 else ()
     list(APPEND SOURCES
@@ -241,6 +243,7 @@ else ()
             app/platform/linux/os_info_linux.c
             app/platform/common/logging_stdio.c
             app/platform/common/app_common.c
+            app/platform/common/i18n_gettext.c
             )
 endif ()
 
@@ -326,8 +329,9 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${PMLOG_LIBRARIES} helpers)
+    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
+            ${WEBOSI18N_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
 elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
@@ -389,18 +393,20 @@ endif ()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+set(I18N_LOCALES "ja")
+
 add_custom_command(TARGET moonlight POST_BUILD
         COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES
-        COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES/moonlight-tv.mo i18n/ja/moonlight-tv.po
+        COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES/moonlight-tv.mo i18n/ja/messages.po
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         VERBATIM)
 
 add_custom_target(i18n-update-pot
-        COMMAND xgettext --add-comments --sort-output -o i18n/moonlight-tv.pot ${SOURCES}
+        COMMAND xgettext --keyword=locstr --add-comments --sort-output -o i18n/messages.pot ${SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(i18n-merge-po
-        COMMAND msgmerge --update i18n/ja/moonlight-tv.po i18n/moonlight-tv.pot
+        COMMAND msgmerge --update i18n/ja/messages.po i18n/messages.pot
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 
@@ -409,8 +415,6 @@ if (TARGET_WEBOS)
     install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR} PATTERN ".*" EXCLUDE)
     # Copy all files under deploy/webos/ to package root
     install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
-    # Copy all .mo files
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/mo/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR}/i18n)
     # Copy manifest
     configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
 
@@ -424,6 +428,13 @@ if (TARGET_WEBOS)
     add_custom_target(webos-package-moonlight
             COMMAND ${CMAKE_COMMAND} --build . --target install
             COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
+            )
+
+    add_custom_command(TARGET moonlight POST_BUILD
+            # Force PATH environment variable to use system python
+            COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/webos/gen_i18n.py
+            -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             )
 
     set_target_properties(moonlight PROPERTIES

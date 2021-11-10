@@ -1,21 +1,25 @@
-#include <util/user_event.h>
-#include <ui/root.h>
-#include <lvgl/font/symbols_material_icon.h>
-#include <lvgl/util/lv_app_utils.h>
-#include <res.h>
-#include <lvgl/lv_disp_drv_app.h>
-#include <SDL_image.h>
-#include <lvgl/lv_sdl_drv_key_input.h>
-#include <ui/settings/settings.controller.h>
-#include <stream/platform.h>
 #include "app.h"
-#include "launcher.controller.h"
-#include "apps.controller.h"
+#include "res.h"
 
-#include "util/logging.h"
 #include "add.dialog.h"
+#include "apps.controller.h"
+#include "launcher.controller.h"
 #include "pair.dialog.h"
 #include "server.context_menu.h"
+
+#include "ui/root.h"
+#include "ui/settings/settings.controller.h"
+#include "lvgl/font/symbols_material_icon.h"
+#include "lvgl/util/lv_app_utils.h"
+#include "lvgl/lv_disp_drv_app.h"
+
+#include <SDL_image.h>
+
+#include "stream/platform.h"
+
+#include "util/i18n.h"
+#include "util/user_event.h"
+#include "util/logging.h"
 
 static void launcher_controller(lv_obj_controller_t *self, void *args);
 
@@ -421,10 +425,10 @@ static void open_settings(lv_event_t *event) {
 
 static void show_decoder_error(launcher_controller_t *controller) {
     static const char *btn_txts[] = {"OK", ""};
-    lv_obj_t *msgbox = lv_msgbox_create(NULL, "Decoder not working", "placeholder", btn_txts, false);
+    lv_obj_t *msgbox = lv_msgbox_create(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
-    lv_label_set_text_fmt(msgview, "Unable to initialize decoder %s. Please try other decoders.",
+    lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
                           decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
                                                                   : app_configuration->decoder);
     lv_obj_center(msgbox);
