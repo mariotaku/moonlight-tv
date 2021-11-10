@@ -94,10 +94,11 @@ find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
+find_package(Config REQUIRED)
+find_package(CURL REQUIRED)
 find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
-find_package(CURL REQUIRED)
-find_package(Config REQUIRED)
+find_package(Freetype REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
@@ -153,6 +154,7 @@ add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
 set(SOURCES
@@ -285,11 +287,11 @@ else ()
     target_link_libraries(moonlight PRIVATE microdns)
 endif ()
 
-
+target_include_directories(moonlight SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads
         moonlight-common-c gamestream lvgl
-        Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES}
+        Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES} ${FREETYPE_LIBRARIES}
         )
 
 macro(moonlight_add_module)

@@ -263,6 +263,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*==================
  *   FONT USAGE
  *===================*/
+#define LV_USE_FREETYPE 1
 
 /*Montserrat fonts with ASCII range and some symbols using bpp = 4
  *https://fonts.google.com/specimen/Montserrat*/
