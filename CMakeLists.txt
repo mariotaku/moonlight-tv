@@ -34,6 +34,8 @@ option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" OFF)
 
+set(I18N_LOCALES "ja" "fr" "nl")
+
 set(FEATURE_FORCE_FULLSCREEN OFF)
 set(FEATURE_I18N_GETTEXT ON)
 
@@ -402,11 +404,12 @@ endif ()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set(I18N_LOCALES "ja" "fr" "nl")
 
 if (FEATURE_I18N_GETTEXT)
     foreach (LANG ${I18N_LOCALES})
-        add_custom_command(TARGET moonlight POST_BUILD
+        add_custom_command(PRE_BUILD
+                OUTPUT ${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES/moonlight-tv.mo
+                DEPENDS i18n/${LANG}/messages.po
                 COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES
                 COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES/moonlight-tv.mo i18n/${LANG}/messages.po
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
