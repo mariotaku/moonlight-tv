@@ -218,6 +218,7 @@ set(SOURCES
         app/util/libconfig_ext.c
         app/util/img_loader.c
         app/util/nullable.c
+        app/util/font.c
         app/app_sdl.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c

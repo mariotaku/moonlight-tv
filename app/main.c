@@ -22,6 +22,7 @@
 #include "ui/root.h"
 #include "ui/launcher/launcher.controller.h"
 
+#include "util/font.h"
 #include "util/i18n.h"
 #include "util/logging.h"
 
@@ -253,52 +254,57 @@ static void app_input_populate_group() {
 }
 
 bool app_load_font(lv_theme_t *theme) {
-    FcConfig *config = FcInitLoadConfigAndFonts(); //Most convenient of all the alternatives
-    if (!config)
+    app_fontset_t fontset = {.small_size = 28, .normal_size = 32, .large_size = 38};
+    app_fontset_t fontset_fallback = fontset;
+    //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
+    FcPattern *pattern = FcNameParse((const FcChar8 *) FONT_FAMILY);
+    if (!pattern)
         return false;
 
-    //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
-    FcPattern *pat = FcNameParse((const FcChar8*) FONT_FAMILY);
-    if (!pat)
-        goto deconfig;
-
-    FcLangSet *ls = FcLangSetCreate();
-    FcLangSetAdd(ls, (const FcChar8 *) app_get_locale_lang());
-    FcLangSetAdd(ls, (const FcChar8 *) app_get_locale());
-    FcPatternAddLangSet(pat, FC_LANG, ls);
-
-    FcConfigSubstitute(NULL, pat, FcMatchPattern);
-    FcDefaultSubstitute(pat);
+    FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
 
     FcResult result;
 
-    FcPattern *font = FcFontMatch(NULL, pat, &result);
-    if (!font)
-        goto depat;
-    //The pointer stored in 'file' is tied to 'font'; therefore, when 'font' is freed, this pointer is freed automatically.
-    //If you want to return the filename of the selected font, pass a buffer and copy the file name into that buffer
-    FcChar8 *file = NULL;
-
-    if (FcPatternGetString(font, FC_FILE, 0, &file) == FcResultMatch) {
-        lv_ft_info_t ft_info = {.name=(char *) file, .style = FT_FONT_STYLE_NORMAL, .weight = 32};
-        if (lv_ft_font_init(&ft_info)) {
-            theme->font_normal = ft_info.font;
-        }
-        lv_ft_info_t ft_info_lg = {.name=(char *) file, .style = FT_FONT_STYLE_NORMAL, .weight = 38};
-        if (lv_ft_font_init(&ft_info_lg)) {
-            theme->font_large = ft_info_lg.font;
-        }
-        lv_ft_info_t ft_info_sm = {.name=(char *) file, .style = FT_FONT_STYLE_NORMAL, .weight = 28};
-        if (lv_ft_font_init(&ft_info_sm)) {
-            theme->font_small = ft_info_sm.font;
-        }
+    FcPattern *font = FcFontMatch(NULL, pattern, &result);
+    if (font && app_fontset_load(&fontset, font)) {
+        theme->font_normal = fontset.normal;
+        theme->font_large = fontset.large;
+        theme->font_small = fontset.small;
     }
+    if (font) {
+        FcPatternDestroy(font);
+        font = NULL;
+    }
+    if (pattern) {
+        FcPatternDestroy(pattern);
+        pattern = NULL;
+    }
+#ifdef FONT_FAMILY_FALLBACK
+    pattern = FcNameParse((const FcChar8 *) FONT_FAMILY_FALLBACK);
+    if (pattern) {
+        FcLangSet *ls = FcLangSetCreate();
+        FcLangSetAdd(ls, (const FcChar8 *) app_get_locale_lang());
+        FcLangSetAdd(ls, (const FcChar8 *) app_get_locale());
+        FcPatternAddLangSet(pattern, FC_LANG, ls);
 
-    //needs to be called for every pattern created; in this case, 'fontFile' / 'file' is also freed
-    FcPatternDestroy(font);
-    depat:
-    FcPatternDestroy(pat); //needs to be called for every pattern created
-    deconfig:
-    FcConfigDestroy(config); //needs to be called for every config created
+        FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+        FcDefaultSubstitute(pattern);
+
+        font = FcFontMatch(NULL, pattern, &result);
+        if (font && app_fontset_load(&fontset_fallback, font)) {
+            fontset.normal->fallback = fontset_fallback.normal;
+            fontset.large->fallback = fontset_fallback.large;
+            fontset.small->fallback = fontset_fallback.small;
+        }
+        if (font) {
+            FcPatternDestroy(font);
+            font = NULL;
+        }
+        FcLangSetDestroy(ls);
+        FcPatternDestroy(pattern);
+        pattern = NULL;
+    }
+#endif
     return true;
 }
