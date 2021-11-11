@@ -406,15 +406,22 @@ install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 
 if (FEATURE_I18N_GETTEXT)
+    find_program(MSGFMT_COMMAND msgfmt)
+    if (NOT MSGFMT_COMMAND)
+        message(FATAL_ERROR "msgfmt not found. Please install gettext.")
+    endif()
+    set(MOFILES)
     foreach (LANG ${I18N_LOCALES})
-        add_custom_command(PRE_BUILD
-                OUTPUT ${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES/moonlight-tv.mo
-                DEPENDS i18n/${LANG}/messages.po
-                COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES
-                COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES/moonlight-tv.mo i18n/${LANG}/messages.po
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                VERBATIM)
+        set(_POFILE ${CMAKE_SOURCE_DIR}/i18n/${LANG}/messages.po)
+        set(_MODIR ${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES)
+        set(_MOFILE ${_MODIR}/moonlight-tv.mo)
+        add_custom_command(OUTPUT ${_MOFILE} DEPENDS i18n/${LANG}/messages.po
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${_MODIR}
+                COMMAND ${MSGFMT_COMMAND} --output-file=${_MOFILE} ${_POFILE})
+        list(APPEND MOFILES ${_MOFILE})
     endforeach ()
+    add_custom_target(moonlight-i18n ALL DEPENDS ${MOFILES})
+    add_dependencies(moonlight moonlight-i18n)
 endif ()
 
 add_custom_target(i18n-update-pot

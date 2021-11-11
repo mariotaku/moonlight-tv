@@ -2,7 +2,7 @@
 
 #if TARGET_WEBOS
 #define FONT_FAMILY "Museo Sans"
-#define FONT_FAMILY_FALLBACK "sans-serif"
 #else
-#define FONT_FAMILY "Sans Serif"
+#define FONT_FAMILY "Dejavu Sans"
 #endif
+#define FONT_FAMILY_FALLBACK "sans-serif"
