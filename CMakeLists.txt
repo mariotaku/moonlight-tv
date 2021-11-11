@@ -389,9 +389,9 @@ endif ()
 
 if (FEATURE_FORCE_FULLSCREEN)
     target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=1)
-else()
+else ()
     target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=0)
-endif()
+endif ()
 
 if (TARGET_WINDOWS)
     target_link_libraries(moonlight PRIVATE rpcrt4)
@@ -402,14 +402,16 @@ endif ()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-set(I18N_LOCALES "ja")
+set(I18N_LOCALES "ja" "fr" "nl")
 
 if (FEATURE_I18N_GETTEXT)
-    add_custom_command(TARGET moonlight POST_BUILD
-            COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES
-            COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES/moonlight-tv.mo i18n/ja/messages.po
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            VERBATIM)
+    foreach (LANG ${I18N_LOCALES})
+        add_custom_command(TARGET moonlight POST_BUILD
+                COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES
+                COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/${LANG}/LC_MESSAGES/moonlight-tv.mo i18n/${LANG}/messages.po
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                VERBATIM)
+    endforeach ()
 endif ()
 
 add_custom_target(i18n-update-pot

@@ -87,7 +87,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
         char resolution_text[16];
         SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", controller->webos_panel_info.w,
                      controller->webos_panel_info.h);
-        about_line(parent, locstr("Panel resolution"), resolution_text, rowcount++, 1);
+        about_line(parent, locstr("Screen resolution"), resolution_text, rowcount++, 1);
     }
     if (controller->webos_panel_info.rate) {
         char fps_text[16];

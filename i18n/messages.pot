@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-11 19:00+0900\n"
+"POT-Creation-Date: 2021-11-11 20:17+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,10 +66,6 @@ msgstr ""
 
 #: app/ui/settings/settings.controller.c:17
 msgid "Decoder Settings"
-msgstr ""
-
-#: app/ui/settings/panes/about.pane.c:76
-msgid "Decoder module"
 msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:428
@@ -185,10 +181,6 @@ msgstr ""
 msgid "Pairing"
 msgstr ""
 
-#: app/ui/settings/panes/about.pane.c:90
-msgid "Panel resolution"
-msgstr ""
-
 #: app/ui/launcher/apps.controller.c:453
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
@@ -224,6 +216,10 @@ msgstr ""
 
 #: app/ui/launcher/apps.controller.c:160
 msgid "Retry"
+msgstr ""
+
+#: app/ui/settings/panes/about.pane.c:90
+msgid "Screen resolution"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:284
@@ -327,6 +323,7 @@ msgid "Video bitrate - %d kbps"
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:69
+#: app/ui/settings/panes/about.pane.c:76
 msgid "Video decoder"
 msgstr ""
 

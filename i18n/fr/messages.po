@@ -1,349 +1,332 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-11 20:17+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: ja\n"
+"PO-Revision-Date: 2021-11-11 11:29\n"
+"Last-Translator: \n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Crowdin-Project: moonlight-tv\n"
+"X-Crowdin-Project-ID: 484733\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-File: messages.pot\n"
+"X-Crowdin-File-ID: 22613\n"
 
 #: app/ui/settings/panes/decoder.pane.c:90
 #, c-format
 msgid "%s decoder doesn't support HDR."
-msgstr ""
+msgstr "Le décodeur %s ne supporte pas le HDR."
 
 #: app/ui/settings/settings.controller.c:18
 msgid "About"
-msgstr "アプリ情報"
+msgstr "À propos"
 
 #: app/ui/settings/panes/input.pane.c:27
 msgid "Absolute mouse event"
-msgstr ""
+msgstr "Mouvements de souris absolus"
 
 #. Use list button for normal container
 #: app/ui/launcher/launcher.view.c:99
 msgid "Add computer"
-msgstr "PCを追加"
+msgstr "Ajouter un ordinateur"
 
 #: app/ui/settings/panes/decoder.pane.c:75
 #: app/ui/settings/panes/about.pane.c:78
 msgid "Audio backend"
-msgstr "オーディオデコーダー"
+msgstr "Back-end audio"
 
 #: app/ui/settings/panes/decoder.pane.c:78
-#, fuzzy, c-format
+#, c-format
 msgid "Audio backend - %s selected"
-msgstr "オーディオデコーダー"
+msgstr "Back-end audio - %s sélectionné"
 
 #: app/ui/settings/panes/decoder.pane.c:37
 #: app/ui/settings/panes/decoder.pane.c:52
 msgid "Automatic"
-msgstr ""
+msgstr "Automatique"
 
 #: app/ui/settings/settings.controller.c:14
-#, fuzzy
 msgid "Basic Settings"
-msgstr "基本設定"
+msgstr "Paramètres de base"
 
 #: app/ui/settings/panes/input.pane.c:28
-msgid ""
-"Better for remote desktop. For some games, mouse will not work properly."
-msgstr ""
+msgid "Better for remote desktop. For some games, mouse will not work properly."
+msgstr "Idéal pour le bureau à distance. Dans certains jeux, la souris ne fonctionnera pas correctement."
 
 #: app/ui/launcher/apps.controller.c:517 app/ui/launcher/add.dialog.c:48
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:176
 msgid "Cancel"
-msgstr "キャンセル"
+msgstr "Annuler"
 
 #: app/ui/settings/settings.controller.c:17
-#, fuzzy
 msgid "Decoder Settings"
-msgstr "デコーダー設定"
+msgstr "Paramètres du décodeur"
 
 #: app/ui/launcher/launcher.controller.c:428
 msgid "Decoder not working"
-msgstr "デコーダーが使えません"
+msgstr "Le décodeur ne fonctionne pas"
 
 #: app/ui/settings/panes/decoder.pane.c:76
-#, fuzzy
 msgid "Decoder provided"
-msgstr "ビデオデコーダー"
+msgstr "Décodeur fourni"
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "Disable input (view-only mode)"
-msgstr ""
+msgstr "Désactiver les entrées (mode observateur)"
 
 #: app/ui/streaming/streaming.controller.c:126
-#, fuzzy
 msgid "Disconnecting."
-msgstr "接続テスト"
+msgstr "Déconnexion."
 
 #: app/ui/launcher/pair.dialog.c:56
 msgid "Enter PIN code on your computer."
-msgstr "PCにPINコードを入力してください。"
+msgstr "Entrez le code PIN sur votre ordinateur."
 
 #: app/ui/launcher/add.dialog.c:85
-#, fuzzy
 msgid "Failed to add computer."
-msgstr "PCを追加"
+msgstr "Impossible d'ajouter l'ordinateur."
 
 #: app/ui/launcher/apps.controller.c:297
 msgid "Failed to load apps"
-msgstr ""
+msgstr "Impossible de charger les applications"
 
 #: app/ui/streaming/streaming.controller.c:218
 msgid "Failed to start session"
-msgstr ""
+msgstr "Impossible de démarrer la session"
 
 #: app/ui/settings/panes/about.pane.c:84
 msgid "Firmware version"
-msgstr "ファームウェアバージョン"
+msgstr "Version du micrologiciel"
 
 #: app/ui/settings/panes/basic.pane.c:93
 msgid "Fullscreen UI"
-msgstr "全画面表示"
+msgstr "Interface plein écran"
 
 #: app/ui/settings/panes/decoder.pane.c:85
 msgid "HDR (experimental)"
-msgstr ""
+msgstr "HDR (expérimental)"
 
 #: app/ui/settings/panes/decoder.pane.c:94
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
-msgstr ""
+msgid "HDR is only supported on certain games and when connecting to supported monitor."
+msgstr "Le HDR n'est pris en charge que sur certains jeux et avec un moniteur compatible."
 
 #: app/ui/launcher/launcher.view.c:105
 msgid "Help"
-msgstr "ヘルプ"
+msgstr "Aide"
 
 #: app/ui/settings/settings.controller.c:15
-#, fuzzy
 msgid "Host Settings"
-msgstr "PC設定"
+msgstr "Paramètres de l'hôte"
 
 #: app/ui/launcher/apps.controller.c:318
 msgid "Host error"
-msgstr ""
+msgstr "Erreur d'hôte"
 
 #: app/ui/launcher/add.dialog.c:63
 msgid "IP address"
-msgstr ""
+msgstr "Adresse IP"
 
 #: app/ui/launcher/add.dialog.c:67
 msgid "IPv4 address only"
-msgstr ""
+msgstr "Adresse IPv4 uniquement"
 
 #: app/ui/launcher/apps.controller.c:513
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: app/ui/settings/settings.controller.c:16
-#, fuzzy
 msgid "Input Settings"
-msgstr "入力設定"
+msgstr "Paramètres des entrées"
 
 #: app/ui/settings/settings.controller.c:270
 msgid "Later"
-msgstr ""
+msgstr "Plus tard"
 
 #: app/ui/settings/panes/decoder.pane.c:97
 msgid "Learn more about HDR feature."
-msgstr ""
+msgstr "En savoir plus sur la fonctionnalité HDR."
 
 #: app/ui/settings/panes/host.pane.c:28
 msgid "Mute host PC while streaming"
-msgstr ""
+msgstr "Couper le son du PC hôte pendant le streaming"
 
 #: app/ui/launcher/apps.controller.c:283
 msgid "Not paired"
-msgstr ""
+msgstr "Non appairé"
 
 #: app/ui/launcher/launcher.controller.c:427
 #: app/ui/launcher/apps.controller.c:451 app/ui/launcher/apps.controller.c:549
 #: app/ui/launcher/add.dialog.c:48 app/ui/launcher/pair.dialog.c:38
 #: app/ui/streaming/streaming.controller.c:217 app/app_sdl.c:176
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: app/ui/launcher/apps.controller.c:331
 msgid "Offline"
-msgstr ""
+msgstr "Hors-ligne"
 
 #: app/ui/settings/panes/host.pane.c:25
 msgid "Optimize game settings for streaming"
-msgstr ""
+msgstr "Optimiser les paramètres du jeu pour le streaming"
 
 #: app/ui/launcher/pair.dialog.c:39
 msgid "Pairing"
-msgstr "ペアリング中"
+msgstr "Association en cours"
 
 #: app/ui/launcher/apps.controller.c:453
 msgid "Please make sure you are quitting with the same client."
-msgstr ""
+msgstr "Pensez à quittez l'application avec le même client."
 
 #: app/ui/launcher/apps.controller.c:298
-msgid ""
-"Press \"Retry\" button to reload.Try restart the computer if error persists."
-msgstr ""
+msgid "Press \"Retry\" button to reload.Try restart the computer if error persists."
+msgstr "Appuyez sur \"Recommencer\" pour ré-essayer. Redémarrez l'ordinateur si l'erreur persiste."
 
 #: app/ui/settings/settings.controller.c:270
 msgid "Quit"
-msgstr ""
+msgstr "Quitter"
 
 #: app/ui/launcher/apps.controller.c:505
 msgid "Quit Session"
-msgstr ""
+msgstr "Quitter la session"
 
 #: app/ui/streaming/streaming.view.c:34
 msgid "Quit game"
-msgstr ""
+msgstr "Quitter le jeu"
 
 #: app/ui/settings/panes/about.pane.c:95
 msgid "Refresh rate"
-msgstr "リフレッシュレート"
+msgstr "Taux de rafraîchissement"
 
 #: app/ui/settings/panes/basic.pane.c:59
 msgid "Resolution and FPS"
-msgstr "解像度とリフレッシュレート"
+msgstr "Résolution et FPS"
 
 #: app/ui/launcher/apps.controller.c:499
 msgid "Resume"
-msgstr ""
+msgstr "Reprendre"
 
 #: app/ui/launcher/apps.controller.c:160
 msgid "Retry"
-msgstr ""
+msgstr "Réessayer"
 
 #: app/ui/settings/panes/about.pane.c:90
-#, fuzzy
 msgid "Screen resolution"
-msgstr "パネル解像度"
+msgstr "Résolution de l'écran"
 
 #: app/ui/launcher/apps.controller.c:284
 msgid "Select computer again to pair."
-msgstr ""
+msgstr "Sélectionnez à nouveau l'ordinateur à associer."
 
 #: app/ui/launcher/apps.controller.c:160
 msgid "Send Wake-On-LAN"
-msgstr ""
+msgstr "Envoyer un paquet Wake-On-LAN"
 
 #: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
 msgid "Settings"
-msgstr "設定"
+msgstr "Paramètres"
 
 #: app/ui/streaming/streaming.view.c:28
 msgid "Soft keyboard"
-msgstr ""
+msgstr "Clavier virtuel"
 
 #: app/ui/settings/settings.controller.c:271
 msgid "Some settings change requires restart to take effect."
-msgstr ""
+msgstr "Certains paramètres requièrent de redémarrer l'application."
 
 #: app/ui/launcher/apps.controller.c:509
 msgid "Star"
-msgstr ""
+msgstr "Étoile"
 
 #: app/ui/launcher/apps.controller.c:499
 msgid "Start"
-msgstr ""
+msgstr "Lancer"
 
 #: app/ui/streaming/streaming.controller.c:113
 msgid "Starting session."
-msgstr ""
+msgstr "Démarrage de la session."
 
 #: app/ui/streaming/streaming.view.c:40
 msgid "Suspend"
-msgstr ""
+msgstr "Suspendre"
 
 #: app/ui/settings/panes/input.pane.c:31
-msgid ""
-"Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
-"layouts."
-msgstr ""
+msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
+msgstr "Échanger les boutons A/B et X/Y. Utile pour des dispositions à la Nintendo."
 
 #: app/ui/settings/panes/input.pane.c:30
 msgid "Swap ABXY buttons"
-msgstr ""
+msgstr "Permuter les boutons ABXY"
 
 #: app/ui/launcher/server.context_menu.c:54
 msgid "Test Connection"
-msgstr "接続テスト"
+msgstr "Tester la connexion"
 
 #: app/ui/settings/panes/basic.pane.c:115
-msgid ""
-"The performance on your host may not be able to smoothly stream under this "
-"resolution and framerate."
-msgstr ""
+msgid "The performance on your host may not be able to smoothly stream under this resolution and framerate."
+msgstr "Votre hôte ne pourra peut-être pas streamer correctement avec cette résolution et fréquence d'image."
 
 #: app/ui/settings/panes/host.pane.c:26
-msgid ""
-"This will limit resolution and FPS to standard presets like 720p, 1080p or "
-"4K. Turn off if you want to try unsupported resolution and FPS."
-msgstr ""
+msgid "This will limit resolution and FPS to standard presets like 720p, 1080p or 4K. Turn off if you want to try unsupported resolution and FPS."
+msgstr "Limite la résolution et fréquence d'image à des pré-réglages tels que 720p, 1080p ou 4K. Désactivez cette option pour essayer des réglages non pris en charge."
 
 #: app/ui/launcher/apps.controller.c:319
 msgid "Try restart the computer."
-msgstr ""
+msgstr "Essayez de redémarrer l'ordinateur."
 
 #: app/ui/launcher/apps.controller.c:332
 msgid "Turn on the computer and retry."
-msgstr ""
+msgstr "Allumez l'ordinateur et réessayez."
 
 #: app/ui/launcher/launcher.controller.c:431
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
-msgstr ""
-"ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しくださ"
-"い。"
+msgstr "Impossible d'initialiser le décodeur %s. Veuillez essayer d'autres décodeurs."
 
 #: app/ui/launcher/apps.controller.c:452
 msgid "Unable to quit game"
-msgstr ""
+msgstr "Impossible de fermer le jeu"
 
 #: app/ui/launcher/server.context_menu.c:59
 msgid "Unpair"
-msgstr "ペアリング解除"
+msgstr "Dissocier"
 
 #: app/ui/launcher/apps.controller.c:509
 msgid "Unstar"
-msgstr ""
+msgstr "Enlever étoile"
 
 #: app/ui/settings/panes/about.pane.c:75
 msgid "Version"
-msgstr "バージョン"
+msgstr "Version"
 
 #: app/ui/settings/panes/basic.pane.c:83
 msgid "Video bitrate"
-msgstr "ビデオビットレート"
+msgstr "Bitrate vidéo"
 
 #: app/ui/settings/panes/basic.pane.c:127
 #, c-format
 msgid "Video bitrate - %d kbps"
-msgstr "ビデオビットレート - %d kbps"
+msgstr "Bitrate vidéo - %d kbps"
 
 #: app/ui/settings/panes/decoder.pane.c:69
 #: app/ui/settings/panes/about.pane.c:76
 msgid "Video decoder"
-msgstr ""
+msgstr "Décodeur vidéo"
 
 #: app/ui/settings/panes/decoder.pane.c:70
 #, c-format
 msgid "Video decoder - %s selected"
-msgstr ""
+msgstr "Décodeur vidéo - %s sélectionné"
 
 #: app/main.c:64
 msgid "[Localized Language]"
-msgstr "日本語"
+msgstr "Français"
 
 #: app/ui/settings/panes/about.pane.c:81
 msgid "webOS version"
-msgstr "webOS バージョン"
+msgstr "Version webOS"
 
-#, fuzzy
-#~ msgid "Decoder module"
-#~ msgstr "ビデオデコーダー"
