@@ -112,8 +112,8 @@ static void on_res_fps_updated(lv_event_t *e) {
     if (app_configuration->stream.width > 1920 && app_configuration->stream.height > 1080 &&
         app_configuration->stream.fps > 60) {
         lv_obj_clear_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
-        lv_label_set_text_static(pane->res_warning, locstr("The performance on your host may not be able to smoothly "
-                                                           "stream under this resolution and framerate."));
+        lv_label_set_text_static(pane->res_warning, locstr("Your computer may not perform well when using this "
+                                                           "resolution and framerate."));
     } else {
         lv_obj_add_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
     }

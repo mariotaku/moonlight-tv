@@ -415,7 +415,7 @@ if (FEATURE_I18N_GETTEXT)
 endif ()
 
 add_custom_target(i18n-update-pot
-        COMMAND xgettext --keyword=locstr --keyword=translatable --add-comments --sort-output -o i18n/messages.pot
+        COMMAND xgettext --keyword=locstr --keyword=translatable --add-comments -o i18n/messages.pot
         ${SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
