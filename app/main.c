@@ -293,6 +293,7 @@ bool app_load_font(lv_theme_t *theme) {
 
         font = FcFontMatch(NULL, pattern, &result);
         if (font && app_fontset_load(&fontset_fallback, font)) {
+            fontset_fallback.normal->fallback = &lv_font_montserrat_32;
             fontset.normal->fallback = fontset_fallback.normal;
             fontset.large->fallback = fontset_fallback.large;
             fontset.small->fallback = fontset_fallback.small;

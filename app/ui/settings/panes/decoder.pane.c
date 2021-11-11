@@ -91,8 +91,8 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
                               decoder_definitions[decoder_current].name);
     } else {
         lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
-        lv_label_set_text_fmt(hdr_hint, locstr("HDR is only supported on certain games and "
-                                               "when connecting to supported monitor."));
+        lv_label_set_text(hdr_hint, locstr("HDR is only supported on certain games and "
+                                           "when connecting to supported monitor."));
     }
     lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."));
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
