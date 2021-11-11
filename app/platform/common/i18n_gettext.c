@@ -1,8 +1,6 @@
 #include "util/i18n.h"
 
-#include <locale.h>
 #include <libintl.h>
-#include <string.h>
 
 const char *locstr(const char *msgid) {
     return gettext(msgid);

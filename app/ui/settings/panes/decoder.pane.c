@@ -1,14 +1,11 @@
-//
-// Created by Mariotaku on 2021/08/30.
-//
-
-#include <malloc.h>
-#include <lvgl.h>
-#include <app.h>
-#include <stream/platform.h>
-#include <ui/settings/settings.controller.h>
+#include "app.h"
+#include "stream/platform.h"
+#include "ui/settings/settings.controller.h"
+#include "lvgl.h"
 #include "lvgl/ext/lv_obj_controller.h"
 #include "pref_obj.h"
+
+#include "util/i18n.h"
 
 typedef struct decoder_pane_t {
     lv_obj_controller_t base;
@@ -69,12 +66,12 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_layout(parent, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_t *decoder_label = pref_title_label(parent, "Video decoder");
+    lv_obj_t *decoder_label = pref_title_label(parent, locstr("Video decoder"));
     lv_label_set_text_fmt(decoder_label, "Video decoder - %s selected", decoder_definitions[decoder_current].name);
     lv_obj_t *decoder_dropdown = pref_dropdown_string(parent, controller->decoder_entries, decoder_orders_len + 1,
                                                       &app_configuration->decoder);
     lv_obj_set_width(decoder_dropdown, LV_PCT(100));
-    lv_obj_t *audio_label = pref_title_label(parent, "Audio backend");
+    lv_obj_t *audio_label = pref_title_label(parent, locstr("Audio backend"));
     const char *audio_name = audio_current == AUDIO_DECODER ? "Use decoder" : audio_definitions[audio_current].name;
     lv_label_set_text_fmt(audio_label, "Audio backend - %s selected", audio_name);
     lv_obj_t *audio_dropdown = pref_dropdown_string(parent, controller->audio_entries, audio_orders_len + 1,
@@ -93,7 +90,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
         lv_label_set_text_fmt(hdr_hint, "HDR is only supported on certain games and "
                                         "when connecting to supported monitor.");
     }
-    lv_obj_t *hdr_more = pref_desc_label(parent, "Learn more about HDR feature.");
+    lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."));
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
     settings_controller_t *parent_controller = (settings_controller_t *) lv_controller_manager_parent(
