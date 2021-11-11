@@ -2,18 +2,21 @@
 // Created by Mariotaku on 2021/08/31.
 //
 
-#include <errors.h>
-#include <util/user_event.h>
 #include "app.h"
+#include "appitem.view.h"
+#include "apps.controller.h"
+#include "launcher.controller.h"
+#include "ui/streaming/streaming.controller.h"
 
 #include "coverloader.h"
 #include "backend/apploader/apploader.h"
+#include <errors.h>
+
 #include "lvgl/ext/lv_gridview.h"
 #include "lvgl/lv_ext_utils.h"
-#include "ui/streaming/streaming.controller.h"
-#include "appitem.view.h"
-#include "launcher.controller.h"
-#include "apps.controller.h"
+
+#include "util/user_event.h"
+#include "util/i18n.h"
 
 
 static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent);
@@ -217,6 +220,8 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             lv_grid_rebind(controller->applist);
             break;
         }
+        default:
+            break;
     }
     return false;
 }
@@ -275,8 +280,8 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_label_set_text_static(controller->errortitle, "Unable to open games");
-                lv_label_set_text_static(controller->errorlabel, "Not paired");
+                lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
+                lv_label_set_text_static(controller->errorlabel, locstr("Not paired"));
             } else if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
                 // is loading apps
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
@@ -289,8 +294,8 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-                lv_label_set_text_static(controller->errortitle, "Unable to open games");
-                lv_label_set_text_static(controller->errorlabel, "Failed to load apps");
+                lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
+                lv_label_set_text_static(controller->errorlabel, locstr("Failed to load apps"));
             } else {
                 // has apps
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
@@ -309,8 +314,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-            lv_label_set_text_static(controller->errortitle, "Unable to open games");
-            lv_label_set_text_static(controller->errorlabel, "Failed to load server info");
+            lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
+            lv_label_set_text_static(controller->errorlabel, locstr("Failed to load server info"));
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -322,8 +327,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-            lv_label_set_text_static(controller->errortitle, "Unable to open games");
-            lv_label_set_text_static(controller->errorlabel, "Host is offline");
+            lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
+            lv_label_set_text_static(controller->errorlabel, locstr("Host is offline"));
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -443,8 +448,8 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
         return;
     }
     static const char *btn_texts[] = {"OK", ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, "Unable to quit game",
-                                        "Please make sure you are quitting with the same client.",
+    lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Unable to quit game"),
+                                        locstr("Please make sure you are quitting with the same client."),
                                         btn_texts, false);
     lv_obj_add_event_cb(dialog, quit_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_center(dialog);
@@ -489,13 +494,14 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
     int currentId = controller->node->server->currentGame;
 
     if (!currentId || currentId == app->base.id) {
-        lv_obj_t *start_btn = lv_list_add_btn(content, NULL, currentId == app->base.id ? "Resume" : "Start");
+        lv_obj_t *start_btn = lv_list_add_btn(content, NULL,
+                                              currentId == app->base.id ? locstr("Resume") : locstr("Start"));
         lv_obj_add_flag(start_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(start_btn, launcher_launch_game);
     }
 
     if (currentId) {
-        lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, "Quit Session");
+        lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, locstr("Quit Session"));
         lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(quit_btn, launcher_quit_game);
     }
@@ -503,11 +509,11 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
     lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 
-    lv_obj_t *info_btn = lv_list_add_btn(content, NULL, "Info");
+    lv_obj_t *info_btn = lv_list_add_btn(content, NULL, locstr("Info"));
     lv_obj_add_flag(info_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(info_btn, app_detail_dialog);
 
-    lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, "Cancel");
+    lv_obj_t *cancel_btn = lv_list_add_btn(content, NULL, locstr("Cancel"));
     lv_obj_add_flag(cancel_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_center(msgbox);
 }

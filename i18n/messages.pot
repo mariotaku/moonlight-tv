@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-11 02:24+0900\n"
+"POT-Creation-Date: 2021-11-11 14:16+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,6 +26,7 @@ msgstr ""
 msgid "Add computer"
 msgstr ""
 
+#: app/ui/settings/panes/decoder.pane.c:74
 #: app/ui/settings/panes/about.pane.c:78
 msgid "Audio backend"
 msgstr ""
@@ -34,6 +35,7 @@ msgstr ""
 msgid "Basic Settings"
 msgstr ""
 
+#: app/ui/launcher/apps.controller.c:516
 #: app/ui/launcher/server.context_menu.c:64
 msgid "Cancel"
 msgstr ""
@@ -50,8 +52,24 @@ msgstr ""
 msgid "Decoder not working"
 msgstr ""
 
+#: app/ui/streaming/streaming.controller.c:126
+msgid "Disconnecting."
+msgstr ""
+
 #: app/ui/launcher/pair.dialog.c:56
 msgid "Enter PIN code on your computer."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:298
+msgid "Failed to load apps"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:318
+msgid "Failed to load server info"
+msgstr ""
+
+#: app/ui/streaming/streaming.controller.c:218
+msgid "Failed to start session"
 msgstr ""
 
 #: app/ui/settings/panes/about.pane.c:84
@@ -70,8 +88,28 @@ msgstr ""
 msgid "Host Settings"
 msgstr ""
 
+#: app/ui/launcher/apps.controller.c:331
+msgid "Host is offline"
+msgstr ""
+
+#: app/ui/launcher/add.dialog.c:63
+msgid "IP address"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:512
+msgid "Info"
+msgstr ""
+
 #: app/ui/settings/settings.controller.c:16
 msgid "Input Settings"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:93
+msgid "Learn more about HDR feature."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:284
+msgid "Not paired"
 msgstr ""
 
 #: app/ui/launcher/pair.dialog.c:39
@@ -82,6 +120,18 @@ msgstr ""
 msgid "Panel resolution"
 msgstr ""
 
+#: app/ui/launcher/apps.controller.c:452
+msgid "Please make sure you are quitting with the same client."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:504
+msgid "Quit Session"
+msgstr ""
+
+#: app/ui/streaming/streaming.view.c:34
+msgid "Quit game"
+msgstr ""
+
 #: app/ui/settings/panes/about.pane.c:95
 msgid "Refresh rate"
 msgstr ""
@@ -90,8 +140,28 @@ msgstr ""
 msgid "Resolution and FPS"
 msgstr ""
 
+#: app/ui/launcher/apps.controller.c:498
+msgid "Resume"
+msgstr ""
+
 #: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
 msgid "Settings"
+msgstr ""
+
+#: app/ui/streaming/streaming.view.c:28
+msgid "Soft keyboard"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:498
+msgid "Start"
+msgstr ""
+
+#: app/ui/streaming/streaming.controller.c:113
+msgid "Starting session."
+msgstr ""
+
+#: app/ui/streaming/streaming.view.c:40
+msgid "Suspend"
 msgstr ""
 
 #: app/ui/launcher/server.context_menu.c:54
@@ -109,6 +179,15 @@ msgstr ""
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr ""
 
+#: app/ui/launcher/apps.controller.c:283 app/ui/launcher/apps.controller.c:297
+#: app/ui/launcher/apps.controller.c:317 app/ui/launcher/apps.controller.c:330
+msgid "Unable to open games"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:451
+msgid "Unable to quit game"
+msgstr ""
+
 #: app/ui/launcher/server.context_menu.c:59
 msgid "Unpair"
 msgstr ""
@@ -124,6 +203,10 @@ msgstr ""
 #: app/ui/settings/panes/basic.pane.c:132
 #, c-format
 msgid "Video bitrate - %d kbps"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:69
+msgid "Video decoder"
 msgstr ""
 
 #: app/main.c:63

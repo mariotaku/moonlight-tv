@@ -4,8 +4,9 @@
 
 #include "add.dialog.h"
 #include "backend/pcmanager.h"
-#include <app.h>
+#include "app.h"
 #include <errors.h>
+#include "util/i18n.h"
 
 #ifdef __WIN32
 
@@ -59,7 +60,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *ip_label = lv_label_create(content);
     lv_obj_set_grid_cell(ip_label, LV_GRID_ALIGN_START, 0, 3, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_set_height(ip_label, LV_SIZE_CONTENT);
-    lv_label_set_text_static(ip_label, "IP address");
+    lv_label_set_text_static(ip_label, locstr("IP address"));
 
     lv_obj_t *ip_input = lv_textarea_create(content);
     lv_obj_set_grid_cell(ip_input, LV_GRID_ALIGN_STRETCH, 0, 3, LV_GRID_ALIGN_STRETCH, 1, 1);

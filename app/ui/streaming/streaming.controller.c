@@ -1,9 +1,11 @@
-#include <util/user_event.h>
-#include <ui/root.h>
-#include <stream/video/delegate.h>
-#include <stream/platform.h>
-#include <app.h>
+#include "app.h"
 #include "streaming.controller.h"
+#include "stream/video/delegate.h"
+#include "stream/platform.h"
+#include "ui/root.h"
+
+#include "util/user_event.h"
+#include "util/i18n.h"
 
 lv_obj_t *progress_dialog_create(const char *message);
 
@@ -108,7 +110,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
     streaming_controller_t *controller = (streaming_controller_t *) self;
     switch (which) {
         case USER_STREAM_CONNECTING: {
-            controller->progress = progress_dialog_create("Starting session.");
+            controller->progress = progress_dialog_create(locstr("Starting session."));
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
             return true;
         }
@@ -121,7 +123,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             break;
         }
         case USER_STREAM_CLOSE: {
-            controller->progress = progress_dialog_create("Disconnecting.");
+            controller->progress = progress_dialog_create(locstr("Disconnecting."));
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
             break;
         }
@@ -213,7 +215,7 @@ static void hide_overlay(lv_event_t *event) {
 
 static void session_error(streaming_controller_t *controller) {
     static const char *btn_texts[] = {"OK", ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, "Failed to start session", streaming_errmsg, btn_texts,
+    lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Failed to start session"), streaming_errmsg, btn_texts,
                                         false);
     lv_obj_add_event_cb(dialog, session_error_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_center(dialog);
