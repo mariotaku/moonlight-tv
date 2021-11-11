@@ -115,9 +115,9 @@ jobs:
       - name: Update packages
         run: sudo apt-get -qq update || true
 
-      - name: Install Crossbuild GCC
+      - name: Install Required Build Tools
         # Use qemu to support cross-architecture debootstrap
-        run: sudo apt-get -y -qq install crossbuild-essential-armhf
+        run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
 
       - name: Install Sysroot
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
