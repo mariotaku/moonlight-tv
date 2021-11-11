@@ -157,7 +157,7 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_min_height(controller->actions, LV_DPX(80), 0);
     lv_obj_set_style_max_width(controller->actions, LV_PCT(100), 0);
     lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_CLICK_TRIG | LV_BTNMATRIX_CTRL_NO_REPEAT);
-    static const char *actions_map[] = {"Send Wake-On-LAN", "Retry", ""};
+    static const char *actions_map[] = {translatable("Send Wake-On-LAN"), translatable("Retry"), ""};
     lv_btnmatrix_set_map(controller->actions, actions_map);
     lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_EVENT_BUBBLE);
     return NULL;
@@ -447,7 +447,7 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     if (resp->result.code == GS_OK) {
         return;
     }
-    static const char *btn_texts[] = {"OK", ""};
+    static const char *btn_texts[] = {translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Unable to quit game"),
                                         locstr("Please make sure you are quitting with the same client."),
                                         btn_texts, false);
@@ -505,7 +505,7 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
         lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(quit_btn, launcher_quit_game);
     }
-    lv_obj_t *fav_btn = lv_list_add_btn(content, NULL, app->fav ? "Remove star" : "Star");
+    lv_obj_t *fav_btn = lv_list_add_btn(content, NULL, app->fav ? locstr("Unstar") : locstr("Star"));
     lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 
@@ -545,7 +545,7 @@ static void context_menu_click_cb(lv_event_t *e) {
 }
 
 static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app) {
-    static const char *btn_txts[] = {"OK", ""};
+    static const char *btn_txts[] = {translatable("OK"), ""};
     lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, "text", btn_txts, false);
     lv_obj_t *msgobj = lv_msgbox_get_text(msgbox);
     lv_label_set_text_fmt(msgobj,

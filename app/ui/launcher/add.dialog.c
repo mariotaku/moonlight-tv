@@ -45,7 +45,7 @@ const lv_obj_controller_class_t add_dialog_class = {
 static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     add_dialog_controller_t *controller = (add_dialog_controller_t *) self;
-    const static char *btn_texts[] = {"Cancel", "OK", ""};
+    const static char *btn_texts[] = {translatable("Cancel"), translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create(NULL, NULL, NULL, btn_texts, false);
     lv_obj_add_event_cb(dialog, dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_t *content = lv_msgbox_get_content(dialog);
@@ -64,7 +64,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_t *ip_input = lv_textarea_create(content);
     lv_obj_set_grid_cell(ip_input, LV_GRID_ALIGN_STRETCH, 0, 3, LV_GRID_ALIGN_STRETCH, 1, 1);
-    lv_textarea_set_placeholder_text(ip_input, "IPv4 address only");
+    lv_textarea_set_placeholder_text(ip_input, locstr("IPv4 address only"));
     lv_textarea_set_one_line(ip_input, true);
     lv_textarea_set_accepted_chars(ip_input, ".-_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     lv_obj_add_event_cb(ip_input, input_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
@@ -82,7 +82,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_height(add_error, LV_SIZE_CONTENT);
     lv_obj_set_grid_cell(add_error, LV_GRID_ALIGN_START, 0, 3, LV_GRID_ALIGN_STRETCH, 2, 1);
     lv_label_set_long_mode(add_error, LV_LABEL_LONG_WRAP);
-    lv_label_set_text_static(add_error, "Failed to add computer.");
+    lv_label_set_text_static(add_error, locstr("Failed to add computer."));
 
     lv_obj_t *btns = lv_msgbox_get_btns(dialog);
     lv_btnmatrix_set_btn_ctrl(btns, 1, LV_BTNMATRIX_CTRL_DISABLED);

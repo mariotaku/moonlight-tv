@@ -1,13 +1,8 @@
-//
-// Created by Mariotaku on 2021/08/30.
-//
-
-#include <malloc.h>
-#include <lvgl.h>
-#include <app.h>
-#include <stream/platform.h>
-#include "lvgl/ext/lv_obj_controller.h"
+#include "app.h"
 #include "pref_obj.h"
+
+#include <stream/platform.h>
+
 #include "util/i18n.h"
 
 typedef struct {
@@ -118,7 +113,7 @@ static void on_res_fps_updated(lv_event_t *e) {
         app_configuration->stream.fps > 60) {
         lv_obj_clear_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text_static(pane->res_warning, locstr("The performance on your host may not be able to smoothly "
-                                                    "stream under this resolution and framerate."));
+                                                           "stream under this resolution and framerate."));
     } else {
         lv_obj_add_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
     }

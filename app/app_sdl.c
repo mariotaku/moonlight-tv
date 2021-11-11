@@ -12,6 +12,7 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "util/logging.h"
+#include "util/i18n.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -172,8 +173,8 @@ void app_set_keep_awake(bool awake) {
 }
 
 void app_quit_confirm() {
-    static const char *btn_txts[] = {"Cancel", "OK", ""};
-    lv_obj_t *mbox = lv_msgbox_create(NULL, NULL, "Do you want to quit Moonlight?", btn_txts, false);
+    static const char *btn_txts[] = {translatable("Cancel"), translatable("OK"), ""};
+    lv_obj_t *mbox = lv_msgbox_create(NULL, NULL, "Quit Moonlight?", btn_txts, false);
     lv_obj_add_event_cb(mbox, quit_confirm_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
 }

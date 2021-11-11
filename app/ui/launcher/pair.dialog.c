@@ -35,7 +35,7 @@ void pair_controller_ctor(lv_obj_controller_t *self, void *args) {
 
 static lv_obj_t *pair_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
-    static const char *btn_texts[] = {"OK", ""};
+    static const char *btn_texts[] = {translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Pairing"), NULL, btn_texts, false);
 
     controller->btns = lv_msgbox_get_btns(dialog);

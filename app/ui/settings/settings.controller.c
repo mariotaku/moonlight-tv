@@ -267,8 +267,8 @@ static void on_dropdown_clicked(lv_event_t *event) {
 static void settings_close(lv_event_t *e) {
     settings_controller_t *controller = lv_event_get_user_data(e);
     if (controller->needs_restart) {
-        static const char *btn_txts[] = {"Later", "Quit", ""};
-        lv_obj_t *msgbox = lv_msgbox_create(NULL, NULL, "Some settings change requires restart to take effect.",
+        static const char *btn_txts[] = {translatable("Later"), translatable("Quit"), ""};
+        lv_obj_t *msgbox = lv_msgbox_create(NULL, NULL, locstr("Some settings change requires restart to take effect."),
                                             btn_txts, false);
         lv_obj_center(msgbox);
         lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, controller);

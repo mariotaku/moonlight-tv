@@ -1,12 +1,8 @@
-//
-// Created by Mariotaku on 2021/08/30.
-//
+#include "app.h"
 
-#include <malloc.h>
-#include <lvgl.h>
-#include <app.h>
-#include "lvgl/ext/lv_obj_controller.h"
 #include "pref_obj.h"
+
+#include "util/i18n.h"
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
 
@@ -26,9 +22,9 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_layout(parent, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    pref_checkbox(parent, "Optimize game settings for streaming", &app_configuration->sops, false);
-    pref_desc_label(parent, "This will limit resolution and FPS to standard presets like 720p, 1080p or 4K. "
-                            "Turn off if you want to try unsupported resolution and FPS.");
-    pref_checkbox(parent, "Mute host PC while streaming", &app_configuration->localaudio, true);
+    pref_checkbox(parent, locstr("Optimize game settings for streaming"), &app_configuration->sops, false);
+    pref_desc_label(parent, locstr("This will limit resolution and FPS to standard presets like 720p, 1080p or 4K. "
+                            "Turn off if you want to try unsupported resolution and FPS."));
+    pref_checkbox(parent, locstr("Mute host PC while streaming"), &app_configuration->localaudio, true);
     return NULL;
 }

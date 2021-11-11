@@ -214,7 +214,7 @@ static void hide_overlay(lv_event_t *event) {
 }
 
 static void session_error(streaming_controller_t *controller) {
-    static const char *btn_texts[] = {"OK", ""};
+    static const char *btn_texts[] = {translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Failed to start session"), streaming_errmsg, btn_texts,
                                         false);
     lv_obj_add_event_cb(dialog, session_error_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
