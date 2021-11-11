@@ -1,0 +1,11 @@
+{
+  "name": "moonlight-tv",
+  "version": "1.0.0",
+  "scripts": {
+    "webos-gen-i18n": "node scripts/webos/gen_i18n.js"
+  },
+  "devDependencies": {
+    "argparse": "^2.0.1",
+    "gettext-parser": "^4.2.0"
+  }
+}

@@ -422,9 +422,7 @@ if (TARGET_WEBOS)
     configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
 
     add_custom_command(TARGET moonlight PRE_BUILD
-            # Force PATH environment variable to use system python
-            COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/webos/gen_i18n.py
-            -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
+            COMMAND npm run webos-gen-i18n -- -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             )
 
