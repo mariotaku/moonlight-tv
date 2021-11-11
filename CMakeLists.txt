@@ -429,11 +429,6 @@ if (TARGET_WEBOS)
     # Copy manifest
     configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
 
-    add_custom_command(TARGET moonlight PRE_BUILD
-            COMMAND npm run webos-gen-i18n -- -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            )
-
     add_custom_target(webos-generate-gamecontrollerdb
             COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -443,6 +438,7 @@ if (TARGET_WEBOS)
 
     add_custom_target(webos-package-moonlight
             COMMAND ${CMAKE_COMMAND} --build . --target install
+            COMMAND npm run webos-gen-i18n -- -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
             COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
             )
 

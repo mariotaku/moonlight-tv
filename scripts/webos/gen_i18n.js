@@ -23,8 +23,9 @@ for (const locale of locales) {
     for (const msgid in translations) {
         if (!msgid) continue;
         const translation = translations[msgid];
-        if (!translation.msgstr) continue;
-        cstrings[translation.msgid] = translation.msgstr[0];
+        const msgstr = translation.msgstr && translation.msgstr[0];
+        if (!msgstr) continue;
+        cstrings[translation.msgid] = msgstr;
     }
 
     const language = pofile.headers['Language'].split(/[-_]/);
