@@ -266,11 +266,9 @@ bool app_load_font(lv_theme_t *theme) {
     FcLangSetAdd(ls, (const FcChar8 *) app_get_locale_lang());
     FcLangSetAdd(ls, (const FcChar8 *) app_get_locale());
     FcPatternAddLangSet(pat, FC_LANG, ls);
-    FcPatternPrint(pat);
 
     FcConfigSubstitute(NULL, pat, FcMatchPattern);
     FcDefaultSubstitute(pat);
-    FcPatternPrint(pat);
 
     FcResult result;
 
