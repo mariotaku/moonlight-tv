@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-11 14:16+0900\n"
+"POT-Creation-Date: 2021-11-11 18:17+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,27 +11,51 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: app/ui/settings/panes/decoder.pane.c:90
+#, c-format
+msgid "%s decoder doesn't support HDR."
+msgstr ""
+
 #: app/ui/settings/settings.controller.c:18
 msgid "About"
 msgstr "アプリ情報"
+
+#: app/ui/settings/panes/input.pane.c:27
+msgid "Absolute mouse event"
+msgstr ""
 
 #. Use list button for normal container
 #: app/ui/launcher/launcher.view.c:99
 msgid "Add computer"
 msgstr "PCを追加"
 
-#: app/ui/settings/panes/decoder.pane.c:74
+#: app/ui/settings/panes/decoder.pane.c:75
 #: app/ui/settings/panes/about.pane.c:78
 msgid "Audio backend"
 msgstr "オーディオデコーダー"
+
+#: app/ui/settings/panes/decoder.pane.c:78
+#, fuzzy, c-format
+msgid "Audio backend - %s selected"
+msgstr "オーディオデコーダー"
+
+#: app/ui/settings/panes/decoder.pane.c:37
+#: app/ui/settings/panes/decoder.pane.c:52
+msgid "Automatic"
+msgstr ""
 
 #: app/ui/settings/settings.controller.c:14
 #, fuzzy
 msgid "Basic Settings"
 msgstr "基本設定"
 
-#: app/ui/launcher/apps.controller.c:516
-#: app/ui/launcher/server.context_menu.c:64
+#: app/ui/settings/panes/input.pane.c:28
+msgid ""
+"Better for remote desktop. For some games, mouse will not work properly."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:516 app/ui/launcher/add.dialog.c:48
+#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:176
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -49,6 +73,10 @@ msgstr "ビデオデコーダー"
 msgid "Decoder not working"
 msgstr "デコーダーが使えません"
 
+#: app/ui/settings/panes/input.pane.c:25
+msgid "Disable input (view-only mode)"
+msgstr ""
+
 #: app/ui/streaming/streaming.controller.c:126
 #, fuzzy
 msgid "Disconnecting."
@@ -57,6 +85,11 @@ msgstr "接続テスト"
 #: app/ui/launcher/pair.dialog.c:56
 msgid "Enter PIN code on your computer."
 msgstr "PCにPINコードを入力してください。"
+
+#: app/ui/launcher/add.dialog.c:85
+#, fuzzy
+msgid "Failed to add computer."
+msgstr "PCを追加"
 
 #: app/ui/launcher/apps.controller.c:298
 msgid "Failed to load apps"
@@ -74,9 +107,19 @@ msgstr ""
 msgid "Firmware version"
 msgstr "ファームウェアバージョン"
 
-#: app/ui/settings/panes/basic.pane.c:98
+#: app/ui/settings/panes/basic.pane.c:93
 msgid "Fullscreen UI"
 msgstr "全画面表示"
+
+#: app/ui/settings/panes/decoder.pane.c:85
+msgid "HDR (experimental)"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:94
+msgid ""
+"HDR is only supported on certain games and when connecting to supported "
+"monitor."
+msgstr ""
 
 #: app/ui/launcher/launcher.view.c:105
 msgid "Help"
@@ -95,6 +138,10 @@ msgstr ""
 msgid "IP address"
 msgstr ""
 
+#: app/ui/launcher/add.dialog.c:67
+msgid "IPv4 address only"
+msgstr ""
+
 #: app/ui/launcher/apps.controller.c:512
 msgid "Info"
 msgstr ""
@@ -104,12 +151,31 @@ msgstr ""
 msgid "Input Settings"
 msgstr "入力設定"
 
-#: app/ui/settings/panes/decoder.pane.c:93
+#: app/ui/settings/settings.controller.c:270
+msgid "Later"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:97
 msgid "Learn more about HDR feature."
+msgstr ""
+
+#: app/ui/settings/panes/host.pane.c:28
+msgid "Mute host PC while streaming"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:284
 msgid "Not paired"
+msgstr ""
+
+#: app/ui/launcher/launcher.controller.c:427
+#: app/ui/launcher/apps.controller.c:450 app/ui/launcher/apps.controller.c:548
+#: app/ui/launcher/add.dialog.c:48 app/ui/launcher/pair.dialog.c:38
+#: app/ui/streaming/streaming.controller.c:217 app/app_sdl.c:176
+msgid "OK"
+msgstr ""
+
+#: app/ui/settings/panes/host.pane.c:25
+msgid "Optimize game settings for streaming"
 msgstr ""
 
 #: app/ui/launcher/pair.dialog.c:39
@@ -124,6 +190,10 @@ msgstr "パネル解像度"
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
+#: app/ui/settings/settings.controller.c:270
+msgid "Quit"
+msgstr ""
+
 #: app/ui/launcher/apps.controller.c:504
 msgid "Quit Session"
 msgstr ""
@@ -136,12 +206,20 @@ msgstr ""
 msgid "Refresh rate"
 msgstr "リフレッシュレート"
 
-#: app/ui/settings/panes/basic.pane.c:64
+#: app/ui/settings/panes/basic.pane.c:59
 msgid "Resolution and FPS"
 msgstr "解像度とリフレッシュレート"
 
 #: app/ui/launcher/apps.controller.c:498
 msgid "Resume"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:160
+msgid "Retry"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:160
+msgid "Send Wake-On-LAN"
 msgstr ""
 
 #: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
@@ -150,6 +228,14 @@ msgstr "設定"
 
 #: app/ui/streaming/streaming.view.c:28
 msgid "Soft keyboard"
+msgstr ""
+
+#: app/ui/settings/settings.controller.c:271
+msgid "Some settings change requires restart to take effect."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:508
+msgid "Star"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:498
@@ -164,14 +250,30 @@ msgstr ""
 msgid "Suspend"
 msgstr ""
 
+#: app/ui/settings/panes/input.pane.c:31
+msgid ""
+"Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
+"layouts."
+msgstr ""
+
+#: app/ui/settings/panes/input.pane.c:30
+msgid "Swap ABXY buttons"
+msgstr ""
+
 #: app/ui/launcher/server.context_menu.c:54
 msgid "Test Connection"
 msgstr "接続テスト"
 
-#: app/ui/settings/panes/basic.pane.c:120
+#: app/ui/settings/panes/basic.pane.c:115
 msgid ""
 "The performance on your host may not be able to smoothly stream under this "
 "resolution and framerate."
+msgstr ""
+
+#: app/ui/settings/panes/host.pane.c:26
+msgid ""
+"This will limit resolution and FPS to standard presets like 720p, 1080p or "
+"4K. Turn off if you want to try unsupported resolution and FPS."
 msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:431
@@ -194,15 +296,23 @@ msgstr ""
 msgid "Unpair"
 msgstr "ペアリング解除"
 
+#: app/ui/launcher/apps.controller.c:508
+msgid "Unstar"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:76
+msgid "Use decoder"
+msgstr ""
+
 #: app/ui/settings/panes/about.pane.c:75
 msgid "Version"
 msgstr "バージョン"
 
-#: app/ui/settings/panes/basic.pane.c:88
+#: app/ui/settings/panes/basic.pane.c:83
 msgid "Video bitrate"
 msgstr "ビデオビットレート"
 
-#: app/ui/settings/panes/basic.pane.c:132
+#: app/ui/settings/panes/basic.pane.c:127
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "ビデオビットレート - %d kbps"
@@ -211,7 +321,12 @@ msgstr "ビデオビットレート - %d kbps"
 msgid "Video decoder"
 msgstr ""
 
-#: app/main.c:63
+#: app/ui/settings/panes/decoder.pane.c:70
+#, c-format
+msgid "Video decoder - %s selected"
+msgstr ""
+
+#: app/main.c:64
 msgid "[Localized Language]"
 msgstr "日本語"
 
