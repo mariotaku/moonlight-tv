@@ -37,7 +37,7 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *suspend_btn = lv_btn_create(scene);
     lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_t *suspend_lbl = lv_label_create(suspend_btn);
-    lv_label_set_text(suspend_lbl, locstr("Suspend"));
+    lv_label_set_text(suspend_lbl, locstr("Disconnect"));
     lv_obj_align_to(suspend_btn, exit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
 
     lv_obj_t *stats = lv_obj_create(scene);
