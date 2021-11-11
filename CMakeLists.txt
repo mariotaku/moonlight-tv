@@ -34,7 +34,8 @@ option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" OFF)
 
-set(FEATURE_FORCE_FULLSCREEN 0)
+set(FEATURE_FORCE_FULLSCREEN OFF)
+set(FEATURE_I18N_GETTEXT ON)
 
 include(LintOptions)
 
@@ -313,7 +314,8 @@ macro(moonlight_add_module)
 endmacro()
 
 if (TARGET_WEBOS)
-    set(FEATURE_FORCE_FULLSCREEN 1)
+    set(FEATURE_FORCE_FULLSCREEN ON)
+    set(FEATURE_I18N_GETTEXT OFF)
     target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
@@ -384,7 +386,11 @@ else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
 
-target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=${FEATURE_FORCE_FULLSCREEN})
+if (FEATURE_FORCE_FULLSCREEN)
+    target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=1)
+else()
+    target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=0)
+endif()
 
 if (TARGET_WINDOWS)
     target_link_libraries(moonlight PRIVATE rpcrt4)
@@ -397,15 +403,17 @@ install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 set(I18N_LOCALES "ja")
 
-add_custom_command(TARGET moonlight POST_BUILD
-        COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES
-        COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES/moonlight-tv.mo i18n/ja/messages.po
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        VERBATIM)
+if (FEATURE_I18N_GETTEXT)
+    add_custom_command(TARGET moonlight POST_BUILD
+            COMMAND mkdir -p ${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES
+            COMMAND msgfmt --output-file=${CMAKE_BINARY_DIR}/mo/ja/LC_MESSAGES/moonlight-tv.mo i18n/ja/messages.po
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            VERBATIM)
+endif ()
 
 add_custom_target(i18n-update-pot
         COMMAND xgettext --keyword=locstr --keyword=translatable --add-comments --sort-output -o i18n/messages.pot
-            ${SOURCES}
+        ${SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(i18n-merge-po
