@@ -15,6 +15,7 @@ void lv_theme_moonlight_init(lv_theme_t *theme) {
 }
 
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
+    bool set_font = true;
     if (lv_obj_has_class(obj, &lv_btn_class)) {
         lv_obj_set_style_flex_cross_place(obj, LV_FLEX_ALIGN_CENTER, 0);
     }
@@ -24,10 +25,12 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
             // Assume this is title
             if (lv_obj_check_type(parent, &lv_msgbox_class) && lv_msgbox_get_title(parent) == NULL) {
                 lv_obj_set_style_text_font(obj, theme->font_large, 0);
+                set_font = false;
             } else {
                 lv_obj_t *parent2 = lv_obj_get_parent(parent);
                 if (parent2 && lv_obj_has_class(parent2, &lv_win_class) && lv_win_get_header(parent2) == parent) {
                     lv_obj_set_style_text_font(obj, theme->font_large, 0);
+                    set_font = false;
                 }
             }
         }
@@ -53,6 +56,9 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
     } else if (lv_obj_check_type(obj, &lv_msgbox_backdrop_class)) {
         lv_obj_set_style_bg_color(obj, lv_color_black(), 0);
         lv_obj_set_style_bg_opa(obj, LV_OPA_50, 0);
+    }
+    if (set_font) {
+        lv_obj_set_style_text_font(obj, theme->font_normal, 0);
     }
 }
 
