@@ -23,6 +23,10 @@ void app_open_url(const char *url) {
 }
 
 void app_init_locale() {
+    const char* textdomaindir = getenv("TEXTDOMAINDIR");
+    if (textdomaindir) {
+        bindtextdomain("moonlight-tv", textdomaindir);
+    }
     textdomain("moonlight-tv");
     setlocale(LC_ALL, "");
 }
