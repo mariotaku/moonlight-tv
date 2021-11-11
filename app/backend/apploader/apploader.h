@@ -6,10 +6,10 @@
 
 typedef struct apploader_task_t apploader_task_t;
 
-typedef enum apploader_status_t {
-    APPLOADER_STATUS_IDLE,
-    APPLOADER_STATUS_LOADING
-} apploader_status_t;
+typedef enum apploader_state_t {
+    APPLOADER_STATE_IDLE,
+    APPLOADER_STATE_LOADING
+} apploader_state_t;
 
 typedef struct apploader_item_t {
     APP_LIST base;
@@ -18,7 +18,7 @@ typedef struct apploader_item_t {
 
 typedef struct apploader_t {
     const SERVER_LIST *node;
-    apploader_status_t status;
+    apploader_state_t state;
     int code;
     apploader_item_t *apps;
     int apps_count;

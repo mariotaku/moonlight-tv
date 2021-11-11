@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-11 18:17+0900\n"
+"POT-Creation-Date: 2021-11-11 19:00+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,7 +59,7 @@ msgid ""
 "Better for remote desktop. For some games, mouse will not work properly."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:516 app/ui/launcher/add.dialog.c:48
+#: app/ui/launcher/apps.controller.c:517 app/ui/launcher/add.dialog.c:48
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:176
 msgid "Cancel"
 msgstr ""
@@ -74,6 +74,10 @@ msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:428
 msgid "Decoder not working"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:76
+msgid "Decoder provided"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:25
@@ -92,12 +96,8 @@ msgstr ""
 msgid "Failed to add computer."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:298
+#: app/ui/launcher/apps.controller.c:297
 msgid "Failed to load apps"
-msgstr ""
-
-#: app/ui/launcher/apps.controller.c:318
-msgid "Failed to load server info"
 msgstr ""
 
 #: app/ui/streaming/streaming.controller.c:218
@@ -130,8 +130,8 @@ msgstr ""
 msgid "Host Settings"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:331
-msgid "Host is offline"
+#: app/ui/launcher/apps.controller.c:318
+msgid "Host error"
 msgstr ""
 
 #: app/ui/launcher/add.dialog.c:63
@@ -142,7 +142,7 @@ msgstr ""
 msgid "IPv4 address only"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:512
+#: app/ui/launcher/apps.controller.c:513
 msgid "Info"
 msgstr ""
 
@@ -162,15 +162,19 @@ msgstr ""
 msgid "Mute host PC while streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:284
+#: app/ui/launcher/apps.controller.c:283
 msgid "Not paired"
 msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:450 app/ui/launcher/apps.controller.c:548
+#: app/ui/launcher/apps.controller.c:451 app/ui/launcher/apps.controller.c:549
 #: app/ui/launcher/add.dialog.c:48 app/ui/launcher/pair.dialog.c:38
 #: app/ui/streaming/streaming.controller.c:217 app/app_sdl.c:176
 msgid "OK"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:331
+msgid "Offline"
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:25
@@ -185,15 +189,20 @@ msgstr ""
 msgid "Panel resolution"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:452
+#: app/ui/launcher/apps.controller.c:453
 msgid "Please make sure you are quitting with the same client."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:298
+msgid ""
+"Press \"Retry\" button to reload.Try restart the computer if error persists."
 msgstr ""
 
 #: app/ui/settings/settings.controller.c:270
 msgid "Quit"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:504
+#: app/ui/launcher/apps.controller.c:505
 msgid "Quit Session"
 msgstr ""
 
@@ -209,12 +218,16 @@ msgstr ""
 msgid "Resolution and FPS"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:498
+#: app/ui/launcher/apps.controller.c:499
 msgid "Resume"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:160
 msgid "Retry"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:284
+msgid "Select computer again to pair."
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:160
@@ -233,11 +246,11 @@ msgstr ""
 msgid "Some settings change requires restart to take effect."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:508
+#: app/ui/launcher/apps.controller.c:509
 msgid "Star"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:498
+#: app/ui/launcher/apps.controller.c:499
 msgid "Start"
 msgstr ""
 
@@ -275,17 +288,20 @@ msgid ""
 "4K. Turn off if you want to try unsupported resolution and FPS."
 msgstr ""
 
+#: app/ui/launcher/apps.controller.c:319
+msgid "Try restart the computer."
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:332
+msgid "Turn on the computer and retry."
+msgstr ""
+
 #: app/ui/launcher/launcher.controller.c:431
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:283 app/ui/launcher/apps.controller.c:297
-#: app/ui/launcher/apps.controller.c:317 app/ui/launcher/apps.controller.c:330
-msgid "Unable to open games"
-msgstr ""
-
-#: app/ui/launcher/apps.controller.c:451
+#: app/ui/launcher/apps.controller.c:452
 msgid "Unable to quit game"
 msgstr ""
 
@@ -293,12 +309,8 @@ msgstr ""
 msgid "Unpair"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:508
+#: app/ui/launcher/apps.controller.c:509
 msgid "Unstar"
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:76
-msgid "Use decoder"
 msgstr ""
 
 #: app/ui/settings/panes/about.pane.c:75

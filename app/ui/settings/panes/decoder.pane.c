@@ -73,7 +73,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
                                                       &app_configuration->decoder);
     lv_obj_set_width(decoder_dropdown, LV_PCT(100));
     lv_obj_t *audio_label = pref_title_label(parent, locstr("Audio backend"));
-    const char *audio_name = audio_current == AUDIO_DECODER ? locstr("Use decoder")
+    const char *audio_name = audio_current == AUDIO_DECODER ? locstr("Decoder provided")
                                                             : audio_definitions[audio_current].name;
     lv_label_set_text_fmt(audio_label, locstr("Audio backend - %s selected"), audio_name);
     lv_obj_t *audio_dropdown = pref_dropdown_string(parent, controller->audio_entries, audio_orders_len + 1,

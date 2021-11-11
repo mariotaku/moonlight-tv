@@ -53,8 +53,8 @@ apploader_t *apploader_new(const SERVER_LIST *node) {
 }
 
 void apploader_load(apploader_t *loader, apploader_cb cb, void *userdata) {
-    if (loader->status != APPLOADER_STATUS_IDLE) return;
-    loader->status = APPLOADER_STATUS_LOADING;
+    if (loader->state != APPLOADER_STATE_IDLE) return;
+    loader->state = APPLOADER_STATE_LOADING;
     apploader_task_t *task = apploader_task_create(loader, cb, userdata);
     refcounter_ref(&loader->refcounter);
     task->thread = SDL_CreateThread((SDL_ThreadFunction) apploader_task_execute, "loadapps", task);
@@ -140,7 +140,7 @@ static void apploader_task_finish(apploader_task_t *task) {
         loader->apps_count = task->result_count;
     }
     loader->code = task->code;
-    loader->status = APPLOADER_STATUS_IDLE;
+    loader->state = APPLOADER_STATE_IDLE;
     loader->task = NULL;
     task->cb(loader, task->userdata);
     SDL_free(task);

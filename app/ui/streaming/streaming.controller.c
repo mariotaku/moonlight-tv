@@ -61,7 +61,7 @@ bool streaming_refresh_stats() {
     lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name,
                           vdec_stream_info.format);
     if (audio_current == AUDIO_DECODER) {
-        lv_label_set_text_static(controller->stats_items.audio, "Use decoder");
+        lv_label_set_text_static(controller->stats_items.audio, "Decoder provided");
     } else {
         lv_label_set_text_static(controller->stats_items.audio, audio_definitions[audio_current].name);
     }

@@ -280,9 +280,9 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
-                lv_label_set_text_static(controller->errorlabel, locstr("Not paired"));
-            } else if (controller->apploader->status == APPLOADER_STATUS_LOADING) {
+                lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
+                lv_label_set_text_static(controller->errorlabel, locstr("Select computer again to pair."));
+            } else if (controller->apploader->state == APPLOADER_STATE_LOADING) {
                 // is loading apps
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
@@ -294,8 +294,9 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-                lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
-                lv_label_set_text_static(controller->errorlabel, locstr("Failed to load apps"));
+                lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
+                lv_label_set_text_static(controller->errorlabel, locstr("Press \"Retry\" button to reload."
+                                                                        "Try restart the computer if error persists."));
             } else {
                 // has apps
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
@@ -314,8 +315,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-            lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
-            lv_label_set_text_static(controller->errorlabel, locstr("Failed to load server info"));
+            lv_label_set_text_static(controller->errortitle, locstr("Host error"));
+            lv_label_set_text_static(controller->errorlabel, locstr("Try restart the computer."));
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -327,8 +328,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-            lv_label_set_text_static(controller->errortitle, locstr("Unable to open games"));
-            lv_label_set_text_static(controller->errorlabel, locstr("Host is offline"));
+            lv_label_set_text_static(controller->errortitle, locstr("Offline"));
+            lv_label_set_text_static(controller->errorlabel, locstr("Turn on the computer and retry."));
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;

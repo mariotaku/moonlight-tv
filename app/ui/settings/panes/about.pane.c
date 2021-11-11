@@ -74,7 +74,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     int rowcount = 0;
     about_line(parent, locstr("Version"), APP_VERSION, rowcount++, 1);
     about_line(parent, locstr("Decoder module"), decoder_definitions[decoder_current].name, rowcount++, 2);
-    const char *audio_name = audio_current == AUDIO_DECODER ? "Use decoder" : audio_definitions[audio_current].name;
+    const char *audio_name = audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
     about_line(parent, locstr("Audio backend"), audio_name, rowcount++, 2);
 #if TARGET_WEBOS
     if (strlen(controller->webos_os_info.release)) {
