@@ -276,10 +276,8 @@ bool app_load_font(lv_theme_t *theme) {
         FcPatternDestroy(font);
         font = NULL;
     }
-    if (pattern) {
-        FcPatternDestroy(pattern);
-        pattern = NULL;
-    }
+    FcPatternDestroy(pattern);
+    pattern = NULL;
 #ifdef FONT_FAMILY_FALLBACK
     pattern = FcNameParse((const FcChar8 *) FONT_FAMILY_FALLBACK);
     if (pattern) {
@@ -306,6 +304,8 @@ bool app_load_font(lv_theme_t *theme) {
         FcPatternDestroy(pattern);
         pattern = NULL;
     }
+#else
+    fontset.normal->fallback = &lv_font_montserrat_32;
 #endif
     return true;
 }
