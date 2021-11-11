@@ -154,11 +154,9 @@ SDL_Window *app_create_window() {
     SDL_Window *win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                        window_width, window_height, window_flags);
     SDL_assert(win);
-#if TARGET_DESKTOP || TARGET_RASPI
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
-#endif
     if (window_flags & SDL_WINDOW_RESIZABLE) {
         SDL_SetWindowMinimumSize(win, 960, 540);
     }

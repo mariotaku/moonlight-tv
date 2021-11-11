@@ -60,7 +60,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
-#if TARGET_DESKTOP || TARGET_RASPI
+#if !FEATURE_FORCE_FULLSCREEN
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
                         streaming_interrupt(false);
