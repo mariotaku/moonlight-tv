@@ -157,9 +157,7 @@ SDL_Window *app_create_window() {
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
-    if (window_flags & SDL_WINDOW_RESIZABLE) {
-        SDL_SetWindowMinimumSize(win, 960, 540);
-    }
+    SDL_SetWindowMinimumSize(win, 640, 480);
     int w = 0, h = 0;
     SDL_GetWindowSize(win, &w, &h);
     SDL_assert(w > 0 && h > 0);
