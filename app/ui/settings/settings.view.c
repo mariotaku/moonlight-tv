@@ -1,4 +1,4 @@
-#include "lvgl/font/symbols_material_icon.h"
+#include "lvgl/font/material_icons_regular_symbols.h"
 #include "settings.controller.h"
 
 #include "util/i18n.h"
@@ -16,7 +16,7 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_t *icon = lv_label_create(header);
     lv_obj_set_size(icon, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_get_style_text_align(icon, LV_TEXT_ALIGN_CENTER);
-    lv_obj_set_style_text_font(icon, LV_ICON_FONT_DEFAULT, 0);
+    lv_obj_set_style_text_font(icon, LV_ICON_FONT_LARGE, 0);
     lv_label_set_text_static(icon, MAT_SYMBOL_SETTINGS);
 
     lv_obj_t *title = lv_win_add_title(win, locstr("Settings"));

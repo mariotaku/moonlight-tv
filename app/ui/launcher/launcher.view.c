@@ -7,7 +7,7 @@
 #include "lvgl/lv_sdl_img.h"
 #include "lvgl/ext/lv_child_group.h"
 #include "lvgl/util/lv_app_utils.h"
-#include "lvgl/font/symbols_material_icon.h"
+#include "lvgl/font/material_icons_regular_symbols.h"
 
 #include "util/i18n.h"
 

@@ -2,10 +2,13 @@
   "name": "moonlight-tv",
   "version": "1.0.0",
   "scripts": {
-    "webos-gen-i18n": "node scripts/webos/gen_i18n.js"
+    "webos-gen-i18n": "node scripts/webos/gen_i18n.js",
+    "gen-mat-iconfont": "node scripts/tools/gen_mat_iconfont.js",
+    "lv_font_conv": "lv_font_conv"
   },
   "devDependencies": {
     "argparse": "^2.0.1",
-    "gettext-parser": "^4.2.0"
+    "gettext-parser": "^4.2.0",
+    "lv_font_conv": "^1.5.2"
   }
 }

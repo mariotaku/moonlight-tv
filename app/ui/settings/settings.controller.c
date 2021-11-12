@@ -1,7 +1,12 @@
-#include <ui/root.h>
-#include <util/user_event.h>
-#include <lvgl/ext/lv_child_group.h>
 #include "settings.controller.h"
+
+#include "ui/root.h"
+
+#include "lvgl/font/material_icons_regular_symbols.h"
+#include "lvgl/ext/lv_child_group.h"
+#include "lvgl/util/lv_app_utils.h"
+
+#include "util/user_event.h"
 #include "util/i18n.h"
 
 typedef struct {
@@ -11,11 +16,11 @@ typedef struct {
 } settings_entry_t;
 
 static const settings_entry_t entries[] = {
-        {NULL, translatable("Basic Settings"),   &settings_pane_basic_cls},
-        {NULL, translatable("Host Settings"),    &settings_pane_host_cls},
-        {NULL, translatable("Input Settings"),   &settings_pane_input_cls},
-        {NULL, translatable("Decoder Settings"), &settings_pane_decoder_cls},
-        {NULL, translatable("About"),            &settings_pane_about_cls},
+        {MAT_SYMBOL_TUNE,            translatable("Basic Settings"),   &settings_pane_basic_cls},
+        {MAT_SYMBOL_DESKTOP_WINDOWS, translatable("Host Settings"),    &settings_pane_host_cls},
+        {MAT_SYMBOL_SPORTS_ESPORTS,  translatable("Input Settings"),   &settings_pane_input_cls},
+        {MAT_SYMBOL_VIDEO_SETTINGS,  translatable("Decoder Settings"), &settings_pane_decoder_cls},
+        {MAT_SYMBOL_INFO,            translatable("About"),            &settings_pane_about_cls},
 };
 static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
@@ -72,9 +77,12 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
 
         app_input_set_group(controller->group);
 
+        lv_obj_t *btns = lv_tabview_get_tab_btns(controller->tabview);
+        lv_obj_set_style_text_font(btns, LV_ICON_FONT_LARGE, 0);
+
         for (int i = 0; i < entries_len; ++i) {
             settings_entry_t entry = entries[i];
-            lv_obj_t *page = lv_tabview_add_tab(controller->tabview, locstr(entry.name));
+            lv_obj_t *page = lv_tabview_add_tab(controller->tabview, entry.icon);
             lv_obj_controller_t *pane = lv_controller_create_unmanaged(page, entry.cls, controller);
             lv_obj_set_user_data(page, pane);
         }
@@ -95,6 +103,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
         for (int i = 0; i < entries_len; ++i) {
             settings_entry_t entry = entries[i];
             lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, locstr(entry.name));
+            lv_obj_set_icon_font(item_view, LV_ICON_FONT_DEFAULT);
+
             lv_obj_set_style_bg_opa(item_view, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
             lv_obj_add_flag(item_view, LV_OBJ_FLAG_EVENT_BUBBLE);
             item_view->user_data = (void *) entry.cls;

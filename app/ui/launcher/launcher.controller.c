@@ -9,7 +9,7 @@
 
 #include "ui/root.h"
 #include "ui/settings/settings.controller.h"
-#include "lvgl/font/symbols_material_icon.h"
+#include "lvgl/font/material_icons_regular_symbols.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_disp_drv_app.h"
 

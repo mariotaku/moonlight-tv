@@ -211,8 +211,9 @@ set(SOURCES
         app/lvgl/ext/lv_obj_controller.c
         app/lvgl/ext/lv_child_group.c
         app/lvgl/util/lv_app_utils.c
-        app/lvgl/font/material_icon_regular_28.c
-        app/lvgl/font/material_icon_regular_32.c
+        app/lvgl/font/material_icons_regular_28.c
+        app/lvgl/font/material_icons_regular_32.c
+        app/lvgl/font/material_icons_regular_38.c
         app/lvgl/theme/lv_theme_moonlight.c
         app/util/path.c
         app/util/debugprint.c
@@ -409,7 +410,7 @@ if (FEATURE_I18N_GETTEXT)
     find_program(MSGFMT_COMMAND msgfmt)
     if (NOT MSGFMT_COMMAND)
         message(FATAL_ERROR "msgfmt not found. Please install gettext.")
-    endif()
+    endif ()
     set(MOFILES)
     foreach (LANG ${I18N_LOCALES})
         set(_POFILE ${CMAKE_SOURCE_DIR}/i18n/${LANG}/messages.po)
@@ -433,10 +434,12 @@ add_custom_target(i18n-merge-po
         COMMAND msgmerge --update i18n/ja/messages.po i18n/messages.pot
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(mat-gen-fonts
+        COMMAND npm run gen-mat-iconfont -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
+        -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL -s 28 32 38
+        )
 
 if (TARGET_WEBOS)
-    # Copy asset dir to package root
-    install(DIRECTORY assets DESTINATION ${CMAKE_INSTALL_DATAROOTDIR} PATTERN ".*" EXCLUDE)
     # Copy all files under deploy/webos/ to package root
     install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
     # Copy manifest
