@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include "util/debugprint.h"
+#include "util/logging.h"
 
 // General decoder and renderer state
 static AVPacket *pkt;
@@ -59,21 +60,23 @@ int ffmpeg_init(int videoFormat, int width, int height, int perf_lvl, int buffer
     ffmpeg_decoder = perf_lvl & VAAPI_ACCELERATION ? VAAPI : SOFTWARE;
     switch (videoFormat) {
         case VIDEO_FORMAT_H264:
+            applog_i("FFMPEG", "Stream is H264");
             decoder = avcodec_find_decoder_by_name("h264");
             break;
         case VIDEO_FORMAT_H265:
+            applog_i("FFMPEG", "Stream is HEVC");
             decoder = avcodec_find_decoder_by_name("hevc");
             break;
     }
 
     if (decoder == NULL) {
-        printf("Couldn't find decoder\n");
+        applog_e("FFMPEG", "Couldn't find decoder\n");
         return -1;
     }
 
     decoder_ctx = avcodec_alloc_context3(decoder);
     if (decoder_ctx == NULL) {
-        printf("Couldn't allocate context");
+        applog_e("FFMPEG", "Couldn't allocate context");
         return -1;
     }
 
@@ -98,21 +101,21 @@ int ffmpeg_init(int videoFormat, int width, int height, int perf_lvl, int buffer
 
     int err = avcodec_open2(decoder_ctx, decoder, NULL);
     if (err < 0) {
-        printf("Couldn't open codec");
+        applog_e("FFMPEG", "Couldn't open codec");
         return err;
     }
 
     dec_frames_cnt = buffer_count;
     dec_frames = malloc(buffer_count * sizeof(AVFrame *));
     if (dec_frames == NULL) {
-        fprintf(stderr, "Couldn't allocate frames");
+        applog_e("FFMPEG", "Couldn't allocate frames");
         return -1;
     }
 
     for (int i = 0; i < buffer_count; i++) {
         dec_frames[i] = av_frame_alloc();
         if (dec_frames[i] == NULL) {
-            fprintf(stderr, "Couldn't allocate frame");
+            applog_e("FFMPEG", "Couldn't allocate frame");
             return -1;
         }
     }
@@ -154,7 +157,7 @@ AVFrame *ffmpeg_get_frame(bool native_frame) {
     } else if (err != AVERROR(EAGAIN)) {
         char errorstring[512];
         av_strerror(err, errorstring, sizeof(errorstring));
-        fprintf(stderr, "Receive failed - %d/%s\n", err, errorstring);
+        applog_w("FFMPEG", "Receive failed - %d/%s\n", err, errorstring);
     }
     return NULL;
 }
@@ -171,7 +174,7 @@ int ffmpeg_decode(unsigned char *indata, int inlen) {
     if (err < 0) {
         char errorstring[512];
         av_strerror(err, errorstring, sizeof(errorstring));
-        fprintf(stderr, "Decode failed - %s\n", errorstring);
+        applog_w("FFMPEG", "Decode failed - %s\n", errorstring);
     }
 
     return err < 0 ? err : 0;

@@ -7,7 +7,7 @@ const char *locstr(const char *msgid) {
     return gettext(msgid);
 }
 
-const char *app_get_locale() {
+const char *i18n_locale() {
     return setlocale(LC_MESSAGES, NULL);
 }
 

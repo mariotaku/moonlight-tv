@@ -10,6 +10,7 @@
 
 const DECODER_SYMBOLS decoder_ffmpeg = {
         .valid = true,
+        .init = decoder_init_ffmpeg,
         .check = decoder_check_ffmpeg,
         .vdec = &decoder_callbacks_ffmpeg,
         .rend = &render_callbacks_ffmpeg,

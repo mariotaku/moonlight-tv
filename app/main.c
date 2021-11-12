@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     // DO not init video subsystem before NDL/LGNC initialization
     app_init_video();
-    applog_i("APP", "UI locale: %s (%s)", app_get_locale(), locstr("[Localized Language]"));
+    applog_i("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
     app_window = app_create_window();
 
     module_post_init(argc, argv);
@@ -281,7 +281,7 @@ bool app_load_font(lv_theme_t *theme) {
     if (pattern) {
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8 *) app_get_locale_lang());
-        FcLangSetAdd(ls, (const FcChar8 *) app_get_locale());
+        FcLangSetAdd(ls, (const FcChar8 *) i18n_locale());
         FcPatternAddLangSet(pattern, FC_LANG, ls);
 
         FcConfigSubstitute(NULL, pattern, FcMatchPattern);

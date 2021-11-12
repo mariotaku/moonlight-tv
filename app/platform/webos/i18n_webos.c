@@ -29,11 +29,6 @@ void i18n_setlocale(const char *locale) {
     }
 }
 
-const char *app_get_locale() {
-    if (!bundle) return "C";
-    return resBundle_getLocale(bundle);
-}
-
 const char *app_get_locale_lang() {
     if (!language[0]) return "C";
     return language;
