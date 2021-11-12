@@ -29,10 +29,14 @@ typedef struct lv_controller_manager_t lv_controller_manager_t;
 typedef struct lv_obj_controller_t lv_obj_controller_t;
 typedef struct lv_obj_controller_class_t lv_obj_controller_class_t;
 
+typedef struct manager_stack_t manager_stack_t;
+
 struct lv_obj_controller_t {
     const lv_obj_controller_class_t *cls;
     lv_controller_manager_t *manager;
     lv_obj_t *obj;
+
+    manager_stack_t *priv_item;
 };
 
 struct lv_obj_controller_class_t {
@@ -88,6 +92,10 @@ void lv_obj_controller_pop(lv_obj_controller_t *controller);
 lv_obj_controller_t *lv_controller_manager_top_controller(lv_controller_manager_t *manager);
 
 lv_obj_controller_t *lv_controller_manager_parent(lv_controller_manager_t *manager);
+
+lv_obj_controller_t *lv_controller_create_unmanaged(lv_obj_t *parent, const lv_obj_controller_class_t *cls, void *args);
+
+void lv_controller_recreate_obj(lv_obj_controller_t *controller);
 /**********************
  *      MACROS
  **********************/

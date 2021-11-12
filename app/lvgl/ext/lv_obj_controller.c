@@ -20,7 +20,6 @@
 typedef struct manager_stack_t {
     const lv_obj_controller_class_t *cls;
     lv_obj_controller_t *controller;
-    lv_obj_t *obj;
     bool obj_created;
     bool destroying_obj;
     bool dialog;
@@ -50,6 +49,8 @@ static void item_destroy_controller(manager_stack_t *item);
 
 static void obj_cb_delete(lv_event_t *event);
 
+static void controller_destroy_obj(lv_obj_controller_t *controller);
+
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -57,6 +58,7 @@ static void obj_cb_delete(lv_event_t *event);
 /**********************
  *      MACROS
  **********************/
+
 
 
 /**********************
@@ -176,6 +178,42 @@ lv_obj_controller_t *lv_controller_manager_parent(lv_controller_manager_t *manag
     return manager->parent;
 }
 
+lv_obj_controller_t *lv_controller_create_unmanaged(lv_obj_t *parent, const lv_obj_controller_class_t *cls,
+                                                    void *args) {
+    LV_ASSERT(cls);
+    LV_ASSERT(cls->instance_size);
+    LV_ASSERT(cls->create_obj_cb);
+    lv_obj_controller_t *controller = lv_mem_alloc(cls->instance_size);
+    lv_memset_00(controller, cls->instance_size);
+    controller->cls = cls;
+    if (cls->constructor_cb) {
+        cls->constructor_cb(controller, args);
+    }
+    lv_obj_t *obj = cls->create_obj_cb(controller, parent);
+    controller->obj = obj;
+    if (cls->obj_created_cb) {
+        cls->obj_created_cb(controller, obj);
+    }
+    return controller;
+}
+
+void lv_controller_recreate_obj(lv_obj_controller_t *controller) {
+    LV_ASSERT(controller);
+    // Disable CB first
+    lv_obj_remove_event_cb(controller->obj, obj_cb_delete);
+    controller_destroy_obj(controller);
+
+    const lv_obj_controller_class_t *cls = controller->cls;
+    lv_obj_t *obj = cls->create_obj_cb(controller, controller->manager->container);
+    controller->obj = obj;
+    if (cls->obj_created_cb) {
+        cls->obj_created_cb(controller, obj);
+    }
+    if (obj) {
+        lv_obj_add_event_cb(obj, obj_cb_delete, LV_EVENT_DELETE, controller->priv_item);
+    }
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -197,6 +235,7 @@ static lv_obj_controller_t *item_create_controller(lv_controller_manager_t *mana
     lv_memset_00(controller, cls->instance_size);
     controller->cls = cls;
     controller->manager = manager;
+    controller->priv_item = item;
     if (cls->constructor_cb) {
         cls->constructor_cb(controller, args);
     }
@@ -214,7 +253,7 @@ static void item_create_obj(lv_controller_manager_t *manager, manager_stack_t *i
     if (check_type) {
         LV_ASSERT(lv_obj_has_class(obj, check_type));
     }
-    item->obj = controller->obj = obj;
+    controller->obj = obj;
     item->obj_created = true;
     if (cls->obj_created_cb) {
         cls->obj_created_cb(controller, obj);
@@ -228,25 +267,30 @@ static void item_destroy_obj(lv_controller_manager_t *manager, manager_stack_t *
     if (!item->obj_created) return;
     item->destroying_obj = true;
     lv_obj_controller_t *controller = item->controller;
-    if (item->obj) {
-        if (item->cls->obj_will_delete_cb) {
-            item->cls->obj_will_delete_cb(controller, item->obj);
+    controller_destroy_obj(controller);
+    item->obj_created = false;
+}
+
+static void controller_destroy_obj(lv_obj_controller_t *controller) {
+    const lv_obj_controller_class_t *cls = controller->cls;
+    lv_obj_t *obj = controller->obj;
+    if (obj) {
+        if (cls->obj_will_delete_cb) {
+            cls->obj_will_delete_cb(controller, obj);
         }
-        lv_obj_del(item->obj);
+        lv_obj_del(obj);
     } else {
-        if (item->cls->obj_will_delete_cb) {
-            item->cls->obj_will_delete_cb(controller, NULL);
+        LV_ASSERT(controller->manager);
+        LV_ASSERT(controller->manager->container);
+        if (cls->obj_will_delete_cb) {
+            cls->obj_will_delete_cb(controller, NULL);
         }
-        lv_obj_clean(manager->container);
-        if (item->cls->obj_deleted_cb) {
-            item->cls->obj_deleted_cb(controller, NULL);
+        lv_obj_clean(controller->manager->container);
+        if (cls->obj_deleted_cb) {
+            cls->obj_deleted_cb(controller, NULL);
         }
     }
-    item->obj_created = false;
-    item->obj = controller->obj = NULL;
-    LV_ASSERT(!item->obj_created);
-    LV_ASSERT(!item->obj);
-    LV_ASSERT(!controller->obj);
+    controller->obj = NULL;
 }
 
 static void item_destroy_controller(manager_stack_t *item) {
@@ -268,7 +312,7 @@ static void obj_cb_delete(lv_event_t *event) {
         cls->obj_deleted_cb(controller, event->target);
     }
     item->obj_created = false;
-    item->obj = controller->obj = NULL;
+    controller->obj = NULL;
     if (!item->destroying_obj) {
         manager_stack_t *prev = item->prev;
         item_destroy_controller(item);

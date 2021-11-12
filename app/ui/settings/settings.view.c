@@ -27,28 +27,33 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_set_style_size(close_btn, lv_dpx(25), 0);
     lv_obj_set_style_radius(close_btn, LV_RADIUS_CIRCLE, 0);
     lv_group_remove_obj(close_btn);
+    controller->close_btn = close_btn;
 
     lv_obj_t *content = lv_win_get_content(win);
     lv_obj_set_style_pad_ver(content, 0, 0);
     lv_obj_set_style_bg_color(content, lv_color_lighten(lv_color_black(), 30), 0);
-    static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};
-    static const lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-    lv_obj_set_grid_dsc_array(content, col_dsc, row_dsc);
-    lv_obj_t *nav = lv_list_create(content);
-    lv_obj_set_style_clip_corner(nav, false, 0);
-    lv_obj_set_style_radius(nav, 0, 0);
-    lv_obj_set_style_border_width(nav, 0, 0);
-    controller->nav = nav;
-    lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+    if (controller->pending_mini) {
+        lv_obj_set_style_pad_hor(content, 0, 0);
+        controller->tabview = lv_tabview_create(content, LV_DIR_BOTTOM, LV_DPX(60));
+    } else {
+        static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};
+        static const lv_coord_t row_dsc[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
+        lv_obj_set_grid_dsc_array(content, col_dsc, row_dsc);
+        lv_obj_t *nav = lv_list_create(content);
+        lv_obj_set_style_clip_corner(nav, false, 0);
+        lv_obj_set_style_radius(nav, 0, 0);
+        lv_obj_set_style_border_width(nav, 0, 0);
+        controller->nav = nav;
+        lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
-    lv_obj_t *detail = lv_obj_create(content);
-    lv_obj_set_style_clip_corner(detail, false, 0);
-    lv_obj_set_style_radius(detail, 0, 0);
-    lv_obj_set_style_border_width(detail, 0, 0);
-    lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
-    controller->detail = detail;
-    controller->close_btn = close_btn;
+        lv_obj_t *detail = lv_obj_create(content);
+        lv_obj_set_style_clip_corner(detail, false, 0);
+        lv_obj_set_style_radius(detail, 0, 0);
+        lv_obj_set_style_border_width(detail, 0, 0);
+        lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+        controller->detail = detail;
+    }
+    controller->mini = controller->pending_mini;
 
     return win;
 }
-

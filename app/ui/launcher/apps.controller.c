@@ -316,7 +316,7 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Host error"));
-            lv_label_set_text_static(controller->errorlabel, locstr("Try restart the computer."));
+            lv_label_set_text_static(controller->errorlabel, locstr("Please restart your computer."));
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -329,7 +329,7 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Offline"));
-            lv_label_set_text_static(controller->errorlabel, locstr("Turn on the computer and retry."));
+            lv_label_set_text_static(controller->errorlabel, locstr("Turn on the host computer and try again."));
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;

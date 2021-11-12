@@ -14,9 +14,15 @@
 
 typedef struct {
     lv_obj_controller_t base;
+    bool mini, pending_mini;
+
     lv_controller_manager_t *pane_manager;
     lv_obj_t *nav, *detail;
     lv_group_t *nav_group, *detail_group;
+
+    lv_obj_t *tabview;
+    lv_group_t *group;
+
     lv_obj_t *close_btn;
 
     lv_obj_t *active_dropdown;

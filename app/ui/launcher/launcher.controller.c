@@ -180,7 +180,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
 
 static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     current_instance = NULL;
-    app_input_set_group(lv_group_get_default());
+    app_input_set_group(NULL);
     pcmanager_auto_discovery_stop(pcmanager);
 
     launcher_controller_t *controller = (launcher_controller_t *) self;

@@ -515,6 +515,7 @@ elseif (TARGET_RASPI)
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST
             "libasound2 (>= 1.0.16)"
             "libpulse0 (>= 0.99.1)"
+            "fonts-dejavu-core"
             )
     set(CPACK_DEBIAN_PACKAGE_SUGGESTS_LIST
             "libavcodec58 (>= 7:4.0)"

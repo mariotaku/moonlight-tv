@@ -9,6 +9,7 @@
 
 typedef struct decoder_pane_t {
     lv_obj_controller_t base;
+    settings_controller_t *parent;
     pref_dropdown_string_entry_t decoder_entries[DECODER_COUNT + 1];
     pref_dropdown_string_entry_t audio_entries[AUDIO_COUNT + 1];
 } decoder_pane_t;
@@ -29,6 +30,7 @@ const lv_obj_controller_class_t settings_pane_decoder_cls = {
 
 static void pane_ctor(lv_obj_controller_t *self, void *args) {
     decoder_pane_t *controller = (decoder_pane_t *) self;
+    controller->parent = args;
     for (int type_idx = -1; type_idx < decoder_orders_len; type_idx++) {
         DECODER type = type_idx == -1 ? DECODER_AUTO : decoder_orders[type_idx];
         int index = type_idx + 1;
@@ -97,9 +99,10 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."));
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
-    settings_controller_t *parent_controller = (settings_controller_t *) lv_controller_manager_parent(
-            controller->base.manager);
-    lv_group_add_obj(parent_controller->detail_group, hdr_more);
+    settings_controller_t *pcontroller = controller->parent;
+    if (pcontroller) {
+        lv_group_add_obj(pcontroller->mini ? pcontroller->group : pcontroller->detail_group, hdr_more);
+    }
     lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
 
     return NULL;
@@ -107,7 +110,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 
 static void pref_mark_restart_cb(lv_event_t *e) {
     decoder_pane_t *controller = (decoder_pane_t *) lv_event_get_user_data(e);
-    settings_controller_t *parent = (settings_controller_t *) lv_controller_manager_parent(controller->base.manager);
+    settings_controller_t *parent = controller->parent;
     parent->needs_restart |= decoder_current != decoder_by_id(app_configuration->decoder);
     parent->needs_restart |= audio_current != audio_by_id(app_configuration->audio_backend);
 }
