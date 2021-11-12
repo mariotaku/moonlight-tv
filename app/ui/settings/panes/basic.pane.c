@@ -1,5 +1,8 @@
 #include "app.h"
+#include "config.h"
+
 #include "pref_obj.h"
+#include "ui/settings/settings.controller.h"
 
 #include <stream/platform.h>
 
@@ -7,12 +10,19 @@
 
 typedef struct {
     lv_obj_controller_t base;
+    settings_controller_t *parent;
+
     lv_obj_t *res_warning;
     lv_obj_t *bitrate_label;
     lv_obj_t *bitrate_slider;
+
+    pref_dropdown_string_entry_t *lang_entries;
+    int lang_entries_len;
 } basic_pane_t;
 
 static void pane_ctor(lv_obj_controller_t *self, void *args);
+
+static void pane_dtor(lv_obj_controller_t *self);
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
 
@@ -24,8 +34,13 @@ static void on_fullscreen_updated(lv_event_t *e);
 
 static void update_bitrate_label(basic_pane_t *pane);
 
+static void init_locale_entries(basic_pane_t *pane);
+
+static void pref_mark_restart_cb(lv_event_t *e);
+
 const lv_obj_controller_class_t settings_pane_basic_cls = {
         .constructor_cb = pane_ctor,
+        .destructor_cb = pane_dtor,
         .create_obj_cb = create_obj,
         .instance_size = sizeof(basic_pane_t),
 };
@@ -49,7 +64,18 @@ static const int supported_fps_len = sizeof(supported_fps) / sizeof(pref_dropdow
 #define BITRATE_STEP 1000
 
 static void pane_ctor(lv_obj_controller_t *self, void *args) {
+    basic_pane_t *pane = (basic_pane_t *) self;
+    pane->parent = args;
+#ifdef FEATURE_I18N_LANGUAGE_SETTINGS
+    init_locale_entries(pane);
+#endif
+}
 
+static void pane_dtor(lv_obj_controller_t *self) {
+    basic_pane_t *pane = (basic_pane_t *) self;
+#ifdef FEATURE_I18N_LANGUAGE_SETTINGS
+    lv_mem_free(pane->lang_entries);
+#endif
 }
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
@@ -89,11 +115,22 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
 
-#if !FEATURE_FORCE_FULLSCREEN
+#ifndef FEATURE_FORCE_FULLSCREEN
     lv_obj_t *checkbox = pref_checkbox(parent, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
     lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
 #endif
 
+#ifdef FEATURE_I18N_LANGUAGE_SETTINGS
+    lv_obj_t *lang_label = pref_title_label(parent, "Language");
+    if (strcmp(locstr("Language"), "Language") != 0) {
+        lv_label_set_text_fmt(lang_label, "%s (Language)", locstr("Language"));
+    }
+
+    lv_obj_t *language_dropdown = pref_dropdown_string(parent, pane->lang_entries, pane->lang_entries_len,
+                                                       &app_configuration->language);
+    lv_obj_add_event_cb(language_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, pane);
+    lv_obj_set_width(language_dropdown, LV_PCT(100));
+#endif
     return NULL;
 }
 
@@ -125,4 +162,34 @@ static void on_fullscreen_updated(lv_event_t *e) {
 
 static void update_bitrate_label(basic_pane_t *pane) {
     lv_label_set_text_fmt(pane->bitrate_label, locstr("Video bitrate - %d kbps"), app_configuration->stream.bitrate);
+}
+
+static void init_locale_entries(basic_pane_t *pane) {
+    pane->lang_entries = lv_mem_alloc(sizeof(pref_dropdown_string_entry_t) * (I18N_LOCALES_LEN + 2));
+    lv_memset_00(pane->lang_entries, sizeof(pref_dropdown_string_entry_t) * (I18N_LOCALES_LEN + 2));
+    for (int i = 0; i < 2; i++) {
+        pref_dropdown_string_entry_t *def_entry = &pane->lang_entries[i];
+        const i18n_entry_t *entry = i18n_entry_at(i);
+        def_entry->value = entry->locale;
+        def_entry->name = locstr(entry->name);
+        def_entry->fallback = i == 0;
+        pane->lang_entries_len++;
+    }
+    char *tok = strdup(I18N_LOCALES);
+    while ((tok = strtok(tok, ";")) != NULL) {
+        const i18n_entry_t *entry = i18n_entry(tok);
+        if (entry) {
+            pref_dropdown_string_entry_t *pref_entry = &pane->lang_entries[pane->lang_entries_len];
+            pref_entry->value = entry->locale;
+            pref_entry->name = entry->name;
+            pane->lang_entries_len++;
+        }
+        tok = NULL;
+    }
+}
+
+static void pref_mark_restart_cb(lv_event_t *e) {
+    basic_pane_t *pane = (basic_pane_t *) lv_event_get_user_data(e);
+    settings_controller_t *parent = pane->parent;
+    parent->needs_restart |= strcasecmp(i18n_locale(), app_configuration->language) != 0;
 }

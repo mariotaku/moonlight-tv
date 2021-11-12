@@ -62,6 +62,7 @@ void settings_free(PCONFIGURATION config) {
     free_nullable(config->decoder);
     free_nullable(config->audio_backend);
     free_nullable(config->audio_device);
+    free_nullable(config->language);
     free(config);
 }
 
@@ -79,6 +80,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.supportsHevc = false;
 
     config->debug_level = 0;
+    config->language = strdup("auto");
     config->audio_backend = strdup("auto");
     config->decoder = strdup("auto");
     config->audio_device = NULL;
@@ -161,6 +163,10 @@ bool settings_read(char *filename, PCONFIGURATION config) {
         free_nullable(config->audio_device);
         config->audio_device = str_tmp;
     }
+    if (config_lookup_string_dup(&libconfig, "language", &str_tmp)) {
+        free_nullable(config->language);
+        config->language = str_tmp;
+    }
 
 #if TARGET_WEBOS
     config->fullscreen = true;
@@ -208,6 +214,7 @@ void settings_write(char *filename, PCONFIGURATION config) {
     config_setting_set_enum_simple(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
 
     config_setting_set_bool_simple(streaming, "hdr", config->stream.enableHdr);
+    config_setting_set_string_simple(root, "language", config->language);
     config_setting_set_bool_simple(root, "fullscreen", config->fullscreen);
     config_setting_set_int_simple(root, "debug_level", config->debug_level);
 

@@ -17,7 +17,6 @@ const locales = args['locales'];
 for (const locale of locales) {
     let cstrings = {}
     const popath = path.join('i18n', locale, 'messages.po');
-    console.log(`Reading ${popath}`);
     const pofile = po.parse(fs.readFileSync(popath));
     const translations = pofile.translations[''];
     for (const msgid in translations) {
@@ -28,10 +27,11 @@ for (const locale of locales) {
         cstrings[translation.msgid] = msgstr;
     }
 
-    const language = pofile.headers['Language'].split(/[-_]/);
+    const language = locale.split(/[-_]/);
     const lang_path = path.join(outdir, ...language);
     if (!fs.existsSync(lang_path)) {
         fs.mkdirSync(lang_path, {recursive: true});
     }
+    console.log(`${popath} => ${path.join(...language, 'cstrings.json')}`);
     fs.writeFileSync(path.join(lang_path, 'cstrings.json'), JSON.stringify(cstrings));
 }

@@ -36,6 +36,7 @@ typedef struct configuration_t {
     char *decoder;
     char *audio_backend;
     char *audio_device;
+    char *language;
     char key_dir[4096];
     bool sops;
     bool localaudio;

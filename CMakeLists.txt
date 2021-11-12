@@ -34,10 +34,12 @@ option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" OFF)
 
-set(I18N_LOCALES "ja" "fr" "nl")
+set(I18N_LOCALES "cs" "fr" "nl" "pt-BR" "ro" "ja")
+list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
 
 set(FEATURE_FORCE_FULLSCREEN OFF)
 set(FEATURE_I18N_GETTEXT ON)
+set(FEATURE_I18N_LANGUAGE_SETTINGS OFF)
 
 include(LintOptions)
 
@@ -227,10 +229,12 @@ set(SOURCES
         app/stream/input/sdl/keyboard.c
         app/stream/input/sdl/gamepad.c
         app/stream/input/sdl/mouse.c
+        app/stream/audio/sdlaud.c
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
-        app/stream/audio/sdlaud.c)
+        app/platform/common/i18n_common.c
+        )
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
@@ -320,6 +324,8 @@ endmacro()
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
     set(FEATURE_I18N_GETTEXT OFF)
+    set(FEATURE_I18N_LANGUAGE_SETTINGS ON)
+
     target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
@@ -390,11 +396,8 @@ else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
 
-if (FEATURE_FORCE_FULLSCREEN)
-    target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=1)
-else ()
-    target_compile_definitions(moonlight PRIVATE FEATURE_FORCE_FULLSCREEN=0)
-endif ()
+configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
+target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (TARGET_WINDOWS)
     target_link_libraries(moonlight PRIVATE rpcrt4)
