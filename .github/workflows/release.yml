@@ -31,14 +31,14 @@ jobs:
         with:
           node-version: 12
 
-      - name: Update packages
-        run: sudo apt-get -qq update || true
-
-      - name: Install Required Build Tools
-        run: sudo apt-get -y -qq install cmake gettext
-
       - name: Install webOS CLI
         run: sudo npm install -g @webosose/ares-cli
+
+      - name: Install Dev Dependency
+        run: npm install
+
+      - name: Install Required Build Tools
+        run: sudo apt-get -y -qq install cmake
 
       - name: Download webOS NDK
         run: wget -q https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/1.0.g-rev.4/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -P ${{github.workspace}}/temp
@@ -120,9 +120,9 @@ jobs:
       - name: Update packages
         run: sudo apt-get -qq update || true
 
-      - name: Install Crossbuild GCC
+      - name: Install Required Build Tools
         # Use qemu to support cross-architecture debootstrap
-        run: sudo apt-get -y -qq install crossbuild-essential-armhf
+        run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
 
       - name: Install Sysroot
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
