@@ -2,13 +2,17 @@
 // Created by Mariotaku on 2021/09/17.
 //
 
+#include "app.h"
 #include "add.dialog.h"
 #include "backend/pcmanager.h"
-#include "app.h"
-#include <errors.h>
+#include "lvgl/util/lv_app_utils.h"
+
+#include <libgamestream/errors.h>
+
 #include "util/i18n.h"
 
 #ifdef __WIN32
+
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -46,7 +50,7 @@ static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     add_dialog_controller_t *controller = (add_dialog_controller_t *) self;
     const static char *btn_texts[] = {translatable("Cancel"), translatable("OK"), ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, NULL, NULL, btn_texts, false);
+    lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, NULL, NULL, btn_texts, false);
     lv_obj_add_event_cb(dialog, dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_t *content = lv_msgbox_get_content(dialog);
     lv_obj_set_style_pad_all(content, lv_dpx(8), 0);

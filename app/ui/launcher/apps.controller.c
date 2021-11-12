@@ -12,8 +12,9 @@
 #include "backend/apploader/apploader.h"
 #include <errors.h>
 
-#include "lvgl/ext/lv_gridview.h"
 #include "lvgl/lv_ext_utils.h"
+#include "lvgl/ext/lv_gridview.h"
+#include "lvgl/util/lv_app_utils.h"
 
 #include "util/user_event.h"
 #include "util/i18n.h"
@@ -449,7 +450,7 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
         return;
     }
     static const char *btn_texts[] = {translatable("OK"), ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Unable to quit game"),
+    lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Unable to quit game"),
                                         locstr("Please make sure you are quitting with the same client."),
                                         btn_texts, false);
     lv_obj_add_event_cb(dialog, quit_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
@@ -547,7 +548,7 @@ static void context_menu_click_cb(lv_event_t *e) {
 
 static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app) {
     static const char *btn_txts[] = {translatable("OK"), ""};
-    lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, "text", btn_txts, false);
+    lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, app->base.name, "text", btn_txts, false);
     lv_obj_t *msgobj = lv_msgbox_get_text(msgbox);
     lv_label_set_text_fmt(msgobj,
                           "ID: %d\n"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 01:33+0900\n"
+"POT-Creation-Date: 2021-11-13 04:37+0900\n"
 "PO-Revision-Date: 2021-11-12 17:35\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:64
+#: app/main.c:78
 msgid "[Localized Language]"
 msgstr "日本語"
 
@@ -35,9 +35,9 @@ msgid "Settings"
 msgstr "設定"
 
 #: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:451 app/ui/launcher/apps.controller.c:549
-#: app/ui/launcher/add.dialog.c:48 app/ui/launcher/pair.dialog.c:38
-#: app/ui/streaming/streaming.controller.c:217 app/app_sdl.c:176
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
+#: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
@@ -48,102 +48,105 @@ msgstr "デコーダーが使えません"
 #: app/ui/launcher/launcher.controller.c:431
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
-msgstr "ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しください。"
+msgstr ""
+"ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しくださ"
+"い。"
 
-#: app/ui/launcher/apps.controller.c:160
+#: app/ui/launcher/apps.controller.c:161
 msgid "Send Wake-On-LAN"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:160
+#: app/ui/launcher/apps.controller.c:161
 msgid "Retry"
 msgstr "再試行"
 
-#: app/ui/launcher/apps.controller.c:283
+#: app/ui/launcher/apps.controller.c:284
 msgid "Not paired"
 msgstr "ペアリングされていません"
 
-#: app/ui/launcher/apps.controller.c:284
+#: app/ui/launcher/apps.controller.c:285
 msgid "Select computer again to pair."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:297
+#: app/ui/launcher/apps.controller.c:298
 msgid "Failed to load apps"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:298
-msgid "Press \"Retry\" button to reload.Try restart the computer if error persists."
-msgstr ""
-
-#: app/ui/launcher/apps.controller.c:318
-msgid "Host error"
+#: app/ui/launcher/apps.controller.c:299
+msgid ""
+"Press \"Retry\" button to reload.Try restart the computer if error persists."
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:319
+msgid "Host error"
+msgstr ""
+
+#: app/ui/launcher/apps.controller.c:320
 msgid "Please restart your computer."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:331
+#: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:332
+#: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:452
+#: app/ui/launcher/apps.controller.c:453
 msgid "Unable to quit game"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:453
+#: app/ui/launcher/apps.controller.c:454
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:499
+#: app/ui/launcher/apps.controller.c:500
 msgid "Resume"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:499
+#: app/ui/launcher/apps.controller.c:500
 msgid "Start"
 msgstr "スタート"
 
-#: app/ui/launcher/apps.controller.c:505
+#: app/ui/launcher/apps.controller.c:506
 msgid "Quit Session"
 msgstr "セッションを終了"
 
-#: app/ui/launcher/apps.controller.c:509
+#: app/ui/launcher/apps.controller.c:510
 msgid "Unstar"
 msgstr "スターを外す"
 
-#: app/ui/launcher/apps.controller.c:509
+#: app/ui/launcher/apps.controller.c:510
 msgid "Star"
 msgstr "スター"
 
-#: app/ui/launcher/apps.controller.c:513
+#: app/ui/launcher/apps.controller.c:514
 msgid "Info"
 msgstr "情報"
 
-#: app/ui/launcher/apps.controller.c:517 app/ui/launcher/add.dialog.c:48
-#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:176
+#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: app/ui/launcher/add.dialog.c:63
+#: app/ui/launcher/add.dialog.c:67
 msgid "IP address"
 msgstr "IPアドレス"
 
-#: app/ui/launcher/add.dialog.c:67
+#: app/ui/launcher/add.dialog.c:71
 msgid "IPv4 address only"
 msgstr "IPv4アドレスのみ"
 
-#: app/ui/launcher/add.dialog.c:85
+#: app/ui/launcher/add.dialog.c:89
 msgid "Failed to add computer."
 msgstr ""
 
-#: app/ui/launcher/pair.dialog.c:39
+#: app/ui/launcher/pair.dialog.c:40
 msgid "Pairing"
 msgstr "ペアリング中"
 
-#: app/ui/launcher/pair.dialog.c:56
+#: app/ui/launcher/pair.dialog.c:57
 msgid "Enter PIN code on your computer."
 msgstr "PCにPINコードを入力してください。"
 
@@ -167,15 +170,15 @@ msgstr "ゲームを終了"
 msgid "Disconnect"
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:113
+#: app/ui/streaming/streaming.controller.c:114
 msgid "Starting session."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:126
+#: app/ui/streaming/streaming.controller.c:127
 msgid "Disconnecting."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:218
+#: app/ui/streaming/streaming.controller.c:219
 msgid "Failed to start session"
 msgstr ""
 
@@ -211,23 +214,29 @@ msgstr "終了"
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:59
+#: app/ui/settings/panes/basic.pane.c:85
 msgid "Resolution and FPS"
 msgstr "解像度とリフレッシュレート"
 
-#: app/ui/settings/panes/basic.pane.c:83
+#: app/ui/settings/panes/basic.pane.c:109
 msgid "Video bitrate"
 msgstr "ビデオビットレート"
 
-#: app/ui/settings/panes/basic.pane.c:93
+#: app/ui/settings/panes/basic.pane.c:119
 msgid "Fullscreen UI"
 msgstr "全画面表示"
 
-#: app/ui/settings/panes/basic.pane.c:115
-msgid "Your computer may not perform well when using this resolution and framerate."
+#: app/ui/settings/panes/basic.pane.c:125
+#: app/ui/settings/panes/basic.pane.c:126
+msgid "Language"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:127
+#: app/ui/settings/panes/basic.pane.c:152
+msgid ""
+"Your computer may not perform well when using this resolution and framerate."
+msgstr ""
+
+#: app/ui/settings/panes/basic.pane.c:164
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "ビデオビットレート - %d kbps"
@@ -237,10 +246,12 @@ msgid "Optimize game settings for streaming"
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:26
-msgid "This will change in-game settings to optimize it for streaming, and limit resolution to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS. Turn off if you want to try unsupported resolution and FPS."
+msgid ""
+"Change in-game settings to optimize for streaming. Resolution will be "
+"limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
 msgstr ""
 
-#: app/ui/settings/panes/host.pane.c:29
+#: app/ui/settings/panes/host.pane.c:28
 msgid "Mute host PC while streaming"
 msgstr ""
 
@@ -257,7 +268,8 @@ msgid "Absolute mouse mode"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:29
-msgid "Better for remote desktop. For some games, mouse will not work properly."
+msgid ""
+"Better for remote desktop. For some games, mouse will not work properly."
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:31
@@ -265,7 +277,9 @@ msgid "Swap ABXY buttons"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:32
-msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
+msgid ""
+"Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
+"layouts."
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:39
@@ -307,7 +321,9 @@ msgid "%s decoder doesn't support HDR."
 msgstr "デコーダー「%s」はHDRに対応していません。"
 
 #: app/ui/settings/panes/decoder.pane.c:96
-msgid "HDR is only supported on certain games and when connecting to supported monitor."
+msgid ""
+"HDR is only supported on certain games and when connecting to supported "
+"monitor."
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:99
@@ -334,3 +350,10 @@ msgstr "画面の解像度"
 msgid "Refresh rate"
 msgstr "リフレッシュレート"
 
+#: app/app_sdl.c:178
+msgid "Quit Moonlight?"
+msgstr ""
+
+#: app/platform/common/i18n_common.c:6
+msgid "System Language"
+msgstr ""

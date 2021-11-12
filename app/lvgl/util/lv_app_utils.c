@@ -4,6 +4,10 @@
 
 #include "lv_app_utils.h"
 
+#include "util/i18n.h"
+
+static void msgbox_i18n_destroy(lv_event_t *e);
+
 void lv_obj_set_icon_font(lv_obj_t *obj, const lv_font_t *font) {
     lv_obj_t *child = lv_btn_find_img(obj);
     if (!child) return;
@@ -25,4 +29,23 @@ lv_obj_t *lv_btn_find_img(lv_obj_t *obj) {
         }
     }
     return NULL;
+}
+
+
+lv_obj_t *lv_msgbox_create_i18n(lv_obj_t *parent, const char *title, const char *txt, const char *btn_txts[],
+                                bool add_close_btn) {
+    int btn_txts_len;
+    for (btn_txts_len = 0; btn_txts[btn_txts_len][0]; btn_txts_len++);
+    const char **btn_txts_loc = lv_mem_alloc(sizeof(char *) * (btn_txts_len + 1));
+    for (int i = 0; i < btn_txts_len; i++) {
+        btn_txts_loc[i] = locstr(btn_txts[i]);
+    }
+    btn_txts_loc[btn_txts_len] = "";
+    lv_obj_t *msgbox = lv_msgbox_create(parent, title, txt, btn_txts_loc, add_close_btn);
+    lv_obj_add_event_cb(msgbox, msgbox_i18n_destroy, LV_EVENT_DELETE, btn_txts_loc);
+    return msgbox;
+}
+
+static void msgbox_i18n_destroy(lv_event_t *e) {
+    lv_mem_free(lv_event_get_user_data(e));
 }

@@ -3,6 +3,7 @@
 #include "stream/video/delegate.h"
 #include "stream/platform.h"
 #include "ui/root.h"
+#include "lvgl/util/lv_app_utils.h"
 
 #include "util/user_event.h"
 #include "util/i18n.h"
@@ -215,7 +216,7 @@ static void hide_overlay(lv_event_t *event) {
 
 static void session_error(streaming_controller_t *controller) {
     static const char *btn_texts[] = {translatable("OK"), ""};
-    lv_obj_t *dialog = lv_msgbox_create(NULL, locstr("Failed to start session"), streaming_errmsg, btn_texts,
+    lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Failed to start session"), streaming_errmsg, btn_texts,
                                         false);
     lv_obj_add_event_cb(dialog, session_error_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_center(dialog);

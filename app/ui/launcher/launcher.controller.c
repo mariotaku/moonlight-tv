@@ -425,7 +425,7 @@ static void open_settings(lv_event_t *event) {
 
 static void show_decoder_error(launcher_controller_t *controller) {
     static const char *btn_txts[] = {translatable("OK"), ""};
-    lv_obj_t *msgbox = lv_msgbox_create(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
+    lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
     lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),

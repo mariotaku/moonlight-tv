@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include "lvgl/lv_sdl_drv_key_input.h"
 #include "lvgl/lv_disp_drv_app.h"
+#include "lvgl/util/lv_app_utils.h"
 
 #include "app.h"
 
@@ -174,7 +175,7 @@ void app_set_keep_awake(bool awake) {
 
 void app_quit_confirm() {
     static const char *btn_txts[] = {translatable("Cancel"), translatable("OK"), ""};
-    lv_obj_t *mbox = lv_msgbox_create(NULL, NULL, "Quit Moonlight?", btn_txts, false);
+    lv_obj_t *mbox = lv_msgbox_create_i18n(NULL, NULL, locstr("Quit Moonlight?"), btn_txts, false);
     lv_obj_add_event_cb(mbox, quit_confirm_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
 }
