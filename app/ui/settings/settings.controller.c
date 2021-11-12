@@ -65,7 +65,7 @@ const lv_obj_controller_class_t settings_controller_cls = {
 
 static void settings_controller_ctor(lv_obj_controller_t *self, void *args) {
     settings_controller_t *controller = (settings_controller_t *) self;
-    controller->mini = UI_IS_MINI(ui_display_width);
+    controller->mini = controller->pending_mini = UI_IS_MINI(ui_display_width);
 }
 
 static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
