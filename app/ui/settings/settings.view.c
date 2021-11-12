@@ -30,10 +30,10 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     controller->close_btn = close_btn;
 
     lv_obj_t *content = lv_win_get_content(win);
-    lv_obj_set_style_pad_ver(content, 0, 0);
+    lv_obj_set_style_pad_all(content, 0, 0);
+    lv_obj_set_style_pad_gap(content, LV_DPX(2), 0);
     lv_obj_set_style_bg_color(content, lv_color_lighten(lv_color_black(), 30), 0);
     if (controller->pending_mini) {
-        lv_obj_set_style_pad_hor(content, 0, 0);
         controller->tabview = lv_tabview_create(content, LV_DIR_BOTTOM, LV_DPX(60));
     } else {
         static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};
