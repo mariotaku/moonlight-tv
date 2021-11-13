@@ -112,11 +112,11 @@ msgstr "Session beenden"
 
 #: app/ui/launcher/apps.controller.c:510
 msgid "Unstar"
-msgstr ""
+msgstr "Defavorisieren"
 
 #: app/ui/launcher/apps.controller.c:510
 msgid "Star"
-msgstr ""
+msgstr "Favorit"
 
 #: app/ui/launcher/apps.controller.c:514
 msgid "Info"
@@ -279,7 +279,7 @@ msgstr "Tausche ABXY Knöpfe"
 msgid ""
 "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
 "layouts."
-msgstr ""
+msgstr "Tausche A/B und X/Y Gamepad Knöpfe. Falls du z.B. Nintendo ähnliches Layout bevorzugst."
 
 #: app/ui/settings/panes/decoder.pane.c:39
 #: app/ui/settings/panes/decoder.pane.c:54
