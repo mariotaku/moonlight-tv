@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
-"PO-Revision-Date: 2021-11-13 19:15\n"
+"POT-Creation-Date: 2021-11-14 04:40+0900\n"
+"PO-Revision-Date: 2021-11-13 19:43\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -35,7 +35,7 @@ msgid "Settings"
 msgstr "设置"
 
 #: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
@@ -99,30 +99,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr "请使用启动游戏的同一客户端退出游戏。"
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
-msgstr "继续"
+msgid "Resume streaming"
+msgstr "继续串流"
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
-msgstr "启动"
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
+msgstr "开始串流"
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
-msgstr "退出会话"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
+msgstr "停止串流"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr "取消收藏"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr "收藏"
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr "详情"
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "取消"
@@ -168,16 +168,16 @@ msgid "Disconnect"
 msgstr "断开连接"
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
-msgstr "正在启动会话。"
+msgid "Connecting..."
+msgstr "正在连接…"
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
-msgstr "正在断开连接。"
+msgid "Disconnecting..."
+msgstr "正在断开连接…"
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
-msgstr "启动会话失败"
+msgid "Failed to start streaming"
+msgstr "无法开始串流"
 
 #: app/ui/settings/settings.controller.c:19
 msgid "Basic Settings"
@@ -247,7 +247,7 @@ msgstr "更改游戏设置以优化串流。分辨率会被限制在720p、1080p
 
 #: app/ui/settings/panes/host.pane.c:28
 msgid "Mute computer while streaming"
-msgstr ""
+msgstr "串流时在电脑上静音"
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
@@ -255,7 +255,7 @@ msgstr "仅查看模式"
 
 #: app/ui/settings/panes/input.pane.c:26
 msgid "Don't send mouse, keyboard or gamepad input to host computer."
-msgstr "不把鼠标、键盘和游戏手柄的输入发送到主机上"
+msgstr "不把鼠标、键盘和游戏手柄的输入发送到电脑上。"
 
 #: app/ui/settings/panes/input.pane.c:28
 msgid "Absolute mouse mode"
