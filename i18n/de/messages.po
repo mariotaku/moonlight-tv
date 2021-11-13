@@ -1,21 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 04:37+0900\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2021-11-14 04:12+0900\n"
+"PO-Revision-Date: 2021-11-13 19:30\n"
+"Last-Translator: \n"
+"Language-Team: German\n"
+"Language: de_DE\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: moonlight-tv\n"
+"X-Crowdin-Project-ID: 484733\n"
+"X-Crowdin-Language: de\n"
+"X-Crowdin-File: messages.pot\n"
+"X-Crowdin-File-ID: 22613\n"
 
 #: app/main.c:78
 msgid "[Localized Language]"
@@ -84,7 +84,7 @@ msgstr "Bitte den Rechner neu starten."
 
 #: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
-msgstr "Offline"
+msgstr ""
 
 #: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
@@ -104,7 +104,7 @@ msgstr "Weiterspielen"
 
 #: app/ui/launcher/apps.controller.c:500
 msgid "Start"
-msgstr "Start"
+msgstr ""
 
 #: app/ui/launcher/apps.controller.c:506
 msgid "Quit Session"
@@ -242,17 +242,12 @@ msgid "Optimize game settings for streaming"
 msgstr "Optimiere Spieleinstellungen für Streaming"
 
 #: app/ui/settings/panes/host.pane.c:26
-msgid ""
-"Change in-game settings to optimize for streaming. Resolution will be "
-"limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
-msgstr ""
-"Ändere spielinterne Einstellungen um das Streaming zu optimieren. Die "
-"Auflösung wird auf 720p, 1080p oder 4K limitiert. Die Bildwiederholrate wird "
-"ebenso auf 30/60 FPS limitiert."
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgstr "Ändere spielinterne Einstellungen um das Streaming zu optimieren. Die Auflösung wird auf 720p, 1080p oder 4K limitiert. Die Bildwiederholrate wird ebenso auf 30/60 FPS limitiert."
 
 #: app/ui/settings/panes/host.pane.c:28
-msgid "Mute host PC while streaming"
-msgstr "Host-Rechner stumm schalten während dem Streaming"
+msgid "Mute computer while streaming"
+msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
@@ -267,8 +262,7 @@ msgid "Absolute mouse mode"
 msgstr "Absolute Mausposition"
 
 #: app/ui/settings/panes/input.pane.c:29
-msgid ""
-"Better for remote desktop. For some games, mouse will not work properly."
+msgid "Better for remote desktop. For some games, mouse will not work properly."
 msgstr "Besser für Remote-Desktop. Bei manchen Spielen könnte die Maus nicht korrekt funktionieren."
 
 #: app/ui/settings/panes/input.pane.c:31
@@ -276,9 +270,7 @@ msgid "Swap ABXY buttons"
 msgstr "Tausche ABXY Knöpfe"
 
 #: app/ui/settings/panes/input.pane.c:32
-msgid ""
-"Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
-"layouts."
+msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "Tausche A/B und X/Y Gamepad Knöpfe. Falls du z.B. Nintendo ähnliches Layout bevorzugst."
 
 #: app/ui/settings/panes/decoder.pane.c:39
@@ -293,8 +285,8 @@ msgstr "Video Dekodierer"
 
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
-msgid "Video decoder - %s selected"
-msgstr "Video Dekodierer - %s ausgewählt"
+msgid "Video decoder - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -307,12 +299,12 @@ msgstr "Verfügbare Dekodierer"
 
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
-msgid "Audio backend - %s selected"
-msgstr "Audio Backend - %s ausgewählt"
+msgid "Audio backend - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
-msgstr "HDR (experimentell"
+msgstr "HDR (experimentell)"
 
 #: app/ui/settings/panes/decoder.pane.c:92
 #, c-format
@@ -320,11 +312,8 @@ msgid "%s decoder doesn't support HDR."
 msgstr "%s Dekodierer unterstützt HDR nicht."
 
 #: app/ui/settings/panes/decoder.pane.c:96
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
-msgstr "HDR wird nur in bestimmten Spielen und nur dann unterstützt wenn "
-"eine Verbindung zu einem HDR-fähigem TV besteht"
+msgid "HDR is only supported on certain games and when connecting to supported monitor."
+msgstr "HDR wird nur in bestimmten Spielen und nur dann unterstützt wenn eine Verbindung zu einem HDR-fähigem TV besteht"
 
 #: app/ui/settings/panes/decoder.pane.c:99
 msgid "Learn more about HDR feature."
@@ -332,7 +321,7 @@ msgstr "Erfahre mehr über die HDR Funktionalität"
 
 #: app/ui/settings/panes/about.pane.c:75
 msgid "Version"
-msgstr "Version"
+msgstr ""
 
 #: app/ui/settings/panes/about.pane.c:81
 msgid "webOS version"
@@ -357,3 +346,4 @@ msgstr "Moonlight beenden?"
 #: app/platform/common/i18n_common.c:6
 msgid "System Language"
 msgstr "Systemsprache"
+
