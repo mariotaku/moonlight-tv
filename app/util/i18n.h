@@ -5,6 +5,7 @@
 typedef struct i18n_entry_t {
     const char *locale;
     const char *name;
+    const char *font;
 } i18n_entry_t;
 
 const char *locstr(const char *msgid);

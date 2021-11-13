@@ -26,6 +26,7 @@ void app_init_locale() {
     const char* textdomaindir = getenv("TEXTDOMAINDIR");
     if (textdomaindir) {
         bindtextdomain("moonlight-tv", textdomaindir);
+        bind_textdomain_codeset("moonlight-tv", "UTF-8");
     }
     textdomain("moonlight-tv");
     setlocale(LC_ALL, "");

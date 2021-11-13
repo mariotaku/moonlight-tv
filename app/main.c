@@ -275,11 +275,13 @@ bool app_load_font(lv_theme_t *theme) {
     FcPatternDestroy(pattern);
     pattern = NULL;
 #ifdef FONT_FAMILY_FALLBACK
-    pattern = FcNameParse((const FcChar8 *) FONT_FAMILY_FALLBACK);
+    const char *locale = i18n_locale();
+    const i18n_entry_t *loc_entry = i18n_entry(locale);
+    pattern = FcNameParse((const FcChar8 *) ((loc_entry && loc_entry->font) ? loc_entry->font : FONT_FAMILY_FALLBACK));
     if (pattern) {
         FcLangSet *ls = FcLangSetCreate();
         FcLangSetAdd(ls, (const FcChar8 *) app_get_locale_lang());
-        FcLangSetAdd(ls, (const FcChar8 *) i18n_locale());
+        FcLangSetAdd(ls, (const FcChar8 *) locale);
         FcPatternAddLangSet(pattern, FC_LANG, ls);
 
         FcConfigSubstitute(NULL, pattern, FcMatchPattern);
