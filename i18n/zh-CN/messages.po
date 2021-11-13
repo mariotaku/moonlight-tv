@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 04:37+0900\n"
-"PO-Revision-Date: 2021-11-13 18:35\n"
+"POT-Creation-Date: 2021-11-14 04:12+0900\n"
+"PO-Revision-Date: 2021-11-13 19:15\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -246,8 +246,8 @@ msgid "Change in-game settings to optimize for streaming. Resolution will be lim
 msgstr "更改游戏设置以优化串流。分辨率会被限制在720p、1080p和4K，帧率也会被限制在30/60帧。"
 
 #: app/ui/settings/panes/host.pane.c:28
-msgid "Mute host PC while streaming"
-msgstr "串流时在电脑上静音"
+msgid "Mute computer while streaming"
+msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
@@ -285,7 +285,7 @@ msgstr "视频解码器"
 
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
-msgid "Video decoder - %s selected"
+msgid "Video decoder - using %s"
 msgstr "视频解码器 - 使用 %s"
 
 #: app/ui/settings/panes/decoder.pane.c:77
@@ -299,8 +299,8 @@ msgstr "由解码器提供"
 
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
-msgid "Audio backend - %s selected"
-msgstr "音频后端 - 已选择 %s"
+msgid "Audio backend - using %s"
+msgstr "音频后端 - 使用 %s"
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"

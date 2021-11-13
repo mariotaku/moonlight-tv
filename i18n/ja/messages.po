@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 04:37+0900\n"
-"PO-Revision-Date: 2021-11-12 17:35\n"
+"POT-Creation-Date: 2021-11-14 04:12+0900\n"
+"PO-Revision-Date: 2021-11-13 19:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -48,9 +48,7 @@ msgstr "デコーダーが使えません"
 #: app/ui/launcher/launcher.controller.c:431
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
-msgstr ""
-"ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しくださ"
-"い。"
+msgstr "ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しください。"
 
 #: app/ui/launcher/apps.controller.c:161
 msgid "Send Wake-On-LAN"
@@ -73,8 +71,7 @@ msgid "Failed to load apps"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:299
-msgid ""
-"Press \"Retry\" button to reload.Try restart the computer if error persists."
+msgid "Press \"Retry\" button to reload.Try restart the computer if error persists."
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:319
@@ -232,8 +229,7 @@ msgid "Language"
 msgstr ""
 
 #: app/ui/settings/panes/basic.pane.c:152
-msgid ""
-"Your computer may not perform well when using this resolution and framerate."
+msgid "Your computer may not perform well when using this resolution and framerate."
 msgstr ""
 
 #: app/ui/settings/panes/basic.pane.c:164
@@ -246,13 +242,11 @@ msgid "Optimize game settings for streaming"
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:26
-msgid ""
-"Change in-game settings to optimize for streaming. Resolution will be "
-"limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:28
-msgid "Mute host PC while streaming"
+msgid "Mute computer while streaming"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:25
@@ -268,8 +262,7 @@ msgid "Absolute mouse mode"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:29
-msgid ""
-"Better for remote desktop. For some games, mouse will not work properly."
+msgid "Better for remote desktop. For some games, mouse will not work properly."
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:31
@@ -277,9 +270,7 @@ msgid "Swap ABXY buttons"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:32
-msgid ""
-"Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
-"layouts."
+msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:39
@@ -294,7 +285,7 @@ msgstr "ビデオデコーダー"
 
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
-msgid "Video decoder - %s selected"
+msgid "Video decoder - using %s"
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:77
@@ -308,8 +299,8 @@ msgstr "ビデオデコーダーと同じ"
 
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
-msgid "Audio backend - %s selected"
-msgstr "オーディオデコーダー - %s"
+msgid "Audio backend - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
@@ -321,9 +312,7 @@ msgid "%s decoder doesn't support HDR."
 msgstr "デコーダー「%s」はHDRに対応していません。"
 
 #: app/ui/settings/panes/decoder.pane.c:96
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
+msgid "HDR is only supported on certain games and when connecting to supported monitor."
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:99
@@ -357,3 +346,4 @@ msgstr ""
 #: app/platform/common/i18n_common.c:6
 msgid "System Language"
 msgstr ""
+

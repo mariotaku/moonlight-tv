@@ -69,7 +69,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     lv_obj_t *decoder_label = pref_title_label(parent, locstr("Video decoder"));
-    lv_label_set_text_fmt(decoder_label, locstr("Video decoder - %s selected"),
+    lv_label_set_text_fmt(decoder_label, locstr("Video decoder - using %s"),
                           decoder_definitions[decoder_current].name);
     lv_obj_t *decoder_dropdown = pref_dropdown_string(parent, controller->decoder_entries, decoder_orders_len + 1,
                                                       &app_configuration->decoder);
@@ -77,7 +77,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *audio_label = pref_title_label(parent, locstr("Audio backend"));
     const char *audio_name = audio_current == AUDIO_DECODER ? locstr("Decoder provided")
                                                             : audio_definitions[audio_current].name;
-    lv_label_set_text_fmt(audio_label, locstr("Audio backend - %s selected"), audio_name);
+    lv_label_set_text_fmt(audio_label, locstr("Audio backend - using %s"), audio_name);
     lv_obj_t *audio_dropdown = pref_dropdown_string(parent, controller->audio_entries, audio_orders_len + 1,
                                                     &app_configuration->audio_backend);
     lv_obj_add_event_cb(decoder_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 01:33+0900\n"
-"PO-Revision-Date: 2021-11-12 17:35\n"
+"POT-Creation-Date: 2021-11-14 04:12+0900\n"
+"PO-Revision-Date: 2021-11-13 19:15\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:64
+#: app/main.c:78
 msgid "[Localized Language]"
 msgstr "Français"
 
@@ -35,9 +35,9 @@ msgid "Settings"
 msgstr "Paramètres"
 
 #: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:451 app/ui/launcher/apps.controller.c:549
-#: app/ui/launcher/add.dialog.c:48 app/ui/launcher/pair.dialog.c:38
-#: app/ui/streaming/streaming.controller.c:217 app/app_sdl.c:176
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
+#: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
@@ -50,100 +50,100 @@ msgstr "Le décodeur ne fonctionne pas"
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Impossible d'initialiser le décodeur %s. Veuillez essayer d'autres décodeurs."
 
-#: app/ui/launcher/apps.controller.c:160
+#: app/ui/launcher/apps.controller.c:161
 msgid "Send Wake-On-LAN"
 msgstr "Envoyer un paquet Wake-On-LAN"
 
-#: app/ui/launcher/apps.controller.c:160
+#: app/ui/launcher/apps.controller.c:161
 msgid "Retry"
 msgstr "Réessayer"
 
-#: app/ui/launcher/apps.controller.c:283
+#: app/ui/launcher/apps.controller.c:284
 msgid "Not paired"
 msgstr "Non appairé"
 
-#: app/ui/launcher/apps.controller.c:284
+#: app/ui/launcher/apps.controller.c:285
 msgid "Select computer again to pair."
 msgstr "Sélectionnez à nouveau l'ordinateur à associer."
 
-#: app/ui/launcher/apps.controller.c:297
+#: app/ui/launcher/apps.controller.c:298
 msgid "Failed to load apps"
 msgstr "Impossible de charger les applications"
 
-#: app/ui/launcher/apps.controller.c:298
+#: app/ui/launcher/apps.controller.c:299
 msgid "Press \"Retry\" button to reload.Try restart the computer if error persists."
 msgstr "Appuyez sur \"Recommencer\" pour ré-essayer. Redémarrez l'ordinateur si l'erreur persiste."
 
-#: app/ui/launcher/apps.controller.c:318
+#: app/ui/launcher/apps.controller.c:319
 msgid "Host error"
 msgstr "Erreur d'hôte"
 
-#: app/ui/launcher/apps.controller.c:319
+#: app/ui/launcher/apps.controller.c:320
 msgid "Please restart your computer."
-msgstr ""
+msgstr "Veuillez redémarrer votre ordinateur."
 
-#: app/ui/launcher/apps.controller.c:331
+#: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
 msgstr "Hors-ligne"
 
-#: app/ui/launcher/apps.controller.c:332
+#: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
-msgstr ""
+msgstr "Allumez l'ordinateur hôte et réessayez."
 
-#: app/ui/launcher/apps.controller.c:452
+#: app/ui/launcher/apps.controller.c:453
 msgid "Unable to quit game"
 msgstr "Impossible de fermer le jeu"
 
-#: app/ui/launcher/apps.controller.c:453
+#: app/ui/launcher/apps.controller.c:454
 msgid "Please make sure you are quitting with the same client."
 msgstr "Pensez à quittez l'application avec le même client."
 
-#: app/ui/launcher/apps.controller.c:499
+#: app/ui/launcher/apps.controller.c:500
 msgid "Resume"
 msgstr "Reprendre"
 
-#: app/ui/launcher/apps.controller.c:499
+#: app/ui/launcher/apps.controller.c:500
 msgid "Start"
 msgstr "Lancer"
 
-#: app/ui/launcher/apps.controller.c:505
+#: app/ui/launcher/apps.controller.c:506
 msgid "Quit Session"
 msgstr "Quitter la session"
 
-#: app/ui/launcher/apps.controller.c:509
+#: app/ui/launcher/apps.controller.c:510
 msgid "Unstar"
 msgstr "Retirer des favoris"
 
-#: app/ui/launcher/apps.controller.c:509
+#: app/ui/launcher/apps.controller.c:510
 msgid "Star"
 msgstr "Ajouter aux favoris"
 
-#: app/ui/launcher/apps.controller.c:513
+#: app/ui/launcher/apps.controller.c:514
 msgid "Info"
 msgstr "Info"
 
-#: app/ui/launcher/apps.controller.c:517 app/ui/launcher/add.dialog.c:48
-#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:176
+#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Annuler"
 
-#: app/ui/launcher/add.dialog.c:63
+#: app/ui/launcher/add.dialog.c:67
 msgid "IP address"
 msgstr "Adresse IP"
 
-#: app/ui/launcher/add.dialog.c:67
+#: app/ui/launcher/add.dialog.c:71
 msgid "IPv4 address only"
 msgstr "Adresse IPv4 uniquement"
 
-#: app/ui/launcher/add.dialog.c:85
+#: app/ui/launcher/add.dialog.c:89
 msgid "Failed to add computer."
 msgstr "Impossible d'ajouter l'ordinateur."
 
-#: app/ui/launcher/pair.dialog.c:39
+#: app/ui/launcher/pair.dialog.c:40
 msgid "Pairing"
 msgstr "Association en cours"
 
-#: app/ui/launcher/pair.dialog.c:56
+#: app/ui/launcher/pair.dialog.c:57
 msgid "Enter PIN code on your computer."
 msgstr "Entrez le code PIN sur votre ordinateur."
 
@@ -167,15 +167,15 @@ msgstr "Quitter le jeu"
 msgid "Disconnect"
 msgstr "Déconnexion"
 
-#: app/ui/streaming/streaming.controller.c:113
+#: app/ui/streaming/streaming.controller.c:114
 msgid "Starting session."
 msgstr "Démarrage de la session."
 
-#: app/ui/streaming/streaming.controller.c:126
+#: app/ui/streaming/streaming.controller.c:127
 msgid "Disconnecting."
 msgstr "Déconnexion."
 
-#: app/ui/streaming/streaming.controller.c:218
+#: app/ui/streaming/streaming.controller.c:219
 msgid "Failed to start session"
 msgstr "Impossible de démarrer la session"
 
@@ -211,23 +211,28 @@ msgstr "Quitter"
 msgid "Some settings require a restart to take effect."
 msgstr "Certains paramètres requièrent de redémarrer l'application."
 
-#: app/ui/settings/panes/basic.pane.c:59
+#: app/ui/settings/panes/basic.pane.c:85
 msgid "Resolution and FPS"
 msgstr "Résolution et FPS"
 
-#: app/ui/settings/panes/basic.pane.c:83
+#: app/ui/settings/panes/basic.pane.c:109
 msgid "Video bitrate"
 msgstr "Bitrate vidéo"
 
-#: app/ui/settings/panes/basic.pane.c:93
+#: app/ui/settings/panes/basic.pane.c:119
 msgid "Fullscreen UI"
 msgstr "Interface plein écran"
 
-#: app/ui/settings/panes/basic.pane.c:115
+#: app/ui/settings/panes/basic.pane.c:125
+#: app/ui/settings/panes/basic.pane.c:126
+msgid "Language"
+msgstr "Langue"
+
+#: app/ui/settings/panes/basic.pane.c:152
 msgid "Your computer may not perform well when using this resolution and framerate."
 msgstr "Votre hôte ne pourra peut-être pas streamer correctement avec cette résolution et fréquence d'image."
 
-#: app/ui/settings/panes/basic.pane.c:127
+#: app/ui/settings/panes/basic.pane.c:164
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "Bitrate vidéo - %d kbps"
@@ -237,24 +242,24 @@ msgid "Optimize game settings for streaming"
 msgstr "Optimiser les paramètres du jeu pour le streaming"
 
 #: app/ui/settings/panes/host.pane.c:26
-msgid "This will change in-game settings to optimize it for streaming, and limit resolution to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS. Turn off if you want to try unsupported resolution and FPS."
-msgstr ""
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgstr "Changez les paramètres du jeu pour optimiser le streaming. La résolution sera limitée à 720p, 1080p ou 4K. La fréquence d'images sera également limitée à 30/60 FPS."
 
-#: app/ui/settings/panes/host.pane.c:29
-msgid "Mute host PC while streaming"
+#: app/ui/settings/panes/host.pane.c:28
+msgid "Mute computer while streaming"
 msgstr "Couper le son du PC hôte pendant le streaming"
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
-msgstr ""
+msgstr "Mode observateur"
 
 #: app/ui/settings/panes/input.pane.c:26
 msgid "Don't send mouse, keyboard or gamepad input to host computer."
-msgstr ""
+msgstr "Ne pas envoyer les entrées de la souris, clavier et manette à l'ordinateur hôte."
 
 #: app/ui/settings/panes/input.pane.c:28
 msgid "Absolute mouse mode"
-msgstr ""
+msgstr "Mode pointage absolu"
 
 #: app/ui/settings/panes/input.pane.c:29
 msgid "Better for remote desktop. For some games, mouse will not work properly."
@@ -280,8 +285,8 @@ msgstr "Décodeur vidéo"
 
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
-msgid "Video decoder - %s selected"
-msgstr "Décodeur vidéo - %s sélectionné"
+msgid "Video decoder - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -294,8 +299,8 @@ msgstr "Décodeur fourni"
 
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
-msgid "Audio backend - %s selected"
-msgstr "Back-end audio - %s sélectionné"
+msgid "Audio backend - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
@@ -333,4 +338,12 @@ msgstr "Résolution de l'écran"
 #: app/ui/settings/panes/about.pane.c:95
 msgid "Refresh rate"
 msgstr "Taux de rafraîchissement"
+
+#: app/app_sdl.c:178
+msgid "Quit Moonlight?"
+msgstr "Quitter Moonlight ?"
+
+#: app/platform/common/i18n_common.c:6
+msgid "System Language"
+msgstr "Langue du système"
 

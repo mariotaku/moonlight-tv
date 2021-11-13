@@ -25,6 +25,6 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     pref_checkbox(parent, locstr("Optimize game settings for streaming"), &app_configuration->sops, false);
     pref_desc_label(parent, locstr("Change in-game settings to optimize for streaming. Resolution will be "
                                    "limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."));
-    pref_checkbox(parent, locstr("Mute host PC while streaming"), &app_configuration->localaudio, true);
+    pref_checkbox(parent, locstr("Mute computer while streaming"), &app_configuration->localaudio, true);
     return NULL;
 }

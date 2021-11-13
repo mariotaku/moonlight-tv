@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 04:37+0900\n"
+"POT-Creation-Date: 2021-11-14 04:12+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -250,7 +250,7 @@ msgid ""
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:28
-msgid "Mute host PC while streaming"
+msgid "Mute computer while streaming"
 msgstr ""
 
 #: app/ui/settings/panes/input.pane.c:25
@@ -292,7 +292,7 @@ msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
-msgid "Video decoder - %s selected"
+msgid "Video decoder - using %s"
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:77
@@ -306,7 +306,7 @@ msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
-msgid "Audio backend - %s selected"
+msgid "Audio backend - using %s"
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:87

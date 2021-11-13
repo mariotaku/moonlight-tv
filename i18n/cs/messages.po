@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-13 01:33+0900\n"
-"PO-Revision-Date: 2021-11-12 17:35\n"
+"POT-Creation-Date: 2021-11-14 04:12+0900\n"
+"PO-Revision-Date: 2021-11-13 19:15\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Language: cs_CZ\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:64
+#: app/main.c:78
 msgid "[Localized Language]"
 msgstr "Čeština"
 
@@ -35,9 +35,9 @@ msgid "Settings"
 msgstr "Nastavení"
 
 #: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:451 app/ui/launcher/apps.controller.c:549
-#: app/ui/launcher/add.dialog.c:48 app/ui/launcher/pair.dialog.c:38
-#: app/ui/streaming/streaming.controller.c:217 app/app_sdl.c:176
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
+#: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
@@ -50,100 +50,100 @@ msgstr "Dekodér nefunguje"
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Nelze inicializovat dekodér %s. Zkuste prosím jiné dekodéry."
 
-#: app/ui/launcher/apps.controller.c:160
+#: app/ui/launcher/apps.controller.c:161
 msgid "Send Wake-On-LAN"
 msgstr "Poslat Wake-On-LAN"
 
-#: app/ui/launcher/apps.controller.c:160
+#: app/ui/launcher/apps.controller.c:161
 msgid "Retry"
 msgstr "Zkusit znovu"
 
-#: app/ui/launcher/apps.controller.c:283
+#: app/ui/launcher/apps.controller.c:284
 msgid "Not paired"
 msgstr "Není spárováno"
 
-#: app/ui/launcher/apps.controller.c:284
+#: app/ui/launcher/apps.controller.c:285
 msgid "Select computer again to pair."
 msgstr "Vyberte znovu počítač pro párování."
 
-#: app/ui/launcher/apps.controller.c:297
+#: app/ui/launcher/apps.controller.c:298
 msgid "Failed to load apps"
 msgstr "Nepodařilo se načíst aplikace"
 
-#: app/ui/launcher/apps.controller.c:298
+#: app/ui/launcher/apps.controller.c:299
 msgid "Press \"Retry\" button to reload.Try restart the computer if error persists."
 msgstr "Pro znovunačtení stiskněte tlačítko \"Zkusit znovu\". Pokud chyba přetrvává, zkuste restartovat počítač."
 
-#: app/ui/launcher/apps.controller.c:318
+#: app/ui/launcher/apps.controller.c:319
 msgid "Host error"
 msgstr "Chyba hostitele"
 
-#: app/ui/launcher/apps.controller.c:319
+#: app/ui/launcher/apps.controller.c:320
 msgid "Please restart your computer."
 msgstr "Prosím restartujte počítač."
 
-#: app/ui/launcher/apps.controller.c:331
+#: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
 msgstr "Offline"
 
-#: app/ui/launcher/apps.controller.c:332
+#: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
 msgstr "Zapněte hostující počítač a zkuste to znovu."
 
-#: app/ui/launcher/apps.controller.c:452
+#: app/ui/launcher/apps.controller.c:453
 msgid "Unable to quit game"
 msgstr "Nelze ukončit hru"
 
-#: app/ui/launcher/apps.controller.c:453
+#: app/ui/launcher/apps.controller.c:454
 msgid "Please make sure you are quitting with the same client."
 msgstr "Ujistěte se, že ukončujete se stejným klientem."
 
-#: app/ui/launcher/apps.controller.c:499
+#: app/ui/launcher/apps.controller.c:500
 msgid "Resume"
 msgstr "Pokračovat"
 
-#: app/ui/launcher/apps.controller.c:499
+#: app/ui/launcher/apps.controller.c:500
 msgid "Start"
 msgstr "Spustit"
 
-#: app/ui/launcher/apps.controller.c:505
+#: app/ui/launcher/apps.controller.c:506
 msgid "Quit Session"
 msgstr "Ukončit relaci"
 
-#: app/ui/launcher/apps.controller.c:509
+#: app/ui/launcher/apps.controller.c:510
 msgid "Unstar"
 msgstr "Odebrat z oblíbených"
 
-#: app/ui/launcher/apps.controller.c:509
+#: app/ui/launcher/apps.controller.c:510
 msgid "Star"
 msgstr "Přidat k oblíbeným"
 
-#: app/ui/launcher/apps.controller.c:513
+#: app/ui/launcher/apps.controller.c:514
 msgid "Info"
 msgstr "Informace"
 
-#: app/ui/launcher/apps.controller.c:517 app/ui/launcher/add.dialog.c:48
-#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:176
+#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: app/ui/launcher/add.dialog.c:63
+#: app/ui/launcher/add.dialog.c:67
 msgid "IP address"
 msgstr "IP adresa"
 
-#: app/ui/launcher/add.dialog.c:67
+#: app/ui/launcher/add.dialog.c:71
 msgid "IPv4 address only"
 msgstr "Pouze IPv4 adresa"
 
-#: app/ui/launcher/add.dialog.c:85
+#: app/ui/launcher/add.dialog.c:89
 msgid "Failed to add computer."
 msgstr "Přidání počítače se nezdařilo."
 
-#: app/ui/launcher/pair.dialog.c:39
+#: app/ui/launcher/pair.dialog.c:40
 msgid "Pairing"
 msgstr "Páruji"
 
-#: app/ui/launcher/pair.dialog.c:56
+#: app/ui/launcher/pair.dialog.c:57
 msgid "Enter PIN code on your computer."
 msgstr "Zadejte PIN kód na vašem počítači."
 
@@ -167,15 +167,15 @@ msgstr "Ukončit hru"
 msgid "Disconnect"
 msgstr "Odpojit"
 
-#: app/ui/streaming/streaming.controller.c:113
+#: app/ui/streaming/streaming.controller.c:114
 msgid "Starting session."
 msgstr "Spouštění relace."
 
-#: app/ui/streaming/streaming.controller.c:126
+#: app/ui/streaming/streaming.controller.c:127
 msgid "Disconnecting."
 msgstr "Odpojování."
 
-#: app/ui/streaming/streaming.controller.c:218
+#: app/ui/streaming/streaming.controller.c:219
 msgid "Failed to start session"
 msgstr "Nepodařilo se spustit relaci"
 
@@ -211,23 +211,28 @@ msgstr "Ukončit"
 msgid "Some settings require a restart to take effect."
 msgstr "Některá nastavení vyžadují restart, aby se projevily."
 
-#: app/ui/settings/panes/basic.pane.c:59
+#: app/ui/settings/panes/basic.pane.c:85
 msgid "Resolution and FPS"
 msgstr "Rozlišení a FPS"
 
-#: app/ui/settings/panes/basic.pane.c:83
+#: app/ui/settings/panes/basic.pane.c:109
 msgid "Video bitrate"
 msgstr "Bitrate videa"
 
-#: app/ui/settings/panes/basic.pane.c:93
+#: app/ui/settings/panes/basic.pane.c:119
 msgid "Fullscreen UI"
 msgstr "Celá Obrazovka"
 
-#: app/ui/settings/panes/basic.pane.c:115
+#: app/ui/settings/panes/basic.pane.c:125
+#: app/ui/settings/panes/basic.pane.c:126
+msgid "Language"
+msgstr "Jazyk"
+
+#: app/ui/settings/panes/basic.pane.c:152
 msgid "Your computer may not perform well when using this resolution and framerate."
 msgstr "Při použití tohoto rozlišení a snímkování nemusí váš počítač fungovat správně."
 
-#: app/ui/settings/panes/basic.pane.c:127
+#: app/ui/settings/panes/basic.pane.c:164
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "Bitrate videa - %d kb/s"
@@ -237,11 +242,11 @@ msgid "Optimize game settings for streaming"
 msgstr "Optimalizovat herní nastavení pro streamování"
 
 #: app/ui/settings/panes/host.pane.c:26
-msgid "This will change in-game settings to optimize it for streaming, and limit resolution to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS. Turn off if you want to try unsupported resolution and FPS."
-msgstr "Toto změní herní nastavení tak, aby bylo optimalizováno pro streamování a omezí rozlišení na 720p, 1080p nebo 4K. Snímková frekvence bude omezena na 30/60 FPS. Vypněte pokud chcete vyzkoušet nepodporované rozlišení a FPS."
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgstr "Změnit herní nastavení pro optimalizaci streamování. Rozlišení bude omezeno na 720p, 1080p nebo 4K. Frameate bude omezen na 30/60 FPS."
 
-#: app/ui/settings/panes/host.pane.c:29
-msgid "Mute host PC while streaming"
+#: app/ui/settings/panes/host.pane.c:28
+msgid "Mute computer while streaming"
 msgstr "Ztlumit hostitelský počítač během streamování"
 
 #: app/ui/settings/panes/input.pane.c:25
@@ -280,8 +285,8 @@ msgstr "Video dekodér"
 
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
-msgid "Video decoder - %s selected"
-msgstr "Video dekodér - vybráno %s"
+msgid "Video decoder - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -294,8 +299,8 @@ msgstr "Dekodér k dispozici"
 
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
-msgid "Audio backend - %s selected"
-msgstr "Audio backend - vybráno %s"
+msgid "Audio backend - using %s"
+msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
@@ -333,4 +338,12 @@ msgstr "Rozlišení obrazovky"
 #: app/ui/settings/panes/about.pane.c:95
 msgid "Refresh rate"
 msgstr "Obnovovací frekvence"
+
+#: app/app_sdl.c:178
+msgid "Quit Moonlight?"
+msgstr "Ukončit Moonlight?"
+
+#: app/platform/common/i18n_common.c:6
+msgid "System Language"
+msgstr "Jazyk systému"
 
