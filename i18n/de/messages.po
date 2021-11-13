@@ -246,6 +246,9 @@ msgid ""
 "Change in-game settings to optimize for streaming. Resolution will be "
 "limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
 msgstr ""
+"Ändere spielinterne Einstellungen um das Streaming zu optimieren. Die "
+"Auflösung wird auf 720p, 1080p oder 4K limitiert. Die Bildwiederholrate wird "
+"ebenso auf 30/60 FPS limitiert."
 
 #: app/ui/settings/panes/host.pane.c:28
 msgid "Mute host PC while streaming"
