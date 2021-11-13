@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
+"POT-Creation-Date: 2021-11-14 04:40+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,7 @@ msgid "Settings"
 msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
@@ -100,30 +100,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
+msgid "Resume streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr ""
@@ -169,15 +169,15 @@ msgid "Disconnect"
 msgstr ""
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
+msgid "Connecting..."
 msgstr ""
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
+msgid "Disconnecting..."
 msgstr ""
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
+msgid "Failed to start streaming"
 msgstr ""
 
 #: app/ui/settings/settings.controller.c:19

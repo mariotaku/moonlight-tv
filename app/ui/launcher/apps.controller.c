@@ -451,8 +451,8 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     }
     static const char *btn_texts[] = {translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Unable to quit game"),
-                                        locstr("Please make sure you are quitting with the same client."),
-                                        btn_texts, false);
+                                             locstr("Please make sure you are quitting with the same client."),
+                                             btn_texts, false);
     lv_obj_add_event_cb(dialog, quit_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_center(dialog);
 }
@@ -497,13 +497,14 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
 
     if (!currentId || currentId == app->base.id) {
         lv_obj_t *start_btn = lv_list_add_btn(content, NULL,
-                                              currentId == app->base.id ? locstr("Resume") : locstr("Start"));
+                                              currentId == app->base.id ? locstr("Resume streaming")
+                                                                        : locstr("Start streaming"));
         lv_obj_add_flag(start_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(start_btn, launcher_launch_game);
     }
 
     if (currentId) {
-        lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, locstr("Quit Session"));
+        lv_obj_t *quit_btn = lv_list_add_btn(content, NULL, locstr("Stop streaming"));
         lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(quit_btn, launcher_quit_game);
     }
