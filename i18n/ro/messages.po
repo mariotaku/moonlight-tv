@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
-"PO-Revision-Date: 2021-11-13 19:15\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
+"PO-Revision-Date: 2021-11-14 15:26\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -26,26 +26,31 @@ msgstr "Română"
 msgid "Add computer"
 msgstr "Adăugare gazdă"
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr "Ajutor"
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr "Setări"
 
-#: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr "Ieşire"
+
+#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr "Decodorul nu funcționează"
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Imposibil de inițializat decodorul %s. Vă rugăm să încercați alte decodoare."
@@ -80,7 +85,7 @@ msgstr "Eroare calculator gazdă"
 
 #: app/ui/launcher/apps.controller.c:320
 msgid "Please restart your computer."
-msgstr ""
+msgstr "Vă rugăm să reporniți calculatorul."
 
 #: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
@@ -88,7 +93,7 @@ msgstr "Deconectat"
 
 #: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
-msgstr ""
+msgstr "Porniți calculatorul gazdă și încercați din nou."
 
 #: app/ui/launcher/apps.controller.c:453
 msgid "Unable to quit game"
@@ -99,30 +104,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr "Te rugăm să te asiguri că ieși prin același client."
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
-msgstr "Continuă"
+msgid "Resume streaming"
+msgstr "Reluați transmisiunea"
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
-msgstr "Pornire"
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
+msgstr "Porneşte transmisiunea"
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
-msgstr "Termină Sesiunea"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
+msgstr "Oprește transmisiunea"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr "Eliminați steaua"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr "Marcare cu stea"
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr "Informații"
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Anulare"
@@ -168,16 +173,16 @@ msgid "Disconnect"
 msgstr "Deconectează"
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
-msgstr "Începe sesiunea."
+msgid "Connecting..."
+msgstr "Conectare în curs..."
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
-msgstr "Se deconectează."
+msgid "Disconnecting..."
+msgstr "Deconectare în curs..."
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
-msgstr "Pornirea sesiunii a eșuat"
+msgid "Failed to start streaming"
+msgstr "Pornirea transmisiunii a eșuat"
 
 #: app/ui/settings/settings.controller.c:19
 msgid "Basic Settings"
@@ -202,10 +207,6 @@ msgstr "Despre"
 #: app/ui/settings/settings.controller.c:309
 msgid "Later"
 msgstr "Mai târziu"
-
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
-msgstr "Ieşire"
 
 #: app/ui/settings/settings.controller.c:310
 msgid "Some settings require a restart to take effect."
@@ -243,23 +244,23 @@ msgstr "Optimizează setările jocului pentru streaming"
 
 #: app/ui/settings/panes/host.pane.c:26
 msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
-msgstr ""
+msgstr "Schimbă setările din joc pentru a optimiza pentru streaming. Rezoluția va fi limitată la 720p, 1080p sau 4K. FPS va fi, de asemenea, limitat la 30/60 FPS."
 
 #: app/ui/settings/panes/host.pane.c:28
 msgid "Mute computer while streaming"
-msgstr ""
+msgstr "Amuțește calculatorul gazdă în timpul conexiunii"
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
-msgstr ""
+msgstr "Mod doar vizualizare"
 
 #: app/ui/settings/panes/input.pane.c:26
 msgid "Don't send mouse, keyboard or gamepad input to host computer."
-msgstr ""
+msgstr "Nu trimite date despre mouse, tastatură sau controller calculatorului gazdă."
 
 #: app/ui/settings/panes/input.pane.c:28
 msgid "Absolute mouse mode"
-msgstr ""
+msgstr "Modul poziționare absolută a mouse-ului"
 
 #: app/ui/settings/panes/input.pane.c:29
 msgid "Better for remote desktop. For some games, mouse will not work properly."
@@ -286,7 +287,7 @@ msgstr "Decodor video"
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
 msgid "Video decoder - using %s"
-msgstr ""
+msgstr "Decodor video - folosind %s"
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -300,7 +301,7 @@ msgstr "Decodor furnizat"
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
 msgid "Audio backend - using %s"
-msgstr ""
+msgstr "Backend audio - folosind %s"
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
@@ -341,9 +342,9 @@ msgstr "Rată de reîmprospătare"
 
 #: app/app_sdl.c:178
 msgid "Quit Moonlight?"
-msgstr ""
+msgstr "Ieși din Moonlight?"
 
 #: app/platform/common/i18n_common.c:6
 msgid "System Language"
-msgstr ""
+msgstr "Limbă sistem"
 

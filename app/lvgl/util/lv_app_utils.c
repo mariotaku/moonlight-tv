@@ -8,6 +8,15 @@
 
 static void msgbox_i18n_destroy(lv_event_t *e);
 
+
+lv_obj_t *lv_child_find_type(lv_obj_t *obj, const lv_obj_class_t *cls);
+
+void lv_obj_set_text_font(lv_obj_t *obj, const lv_font_t *font) {
+    lv_obj_t *child = lv_btn_find_label(obj);
+    if (!child) return;
+    lv_obj_set_style_text_font(child, font, 0);
+}
+
 void lv_obj_set_icon_font(lv_obj_t *obj, const lv_font_t *font) {
     lv_obj_t *child = lv_btn_find_img(obj);
     if (!child) return;
@@ -22,9 +31,18 @@ void lv_btn_set_icon(lv_obj_t *obj, const char *symbol) {
 
 lv_obj_t *lv_btn_find_img(lv_obj_t *obj) {
     if (!lv_obj_has_class(obj, &lv_btn_class)) return NULL;
+    return lv_child_find_type(obj, &lv_img_class);
+}
+
+lv_obj_t *lv_btn_find_label(lv_obj_t *obj) {
+    if (!lv_obj_has_class(obj, &lv_btn_class)) return NULL;
+    return lv_child_find_type(obj, &lv_label_class);
+}
+
+lv_obj_t *lv_child_find_type(lv_obj_t *obj, const lv_obj_class_t *cls) {
     for (int i = 0, j = (int) lv_obj_get_child_cnt(obj); i < j; ++i) {
         struct _lv_obj_t *child = lv_obj_get_child(obj, i);
-        if (lv_obj_has_class(child, &lv_img_class)) {
+        if (lv_obj_has_class(child, cls)) {
             return child;
         }
     }

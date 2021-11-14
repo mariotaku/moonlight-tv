@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
-"PO-Revision-Date: 2021-11-13 19:30\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
+"PO-Revision-Date: 2021-11-14 15:26\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -26,26 +26,31 @@ msgstr "Deutsch"
 msgid "Add computer"
 msgstr "Rechner Hinzufügen"
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr "Hilfe"
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr "Beenden"
+
+#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "Ok"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr "Dekodierer funktioniert nicht"
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Dekodierer %s konnte nicht initialisiert werden. Bitte versuche einen anderen."
@@ -84,7 +89,7 @@ msgstr "Bitte den Rechner neu starten."
 
 #: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
-msgstr ""
+msgstr "Offline"
 
 #: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
@@ -99,30 +104,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr "Stelle sicher dass das Spiel vom selben Client geschlossen wird."
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
-msgstr "Weiterspielen"
+msgid "Resume streaming"
+msgstr "Streaming fortsetzen"
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
-msgstr ""
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
+msgstr "Stream starten"
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
-msgstr "Session beenden"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
+msgstr "Stream anhalten"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr "Defavorisieren"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr "Favorit"
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr "Information"
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Abbrechen"
@@ -168,16 +173,16 @@ msgid "Disconnect"
 msgstr "Verbindung beenden"
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
-msgstr "Session starten"
+msgid "Connecting..."
+msgstr "Verbinde..."
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
-msgstr "Beende Verbindung"
+msgid "Disconnecting..."
+msgstr "Trennen..."
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
-msgstr "Beenden der Session fehlgeschlagen"
+msgid "Failed to start streaming"
+msgstr "Fehler beim Starten des Streams"
 
 #: app/ui/settings/settings.controller.c:19
 msgid "Basic Settings"
@@ -202,10 +207,6 @@ msgstr "Über"
 #: app/ui/settings/settings.controller.c:309
 msgid "Later"
 msgstr "Später"
-
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
-msgstr "Beenden"
 
 #: app/ui/settings/settings.controller.c:310
 msgid "Some settings require a restart to take effect."
@@ -247,7 +248,7 @@ msgstr "Ändere spielinterne Einstellungen um das Streaming zu optimieren. Die A
 
 #: app/ui/settings/panes/host.pane.c:28
 msgid "Mute computer while streaming"
-msgstr ""
+msgstr "Computer während des Streamens stummschalten"
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
@@ -286,7 +287,7 @@ msgstr "Video Dekodierer"
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
 msgid "Video decoder - using %s"
-msgstr ""
+msgstr "Video-Decodierer - mit %s"
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -300,7 +301,7 @@ msgstr "Verfügbare Dekodierer"
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
 msgid "Audio backend - using %s"
-msgstr ""
+msgstr "Audio-Backend - mit %s"
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
@@ -321,7 +322,7 @@ msgstr "Erfahre mehr über die HDR Funktionalität"
 
 #: app/ui/settings/panes/about.pane.c:75
 msgid "Version"
-msgstr ""
+msgstr "Version"
 
 #: app/ui/settings/panes/about.pane.c:81
 msgid "webOS version"

@@ -310,6 +310,7 @@ LV_FONT_DECLARE(material_icons_regular_38)
 /*Always set a default font*/
 #define LV_FONT_DEFAULT &lv_font_montserrat_32
 
+#define LV_ICON_FONT_SMALL &material_icons_regular_28
 #define LV_ICON_FONT_DEFAULT &material_icons_regular_32
 #define LV_ICON_FONT_LARGE &material_icons_regular_38
 

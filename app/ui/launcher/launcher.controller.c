@@ -151,6 +151,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->pref_btn, open_settings, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->help_btn, open_help, LV_EVENT_CLICKED, controller);
+    lv_obj_add_event_cb(controller->quit_btn, app_quit_confirm, LV_EVENT_CLICKED, controller);
 
     update_pclist(controller);
 

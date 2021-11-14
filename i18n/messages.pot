@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:40+0900\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,26 +26,31 @@ msgstr ""
 msgid "Add computer"
 msgstr ""
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr ""
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:427
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr ""
+
+#: app/ui/launcher/launcher.controller.c:428
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr ""
@@ -202,10 +207,6 @@ msgstr ""
 
 #: app/ui/settings/settings.controller.c:309
 msgid "Later"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
 msgstr ""
 
 #: app/ui/settings/settings.controller.c:310

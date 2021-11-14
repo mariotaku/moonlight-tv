@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
-"PO-Revision-Date: 2021-11-13 19:15\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
+"PO-Revision-Date: 2021-11-14 15:26\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -26,26 +26,31 @@ msgstr "Nederlands"
 msgid "Add computer"
 msgstr "Computer toevoegen"
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr "Help"
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr "Instellingen"
 
-#: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr "Afsluiten"
+
+#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr "Decoder werkt niet"
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Kan de %s decoder niet initialiseren. Probeer een andere."
@@ -99,30 +104,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr "Zorg ervoor dat je de sessie beëindigt vanaf hetzelfde apparaat."
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
-msgstr "Hervatten"
+msgid "Resume streaming"
+msgstr ""
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
-msgstr "Starten"
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
+msgstr ""
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
-msgstr "Sessie afsluiten"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
+msgstr ""
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr "Verwijder favoriet"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr "Favoriet maken"
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr "Info"
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Annuleren"
@@ -168,16 +173,16 @@ msgid "Disconnect"
 msgstr "Verbinding verbreken"
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
-msgstr "Sessie starten."
+msgid "Connecting..."
+msgstr ""
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
-msgstr "Verbinding verbreken."
+msgid "Disconnecting..."
+msgstr ""
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
-msgstr "Starten van de sessie is mislukt"
+msgid "Failed to start streaming"
+msgstr ""
 
 #: app/ui/settings/settings.controller.c:19
 msgid "Basic Settings"
@@ -202,10 +207,6 @@ msgstr "Info"
 #: app/ui/settings/settings.controller.c:309
 msgid "Later"
 msgstr "Niet nu"
-
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
-msgstr "Afsluiten"
 
 #: app/ui/settings/settings.controller.c:310
 msgid "Some settings require a restart to take effect."

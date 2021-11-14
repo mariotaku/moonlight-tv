@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
-"PO-Revision-Date: 2021-11-13 19:15\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
+"PO-Revision-Date: 2021-11-14 15:26\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -26,26 +26,31 @@ msgstr "Português do Brasil"
 msgid "Add computer"
 msgstr "Adicionar um computador"
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr "Ajuda"
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr "Configurações"
 
-#: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr "Sair"
+
+#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr "Decoder não está funcionando"
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Não foi possível inicializar o decoder %s. Por favor tente outros decoders."
@@ -80,7 +85,7 @@ msgstr "Erro no host"
 
 #: app/ui/launcher/apps.controller.c:320
 msgid "Please restart your computer."
-msgstr ""
+msgstr "Por favor, reinicie seu computador."
 
 #: app/ui/launcher/apps.controller.c:332
 msgid "Offline"
@@ -88,7 +93,7 @@ msgstr "Offline"
 
 #: app/ui/launcher/apps.controller.c:333
 msgid "Turn on the host computer and try again."
-msgstr ""
+msgstr "Ligue o host e tente novamente."
 
 #: app/ui/launcher/apps.controller.c:453
 msgid "Unable to quit game"
@@ -99,30 +104,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr "Por favor, certifique-se de estar saindo com o mesmo cliente."
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
-msgstr "Retomar"
+msgid "Resume streaming"
+msgstr "Retomar streaming"
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
-msgstr "Iniciar"
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
+msgstr "Iniciar streaming"
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
-msgstr "Fechar Sessão"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
+msgstr "Parar streaming"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr "Desfavoritar"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr "Favoritar"
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr "Informação"
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Cancelar"
@@ -168,16 +173,16 @@ msgid "Disconnect"
 msgstr "Desconectar"
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
-msgstr "Iniciando a sessão."
+msgid "Connecting..."
+msgstr "Conectando..."
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
-msgstr "Desconectando"
+msgid "Disconnecting..."
+msgstr "Desconectando..."
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
-msgstr "Falha ao iniciar a sessão"
+msgid "Failed to start streaming"
+msgstr "Falha ao iniciar o streaming"
 
 #: app/ui/settings/settings.controller.c:19
 msgid "Basic Settings"
@@ -203,10 +208,6 @@ msgstr "Sobre"
 msgid "Later"
 msgstr "Depois"
 
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
-msgstr "Sair"
-
 #: app/ui/settings/settings.controller.c:310
 msgid "Some settings require a restart to take effect."
 msgstr "Algumas configurações requerem uma reinicialização para ter efeito."
@@ -226,7 +227,7 @@ msgstr "Tela cheia"
 #: app/ui/settings/panes/basic.pane.c:125
 #: app/ui/settings/panes/basic.pane.c:126
 msgid "Language"
-msgstr ""
+msgstr "Idioma"
 
 #: app/ui/settings/panes/basic.pane.c:152
 msgid "Your computer may not perform well when using this resolution and framerate."
@@ -243,23 +244,23 @@ msgstr "Otimizar configurações do jogo para streaming"
 
 #: app/ui/settings/panes/host.pane.c:26
 msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
-msgstr ""
+msgstr "Altere as configurações do jogo para otimizar o streaming. A resolução será limitada a 720p, 1080p ou 4K. O FPS também será limitado a 30/60 FPS."
 
 #: app/ui/settings/panes/host.pane.c:28
 msgid "Mute computer while streaming"
-msgstr ""
+msgstr "Silenciar o host durante streaming"
 
 #: app/ui/settings/panes/input.pane.c:25
 msgid "View-only mode"
-msgstr ""
+msgstr "Modo somente visualização"
 
 #: app/ui/settings/panes/input.pane.c:26
 msgid "Don't send mouse, keyboard or gamepad input to host computer."
-msgstr ""
+msgstr "Não envia mouse, teclado ou controle para o computador host."
 
 #: app/ui/settings/panes/input.pane.c:28
 msgid "Absolute mouse mode"
-msgstr ""
+msgstr "Movimento absoluto do mouse"
 
 #: app/ui/settings/panes/input.pane.c:29
 msgid "Better for remote desktop. For some games, mouse will not work properly."
@@ -286,7 +287,7 @@ msgstr "Decoder de vídeo"
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
 msgid "Video decoder - using %s"
-msgstr ""
+msgstr "Decoder de vídeo - usando %s"
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -300,7 +301,7 @@ msgstr "Decoder fornecido"
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
 msgid "Audio backend - using %s"
-msgstr ""
+msgstr "Backend de áudio - usando %s"
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
@@ -341,9 +342,9 @@ msgstr "Taxa de atualização"
 
 #: app/app_sdl.c:178
 msgid "Quit Moonlight?"
-msgstr ""
+msgstr "Sair do Moonlight?"
 
 #: app/platform/common/i18n_common.c:6
 msgid "System Language"
-msgstr ""
+msgstr "Idioma do Sistema"
 

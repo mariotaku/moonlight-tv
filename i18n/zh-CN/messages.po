@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:40+0900\n"
-"PO-Revision-Date: 2021-11-13 19:43\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
+"PO-Revision-Date: 2021-11-14 15:26\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -26,26 +26,31 @@ msgstr "简体中文"
 msgid "Add computer"
 msgstr "添加电脑"
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr "帮助"
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr "设置"
 
-#: app/ui/launcher/launcher.controller.c:427
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr "退出"
+
+#: app/ui/launcher/launcher.controller.c:428
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "确定"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr "解码器不可用"
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "无法初始化解码器 %s。请尝试其他解码器。"
@@ -202,10 +207,6 @@ msgstr "关于"
 #: app/ui/settings/settings.controller.c:309
 msgid "Later"
 msgstr "稍后"
-
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
-msgstr "退出"
 
 #: app/ui/settings/settings.controller.c:310
 msgid "Some settings require a restart to take effect."

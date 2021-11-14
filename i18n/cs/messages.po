@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-14 04:12+0900\n"
-"PO-Revision-Date: 2021-11-13 19:15\n"
+"POT-Creation-Date: 2021-11-15 00:25+0900\n"
+"PO-Revision-Date: 2021-11-14 15:26\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Language: cs_CZ\n"
@@ -26,26 +26,31 @@ msgstr "Čeština"
 msgid "Add computer"
 msgstr "Přidat počítač"
 
-#: app/ui/launcher/launcher.view.c:105
+#: app/ui/launcher/launcher.view.c:106
 msgid "Help"
 msgstr "Nápověda"
 
-#: app/ui/launcher/launcher.view.c:111 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
 msgid "Settings"
 msgstr "Nastavení"
 
-#: app/ui/launcher/launcher.controller.c:427
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:550
+#: app/ui/launcher/launcher.view.c:120
+#: app/ui/settings/settings.controller.c:309
+msgid "Quit"
+msgstr "Ukončit"
+
+#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:429
 msgid "Decoder not working"
 msgstr "Dekodér nefunguje"
 
-#: app/ui/launcher/launcher.controller.c:431
+#: app/ui/launcher/launcher.controller.c:432
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Nelze inicializovat dekodér %s. Zkuste prosím jiné dekodéry."
@@ -99,30 +104,30 @@ msgid "Please make sure you are quitting with the same client."
 msgstr "Ujistěte se, že ukončujete se stejným klientem."
 
 #: app/ui/launcher/apps.controller.c:500
-msgid "Resume"
-msgstr "Pokračovat"
+msgid "Resume streaming"
+msgstr "Pokračovat ve streamování"
 
-#: app/ui/launcher/apps.controller.c:500
-msgid "Start"
-msgstr "Spustit"
+#: app/ui/launcher/apps.controller.c:501
+msgid "Start streaming"
+msgstr "Zahájit streamování"
 
-#: app/ui/launcher/apps.controller.c:506
-msgid "Quit Session"
-msgstr "Ukončit relaci"
+#: app/ui/launcher/apps.controller.c:507
+msgid "Stop streaming"
+msgstr "Zastavit streamování"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Unstar"
 msgstr "Odebrat z oblíbených"
 
-#: app/ui/launcher/apps.controller.c:510
+#: app/ui/launcher/apps.controller.c:511
 msgid "Star"
 msgstr "Přidat k oblíbeným"
 
-#: app/ui/launcher/apps.controller.c:514
+#: app/ui/launcher/apps.controller.c:515
 msgid "Info"
 msgstr "Informace"
 
-#: app/ui/launcher/apps.controller.c:518 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
 msgid "Cancel"
 msgstr "Zrušit"
@@ -168,16 +173,16 @@ msgid "Disconnect"
 msgstr "Odpojit"
 
 #: app/ui/streaming/streaming.controller.c:114
-msgid "Starting session."
-msgstr "Spouštění relace."
+msgid "Connecting..."
+msgstr "Připojování..."
 
 #: app/ui/streaming/streaming.controller.c:127
-msgid "Disconnecting."
-msgstr "Odpojování."
+msgid "Disconnecting..."
+msgstr "Odpojování..."
 
 #: app/ui/streaming/streaming.controller.c:219
-msgid "Failed to start session"
-msgstr "Nepodařilo se spustit relaci"
+msgid "Failed to start streaming"
+msgstr "Nepodařilo se spustit streamování"
 
 #: app/ui/settings/settings.controller.c:19
 msgid "Basic Settings"
@@ -202,10 +207,6 @@ msgstr "O aplikaci"
 #: app/ui/settings/settings.controller.c:309
 msgid "Later"
 msgstr "Později"
-
-#: app/ui/settings/settings.controller.c:309
-msgid "Quit"
-msgstr "Ukončit"
 
 #: app/ui/settings/settings.controller.c:310
 msgid "Some settings require a restart to take effect."
@@ -286,7 +287,7 @@ msgstr "Video dekodér"
 #: app/ui/settings/panes/decoder.pane.c:72
 #, c-format
 msgid "Video decoder - using %s"
-msgstr ""
+msgstr "Video dekodér - používá %s"
 
 #: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:78
@@ -300,7 +301,7 @@ msgstr "Dekodér k dispozici"
 #: app/ui/settings/panes/decoder.pane.c:80
 #, c-format
 msgid "Audio backend - using %s"
-msgstr ""
+msgstr "Audio backend - používá %s"
 
 #: app/ui/settings/panes/decoder.pane.c:87
 msgid "HDR (experimental)"
