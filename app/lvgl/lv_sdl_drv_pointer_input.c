@@ -1,7 +1,9 @@
+#include "app.h"
+
 #include <SDL.h>
-#include <stream/input/sdlinput.h>
-#include <util/logging.h>
-#include <app.h>
+#include "stream/input/sdlinput.h"
+#include "ui/root.h"
+#include "util/logging.h"
 
 #include "lvgl.h"
 #include "lv_sdl_drv_pointer_input.h"
@@ -53,6 +55,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         absinput_dispatch_event(&e);
         data->state = e.button.state;
         data->point = (lv_point_t) {.x = e.button.x, .y = e.button.y};
+        ui_set_input_mode(UI_INPUT_MODE_POINTER);
     }
 }
 

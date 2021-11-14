@@ -10,6 +10,7 @@
 #include "ui/root.h"
 #include "ui/settings/settings.controller.h"
 #include "lvgl/font/material_icons_regular_symbols.h"
+#include "lvgl/ext/lv_gridview.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_disp_drv_app.h"
 
@@ -384,25 +385,35 @@ static void cb_nav_key(lv_event_t *event) {
             break;
         }
         case LV_KEY_RIGHT: {
-            lv_group_t *group = controller->nav_group;
-            lv_obj_t *focused = lv_group_get_focused(group);
-            if (lv_obj_get_parent(focused) == controller->pclist) {
-                lv_event_send(focused, LV_EVENT_CLICKED, NULL);
-            } else {
-                set_detail_opened(controller, true);
-            }
+            set_detail_opened(controller, true);
             break;
         }
     }
 }
 
 static void set_detail_opened(launcher_controller_t *controller, bool opened) {
+    bool key = ui_input_mode != UI_INPUT_MODE_POINTER;
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
         app_input_set_group(controller->detail_group);
+        lv_obj_t *detail_focused = lv_group_get_focused(controller->detail_group);
+        if (key && detail_focused) {
+            if (lv_obj_check_type(detail_focused, &lv_gridview_class)) {
+                int index = lv_gridview_get_focused_index(detail_focused);
+                lv_gridview_focus(detail_focused, index);
+            } else {
+                lv_obj_add_state(detail_focused, LV_STATE_FOCUS_KEY);
+            }
+        }
     } else {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
         app_input_set_group(controller->nav_group);
+        if (key) {
+            lv_obj_t *nav_focused = lv_group_get_focused(controller->nav_group);
+            if (nav_focused) {
+                lv_obj_add_state(nav_focused, LV_STATE_FOCUS_KEY);
+            }
+        }
     }
     controller->detail_opened = opened;
 }

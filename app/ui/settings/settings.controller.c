@@ -280,7 +280,9 @@ static bool detail_item_needs_lrkey(lv_obj_t *obj) {
 
 static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown) {
     lv_obj_t *target = lv_event_get_target(e);
-    if (!lv_obj_has_state(target, LV_STATE_FOCUS_KEY)) return;
+    if (!lv_obj_has_state(target, LV_STATE_FOCUS_KEY)) {
+        goto focus_nav;
+    }
     if (lv_obj_has_class(target, &lv_dropdown_class)) {
         if (controller->active_dropdown) {
             if (close_dropdown) {
@@ -290,7 +292,12 @@ static void detail_defocus(settings_controller_t *controller, lv_event_t *e, boo
         }
     }
     lv_event_send(target, LV_EVENT_DEFOCUSED, lv_indev_get_act());
+    focus_nav:
     app_input_set_group(controller->nav_group);
+    lv_obj_t *nav_focused = lv_group_get_focused(controller->nav_group);
+    if (nav_focused) {
+        lv_obj_add_state(nav_focused, LV_STATE_FOCUS_KEY);
+    }
 }
 
 static void on_dropdown_clicked(lv_event_t *event) {
@@ -308,7 +315,7 @@ static void settings_close(lv_event_t *e) {
     if (controller->needs_restart) {
         static const char *btn_txts[] = {translatable("Later"), translatable("Quit"), ""};
         lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, NULL, locstr("Some settings require a restart to take effect."),
-                                            btn_txts, false);
+                                                 btn_txts, false);
         lv_obj_center(msgbox);
         lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, controller);
         return;

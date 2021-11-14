@@ -1,7 +1,8 @@
 #include <SDL.h>
-#include <stream/input/sdlinput.h>
 #include <stdint.h>
-#include <platform/sdl/navkey_sdl.h>
+#include "stream/input/sdlinput.h"
+#include "platform/sdl/navkey_sdl.h"
+#include "ui/root.h"
 
 #include "lvgl.h"
 #include "lv_sdl_drv_key_input.h"
@@ -82,14 +83,18 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         if (absinput_dispatch_event(&e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
-            read_keyboard(&e.key, state);
+            if (read_keyboard(&e.key, state)) {
+                ui_set_input_mode(UI_INPUT_MODE_KEY);
+            }
         }
         data->continue_reading = true;
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_CONTROLLERAXISMOTION, SDL_CONTROLLERBUTTONUP) > 0) {
         if (absinput_dispatch_event(&e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
-            read_event(&e, state);
+            if (read_event(&e, state)) {
+                ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
+            }
         }
         data->continue_reading = true;
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_TEXTINPUT, SDL_TEXTINPUT) > 0) {
