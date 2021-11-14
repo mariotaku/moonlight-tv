@@ -11,13 +11,13 @@ static void msgbox_i18n_destroy(lv_event_t *e);
 
 lv_obj_t *lv_child_find_type(lv_obj_t *obj, const lv_obj_class_t *cls);
 
-void lv_obj_set_text_font(lv_obj_t *obj, const lv_font_t *font) {
+void lv_btn_set_text_font(lv_obj_t *obj, const lv_font_t *font) {
     lv_obj_t *child = lv_btn_find_label(obj);
     if (!child) return;
     lv_obj_set_style_text_font(child, font, 0);
 }
 
-void lv_obj_set_icon_font(lv_obj_t *obj, const lv_font_t *font) {
+void lv_btn_set_icon_font(lv_obj_t *obj, const lv_font_t *font) {
     lv_obj_t *child = lv_btn_find_img(obj);
     if (!child) return;
     lv_obj_set_style_text_font(child, font, 0);

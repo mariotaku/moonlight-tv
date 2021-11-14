@@ -103,7 +103,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
         for (int i = 0; i < entries_len; ++i) {
             settings_entry_t entry = entries[i];
             lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, locstr(entry.name));
-            lv_obj_set_icon_font(item_view, LV_ICON_FONT_DEFAULT);
+            lv_btn_set_icon_font(item_view, LV_ICON_FONT_DEFAULT);
 
             lv_obj_set_style_bg_opa(item_view, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
             lv_obj_add_flag(item_view, LV_OBJ_FLAG_EVENT_BUBBLE);

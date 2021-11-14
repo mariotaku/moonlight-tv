@@ -56,6 +56,12 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
     } else if (lv_obj_check_type(obj, &lv_msgbox_backdrop_class)) {
         lv_obj_set_style_bg_color(obj, lv_color_black(), 0);
         lv_obj_set_style_bg_opa(obj, LV_OPA_50, 0);
+    } else if (lv_obj_check_type(obj, &lv_btnmatrix_class)) {
+        lv_obj_t *parent = lv_obj_get_parent(obj);
+        if (lv_obj_check_type(parent, &lv_msgbox_class)) {
+            lv_obj_set_style_text_font(obj, theme->font_small, 0);
+            set_font = false;
+        }
     }
     if (set_font) {
         lv_obj_set_style_text_font(obj, theme->font_normal, 0);

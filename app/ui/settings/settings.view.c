@@ -1,5 +1,6 @@
-#include "lvgl/font/material_icons_regular_symbols.h"
 #include "settings.controller.h"
+#include "lvgl/font/material_icons_regular_symbols.h"
+#include "lvgl/util/lv_app_utils.h"
 
 #include "util/i18n.h"
 
@@ -22,10 +23,12 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_t *title = lv_win_add_title(win, locstr("Settings"));
     lv_obj_set_style_text_font(title, lv_theme_get_font_large(win), 0);
 
-    lv_obj_t *close_btn = lv_win_add_btn(win, LV_SYMBOL_CLOSE, lv_dpx(25));
+    lv_obj_t *close_btn = lv_win_add_btn(win, MAT_SYMBOL_CLOSE, lv_dpx(28));
+    lv_btn_set_icon_font(close_btn, LV_ICON_FONT_DEFAULT);
     lv_obj_add_flag(close_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_style_size(close_btn, lv_dpx(25), 0);
+    lv_obj_set_style_size(close_btn, lv_dpx(28), 0);
     lv_obj_set_style_radius(close_btn, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(close_btn, lv_palette_darken(LV_PALETTE_GREY, 3), 0);
     lv_group_remove_obj(close_btn);
     controller->close_btn = close_btn;
 
