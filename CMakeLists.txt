@@ -86,9 +86,9 @@ elseif (TARGET_DESKTOP)
 
     set(HAVE_SDL TRUE)
 
-    set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_PREFIX}/bin)
-    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/share)
+    set(CMAKE_INSTALL_LIBDIR lib)
+    set(CMAKE_INSTALL_BINDIR bin)
+    set(CMAKE_INSTALL_DATAROOTDIR share)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
@@ -447,31 +447,7 @@ add_custom_target(mat-gen-fonts
         )
 
 if (TARGET_WEBOS)
-    # Copy all files under deploy/webos/ to package root
-    install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
-    # Copy manifest
-    configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
-
-    add_custom_target(webos-generate-gamecontrollerdb
-            COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            )
-
-    set(WEBOS_PACKAGE_FILENAME ${WEBOS_APPINFO_ID}_${PROJECT_VERSION}_$ENV{ARCH}.ipk)
-
-    add_custom_target(webos-package-moonlight
-            COMMAND ${CMAKE_COMMAND} --build . --target install
-            COMMAND npm run webos-gen-i18n -- -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
-            COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
-            )
-
-    set_target_properties(moonlight PROPERTIES
-            WEBOS_PACKAGE_TARGET webos-package-moonlight
-            WEBOS_PACKAGE_PATH ${CMAKE_BINARY_DIR}/${WEBOS_PACKAGE_FILENAME}
-            WEBOS_PACKAGE_FILENAME ${WEBOS_PACKAGE_FILENAME}
-            WEBOS_APPINFO_ID ${WEBOS_APPINFO_ID}
-            )
-
+    include(PackageWebOS)
     if ($ENV{CI})
         get_target_property(package_id moonlight WEBOS_APPINFO_ID)
         get_target_property(package_file moonlight WEBOS_PACKAGE_PATH)
@@ -492,50 +468,7 @@ if (TARGET_WEBOS)
         include(WebOSInstall)
         target_webos_install(moonlight)
     endif ()
-
-    # add_dependencies(webos-package-moonlight webos-generate-gamecontrollerdb)
 elseif (TARGET_RASPI)
-    install(FILES deploy/linux/moonlight-tv.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
-    install(FILES deploy/linux/moonlight-tv.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pixmaps)
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/mo/ DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/locale)
-
-    set(CPACK_GENERATOR "DEB")
-    set(CPACK_DEBIAN_PACKAGE_NAME "moonlight-tv")
-    set(CPACK_DEBIAN_PACKAGE_VERSION "${PROJECT_VERSION}")
-    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "armhf")
-    set(CPACK_DEBIAN_PACKAGE_SUMMARY "Open Source NVIDIA GameStream Client")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Mariotaku Lee <mariotaku.lee@gmail.com>")
-    set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/mariotaku/moonlight-tv")
-    set(CPACK_DEBIAN_PACKAGE_SECTION "games")
-    # set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-    # set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY ">=")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS_LIST
-            "libc6 (>= 2.28)"
-            "libsdl2-2.0-0 (>= 2.0.4)"
-            "libsdl2-image-2.0-0 (>= 2.0.1)"
-            "libopus0 (>= 1.1)"
-            "libcurl4 (>= 7.16.2)"
-            "libuuid1 (>= 2.16)"
-            "libexpat1 (>= 2.0.1)"
-            "libmbedcrypto3 (>= 2.13)"
-            "libmbedx509-0 (>= 2.0)"
-            "libconfig9 (>= 1.5)"
-            "libraspberrypi0"
-            )
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST
-            "libasound2 (>= 1.0.16)"
-            "libpulse0 (>= 0.99.1)"
-            "fonts-dejavu-core"
-            )
-    set(CPACK_DEBIAN_PACKAGE_SUGGESTS_LIST
-            "libavcodec58 (>= 7:4.0)"
-            "libavutil56 (>= 7:4.0)"
-            )
-    string(REPLACE ";" ", " CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS_LIST}")
-    string(REPLACE ";" ", " CPACK_DEBIAN_PACKAGE_RECOMMENDS "${CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST}")
-    string(REPLACE ";" ", " CPACK_DEBIAN_PACKAGE_SUGGESTS "${CPACK_DEBIAN_PACKAGE_SUGGESTS_LIST}")
-
-    set(CPACK_PACKAGE_FILE_NAME "${CPACK_DEBIAN_PACKAGE_NAME}-${CPACK_DEBIAN_PACKAGE_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
-
-    include(CPack)
+    include(PackageRaspbian)
+elseif (TARGET_WINDOWS)
 endif ()
