@@ -160,7 +160,7 @@ static void apploader_apps_free(apploader_t *loader) {
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2) {
     int extra = p2->fav * 1000 - p1->fav * 1000;
-    int namecmp = strcmp(p1->base.name, p2->base.name);
+    int namecmp = strcoll(p1->base.name, p2->base.name);
     if (namecmp > 0) {
         return 1 + extra;
     } else if (namecmp < 0) {

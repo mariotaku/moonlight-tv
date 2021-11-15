@@ -10,19 +10,20 @@
 #include "util/navkey.h"
 
 enum UI_INPUT_MODE {
-    UI_INPUT_MODE_POINTER,
+    UI_INPUT_MODE_POINTER = 0,
     UI_INPUT_MODE_KEY,
     UI_INPUT_MODE_REMOTE,
-    UI_INPUT_MODE_GAMEPAD
+    UI_INPUT_MODE_GAMEPAD,
+    UI_INPUT_MODE_COUNT
 };
-#define UI_INPUT_MODE_COUNT 3
 
-#define UI_BOTTOM_BAR_HEIGHT_DP 20
-#define UI_TITLE_BAR_HEIGHT_DP 25
+#define NAV_WIDTH_COLLAPSED 50
+#define NAV_LOGO_SIZE 24
 
 extern short ui_display_width, ui_display_height;
 extern enum UI_INPUT_MODE ui_input_mode;
 
+const char *ui_logo_src();
 
 bool ui_has_stream_renderer();
 

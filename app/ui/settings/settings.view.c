@@ -1,4 +1,7 @@
 #include "settings.controller.h"
+
+#include "ui/root.h"
+
 #include "lvgl/font/material_icons_regular_symbols.h"
 #include "lvgl/util/lv_app_utils.h"
 
@@ -7,18 +10,20 @@
 lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
     /*Create a window*/
-    lv_obj_t *win = lv_win_create(parent, lv_dpx(50));
+    lv_obj_t *win = lv_win_create(parent, LV_DPX(50));
 
     lv_obj_t *header = lv_win_get_header(win);
     lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_pad_ver(header, lv_dpx(10), 0);
-    lv_obj_set_style_pad_hor(header, lv_dpx(20), 0);
+    lv_obj_set_style_pad_left(header, 0, 0);
+    lv_obj_set_style_pad_right(header, lv_dpx(20), 0);
+    lv_obj_set_style_bg_color(header, lv_color_darken(lv_color_hex(0x2f3237), 4), 0);
 
-    lv_obj_t *icon = lv_label_create(header);
-    lv_obj_set_size(icon, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_get_style_text_align(icon, LV_TEXT_ALIGN_CENTER);
-    lv_obj_set_style_text_font(icon, LV_ICON_FONT_LARGE, 0);
-    lv_label_set_text_static(icon, MAT_SYMBOL_SETTINGS);
+    lv_obj_t *icon = lv_img_create(header);
+    lv_obj_set_size(icon, LV_DPX(NAV_WIDTH_COLLAPSED), LV_DPX(50));
+    lv_obj_set_style_pad_hor(icon, LV_DPX((NAV_WIDTH_COLLAPSED - NAV_LOGO_SIZE) / 2), 0);
+    lv_obj_set_style_pad_ver(icon, LV_DPX((50 - NAV_LOGO_SIZE) / 2), 0);
+    lv_img_set_src(icon, ui_logo_src());
 
     lv_obj_t *title = lv_win_add_title(win, locstr("Settings"));
     lv_obj_set_style_text_font(title, lv_theme_get_font_large(win), 0);

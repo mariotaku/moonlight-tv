@@ -14,8 +14,6 @@
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_disp_drv_app.h"
 
-#include <SDL_image.h>
-
 #include "stream/platform.h"
 
 #include "util/i18n.h"
@@ -119,16 +117,16 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
     };
     lv_style_transition_dsc_init(&controller->tr_detail, props, lv_anim_path_ease_out, 300, 0, NULL);
     lv_style_transition_dsc_init(&controller->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
+    lv_style_init(&controller->nav_host_style);
+    lv_style_set_pad_left(&controller->nav_host_style, LV_DPX(16));
+    lv_style_set_pad_gap(&controller->nav_host_style, LV_DPX(20));
 
-    SDL_Renderer *renderer = lv_app_disp_renderer(lv_disp_get_default());
-    controller->logo_texture = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_logo_96_data, res_logo_96_size), 1);
-    lv_sdl_img_src_t logo_src = {
-            .w = LV_DPX(NAV_LOGO_SIZE),
-            .h = LV_DPX(NAV_LOGO_SIZE),
-            .type = LV_SDL_IMG_TYPE_TEXTURE,
-            .data.texture = controller->logo_texture,
-    };
-    lv_sdl_img_src_stringify(&logo_src, controller->logo_src);
+    lv_style_init(&controller->nav_menu_style);
+    lv_style_set_border_side(&controller->nav_menu_style, LV_BORDER_SIDE_NONE);
+    lv_style_set_pad_ver(&controller->nav_menu_style, LV_DPX(10));
+    lv_style_set_pad_left(&controller->nav_menu_style, LV_DPX(17));
+    lv_style_set_pad_gap(&controller->nav_menu_style, LV_DPX(20));
+
     controller->detail_opened = false;
     controller->pane_initialized = false;
     controller->first_created = true;
@@ -136,7 +134,6 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
 
 static void controller_dtor(lv_obj_controller_t *self) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
-    SDL_DestroyTexture(controller->logo_texture);
 }
 
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
@@ -306,6 +303,7 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
     const char *icon = server_item_icon(cur);
     lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
     lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_style(pcitem, &controller->nav_host_style, 0);
     lv_obj_t *btn_img = lv_btn_find_img(pcitem);
     lv_obj_set_style_text_font(btn_img, LV_ICON_FONT_DEFAULT, 0);
     lv_obj_set_style_bg_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);

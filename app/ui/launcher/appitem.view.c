@@ -2,7 +2,6 @@
 // Created by Mariotaku on 2021/09/05.
 //
 
-#include <SDL_image.h>
 #include <res.h>
 #include <gpu/sdl/lv_gpu_sdl_utils.h>
 #include "appitem.view.h"
@@ -10,6 +9,10 @@
 static void appitem_holder_free_cb(lv_event_t *event);
 
 static void appitem_draw_decor(lv_event_t *e);
+
+static void appitem_selected(lv_event_t *e);
+
+static void appitem_deselected(lv_event_t *e);
 
 lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     appitem_styles_t *styles = &controller->appitem_style;
@@ -25,6 +28,8 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     lv_obj_set_style_transition(item, &styles->tr_pressed, LV_STATE_PRESSED | LV_STATE_FOCUS_KEY);
     lv_obj_set_style_transition(item, &styles->tr_released, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(item, appitem_draw_decor, LV_EVENT_DRAW_MAIN, styles);
+    lv_obj_add_event_cb(item, appitem_selected, LV_EVENT_FOCUSED, NULL);
+    lv_obj_add_event_cb(item, appitem_deselected, LV_EVENT_DEFOCUSED, NULL);
 
     lv_obj_t *play_indicator = lv_obj_create(item);
     lv_obj_remove_style_all(play_indicator);
@@ -33,7 +38,9 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     lv_obj_set_style_bg_img_src(play_indicator, LV_SYMBOL_PLAY, 0);
     lv_obj_center(play_indicator);
     lv_obj_t *title = lv_label_create(item);
-    lv_obj_set_size(title, LV_PCT(100), LV_DPX(20));
+    const lv_font_t *font = lv_theme_get_font_small(item);
+    lv_obj_set_style_text_font(title, font, 0);
+    lv_obj_set_size(title, LV_PCT(100), lv_obj_get_style_text_font(title, 0)->line_height + LV_DPX(2));
     lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(title, LV_LABEL_LONG_DOT);
     lv_obj_set_style_pad_hor(title, LV_DPX(5), 0);
@@ -75,18 +82,13 @@ void appitem_style_init(appitem_styles_t *style) {
                                  0, NULL);
     lv_style_transition_dsc_init(&style->tr_released, trans_props, lv_anim_path_linear, LV_THEME_DEFAULT_TRANSITON_TIME,
                                  70, NULL);
-
-    lv_disp_t *disp = lv_disp_get_default();
-    SDL_Renderer *renderer = disp->driver->user_data;
-    SDL_Texture *fav_indicator = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_fav_indicator_data,
-                                                                                 (int) res_fav_indicator_size), 1);
-
     lv_sdl_img_src_t src = {
             .w = LV_DPX(48),
             .h = LV_DPX(48),
-            .type = LV_SDL_IMG_TYPE_TEXTURE,
+            .type = LV_SDL_IMG_TYPE_CONST_PTR,
             .cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-            .data.texture = fav_indicator,
+            .data.constptr = res_fav_indicator_data,
+            .data_len = res_fav_indicator_size,
     };
     lv_sdl_img_src_stringify(&src, style->fav_indicator_src);
 }
@@ -122,4 +124,16 @@ static void appitem_draw_decor(lv_event_t *e) {
             zoomed_rect.x + LV_DPX(48) - 1, zoomed_rect.y + LV_DPX(48) - 1
     };
     lv_draw_img(&coords, clip_area, styles->fav_indicator_src, &dsc);
+}
+
+static void appitem_selected(lv_event_t *e) {
+    lv_obj_t *item = lv_event_get_current_target(e);
+    appitem_viewholder_t *holder = lv_obj_get_user_data(item);
+    lv_label_set_long_mode(holder->title, LV_LABEL_LONG_SCROLL_CIRCULAR);
+}
+
+static void appitem_deselected(lv_event_t *e) {
+    lv_obj_t *item = lv_event_get_current_target(e);
+    appitem_viewholder_t *holder = lv_obj_get_user_data(item);
+    lv_label_set_long_mode(holder->title, LV_LABEL_LONG_DOT);
 }

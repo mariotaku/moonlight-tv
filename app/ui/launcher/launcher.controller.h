@@ -20,17 +20,15 @@ typedef struct {
     lv_controller_manager_t *pane_manager;
     lv_style_transition_dsc_t tr_nav;
     lv_style_transition_dsc_t tr_detail;
+    lv_style_t nav_host_style, nav_menu_style;
     lv_coord_t col_dsc[4], row_dsc[2];
 
-    SDL_Texture *logo_texture;
-    char logo_src[LV_SDL_IMG_LEN];
     bool detail_opened;
     bool pane_initialized;
     bool first_created;
     bool detail_changing;
 } launcher_controller_t;
 
-#define NAV_LOGO_SIZE 32
 
 lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent);
 

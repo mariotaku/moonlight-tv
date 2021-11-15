@@ -1,10 +1,10 @@
 #include "launcher.controller.h"
 #include "apps.controller.h"
-#include "ui/settings/settings.controller.h"
+
+#include "ui/root.h"
 
 #include "lvgl.h"
 
-#include "lvgl/lv_sdl_img.h"
 #include "lvgl/ext/lv_child_group.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/font/material_icons_regular_symbols.h"
@@ -14,7 +14,6 @@
 static void detail_group_add(lv_event_t *event);
 
 #define NAV_WIDTH_EXPANDED 240
-#define NAV_WIDTH_COLLAPSED 44
 #define NAV_TRANSLATE_OFFSET (NAV_WIDTH_EXPANDED - NAV_WIDTH_COLLAPSED)
 
 lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
@@ -70,14 +69,17 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_t *title = lv_obj_create(nav);
     lv_obj_remove_style_all(title);
-    lv_obj_set_size(title, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_size(title, LV_PCT(100), LV_DPX(50));
     lv_obj_set_flex_flow(title, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(title, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_style_bg_opa(title, LV_OPA_COVER, 0);
+    lv_obj_set_style_bg_color(title, lv_color_darken(lv_color_hex(0x2f3237), 4), 0);
 
     lv_obj_t *title_logo = lv_img_create(title);
-    lv_obj_set_size(title_logo, LV_DPX(NAV_WIDTH_COLLAPSED), LV_DPX(NAV_WIDTH_COLLAPSED));
-    lv_obj_set_style_pad_all(title_logo, LV_DPX((NAV_WIDTH_COLLAPSED - NAV_LOGO_SIZE) / 2), 0);
-    lv_img_set_src(title_logo, controller->logo_src);
+    lv_obj_set_size(title_logo, LV_DPX(NAV_WIDTH_COLLAPSED), LV_DPX(50));
+    lv_obj_set_style_pad_hor(title_logo, LV_DPX((NAV_WIDTH_COLLAPSED - NAV_LOGO_SIZE) / 2), 0);
+    lv_obj_set_style_pad_ver(title_logo, LV_DPX((50 - NAV_LOGO_SIZE) / 2), 0);
+    lv_img_set_src(title_logo, ui_logo_src());
 
     lv_obj_t *title_label = lv_label_create(title);
     lv_obj_set_style_pad_hor(title_label, LV_DPX(10), 0);
@@ -97,32 +99,28 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     // Use list button for normal container
     lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, locstr("Add computer"));
+    lv_obj_add_style(add_btn, &controller->nav_menu_style, 0);
     lv_btn_set_icon_font(add_btn, LV_ICON_FONT_SMALL);
     lv_btn_set_text_font(add_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(add_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_flex_grow(add_btn, 0);
-    lv_obj_set_style_border_side(add_btn, LV_BORDER_SIDE_NONE, 0);
 
     lv_obj_t *help_btn = lv_list_add_btn(nav, MAT_SYMBOL_HELP, locstr("Help"));
+    lv_obj_add_style(help_btn, &controller->nav_menu_style, 0);
     lv_btn_set_icon_font(help_btn, LV_ICON_FONT_SMALL);
     lv_btn_set_text_font(help_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(help_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_flex_grow(help_btn, 0);
-    lv_obj_set_style_border_side(help_btn, LV_BORDER_SIDE_NONE, 0);
 
     lv_obj_t *pref_btn = lv_list_add_btn(nav, MAT_SYMBOL_SETTINGS, locstr("Settings"));
+    lv_obj_add_style(pref_btn, &controller->nav_menu_style, 0);
     lv_btn_set_icon_font(pref_btn, LV_ICON_FONT_SMALL);
     lv_btn_set_text_font(pref_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_flex_grow(pref_btn, 0);
-    lv_obj_set_style_border_side(pref_btn, LV_BORDER_SIDE_NONE, 0);
 
     lv_obj_t *quit_btn = lv_list_add_btn(nav, MAT_SYMBOL_CLOSE, locstr("Quit"));
+    lv_obj_add_style(quit_btn, &controller->nav_menu_style, 0);
     lv_btn_set_icon_font(quit_btn, LV_ICON_FONT_SMALL);
     lv_btn_set_text_font(quit_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_set_flex_grow(quit_btn, 0);
-    lv_obj_set_style_border_side(quit_btn, LV_BORDER_SIDE_NONE, 0);
 
     controller->nav = nav;
     controller->detail = detail;

@@ -9,7 +9,6 @@
 typedef enum {
     LV_SDL_IMG_TYPE_PATH,
     LV_SDL_IMG_TYPE_CONST_PTR,
-    LV_SDL_IMG_TYPE_SURFACE,
     LV_SDL_IMG_TYPE_TEXTURE,
 } lv_sdl_img_src_type_t;
 

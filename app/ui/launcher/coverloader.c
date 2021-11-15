@@ -104,7 +104,6 @@ struct coverloader_t {
     lv_lru_t *mem_cache;
     GS_CLIENT client;
     coverloader_req_t *reqlist;
-    SDL_Texture *defcover;
     refcounter_t refcounter;
 };
 
@@ -116,20 +115,12 @@ coverloader_t *coverloader_new() {
     loader->base_loader = img_loader_create(&coverloader_impl);
     loader->client = app_gs_client_new();
     loader->reqlist = NULL;
-
-    lv_disp_t *disp = lv_disp_get_default();
-    SDL_Renderer *renderer = disp->driver->user_data;
-    loader->defcover = IMG_LoadTexture_RW(renderer, SDL_RWFromConstMem(res_default_cover_data,
-                                                                       (int) res_default_cover_size), 1);
     return loader;
 }
 
 void coverloader_unref(coverloader_t *loader) {
     if (!refcounter_unref(&loader->refcounter)) {
         return;
-    }
-    if (loader->defcover) {
-        SDL_DestroyTexture(loader->defcover);
     }
     gs_destroy(loader->client);
     img_loader_destroy(loader->base_loader);
@@ -273,9 +264,10 @@ static void img_loader_start_cb(coverloader_req_t *req) {
     lv_sdl_img_src_t src = {
             .w = req->target_width,
             .h = req->target_height,
-            .type = LV_SDL_IMG_TYPE_TEXTURE,
+            .type = LV_SDL_IMG_TYPE_CONST_PTR,
             .cf = LV_IMG_CF_TRUE_COLOR,
-            .data.texture = req->loader->defcover,
+            .data.constptr = res_default_cover_data,
+            .data_len = res_default_cover_size,
     };
     lv_sdl_img_src_stringify(&src, holder->cover_src);
     lv_img_set_src(req->target, holder->cover_src);
@@ -298,9 +290,10 @@ static void img_loader_result_cb(coverloader_req_t *req) {
         lv_sdl_img_src_t src = {
                 .w = req->target_width,
                 .h = req->target_height,
-                .type = LV_SDL_IMG_TYPE_TEXTURE,
+                .type = LV_SDL_IMG_TYPE_CONST_PTR,
                 .cf = LV_IMG_CF_TRUE_COLOR,
-                .data.texture = loader->defcover,
+                .data.constptr = res_default_cover_data,
+                .data_len = res_default_cover_size,
         };
         lv_sdl_img_src_stringify(&src, holder->cover_src);
         lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
