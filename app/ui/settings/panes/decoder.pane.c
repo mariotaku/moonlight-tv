@@ -86,7 +86,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_t *hdr_checkbox = pref_checkbox(parent, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
                                            false);
-    lv_obj_t *hdr_hint = pref_desc_label(parent, NULL);
+    lv_obj_t *hdr_hint = pref_desc_label(parent, NULL, false);
     if (decoder_info.hdr == DECODER_HDR_NONE) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
@@ -96,13 +96,9 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
         lv_label_set_text(hdr_hint, locstr("HDR is only supported on certain games and "
                                            "when connecting to supported monitor."));
     }
-    lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."));
+    lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."), true);
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
-    settings_controller_t *pcontroller = controller->parent;
-    if (pcontroller) {
-        lv_group_add_obj(pcontroller->mini ? pcontroller->group : pcontroller->detail_group, hdr_more);
-    }
     lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
 
     return NULL;

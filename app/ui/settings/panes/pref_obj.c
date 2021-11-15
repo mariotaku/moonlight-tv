@@ -27,6 +27,12 @@ typedef union pref_attrs_t {
     } dropdown_string;
 } pref_attrs_t;
 
+static const lv_obj_class_t pref_label_cls = {
+        .base_class = &lv_label_class,
+        .group_def = LV_OBJ_CLASS_GROUP_DEF_TRUE,
+        .instance_size = sizeof(lv_label_t),
+};
+
 static void pref_attrs_free(lv_event_t *event);
 
 static void pref_checkable_value_write_back(lv_event_t *event);
@@ -176,8 +182,14 @@ lv_obj_t *pref_title_label(lv_obj_t *parent, const char *title) {
     return label;
 }
 
-lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title) {
-    lv_obj_t *label = lv_label_create(parent);
+lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title, bool focusable) {
+    lv_obj_t *label;
+    if (focusable) {
+        label = lv_obj_class_create_obj(&pref_label_cls, parent);
+        lv_obj_class_init_obj(label);
+    } else {
+        label = lv_label_create(parent);
+    }
     lv_obj_set_width(label, LV_PCT(100));
     lv_obj_set_style_pad_left(label, LV_DPX(30), 0);
     lv_obj_set_style_text_font(label, lv_theme_get_font_small(parent), 0);
