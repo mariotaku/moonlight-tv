@@ -3,6 +3,8 @@
 #include <locale.h>
 #include <libintl.h>
 
+#include "util/i18n.h"
+
 #if !SDL_VERSION_ATLEAST(2, 0, 14)
 #include <stdio.h>
 #include <stdlib.h>
