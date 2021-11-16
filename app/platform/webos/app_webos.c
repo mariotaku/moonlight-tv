@@ -8,7 +8,7 @@
 
 #include "lunasynccall.h"
 
-void i18n_setlocale(const char *locale);
+static char locale_system[16];
 
 void app_open_url(const char *url) {
     char payload[8192];
@@ -35,12 +35,11 @@ void app_init_locale() {
     jvalue_ref locale = jobject_get_nested(payload_obj, "settings", "localeInfo", "locales", "UI", NULL);
     if (jis_string(locale)) {
         raw_buffer buf = jstring_get(locale);
-        char locale_str[16];
         size_t len = buf.m_len <= 15 ? buf.m_len : 15;
-        strncpy(locale_str, buf.m_str, len);
-        locale_str[len] = '\0';
+        strncpy(locale_system, buf.m_str, len);
+        locale_system[len] = '\0';
         jstring_free_buffer(buf);
-        i18n_setlocale(locale_str);
+        i18n_setlocale(locale_system);
     }
     jdomparser_release(&parser);
 }

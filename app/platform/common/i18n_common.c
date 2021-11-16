@@ -40,8 +40,13 @@ const i18n_entry_t *i18n_entry(const char *locale) {
         current_pos = strchr(current_pos, '_');
     }
     for (int i = 0; i18n_locales[i].locale; i++) {
-        if (strcasecmp(locale_tmp, i18n_locales[i].locale) == 0) {
-            return &i18n_locales[i];
+        const char *item_loc = i18n_locales[i].locale;
+        if (strchr(item_loc, '-')) {
+            if (strcasecmp(locale_tmp, item_loc) == 0) {
+                return &i18n_locales[i];
+            }
+        } else if (strncasecmp(locale_tmp, item_loc, 2) == 0) {
+            return  &i18n_locales[i];
         }
     }
     return NULL;

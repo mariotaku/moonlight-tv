@@ -29,5 +29,5 @@ void app_init_locale() {
         bind_textdomain_codeset("moonlight-tv", "UTF-8");
     }
     textdomain("moonlight-tv");
-    setlocale(LC_ALL, "");
+    i18n_setlocale("");
 }

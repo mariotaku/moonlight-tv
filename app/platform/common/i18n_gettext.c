@@ -14,3 +14,7 @@ const char *i18n_locale() {
 const char *app_get_locale_lang() {
     return setlocale(LC_MESSAGES, NULL);
 }
+
+void i18n_setlocale(const char *locale) {
+    setlocale(LC_ALL, locale);
+}

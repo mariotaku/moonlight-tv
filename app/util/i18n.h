@@ -10,6 +10,8 @@ typedef struct i18n_entry_t {
 
 const char *locstr(const char *msgid);
 
+void i18n_setlocale(const char *locale);
+
 const char *i18n_locale();
 
 const i18n_entry_t *i18n_entry_at(int index);
