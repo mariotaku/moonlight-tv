@@ -2,13 +2,14 @@
 
 #include <stddef.h>
 #include <memory.h>
-#include <time.h>
 
 #include "stream/session.h"
 #include "stream/module/api.h"
 
 #include "util/bus.h"
 #include "ui/streaming/streaming.controller.h"
+
+#include <SDL.h>
 
 static PDECODER_RENDERER_CALLBACKS vdec;
 static int lastFrameNumber;
@@ -22,7 +23,7 @@ static void vdec_delegate_cleanup();
 
 static int vdec_delegate_submit(PDECODE_UNIT decodeUnit);
 
-static void vdec_stat_submit(const struct VIDEO_STATS *src, long now);
+static void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now);
 
 DECODER_RENDERER_CALLBACKS decoder_render_callbacks_delegate(PDECODER_RENDERER_CALLBACKS cb) {
     DECODER_RENDERER_CALLBACKS vdec_delegate = {
@@ -66,9 +67,7 @@ void vdec_delegate_cleanup() {
 }
 
 int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
-    static struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    long ticksms = (ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+    unsigned long ticksms = SDL_GetTicks();
     if (lastFrameNumber <= 0) {
         vdec_temp_stats.measurementStartTimestamp = ticksms;
         lastFrameNumber = decodeUnit->frameNumber;
@@ -102,7 +101,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     return err;
 }
 
-void vdec_stat_submit(const struct VIDEO_STATS *src, long now) {
+void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     struct VIDEO_STATS *dst = &vdec_summary_stats;
     memcpy(dst, src, sizeof(struct VIDEO_STATS));
     dst->totalFps = (float) dst->totalFrames / ((float) (now - dst->measurementStartTimestamp) / 1000);
