@@ -74,6 +74,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_align(title, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_bg_opa(title, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(title, lv_color_darken(lv_color_hex(0x2f3237), 4), 0);
+    lv_obj_set_style_pad_gap(title, 0, 0);
 
     lv_obj_t *title_logo = lv_img_create(title);
     lv_obj_set_size(title_logo, LV_DPX(NAV_WIDTH_COLLAPSED), LV_DPX(50));
@@ -82,7 +83,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_img_set_src(title_logo, ui_logo_src());
 
     lv_obj_t *title_label = lv_label_create(title);
-    lv_obj_set_style_pad_hor(title_label, LV_DPX(10), 0);
+    lv_obj_set_style_pad_hor(title_label, 0, 0);
     lv_obj_set_style_text_font(title_label, lv_theme_get_font_large(title), 0);
     lv_label_set_text_static(title_label, "Moonlight");
     lv_obj_get_style_flex_grow(title_label, 1);

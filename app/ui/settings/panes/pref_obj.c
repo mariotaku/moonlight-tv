@@ -191,6 +191,7 @@ lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title, bool focusable) {
         label = lv_label_create(parent);
     }
     lv_obj_set_width(label, LV_PCT(100));
+    lv_obj_add_flag(label, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_set_style_pad_left(label, LV_DPX(30), 0);
     lv_obj_set_style_text_font(label, lv_theme_get_font_small(parent), 0);
     lv_obj_set_style_outline_opa(label, LV_OPA_50, LV_STATE_FOCUS_KEY);

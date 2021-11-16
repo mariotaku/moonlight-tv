@@ -15,6 +15,7 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_t *header = lv_win_get_header(win);
     lv_obj_clear_flag(header, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_pad_ver(header, lv_dpx(10), 0);
+    lv_obj_set_style_pad_gap(header, 0, 0);
     lv_obj_set_style_pad_left(header, 0, 0);
     lv_obj_set_style_pad_right(header, lv_dpx(20), 0);
     lv_obj_set_style_bg_color(header, lv_color_darken(lv_color_hex(0x2f3237), 4), 0);
@@ -42,6 +43,9 @@ lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent
     lv_obj_set_style_pad_gap(content, LV_DPX(2), 0);
     lv_obj_set_style_bg_color(content, lv_color_lighten(lv_color_black(), 30), 0);
     if (controller->pending_mini) {
+        controller->nav = lv_obj_create(content);
+        lv_obj_remove_style_all(controller->nav);
+        lv_obj_center(controller->nav);
         controller->tabview = lv_tabview_create(content, LV_DIR_BOTTOM, LV_DPX(60));
     } else {
         static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};

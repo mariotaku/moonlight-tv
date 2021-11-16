@@ -117,15 +117,20 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
     };
     lv_style_transition_dsc_init(&controller->tr_detail, props, lv_anim_path_ease_out, 300, 0, NULL);
     lv_style_transition_dsc_init(&controller->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
+
     lv_style_init(&controller->nav_host_style);
-    lv_style_set_pad_left(&controller->nav_host_style, LV_DPX(16));
-    lv_style_set_pad_gap(&controller->nav_host_style, LV_DPX(20));
+    int ico_width_def = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), LV_ICON_FONT_DEFAULT, 0, 0);
+    int host_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_def) / 2;
+    lv_style_set_pad_left(&controller->nav_host_style, host_icon_pad);
+    lv_style_set_pad_gap(&controller->nav_host_style, host_icon_pad);
 
     lv_style_init(&controller->nav_menu_style);
     lv_style_set_border_side(&controller->nav_menu_style, LV_BORDER_SIDE_NONE);
     lv_style_set_pad_ver(&controller->nav_menu_style, LV_DPX(10));
-    lv_style_set_pad_left(&controller->nav_menu_style, LV_DPX(17));
-    lv_style_set_pad_gap(&controller->nav_menu_style, LV_DPX(20));
+    int ico_width_sm = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), LV_ICON_FONT_SMALL, 0, 0);
+    int nav_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_sm) / 2;
+    lv_style_set_pad_left(&controller->nav_menu_style, nav_icon_pad);
+    lv_style_set_pad_gap(&controller->nav_menu_style, nav_icon_pad);
 
     controller->detail_opened = false;
     controller->pane_initialized = false;

@@ -17,7 +17,7 @@ enum UI_INPUT_MODE {
     UI_INPUT_MODE_COUNT
 };
 
-#define NAV_WIDTH_COLLAPSED 50
+#define NAV_WIDTH_COLLAPSED 44
 #define NAV_LOGO_SIZE 24
 
 extern short ui_display_width, ui_display_height;
