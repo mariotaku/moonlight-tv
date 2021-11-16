@@ -26,15 +26,4 @@ _Screenshot performed on TV has lower picture quality. Actual picture quality is
 
 Or download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/releases/latest)
 
-## [Installation Guide](https://github.com/mariotaku/moonlight-tv/wiki/Installation-Guide)
-
-## [Compatibility Status](https://github.com/mariotaku/moonlight-tv/wiki/Compatibility-Status)
-
-## [Gamepad Setup](https://github.com/mariotaku/moonlight-tv/wiki/Gamepad-Setup)
-
-## (For developers) Building for webOS
-
- - Follow instructions [here](https://github.com/webosbrew/meta-lg-webos-ndk) to setup NDK
- - Create a directory e.g. `build` in project root directory, and `cd` into it.
- - run `cmake .. -DTARGET_WEBOS=ON`
- - run `make webos-package-moonlight` to get IPK package in `build` directory
+## [Documentations](https://github.com/mariotaku/moonlight-tv/wiki)
