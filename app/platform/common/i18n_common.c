@@ -5,7 +5,7 @@
 static const i18n_entry_t i18n_locales[] = {
         {"auto", translatable("System Language")},
         {"en-US", "English"},
-        {"cs",    "Český Jazyk"},
+        {"cs",    "Čeština"},
         {"de",    "Deutsch"},
         {"es",    "Español"},
         {"fr",    "Français"},
