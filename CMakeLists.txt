@@ -213,9 +213,7 @@ set(SOURCES
         app/lvgl/ext/lv_obj_controller.c
         app/lvgl/ext/lv_child_group.c
         app/lvgl/util/lv_app_utils.c
-        app/lvgl/font/material_icons_regular_28.c
-        app/lvgl/font/material_icons_regular_32.c
-        app/lvgl/font/material_icons_regular_38.c
+        app/lvgl/font/font_empty.c
         app/lvgl/theme/lv_theme_moonlight.c
         app/util/path.c
         app/util/debugprint.c
@@ -444,6 +442,11 @@ add_custom_target(i18n-merge-po
 add_custom_target(mat-gen-fonts
         COMMAND npm run gen-mat-iconfont -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
         -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL -s 28 32 38
+        )
+
+add_custom_target(iconfont-minify
+        COMMAND npm run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
+        -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
         )
 
 if (TARGET_WEBOS)

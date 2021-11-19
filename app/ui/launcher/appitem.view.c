@@ -35,7 +35,7 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     lv_obj_remove_style_all(play_indicator);
     lv_obj_clear_flag(play_indicator, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_style(play_indicator, &styles->btn, 0);
-    lv_obj_set_style_bg_img_src(play_indicator, LV_SYMBOL_PLAY, 0);
+    lv_obj_set_style_bg_img_src(play_indicator, MAT_SYMBOL_PLAY_ARROW, 0);
     lv_obj_center(play_indicator);
     lv_obj_t *title = lv_label_create(item);
     const lv_font_t *font = lv_theme_get_font_small(item);

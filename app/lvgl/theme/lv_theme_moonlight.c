@@ -1,6 +1,8 @@
 #include <app.h>
-#include <lvgl/ext/lv_child_group.h>
+#include "lvgl/ext/lv_child_group.h"
 #include "lv_theme_moonlight.h"
+#include "util/font.h"
+#include "lvgl/font/material_icons_regular_symbols.h"
 
 static void apply_cb(struct _lv_theme_t *, lv_obj_t *);
 
@@ -62,6 +64,11 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
             lv_obj_set_style_text_font(obj, theme->font_small, 0);
             set_font = false;
         }
+    } else if (lv_obj_check_type(obj, &lv_dropdown_class)) {
+        lv_obj_set_style_text_font(obj, app_iconfonts.normal, LV_PART_INDICATOR);
+        lv_dropdown_set_symbol(obj, MAT_SYMBOL_ARROW_DROP_DOWN);
+    } else if (lv_obj_check_type(obj, &lv_checkbox_class)) {
+        lv_obj_set_style_text_font(obj, app_iconfonts.normal, LV_PART_INDICATOR | LV_STATE_CHECKED);
     }
     if (set_font) {
         lv_obj_set_style_text_font(obj, theme->font_normal, 0);

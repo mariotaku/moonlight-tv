@@ -8,7 +8,6 @@
 #include "backend/pcmanager.h"
 #include "libgamestream/client.h"
 
-extern FILE *app_logfile;
 extern PCONFIGURATION app_configuration;
 extern lv_controller_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;

@@ -7,6 +7,7 @@
 #include "lvgl/util/lv_app_utils.h"
 
 #include "util/user_event.h"
+#include "util/font.h"
 #include "util/i18n.h"
 
 typedef struct {
@@ -83,7 +84,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
         app_input_set_group(controller->nav_group);
 
         lv_obj_t *btns = lv_tabview_get_tab_btns(controller->tabview);
-        lv_obj_set_style_text_font(btns, LV_ICON_FONT_LARGE, 0);
+        lv_obj_set_style_text_font(btns, app_iconfonts.large, 0);
         lv_group_remove_obj(btns);
 
         lv_group_add_obj(controller->nav_group, controller->nav);
@@ -122,7 +123,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
         for (int i = 0; i < entries_len; ++i) {
             settings_entry_t entry = entries[i];
             lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, locstr(entry.name));
-            lv_btn_set_icon_font(item_view, LV_ICON_FONT_DEFAULT);
+            lv_btn_set_icon_font(item_view, app_iconfonts.normal);
 
             lv_obj_set_style_bg_opa(item_view, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
             lv_obj_add_flag(item_view, LV_OBJ_FLAG_EVENT_BUBBLE);

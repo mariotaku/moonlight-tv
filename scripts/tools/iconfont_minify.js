@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const convert = require('lv_font_conv/lib/convert');
+const util = require('util');
+const Fontmin = require('fontmin');
+const rename = require('gulp-rename');
+var vfs = require('vinyl-fs');
 
 const {ArgumentParser} = require("argparse");
 const parser = new ArgumentParser()
@@ -11,7 +14,6 @@ parser.add_argument('-o', '--output', {required: true});
 parser.add_argument('-l', '--list', {required: true});
 parser.add_argument('-n', '--name', {required: true});
 parser.add_argument('-p', '--prefix', {required: true});
-parser.add_argument('-s', '--sizes', {nargs: '+', required: true, type: Number});
 
 const args = parser.parse_args();
 
@@ -25,38 +27,20 @@ const list = fs.readFileSync(args.list, {encoding: 'utf-8'}).split('\n').map(lin
     .filter(v => v);
 
 const ranges = list.map(line => {
-    let codepoint = codepoints[line.trim()];
+    let codepoint = codepoints[line];
     if (!codepoint) return null;
     return {range: [codepoint, codepoint, codepoint]};
 }).filter(v => v);
 
 async function do_convert() {
-    for (const size of args.sizes) {
-        const files = await convert({
-            font: [{
-                source_path: args.font,
-                source_bin: fs.readFileSync(args.font),
-                ranges: ranges
-            }],
-            format: 'lvgl',
-            output: path.join(args.output, `${args.name}_${size}.c`),
-            size: size,
-            bpp: 4,
-            lcd: false,
-            lcd_v: false,
-            use_color_info: false,
-            no_compress: true,
-        });
-        for (let [filename, data] of Object.entries(files)) {
-            let dir = path.dirname(filename);
-
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, {recursive: true});
-            }
-
-            fs.writeFileSync(filename, data);
-        }
-    }
+    const fontmin = new Fontmin()
+        .src(args.font)
+        .use(Fontmin.glyph({
+            text: String.fromCodePoint(...list.map(line => codepoints[line]).filter(v => v))
+        }))
+        .use(rename(`${args.name}.ttf`))
+        .use(vfs.dest(args.output));
+    await util.promisify(fontmin.run).bind(fontmin)();
     let entries = list.map(key => {
         const codepoint = codepoints[key];
         if (!codepoint) return null;

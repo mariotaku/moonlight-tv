@@ -13,4 +13,6 @@ typedef struct app_fontset_t {
     lv_font_t *large;
 } app_fontset_t;
 
-bool app_fontset_load(app_fontset_t *set, FcPattern *font);
+extern app_fontset_t app_iconfonts;
+
+bool app_font_init(lv_theme_t *theme);

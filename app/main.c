@@ -40,7 +40,6 @@
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
 #endif
 
-FILE *app_logfile = NULL;
 SDL_Window *app_window = NULL;
 
 static bool running = true;
@@ -53,8 +52,6 @@ static lv_indev_t *app_indev_key, *app_indev_wheel;
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
 SDL_Window *app_create_window();
-
-bool app_load_font(lv_theme_t *theme);
 
 int main(int argc, char *argv[]) {
     app_loginit();
@@ -86,7 +83,7 @@ int main(int argc, char *argv[]) {
     lv_theme_t theme_app = *parent_theme;
     lv_theme_set_parent(&theme_app, parent_theme);
     lv_theme_moonlight_init(&theme_app);
-    app_load_font(&theme_app);
+    app_font_init(&theme_app);
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
@@ -249,59 +246,3 @@ static void app_input_populate_group() {
     lv_indev_set_group(app_indev_wheel, group);
 }
 
-bool app_load_font(lv_theme_t *theme) {
-    app_fontset_t fontset = {.small_size = 28, .normal_size = 32, .large_size = 38};
-    app_fontset_t fontset_fallback = fontset;
-    //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
-    FcPattern *pattern = FcNameParse((const FcChar8 *) FONT_FAMILY);
-    if (!pattern)
-        return false;
-
-    FcConfigSubstitute(NULL, pattern, FcMatchPattern);
-    FcDefaultSubstitute(pattern);
-
-    FcResult result;
-
-    FcPattern *font = FcFontMatch(NULL, pattern, &result);
-    if (font && app_fontset_load(&fontset, font)) {
-        theme->font_normal = fontset.normal;
-        theme->font_large = fontset.large;
-        theme->font_small = fontset.small;
-    }
-    if (font) {
-        FcPatternDestroy(font);
-        font = NULL;
-    }
-    FcPatternDestroy(pattern);
-    pattern = NULL;
-#ifdef FONT_FAMILY_FALLBACK
-    const i18n_entry_t *loc_entry = i18n_entry(i18n_locale());
-    pattern = FcNameParse((const FcChar8 *) ((loc_entry && loc_entry->font) ? loc_entry->font : FONT_FAMILY_FALLBACK));
-    if (pattern) {
-        FcLangSet *ls = FcLangSetCreate();
-        if (loc_entry) {
-            FcLangSetAdd(ls, (const FcChar8 *) loc_entry->locale);
-            FcPatternAddLangSet(pattern, FC_LANG, ls);
-        }
-
-        FcConfigSubstitute(NULL, pattern, FcMatchPattern);
-        FcDefaultSubstitute(pattern);
-
-        font = FcFontMatch(NULL, pattern, &result);
-        if (font && app_fontset_load(&fontset_fallback, font)) {
-            fontset_fallback.normal->fallback = &lv_font_montserrat_32;
-            fontset.normal->fallback = fontset_fallback.normal;
-            fontset.large->fallback = fontset_fallback.large;
-            fontset.small->fallback = fontset_fallback.small;
-        }
-        if (font) {
-            FcPatternDestroy(font);
-            font = NULL;
-        }
-        FcLangSetDestroy(ls);
-        FcPatternDestroy(pattern);
-        pattern = NULL;
-    }
-#endif
-    return true;
-}

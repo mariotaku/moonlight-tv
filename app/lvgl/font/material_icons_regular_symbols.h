@@ -13,3 +13,6 @@
 #define MAT_SYMBOL_DESKTOP_WINDOWS "\xee\x8c\x8c"
 #define MAT_SYMBOL_VIDEO_SETTINGS "\xee\xa9\xb5"
 #define MAT_SYMBOL_TUNE "\xee\x90\xa9"
+#define MAT_SYMBOL_ARROW_DROP_DOWN "\xee\x97\x85"
+#define MAT_SYMBOL_CHECK "\xee\x97\x8a"
+#define MAT_SYMBOL_PLAY_ARROW "\xee\x80\xb7"

@@ -16,6 +16,7 @@
 
 #include "stream/platform.h"
 
+#include "util/font.h"
 #include "util/i18n.h"
 #include "util/user_event.h"
 #include "util/logging.h"
@@ -119,7 +120,7 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
     lv_style_transition_dsc_init(&controller->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
 
     lv_style_init(&controller->nav_host_style);
-    int ico_width_def = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), LV_ICON_FONT_DEFAULT, 0, 0);
+    int ico_width_def = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), app_iconfonts.normal, 0, 0);
     int host_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_def) / 2;
     lv_style_set_pad_left(&controller->nav_host_style, host_icon_pad);
     lv_style_set_pad_gap(&controller->nav_host_style, host_icon_pad);
@@ -127,7 +128,7 @@ static void launcher_controller(lv_obj_controller_t *self, void *args) {
     lv_style_init(&controller->nav_menu_style);
     lv_style_set_border_side(&controller->nav_menu_style, LV_BORDER_SIDE_NONE);
     lv_style_set_pad_ver(&controller->nav_menu_style, LV_DPX(10));
-    int ico_width_sm = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), LV_ICON_FONT_SMALL, 0, 0);
+    int ico_width_sm = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), app_iconfonts.small, 0, 0);
     int nav_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_sm) / 2;
     lv_style_set_pad_left(&controller->nav_menu_style, nav_icon_pad);
     lv_style_set_pad_gap(&controller->nav_menu_style, nav_icon_pad);
@@ -310,7 +311,7 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
     lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(pcitem, &controller->nav_host_style, 0);
     lv_obj_t *btn_img = lv_btn_find_img(pcitem);
-    lv_obj_set_style_text_font(btn_img, LV_ICON_FONT_DEFAULT, 0);
+    lv_obj_set_style_text_font(btn_img, app_iconfonts.normal, 0);
     lv_obj_set_style_bg_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
     lv_obj_set_style_text_color(btn_img, lv_color_black(), LV_STATE_CHECKED);
     lv_obj_set_style_radius(btn_img, LV_DPX(1), LV_STATE_CHECKED);

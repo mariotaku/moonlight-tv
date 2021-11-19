@@ -13,7 +13,6 @@
 
 #include <stdint.h>
 
-
 /*====================
    COLOR SETTINGS
  *====================*/
@@ -264,6 +263,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
  *   FONT USAGE
  *===================*/
 #define LV_USE_FREETYPE 1
+//#define LV_FREETYPE_CACHE_SIZE 32
 
 /*Montserrat fonts with ASCII range and some symbols using bpp = 4
  *https://fonts.google.com/specimen/Montserrat*/
@@ -279,7 +279,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_FONT_MONTSERRAT_26    0
 #define LV_FONT_MONTSERRAT_28    0
 #define LV_FONT_MONTSERRAT_30    0
-#define LV_FONT_MONTSERRAT_32    1
+#define LV_FONT_MONTSERRAT_32    0
 #define LV_FONT_MONTSERRAT_34    0
 #define LV_FONT_MONTSERRAT_36    0
 #define LV_FONT_MONTSERRAT_38    0
@@ -302,17 +302,10 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*Optionally declare custom fonts here.
  *You can use these fonts as default font too and they will be available globally.
  *E.g. #define LV_FONT_CUSTOM_DECLARE   LV_FONT_DECLARE(my_font_1) LV_FONT_DECLARE(my_font_2)*/
-#define LV_FONT_CUSTOM_DECLARE \
-LV_FONT_DECLARE(material_icons_regular_28) \
-LV_FONT_DECLARE(material_icons_regular_32) \
-LV_FONT_DECLARE(material_icons_regular_38)
+#define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(lv_font_empty)
 
 /*Always set a default font*/
-#define LV_FONT_DEFAULT &lv_font_montserrat_32
-
-#define LV_ICON_FONT_SMALL &material_icons_regular_28
-#define LV_ICON_FONT_DEFAULT &material_icons_regular_32
-#define LV_ICON_FONT_LARGE &material_icons_regular_38
+#define LV_FONT_DEFAULT &lv_font_empty
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.
@@ -518,6 +511,8 @@ LV_FONT_DECLARE(material_icons_regular_38)
 
 /*Enable the examples to be built with the library*/
 #define LV_BUILD_EXAMPLES   0
+
+#include "./font/lv_symbol_def_replace.h"
 
 /*--END OF LV_CONF_H--*/
 
