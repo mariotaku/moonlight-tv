@@ -50,6 +50,7 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_flex_flow(stats, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_align(stats, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
 
+    controller->stats_items.resolution = stat_label(stats, "Resolution");
     controller->stats_items.decoder = stat_label(stats, "Decoder");
     controller->stats_items.audio = stat_label(stats, "Audio backend");
 

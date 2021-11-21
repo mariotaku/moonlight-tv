@@ -59,6 +59,9 @@ bool streaming_refresh_stats() {
     if (!streaming_overlay_shown()) {
         return false;
     }
+    const struct VIDEO_STATS *dst = &vdec_summary_stats;
+    const struct VIDEO_INFO *info = &vdec_stream_info;
+    lv_label_set_text_fmt(controller->stats_items.resolution, "%d * %d", info->width, info->height);
     lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name,
                           vdec_stream_info.format);
     if (audio_current == AUDIO_DECODER) {
@@ -66,7 +69,6 @@ bool streaming_refresh_stats() {
     } else {
         lv_label_set_text_static(controller->stats_items.audio, audio_definitions[audio_current].name);
     }
-    const struct VIDEO_STATS *dst = &vdec_summary_stats;
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 
