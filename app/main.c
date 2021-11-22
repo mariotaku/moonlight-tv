@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
     lv_indev_t *indev_key = lv_sdl_init_key_input();
     lv_indev_t *indev_wheel = lv_sdl_init_wheel();
     lv_indev_t *indev_pointer = lv_sdl_init_pointer();
+    lv_indev_t *indev_button = lv_sdl_init_button();
     app_indev_key = indev_key;
     app_indev_wheel = indev_wheel;
 
@@ -113,6 +114,7 @@ int main(int argc, char *argv[]) {
 
     lv_controller_manager_del(app_uimanager);
 
+    lv_sdl_deinit_button(indev_button);
     lv_sdl_deinit_pointer(indev_pointer);
     lv_sdl_deinit_wheel(indev_wheel);
     lv_sdl_deinit_key_input(indev_key);

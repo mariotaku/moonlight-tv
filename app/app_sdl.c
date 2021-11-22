@@ -34,6 +34,8 @@ int app_init(int argc, char *argv[]) {
 
 void app_init_video() {
     SDL_Init(SDL_INIT_VIDEO);
+    // This will occupy SDL_USEREVENT
+    SDL_RegisterEvents(1);
     SDL_Surface *surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
     blank_cursor = SDL_CreateColorCursor(surface, 0, 0);
     if (!blank_cursor) {

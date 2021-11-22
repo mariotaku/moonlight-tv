@@ -208,6 +208,7 @@ set(SOURCES
         app/lvgl/lv_sdl_drv_key_input.c
         app/lvgl/lv_sdl_drv_pointer_input.c
         app/lvgl/lv_sdl_drv_wheel_input.c
+        app/lvgl/lv_sdl_drv_button_input.c
         app/lvgl/lv_ext_utils.c
         app/lvgl/lv_sdl_img.c
         app/lvgl/ext/lv_gridview.c

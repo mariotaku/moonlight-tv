@@ -7,3 +7,7 @@
 #define USER_SIZE_CHANGED 150
 
 #define USER_OPEN_OVERLAY 531
+
+extern unsigned int app_userevent_remotebutton;
+
+#define USER_REMOTEBUTTONEVENT app_userevent_remotebutton
