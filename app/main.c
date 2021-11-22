@@ -10,10 +10,8 @@
 
 #include "lvgl.h"
 #include "lvgl/lv_disp_drv_app.h"
-#include "lvgl/lv_sdl_drv_key_input.h"
-#include "lvgl/lv_sdl_drv_pointer_input.h"
+#include "lvgl/lv_sdl_drv_input.h"
 #include "lvgl/lv_sdl_img.h"
-#include "lvgl/lv_sdl_drv_wheel_input.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
 
 #include "backend/backend_root.h"

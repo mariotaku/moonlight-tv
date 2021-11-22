@@ -1,3 +1,5 @@
+#include "lv_sdl_drv_input.h"
+
 #include "app.h"
 
 #include <SDL.h>
@@ -6,7 +8,6 @@
 #include "util/logging.h"
 
 #include "lvgl.h"
-#include "lv_sdl_drv_pointer_input.h"
 
 static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 

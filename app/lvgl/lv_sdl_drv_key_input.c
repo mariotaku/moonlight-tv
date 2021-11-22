@@ -5,7 +5,7 @@
 #include "ui/root.h"
 
 #include "lvgl.h"
-#include "lv_sdl_drv_key_input.h"
+#include "lv_sdl_drv_input.h"
 
 typedef struct {
     uint32_t key;
@@ -42,7 +42,6 @@ lv_indev_t *lv_sdl_init_key_input() {
     indev_drv->read_cb = sdl_input_read;
 
     state->state = LV_INDEV_STATE_RELEASED;
-
     lv_indev_t *indev = lv_indev_drv_register(indev_drv);
     if (group) {
         lv_indev_set_group(indev, group);
