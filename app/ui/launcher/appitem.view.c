@@ -1,10 +1,8 @@
-//
-// Created by Mariotaku on 2021/09/05.
-//
-
-#include <res.h>
-#include <gpu/sdl/lv_gpu_sdl_utils.h>
 #include "appitem.view.h"
+
+#include "res.h"
+#include "gpu/sdl/lv_gpu_sdl_utils.h"
+#include "util/font.h"
 
 static void appitem_holder_free_cb(lv_event_t *event);
 
@@ -32,8 +30,8 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     lv_obj_add_event_cb(item, appitem_deselected, LV_EVENT_DEFOCUSED, NULL);
 
     lv_obj_t *play_indicator = lv_obj_create(item);
+    lv_obj_clear_flag(play_indicator, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_remove_style_all(play_indicator);
-    lv_obj_clear_flag(play_indicator, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_style(play_indicator, &styles->btn, 0);
     lv_obj_set_style_bg_img_src(play_indicator, MAT_SYMBOL_PLAY_ARROW, 0);
     lv_obj_center(play_indicator);
@@ -65,7 +63,7 @@ void appitem_style_init(appitem_styles_t *style) {
     lv_style_set_shadow_ofs_y(&style->cover, lv_dpx(3));
     lv_style_set_outline_color(&style->cover, lv_color_lighten(lv_palette_main(LV_PALETTE_BLUE), 30));
     lv_style_set_outline_width(&style->cover, lv_dpx(2));
-    lv_style_set_outline_opa(&style->cover, LV_OPA_0);
+    lv_style_set_outline_opa(&style->cover, LV_OPA_TRANSP);
     lv_style_set_outline_pad(&style->cover, lv_dpx(2));
 
     lv_style_init(&style->btn);
@@ -74,6 +72,11 @@ void appitem_style_init(appitem_styles_t *style) {
     lv_style_set_bg_color(&style->btn, lv_color_white());
     lv_style_set_bg_opa(&style->btn, LV_OPA_COVER);
     lv_style_set_text_color(&style->btn, lv_color_black());
+    lv_style_set_border_opa(&style->btn, LV_OPA_TRANSP);
+    lv_style_set_text_font(&style->btn, app_iconfonts.large);
+    lv_style_set_shadow_width(&style->btn, LV_DPX(4));
+    lv_style_set_shadow_color(&style->btn, lv_color_black());
+    lv_style_set_shadow_opa(&style->btn, LV_OPA_30);
 
     static const lv_style_prop_t trans_props[] = {
             LV_STYLE_OUTLINE_OPA, LV_STYLE_TRANSFORM_WIDTH, LV_STYLE_TRANSFORM_HEIGHT, LV_STYLE_TRANSFORM_ZOOM, 0

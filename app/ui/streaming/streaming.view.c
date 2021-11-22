@@ -24,20 +24,24 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_t *kbd_btn = lv_btn_create(scene);
     lv_obj_add_flag(kbd_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_style_bg_color(kbd_btn, lv_palette_main(LV_PALETTE_BLUE), 0);
     lv_obj_t *kbd_label = lv_label_create(kbd_btn);
     lv_label_set_text(kbd_label, locstr("Soft keyboard"));
-    lv_obj_align(kbd_btn, LV_ALIGN_BOTTOM_LEFT, LV_DPX(20), -LV_DPX(20));
-
-    lv_obj_t *exit_btn = lv_btn_create(scene);
-    lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_t *exit_lbl = lv_label_create(exit_btn);
-    lv_label_set_text(exit_lbl, locstr("Quit game"));
-    lv_obj_align(exit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
 
     lv_obj_t *suspend_btn = lv_btn_create(scene);
     lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_style_bg_color(suspend_btn, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_obj_t *suspend_lbl = lv_label_create(suspend_btn);
     lv_label_set_text(suspend_lbl, locstr("Disconnect"));
+
+    lv_obj_t *exit_btn = lv_btn_create(scene);
+    lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_style_bg_color(exit_btn, lv_palette_main(LV_PALETTE_RED), 0);
+    lv_obj_t *exit_lbl = lv_label_create(exit_btn);
+    lv_label_set_text(exit_lbl, locstr("Quit game"));
+
+    lv_obj_align(kbd_btn, LV_ALIGN_BOTTOM_LEFT, LV_DPX(20), -LV_DPX(20));
+    lv_obj_align(exit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
     lv_obj_align_to(suspend_btn, exit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
 
     lv_obj_t *stats = lv_obj_create(scene);
