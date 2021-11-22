@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-15 00:25+0900\n"
-"PO-Revision-Date: 2021-11-14 15:26\n"
+"POT-Creation-Date: 2021-11-22 23:38+0900\n"
+"PO-Revision-Date: 2021-11-22 14:40\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -17,40 +17,44 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:78
+#: app/main.c:75
 msgid "[Localized Language]"
 msgstr "日本語"
 
+#: app/stream/session/connection.c:28
+msgid "Unstable connection."
+msgstr ""
+
 #. Use list button for normal container
-#: app/ui/launcher/launcher.view.c:99
+#: app/ui/launcher/launcher.view.c:103
 msgid "Add computer"
 msgstr "PCを追加"
 
-#: app/ui/launcher/launcher.view.c:106
+#: app/ui/launcher/launcher.view.c:109
 msgid "Help"
 msgstr "ヘルプ"
 
-#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:115 app/ui/settings/settings.view.c:30
 msgid "Settings"
 msgstr "設定"
 
-#: app/ui/launcher/launcher.view.c:120
-#: app/ui/settings/settings.controller.c:309
+#: app/ui/launcher/launcher.view.c:121
+#: app/ui/settings/settings.controller.c:416
 msgid "Quit"
 msgstr "終了"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:443
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
-#: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
+#: app/ui/streaming/streaming.controller.c:224 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
-#: app/ui/launcher/launcher.controller.c:429
+#: app/ui/launcher/launcher.controller.c:444
 msgid "Decoder not working"
 msgstr "デコーダーが使えません"
 
-#: app/ui/launcher/launcher.controller.c:432
+#: app/ui/launcher/launcher.controller.c:447
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "ビデオデコーダー「%s」を初期化できませんでした。他のデコーダーをお試しください。"
@@ -170,45 +174,45 @@ msgstr "ゲームを終了"
 
 #: app/ui/streaming/streaming.view.c:40
 msgid "Disconnect"
-msgstr ""
+msgstr "切断"
 
-#: app/ui/streaming/streaming.controller.c:114
+#: app/ui/streaming/streaming.controller.c:120
 msgid "Connecting..."
-msgstr ""
+msgstr "接続中..."
 
-#: app/ui/streaming/streaming.controller.c:127
+#: app/ui/streaming/streaming.controller.c:133
 msgid "Disconnecting..."
-msgstr ""
+msgstr "切断中..."
 
-#: app/ui/streaming/streaming.controller.c:219
+#: app/ui/streaming/streaming.controller.c:225
 msgid "Failed to start streaming"
 msgstr ""
 
-#: app/ui/settings/settings.controller.c:19
+#: app/ui/settings/settings.controller.c:20
 msgid "Basic Settings"
 msgstr "基本設定"
 
-#: app/ui/settings/settings.controller.c:20
+#: app/ui/settings/settings.controller.c:21
 msgid "Host Settings"
 msgstr "PC設定"
 
-#: app/ui/settings/settings.controller.c:21
+#: app/ui/settings/settings.controller.c:22
 msgid "Input Settings"
 msgstr "入力設定"
 
-#: app/ui/settings/settings.controller.c:22
+#: app/ui/settings/settings.controller.c:23
 msgid "Decoder Settings"
 msgstr "デコーダー設定"
 
-#: app/ui/settings/settings.controller.c:23
+#: app/ui/settings/settings.controller.c:24
 msgid "About"
 msgstr "アプリ情報"
 
-#: app/ui/settings/settings.controller.c:309
+#: app/ui/settings/settings.controller.c:416
 msgid "Later"
-msgstr ""
+msgstr "後で"
 
-#: app/ui/settings/settings.controller.c:310
+#: app/ui/settings/settings.controller.c:417
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
@@ -227,7 +231,7 @@ msgstr "全画面表示"
 #: app/ui/settings/panes/basic.pane.c:125
 #: app/ui/settings/panes/basic.pane.c:126
 msgid "Language"
-msgstr ""
+msgstr "言語"
 
 #: app/ui/settings/panes/basic.pane.c:152
 msgid "Your computer may not perform well when using this resolution and framerate."
@@ -342,7 +346,7 @@ msgstr "リフレッシュレート"
 
 #: app/app_sdl.c:178
 msgid "Quit Moonlight?"
-msgstr ""
+msgstr "Moonlight を終了しますか？"
 
 #: app/platform/common/i18n_common.c:6
 msgid "System Language"

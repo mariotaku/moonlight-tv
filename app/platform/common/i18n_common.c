@@ -5,25 +5,26 @@
 static const i18n_entry_t i18n_locales[] = {
         {"auto", translatable("System Language")},
         {"en-US", "English"},
-        {"cs",    "Čeština"},
-        {"de",    "Deutsch"},
-        {"es",    "Español"},
-        {"fr",    "Français"},
-        {"it",    "Italiano"},
+        {"cs", "Čeština"},
+        {"de", "Deutsch"},
+        {"es", "Español"},
+        {"fr", "Français"},
+        {"it", "Italiano"},
 #if DEBUG
-        {"ja",    "日本語"},
+        {"ja", "日本語"},
 #endif
-        {"ko",    "조선말"},
-        {"nl",    "Dutch"},
+        {"ko", "조선말"},
+        {"nl", "Dutch"},
+        {"pl", "Polski"},
         {"pt-BR", "Português (Brasil)"},
-        {"ro",    "Română"},
-        {"ru",    "Русский"},
+        {"ro", "Română"},
+        {"ru", "Русский"},
         {"zh-CN", "简体中文",
 #if TARGET_WINDOWS
                 .font =        "Microsoft YaHei"
 #endif
         },
-        {NULL,   NULL},
+        {NULL, NULL},
 };
 
 const i18n_entry_t *i18n_entry_at(int index) {
@@ -46,7 +47,7 @@ const i18n_entry_t *i18n_entry(const char *locale) {
                 return &i18n_locales[i];
             }
         } else if (strncasecmp(locale_tmp, item_loc, 2) == 0) {
-            return  &i18n_locales[i];
+            return &i18n_locales[i];
         }
     }
     return NULL;

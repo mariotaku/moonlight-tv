@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-15 00:25+0900\n"
-"PO-Revision-Date: 2021-11-14 15:26\n"
+"POT-Creation-Date: 2021-11-22 23:38+0900\n"
+"PO-Revision-Date: 2021-11-22 14:40\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -17,40 +17,44 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:78
+#: app/main.c:75
 msgid "[Localized Language]"
 msgstr "Nederlands"
 
+#: app/stream/session/connection.c:28
+msgid "Unstable connection."
+msgstr ""
+
 #. Use list button for normal container
-#: app/ui/launcher/launcher.view.c:99
+#: app/ui/launcher/launcher.view.c:103
 msgid "Add computer"
 msgstr "Computer toevoegen"
 
-#: app/ui/launcher/launcher.view.c:106
+#: app/ui/launcher/launcher.view.c:109
 msgid "Help"
 msgstr "Help"
 
-#: app/ui/launcher/launcher.view.c:113 app/ui/settings/settings.view.c:22
+#: app/ui/launcher/launcher.view.c:115 app/ui/settings/settings.view.c:30
 msgid "Settings"
 msgstr "Instellingen"
 
-#: app/ui/launcher/launcher.view.c:120
-#: app/ui/settings/settings.controller.c:309
+#: app/ui/launcher/launcher.view.c:121
+#: app/ui/settings/settings.controller.c:416
 msgid "Quit"
 msgstr "Afsluiten"
 
-#: app/ui/launcher/launcher.controller.c:428
+#: app/ui/launcher/launcher.controller.c:443
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
-#: app/ui/streaming/streaming.controller.c:218 app/app_sdl.c:177
+#: app/ui/streaming/streaming.controller.c:224 app/app_sdl.c:177
 msgid "OK"
 msgstr "OK"
 
-#: app/ui/launcher/launcher.controller.c:429
+#: app/ui/launcher/launcher.controller.c:444
 msgid "Decoder not working"
 msgstr "Decoder werkt niet"
 
-#: app/ui/launcher/launcher.controller.c:432
+#: app/ui/launcher/launcher.controller.c:447
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr "Kan de %s decoder niet initialiseren. Probeer een andere."
@@ -172,43 +176,43 @@ msgstr "Spel afsluiten"
 msgid "Disconnect"
 msgstr "Verbinding verbreken"
 
-#: app/ui/streaming/streaming.controller.c:114
+#: app/ui/streaming/streaming.controller.c:120
 msgid "Connecting..."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:127
+#: app/ui/streaming/streaming.controller.c:133
 msgid "Disconnecting..."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:219
+#: app/ui/streaming/streaming.controller.c:225
 msgid "Failed to start streaming"
 msgstr ""
 
-#: app/ui/settings/settings.controller.c:19
+#: app/ui/settings/settings.controller.c:20
 msgid "Basic Settings"
 msgstr "Basis instellingen"
 
-#: app/ui/settings/settings.controller.c:20
+#: app/ui/settings/settings.controller.c:21
 msgid "Host Settings"
 msgstr "Host Instellingen"
 
-#: app/ui/settings/settings.controller.c:21
+#: app/ui/settings/settings.controller.c:22
 msgid "Input Settings"
 msgstr "Invoerinstellingen"
 
-#: app/ui/settings/settings.controller.c:22
+#: app/ui/settings/settings.controller.c:23
 msgid "Decoder Settings"
 msgstr "Decoder instellingen"
 
-#: app/ui/settings/settings.controller.c:23
+#: app/ui/settings/settings.controller.c:24
 msgid "About"
 msgstr "Info"
 
-#: app/ui/settings/settings.controller.c:309
+#: app/ui/settings/settings.controller.c:416
 msgid "Later"
 msgstr "Niet nu"
 
-#: app/ui/settings/settings.controller.c:310
+#: app/ui/settings/settings.controller.c:417
 msgid "Some settings require a restart to take effect."
 msgstr "Sommige instellingen vereisen dat u het programma opnieuw opstart."
 

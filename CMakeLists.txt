@@ -34,7 +34,7 @@ option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" ON)
 
-set(I18N_LOCALES "cs" "de" "fr" "nl" "pt-BR" "ro" "ja" "zh-CN")
+set(I18N_LOCALES "cs" "de" "fr" "it" "nl" "pl" "pt-BR" "ro" "ja" "zh-CN")
 list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
 
 set(FEATURE_FORCE_FULLSCREEN OFF)
@@ -438,13 +438,16 @@ if (FEATURE_I18N_GETTEXT)
     add_dependencies(moonlight moonlight-i18n)
 endif ()
 
+find_program(XGETTEXT_COMMAND xgettext)
+find_program(MSGMERGE_COMMAND msgmerge)
+
 add_custom_target(i18n-update-pot
-        COMMAND xgettext --keyword=locstr --keyword=translatable --add-comments -o i18n/messages.pot
+        COMMAND ${XGETTEXT_COMMAND} --keyword=locstr --keyword=translatable --add-comments -o i18n/messages.pot
         ${SOURCES}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(i18n-merge-po
-        COMMAND msgmerge --update i18n/ja/messages.po i18n/messages.pot
+        COMMAND ${MSGMERGE_COMMAND} --update i18n/ja/messages.po i18n/messages.pot
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(mat-gen-fonts
