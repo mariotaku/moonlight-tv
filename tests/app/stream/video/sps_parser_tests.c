@@ -31,14 +31,14 @@ void test_sps_parse_dimension_h264(void) {
     sps_dimension_t dimension;
     TEST_ASSERT_TRUE(sps_parse_dimension_h264(&h264_test_data[4], &dimension));
     TEST_ASSERT_EQUAL_INT(1920, dimension.width);
-    TEST_ASSERT_EQUAL_INT(1088, dimension.height);
+    TEST_ASSERT_EQUAL_INT(1080, dimension.height);
 }
 
 void test_sps_parse_dimension_hevc(void) {
     sps_dimension_t dimension;
     TEST_ASSERT_TRUE(sps_parse_dimension_hevc(&h265_test_data[4], &dimension));
     TEST_ASSERT_EQUAL_INT(1920, dimension.width);
-    TEST_ASSERT_EQUAL_INT(1088, dimension.height);
+    TEST_ASSERT_EQUAL_INT(1080, dimension.height);
 }
 
 // not needed when using generate_test_runner.rb

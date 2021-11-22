@@ -6,6 +6,14 @@ typedef struct bitstream_t {
     uint32_t consecutive_zeroes;
 } bitstream_t;
 
+#define EXTENDED_SAR 255
+
+static bool skip_vui_parameters(bitstream_t *buf);
+
+static bool skip_hrd_parameters(bitstream_t *buf);
+
+static int parse_profile_info(bitstream_t *buf);
+
 static void bitstream_init(bitstream_t *buf, const unsigned char *data) {
     buf->data = data;
     buf->offset = 0;
@@ -79,7 +87,7 @@ static bool bitstream_read_ueg(bitstream_t *buf, uint32_t *value) {
         if (!bitstream_read_bits(buf, bitcount, &tmp)) {
             return false;
         }
-        result = (uint32_t)((1 << bitcount) - 1 + tmp);
+        result = (uint32_t) ((1 << bitcount) - 1 + tmp);
     }
     *value = result;
     return true;
@@ -91,9 +99,9 @@ static bool bitstream_read_eg(bitstream_t *buf, int32_t *value) {
         return false;
     }
     if (tmp & 0x01) {
-        *value = (int32_t)(tmp + 1) / 2;
+        *value = (int32_t) (tmp + 1) / 2;
     } else {
-        *value = (int32_t) - (tmp / 2);
+        *value = (int32_t) -(tmp / 2);
     }
     return true;
 }
@@ -112,8 +120,13 @@ static bool bitstream_skip_scaling_list(bitstream_t *buf, uint8_t count) {
 }
 
 bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimension) {
+    uint8_t subwc[] = {1, 2, 2, 1};
+    uint8_t subhc[] = {1, 2, 1, 1};
+
     bitstream_t buf;
     bitstream_init(&buf, data);
+
+    uint32_t chroma_format_idc = 1;
 
     uint32_t width, height;
 
@@ -139,7 +152,6 @@ bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimens
         profile_idc == 83 || profile_idc == 86 || profile_idc == 118 ||
         profile_idc == 128 || profile_idc == 138 || profile_idc == 139 ||
         profile_idc == 134 || profile_idc == 135) {
-        uint32_t chroma_format_idc;
         if (!bitstream_read_ueg(&buf, &chroma_format_idc)) return false;
         if (chroma_format_idc > 3) return false;
         if (chroma_format_idc == 3) {
@@ -179,15 +191,15 @@ bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimens
         // delta_pic_order_always_zero_flag
         bitstream_skip_bits(&buf, 1);
         // offset_for_non_ref_pic
-        bitstream_read_eg(&buf, (int32_t * )(&tmp));
+        bitstream_read_eg(&buf, (int32_t *) (&tmp));
         // offset_for_top_to_bottom_field
-        bitstream_read_eg(&buf, (int32_t * )(&tmp));
+        bitstream_read_eg(&buf, (int32_t *) (&tmp));
         uint32_t num_ref_frames_in_pic_order_cnt_cycle;
         bitstream_read_ueg(&buf, &num_ref_frames_in_pic_order_cnt_cycle);
 
         for (int i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; i++) {
             // offset_for_ref_frame[i]
-            bitstream_read_eg(&buf, (int32_t * )(&tmp));
+            bitstream_read_eg(&buf, (int32_t *) (&tmp));
         }
     }
 
@@ -212,23 +224,20 @@ bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimens
     bitstream_skip_bits(&buf, 1);
     bool frame_cropping_flag;
     bitstream_read1(&buf, &frame_cropping_flag);
+    uint32_t frame_crop_left_offset = 0, frame_crop_right_offset = 0, frame_crop_top_offset = 0,
+            frame_crop_bottom_offset = 0;
     if (frame_cropping_flag) {
-        // frame_crop_left_offset
-        bitstream_read_ueg(&buf, &tmp);
-        // frame_crop_right_offset
-        bitstream_read_ueg(&buf, &tmp);
-        // frame_crop_top_offset
-        bitstream_read_ueg(&buf, &tmp);
-        // frame_crop_bottom_offset
-        bitstream_read_ueg(&buf, &tmp);
+        bitstream_read_ueg(&buf, &frame_crop_left_offset);
+        bitstream_read_ueg(&buf, &frame_crop_right_offset);
+        bitstream_read_ueg(&buf, &frame_crop_top_offset);
+        bitstream_read_ueg(&buf, &frame_crop_bottom_offset);
     }
 
     bool vui_parameters_present_flag = false;
     bitstream_read1(&buf, &vui_parameters_present_flag);
-//    if (vui_parameters_present_flag) {
-//        if (!gst_h264_parse_vui_parameters(sps, nr))
-//            goto error;
-//    }
+    if (vui_parameters_present_flag) {
+        if (!skip_vui_parameters(&buf)) return false;
+    }
 
     /* Calculate width and height */
     width = (pic_width_in_mbs_minus1 + 1);
@@ -239,6 +248,13 @@ bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimens
         return false;
     }
 
+    if (frame_cropping_flag) {
+        const uint32_t crop_unit_x = subwc[chroma_format_idc];
+        const uint32_t crop_unit_y = subhc[chroma_format_idc] * (2 - frame_mbs_only_flag);
+
+        width -= (frame_crop_left_offset + frame_crop_right_offset) * crop_unit_x;
+        height -= (frame_crop_top_offset + frame_crop_bottom_offset) * crop_unit_y;
+    }
 
     dimension->width = width;
     dimension->height = height;
@@ -246,35 +262,10 @@ bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimens
 }
 
 
-static int parse_profile_info(bitstream_t *buf) {
-    // profile_space:2
-    bitstream_skip_bits(buf, 2);
-    // tier_flag:1
-    bitstream_skip_bits(buf, 1);
-    // profile_idc:5
-    bitstream_skip_bits(buf, 5);
-
-    uint32_t tmp;
-    for (int i = 0; i < 32; i++) {
-        // profile_compatibility_flag[i]
-        bitstream_skip_bits(buf, 1);
-    }
-    // progressive_source_flag
-    bitstream_skip_bits(buf, 1);
-    // interlaced_source_flag
-    bitstream_skip_bits(buf, 1);
-    // non_packed_constraint_flag
-    bitstream_skip_bits(buf, 1);
-    // frame_only_constraint_flag
-    bitstream_skip_bits(buf, 1);
-
-    bitstream_skip_bits(buf, 44);
-
-    return 0;
-}
-
-
 bool sps_parse_dimension_hevc(const unsigned char *data, sps_dimension_t *dimension) {
+    uint8_t subwc[] = {1, 2, 2, 1, 1};
+    uint8_t subhc[] = {1, 2, 1, 1, 1};
+
     uint8_t max_sub_layers_minus1 = 0;
 
     uint8_t sub_layer_profile_present_flag[6];
@@ -340,7 +331,183 @@ bool sps_parse_dimension_hevc(const unsigned char *data, sps_dimension_t *dimens
     if (!bitstream_read_ueg(&buf, &pic_width_in_luma_samples)) return false;
     if (!bitstream_read_ueg(&buf, &pic_height_in_luma_samples)) return false;
     if (pic_width_in_luma_samples <= 0 || pic_height_in_luma_samples <= 0) return false;
-    dimension->width = pic_width_in_luma_samples;
-    dimension->height = pic_height_in_luma_samples;
+
+    bool conformance_window_flag = false;
+    bitstream_read1(&buf, &conformance_window_flag);
+    uint32_t conf_win_left_offset = 0, conf_win_right_offset = 0, conf_win_top_offset = 0, conf_win_bottom_offset = 0;
+    if (conformance_window_flag) {
+        bitstream_read_ueg(&buf, &conf_win_left_offset);
+        bitstream_read_ueg(&buf, &conf_win_right_offset);
+        bitstream_read_ueg(&buf, &conf_win_top_offset);
+        bitstream_read_ueg(&buf, &conf_win_bottom_offset);
+    }
+
+    uint32_t width = pic_width_in_luma_samples, height = pic_height_in_luma_samples;
+    if (conformance_window_flag) {
+        const uint8_t crop_unit_x = subwc[chroma_format_idc];
+        const uint8_t crop_unit_y = subhc[chroma_format_idc];
+        width -= (conf_win_left_offset + conf_win_right_offset) * crop_unit_x;
+        height -= (conf_win_top_offset + conf_win_bottom_offset) * crop_unit_y;
+    }
+    dimension->width = width;
+    dimension->height = height;
     return true;
+}
+
+static bool skip_vui_parameters(bitstream_t *buf) {
+    bool aspect_ratio_info_present_flag = false;
+    bitstream_read1(buf, &aspect_ratio_info_present_flag);
+    if (aspect_ratio_info_present_flag) {
+        uint8_t aspect_ratio_idc;
+        bitstream_read8(buf, &aspect_ratio_idc);
+        if (aspect_ratio_idc == EXTENDED_SAR) {
+            // sar_width
+            bitstream_skip_bits(buf, 16);
+            // sar_height
+            bitstream_skip_bits(buf, 16);
+        }
+    }
+
+    bool overscan_info_present_flag = false;
+    bitstream_read1(buf, &overscan_info_present_flag);
+    if (overscan_info_present_flag) {
+        // overscan_appropriate_flag
+        bitstream_skip_bits(buf, 1);
+    }
+
+    bool video_signal_type_present_flag = false;
+    bitstream_read1(buf, &video_signal_type_present_flag);
+    if (video_signal_type_present_flag) {
+        // video_format
+        bitstream_skip_bits(buf, 3);
+        // video_full_range_flag
+        bitstream_skip_bits(buf, 1);
+        bool colour_description_present_flag = false;
+        bitstream_read1(buf, &colour_description_present_flag);
+        if (colour_description_present_flag) {
+            bitstream_skip_bits(buf, 8);
+            bitstream_skip_bits(buf, 8);
+            bitstream_skip_bits(buf, 8);
+        }
+    }
+
+    bool chroma_loc_info_present_flag = false;
+    bitstream_read1(buf, &chroma_loc_info_present_flag);
+    if (chroma_loc_info_present_flag) {
+        bitstream_skip_bits(buf, 5);
+        bitstream_skip_bits(buf, 5);
+    }
+
+    bool timing_info_present_flag = false;
+    bitstream_read1(buf, &timing_info_present_flag);
+    if (timing_info_present_flag) {
+        // num_units_in_tick
+        bitstream_skip_bits(buf, 32);
+        // time_scale
+        bitstream_skip_bits(buf, 32);
+        // fixed_frame_rate_flag
+        bitstream_skip_bits(buf, 1);
+    }
+
+    bool nal_hrd_parameters_present_flag = false;
+    bitstream_read1(buf, &nal_hrd_parameters_present_flag);
+    if (nal_hrd_parameters_present_flag) {
+        if (!skip_hrd_parameters(buf))
+            return false;
+    }
+
+    bool vcl_hrd_parameters_present_flag = false;
+    bitstream_read1(buf, &vcl_hrd_parameters_present_flag);
+    if (vcl_hrd_parameters_present_flag) {
+        if (!skip_hrd_parameters(buf))
+            return false;
+    }
+
+    if (nal_hrd_parameters_present_flag || vcl_hrd_parameters_present_flag) {
+        // low_delay_hrd_flag
+        bitstream_skip_bits(buf, 1);
+    }
+
+    // pic_struct_present_flag
+    bitstream_skip_bits(buf, 1);
+    bool bitstream_restriction_flag = false;
+    bitstream_read1(buf, &bitstream_restriction_flag);
+    if (bitstream_restriction_flag) {
+        // motion_vectors_over_pic_boundaries_flag
+        bitstream_skip_bits(buf, 1);
+        uint32_t tmp;
+        // max_bytes_per_pic_denom
+        bitstream_read_ueg(buf, &tmp);
+        // max_bits_per_mb_denom
+        bitstream_read_ueg(buf, &tmp);
+        // log2_max_mv_length_horizontal
+        bitstream_read_ueg(buf, &tmp);
+        // log2_max_mv_length_vertical
+        bitstream_read_ueg(buf, &tmp);
+        // num_reorder_frames
+        bitstream_read_ueg(buf, &tmp);
+        // max_dec_frame_buffering
+        bitstream_read_ueg(buf, &tmp);
+    }
+
+    return true;
+}
+
+static bool skip_hrd_parameters(bitstream_t *buf) {
+    uint32_t cpb_cnt_minus1;
+    bitstream_read_ueg(buf, &cpb_cnt_minus1);
+    if (cpb_cnt_minus1 > 31) return false;
+
+    // bit_rate_scale
+    bitstream_skip_bits(buf, 4);
+    // cpb_size_scale
+    bitstream_skip_bits(buf, 4);
+
+    uint32_t tmp;
+
+    for (int sched_sel_idx = 0; sched_sel_idx <= cpb_cnt_minus1; sched_sel_idx++) {
+        // bit_rate_value_minus1[sched_sel_idx]
+        bitstream_read_ueg(buf, &tmp);
+        // cpb_size_value_minus1[sched_sel_idx]
+        bitstream_read_ueg(buf, &tmp);
+        // cbr_flag[sched_sel_idx]
+        bitstream_skip_bits(buf, 1);
+    }
+
+    // initial_cpb_removal_delay_length_minus1
+    bitstream_skip_bits(buf, 5);
+    // cpb_removal_delay_length_minus1
+    bitstream_skip_bits(buf, 5);
+    // dpb_output_delay_length_minus1
+    bitstream_skip_bits(buf, 5);
+    // time_offset_length
+    bitstream_skip_bits(buf, 5);
+    return true;
+}
+
+static int parse_profile_info(bitstream_t *buf) {
+    // profile_space:2
+    bitstream_skip_bits(buf, 2);
+    // tier_flag:1
+    bitstream_skip_bits(buf, 1);
+    // profile_idc:5
+    bitstream_skip_bits(buf, 5);
+
+    uint32_t tmp;
+    for (int i = 0; i < 32; i++) {
+        // profile_compatibility_flag[i]
+        bitstream_skip_bits(buf, 1);
+    }
+    // progressive_source_flag
+    bitstream_skip_bits(buf, 1);
+    // interlaced_source_flag
+    bitstream_skip_bits(buf, 1);
+    // non_packed_constraint_flag
+    bitstream_skip_bits(buf, 1);
+    // frame_only_constraint_flag
+    bitstream_skip_bits(buf, 1);
+
+    bitstream_skip_bits(buf, 44);
+
+    return 0;
 }
