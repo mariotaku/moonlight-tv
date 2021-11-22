@@ -45,10 +45,10 @@ const lv_obj_controller_class_t settings_pane_basic_cls = {
         .instance_size = sizeof(basic_pane_t),
 };
 static const pref_dropdown_int_pair_entry_t supported_resolutions[] = {
-        {"720P",  1280, 720, true},
-        {"1080P", 1920, 1080},
-        {"1440P", 2560, 1440},
-        {"4K",    3840, 2160},
+        {"1280 * 720",  1280, 720, true},
+        {"1920 * 1080", 1920, 1080},
+        {"2560 * 1440", 2560, 1440},
+        {"3840 * 2160", 3840, 2160},
 //        {"Automatic", 0,    0, true},
 };
 
