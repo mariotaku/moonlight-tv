@@ -17,7 +17,7 @@ bool decoder_check_ffmpeg(PDECODER_INFO info) {
     if (avcodec_find_decoder(AV_CODEC_ID_HEVC)) {
         applog_i("FFMPEG", "Init with HEVC support");
         info->valid = true;
-        info->hevc = true;
+//        info->hevc = true;
     } else if (avcodec_find_decoder(AV_CODEC_ID_H264)) {
         applog_i("FFMPEG", "Init with H264 support");
         info->valid = true;

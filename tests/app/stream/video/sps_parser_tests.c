@@ -1,7 +1,15 @@
 #include "unity.h"
 #include "stream/video/sps_parser.h"
 
-static const uint8_t nalu_header[] = {
+static const uint8_t h264_test_data[] = {
+        0x00, 0x00, 0x00, 0x01, 0x67, 0x64, 0x00, 0x2a,
+        0xac, 0x2b, 0x40, 0x3c, 0x01, 0x13, 0xf2, 0xe0,
+        0x2d, 0x41, 0x81, 0x81, 0xa9, 0x40, 0x00, 0x00,
+        0xfa, 0x00, 0x00, 0x75, 0x30, 0x23, 0xc7, 0x0a,
+        0xa8
+};
+
+static const uint8_t h265_test_data[] = {
         0x00, 0x00, 0x00, 0x01, 0x42, 0x01, 0x01, 0x21,
         0x40, 0x00, 0x00, 0x03, 0x00, 0x00, 0x03, 0x00,
         0x00, 0x03, 0x00, 0x00, 0x03, 0x00, 0x7B, 0xA0,
@@ -19,9 +27,16 @@ void tearDown(void) {
     // clean stuff up here
 }
 
+void test_sps_parse_dimension_h264(void) {
+    sps_dimension_t dimension;
+    TEST_ASSERT_TRUE(sps_parse_dimension_h264(&h264_test_data[4], &dimension));
+    TEST_ASSERT_EQUAL_INT(1920, dimension.width);
+    TEST_ASSERT_EQUAL_INT(1088, dimension.height);
+}
+
 void test_sps_parse_dimension_hevc(void) {
     sps_dimension_t dimension;
-    sps_parse_dimension_hevc(&nalu_header[4], &dimension);
+    TEST_ASSERT_TRUE(sps_parse_dimension_hevc(&h265_test_data[4], &dimension));
     TEST_ASSERT_EQUAL_INT(1920, dimension.width);
     TEST_ASSERT_EQUAL_INT(1088, dimension.height);
 }
@@ -29,6 +44,7 @@ void test_sps_parse_dimension_hevc(void) {
 // not needed when using generate_test_runner.rb
 int main(void) {
     UNITY_BEGIN();
+    RUN_TEST(test_sps_parse_dimension_h264);
     RUN_TEST(test_sps_parse_dimension_hevc);
     return UNITY_END();
 }

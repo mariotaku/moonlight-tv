@@ -1,7 +1,5 @@
 #include "sps_parser.h"
 
-#include <assert.h>
-
 typedef struct bitstream_t {
     const unsigned char *data;
     uint32_t offset;
@@ -14,8 +12,8 @@ static void bitstream_init(bitstream_t *buf, const unsigned char *data) {
     buf->consecutive_zeroes = 0;
 }
 
-static uint32_t bitstream_read_bits(bitstream_t *buf, uint32_t size) {
-    assert(size <= 32);
+static bool bitstream_read_bits(bitstream_t *buf, uint32_t size, uint32_t *value) {
+    if (size > 32) return false;
     uint32_t result = 0;
     for (uint32_t i = 0; i < size; i++) {
         if ((buf->offset + i) % 8 == 0) {
@@ -35,147 +33,240 @@ static uint32_t bitstream_read_bits(bitstream_t *buf, uint32_t size) {
         result |= (buf->data[byte_index] >> bit_offset & 0x1) << (size - i - 1);
     }
     buf->offset += size;
-    return result;
+    *value = result;
+    return true;
 }
 
-static void bitstream_skip_bits(bitstream_t *buf, uint32_t size) {
+static bool bitstream_skip_bits(bitstream_t *buf, uint32_t size) {
+    uint32_t tmp;
     for (int i = 0; i < size; i += 16) {
-        bitstream_read_bits(buf, size - i < 16 ? size - i : 16);
+        if (!bitstream_read_bits(buf, size - i < 16 ? size - i : 16, &tmp)) return false;
     }
+    return true;
 }
 
-static uint32_t bitstream_read_ueg(bitstream_t *buf) {
-    uint32_t i = 0;
-    uint8_t bit;
-    uint32_t value;
-
-    bit = bitstream_read_bits(buf, 1);
-
-    while (bit == 0) {
-        i++;
-        bit = bitstream_read_bits(buf, 1);
-    }
-
-    assert (i <= 31);
-
-    value = bitstream_read_bits(buf, i);
-
-    return (1 << i) - 1 + value;
+static inline bool bitstream_read8(bitstream_t *buf, uint8_t *value) {
+    uint32_t tmp;
+    if (!bitstream_read_bits(buf, 8, &tmp)) return false;
+    *value = tmp;
+    return true;
 }
 
-static int32_t bitstream_read_eg(bitstream_t *buf) {
-    uint32_t value = bitstream_read_ueg(buf);
-    if (value & 0x01) {
-        return (value + 1) / 2;
+static inline bool bitstream_read1(bitstream_t *buf, bool *value) {
+    uint32_t tmp;
+    if (!bitstream_read_bits(buf, 1, &tmp)) return false;
+    *value = tmp;
+    return true;
+}
+
+static bool bitstream_read_ueg(bitstream_t *buf, uint32_t *value) {
+    uint32_t bitcount = 0;
+    uint32_t tmp;
+
+    for (;;) {
+        if (!bitstream_read_bits(buf, 1, &tmp)) return false;
+        if (tmp == 0) {
+            bitcount++;
+        } else {
+            // bitOffset--;
+            break;
+        }
+    }
+
+    // bitOffset --;
+    uint32_t result = 0;
+    if (bitcount) {
+        if (!bitstream_read_bits(buf, bitcount, &tmp)) {
+            return false;
+        }
+        result = (uint32_t)((1 << bitcount) - 1 + tmp);
+    }
+    *value = result;
+    return true;
+}
+
+static bool bitstream_read_eg(bitstream_t *buf, int32_t *value) {
+    uint32_t tmp;
+    if (!bitstream_read_ueg(buf, &tmp)) {
+        return false;
+    }
+    if (tmp & 0x01) {
+        *value = (int32_t)(tmp + 1) / 2;
     } else {
-        return -(value / 2);
+        *value = (int32_t) - (tmp / 2);
     }
+    return true;
 }
 
-static void bitstream_skip_scaling_list(bitstream_t *buf, uint8_t count) {
-    uint32_t deltaScale, lastScale = 8, nextScale = 8;
+static bool bitstream_skip_scaling_list(bitstream_t *buf, uint8_t count) {
+    uint32_t lastScale = 8, nextScale = 8;
+    int32_t deltaScale;
     for (uint8_t j = 0; j < count; j++) {
         if (nextScale != 0) {
-            deltaScale = bitstream_read_eg(buf);
+            if (!bitstream_read_eg(buf, &deltaScale)) return false;
             nextScale = (lastScale + deltaScale + 256) % 256;
         }
         lastScale = (nextScale == 0 ? lastScale : nextScale);
     }
+    return true;
 }
 
 bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimension) {
-    uint8_t profileIdc = 0;
-    uint32_t pict_order_cnt_type = 0;
-    uint32_t picWidthInMbsMinus1 = 0;
-    uint32_t picHeightInMapUnitsMinus1 = 0;
-    uint8_t frameMbsOnlyFlag = 0;
-    uint32_t frameCropLeftOffset = 0;
-    uint32_t frameCropRightOffset = 0;
-    uint32_t frameCropTopOffset = 0;
-    uint32_t frameCropBottomOffset = 0;
-
     bitstream_t buf;
     bitstream_init(&buf, data);
-    bitstream_read_bits(&buf, 8);
-    profileIdc = bitstream_read_bits(&buf, 8);
-    bitstream_read_bits(&buf, 16);
-    bitstream_read_ueg(&buf);
 
-    if (profileIdc == 100 || profileIdc == 110 || profileIdc == 122 ||
-        profileIdc == 244 || profileIdc == 44 || profileIdc == 83 ||
-        profileIdc == 86 || profileIdc == 118 || profileIdc == 128) {
-        uint32_t chromaFormatIdc = bitstream_read_ueg(&buf);
-        if (chromaFormatIdc == 3) bitstream_read_bits(&buf, 1);
-        bitstream_read_ueg(&buf);
-        bitstream_read_ueg(&buf);
-        bitstream_read_bits(&buf, 1);
-        if (bitstream_read_bits(&buf, 1)) {
-            for (uint8_t i = 0; i < (chromaFormatIdc != 3) ? 8 : 12; i++) {
-                if (bitstream_read_bits(&buf, 1)) {
-                    if (i < 6) {
-                        bitstream_skip_scaling_list(&buf, 16);
-                    } else {
-                        bitstream_skip_scaling_list(&buf, 64);
-                    }
+    uint32_t width, height;
+
+    bitstream_skip_bits(&buf, 8);
+    uint8_t profile_idc;
+    bitstream_read8(&buf, &profile_idc);
+    // constraint_set[0-5]_flag
+    bitstream_skip_bits(&buf, 6);
+
+    /* skip reserved_zero_2bits */
+    if (!bitstream_skip_bits(&buf, 2))
+        return false;
+
+    // level_idc
+    bitstream_skip_bits(&buf, 8);
+
+    uint32_t tmp;
+    // id
+    bitstream_read_ueg(&buf, &tmp);
+
+    if (profile_idc == 100 || profile_idc == 110 ||
+        profile_idc == 122 || profile_idc == 244 || profile_idc == 44 ||
+        profile_idc == 83 || profile_idc == 86 || profile_idc == 118 ||
+        profile_idc == 128 || profile_idc == 138 || profile_idc == 139 ||
+        profile_idc == 134 || profile_idc == 135) {
+        uint32_t chroma_format_idc;
+        if (!bitstream_read_ueg(&buf, &chroma_format_idc)) return false;
+        if (chroma_format_idc > 3) return false;
+        if (chroma_format_idc == 3) {
+            // separate_colour_plane_flag
+            bitstream_skip_bits(&buf, 1);
+        }
+
+        // bit_depth_luma_minus8
+        bitstream_read_ueg(&buf, &tmp);
+        // bit_depth_chroma_minus8
+        bitstream_read_ueg(&buf, &tmp);
+        // qpprime_y_zero_transform_bypass_flag
+        bitstream_skip_bits(&buf, 1);
+
+        bool scaling_matrix_present_flag;
+        bitstream_read1(&buf, &scaling_matrix_present_flag);
+        if (scaling_matrix_present_flag) {
+            for (int i = 0; i < ((chroma_format_idc != 3) ? 8 : 12); i++) {
+                bool scaling_list_present_flag;
+                bitstream_read1(&buf, &scaling_list_present_flag);
+                if (scaling_list_present_flag) {
+                    bitstream_skip_scaling_list(&buf, i < 6 ? 16 : 64);
                 }
             }
         }
     }
 
-    bitstream_read_ueg(&buf);
-    pict_order_cnt_type = bitstream_read_ueg(&buf);
+    // log2_max_frame_num_minus4
+    bitstream_read_ueg(&buf, &tmp);
 
-    if (pict_order_cnt_type == 0) {
-        bitstream_read_ueg(&buf);
-    } else if (pict_order_cnt_type == 1) {
-        bitstream_read_bits(&buf, 1);
-        bitstream_read_eg(&buf);
-        bitstream_read_eg(&buf);
-        for (uint32_t i = 0; i < bitstream_read_ueg(&buf); i++) {
-            bitstream_read_eg(&buf);
+    uint32_t pic_order_cnt_type;
+    bitstream_read_ueg(&buf, &pic_order_cnt_type);
+    if (pic_order_cnt_type == 0) {
+        // log2_max_pic_order_cnt_lsb_minus4
+        bitstream_read_ueg(&buf, &tmp);
+    } else if (pic_order_cnt_type == 1) {
+        // delta_pic_order_always_zero_flag
+        bitstream_skip_bits(&buf, 1);
+        // offset_for_non_ref_pic
+        bitstream_read_eg(&buf, (int32_t * )(&tmp));
+        // offset_for_top_to_bottom_field
+        bitstream_read_eg(&buf, (int32_t * )(&tmp));
+        uint32_t num_ref_frames_in_pic_order_cnt_cycle;
+        bitstream_read_ueg(&buf, &num_ref_frames_in_pic_order_cnt_cycle);
+
+        for (int i = 0; i < num_ref_frames_in_pic_order_cnt_cycle; i++) {
+            // offset_for_ref_frame[i]
+            bitstream_read_eg(&buf, (int32_t * )(&tmp));
         }
     }
 
-    bitstream_read_ueg(&buf);
-    bitstream_read_bits(&buf, 1);
-    picWidthInMbsMinus1 = bitstream_read_ueg(&buf);
-    picHeightInMapUnitsMinus1 = bitstream_read_ueg(&buf);
-    frameMbsOnlyFlag = bitstream_read_bits(&buf, 1);
-    if (!frameMbsOnlyFlag) bitstream_read_bits(&buf, 1);
-    bitstream_read_bits(&buf, 1);
-    if (bitstream_read_bits(&buf, 1)) {
-        frameCropLeftOffset = bitstream_read_ueg(&buf);
-        frameCropRightOffset = bitstream_read_ueg(&buf);
-        frameCropTopOffset = bitstream_read_ueg(&buf);
-        frameCropBottomOffset = bitstream_read_ueg(&buf);
+    // num_ref_frames
+    bitstream_read_ueg(&buf, &tmp);
+    // gaps_in_frame_num_value_allowed_flag
+    bitstream_skip_bits(&buf, 1);
+    uint32_t pic_width_in_mbs_minus1;
+    if (!bitstream_read_ueg(&buf, &pic_width_in_mbs_minus1)) return false;
+    uint32_t pic_height_in_map_units_minus1;
+    if (!bitstream_read_ueg(&buf, &pic_height_in_map_units_minus1)) return false;
+
+    bool frame_mbs_only_flag = 0;
+    bitstream_read1(&buf, &frame_mbs_only_flag);
+
+    if (!frame_mbs_only_flag) {
+        // mb_adaptive_frame_field_flag
+        bitstream_skip_bits(&buf, 1);
     }
-    dimension->width = (((picWidthInMbsMinus1 + 1) * 16) - frameCropLeftOffset * 2 - frameCropRightOffset * 2);
-    dimension->height = ((2 - frameMbsOnlyFlag) * (picHeightInMapUnitsMinus1 + 1) * 16) -
-                        ((frameMbsOnlyFlag ? 2 : 4) * (frameCropTopOffset + frameCropBottomOffset));
+
+    // direct_8x8_inference_flag
+    bitstream_skip_bits(&buf, 1);
+    bool frame_cropping_flag;
+    bitstream_read1(&buf, &frame_cropping_flag);
+    if (frame_cropping_flag) {
+        // frame_crop_left_offset
+        bitstream_read_ueg(&buf, &tmp);
+        // frame_crop_right_offset
+        bitstream_read_ueg(&buf, &tmp);
+        // frame_crop_top_offset
+        bitstream_read_ueg(&buf, &tmp);
+        // frame_crop_bottom_offset
+        bitstream_read_ueg(&buf, &tmp);
+    }
+
+    bool vui_parameters_present_flag = false;
+    bitstream_read1(&buf, &vui_parameters_present_flag);
+//    if (vui_parameters_present_flag) {
+//        if (!gst_h264_parse_vui_parameters(sps, nr))
+//            goto error;
+//    }
+
+    /* Calculate width and height */
+    width = (pic_width_in_mbs_minus1 + 1);
+    width *= 16;
+    height = (pic_height_in_map_units_minus1 + 1);
+    height *= 16 * (2 - frame_mbs_only_flag);
+    if (width < 0 || height < 0) {
+        return false;
+    }
+
+
+    dimension->width = width;
+    dimension->height = height;
     return true;
 }
 
 
 static int parse_profile_info(bitstream_t *buf) {
     // profile_space:2
-    uint32_t profile_space = bitstream_read_bits(buf, 2);
+    bitstream_skip_bits(buf, 2);
     // tier_flag:1
-    uint32_t tier_flag = bitstream_read_bits(buf, 1);
+    bitstream_skip_bits(buf, 1);
     // profile_idc:5
-    uint32_t profile_idc = bitstream_read_bits(buf, 5);
+    bitstream_skip_bits(buf, 5);
 
-    uint8_t profile_compatibility_flag[32];
+    uint32_t tmp;
     for (int i = 0; i < 32; i++) {
-        profile_compatibility_flag[i] = bitstream_read_bits(buf, 1);
+        // profile_compatibility_flag[i]
+        bitstream_skip_bits(buf, 1);
     }
     // progressive_source_flag
-    bitstream_read_bits(buf, 1);
+    bitstream_skip_bits(buf, 1);
     // interlaced_source_flag
-    bitstream_read_bits(buf, 1);
+    bitstream_skip_bits(buf, 1);
     // non_packed_constraint_flag
-    bitstream_read_bits(buf, 1);
+    bitstream_skip_bits(buf, 1);
     // frame_only_constraint_flag
-    bitstream_read_bits(buf, 1);
+    bitstream_skip_bits(buf, 1);
 
     bitstream_skip_bits(buf, 44);
 
@@ -188,28 +279,37 @@ bool sps_parse_dimension_hevc(const unsigned char *data, sps_dimension_t *dimens
 
     uint8_t sub_layer_profile_present_flag[6];
     uint8_t sub_layer_level_present_flag[6];
+    uint32_t tmp;
 
     bitstream_t buf;
     bitstream_init(&buf, data);
     // vps_id
-    bitstream_read_bits(&buf, 4);
-    max_sub_layers_minus1 = bitstream_read_bits(&buf, 3);
+    bitstream_skip_bits(&buf, 4);
+    bitstream_read_bits(&buf, 3, &tmp);
+    max_sub_layers_minus1 = tmp;
     // temporal_id_nesting_flag
-    bitstream_read_bits(&buf, 1);
+    bitstream_skip_bits(&buf, 1);
     {
         parse_profile_info(&buf);
 
         // level_idc
-        bitstream_read_bits(&buf, 8);
+        bitstream_skip_bits(&buf, 8);
         for (int i = 0; i < max_sub_layers_minus1; i++) {
-            sub_layer_profile_present_flag[i] = bitstream_read_bits(&buf, 1);
-            sub_layer_level_present_flag[i] = bitstream_read_bits(&buf, 1);
+            uint32_t flg;
+            if (!bitstream_read_bits(&buf, 1, &flg)) {
+                return false;
+            }
+            sub_layer_profile_present_flag[i] = flg;
+            if (!bitstream_read_bits(&buf, 1, &flg)) {
+                return false;
+            }
+            sub_layer_level_present_flag[i] = flg;
         }
 
         if (max_sub_layers_minus1 > 0) {
             for (int i = max_sub_layers_minus1; i < 8; i++) {
                 // skip 2 bits
-                bitstream_read_bits(&buf, 2);
+                bitstream_skip_bits(&buf, 2);
             }
         }
 
@@ -220,22 +320,25 @@ bool sps_parse_dimension_hevc(const unsigned char *data, sps_dimension_t *dimens
 
             if (sub_layer_level_present_flag[i]) {
                 // sub_layer_level_idc[i]
-                bitstream_read_bits(&buf, 8);
+                bitstream_skip_bits(&buf, 8);
             }
         }
     }
 
     // id
-    bitstream_read_ueg(&buf);
+    if (!bitstream_read_ueg(&buf, &tmp)) return false;
 
-    uint32_t chroma_format_idc = bitstream_read_ueg(&buf);
+    uint32_t chroma_format_idc;
+    if (!bitstream_read_ueg(&buf, &chroma_format_idc)) return false;
     if (chroma_format_idc == 3) {
         // separate_colour_plane_flag:1
-        bitstream_read_bits(&buf, 1);
+        bitstream_skip_bits(&buf, 1);
     }
 
-    uint32_t pic_width_in_luma_samples = bitstream_read_ueg(&buf);
-    uint32_t pic_height_in_luma_samples = bitstream_read_ueg(&buf);
+    uint32_t pic_width_in_luma_samples;
+    uint32_t pic_height_in_luma_samples;
+    if (!bitstream_read_ueg(&buf, &pic_width_in_luma_samples)) return false;
+    if (!bitstream_read_ueg(&buf, &pic_height_in_luma_samples)) return false;
     if (pic_width_in_luma_samples <= 0 || pic_height_in_luma_samples <= 0) return false;
     dimension->width = pic_width_in_luma_samples;
     dimension->height = pic_height_in_luma_samples;
