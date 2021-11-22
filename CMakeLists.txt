@@ -32,7 +32,7 @@ option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
 option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
 
 option(BUILD_EXAMPLES "" OFF)
-option(BUILD_TESTS "" OFF)
+option(BUILD_TESTS "" ON)
 
 set(I18N_LOCALES "cs" "de" "fr" "nl" "pt-BR" "ro" "ja" "zh-CN")
 list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
@@ -184,6 +184,7 @@ set(SOURCES
         app/stream/settings.c
         app/stream/video/delegate.c
         app/stream/video/dummy.c
+        app/stream/video/sps_parser.c
         app/ui/root.c
         app/ui/launcher/launcher.view.c
         app/ui/launcher/launcher.controller.c
@@ -405,6 +406,13 @@ if (TARGET_WINDOWS)
 else ()
     pkg_check_modules(UUID REQUIRED uuid)
     target_link_libraries(moonlight PRIVATE ${UUID_LIBRARIES})
+endif ()
+
+if (BUILD_TESTS)
+    enable_testing()
+
+    add_subdirectory(third_party/Unity)
+    add_subdirectory(tests)
 endif ()
 
 install(TARGETS moonlight DESTINATION ${CMAKE_INSTALL_BINDIR})

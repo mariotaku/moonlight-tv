@@ -8,12 +8,14 @@
 
 #include "util/bus.h"
 #include "ui/streaming/streaming.controller.h"
+#include "sps_parser.h"
 
 #include <SDL.h>
 
 static PDECODER_RENDERER_CALLBACKS vdec;
 static int lastFrameNumber;
 static struct VIDEO_STATS vdec_temp_stats;
+static int vdec_stream_format = 0;
 struct VIDEO_STATS vdec_summary_stats;
 struct VIDEO_INFO vdec_stream_info;
 
@@ -24,6 +26,8 @@ static void vdec_delegate_cleanup();
 static int vdec_delegate_submit(PDECODE_UNIT decodeUnit);
 
 static void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now);
+
+static void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info);
 
 DECODER_RENDERER_CALLBACKS decoder_render_callbacks_delegate(PDECODER_RENDERER_CALLBACKS cb) {
     DECODER_RENDERER_CALLBACKS vdec_delegate = {
@@ -53,10 +57,8 @@ static const char *video_format_name(int videoFormat) {
 int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags) {
     vdec = context;
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
-
+    vdec_stream_format = videoFormat;
     vdec_stream_info.format = video_format_name(videoFormat);
-    vdec_stream_info.width = width;
-    vdec_stream_info.height = height;
     lastFrameNumber = 0;
     return vdec->setup(videoFormat, width, height, redrawRate, context, drFlags);
 }
@@ -92,6 +94,9 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     vdec_temp_stats.totalReassemblyTime += decodeUnit->enqueueTimeMs - decodeUnit->receiveTimeMs;
     int err = vdec->submitDecodeUnit(decodeUnit);
     if (err == DR_OK) {
+        if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
+            stream_info_parse_size(decodeUnit, &vdec_stream_info);
+        }
         vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
         vdec_temp_stats.decodedFrames++;
     } else if (err == DR_INTERRUPT) {
@@ -109,4 +114,22 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     dst->decodedFps = (float) dst->decodedFrames / ((float) (now - dst->measurementStartTimestamp) / 1000);
     LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
     bus_pushaction((bus_actionfunc) streaming_refresh_stats, NULL);
+}
+
+void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {
+    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
+        if (entry->bufferType != BUFFER_TYPE_SPS) continue;
+        sps_dimension_t dimension;
+        if (vdec_stream_format & VIDEO_FORMAT_MASK_H264) {
+            sps_parse_dimension_h264((const unsigned char *) &entry->data[4], &dimension);
+        } else if (vdec_stream_format & VIDEO_FORMAT_MASK_H265) {
+            sps_parse_dimension_hevc((const unsigned char *) &entry->data[4], &dimension);
+        } else {
+            info->width = info->height = -1;
+            return;
+        }
+        info->width = dimension.width;
+        info->height = dimension.height;
+        return;
+    }
 }

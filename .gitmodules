@@ -28,3 +28,6 @@
 [submodule "third_party/libmicrodns"]
 	path = third_party/libmicrodns
 	url = https://github.com/videolabs/libmicrodns.git
+[submodule "third_party/Unity"]
+	path = third_party/Unity
+	url = https://github.com/ThrowTheSwitch/Unity.git

@@ -61,7 +61,11 @@ bool streaming_refresh_stats() {
     }
     const struct VIDEO_STATS *dst = &vdec_summary_stats;
     const struct VIDEO_INFO *info = &vdec_stream_info;
-    lv_label_set_text_fmt(controller->stats_items.resolution, "%d * %d", info->width, info->height);
+    if (info->width > 0 && info->height > 0) {
+        lv_label_set_text_fmt(controller->stats_items.resolution, "%d * %d", info->width, info->height);
+    } else {
+        lv_label_set_text(controller->stats_items.resolution, "N/A");
+    }
     lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name,
                           vdec_stream_info.format);
     if (audio_current == AUDIO_DECODER) {
