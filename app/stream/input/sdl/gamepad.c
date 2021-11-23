@@ -201,8 +201,9 @@ static void release_buttons(PGAMEPAD_STATE gamepad) {
 static short calc_mouse_movement(short axis) {
     short abs_axis = (short) (axis > 0 ? axis : -axis);
     short threshold = 4096;
+    short speed = 8;
     if (abs_axis < threshold) return 0;
-    return (short) (SDL_sqrt(abs_axis - threshold) * (axis > 0 ? 1 : -1) / 16);
+    return (short) (SDL_sqrt(abs_axis - threshold) * (axis > 0 ? 1 : -1) / 32 - LV_CLAMP(0, speed, 16));
 }
 
 static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
