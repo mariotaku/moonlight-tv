@@ -45,6 +45,8 @@ lv_group_t *app_input_get_group();
 
 lv_group_t *app_input_get_modal_group();
 
+void app_input_set_button_points(const lv_point_t *points);
+
 void app_set_fullscreen(bool);
 
 void app_open_url(const char *url);

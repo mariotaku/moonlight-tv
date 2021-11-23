@@ -26,9 +26,6 @@
 
 #include <SDL_image.h>
 
-#include <fontconfig/fontconfig.h>
-
-
 #if TARGET_WEBOS
 
 #include "debughelper.h"
@@ -45,7 +42,15 @@ static SDL_mutex *app_gs_client_mutex = NULL;
 
 lv_controller_manager_t *app_uimanager;
 
-static lv_indev_t *app_indev_key, *app_indev_wheel;
+static lv_indev_t *app_indev_key, *app_indev_wheel, *app_indev_button;
+
+static const lv_point_t button_points_empty[5] = {
+        {.x= 0, .y = 0},
+        {.x= 0, .y = 0},
+        {.x= 0, .y = 0},
+        {.x= 0, .y = 0},
+        {.x= 0, .y = 0},
+};
 
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
@@ -97,6 +102,8 @@ int main(int argc, char *argv[]) {
     lv_indev_t *indev_button = lv_sdl_init_button();
     app_indev_key = indev_key;
     app_indev_wheel = indev_wheel;
+    app_indev_button = indev_button;
+    lv_indev_set_button_points(indev_button, button_points_empty);
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
@@ -197,6 +204,10 @@ void app_input_set_modal_group(lv_group_t *group) {
     app_input_populate_group();
 }
 
+void app_input_set_button_points(const lv_point_t *points) {
+    lv_indev_set_button_points(app_indev_button, points ? points : button_points_empty);
+}
+
 void app_start_text_input(int x, int y, int w, int h) {
     if (w > 0 && h > 0) {
         struct SDL_Rect rect = {x, y, w, h};
@@ -244,5 +255,6 @@ static void app_input_populate_group() {
     }
     lv_indev_set_group(app_indev_key, group);
     lv_indev_set_group(app_indev_wheel, group);
+    lv_indev_set_group(app_indev_button, group);
 }
 

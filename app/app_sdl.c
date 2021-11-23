@@ -128,6 +128,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_TEXTINPUT:
             return 1;
         default:
+            if (event->type == USER_REMOTEBUTTONEVENT) {
+                return 1;
+            }
             return 0;
     }
     return 0;

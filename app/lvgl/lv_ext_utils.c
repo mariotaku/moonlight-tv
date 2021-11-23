@@ -31,3 +31,8 @@ lv_coord_t lv_measure_height(lv_obj_t *obj) {
     } while (obj && !LV_COORD_IS_PX(height));
     return 0;
 }
+
+void lv_area_center(const lv_area_t *area, lv_point_t *point) {
+    point->x = area->x1 + lv_area_get_width(area) / 2;
+    point->y = area->y1 + lv_area_get_height(area) / 2;
+}

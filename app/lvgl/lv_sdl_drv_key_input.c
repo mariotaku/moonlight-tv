@@ -3,6 +3,7 @@
 #include "stream/input/sdlinput.h"
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/root.h"
+#include "util/user_event.h"
 
 #include "lvgl.h"
 #include "lv_sdl_drv_input.h"
@@ -226,6 +227,16 @@ static bool read_webos_key(const SDL_KeyboardEvent *event, indev_key_state_t *st
         case SDL_WEBOS_SCANCODE_BACK:
             state->key = LV_KEY_ESC;
             return true;
+        case SDL_WEBOS_SCANCODE_RED:
+        case SDL_WEBOS_SCANCODE_GREEN:
+        case SDL_WEBOS_SCANCODE_YELLOW:
+        case SDL_WEBOS_SCANCODE_BLUE: {
+            SDL_Event btn_event;
+            SDL_memcpy(&btn_event.key, event, sizeof(SDL_KeyboardEvent));
+            btn_event.type = USER_REMOTEBUTTONEVENT;
+            SDL_PushEvent(&btn_event);
+            return false;
+        }
         default:
             return false;
     }

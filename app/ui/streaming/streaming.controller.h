@@ -23,6 +23,7 @@ typedef struct {
         lv_obj_t *decode_time;
     } stats_items;
     lv_obj_t *notice, *notice_label;
+    lv_point_t button_points[5];
 } streaming_controller_t;
 
 typedef struct {
@@ -38,4 +39,4 @@ bool streaming_overlay_shown();
 
 bool streaming_refresh_stats();
 
-void streaming_notice_show(const char* message);
+void streaming_notice_show(const char *message);

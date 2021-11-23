@@ -4,6 +4,7 @@
 #include "stream/platform.h"
 #include "ui/root.h"
 #include "lvgl/util/lv_app_utils.h"
+#include "lvgl/lv_ext_utils.h"
 
 #include "util/user_event.h"
 #include "util/i18n.h"
@@ -35,6 +36,10 @@ static void session_error(streaming_controller_t *controller);
 static void session_error_dialog_cb(lv_event_t *event);
 
 static void overlay_key_cb(lv_event_t *e);
+
+static void overlay_layout_cb(lv_event_t *e);
+
+static void update_buttons_layout(streaming_controller_t *controller);
 
 const lv_obj_controller_class_t streaming_controller_class = {
         .constructor_cb = streaming_controller_ctor,
@@ -166,6 +171,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->video, overlay_layout_cb, LV_EVENT_CHILD_CHANGED, controller);
 
     lv_obj_t *notice = lv_obj_create(lv_layer_top());
     lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -208,11 +214,14 @@ bool show_overlay(streaming_controller_t *controller) {
     lv_area_t coords = controller->video->coords;
     streaming_enter_overlay(coords.x1, coords.y1, lv_area_get_width(&coords), lv_area_get_height(&coords));
     streaming_refresh_stats();
+
+    update_buttons_layout(controller);
     return true;
 }
 
 static void hide_overlay(lv_event_t *event) {
     streaming_controller_t *controller = (streaming_controller_t *) lv_event_get_user_data(event);
+    app_input_set_button_points(NULL);
     lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
     if (!overlay_showing)
         return;
@@ -251,4 +260,20 @@ static void overlay_key_cb(lv_event_t *e) {
         default:
             break;
     }
+}
+
+static void overlay_layout_cb(lv_event_t *e) {
+    streaming_controller_t *controller = lv_event_get_user_data(e);
+    update_buttons_layout(controller);
+}
+
+static void update_buttons_layout(streaming_controller_t *controller) {
+    lv_area_t coords;
+    lv_obj_get_coords(controller->quit_btn, &coords);
+    lv_area_center(&coords, &controller->button_points[1]);
+    lv_obj_get_coords(controller->suspend_btn, &coords);
+    lv_area_center(&coords, &controller->button_points[3]);
+    lv_obj_get_coords(controller->kbd_btn, &coords);
+    lv_area_center(&coords, &controller->button_points[4]);
+    app_input_set_button_points(controller->button_points);
 }
