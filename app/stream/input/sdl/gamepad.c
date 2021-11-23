@@ -14,6 +14,8 @@ static bool quit_combo_pressed = false;
 
 static void vmouse_set_vector(short x, short y);
 
+static void vmouse_handle_button(Uint8 button, bool pressed);
+
 static void release_buttons(PGAMEPAD_STATE gamepad);
 
 static short calc_mouse_movement(short axis);
@@ -29,6 +31,7 @@ static Uint32 vmouse_timer_callback(Uint32 interval, void *param);
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
     short button = 0;
     PGAMEPAD_STATE gamepad = get_gamepad(event->which);
+    bool vmouse_intercepted = false;
     switch (event->button) {
         case SDL_CONTROLLER_BUTTON_A:
             button = app_configuration->swap_abxy ? B_FLAG : A_FLAG;
@@ -67,6 +70,9 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
             button = LS_CLK_FLAG;
             break;
         case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
+            if (absinput_virtual_mouse == ABSINPUT_VMOUSE_RIGHT_STICK) {
+                vmouse_intercepted = true;
+            }
             button = RS_CLK_FLAG;
             break;
         case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
@@ -78,10 +84,14 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
         default:
             return;
     }
-    if (event->type == SDL_CONTROLLERBUTTONDOWN)
-        gamepad->buttons |= button;
-    else
+    if (vmouse_intercepted) {
+        vmouse_handle_button(event->button, event->state);
         gamepad->buttons &= ~button;
+    } else if (event->type == SDL_CONTROLLERBUTTONDOWN) {
+        gamepad->buttons |= button;
+    } else {
+        gamepad->buttons &= ~button;
+    }
 
     if ((gamepad->buttons & QUIT_BUTTONS) == QUIT_BUTTONS) {
         quit_combo_pressed = true;
@@ -181,6 +191,19 @@ static void vmouse_set_vector(short x, short y) {
     } else if (vmouse_timer_id) {
         SDL_RemoveTimer(vmouse_timer_id);
         vmouse_timer_id = 0;
+    }
+}
+
+static void vmouse_handle_button(Uint8 button, bool pressed) {
+    switch (button) {
+        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: {
+            LiSendMouseButtonEvent(pressed ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, BUTTON_LEFT);
+            break;
+        }
+        default: {
+            break;
+        }
     }
 }
 
