@@ -67,6 +67,9 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
             button = SPECIAL_FLAG;
             break;
         case SDL_CONTROLLER_BUTTON_LEFTSTICK:
+            if (absinput_virtual_mouse == ABSINPUT_VMOUSE_LEFT_STICK) {
+                vmouse_intercepted = true;
+            }
             button = LS_CLK_FLAG;
             break;
         case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
@@ -196,8 +199,8 @@ static void vmouse_set_vector(short x, short y) {
 
 static void vmouse_handle_button(Uint8 button, bool pressed) {
     switch (button) {
-        case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-        case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: {
+        case SDL_CONTROLLER_BUTTON_LEFTSTICK:
+        case SDL_CONTROLLER_BUTTON_RIGHTSTICK: {
             LiSendMouseButtonEvent(pressed ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, BUTTON_LEFT);
             break;
         }
