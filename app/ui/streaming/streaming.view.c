@@ -31,6 +31,14 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_style(kbd_label, &controller->overlay_button_label_style, 0);
     lv_label_set_text(kbd_label, locstr("Soft keyboard"));
 
+    lv_obj_t *vmouse_btn = lv_btn_create(scene);
+    lv_obj_add_flag(vmouse_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_style(vmouse_btn, &controller->overlay_button_style, 0);
+    lv_obj_set_style_bg_color(vmouse_btn, lv_palette_main(LV_PALETTE_GREEN), 0);
+    lv_obj_t *vmouse_label = lv_label_create(vmouse_btn);
+    lv_obj_add_style(vmouse_label, &controller->overlay_button_label_style, 0);
+    lv_label_set_text(vmouse_label, locstr("Virtual Mouse"));
+
     lv_obj_t *suspend_btn = lv_btn_create(scene);
     lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(suspend_btn, &controller->overlay_button_style, 0);
@@ -71,6 +79,7 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     controller->video = video;
     controller->kbd_btn = kbd_btn;
+    controller->vmouse_btn = vmouse_btn;
     controller->quit_btn = exit_btn;
     controller->suspend_btn = suspend_btn;
     controller->stats = stats;
@@ -99,6 +108,8 @@ void streaming_styles_init(streaming_controller_t *controller) {
 void streaming_overlay_resized(streaming_controller_t *controller) {
     lv_obj_align(controller->kbd_btn, LV_ALIGN_BOTTOM_LEFT, LV_DPX(20), -LV_DPX(20));
     lv_obj_align(controller->quit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
+
+    lv_obj_align_to(controller->vmouse_btn, controller->kbd_btn, LV_ALIGN_OUT_RIGHT_MID, LV_DPX(10), 0);
     lv_obj_align_to(controller->suspend_btn, controller->quit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
 
     lv_obj_update_layout(controller->scene);

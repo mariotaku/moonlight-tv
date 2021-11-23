@@ -30,6 +30,7 @@ void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event);
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 
 bool absinput_no_control;
+absinput_vmouse_mode_t absinput_virtual_mouse;
 
 GAMEPAD_STATE gamepads[4];
 short activeGamepadMask = 0;

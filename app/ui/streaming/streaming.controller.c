@@ -5,6 +5,7 @@
 #include "ui/root.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_ext_utils.h"
+#include "stream/input/absinput.h"
 
 #include "util/user_event.h"
 #include "util/i18n.h"
@@ -16,6 +17,8 @@ static void exit_streaming(lv_event_t *event);
 static void suspend_streaming(lv_event_t *event);
 
 static void open_keyboard(lv_event_t *event);
+
+static void toggle_vmouse(lv_event_t *event);
 
 static void hide_overlay(lv_event_t *event);
 
@@ -174,6 +177,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
+    lv_obj_add_event_cb(controller->vmouse_btn, toggle_vmouse, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
 
@@ -207,6 +211,14 @@ static void suspend_streaming(lv_event_t *event) {
 
 static void open_keyboard(lv_event_t *event) {
     app_start_text_input(0, 0, ui_display_width, ui_display_height);
+}
+
+static void toggle_vmouse(lv_event_t *event) {
+    if (absinput_virtual_mouse != ABSINPUT_VMOUSE_OFF) {
+        absinput_virtual_mouse = ABSINPUT_VMOUSE_OFF;
+    } else {
+        absinput_virtual_mouse = ABSINPUT_VMOUSE_RIGHT_STICK;
+    }
 }
 
 bool show_overlay(streaming_controller_t *controller) {
