@@ -6,6 +6,7 @@
 
 typedef struct {
     lv_obj_controller_t base;
+    lv_obj_t *scene;
     lv_group_t *group;
     lv_obj_t *progress;
     lv_obj_t *video;
@@ -23,6 +24,8 @@ typedef struct {
         lv_obj_t *decode_time;
     } stats_items;
     lv_obj_t *notice, *notice_label;
+    lv_style_t overlay_button_style;
+    lv_style_t overlay_button_label_style;
     lv_point_t button_points[5];
 } streaming_controller_t;
 
@@ -34,6 +37,10 @@ typedef struct {
 extern const lv_obj_controller_class_t streaming_controller_class;
 
 lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent);
+
+void streaming_styles_init(streaming_controller_t *controller);
+
+void streaming_overlay_resized(streaming_controller_t *controller);
 
 bool streaming_overlay_shown();
 

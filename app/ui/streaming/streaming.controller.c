@@ -37,8 +37,6 @@ static void session_error_dialog_cb(lv_event_t *event);
 
 static void overlay_key_cb(lv_event_t *e);
 
-static void overlay_layout_cb(lv_event_t *e);
-
 static void update_buttons_layout(streaming_controller_t *controller);
 
 const lv_obj_controller_class_t streaming_controller_class = {
@@ -112,6 +110,8 @@ static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
     streaming_begin(req->server, req->app);
 
     overlay_showing = false;
+
+    streaming_styles_init(controller);
 }
 
 static void controller_dtor(lv_obj_controller_t *self) {
@@ -156,6 +156,11 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             show_overlay(controller);
             return true;
         }
+        case USER_SIZE_CHANGED: {
+            update_buttons_layout(controller);
+            streaming_overlay_resized(controller);
+            return false;
+        }
         default: {
             break;
         }
@@ -171,7 +176,6 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
-    lv_obj_add_event_cb(controller->video, overlay_layout_cb, LV_EVENT_CHILD_CHANGED, controller);
 
     lv_obj_t *notice = lv_obj_create(lv_layer_top());
     lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -260,11 +264,6 @@ static void overlay_key_cb(lv_event_t *e) {
         default:
             break;
     }
-}
-
-static void overlay_layout_cb(lv_event_t *e) {
-    streaming_controller_t *controller = lv_event_get_user_data(e);
-    update_buttons_layout(controller);
 }
 
 static void update_buttons_layout(streaming_controller_t *controller) {

@@ -1,7 +1,6 @@
-#include "lvgl/ext/lv_child_group.h"
-#include "lvgl/ext/lv_obj_controller.h"
-
 #include "streaming.controller.h"
+
+#include "lvgl/ext/lv_child_group.h"
 
 #include "util/i18n.h"
 
@@ -11,9 +10,11 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
     controller->group = lv_group_create();
+    controller->scene = scene;
     lv_obj_add_event_cb(scene, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->group);
 
     lv_obj_remove_style_all(scene);
+    lv_obj_clear_flag(scene, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(scene, LV_PCT(100), LV_PCT(100));
 
     lv_obj_t *video = lv_obj_create(scene);
@@ -24,25 +25,27 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     lv_obj_t *kbd_btn = lv_btn_create(scene);
     lv_obj_add_flag(kbd_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_style(kbd_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(kbd_btn, lv_palette_main(LV_PALETTE_BLUE), 0);
     lv_obj_t *kbd_label = lv_label_create(kbd_btn);
+    lv_obj_add_style(kbd_label, &controller->overlay_button_label_style, 0);
     lv_label_set_text(kbd_label, locstr("Soft keyboard"));
 
     lv_obj_t *suspend_btn = lv_btn_create(scene);
     lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_style(suspend_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(suspend_btn, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_obj_t *suspend_lbl = lv_label_create(suspend_btn);
+    lv_obj_add_style(suspend_lbl, &controller->overlay_button_label_style, 0);
     lv_label_set_text(suspend_lbl, locstr("Disconnect"));
 
     lv_obj_t *exit_btn = lv_btn_create(scene);
     lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_style(exit_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(exit_btn, lv_palette_main(LV_PALETTE_RED), 0);
     lv_obj_t *exit_lbl = lv_label_create(exit_btn);
+    lv_obj_add_style(exit_lbl, &controller->overlay_button_label_style, 0);
     lv_label_set_text(exit_lbl, locstr("Quit game"));
-
-    lv_obj_align(kbd_btn, LV_ALIGN_BOTTOM_LEFT, LV_DPX(20), -LV_DPX(20));
-    lv_obj_align(exit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
-    lv_obj_align_to(suspend_btn, exit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
 
     lv_obj_t *stats = lv_obj_create(scene);
     lv_obj_remove_style_all(stats);
@@ -72,7 +75,33 @@ lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
     controller->suspend_btn = suspend_btn;
     controller->stats = stats;
 
+    streaming_overlay_resized(controller);
+
     return scene;
+}
+
+void streaming_styles_init(streaming_controller_t *controller) {
+    lv_theme_t *theme = lv_disp_get_default()->theme;
+
+    lv_style_init(&controller->overlay_button_style);
+    lv_style_set_shadow_ofs_y(&controller->overlay_button_style, LV_DPX(3));
+    lv_style_set_shadow_width(&controller->overlay_button_style, LV_DPX(4));
+    lv_style_set_shadow_color(&controller->overlay_button_style, lv_color_black());
+    lv_style_set_shadow_opa(&controller->overlay_button_style, LV_OPA_30);
+    lv_style_set_radius(&controller->overlay_button_style, LV_DPX(8));
+    lv_style_set_pad_hor(&controller->overlay_button_style, LV_DPX(15));
+    lv_style_set_pad_ver(&controller->overlay_button_style, LV_DPX(10));
+
+    lv_style_init(&controller->overlay_button_label_style);
+    lv_style_set_text_font(&controller->overlay_button_label_style, theme->font_small);
+}
+
+void streaming_overlay_resized(streaming_controller_t *controller) {
+    lv_obj_align(controller->kbd_btn, LV_ALIGN_BOTTOM_LEFT, LV_DPX(20), -LV_DPX(20));
+    lv_obj_align(controller->quit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
+    lv_obj_align_to(controller->suspend_btn, controller->quit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
+
+    lv_obj_update_layout(controller->scene);
 }
 
 lv_obj_t *progress_dialog_create(const char *message) {
