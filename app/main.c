@@ -84,6 +84,9 @@ int main(int argc, char *argv[]) {
     lv_disp_t *disp = lv_app_display_init(app_window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
     lv_theme_t theme_app;
+    lv_memset_00(&theme_app, sizeof(lv_theme_t));
+    theme_app.color_primary = parent_theme->color_primary;
+    theme_app.color_secondary = parent_theme->color_secondary;
     lv_theme_set_parent(&theme_app, parent_theme);
     lv_theme_moonlight_init(&theme_app);
     app_font_init(&theme_app);
