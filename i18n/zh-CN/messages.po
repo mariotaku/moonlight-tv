@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-22 23:38+0900\n"
-"PO-Revision-Date: 2021-11-22 14:40\n"
+"POT-Creation-Date: 2021-11-23 20:35+0900\n"
+"PO-Revision-Date: 2021-11-23 11:39\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -17,7 +17,7 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:75
+#: app/main.c:78
 msgid "[Localized Language]"
 msgstr "简体中文"
 
@@ -46,7 +46,7 @@ msgstr "退出"
 #: app/ui/launcher/launcher.controller.c:443
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
-#: app/ui/streaming/streaming.controller.c:224 app/app_sdl.c:177
+#: app/ui/streaming/streaming.controller.c:237 app/app_sdl.c:182
 msgid "OK"
 msgstr "确定"
 
@@ -132,7 +132,7 @@ msgid "Info"
 msgstr "详情"
 
 #: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
-#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
+#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:182
 msgid "Cancel"
 msgstr "取消"
 
@@ -164,27 +164,27 @@ msgstr "测试连接"
 msgid "Unpair"
 msgstr "取消配对"
 
-#: app/ui/streaming/streaming.view.c:28
+#: app/ui/streaming/streaming.view.c:32
 msgid "Soft keyboard"
 msgstr "显示软键盘"
-
-#: app/ui/streaming/streaming.view.c:34
-msgid "Quit game"
-msgstr "退出游戏"
 
 #: app/ui/streaming/streaming.view.c:40
 msgid "Disconnect"
 msgstr "断开连接"
 
-#: app/ui/streaming/streaming.controller.c:120
+#: app/ui/streaming/streaming.view.c:48
+msgid "Quit game"
+msgstr "退出游戏"
+
+#: app/ui/streaming/streaming.controller.c:125
 msgid "Connecting..."
 msgstr "正在连接…"
 
-#: app/ui/streaming/streaming.controller.c:133
+#: app/ui/streaming/streaming.controller.c:138
 msgid "Disconnecting..."
 msgstr "正在断开连接…"
 
-#: app/ui/streaming/streaming.controller.c:225
+#: app/ui/streaming/streaming.controller.c:238
 msgid "Failed to start streaming"
 msgstr "无法开始串流"
 
@@ -278,49 +278,68 @@ msgstr "交换ABXY键位"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "交换手柄的A/B和X/Y键。如果你习惯使用类似任天堂的按键布局会有用。"
 
-#: app/ui/settings/panes/decoder.pane.c:39
-#: app/ui/settings/panes/decoder.pane.c:54
+#: app/ui/settings/panes/decoder.pane.c:45
+#: app/ui/settings/panes/decoder.pane.c:60
 msgid "Automatic"
 msgstr "自动"
 
-#: app/ui/settings/panes/decoder.pane.c:71
+#: app/ui/settings/panes/decoder.pane.c:77
 #: app/ui/settings/panes/about.pane.c:76
 msgid "Video decoder"
 msgstr "视频解码器"
 
-#: app/ui/settings/panes/decoder.pane.c:72
+#: app/ui/settings/panes/decoder.pane.c:78
 #, c-format
 msgid "Video decoder - using %s"
 msgstr "视频解码器 - 使用 %s"
 
-#: app/ui/settings/panes/decoder.pane.c:77
+#: app/ui/settings/panes/decoder.pane.c:83
 #: app/ui/settings/panes/about.pane.c:78
 msgid "Audio backend"
 msgstr "音频后端"
 
-#: app/ui/settings/panes/decoder.pane.c:78
+#: app/ui/settings/panes/decoder.pane.c:84
 msgid "Decoder provided"
 msgstr "由解码器提供"
 
-#: app/ui/settings/panes/decoder.pane.c:80
+#: app/ui/settings/panes/decoder.pane.c:86
 #, c-format
 msgid "Audio backend - using %s"
 msgstr "音频后端 - 使用 %s"
 
-#: app/ui/settings/panes/decoder.pane.c:87
+#: app/ui/settings/panes/decoder.pane.c:91
+msgid "Use H265 codec"
+msgstr "使用 H265 编码"
+
+#: app/ui/settings/panes/decoder.pane.c:96
+#, c-format
+msgid "%s decoder doesn't support H265 codec."
+msgstr "解码器 %s 不支持 H265 编码。"
+
+#: app/ui/settings/panes/decoder.pane.c:100
+msgid "H265 usually has clearer graphics, and is required for using HDR."
+msgstr "H265 通常画面更清晰，并且需要启用才可以使用 HDR。"
+
+#: app/ui/settings/panes/decoder.pane.c:104
 msgid "HDR (experimental)"
 msgstr "HDR（测试功能）"
 
-#: app/ui/settings/panes/decoder.pane.c:92
+#: app/ui/settings/panes/decoder.pane.c:109
 #, c-format
 msgid "%s decoder doesn't support HDR."
 msgstr "解码器 %s 不支持 HDR。"
 
-#: app/ui/settings/panes/decoder.pane.c:96
+#: app/ui/settings/panes/decoder.pane.c:113
+#: app/ui/settings/panes/decoder.pane.c:144
+msgid "H265 is required to use HDR."
+msgstr "使用 HDR 必须启用 H265。"
+
+#: app/ui/settings/panes/decoder.pane.c:116
+#: app/ui/settings/panes/decoder.pane.c:147
 msgid "HDR is only supported on certain games and when connecting to supported monitor."
 msgstr "请注意HDR仅在部分游戏中支持，通常您还需要连接支持的显示器。"
 
-#: app/ui/settings/panes/decoder.pane.c:99
+#: app/ui/settings/panes/decoder.pane.c:119
 msgid "Learn more about HDR feature."
 msgstr "了解更多关于HDR功能的信息。"
 
@@ -344,7 +363,7 @@ msgstr "屏幕分辨率"
 msgid "Refresh rate"
 msgstr "刷新率"
 
-#: app/app_sdl.c:178
+#: app/app_sdl.c:183
 msgid "Quit Moonlight?"
 msgstr "退出Moonlight？"
 
