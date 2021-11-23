@@ -76,7 +76,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
         config->stream.bitrate = decoder_info.maxBitrate;
     config->sops &= streaming_sops_supported(server->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
-    config->stream.supportsHevc = decoder_info.hevc;
+    config->stream.supportsHevc &= decoder_info.hevc;
     config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server->supportsHdr &&
                                 (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
     config->stream.colorSpace = decoder_info.colorSpace;

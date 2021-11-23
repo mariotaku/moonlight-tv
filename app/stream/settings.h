@@ -22,14 +22,6 @@
 
 #include <stdbool.h>
 
-#define MAX_INPUTS 6
-
-enum codecs {
-    CODEC_UNSPECIFIED,
-    CODEC_H264,
-    CODEC_HEVC
-};
-
 typedef struct configuration_t {
     STREAM_CONFIGURATION stream;
     int debug_level;
@@ -47,7 +39,6 @@ typedef struct configuration_t {
     bool viewonly;
     bool absmouse;
     bool swap_abxy;
-    enum codecs codec;
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_MOONLIGHT "moonlight.conf"

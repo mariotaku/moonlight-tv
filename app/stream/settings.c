@@ -1,14 +1,10 @@
 #include "settings.h"
 
-#include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <libconfig.h>
 
-#include <sys/stat.h>
 #include <util/nullable.h>
 
 #include "util/path.h"
@@ -77,7 +73,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.packetSize = 1024;
     config->stream.streamingRemotely = 0;
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
-    config->stream.supportsHevc = false;
+    config->stream.supportsHevc = true;
 
     config->debug_level = 0;
     config->language = strdup("auto");
@@ -92,7 +88,6 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->quitappafter = false;
     config->viewonly = false;
     config->rotate = 0;
-    config->codec = CODEC_UNSPECIFIED;
     config->absmouse = true;
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
@@ -139,6 +134,7 @@ bool settings_read(char *filename, PCONFIGURATION config) {
     config_lookup_int(&libconfig, "streaming.bitrate", &config->stream.bitrate);
     config_lookup_int(&libconfig, "streaming.packetsize", &config->stream.packetSize);
     config_lookup_int(&libconfig, "streaming.rotate", &config->rotate);
+    config_lookup_bool_std(&libconfig, "streaming.hevc", &config->stream.supportsHevc);
     config_lookup_bool_std(&libconfig, "streaming.hdr", &config->stream.enableHdr);
     config_lookup_enum(&libconfig, "streaming.surround", &config->stream.audioConfiguration, parse_audio_config);
 
@@ -214,6 +210,7 @@ void settings_write(char *filename, PCONFIGURATION config) {
     config_setting_set_enum_simple(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
 
     config_setting_set_bool_simple(streaming, "hdr", config->stream.enableHdr);
+    config_setting_set_bool_simple(streaming, "hevc", config->stream.supportsHevc);
     config_setting_set_string_simple(root, "language", config->language);
     config_setting_set_bool_simple(root, "fullscreen", config->fullscreen);
     config_setting_set_int_simple(root, "debug_level", config->debug_level);

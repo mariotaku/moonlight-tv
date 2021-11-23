@@ -10,6 +10,10 @@
 typedef struct decoder_pane_t {
     lv_obj_controller_t base;
     settings_controller_t *parent;
+
+    lv_obj_t *hdr_checkbox;
+    lv_obj_t *hdr_hint;
+
     pref_dropdown_string_entry_t decoder_entries[DECODER_COUNT + 1];
     pref_dropdown_string_entry_t audio_entries[AUDIO_COUNT + 1];
 } decoder_pane_t;
@@ -19,6 +23,8 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
 static void pane_ctor(lv_obj_controller_t *self, void *args);
 
 static void pref_mark_restart_cb(lv_event_t *e);
+
+static void hdr_state_update_cb(lv_event_t *e);
 
 static void hdr_more_click_cb(lv_event_t *e);
 
@@ -80,9 +86,20 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_label_set_text_fmt(audio_label, locstr("Audio backend - using %s"), audio_name);
     lv_obj_t *audio_dropdown = pref_dropdown_string(parent, controller->audio_entries, audio_orders_len + 1,
                                                     &app_configuration->audio_backend);
-    lv_obj_add_event_cb(decoder_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
-    lv_obj_add_event_cb(audio_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_set_width(audio_dropdown, LV_PCT(100));
+
+    lv_obj_t *hevc_checkbox = pref_checkbox(parent, locstr("Use H265 codec"), &app_configuration->stream.supportsHevc,
+                                            false);
+    lv_obj_t *hevc_hint = pref_desc_label(parent, NULL, false);
+    if (!decoder_info.hevc) {
+        lv_obj_add_state(hevc_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text_fmt(hevc_hint, locstr("%s decoder doesn't support H265 codec."),
+                              decoder_definitions[decoder_current].name);
+    } else {
+        lv_obj_clear_state(hevc_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text(hevc_hint, locstr("H265 usually has clearer graphics, and is required "
+                                            "for using HDR."));
+    }
 
     lv_obj_t *hdr_checkbox = pref_checkbox(parent, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
                                            false);
@@ -91,6 +108,9 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
                               decoder_definitions[decoder_current].name);
+    } else if (!app_configuration->stream.supportsHevc) {
+        lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text(hdr_hint, locstr("H265 is required to use HDR."));
     } else {
         lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text(hdr_hint, locstr("HDR is only supported on certain games and "
@@ -100,7 +120,12 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(decoder_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(audio_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(hevc_checkbox, hdr_state_update_cb, LV_EVENT_VALUE_CHANGED, controller);
 
+    controller->hdr_checkbox = hdr_checkbox;
+    controller->hdr_hint = hdr_hint;
     return NULL;
 }
 
@@ -109,6 +134,19 @@ static void pref_mark_restart_cb(lv_event_t *e) {
     settings_controller_t *parent = controller->parent;
     parent->needs_restart |= decoder_current != decoder_by_id(app_configuration->decoder);
     parent->needs_restart |= audio_current != audio_by_id(app_configuration->audio_backend);
+}
+
+static void hdr_state_update_cb(lv_event_t *e) {
+    if (decoder_info.hdr == DECODER_HDR_NONE) return;
+    decoder_pane_t *controller = (decoder_pane_t *) lv_event_get_user_data(e);
+    if (!app_configuration->stream.supportsHevc) {
+        lv_obj_add_state(controller->hdr_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text(controller->hdr_hint, locstr("H265 is required to use HDR."));
+    } else {
+        lv_obj_clear_state(controller->hdr_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text(controller->hdr_hint, locstr("HDR is only supported on certain games and "
+                                                       "when connecting to supported monitor."));
+    }
 }
 
 static void hdr_more_click_cb(lv_event_t *e) {
