@@ -88,7 +88,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
                                                     &app_configuration->audio_backend);
     lv_obj_set_width(audio_dropdown, LV_PCT(100));
 
-    lv_obj_t *hevc_checkbox = pref_checkbox(parent, locstr("Use H265 codec"), &app_configuration->stream.supportsHevc,
+    lv_obj_t *hevc_checkbox = pref_checkbox(parent, locstr("Prefer H265 codec"), &app_configuration->stream.supportsHevc,
                                             false);
     lv_obj_t *hevc_hint = pref_desc_label(parent, NULL, false);
     if (!decoder_info.hevc) {

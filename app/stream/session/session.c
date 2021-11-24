@@ -133,6 +133,7 @@ int streaming_worker(session_t *session) {
     PSERVER_DATA server = session->server;
     PCONFIGURATION config = session->config;
     absinput_no_control = config->viewonly;
+    absinput_virtual_mouse = ABSINPUT_VMOUSE_OFF;
     int appId = session->appId;
 
     int gamepads = absinput_gamepads();

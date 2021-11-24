@@ -9,8 +9,11 @@
 #include "util/user_event.h"
 
 #define QUIT_BUTTONS (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG)
+#define GAMEPAD_COMBO_VMOUSE1 (BACK_FLAG | RS_CLK_FLAG)
+#define GAMEPAD_COMBO_VMOUSE2 (BACK_FLAG | LS_CLK_FLAG)
 
 static bool quit_combo_pressed = false;
+static bool vmouse_combo_pressed = false;
 
 static void vmouse_set_vector(short x, short y);
 
@@ -27,6 +30,8 @@ static struct {
 static SDL_TimerID vmouse_timer_id = 0;
 
 static Uint32 vmouse_timer_callback(Uint32 interval, void *param);
+
+static bool gamepad_combo_check(short buttons, short combo);
 
 void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
     short button = 0;
@@ -87,26 +92,39 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
         default:
             return;
     }
-    if (vmouse_intercepted) {
-        vmouse_handle_button(event->button, event->state);
-        gamepad->buttons &= ~button;
-    } else if (event->type == SDL_CONTROLLERBUTTONDOWN) {
+    if (event->type == SDL_CONTROLLERBUTTONDOWN) {
         gamepad->buttons |= button;
     } else {
         gamepad->buttons &= ~button;
     }
 
-    if ((gamepad->buttons & QUIT_BUTTONS) == QUIT_BUTTONS) {
+    if (gamepad_combo_check(gamepad->buttons, QUIT_BUTTONS)) {
         quit_combo_pressed = true;
         return;
+    } else if (gamepad_combo_check(gamepad->buttons, GAMEPAD_COMBO_VMOUSE1)
+               || gamepad_combo_check(gamepad->buttons, GAMEPAD_COMBO_VMOUSE2)) {
+        vmouse_combo_pressed = true;
+        return;
+    } else if (vmouse_intercepted) {
+        vmouse_handle_button(event->button, event->state);
+        gamepad->buttons &= ~button;
     }
-    if (quit_combo_pressed) {
-        if (gamepad->buttons == 0) {
+    if (gamepad->buttons == 0) {
+        if (quit_combo_pressed) {
             quit_combo_pressed = false;
             release_buttons(gamepad);
             bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
+            return;
+        } else if (vmouse_combo_pressed) {
+            vmouse_combo_pressed = false;
+            release_buttons(gamepad);
+            if (absinput_virtual_mouse) {
+                absinput_virtual_mouse = ABSINPUT_VMOUSE_OFF;
+            } else {
+                absinput_virtual_mouse = ABSINPUT_VMOUSE_RIGHT_STICK;
+            }
+            return;
         }
-        return;
     }
 
     if (absinput_no_control)
@@ -227,9 +245,8 @@ static void release_buttons(PGAMEPAD_STATE gamepad) {
 static short calc_mouse_movement(short axis) {
     short abs_axis = (short) (axis > 0 ? axis : -axis);
     short threshold = 4096;
-    short speed = 8;
     if (abs_axis < threshold) return 0;
-    return (short) (SDL_sqrt(abs_axis - threshold) * (axis > 0 ? 1 : -1) / (32 - LV_CLAMP(0, speed, 16)));
+    return (short) (SDL_sqrt(abs_axis - threshold) * (axis > 0 ? 1 : -1));
 }
 
 static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
@@ -237,6 +254,14 @@ static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
     if (!vmouse_vector.x && !vmouse_vector.y) {
         return 0;
     }
-    LiSendMouseMoveEvent(vmouse_vector.x, vmouse_vector.y);
-    return 5;
+    short speed = 16;
+    double x = vmouse_vector.x / (32 - LV_CLAMP(0, speed, 16));
+    double y = vmouse_vector.y / (32 - LV_CLAMP(0, speed, 16));
+    double abs_x = LV_ABS(x), abs_y = LV_ABS(y);
+    LiSendMouseMoveEvent((short) (abs_x > 1 ? x : x / abs_x), (short) (abs_y > 1 ? y : y / abs_y));
+    return LV_CLAMP(5, 5 / LV_MAX(abs_x, abs_y), 20);
+}
+
+static bool gamepad_combo_check(short buttons, short combo) {
+    return (buttons & combo) == combo;
 }

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-23 20:35+0900\n"
+"POT-Creation-Date: 2021-11-25 01:05+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,7 +46,7 @@ msgstr ""
 #: app/ui/launcher/launcher.controller.c:443
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
-#: app/ui/streaming/streaming.controller.c:237 app/app_sdl.c:182
+#: app/ui/streaming/streaming.controller.c:249 app/app_sdl.c:182
 msgid "OK"
 msgstr ""
 
@@ -170,22 +170,26 @@ msgid "Soft keyboard"
 msgstr ""
 
 #: app/ui/streaming/streaming.view.c:40
-msgid "Disconnect"
+msgid "Virtual Mouse"
 msgstr ""
 
 #: app/ui/streaming/streaming.view.c:48
+msgid "Disconnect"
+msgstr ""
+
+#: app/ui/streaming/streaming.view.c:56
 msgid "Quit game"
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:125
+#: app/ui/streaming/streaming.controller.c:128
 msgid "Connecting..."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:138
+#: app/ui/streaming/streaming.controller.c:141
 msgid "Disconnecting..."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:238
+#: app/ui/streaming/streaming.controller.c:250
 msgid "Failed to start streaming"
 msgstr ""
 
@@ -315,7 +319,7 @@ msgid "Audio backend - using %s"
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:91
-msgid "Use H265 codec"
+msgid "Prefer H265 codec"
 msgstr ""
 
 #: app/ui/settings/panes/decoder.pane.c:96
