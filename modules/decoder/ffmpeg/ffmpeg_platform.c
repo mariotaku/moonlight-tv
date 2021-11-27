@@ -27,6 +27,7 @@ bool decoder_check_ffmpeg(PDECODER_INFO info) {
     info->accelerated = false;
     info->audio = false;
     info->hasRenderer = true;
+    info->suggestedBitrate = 50000;
 
     return true;
 }

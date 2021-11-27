@@ -15,6 +15,7 @@ typedef struct {
     lv_obj_t *res_warning;
     lv_obj_t *bitrate_label;
     lv_obj_t *bitrate_slider;
+    lv_obj_t *bitrate_warning;
 
     pref_dropdown_string_entry_t *lang_entries;
     int lang_entries_len;
@@ -37,6 +38,8 @@ static void update_bitrate_label(basic_pane_t *pane);
 static void init_locale_entries(basic_pane_t *pane);
 
 static void pref_mark_restart_cb(lv_event_t *e);
+
+static void update_bitrate_hint(basic_pane_t *pane);
 
 const lv_obj_controller_class_t settings_pane_basic_cls = {
         .constructor_cb = pane_ctor,
@@ -107,13 +110,19 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_label_set_long_mode(pane->res_warning, LV_LABEL_LONG_WRAP);
 
     pane->bitrate_label = pref_title_label(parent, locstr("Video bitrate"));
-    update_bitrate_label(pane);
 
-    int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 50000;
+    int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 100000;
     lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
+
+    pane->bitrate_warning = lv_label_create(parent);
+    lv_obj_add_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_width(pane->bitrate_warning, LV_PCT(100));
+    lv_obj_set_style_text_font(pane->bitrate_warning, lv_theme_get_font_small(parent), 0);
+    lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
+    lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
 
 #if !FEATURE_FORCE_FULLSCREEN
     lv_obj_t *checkbox = pref_checkbox(parent, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
@@ -131,12 +140,17 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_add_event_cb(language_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, pane);
     lv_obj_set_width(language_dropdown, LV_PCT(100));
 #endif
+
+    update_bitrate_label(pane);
+    update_bitrate_hint(pane);
+
     return NULL;
 }
 
 static void on_bitrate_changed(lv_event_t *e) {
     basic_pane_t *pane = lv_event_get_user_data(e);
     update_bitrate_label(pane);
+    update_bitrate_hint(pane);
 }
 
 static void on_res_fps_updated(lv_event_t *e) {
@@ -145,7 +159,6 @@ static void on_res_fps_updated(lv_event_t *e) {
                                            app_configuration->stream.fps);
     lv_slider_set_value(pane->bitrate_slider, bitrate / BITRATE_STEP, LV_ANIM_OFF);
     app_configuration->stream.bitrate = lv_slider_get_value(pane->bitrate_slider) * BITRATE_STEP;
-    update_bitrate_label(pane);
     if (app_configuration->stream.width > 1920 && app_configuration->stream.height > 1080 &&
         app_configuration->stream.fps > 60) {
         lv_obj_clear_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
@@ -154,6 +167,8 @@ static void on_res_fps_updated(lv_event_t *e) {
     } else {
         lv_obj_add_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
     }
+    update_bitrate_label(pane);
+    update_bitrate_hint(pane);
 }
 
 static void on_fullscreen_updated(lv_event_t *e) {
@@ -162,6 +177,16 @@ static void on_fullscreen_updated(lv_event_t *e) {
 
 static void update_bitrate_label(basic_pane_t *pane) {
     lv_label_set_text_fmt(pane->bitrate_label, locstr("Video bitrate - %d kbps"), app_configuration->stream.bitrate);
+}
+
+static void update_bitrate_hint(basic_pane_t *pane) {
+    if (decoder_info.suggestedBitrate && app_configuration->stream.bitrate > decoder_info.suggestedBitrate) {
+        lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text_static(pane->bitrate_warning, locstr("Higher bitrate may cause performance issue, "
+                                                               "try with caution."));
+    } else {
+        lv_obj_add_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 static void init_locale_entries(basic_pane_t *pane) {

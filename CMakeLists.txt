@@ -451,11 +451,6 @@ add_custom_target(i18n-merge-po
         COMMAND ${MSGMERGE_COMMAND} --update i18n/ja/messages.po i18n/messages.pot
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_custom_target(mat-gen-fonts
-        COMMAND npm run gen-mat-iconfont -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
-        -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL -s 28 32 38
-        )
-
 add_custom_target(iconfont-minify
         COMMAND npm run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
         -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
