@@ -5,8 +5,9 @@
 
 #include <libconfig.h>
 
-#include <util/nullable.h>
+#include "stream/platform.h"
 
+#include "util/nullable.h"
 #include "util/path.h"
 #include "util/logging.h"
 #include "util/libconfig_ext.h"
@@ -111,7 +112,15 @@ int settings_optimal_bitrate(int w, int h, int fps) {
             kbps = 25000;
             break;
     }
-    return kbps * fps / 30;
+    int suggested_max = decoder_info.suggestedBitrate;
+    if (!suggested_max) {
+        suggested_max = decoder_info.maxFramerate;
+    }
+    int calculated = kbps * fps / 30;
+    if (!suggested_max) {
+        return calculated;
+    }
+    return calculated < suggested_max ? calculated : suggested_max;
 }
 
 bool settings_read(char *filename, PCONFIGURATION config) {

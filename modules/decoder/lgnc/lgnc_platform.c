@@ -80,6 +80,7 @@ MODULE_API bool decoder_check_lgnc(PDECODER_INFO dinfo) {
     dinfo->accelerated = true;
     dinfo->audio = true;
     dinfo->maxBitrate = 40000;
+    dinfo->suggestedBitrate = 30000;
     return true;
 }
 

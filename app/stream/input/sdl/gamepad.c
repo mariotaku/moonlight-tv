@@ -3,7 +3,9 @@
 #include "app.h"
 
 #include <Limelight.h>
-#include <stream/input/absinput.h>
+#include <SDL.h>
+
+#include "stream/input/absinput.h"
 
 #include "util/bus.h"
 #include "util/user_event.h"
@@ -255,11 +257,12 @@ static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
         return 0;
     }
     short speed = 16;
-    double x = vmouse_vector.x / (32 - LV_CLAMP(0, speed, 16));
-    double y = vmouse_vector.y / (32 - LV_CLAMP(0, speed, 16));
-    double abs_x = LV_ABS(x), abs_y = LV_ABS(y);
+    double speed_divider = 32 - SDL_max(0, SDL_min(speed, 16));
+    double x = vmouse_vector.x / speed_divider;
+    double y = vmouse_vector.y / speed_divider;
+    double abs_x = SDL_fabs(x), abs_y = SDL_fabs(y);
     LiSendMouseMoveEvent((short) (abs_x > 1 ? x : x / abs_x), (short) (abs_y > 1 ? y : y / abs_y));
-    return LV_CLAMP(5, 5 / LV_MAX(abs_x, abs_y), 20);
+    return SDL_max(5, SDL_min(5 / SDL_max(abs_x, abs_y), 20));
 }
 
 static bool gamepad_combo_check(short buttons, short combo) {

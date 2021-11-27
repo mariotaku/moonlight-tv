@@ -59,6 +59,7 @@ MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->hdr = DECODER_HDR_ALWAYS;
     dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->maxBitrate = 50000;
+    dinfo->suggestedBitrate = 35000;
     return true;
 }
 

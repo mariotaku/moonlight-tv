@@ -59,6 +59,7 @@ typedef struct DECODER_INFO {
     int audioConfig;
     /* Handles video renderer on screen */
     bool hasRenderer;
+    int suggestedBitrate;
 } *PDECODER_INFO, DECODER_INFO;
 
 typedef struct AUDIO_INFO {
