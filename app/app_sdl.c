@@ -5,6 +5,7 @@
 #include "lvgl/util/lv_app_utils.h"
 
 #include "app.h"
+#include "config.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"
@@ -63,7 +64,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
-#ifndef FEATURE_FORCE_FULLSCREEN
+#if !FEATURE_FORCE_FULLSCREEN
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
                         streaming_interrupt(false);
