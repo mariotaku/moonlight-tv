@@ -11,9 +11,17 @@
 static char locale_system[16];
 
 void app_open_url(const char *url) {
-    char payload[8192];
-    snprintf(payload, sizeof(payload), "{\"id\": \"com.webos.app.browser\", \"params\":{\"target\": \"%s\"}}", url);
+    jvalue_ref payload_obj = jobject_create_var(
+            jkeyval(J_CSTR_TO_JVAL("id"), J_CSTR_TO_JVAL("com.webos.app.browser")),
+            jkeyval(J_CSTR_TO_JVAL("params"), jobject_create_var(
+                    jkeyval(J_CSTR_TO_JVAL("target"), j_cstr_to_jval(url)),
+                    J_END_OBJ_DECL
+            )),
+            J_END_OBJ_DECL
+    );
+    const char *payload = jvalue_stringify(payload_obj);
     HLunaServiceCallSync("luna://com.webos.applicationManager/launch", payload, true, NULL);
+    j_release(&payload_obj);
 }
 
 void app_init_locale() {
@@ -22,8 +30,8 @@ void app_init_locale() {
         return;
     }
     char *payload = NULL;
-    if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}", true,
-                              &payload) || !payload) {
+    if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}",
+                              true, &payload) || !payload) {
         return;
     }
     JSchemaInfo schemaInfo;
