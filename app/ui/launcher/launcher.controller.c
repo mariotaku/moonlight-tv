@@ -1,3 +1,4 @@
+#include <ui/help/help.dialog.h>
 #include "app.h"
 #include "res.h"
 
@@ -456,5 +457,5 @@ static void decoder_error_cb(lv_event_t *e) {
 }
 
 static void open_help(lv_event_t *event) {
-    app_open_url("https://github.com/mariotaku/moonlight-tv/wiki");
+    help_dialog_create();
 }

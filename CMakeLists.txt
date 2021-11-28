@@ -204,6 +204,7 @@ set(SOURCES
         app/ui/settings/panes/decoder.pane.c
         app/ui/settings/panes/about.pane.c
         app/ui/settings/panes/pref_obj.c
+        app/ui/help/help.dialog.c
         app/lvgl/lv_disp_drv_app.c
         app/lvgl/lv_sdl_drv_key_input.c
         app/lvgl/lv_sdl_drv_pointer_input.c

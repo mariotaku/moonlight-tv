@@ -30,9 +30,15 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
                 set_font = false;
             } else {
                 lv_obj_t *parent2 = lv_obj_get_parent(parent);
-                if (parent2 && lv_obj_has_class(parent2, &lv_win_class) && lv_win_get_header(parent2) == parent) {
-                    lv_obj_set_style_text_font(obj, theme->font_large, 0);
-                    set_font = false;
+                if (parent2) {
+                    if (lv_obj_has_class(parent2, &lv_win_class) && lv_win_get_header(parent2) == parent) {
+                        lv_obj_set_style_text_font(obj, theme->font_large, 0);
+                        set_font = false;
+                    } else if (lv_obj_check_type(parent2, &lv_msgbox_class) &&
+                               lv_msgbox_get_close_btn(parent2) == parent) {
+                        lv_obj_set_style_text_font(obj, app_iconfonts.large, 0);
+                        set_font = false;
+                    }
                 }
             }
         }
