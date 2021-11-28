@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-25 01:05+0900\n"
+"POT-Creation-Date: 2021-11-29 01:40+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr ""
 msgid "Add computer"
 msgstr ""
 
-#: app/ui/launcher/launcher.view.c:109
+#: app/ui/launcher/launcher.view.c:109 app/ui/help/help.dialog.c:15
 msgid "Help"
 msgstr ""
 
@@ -43,18 +43,18 @@ msgstr ""
 msgid "Quit"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:443
+#: app/ui/launcher/launcher.controller.c:444
 #: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
-#: app/ui/streaming/streaming.controller.c:249 app/app_sdl.c:182
+#: app/ui/streaming/streaming.controller.c:245 app/app_sdl.c:183
 msgid "OK"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:444
+#: app/ui/launcher/launcher.controller.c:445
 msgid "Decoder not working"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:447
+#: app/ui/launcher/launcher.controller.c:448
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr ""
@@ -133,7 +133,7 @@ msgid "Info"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
-#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:182
+#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:183
 msgid "Cancel"
 msgstr ""
 
@@ -189,7 +189,7 @@ msgstr ""
 msgid "Disconnecting..."
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:250
+#: app/ui/streaming/streaming.controller.c:246
 msgid "Failed to start streaming"
 msgstr ""
 
@@ -221,31 +221,35 @@ msgstr ""
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:85
+#: app/ui/settings/panes/basic.pane.c:88
 msgid "Resolution and FPS"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:109
+#: app/ui/settings/panes/basic.pane.c:112
 msgid "Video bitrate"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:119
+#: app/ui/settings/panes/basic.pane.c:128
 msgid "Fullscreen UI"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:125
-#: app/ui/settings/panes/basic.pane.c:126
+#: app/ui/settings/panes/basic.pane.c:134
+#: app/ui/settings/panes/basic.pane.c:135
 msgid "Language"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:152
+#: app/ui/settings/panes/basic.pane.c:165
 msgid ""
 "Your computer may not perform well when using this resolution and framerate."
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:164
+#: app/ui/settings/panes/basic.pane.c:179
 #, c-format
 msgid "Video bitrate - %d kbps"
+msgstr ""
+
+#: app/ui/settings/panes/basic.pane.c:185
+msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:25
@@ -376,7 +380,23 @@ msgstr ""
 msgid "Refresh rate"
 msgstr ""
 
-#: app/app_sdl.c:183
+#: app/ui/help/help.dialog.c:37
+msgid "Gamepad hotkeys"
+msgstr ""
+
+#: app/ui/help/help.dialog.c:39
+msgid "Remote controller keys"
+msgstr ""
+
+#: app/ui/help/help.dialog.c:42
+msgid "Open moonlight-tv Wiki"
+msgstr ""
+
+#: app/ui/help/help.dialog.c:44
+msgid "Open moonlight-stream Wiki"
+msgstr ""
+
+#: app/app_sdl.c:184
 msgid "Quit Moonlight?"
 msgstr ""
 
