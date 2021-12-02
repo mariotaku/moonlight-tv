@@ -26,7 +26,7 @@ if [ ! -d build ]; then
 fi
 
 cd build
-$CMAKE_BIN .. -DCMAKE_TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake -DTARGET_WEBOS=ON -DCMAKE_BUILD_TYPE=Debug
+$CMAKE_BIN .. -DCMAKE_TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake -DTARGET_WEBOS=ON "$@"
 
 echo "Start build"
 $CMAKE_BIN --install .
