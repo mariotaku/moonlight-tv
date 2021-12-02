@@ -14,20 +14,22 @@ if [ -z $CMAKE_BIN ]; then
     exit 1
 fi
 
-echo "Update submodules"
-git submodule update --init --recursive
+if [ -z $CI ]; then
+    echo "Update submodules"
+    git submodule update --init --recursive
+fi
 
 echo "Setup environment"
 . /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi
 
-echo "Project configuration"
+echo "Configure project"
 if [ ! -d build ]; then
     mkdir build
 fi
 
 cd build
-$CMAKE_BIN .. -DCMAKE_TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake -DTARGET_WEBOS=ON "$@"
+$CMAKE_BIN .. -DCMAKE_TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake -DTARGET_WEBOS=ON $@
 
-echo "Start build"
+echo "Build package"
 $CMAKE_BIN --install .
 $CMAKE_BIN --build . --target webos-package-moonlight
