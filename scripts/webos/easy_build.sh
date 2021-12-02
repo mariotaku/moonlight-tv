@@ -30,4 +30,4 @@ $CMAKE_BIN .. -DCMAKE_TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64
 
 echo "Start build"
 $CMAKE_BIN --install .
-$CMAKE_BIN --build . --target webos-package-moonlight
+$CMAKE_BIN --build . --target webos-package-moonlight "$@"
