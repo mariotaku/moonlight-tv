@@ -47,7 +47,7 @@ jobs:
         run: chmod 755 ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh && sudo ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -y
 
       - name: Run easy_build
-        run: ./scripts/webos/easy_build.sh --config $BUILD_TYPE
+        run: ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
       - name: Set Environment for Release
         working-directory: ${{github.workspace}}/build
