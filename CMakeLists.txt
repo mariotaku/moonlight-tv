@@ -8,7 +8,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH
-        ${CMAKE_SOURCE_DIR}/utils/cmake
+        ${CMAKE_SOURCE_DIR}/system/webos/utils/cmake
         ${CMAKE_SOURCE_DIR}/cmake
         ${CMAKE_SOURCE_DIR}/core/moonlight-common-c/cmake
         )
