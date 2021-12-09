@@ -6,6 +6,7 @@
 #define media_initialized PLUGIN_SYMBOL_NAME(decoder_media_initialized)
 #define media_loaded PLUGIN_SYMBOL_NAME(decoder_media_loaded)
 #define media_info PLUGIN_SYMBOL_NAME(decoder_media_info)
+#define hdr_info PLUGIN_SYMBOL_NAME(decoder_hdr_info)
 #define media_reload PLUGIN_SYMBOL_NAME(decoder_media_reload)
 #define media_unload PLUGIN_SYMBOL_NAME(decoder_media_unload)
 
@@ -36,8 +37,14 @@ const static uint8_t h264_test_frame[] = {
         0xa0, 0x00, 0x20, 0x00, 0x02, 0x16, 0xb8, 0x00, 0x08, 0x08
 };
 
+typedef struct ndl_hdr_info_t {
+    bool supported;
+    NDL_DIRECTVIDEO_HDR_INFO value;
+} ndl_hdr_info_t;
+
 extern bool media_initialized;
 extern bool media_loaded;
 extern NDL_DIRECTMEDIA_DATA_INFO media_info;
+extern ndl_hdr_info_t hdr_info;
 int media_reload();
 void media_unload();

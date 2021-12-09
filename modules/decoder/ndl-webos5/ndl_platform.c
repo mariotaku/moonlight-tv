@@ -30,6 +30,7 @@ MODULE_API bool decoder_post_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
         applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
     }
     memset(&media_info, 0, sizeof(media_info));
+    memset(&hdr_info, 0, sizeof(hdr_info));
     return media_initialized;
 }
 
