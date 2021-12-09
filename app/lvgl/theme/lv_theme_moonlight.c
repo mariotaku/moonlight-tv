@@ -1,8 +1,11 @@
-#include <app.h>
-#include "lvgl/ext/lv_child_group.h"
+#include "app.h"
+
 #include "lv_theme_moonlight.h"
+
 #include "util/font.h"
-#include "lvgl/font/material_icons_regular_symbols.h"
+#include "lvgl/ext/lv_child_group.h"
+
+static lv_style_t knob_shadow;
 
 static void apply_cb(struct _lv_theme_t *, lv_obj_t *);
 
@@ -14,6 +17,11 @@ static void msgbox_destroy(lv_event_t *event);
 
 void lv_theme_moonlight_init(lv_theme_t *theme) {
     lv_theme_set_apply_cb(theme, apply_cb);
+
+    lv_style_init(&knob_shadow);
+    lv_style_set_shadow_color(&knob_shadow, lv_color_black());
+    lv_style_set_shadow_width(&knob_shadow, LV_DPX(5));
+    lv_style_set_shadow_opa(&knob_shadow, LV_OPA_50);
 }
 
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
@@ -75,6 +83,8 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_dropdown_set_symbol(obj, MAT_SYMBOL_ARROW_DROP_DOWN);
     } else if (lv_obj_check_type(obj, &lv_checkbox_class)) {
         lv_obj_set_style_text_font(obj, app_iconfonts.normal, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    } else if (lv_obj_check_type(obj, &lv_slider_class)) {
+        lv_obj_add_style(obj, &knob_shadow, LV_PART_KNOB);
     }
     if (set_font) {
         lv_obj_set_style_text_font(obj, theme->font_normal, 0);
