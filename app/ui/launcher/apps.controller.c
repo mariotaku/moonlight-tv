@@ -285,9 +285,13 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_label_set_text_static(controller->errorlabel, locstr("Select computer again to pair."));
             } else if (controller->apploader->state == APPLOADER_STATE_LOADING) {
                 // is loading apps
-                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                if (controller->apploader->apps_count) {
+
+                } else {
+                    lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                }
             } else if (controller->apploader->code != 0) {
                 // apploader has error
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);

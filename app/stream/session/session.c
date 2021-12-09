@@ -143,15 +143,15 @@ int streaming_worker(session_t *session) {
 
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
-    gs_set_timeout(client, 15);
+    gs_set_timeout(client, 30);
     char *rtsp_session_url = NULL;
     int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask,
                            &rtsp_session_url);
     server->serverInfo.rtspSessionUrl = rtsp_session_url;
-    if (ret < 0) {
+    if (ret != GS_OK) {
         streaming_set_status(STREAMING_ERROR);
         if (gs_error) {
-            streaming_error(ret, "Failed to launch session: gamestream returned %d. (%s)", ret, gs_error);
+            streaming_error(ret, "Failed to launch session: %s (code %d)", gs_error, ret);
         } else {
             streaming_error(ret, "Failed to launch session: gamestream returned %d", ret);
         }

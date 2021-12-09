@@ -13,6 +13,7 @@ void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_lis
     vprintf(fmt, args);
     if (len && fmt[len - 1] != '\n')
         printf("\n");
+    fflush(stdout);
 }
 
 void app_loginit() {
