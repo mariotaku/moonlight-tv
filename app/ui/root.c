@@ -1,5 +1,6 @@
-#include <lvgl/lv_disp_drv_app.h>
-#include <ui/streaming/streaming.controller.h>
+#include "lvgl/lv_disp_drv_app.h"
+#include "ui/streaming/streaming.controller.h"
+#include "draw/sdl/lv_draw_sdl_utils.h"
 #include "app.h"
 #include "root.h"
 #include "config.h"
@@ -48,7 +49,7 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     if (!handled) {
         switch (which) {
             case USER_STREAM_OPEN:
-                ui_stream_render_host_context.renderer = lv_disp_get_default()->driver->user_data;
+                ui_stream_render_host_context.renderer = lv_draw_sdl_get_context()->renderer;
                 ui_stream_render = decoder_get_render(decoder_current);
                 if (ui_stream_render) {
                     ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);

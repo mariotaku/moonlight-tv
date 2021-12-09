@@ -1,9 +1,11 @@
 #include "lv_sdl_img.h"
 #include "lv_disp_drv_app.h"
 
-#include <SDL_image.h>
-#include <gpu/sdl/lv_gpu_sdl_texture_cache.h>
 #include <mbedtls/base64.h>
+
+#include <SDL_image.h>
+#include "draw/sdl/lv_draw_sdl_utils.h"
+#include "draw/sdl/lv_draw_sdl_texture_cache.h"
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header);
 
@@ -13,7 +15,7 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
 
 static bool is_sdl_img_src(const void *src);
 
-static lv_gpu_sdl_dec_dsc_userdata_t *lv_gpu_sdl_dec_dsc_userdata_new();
+static lv_draw_sdl_dec_dsc_userdata_t *lv_gpu_sdl_dec_dsc_userdata_new();
 
 void lv_sdl_img_decoder_init(lv_img_decoder_t *decoder) {
     IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
@@ -60,27 +62,27 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
     switch (sdl_src.type) {
         case LV_SDL_IMG_TYPE_TEXTURE: {
             dsc->img_data = NULL;
-            lv_gpu_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
+            lv_draw_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
             userdata->texture = sdl_src.data.texture;
             userdata->texture_managed = true;
             dsc->user_data = userdata;
             break;
         }
         case LV_SDL_IMG_TYPE_PATH: {
-            SDL_Renderer *renderer = lv_app_disp_renderer(lv_disp_get_default());
+            SDL_Renderer *renderer = lv_draw_sdl_get_context()->renderer;
             SDL_Texture *texture = IMG_LoadTexture(renderer, sdl_src.data.path);
             dsc->img_data = NULL;
-            lv_gpu_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
+            lv_draw_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
             userdata->texture = texture;
             dsc->user_data = userdata;
             break;
         }
         case LV_SDL_IMG_TYPE_CONST_PTR: {
-            SDL_Renderer *renderer = lv_app_disp_renderer(lv_disp_get_default());
+            SDL_Renderer *renderer = lv_draw_sdl_get_context()->renderer;
             SDL_RWops *src = SDL_RWFromConstMem(sdl_src.data.constptr, (int) sdl_src.data_len);
             SDL_Texture *texture = IMG_LoadTexture_RW(renderer, src, 1);
             dsc->img_data = NULL;
-            lv_gpu_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
+            lv_draw_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
             userdata->texture = texture;
             dsc->user_data = userdata;
             break;
@@ -98,7 +100,7 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
     }
     lv_sdl_img_src_t sdl_src;
     lv_sdl_img_src_parse(dsc->src, &sdl_src);
-    lv_gpu_sdl_dec_dsc_userdata_t *userdata = dsc->user_data;
+    lv_draw_sdl_dec_dsc_userdata_t *userdata = dsc->user_data;
     if (!userdata) {
         return;
     }
@@ -112,9 +114,9 @@ static inline bool is_sdl_img_src(const void *src) {
     return ((char *) src)[0] == '!' && SDL_memcmp(src, LV_SDL_IMG_HEAD, 8) == 0;
 }
 
-static lv_gpu_sdl_dec_dsc_userdata_t *lv_gpu_sdl_dec_dsc_userdata_new() {
-    lv_gpu_sdl_dec_dsc_userdata_t *userdata = SDL_malloc(sizeof(lv_gpu_sdl_dec_dsc_userdata_t));
-    SDL_memset(userdata, 0, sizeof(lv_gpu_sdl_dec_dsc_userdata_t));
-    SDL_memcpy(userdata->head, LV_GPU_SDL_DEC_DSC_TEXTURE_HEAD, 8);
+static lv_draw_sdl_dec_dsc_userdata_t *lv_gpu_sdl_dec_dsc_userdata_new() {
+    lv_draw_sdl_dec_dsc_userdata_t *userdata = SDL_malloc(sizeof(lv_draw_sdl_dec_dsc_userdata_t));
+    SDL_memset(userdata, 0, sizeof(lv_draw_sdl_dec_dsc_userdata_t));
+    SDL_memcpy(userdata->head, LV_DRAW_SDL_DEC_DSC_TEXTURE_HEAD, 8);
     return userdata;
 }

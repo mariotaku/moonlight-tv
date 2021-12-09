@@ -11,8 +11,9 @@
 #include "libgamestream/errors.h"
 
 #include <SDL_image.h>
+#include "draw/sdl/lv_draw_sdl_utils.h"
+#include "misc/lv_lru.h"
 #include "util/img_loader.h"
-#include <gpu/sdl/lv_gpu_sdl_lru.h>
 #include "util/refcounter.h"
 
 #include "util/logging.h"
@@ -188,8 +189,8 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     };
     lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
     if (!result) {
-        lv_disp_t *disp = lv_disp_get_default();
-        SDL_Renderer *renderer = disp->driver->user_data;
+        lv_draw_sdl_context_t *context = lv_draw_sdl_get_context();
+        SDL_Renderer *renderer = context->renderer;
         result = malloc(sizeof(lv_sdl_img_src_t));
         SDL_memset(result, 0, sizeof(lv_sdl_img_src_t));
         result->type = LV_SDL_IMG_TYPE_TEXTURE;

@@ -13,6 +13,7 @@
 #include "lvgl/lv_sdl_drv_input.h"
 #include "lvgl/lv_sdl_img.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
+#include "draw/sdl/lv_draw_sdl.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"
@@ -25,6 +26,7 @@
 #include "util/logging.h"
 
 #include <SDL_image.h>
+
 
 #if TARGET_WEBOS
 
@@ -81,6 +83,7 @@ int main(int argc, char *argv[]) {
     module_post_init(argc, argv);
 
     lv_init();
+    lv_draw_sdl_init();
     lv_disp_t *disp = lv_app_display_init(app_window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
     lv_theme_t theme_app;
@@ -130,7 +133,7 @@ int main(int argc, char *argv[]) {
     lv_sdl_deinit_key_input(indev_key);
     lv_app_display_deinit(disp);
     lv_img_decoder_delete(img_decoder);
-    lv_deinit();
+    lv_draw_sdl_deinit();
 
     SDL_DestroyWindow(app_window);
 

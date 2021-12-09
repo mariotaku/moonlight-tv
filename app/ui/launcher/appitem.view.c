@@ -1,8 +1,8 @@
 #include "appitem.view.h"
-
 #include "res.h"
-#include "gpu/sdl/lv_gpu_sdl_utils.h"
+
 #include "util/font.h"
+#include "draw/sdl/lv_draw_sdl_utils.h"
 
 static void appitem_holder_free_cb(lv_event_t *event);
 
