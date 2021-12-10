@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "app.h"
 
 #define RES_IMPL
@@ -29,8 +27,6 @@
 
 
 #if TARGET_WEBOS
-
-#include "debughelper.h"
 
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
 #else
