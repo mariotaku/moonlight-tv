@@ -8,6 +8,7 @@
 
 #include <libavcodec/avcodec.h>
 #include <SDL.h>
+#include "util/logging.h"
 
 static int width, height;
 
@@ -31,28 +32,29 @@ static bool renderer_setup(PSTREAM_CONFIGURATION conf, HOST_RENDER_CONTEXT *host
 }
 
 static bool renderer_submit_frame(AVFrame *frame) {
-    if (!renderer_ready || !frame) {
+    if (!renderer_ready) {
+        applog_w("FFMPEG", "Render is not ready.");
+        return false;
+    }
+    if (!frame) {
+        applog_w("FFMPEG", "Frame data is NULL.");
         return false;
     }
     if (!frame_texture) {
-        frame_texture = SDL_CreateTexture(host_render_context_ffmpeg->renderer, SDL_PIXELFORMAT_YV12,
+        SDL_PixelFormatEnum format;
+        switch (frame->format) {
+            case AV_PIX_FMT_YUV420P:
+                format = SDL_PIXELFORMAT_YV12;
+                break;
+            default:
+                return false;
+        }
+        frame_texture = SDL_CreateTexture(host_render_context_ffmpeg->renderer, format,
                                           SDL_TEXTUREACCESS_STREAMING, width, height);
     }
-    switch (frame->format) {
-        case AV_PIX_FMT_YUV420P:
-            SDL_UpdateYUVTexture(frame_texture, NULL, frame->data[0], frame->linesize[0],
-                                 frame->data[1], frame->linesize[1],
-                                 frame->data[2], frame->linesize[2]);
-            break;
-//            case AV_PIX_FMT_NV12:
-//                SDL_UpdateYUVTexture(m_Texture, NULL, frame->data[0], frame->linesize[0], frame->data[1],
-//                                     frame->linesize[1],
-//                                     frame->data[2], frame->linesize[2];
-//                break;
-        default:
-            // TODO: handle unsupported pixel format
-            return false;
-    }
+    SDL_UpdateYUVTexture(frame_texture, NULL, frame->data[0], frame->linesize[0],
+                         frame->data[1], frame->linesize[1],
+                         frame->data[2], frame->linesize[2]);
     frame_arrived |= true;
     return true;
 }
@@ -64,6 +66,8 @@ static bool renderer_draw() {
     HOST_RENDERER *renderer = host_render_context_ffmpeg->renderer;
     SDL_Rect viewport;
     SDL_RenderGetViewport(renderer, &viewport);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
+    SDL_RenderClear(renderer);
     double srcratio = width / (double) height, dstratio = viewport.w / (double) viewport.h;
     SDL_Rect dstrect;
     if (srcratio > dstratio) {

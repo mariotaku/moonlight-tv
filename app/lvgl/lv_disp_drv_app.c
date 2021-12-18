@@ -9,6 +9,8 @@
 
 static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *src);
 
+static void lv_sdl_drv_fb_clear(lv_disp_drv_t *disp_drv, uint8_t *buf, uint32_t size);
+
 lv_disp_t *lv_app_display_init(SDL_Window *window) {
     int width, height;
     SDL_GetWindowSize(window, &width, &height);
@@ -26,6 +28,7 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     driver->user_data = param;
     driver->draw_buf = draw_buf;
     driver->flush_cb = lv_sdl_drv_fb_flush;
+    driver->clear_cb = lv_sdl_drv_fb_clear;
     driver->hor_res = (lv_coord_t) width;
     driver->ver_res = (lv_coord_t) height;
     SDL_RendererInfo renderer_info;
@@ -35,7 +38,6 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     lv_disp_t *disp = lv_disp_drv_register(driver);
     disp->bg_color = lv_color_make(0, 0, 0);
     disp->bg_opa = 0;
-//    disp->bg_fn = lv_bg_draw;
     return disp;
 }
 
@@ -101,3 +103,6 @@ static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
     lv_disp_flush_ready(disp_drv);
 }
 
+static void lv_sdl_drv_fb_clear(lv_disp_drv_t *disp_drv, uint8_t *buf, uint32_t size) {
+    // No-op
+}
