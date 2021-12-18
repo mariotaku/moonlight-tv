@@ -189,8 +189,8 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     };
     lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
     if (!result) {
-        lv_draw_sdl_context_t *context = lv_draw_sdl_get_context();
-        SDL_Renderer *renderer = context->renderer;
+        lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
+        SDL_Renderer *renderer = param->renderer;
         result = malloc(sizeof(lv_sdl_img_src_t));
         SDL_memset(result, 0, sizeof(lv_sdl_img_src_t));
         result->type = LV_SDL_IMG_TYPE_TEXTURE;

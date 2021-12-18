@@ -69,7 +69,8 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
             break;
         }
         case LV_SDL_IMG_TYPE_PATH: {
-            SDL_Renderer *renderer = lv_draw_sdl_get_context()->renderer;
+            lv_disp_drv_t *driver = _lv_refr_get_disp_refreshing()->driver;
+            SDL_Renderer *renderer = ((lv_draw_sdl_drv_param_t *)driver->user_data)->renderer;
             SDL_Texture *texture = IMG_LoadTexture(renderer, sdl_src.data.path);
             dsc->img_data = NULL;
             lv_draw_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
@@ -78,7 +79,8 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
             break;
         }
         case LV_SDL_IMG_TYPE_CONST_PTR: {
-            SDL_Renderer *renderer = lv_draw_sdl_get_context()->renderer;
+            lv_disp_drv_t *driver = _lv_refr_get_disp_refreshing()->driver;
+            SDL_Renderer *renderer = ((lv_draw_sdl_drv_param_t *)driver->user_data)->renderer;
             SDL_RWops *src = SDL_RWFromConstMem(sdl_src.data.constptr, (int) sdl_src.data_len);
             SDL_Texture *texture = IMG_LoadTexture_RW(renderer, src, 1);
             dsc->img_data = NULL;

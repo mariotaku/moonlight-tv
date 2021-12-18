@@ -121,12 +121,12 @@ static void appitem_draw_decor(lv_event_t *e) {
 
     lv_draw_img_dsc_t dsc;
     lv_draw_img_dsc_init(&dsc);
-    const lv_area_t *clip_area = lv_event_get_param(e);
     lv_area_t coords = {
             zoomed_rect.x, zoomed_rect.y,
             zoomed_rect.x + LV_DPX(48) - 1, zoomed_rect.y + LV_DPX(48) - 1
     };
-    lv_draw_img(&coords, clip_area, styles->fav_indicator_src, &dsc);
+    lv_draw_ctx_t *ctx = lv_event_get_draw_ctx(e);
+    lv_draw_img(ctx, &dsc, &coords, styles->fav_indicator_src);
 }
 
 static void appitem_selected(lv_event_t *e) {
