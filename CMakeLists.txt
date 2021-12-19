@@ -335,6 +335,8 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
+    set_target_properties(opus PROPERTIES C_STANDARD 99)
+
     moonlight_add_module(TARGETS moonlight-smp moonlight-smp-webos4 moonlight-smp-webos3)
     moonlight_add_module(TARGETS moonlight-dile-legacy)
     moonlight_add_module(TARGETS moonlight-ndl-webos5 moonlight-ndl)
