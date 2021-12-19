@@ -235,7 +235,7 @@ set(SOURCES
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/platform/common/i18n_common.c
-        app/platform/webos/mrcu_webos.c)
+        )
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
@@ -248,6 +248,7 @@ if (TARGET_WEBOS)
             app/platform/webos/app_webos.c
             app/platform/webos/lunasynccall.c
             app/platform/webos/i18n_webos.c
+            app/platform/webos/mrcu_webos.c
             )
 else ()
     list(APPEND SOURCES
