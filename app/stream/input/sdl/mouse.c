@@ -3,10 +3,15 @@
 #include "app.h"
 
 #include "stream/session.h"
-#include "stream/settings.h"
 
 #include <Limelight.h>
 #include <SDL.h>
+
+#if TARGET_WEBOS
+
+bool webos_magic_remote_active();
+
+#endif
 
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
     if (absinput_no_control)
@@ -35,10 +40,8 @@ void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
             return;
     }
 
-    if (button != 0) {
-        LiSendMouseButtonEvent(event->type == SDL_MOUSEBUTTONDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
-                               button);
-    }
+    LiSendMouseButtonEvent(event->type == SDL_MOUSEBUTTONDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
+                           button);
 }
 
 void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event) {
@@ -48,6 +51,9 @@ void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event) {
 
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event) {
     if (absinput_no_control) return;
+#if TARGET_WEBOS
+    if (webos_magic_remote_active()) return;
+#endif
     if (app_get_mouse_relative()) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
     } else {

@@ -235,11 +235,11 @@ set(SOURCES
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
         app/platform/common/i18n_common.c
-        )
+        app/platform/webos/mrcu_webos.c)
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
-            app/stream/input/sdl/keyboard_webos.c
+            app/platform/webos/keyboard_webos.c
             app/platform/webos/navkey_sdl_webos.c
             app/platform/webos/path_webos.c
             app/platform/webos/os_info.c

@@ -1,4 +1,3 @@
-#include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 #include "stream/session.h"
 

@@ -1,13 +1,20 @@
+#include "app.h"
+
 #include "sdlinput.h"
 #include "absinput.h"
 
-#include <ui/root.h>
+#include "ui/root.h"
 
-#include "stream/session.h"
 #include "util/logging.h"
 
 #if TARGET_WEBOS
+
 #include <SDL_webOS.h>
+
+void webos_magic_remote_register();
+
+void webos_magic_remote_unregister();
+
 #endif
 
 
@@ -29,6 +36,7 @@ void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event);
 
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 
+bool absinput_started;
 bool absinput_no_control;
 bool absinput_virtual_mouse;
 
@@ -38,6 +46,7 @@ int sdl_gamepads = 0;
 
 void absinput_init() {
     memset(gamepads, 0, sizeof(gamepads));
+    absinput_started = false;
 }
 
 void absinput_destroy() {
@@ -86,7 +95,23 @@ void absinput_rumble(unsigned short controller_id, unsigned short low_freq_motor
 }
 
 bool absinput_should_accept() {
-    return streaming_status == STREAMING_STREAMING && !ui_should_block_input();
+    return absinput_started && !ui_should_block_input();
+}
+
+void absinput_start() {
+    absinput_started = true;
+#if TARGET_WEBOS
+    if (app_configuration->mouse_mrcu) {
+        webos_magic_remote_register();
+    }
+#endif
+}
+
+void absinput_stop() {
+#if TARGET_WEBOS
+    webos_magic_remote_unregister();
+#endif
+    absinput_started = false;
 }
 
 bool absinput_dispatch_event(SDL_Event *event) {

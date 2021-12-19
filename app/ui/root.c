@@ -1,20 +1,20 @@
-#include "lvgl/lv_disp_drv_app.h"
-#include "ui/streaming/streaming.controller.h"
-#include "draw/sdl/lv_draw_sdl_utils.h"
 #include "app.h"
 #include "root.h"
-#include "config.h"
+#include "res.h"
+
+#include "lvgl/lv_disp_drv_app.h"
+#include "draw/sdl/lv_draw_sdl_utils.h"
 
 #include "stream/platform.h"
 #include "stream/session.h"
+#include "stream/input/absinput.h"
 
+#include "streaming/streaming.controller.h"
 #include "launcher/launcher.controller.h"
 
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "util/logging.h"
-
-#include "res.h"
 
 short ui_display_width, ui_display_height;
 static unsigned int last_pts = 0;
@@ -55,6 +55,7 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
                 if (ui_stream_render) {
                     ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);
                 }
+                absinput_start();
                 app_set_keep_awake(true);
                 streaming_enter_fullscreen();
                 last_pts = 0;
@@ -66,6 +67,7 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
                 }
                 app_set_keep_awake(false);
                 app_set_mouse_grab(false);
+                absinput_stop();
                 ui_stream_render = NULL;
                 ui_stream_render_host_context.renderer = NULL;
                 return true;
