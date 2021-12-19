@@ -93,6 +93,11 @@ jobs:
       - name: Run easy_build
         run: ./scripts/webos/easy_build.sh
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: webos-snapshot
+          path: build/*.ipk
+
   build-raspi:
     runs-on: ubuntu-latest
     env:
