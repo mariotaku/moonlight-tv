@@ -11,10 +11,6 @@
 
 #include <SDL_webOS.h>
 
-void webos_magic_remote_register();
-
-void webos_magic_remote_unregister();
-
 #endif
 
 
@@ -100,17 +96,9 @@ bool absinput_should_accept() {
 
 void absinput_start() {
     absinput_started = true;
-#if TARGET_WEBOS
-    if (app_configuration->mouse_mrcu) {
-        webos_magic_remote_register();
-    }
-#endif
 }
 
 void absinput_stop() {
-#if TARGET_WEBOS
-    webos_magic_remote_unregister();
-#endif
     absinput_started = false;
 }
 

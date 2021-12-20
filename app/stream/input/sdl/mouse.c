@@ -7,12 +7,6 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-#if TARGET_WEBOS
-
-bool webos_magic_remote_active();
-
-#endif
-
 void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
     if (absinput_no_control)
         return;
@@ -51,9 +45,6 @@ void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event) {
 
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event) {
     if (absinput_no_control) return;
-#if TARGET_WEBOS
-    if (webos_magic_remote_active()) return;
-#endif
     if (app_get_mouse_relative()) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
     } else {

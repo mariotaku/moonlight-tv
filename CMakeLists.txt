@@ -248,7 +248,6 @@ if (TARGET_WEBOS)
             app/platform/webos/app_webos.c
             app/platform/webos/lunasynccall.c
             app/platform/webos/i18n_webos.c
-            app/platform/webos/mrcu_webos.c
             )
 else ()
     list(APPEND SOURCES
