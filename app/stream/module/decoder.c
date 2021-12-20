@@ -7,12 +7,11 @@
 #ifndef __WIN32
 
 #include <dlfcn.h>
+#include "util/logging.h"
 
 #endif
 
 #include "symbols.h"
-
-#include "util/logging.h"
 
 #if TARGET_WEBOS
 
@@ -73,7 +72,6 @@ static void decoder_finalize_simple(DECODER platform, int libidx);
 PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device);
 
 static bool decoder_try_init(DECODER ptype, int argc, char *argv[]) {
-    char libname[64];
     MODULE_DEFINITION pdef = decoder_definitions[ptype];
     if (pdef.symbols.ptr && pdef.symbols.decoder->valid) {
         if (decoder_init_simple(ptype, -1, argc, argv)) {
@@ -83,6 +81,7 @@ static bool decoder_try_init(DECODER ptype, int argc, char *argv[]) {
         }
     } else {
 #ifndef __WIN32
+        char libname[64];
         for (int i = 0; i < pdef.liblen; i++) {
             snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.dynlibs[i].library);
             applog_d("APP", "Loading module %s", libname);
@@ -129,17 +128,15 @@ bool decoder_post_init(DECODER decoder, int libidx, int argc, char *argv[]) {
     return decoder_post_init_simple(decoder, libidx, argc, argv);
 }
 
+#ifndef __WIN32
 static void *module_sym(char *fmt, DECODER platform, int libidx) {
     MODULE_DEFINITION def = decoder_definitions[platform];
     if (!def.dynlibs) return NULL;
     char symbol[128];
     snprintf(symbol, sizeof(symbol), fmt, def.dynlibs[libidx].suffix);
-#ifdef __WIN32
-    return NULL;
-#else
     return dlsym(RTLD_DEFAULT, symbol);
-#endif
 }
+#endif
 
 PDECODER_RENDERER_CALLBACKS decoder_get_video() {
     if (decoder_current == DECODER_NONE)
@@ -147,9 +144,11 @@ PDECODER_RENDERER_CALLBACKS decoder_get_video() {
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
         return pdef.symbols.decoder->vdec;
+#ifndef __WIN32
     PDECODER_RENDERER_CALLBACKS cb = module_sym("decoder_callbacks_%s", decoder_current, decoder_current_libidx);
     if (cb)
         return cb;
+#endif
     return &decoder_callbacks_dummy;
 }
 
@@ -159,9 +158,11 @@ PAUDIO_RENDERER_CALLBACKS decoder_get_audio(const char *audio_device) {
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
         return pdef.symbols.decoder->adec;
+#ifndef __WIN32
     PAUDIO_RENDERER_CALLBACKS cb = module_sym("audio_callbacks_%s", decoder_current, decoder_current_libidx);
     if (cb && decoder_info.audio)
         return cb;
+#endif
     return NULL;
 }
 
@@ -171,7 +172,11 @@ PVIDEO_PRESENTER_CALLBACKS decoder_get_presenter() {
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
         return pdef.symbols.decoder->pres;
+#ifndef __WIN32
     return module_sym("presenter_callbacks_%s", decoder_current, decoder_current_libidx);
+#else
+    return NULL;
+#endif
 }
 
 PVIDEO_RENDER_CALLBACKS decoder_get_render() {
@@ -180,7 +185,11 @@ PVIDEO_RENDER_CALLBACKS decoder_get_render() {
     MODULE_DEFINITION pdef = decoder_definitions[decoder_current];
     if (pdef.symbols.ptr)
         return pdef.symbols.decoder->rend;
+#ifndef __WIN32
     return module_sym("render_callbacks_%s", decoder_current, decoder_current_libidx);
+#else
+    return NULL;
+#endif
 }
 
 PAUDIO_RENDERER_CALLBACKS module_get_audio(const char *audio_device) {
@@ -205,34 +214,50 @@ int module_audio_configuration() {
 
 static bool decoder_init_simple(DECODER platform, int libidx, int argc, char *argv[]) {
     MODULE_DEFINITION pdef = decoder_definitions[platform];
-    MODULE_INIT_FN fn;
+    MODULE_INIT_FN fn = NULL;
     if (pdef.symbols.ptr) {
         fn = pdef.symbols.decoder->init;
-    } else {
+    }
+#ifdef __WIN32
+    (void) libidx;
+#else
+    else {
         fn = module_sym("decoder_init_%s", platform, libidx);
     }
+#endif
     return !fn || fn(argc, argv, &module_host_context);
 }
 
 static bool decoder_post_init_simple(DECODER platform, int libidx, int argc, char *argv[]) {
     MODULE_DEFINITION pdef = decoder_definitions[platform];
-    MODULE_INIT_FN fn;
+    MODULE_INIT_FN fn = NULL;
     if (pdef.symbols.ptr) {
         fn = pdef.symbols.decoder->post_init;
-    } else {
-        fn = module_sym("decoder_post_init_%s", platform, libidx);
     }
+#ifdef __WIN32
+    (void) libidx;
+#else
+    else {
+            fn = module_sym("decoder_post_init_%s", platform, libidx);
+        }
+#endif
     return !fn || fn(argc, argv, &module_host_context);
 }
 
 bool decoder_check_info(DECODER platform, int libidx) {
     memset(&decoder_info, 0, sizeof(decoder_info));
     MODULE_DEFINITION pdef = decoder_definitions[platform];
-    DECODER_CHECK_FN fn;
-    if (pdef.symbols.ptr)
+    DECODER_CHECK_FN fn = NULL;
+    if (pdef.symbols.ptr) {
         fn = pdef.symbols.decoder->check;
-    else
-        fn = module_sym("decoder_check_%s", platform, libidx);
+    }
+#ifdef __WIN32
+    (void) libidx;
+#else
+    else {
+            fn = module_sym("decoder_check_%s", platform, libidx);
+        }
+#endif
     if (fn == NULL) {
         decoder_info.valid = true;
         return true;
@@ -245,12 +270,17 @@ static void decoder_finalize_simple(DECODER platform, int libidx) {
         // Nothing to finalize
         return;
     MODULE_DEFINITION pdef = decoder_definitions[platform];
-    MODULE_FINALIZE_FN fn;
+    MODULE_FINALIZE_FN fn = NULL;
     if (pdef.symbols.ptr) {
         fn = pdef.symbols.decoder->finalize;
-    } else {
+    }
+#ifdef __WIN32
+    (void) libidx;
+#else
+    else {
         fn = module_sym("decoder_finalize_%s", platform, libidx);
     }
+#endif
     if (fn)
         fn();
 }
