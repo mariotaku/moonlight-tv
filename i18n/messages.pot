@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-29 01:40+0900\n"
+"POT-Creation-Date: 2021-12-20 14:22+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: app/main.c:78
+#: app/main.c:77
 msgid "[Localized Language]"
 msgstr ""
 
@@ -44,7 +44,7 @@ msgid "Quit"
 msgstr ""
 
 #: app/ui/launcher/launcher.controller.c:444
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
+#: app/ui/launcher/apps.controller.c:456 app/ui/launcher/apps.controller.c:555
 #: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
 #: app/ui/streaming/streaming.controller.c:245 app/app_sdl.c:183
 msgid "OK"
@@ -54,7 +54,14 @@ msgstr ""
 msgid "Decoder not working"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:448
+#: app/ui/launcher/launcher.controller.c:450
+#, c-format
+msgid ""
+"Unable to initialize decoder %s. Please try other decoders.\n"
+"Error detail: %s"
+msgstr ""
+
+#: app/ui/launcher/launcher.controller.c:455
 #, c-format
 msgid "Unable to initialize decoder %s. Please try other decoders."
 msgstr ""
@@ -75,64 +82,64 @@ msgstr ""
 msgid "Select computer again to pair."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:298
+#: app/ui/launcher/apps.controller.c:302
 msgid "Failed to load apps"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:299
+#: app/ui/launcher/apps.controller.c:303
 msgid ""
 "Press \"Retry\" button to reload.Try restart the computer if error persists."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:319
+#: app/ui/launcher/apps.controller.c:323
 msgid "Host error"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:320
+#: app/ui/launcher/apps.controller.c:324
 msgid "Please restart your computer."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:332
+#: app/ui/launcher/apps.controller.c:336
 msgid "Offline"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:333
+#: app/ui/launcher/apps.controller.c:337
 msgid "Turn on the host computer and try again."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:453
+#: app/ui/launcher/apps.controller.c:457
 msgid "Unable to quit game"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:454
+#: app/ui/launcher/apps.controller.c:458
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:500
+#: app/ui/launcher/apps.controller.c:504
 msgid "Resume streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:501
+#: app/ui/launcher/apps.controller.c:505
 msgid "Start streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:507
+#: app/ui/launcher/apps.controller.c:511
 msgid "Stop streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:511
+#: app/ui/launcher/apps.controller.c:515
 msgid "Unstar"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:511
+#: app/ui/launcher/apps.controller.c:515
 msgid "Star"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:515
+#: app/ui/launcher/apps.controller.c:519
 msgid "Info"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
+#: app/ui/launcher/apps.controller.c:523 app/ui/launcher/add.dialog.c:52
 #: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:183
 msgid "Cancel"
 msgstr ""

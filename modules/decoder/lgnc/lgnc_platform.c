@@ -38,9 +38,11 @@ const static uint8_t h264_test_frame[] = {
 };
 
 MODULE_API bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx) {
-    if (hctx) {
-        module_logvprintf = hctx->logvprintf;
+    if (lgnc_initialized) {
+        applog_w("LGNC", "Already initialized");
+        return true;
     }
+    module_logvprintf = hctx->logvprintf;
 #ifdef DECODER_LGNC_NOINIT
     lgnc_initialized = true;
 #else
@@ -59,6 +61,7 @@ MODULE_API bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx) {
         applog_i("LGNC", "Initialized");
     } else {
         lgnc_initialized = false;
+        hctx->seterror("Unable to initialize LGNC");
         applog_e("LGNC", "Unable to initialize LGNC");
     }
 #endif

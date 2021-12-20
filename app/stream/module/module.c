@@ -4,6 +4,8 @@
 
 HOST_CONTEXT module_host_context;
 
+static char module_error[1024];
+
 void module_init(int argc, char *argv[]) {
     // LGNC requires init before window created, don't put this after app_window_create!
     decoder_init(app_configuration->decoder, argc, argv);
@@ -34,4 +36,17 @@ void module_post_init(int argc, char *argv[]) {
         applog_i("APP", "Audio module: %s (%s requested)", audio_definitions[audio_current].name,
                  app_configuration->audio_backend);
     }
+}
+
+void module_seterror(const char *error) {
+    if (!error) {
+        module_error[0] = '\0';
+        return;
+    }
+    strncpy(module_error, error, 1023);
+    module_error[1023] = '\0';
+}
+
+const char *module_geterror() {
+    return module_error;
 }

@@ -2,7 +2,6 @@
 #include "util/logging.h"
 
 #include <cassert>
-#include <iostream>
 
 #include "stream/module/api.h"
 
@@ -27,17 +26,12 @@ static VideoConfig videoConfig;
 extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
 extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks;
 
-extern "C" bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx)
-{
-    if (hctx)
-    {
-        module_logvprintf = hctx->logvprintf;
-    }
+extern "C" bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
+    module_logvprintf = hctx->logvprintf;
     return true;
 }
 
-extern "C" bool decoder_check(PDECODER_INFO dinfo)
-{
+extern "C" bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->valid = true;
     dinfo->accelerated = true;
 #if DEBUG
@@ -53,12 +47,10 @@ extern "C" bool decoder_check(PDECODER_INFO dinfo)
     return true;
 }
 
-extern "C" void decoder_finalize()
-{
+extern "C" void decoder_finalize() {
 }
 
-static int _initPlayerWhenReady()
-{
+static int _initPlayerWhenReady() {
     if (!streamPlayer)
         streamPlayer.reset(new AVStreamPlayer());
     // Don't setup before video comes in
@@ -66,8 +58,7 @@ static int _initPlayerWhenReady()
         return 0;
     streamPlayer->videoConfig = videoConfig;
     streamPlayer->audioConfig = audioConfig;
-    if (!streamPlayer->load())
-    {
+    if (!streamPlayer->load()) {
         videoConfig.format = 0;
         audioConfig.type = 0;
         return -1;
@@ -75,13 +66,11 @@ static int _initPlayerWhenReady()
     return 0;
 }
 
-static void _destroyPlayer()
-{
+static void _destroyPlayer() {
     streamPlayer.reset(nullptr);
 }
 
-static int _videoSetup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags)
-{
+static int videoSetup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags) {
     assert(!videoConfig.format);
     videoConfig.format = videoFormat;
     videoConfig.width = width;
@@ -90,63 +79,58 @@ static int _videoSetup(int videoFormat, int width, int height, int redrawRate, v
     return _initPlayerWhenReady();
 }
 
-static int _audioSetup(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags)
-{
+static int _audioSetup(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context,
+                       int arFlags) {
     assert(!audioConfig.type);
     audioConfig.type = audioConfiguration;
     memcpy(&audioConfig.opusConfig, opusConfig, sizeof(OPUS_MULTISTREAM_CONFIGURATION));
     return _initPlayerWhenReady();
 }
 
-static int _videoSubmit(PDECODE_UNIT decodeUnit)
-{
+static int videoSubmit(PDECODE_UNIT decodeUnit) {
     if (!streamPlayer)
         return DR_OK;
     return streamPlayer->submitVideo(decodeUnit);
 }
 
-static void _audioSubmit(char *sampleData, int sampleLength)
-{
+static void audioSubmit(char *sampleData, int sampleLength) {
     if (!streamPlayer)
         return;
     streamPlayer->submitAudio(sampleData, sampleLength);
 }
 
-static void _avStop()
-{
+static void avStop() {
     if (!streamPlayer)
         return;
     streamPlayer->sendEOS();
 }
 
-static void _videoCleanup()
-{
+static void videoCleanup() {
     videoConfig.format = 0;
     _destroyPlayer();
 }
 
-static void _audioCleanup()
-{
+static void audioCleanup() {
     audioConfig.type = 0;
     _destroyPlayer();
 }
 
 DECODER_RENDERER_CALLBACKS decoder_callbacks = {
-    .setup = _videoSetup,
-    .start = nullptr,
-    .stop = _avStop,
-    .cleanup = _videoCleanup,
-    .submitDecodeUnit = _videoSubmit,
-    .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
+        .setup = videoSetup,
+        .start = nullptr,
+        .stop = avStop,
+        .cleanup = videoCleanup,
+        .submitDecodeUnit = videoSubmit,
+        .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
 };
 
 AUDIO_RENDERER_CALLBACKS audio_callbacks = {
-    .init = _audioSetup,
-    .start = nullptr,
-    .stop = _avStop,
-    .cleanup = _audioCleanup,
-    .decodeAndPlaySample = _audioSubmit,
-    .capabilities = CAPABILITY_DIRECT_SUBMIT,
+        .init = _audioSetup,
+        .start = nullptr,
+        .stop = avStop,
+        .cleanup = audioCleanup,
+        .decodeAndPlaySample = audioSubmit,
+        .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
 
 logvprintf_fn module_logvprintf = NULL;

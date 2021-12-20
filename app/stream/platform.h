@@ -172,3 +172,7 @@ static const int audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);
 void module_init(int argc, char *argv[]);
 
 void module_post_init(int argc, char *argv[]);
+
+void module_seterror(const char* error);
+
+const char *module_geterror();

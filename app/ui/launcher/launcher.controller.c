@@ -445,9 +445,17 @@ static void show_decoder_error(launcher_controller_t *controller) {
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
-    lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
-                          decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
-                                                                  : app_configuration->decoder);
+    const char *module_err = module_geterror();
+    if (module_err[0]) {
+        lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders.\n"
+                                              "Error detail: %s"),
+                              decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
+                                                                      : app_configuration->decoder, module_err);
+    } else {
+        lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
+                              decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
+                                                                      : app_configuration->decoder);
+    }
     lv_obj_center(msgbox);
 }
 

@@ -13,19 +13,18 @@ bool media_initialized = false;
 logvprintf_fn module_logvprintf;
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
-#define decoder_post_init PLUGIN_SYMBOL_NAME(decoder_post_init)
 #define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
 #define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
 
 MODULE_API bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
-    if (hctx) {
-        module_logvprintf = hctx->logvprintf;
-    }
+    module_logvprintf = hctx->logvprintf;
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0) {
         media_initialized = true;
     } else {
         media_initialized = false;
-        applog_e("NDL", "Unable to initialize NDL: %s", NDL_DirectMediaGetError());
+        char *err = NDL_DirectMediaGetError();
+        hctx->seterror(err);
+        applog_e("NDL", "Unable to initialize NDL: %s", err);
     }
     return media_initialized;
 }

@@ -84,7 +84,8 @@ static bool decoder_try_init(DECODER ptype, int argc, char *argv[]) {
         char libname[64];
         for (int i = 0; i < pdef.liblen; i++) {
             snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.dynlibs[i].library);
-            applog_d("APP", "Loading module %s", libname);
+            module_seterror(NULL);
+            applog_d("Module", "Loading decoder %s", libname);
             // Lazy load to test if this library can be linked
             if (!dlopen(libname, RTLD_NOW | RTLD_GLOBAL)) {
                 dlerror_log();
@@ -95,6 +96,7 @@ static bool decoder_try_init(DECODER ptype, int argc, char *argv[]) {
                 decoder_current_libidx = i;
                 return true;
             }
+            applog_d("Module", "Failed to init decoder %s: %s", libname, module_geterror());
         }
 #endif
     }
@@ -318,6 +320,8 @@ int decoder_max_framerate() {
 
 void dlerror_log() {
 #ifndef __WIN32
-    applog_w("APP", "Unable to load decoder module: %s", dlerror());
+    char *err = dlerror();
+    module_seterror(err);
+    applog_w("Module", "Unable to load decoder module: %s", err);
 #endif
 }

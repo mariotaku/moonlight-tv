@@ -39,6 +39,7 @@
 
 typedef struct HOST_CONTEXT {
     void (*logvprintf)(int, const char *, const char *, va_list);
+    void (*seterror)(const char*);
 } HOST_CONTEXT, *PHOST_CONTEXT;
 
 typedef struct DECODER_INFO {
