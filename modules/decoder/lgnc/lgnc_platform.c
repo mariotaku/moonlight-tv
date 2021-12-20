@@ -1,13 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
-#include <lgnc_system.h>
-#include <lgnc_directvideo.h>
+#include <cgl.h>
+
 #include "stream/module/api.h"
 #include "util/logging.h"
 
-static bool lgnc_initialized = false;
+static bool cgl_initialized = false;
 logvprintf_fn module_logvprintf;
 
 const static uint8_t h264_test_frame[] = {
@@ -38,47 +37,32 @@ const static uint8_t h264_test_frame[] = {
 };
 
 MODULE_API bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx) {
-    if (lgnc_initialized) {
-        applog_w("LGNC", "Already initialized");
+    if (cgl_initialized) {
+        applog_w("CGL", "Already initialized");
         return true;
     }
     module_logvprintf = hctx->logvprintf;
-#ifdef DECODER_LGNC_NOINIT
-    lgnc_initialized = true;
-#else
-    LGNC_SYSTEM_CALLBACKS_T callbacks = {
-            .pfnJoystickEventCallback = NULL,
-            .pfnMsgHandler = NULL,
-            .pfnKeyEventCallback = NULL,
-            .pfnMouseEventCallback = NULL,
-    };
-    applog_d("LGNC", "LGNC_SYSTEM_Initialize");
-    for (int i = 0; i < argc; i++) {
-        applog_d("LGNC", "LGNC_SYSTEM_Initialize. argv[%d] = %s", i, argv[i]);
-    }
-    if (LGNC_SYSTEM_Initialize(argc, argv, &callbacks) == 0) {
-        lgnc_initialized = true;
-        applog_i("LGNC", "Initialized");
+    if (CGL_Initialize(getenv("APPID")) == 0) {
+        cgl_initialized = true;
     } else {
-        lgnc_initialized = false;
-        hctx->seterror("Unable to initialize LGNC");
-        applog_e("LGNC", "Unable to initialize LGNC");
+        cgl_initialized = false;
+        applog_e("CGL", "Unable to initialize CGL.");
     }
-#endif
-    return lgnc_initialized;
+    return cgl_initialized;
 }
 
 MODULE_API bool decoder_check_lgnc(PDECODER_INFO dinfo) {
-    applog_d("LGNC", "Initialize decoder info");
-    LGNC_VDEC_DATA_INFO_T info = {
+    if (!cgl_initialized) return false;
+    applog_d("CGL", "Initialize decoder info");
+    CGL_VIDEO_INFO_T info = {
             .width = 1280,
             .height = 720,
-            .trid_type=  LGNC_VDEC_3D_TYPE_NONE,
-            .vdecFmt = LGNC_VDEC_FMT_H264
+            .source = CGL_VIDEO_SOURCE_MAIN,
+            .tridType = CGL_VIDEO_3D_TYPE_NONE,
     };
-    if (LGNC_DIRECTVIDEO_Open(&info) != 0) return false;
-    LGNC_DIRECTVIDEO_Play(h264_test_frame, sizeof(h264_test_frame));
-    LGNC_DIRECTVIDEO_Close();
+    if (CGL_OpenVideo(&info) != 0) return false;
+    CGL_PlayVideo(h264_test_frame, sizeof(h264_test_frame));
+    CGL_CloseVideo();
     dinfo->valid = true;
     dinfo->accelerated = true;
     dinfo->audio = true;
@@ -88,11 +72,7 @@ MODULE_API bool decoder_check_lgnc(PDECODER_INFO dinfo) {
 }
 
 MODULE_API void decoder_finalize_lgnc() {
-    if (lgnc_initialized) {
-#ifndef DECODER_LGNC_NOINIT
-        LGNC_SYSTEM_Finalize();
-        applog_d("LGNC", "LGNC_SYSTEM_Finalize");
-#endif
-        lgnc_initialized = false;
-    }
+    if (!cgl_initialized) return;
+    CGL_Finalize();
+    cgl_initialized = false;
 }
