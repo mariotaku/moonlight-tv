@@ -1,15 +1,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include <signal.h>
 
-#include <lgnc_plugin.h>
-#include <lgnc_directvideo.h>
+#include <cgl.h>
 
 #include "stream/module/api.h"
 #include "util/logging.h"
 
-static bool lgnc_initialized = false;
-static bool lgnc_ready_for_check = false;
+static bool cgl_initialized = false;
 logvprintf_fn module_logvprintf;
 
 const static uint8_t h264_test_frame[] = {
@@ -39,49 +36,33 @@ const static uint8_t h264_test_frame[] = {
         0xa0, 0x00, 0x20, 0x00, 0x02, 0x16, 0xb8, 0x00, 0x08, 0x08
 };
 
-MODULE_API bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx) {
-    if (hctx) {
-        module_logvprintf = hctx->logvprintf;
+MODULE_API bool decoder_init_cgl(int argc, char *argv[], PHOST_CONTEXT hctx) {
+    if (cgl_initialized) {
+        applog_w("CGL", "Already initialized");
+        return true;
     }
-#ifdef DECODER_LGNC_NOINIT
-        lgnc_initialized = true;
-#else
-    applog_d("LGNC", "LGNC_PLUGIN_Initialize");
-    for (int i = 0; i < argc; i++) {
-        applog_d("LGNC", "LGNC_PLUGIN_Initialize. argv[%d] = %s", i, argv[i]);
-    }
-    LGNC_PLUGIN_INIT_PARAM_T param = {};
-    if (LGNC_PLUGIN_Initialize(&param) == 0) {
-        LGNC_PLUGIN_SetAppId(getenv("APPID"));
-        signal(SIGUSR1, SIG_IGN);
-        lgnc_initialized = true;
-        applog_i("LGNC", "Initialized");
+    module_logvprintf = hctx->logvprintf;
+    if (CGL_Initialize(getenv("APPID")) == 0) {
+        cgl_initialized = true;
     } else {
-        lgnc_initialized = false;
-        applog_e("LGNC", "Unable to initialize LGNC");
+        cgl_initialized = false;
+        applog_e("CGL", "Unable to initialize CGL.");
     }
-#endif
-    return lgnc_initialized;
+    return cgl_initialized;
 }
 
-MODULE_API bool decoder_post_init_lgnc(int arc, char *argv[], PHOST_CONTEXT hctx) {
-    if (!lgnc_initialized) return false;
-    lgnc_ready_for_check = true;
-    return true;
-}
-
-MODULE_API bool decoder_check_lgnc(PDECODER_INFO dinfo) {
-    if (!lgnc_ready_for_check) return false;
-    applog_d("LGNC", "Initialize decoder info");
-    LGNC_VDEC_DATA_INFO_T info = {
+MODULE_API bool decoder_check_cgl(PDECODER_INFO dinfo) {
+    if (!cgl_initialized) return false;
+    applog_d("CGL", "Initialize decoder info");
+    CGL_VIDEO_INFO_T info = {
             .width = 1280,
             .height = 720,
-            .trid_type=  LGNC_VDEC_3D_TYPE_NONE,
-            .vdecFmt = LGNC_VDEC_FMT_H264
+            .source = CGL_VIDEO_SOURCE_MAIN,
+            .tridType = CGL_VIDEO_3D_TYPE_NONE,
     };
-    if (LGNC_DIRECTVIDEO_Open(&info) != 0) return false;
-    LGNC_DIRECTVIDEO_Play(h264_test_frame, sizeof(h264_test_frame));
-    LGNC_DIRECTVIDEO_Close();
+    if (CGL_OpenVideo(&info) != 0) return false;
+    CGL_PlayVideo(h264_test_frame, sizeof(h264_test_frame));
+    CGL_CloseVideo();
     dinfo->valid = true;
     dinfo->accelerated = true;
     dinfo->audio = true;
@@ -90,12 +71,8 @@ MODULE_API bool decoder_check_lgnc(PDECODER_INFO dinfo) {
     return true;
 }
 
-MODULE_API void decoder_finalize_lgnc() {
-    if (lgnc_initialized) {
-#ifndef DECODER_LGNC_NOINIT
-        LGNC_PLUGIN_Finalize();
-        applog_d("LGNC", "LGNC_PLUGIN_Finalize");
-#endif
-        lgnc_initialized = false;
-    }
+MODULE_API void decoder_finalize_cgl() {
+    if (!cgl_initialized) return;
+    CGL_Finalize();
+    cgl_initialized = false;
 }

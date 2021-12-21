@@ -337,7 +337,7 @@ if (TARGET_WEBOS)
     moonlight_add_module(TARGETS moonlight-smp moonlight-smp-webos4 moonlight-smp-webos3)
     moonlight_add_module(TARGETS moonlight-dile-legacy)
     moonlight_add_module(TARGETS moonlight-ndl-webos5 moonlight-ndl)
-    moonlight_add_module(TARGETS moonlight-lgnc)
+    moonlight_add_module(TARGETS moonlight-cgl moonlight-lgnc)
     moonlight_add_module(TARGETS moonlight-pulse)
     moonlight_add_module(TARGETS moonlight-ndlaud moonlight-ndlaud-webos5)
 

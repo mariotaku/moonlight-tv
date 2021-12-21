@@ -27,7 +27,8 @@ static MODULE_LIB_DEFINITION ndl_libs[] = {
         {"ndl",        "ndl"}
 };
 static MODULE_LIB_DEFINITION lgnc_libs[] = {
-        {"lgnc", "lgnc"}
+        {"cgl",  "cgl"},
+        {"lgnc", "lgnc"},
 };
 static MODULE_LIB_DEFINITION smp_libs[] = {
         {"smp",        "smp"},
@@ -48,7 +49,7 @@ MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
         {"Null",              "null", NULL,          0, NULL},
         {"FFMPEG (SW codec)", "ffmpeg", ffmpeg_libs, 1, DECODER_SYMBOLS_FFMPEG},
         {"webOS NDL",         "ndl",    ndl_libs,    2, NULL},
-        {"NetCast Legacy",    "lgnc",   lgnc_libs,   1, NULL},
+        {"NetCast Legacy",    "lgnc",   lgnc_libs,   2, NULL},
         {"webOS SMP",         "smp",    smp_libs,    3, NULL},
         {"webOS DILE",        "dile",   dile_libs,   2, NULL},
         {"Raspberry Pi",      "pi",     pi_libs,     1, NULL},
@@ -131,6 +132,7 @@ bool decoder_post_init(DECODER decoder, int libidx, int argc, char *argv[]) {
 }
 
 #ifndef __WIN32
+
 static void *module_sym(char *fmt, DECODER platform, int libidx) {
     MODULE_DEFINITION def = decoder_definitions[platform];
     if (!def.dynlibs) return NULL;
@@ -138,6 +140,7 @@ static void *module_sym(char *fmt, DECODER platform, int libidx) {
     snprintf(symbol, sizeof(symbol), fmt, def.dynlibs[libidx].suffix);
     return dlsym(RTLD_DEFAULT, symbol);
 }
+
 #endif
 
 PDECODER_RENDERER_CALLBACKS decoder_get_video() {
@@ -221,7 +224,7 @@ static bool decoder_init_simple(DECODER platform, int libidx, int argc, char *ar
         fn = pdef.symbols.decoder->init;
     }
 #ifdef __WIN32
-    (void) libidx;
+        (void) libidx;
 #else
     else {
         fn = module_sym("decoder_init_%s", platform, libidx);
@@ -237,11 +240,11 @@ static bool decoder_post_init_simple(DECODER platform, int libidx, int argc, cha
         fn = pdef.symbols.decoder->post_init;
     }
 #ifdef __WIN32
-    (void) libidx;
+        (void) libidx;
 #else
     else {
-            fn = module_sym("decoder_post_init_%s", platform, libidx);
-        }
+        fn = module_sym("decoder_post_init_%s", platform, libidx);
+    }
 #endif
     return !fn || fn(argc, argv, &module_host_context);
 }
@@ -254,11 +257,11 @@ bool decoder_check_info(DECODER platform, int libidx) {
         fn = pdef.symbols.decoder->check;
     }
 #ifdef __WIN32
-    (void) libidx;
+        (void) libidx;
 #else
     else {
-            fn = module_sym("decoder_check_%s", platform, libidx);
-        }
+        fn = module_sym("decoder_check_%s", platform, libidx);
+    }
 #endif
     if (fn == NULL) {
         decoder_info.valid = true;
@@ -277,7 +280,7 @@ static void decoder_finalize_simple(DECODER platform, int libidx) {
         fn = pdef.symbols.decoder->finalize;
     }
 #ifdef __WIN32
-    (void) libidx;
+        (void) libidx;
 #else
     else {
         fn = module_sym("decoder_finalize_%s", platform, libidx);

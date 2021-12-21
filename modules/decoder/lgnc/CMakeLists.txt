@@ -5,6 +5,7 @@ set(DECODER_LGNC_SRC
         lgnc_audio.c
         lgnc_video.c
         lgnc_logging.c
+        cgl_logging.c
         )
 
 if (DECODER_LGNC_STATIC)
@@ -19,7 +20,7 @@ target_include_directories(moonlight-lgnc PRIVATE
         ${CMAKE_SOURCE_DIR}/app
         ${PBNJSON_INCLUDE_DIRS}
         )
-target_link_libraries(moonlight-lgnc PRIVATE moonlight-common-c opus cgl)
+target_link_libraries(moonlight-lgnc PRIVATE moonlight-common-c opus lgncopenapi)
 target_compile_definitions(moonlight-lgnc PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
 if (DECODER_LGNC_NOINIT)
