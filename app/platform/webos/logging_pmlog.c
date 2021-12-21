@@ -37,7 +37,7 @@ void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_lis
         case APPLOG_VERBOSE:
         case APPLOG_DEBUG:
         default:
-            PmLogDebug(context, tag, 0, "%s", msg);
+            PmLogDebug(context, "[%s] %s", tag, msg);
             break;
     }
 }
