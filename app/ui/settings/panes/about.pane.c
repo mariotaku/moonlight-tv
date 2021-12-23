@@ -5,8 +5,7 @@
 #include <malloc.h>
 #include <lvgl.h>
 #include <app.h>
-#include <stream/platform.h>
-#include "lvgl/ext/lv_obj_controller.h"
+#include "stream/platform.h"
 #include "pref_obj.h"
 
 #include "util/i18n.h"

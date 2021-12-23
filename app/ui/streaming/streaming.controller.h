@@ -1,6 +1,7 @@
 #pragma once
 
-#include "lvgl/ext/lv_obj_controller.h"
+#include <lvgl.h>
+
 #include "client.h"
 #include "stream/session.h"
 

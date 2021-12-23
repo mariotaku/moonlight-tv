@@ -213,7 +213,6 @@ set(SOURCES
         app/lvgl/lv_ext_utils.c
         app/lvgl/lv_sdl_img.c
         app/lvgl/ext/lv_gridview.c
-        app/lvgl/ext/lv_obj_controller.c
         app/lvgl/ext/lv_child_group.c
         app/lvgl/util/lv_app_utils.c
         app/lvgl/font/font_empty.c

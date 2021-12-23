@@ -4,7 +4,6 @@
 #include <lvgl/lv_sdl_img.h>
 
 #include "ui/config.h"
-#include "lvgl/ext/lv_obj_controller.h"
 
 #include "lvgl.h"
 

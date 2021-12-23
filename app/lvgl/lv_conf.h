@@ -503,6 +503,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*A layout similar to Grid in CSS.*/
 #define LV_USE_GRID     1
 
+/*-----------
+ * Extras
+ *----------*/
+#define LV_USE_OBJ_CONTROLLER 1
+
 /*==================
 * EXAMPLES
 *==================*/

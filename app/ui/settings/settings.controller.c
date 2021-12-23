@@ -97,7 +97,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
             lv_obj_t *page = lv_tabview_add_tab(controller->tabview, entry.icon);
             lv_obj_add_event_cb(page, cb_child_group_add, LV_EVENT_CHILD_CREATED, tab_group);
             lv_obj_add_event_cb(page, pane_child_added, LV_EVENT_CHILD_CREATED, controller);
-            lv_obj_controller_t *pane = lv_controller_create_unmanaged(page, entry.cls, controller);
+            lv_obj_controller_t *pane = lv_obj_controller_class_create_unmanaged(entry.cls, page, controller);
             lv_obj_set_user_data(page, pane);
 
             lv_obj_t *tab_focused = lv_group_get_focused(tab_group);
@@ -162,7 +162,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             bool mini = UI_IS_MINI(ui_display_width);
             if (mini != controller->mini) {
                 controller->pending_mini = mini;
-                lv_controller_recreate_obj(self);
+                lv_obj_controller_recreate_obj(self);
             }
             break;
         }

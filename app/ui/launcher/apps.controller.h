@@ -1,8 +1,8 @@
 #pragma once
 
-#include <backend/apploader/apploader.h>
-#include "lvgl/ext/lv_obj_controller.h"
+#include "lvgl.h"
 #include "coverloader.h"
+#include "backend/apploader/apploader.h"
 
 typedef struct {
     lv_style_t cover;
