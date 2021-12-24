@@ -58,9 +58,9 @@ static int setup(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusCon
     want.freq = sampleRate;
     want.format = AUDIO_S16LSB;
     want.channels = channelCount;
-    want.samples = opusConfig->samplesPerFrame;
+    want.samples = opusConfig->samplesPerFrame * 2;
 
-    dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 1);
+    dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
     if (dev == 0) {
         applog_e("SDLAud", "Failed to open audio: %s", SDL_GetError());
         return -1;
@@ -102,7 +102,8 @@ static void queue(char *data, int length) {
         size_t write_size = sdlaud_ringbuf_write(ringbuf, (unsigned char *) pcmBuffer,
                                                  decodeLen * channelCount * sizeof(short));
         if (!write_size) {
-            applog_w("SDLAud", "ring buffer overflow");
+            applog_w("SDLAud", "ring buffer overflow, clean the whole buffer");
+            sdlaud_ringbuf_clear(ringbuf);
         }
     } else {
         applog_e("SDLAud", "Opus error from decode: %d", decodeLen);
