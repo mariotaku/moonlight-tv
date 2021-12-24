@@ -18,11 +18,12 @@ sdlaud_ringbuf *sdlaud_ringbuf_new(size_t capacity) {
     return buf;
 }
 
-void sdlaud_ringbuf_write(sdlaud_ringbuf *buf, const unsigned char *src, size_t size) {
+size_t sdlaud_ringbuf_write(sdlaud_ringbuf *buf, const unsigned char *src, size_t size) {
     SDL_LockMutex(buf->mutex);
     if (buf->size + size >= buf->cap) {
         // Buffer overflow
-        abort();
+        SDL_UnlockMutex(buf->mutex);
+        return 0;
     }
     unsigned char *dst = (unsigned char *) buf + sizeof(sdlaud_ringbuf);
     size_t tmp_tail = buf->tail + size;
@@ -41,6 +42,7 @@ void sdlaud_ringbuf_write(sdlaud_ringbuf *buf, const unsigned char *src, size_t 
     buf->tail = tmp_tail;
 
     SDL_UnlockMutex(buf->mutex);
+    return size;
 }
 
 size_t sdlaud_ringbuf_read(sdlaud_ringbuf *buf, unsigned char *dst, size_t size) {
@@ -67,6 +69,10 @@ size_t sdlaud_ringbuf_read(sdlaud_ringbuf *buf, unsigned char *dst, size_t size)
     buf->head = tmp_head;
     SDL_UnlockMutex(buf->mutex);
     return read_size;
+}
+
+size_t sdlaud_ringbuf_size(const sdlaud_ringbuf *buf) {
+    return buf->size;
 }
 
 void sdlaud_ringbuf_delete(sdlaud_ringbuf *buf) {

@@ -27,31 +27,36 @@
 #include <opus_multistream.h>
 
 #define MAX_CHANNEL_COUNT 6
-#define FRAME_SIZE 240
 
 static OpusMSDecoder *decoder = NULL;
 static sdlaud_ringbuf *ringbuf = NULL;
+static unsigned char *pcmBuffer = NULL;
 static unsigned char *readbuf = NULL;
 static size_t readbuf_size = 0;
-static int channelCount;
+static int channelCount, samplesPerFrame, sampleRate;
 
 static void sdlaud_callback(void *userdata, Uint8 *stream, int len);
 
 static int setup(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context, int arFlags) {
     int rc;
-    decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams,
-                                              opusConfig->coupledStreams, opusConfig->mapping, &rc);
-    ringbuf = sdlaud_ringbuf_new(FRAME_SIZE * MAX_CHANNEL_COUNT * 32);
+    samplesPerFrame = opusConfig->samplesPerFrame;
     channelCount = opusConfig->channelCount;
+    sampleRate = opusConfig->sampleRate;
+
+    decoder = opus_multistream_decoder_create(sampleRate, channelCount, opusConfig->streams, opusConfig->coupledStreams,
+                                              opusConfig->mapping, &rc);
+
+    ringbuf = sdlaud_ringbuf_new(opusConfig->samplesPerFrame * MAX_CHANNEL_COUNT * 8);
+    pcmBuffer = malloc(sizeof(short) * channelCount * samplesPerFrame);
 
     SDL_InitSubSystem(SDL_INIT_AUDIO);
 
     SDL_AudioSpec want, have;
     SDL_zero(want);
     want.callback = sdlaud_callback;
-    want.freq = opusConfig->sampleRate;
+    want.freq = sampleRate;
     want.format = AUDIO_S16LSB;
-    want.channels = opusConfig->channelCount;
+    want.channels = channelCount;
     want.samples = opusConfig->samplesPerFrame;
 
     if (SDL_OpenAudio(&want, &have) != 0) {
@@ -80,15 +85,22 @@ static void cleanup() {
         readbuf_size = 0;
         readbuf = NULL;
     }
+    if (pcmBuffer != NULL) {
+        SDL_free(pcmBuffer);
+        pcmBuffer = NULL;
+    }
     SDL_CloseAudio();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
 static void queue(char *data, int length) {
-    short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];
-    int decodeLen = opus_multistream_decode(decoder, (unsigned char *) data, length, pcmBuffer, FRAME_SIZE, 0);
+    int decodeLen = opus_multistream_decode(decoder, (unsigned char *) data, length, pcmBuffer, samplesPerFrame, 0);
     if (decodeLen > 0) {
-        sdlaud_ringbuf_write(ringbuf, (unsigned char *) pcmBuffer, decodeLen * channelCount * sizeof(short));
+        size_t write_size = sdlaud_ringbuf_write(ringbuf, (unsigned char *) pcmBuffer,
+                                                 decodeLen * channelCount * sizeof(short));
+        if (!write_size) {
+            applog_w("SDLAud", "ring buffer overflow");
+        }
     } else {
         applog_e("SDLAud", "Opus error from decode: %d", decodeLen);
     }
@@ -110,7 +122,7 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
         .init = setup,
         .cleanup = cleanup,
         .decodeAndPlaySample = queue,
-        .capabilities = CAPABILITY_DIRECT_SUBMIT,
+        .capabilities = CAPABILITY_DIRECT_SUBMIT | CAPABILITY_SUPPORTS_ARBITRARY_AUDIO_DURATION,
 };
 
 bool audio_check_sdl(PAUDIO_INFO ainfo) {
