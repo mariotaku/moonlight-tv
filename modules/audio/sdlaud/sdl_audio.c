@@ -28,6 +28,7 @@
 
 #define MAX_CHANNEL_COUNT 6
 
+static SDL_AudioDeviceID dev = 0;
 static OpusMSDecoder *decoder = NULL;
 static sdlaud_ringbuf *ringbuf = NULL;
 static unsigned char *pcmBuffer = NULL;
@@ -59,13 +60,14 @@ static int setup(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusCon
     want.channels = channelCount;
     want.samples = opusConfig->samplesPerFrame;
 
-    if (SDL_OpenAudio(&want, &have) != 0) {
+    dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 1);
+    if (dev == 0) {
         applog_e("SDLAud", "Failed to open audio: %s", SDL_GetError());
         return -1;
     } else {
         if (have.format != want.format) // we let this one thing change.
             applog_w("SDLAud", "We didn't get requested audio format.");
-        SDL_PauseAudio(0); // start audio playing.
+        SDL_PauseAudioDevice(dev, 0); // start audio playing.
     }
 
     return 0;
@@ -89,7 +91,8 @@ static void cleanup() {
         SDL_free(pcmBuffer);
         pcmBuffer = NULL;
     }
-    SDL_CloseAudio();
+    SDL_CloseAudioDevice(dev);
+    dev = 0;
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
