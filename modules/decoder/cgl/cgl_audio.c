@@ -1,12 +1,12 @@
-#include "audio.h"
-
 #include <cgl.h>
 
-#include <stdio.h>
 #include <opus_multistream.h>
 
 #include "stream/module/api.h"
 #include "util/logging.h"
+
+#define MAX_CHANNEL_COUNT 6
+#define FRAME_SIZE 240
 
 static OpusMSDecoder *decoder;
 static short pcmBuffer[FRAME_SIZE * MAX_CHANNEL_COUNT];

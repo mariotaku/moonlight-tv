@@ -24,7 +24,7 @@ SDL_BACKPORT SDL_bool SDL_webOSCursorVisibility(SDL_bool visible) {
 SDL_BACKPORT SDL_bool SDL_webOSGetPanelResolution(int *width, int *height) {
     SDL_bool (*fn)(int *, int *) = noop;
     if (fn == noop) {
-        dlsym(RTLD_NEXT, "SDL_webOSGetPanelResolution");
+        fn = dlsym(RTLD_NEXT, "SDL_webOSGetPanelResolution");
     }
     if (!fn)
         return SDL_FALSE;
@@ -34,7 +34,7 @@ SDL_BACKPORT SDL_bool SDL_webOSGetPanelResolution(int *width, int *height) {
 SDL_BACKPORT SDL_bool SDL_webOSGetRefreshRate(int *rate) {
     SDL_bool (*fn)(int *) = noop;
     if (fn == noop) {
-        dlsym(RTLD_NEXT, "SDL_webOSGetRefreshRate");
+        fn = dlsym(RTLD_NEXT, "SDL_webOSGetRefreshRate");
     }
     if (!fn)
         return SDL_FALSE;
@@ -110,7 +110,7 @@ SDL_BACKPORT int SDL_GameControllerAddMappingsFromRW(SDL_RWops *rw, int freerw) 
 SDL_BACKPORT char *SDL_GetBasePath() {
     char *(*fn)() = noop;
     if (fn == noop) {
-        dlsym(RTLD_NEXT, "SDL_GetBasePath");
+        fn = dlsym(RTLD_NEXT, "SDL_GetBasePath");
     }
     if (!fn) {
         return getcwd(malloc(4096), 4096);
@@ -121,7 +121,7 @@ SDL_BACKPORT char *SDL_GetBasePath() {
 SDL_BACKPORT char *SDL_GetPrefPath(const char *org, const char *app) {
     char *(*fn)(const char *, const char *) = noop;
     if (fn == noop) {
-        dlsym(RTLD_NEXT, "SDL_GetPrefPath");
+        fn = dlsym(RTLD_NEXT, "SDL_GetPrefPath");
     }
     if (!fn) {
         return getcwd(malloc(4096), 4096);
