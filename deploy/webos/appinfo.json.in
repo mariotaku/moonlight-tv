@@ -6,6 +6,7 @@
     "main": "moonlight",
     "title": "Moonlight",
     "icon": "icon.png",
+    "largeIcon": "icon_large.png",
     "splashBackground": "splash.png",
     "appDescription": "Open Source NVIDIA GameStream Client"
 }
