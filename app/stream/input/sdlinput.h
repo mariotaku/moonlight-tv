@@ -10,6 +10,7 @@ typedef struct _GAMEPAD_STATE {
     short rightStickX, rightStickY;
     short buttons;
     SDL_JoystickID sdl_id;
+    SDL_GameController *controller;
     SDL_Haptic *haptic;
     int haptic_effect_id;
     short id;

@@ -158,6 +158,7 @@ bool absinput_init_gamepad(int joystick_index) {
 
         SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
         PGAMEPAD_STATE state = get_gamepad(sdl_id);
+        state->controller = controller;
         state->haptic = haptic;
         state->haptic_effect_id = -1;
         applog_i("Input", "Controller #%d (%s) connected, sdl_id: %d", state->id, SDL_JoystickName(joystick), sdl_id);
@@ -177,8 +178,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id) {
     if (!state) {
         return;
     }
-    SDL_GameController *controller = SDL_GameControllerFromInstanceID(sdl_id);
-    if (!controller) {
+    if (!state->controller) {
         applog_w("Input", "Could not find gamecontroller %i: %s", sdl_id, SDL_GetError());
         return;
     }
@@ -189,7 +189,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id) {
     if (state->haptic) {
         SDL_HapticClose(state->haptic);
     }
-    SDL_GameControllerClose(controller);
+    SDL_GameControllerClose(state->controller);
     applog_i("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
     // Release the state so it can be reused later
     memset(state, 0, sizeof(GAMEPAD_STATE));
