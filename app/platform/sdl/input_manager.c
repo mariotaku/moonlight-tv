@@ -18,8 +18,6 @@ void inputmgr_init() {
     char *condb = gamecontrollerdb_path();
     if (access(condb, F_OK) == 0) {
         numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
-    } else {
-        numofmappings = SDL_GameControllerAddMappingsFromFile("third_party/SDL_GameControllerDB/gamecontrollerdb.txt");
     }
     free(condb);
 

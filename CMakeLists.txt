@@ -229,7 +229,6 @@ set(SOURCES
         app/stream/input/sdl/keyboard.c
         app/stream/input/sdl/gamepad.c
         app/stream/input/sdl/mouse.c
-        app/stream/audio/sdlaud.c
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
@@ -304,6 +303,7 @@ target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads
         moonlight-common-c gamestream lvgl
         Fontconfig::Fontconfig Config::Config ${CURL_LIBRARIES} ${FREETYPE_LIBRARIES}
+        moonlight-sdlaud
         )
 
 macro(moonlight_add_module)
