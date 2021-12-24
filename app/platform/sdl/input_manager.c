@@ -23,7 +23,11 @@ void inputmgr_init() {
 
     char *condb = gamecontrollerdb_path();
     if (access(condb, F_OK) == 0) {
+#if TARGET_WEBOS
+        numofmappings = BACKPORT_GameControllerAddMappingsFromFile(condb);
+#else
         numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
+#endif
     } else {
 #if TARGET_WEBOS
         numofmappings = BACKPORT_GameControllerAddMappingsFromFile("assets/gamecontrollerdb.txt");
