@@ -242,6 +242,7 @@ if (TARGET_WEBOS)
             app/platform/webos/path_webos.c
             app/platform/webos/os_info.c
             app/platform/webos/SDL_webOS_compat.c
+            app/platform/webos/pbnjson_compat.c
             app/platform/webos/logging_pmlog.c
             app/platform/webos/app_webos.c
             app/platform/webos/lunasynccall.c

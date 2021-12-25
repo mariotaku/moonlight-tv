@@ -30,6 +30,7 @@ void app_init_locale() {
         return;
     }
     char *payload = NULL;
+    applog_d("APP", "Get system locale settings");
     if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}",
                               true, &payload) || !payload) {
         return;
