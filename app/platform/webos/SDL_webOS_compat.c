@@ -12,8 +12,8 @@ static int noop() {
 }
 
 SDL_BACKPORT SDL_bool SDL_webOSCursorVisibility(SDL_bool visible) {
-    SDL_bool (*fn)(SDL_bool) = noop;
-    if (fn == noop) {
+    SDL_bool (*fn)(SDL_bool) = (void *) noop;
+    if (fn == (void *) noop) {
         fn = dlsym(RTLD_NEXT, "SDL_webOSCursorVisibility");
     }
     if (!fn)
@@ -22,8 +22,8 @@ SDL_BACKPORT SDL_bool SDL_webOSCursorVisibility(SDL_bool visible) {
 }
 
 SDL_BACKPORT SDL_bool SDL_webOSGetPanelResolution(int *width, int *height) {
-    SDL_bool (*fn)(int *, int *) = noop;
-    if (fn == noop) {
+    SDL_bool (*fn)(int *, int *) =(void *) noop;
+    if (fn == (void *) noop) {
         fn = dlsym(RTLD_NEXT, "SDL_webOSGetPanelResolution");
     }
     if (!fn)
@@ -32,8 +32,8 @@ SDL_BACKPORT SDL_bool SDL_webOSGetPanelResolution(int *width, int *height) {
 }
 
 SDL_BACKPORT SDL_bool SDL_webOSGetRefreshRate(int *rate) {
-    SDL_bool (*fn)(int *) = noop;
-    if (fn == noop) {
+    SDL_bool (*fn)(int *) =(void *) noop;
+    if (fn == (void *) noop) {
         fn = dlsym(RTLD_NEXT, "SDL_webOSGetRefreshRate");
     }
     if (!fn)
@@ -108,8 +108,8 @@ SDL_BACKPORT int SDL_GameControllerAddMappingsFromRW(SDL_RWops *rw, int freerw) 
 }
 
 SDL_BACKPORT char *SDL_GetBasePath() {
-    char *(*fn)() = noop;
-    if (fn == noop) {
+    char *(*fn)() = (void *) noop;
+    if (fn == (void *) noop) {
         fn = dlsym(RTLD_NEXT, "SDL_GetBasePath");
     }
     if (!fn) {
@@ -119,8 +119,8 @@ SDL_BACKPORT char *SDL_GetBasePath() {
 }
 
 SDL_BACKPORT char *SDL_GetPrefPath(const char *org, const char *app) {
-    char *(*fn)(const char *, const char *) = noop;
-    if (fn == noop) {
+    char *(*fn)(const char *, const char *) = (void *) noop;
+    if (fn == (void *) noop) {
         fn = dlsym(RTLD_NEXT, "SDL_GetPrefPath");
     }
     if (!fn) {

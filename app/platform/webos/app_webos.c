@@ -35,7 +35,9 @@ void app_init_locale() {
                               true, &payload) || !payload) {
         return;
     }
-    jdomparser_ref parser = jdomparser_new(jschema_all());
+    JSchemaInfo schemaInfo;
+    jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
+    jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
     jdomparser_feed(parser, payload, (int) strlen(payload));
     jdomparser_end(parser);
     jvalue_ref payload_obj = jdomparser_get_result(parser);

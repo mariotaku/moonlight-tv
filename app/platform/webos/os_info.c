@@ -15,7 +15,9 @@ int os_info_get(os_info_t *info) {
         return -1;
     }
     char buf[8192];
-    jdomparser_ref parser = jdomparser_new(jschema_all());
+    JSchemaInfo schemaInfo;
+    jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
+    jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
     size_t buflen;
     while ((buflen = fread(buf, sizeof(char), 8192, f)) > 0) {
         jdomparser_feed(parser, buf, (int) buflen);

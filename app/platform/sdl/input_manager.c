@@ -13,9 +13,10 @@
 
 void inputmgr_init() {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
-    int numofmappings;
+    int numofmappings = 0;
 
     char *condb = gamecontrollerdb_path();
+    applog_i("Input", "Load game controller mappping from %s", condb);
     if (access(condb, F_OK) == 0) {
         numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
     }
