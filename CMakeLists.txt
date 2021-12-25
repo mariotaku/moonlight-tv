@@ -118,7 +118,7 @@ if (TARGET_WEBOS)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
-    pkg_check_modules(PBNJSON REQUIRED pbnjson_c)
+    pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
 elseif (TARGET_RASPI)
@@ -347,9 +347,9 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
+    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
 elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
