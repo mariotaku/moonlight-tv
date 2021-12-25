@@ -13,7 +13,7 @@ It was originally designed for LG webOS TVs, but may support running on more dev
 
 ![Launcher](https://user-images.githubusercontent.com/830358/141690137-529d3b94-b56a-4f24-a3c5-00a56eb30952.png)
 
-![Settings](https://user-images.githubusercontent.com/830358/141690143-6752757b-5e1f-4a23-acf7-4b2667e2fd05.png)
+![Settings](https://user-images.githubusercontent.com/830358/147389849-6907f614-dbd4-4c24-987e-1a214a9680d0.png)
 
 ![In-game Overlay](https://user-images.githubusercontent.com/830358/141690146-27ee2564-0cc8-43ef-a5b0-54b8487dda1e.png)
 _Screenshot performed on TV has lower picture quality. Actual picture quality is better._
