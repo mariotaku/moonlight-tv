@@ -413,7 +413,7 @@ endif ()
 if (BUILD_TESTS)
     enable_testing()
 
-    add_subdirectory(third_party/Unity)
+    add_subdirectory(third_party/Unity EXCLUDE_FROM_ALL)
     add_subdirectory(tests)
 endif ()
 
