@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 if [ ! -d app ] || [ ! -f CMakeLists.txt ]; then
   echo "Please invoke this script in project root directory"
