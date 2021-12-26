@@ -1,12 +1,13 @@
 # Moonlight TV
 
-Moonlight TV is a GUI front end for [Moonlight GameStream Client](https://moonlight-stream.org/). With some components from [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded).
-It was originally designed for LG webOS TVs, but may support running on more devices in the future.
+Moonlight TV is a community version of [Moonlight GameStream Client](https://moonlight-stream.org/), made for large
+screens. It works on LG webOS powered TVs, and Raspberry Pi running Raspbian.
 
 ## Features
 
+* High performance streaming for webOS
+* UI optimized for large screen and remote controller
 * Supports up to 4 controllers
-* Utilizes system hardware decoder to get best performance (webOS 2/3/4/5)
 * Easy to port to other OSes (Now runs on macOS, Arch, Debian, Raspbian and Windows)
 
 ## Screenshots
@@ -26,4 +27,13 @@ _Screenshot performed on TV has lower picture quality. Actual picture quality is
 
 Or download IPK from [Latest release](https://github.com/mariotaku/moonlight-tv/releases/latest)
 
+### For Raspbian
+
+Download DEB from [Latest release](https://github.com/mariotaku/moonlight-tv/releases/latest)
+
 ## [Documentations](https://github.com/mariotaku/moonlight-tv/wiki)
+
+## Credits
+
+* [moonlight-embedded](https://github.com/irtimmer/moonlight-embedded), for original libgamestream and decoder
+  components
