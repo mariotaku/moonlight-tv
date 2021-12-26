@@ -1,8 +1,6 @@
 #!/bin/sh
 
-TOPDIR=$(git rev-parse --show-toplevel)
-
-if [ "$TOPDIR" != "$PWD" ]; then
+if [ ! -d app ] || [ ! -f CMakeLists.txt ]; then
   echo "Please invoke this script in project root directory"
   exit 1
 fi
