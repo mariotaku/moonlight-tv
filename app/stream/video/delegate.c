@@ -16,8 +16,8 @@ static PDECODER_RENDERER_CALLBACKS vdec;
 static int lastFrameNumber;
 static struct VIDEO_STATS vdec_temp_stats;
 static int vdec_stream_format = 0;
-struct VIDEO_STATS vdec_summary_stats;
-struct VIDEO_INFO vdec_stream_info;
+VIDEO_STATS vdec_summary_stats;
+VIDEO_INFO vdec_stream_info;
 
 static int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags);
 

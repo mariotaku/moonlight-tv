@@ -1,22 +1,3 @@
-/*
- * This file is part of Moonlight Embedded.
- *
- * Copyright (C) 2015-2017 Iwan Timmer
- *
- * Moonlight is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * Moonlight is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Moonlight; if not, see <http://www.gnu.org/licenses/>.
- */
-
 #include "stream/module/api.h"
 #include "ringbuf.h"
 #include "util/logging.h"
@@ -26,12 +7,10 @@
 #include <Limelight.h>
 #include <opus_multistream.h>
 
-#define MAX_CHANNEL_COUNT 6
-
 static SDL_AudioDeviceID dev = 0;
 static OpusMSDecoder *decoder = NULL;
 static sdlaud_ringbuf *ringbuf = NULL;
-static unsigned char *pcmBuffer = NULL;
+static short *pcmBuffer = NULL;
 static unsigned char *readbuf = NULL;
 static size_t readbuf_size = 0;
 static int channelCount, samplesPerFrame, sampleRate;
@@ -47,8 +26,10 @@ static int setup(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusCon
     decoder = opus_multistream_decoder_create(sampleRate, channelCount, opusConfig->streams, opusConfig->coupledStreams,
                                               opusConfig->mapping, &rc);
 
-    ringbuf = sdlaud_ringbuf_new(opusConfig->samplesPerFrame * MAX_CHANNEL_COUNT * 8);
-    pcmBuffer = malloc(sizeof(short) * channelCount * samplesPerFrame);
+    size_t bufSize = sizeof(short) * channelCount * samplesPerFrame;
+    // This ring buffer stores roughly 80ms of audio
+    ringbuf = sdlaud_ringbuf_new(bufSize * 16);
+    pcmBuffer = malloc(bufSize);
 
     SDL_InitSubSystem(SDL_INIT_AUDIO);
 
@@ -58,16 +39,15 @@ static int setup(int audioConfiguration, POPUS_MULTISTREAM_CONFIGURATION opusCon
     want.freq = sampleRate;
     want.format = AUDIO_S16LSB;
     want.channels = channelCount;
-    want.samples = opusConfig->samplesPerFrame * 2;
+    want.samples = samplesPerFrame;
 
-    dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0);
-    if (dev == 0) {
+    if (SDL_OpenAudio(&want, &have)) {
         applog_e("SDLAud", "Failed to open audio: %s", SDL_GetError());
         return -1;
     } else {
         if (have.format != want.format) // we let this one thing change.
             applog_w("SDLAud", "We didn't get requested audio format.");
-        SDL_PauseAudioDevice(dev, 0); // start audio playing.
+        SDL_PauseAudio(0); // start audio playing.
     }
 
     return 0;
@@ -91,8 +71,7 @@ static void cleanup() {
         SDL_free(pcmBuffer);
         pcmBuffer = NULL;
     }
-    SDL_CloseAudioDevice(dev);
-    dev = 0;
+    SDL_CloseAudio();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -117,6 +96,8 @@ static void sdlaud_callback(void *userdata, Uint8 *stream, int len) {
     }
     size_t read_size = sdlaud_ringbuf_read(ringbuf, readbuf, len);
     if (read_size > 0) {
+        applog_d("SDLAud", "ring buffer delay: %.2f ms",
+                 (double) sdlaud_ringbuf_size(ringbuf) / (channelCount * sizeof(short) * (sampleRate / 1000.0)));
         SDL_memset(stream, 0, len);
         SDL_MixAudio(stream, readbuf, read_size, SDL_MIX_MAXVOLUME);
     }
@@ -126,7 +107,7 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
         .init = setup,
         .cleanup = cleanup,
         .decodeAndPlaySample = queue,
-        .capabilities = CAPABILITY_DIRECT_SUBMIT | CAPABILITY_SUPPORTS_ARBITRARY_AUDIO_DURATION,
+        .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
 
 bool audio_check_sdl(PAUDIO_INFO ainfo) {

@@ -27,11 +27,15 @@ typedef struct VIDEO_STATS {
     uint32_t rtt, rttVariance;
 } VIDEO_STATS;
 
-struct VIDEO_INFO {
+typedef struct VIDEO_INFO {
     const char *format;
     int width;
     int height;
-};
+} VIDEO_INFO;
+
+typedef struct AUDIO_STATS {
+    uint32_t avgBufferTime;
+} AUDIO_STATS;
 
 extern STREAMING_STATUS streaming_status;
 extern int streaming_errno;

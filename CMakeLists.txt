@@ -182,6 +182,7 @@ set(SOURCES
         app/stream/session/session.c
         app/stream/session/connection.c
         app/stream/settings.c
+        app/stream/audio/stats.c
         app/stream/video/delegate.c
         app/stream/video/dummy.c
         app/stream/video/sps_parser.c
