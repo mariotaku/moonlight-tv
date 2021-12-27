@@ -183,10 +183,11 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     adaptiveStreaming.put("maxHeight", videoConfig.height);
     adaptiveStreaming.put("maxFrameRate", videoConfig.fps);
 
-    if (videoConfig.format & VIDEO_FORMAT_MASK_H264)
+    if (videoConfig.format & VIDEO_FORMAT_MASK_H264) {
         codec.put("video", "H264");
-    else if (videoConfig.format & VIDEO_FORMAT_MASK_H265)
+    } else if (videoConfig.format & VIDEO_FORMAT_MASK_H265) {
         codec.put("video", "H265");
+    }
 
     if (audioConfig.type) {
         pj::JValue audioSink = pj::Object();
@@ -292,9 +293,18 @@ void AVStreamPlayer::SetMediaAudioData(const char *data) {
 }
 
 void AVStreamPlayer::SetMediaVideoData(const char *data) {
-    applog_d("SMP", "AVStreamPlayer::SetMediaVideoData %s", data);
+    pj::JSchema schema = pj::JSchema::AllSchema();
+    pj::JValue parsed = pj::JDomParser::fromString(data, schema);
+    pj::JValue video = parsed["video"];
+    if (videoConfig.format == VIDEO_FORMAT_H265_MAIN10 && video["hdrType"].asString() != "HDR10") {
+        video.put("hdrType", "HDR10");
+        applog_i("SMP", "Add missing HDR type");
+    }
+    const std::string &modified = pj::JGenerator::serialize(parsed, schema);
+
+    applog_d("SMP", "AVStreamPlayer::SetMediaVideoData %s", modified.c_str());
 #ifdef USE_ACB
-    acb_client_->setMediaVideoData(data);
+    acb_client_->setMediaVideoData(modified.c_str());
 #endif
 }
 
