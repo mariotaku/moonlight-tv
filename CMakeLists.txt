@@ -108,11 +108,11 @@ set(BUILD_SHARED_CORE_LIBS OFF)
 
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
-    add_subdirectory(third_party/opus EXCLUDE_FROM_ALL)
+    add_subdirectory(third_party/opus)
     unset(BUILD_SHARED_LIBS)
 
-    add_subdirectory(third_party/libconfig EXCLUDE_FROM_ALL)
-    add_subdirectory(third_party/mbedtls EXCLUDE_FROM_ALL)
+    add_subdirectory(third_party/libconfig)
+    add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
