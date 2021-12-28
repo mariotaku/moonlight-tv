@@ -161,7 +161,7 @@ void settings_write(const char *filename, PCONFIGURATION config) {
 
     ini_write_section(fp, "audio");
     ini_write_string(fp, "backend", config->audio_backend);
-    if (!config->audio_device || !config->audio_device[0]) {
+    if (config->audio_device && config->audio_device[0]) {
         ini_write_string(fp, "device", config->audio_device);
     }
     ini_write_string(fp, "surround", serialize_audio_config(config->stream.audioConfiguration));
