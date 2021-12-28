@@ -5,6 +5,7 @@ include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(CheckTypeSize)
 
+message(BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS})
 add_library(microdns
         ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/mdns.c
         ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/rr.c
@@ -85,3 +86,5 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 if (HAVE_UNISTD_H)
     target_compile_definitions(microdns PRIVATE HAVE_UNISTD_H=1)
 endif ()
+
+install(TARGETS microdns LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
