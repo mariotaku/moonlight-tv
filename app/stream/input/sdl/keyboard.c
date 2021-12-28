@@ -1,3 +1,4 @@
+#include "app.h"
 #include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 #include "stream/session.h"
@@ -9,15 +10,7 @@
 #include "util/user_event.h"
 #include "util/logging.h"
 
-#define VK_0 0x30
-#define VK_A 0x41
-
-// These are real Windows VK_* codes
-#ifndef VK_F1
-#define VK_F1 0x70
-#define VK_F13 0x7C
-#define VK_NUMPAD0 0x60
-#endif
+#include "vk.h"
 
 enum KeyCombo {
     KeyComboQuit,
@@ -83,7 +76,7 @@ static int keys_code_comparator(struct KeysDown *p, const void *fv) {
 }
 
 static bool isSystemKeyCaptureActive() {
-    return false;
+    return app_configuration->syskey_capture;
 }
 
 void performPendingSpecialKeyCombo() {
@@ -223,71 +216,71 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
     } else {
         switch (event->keysym.scancode) {
             case SDL_SCANCODE_BACKSPACE:
-                keyCode = 0x08;
+                keyCode = VK_BACK;
                 break;
             case SDL_SCANCODE_TAB:
-                keyCode = 0x09;
+                keyCode = VK_TAB;
                 break;
             case SDL_SCANCODE_CLEAR:
-                keyCode = 0x0C;
+                keyCode = VK_CLEAR;
                 break;
             case SDL_SCANCODE_KP_ENTER: // FIXME: Is this correct?
             case SDL_SCANCODE_RETURN:
-                keyCode = 0x0D;
+                keyCode = VK_RETURN;
                 break;
             case SDL_SCANCODE_PAUSE:
-                keyCode = 0x13;
+                keyCode = VK_PAUSE;
                 break;
             case SDL_SCANCODE_CAPSLOCK:
-                keyCode = 0x14;
+                keyCode = VK_CAPITAL;
                 break;
             case SDL_SCANCODE_ESCAPE:
-                keyCode = 0x1B;
+                keyCode = VK_ESCAPE;
                 break;
             case SDL_SCANCODE_SPACE:
-                keyCode = 0x20;
+                keyCode = VK_SPACE;
                 break;
             case SDL_SCANCODE_PAGEUP:
-                keyCode = 0x21;
+                keyCode = VK_PRIOR;
                 break;
             case SDL_SCANCODE_PAGEDOWN:
-                keyCode = 0x22;
+                keyCode = VK_NEXT;
                 break;
             case SDL_SCANCODE_END:
-                keyCode = 0x23;
+                keyCode = VK_END;
                 break;
             case SDL_SCANCODE_HOME:
-                keyCode = 0x24;
+                keyCode = VK_HOME;
                 break;
             case SDL_SCANCODE_LEFT:
-                keyCode = 0x25;
+                keyCode = VK_LEFT;
                 break;
             case SDL_SCANCODE_UP:
-                keyCode = 0x26;
+                keyCode = VK_UP;
                 break;
             case SDL_SCANCODE_RIGHT:
-                keyCode = 0x27;
+                keyCode = VK_RIGHT;
                 break;
             case SDL_SCANCODE_DOWN:
-                keyCode = 0x28;
+                keyCode = VK_DOWN;
                 break;
             case SDL_SCANCODE_SELECT:
-                keyCode = 0x29;
+                keyCode = VK_SELECT;
                 break;
             case SDL_SCANCODE_EXECUTE:
-                keyCode = 0x2B;
+                keyCode = VK_EXECUTE;
                 break;
             case SDL_SCANCODE_PRINTSCREEN:
-                keyCode = 0x2C;
+                keyCode = VK_SNAPSHOT;
                 break;
             case SDL_SCANCODE_INSERT:
-                keyCode = 0x2D;
+                keyCode = VK_INSERT;
                 break;
             case SDL_SCANCODE_DELETE:
-                keyCode = 0x2E;
+                keyCode = VK_DELETE;
                 break;
             case SDL_SCANCODE_HELP:
-                keyCode = 0x2F;
+                keyCode = VK_HELP;
                 break;
             case SDL_SCANCODE_KP_0:
                 // See comment above about why we only handle SDL_SCANCODE_KP_0 here
@@ -298,115 +291,115 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
                 keyCode = VK_0;
                 break;
             case SDL_SCANCODE_KP_MULTIPLY:
-                keyCode = 0x6A;
+                keyCode = VK_MULTIPLY;
                 break;
             case SDL_SCANCODE_KP_PLUS:
-                keyCode = 0x6B;
+                keyCode = VK_ADD;
                 break;
             case SDL_SCANCODE_KP_COMMA:
-                keyCode = 0x6C;
+                keyCode = VK_SEPARATOR;
                 break;
             case SDL_SCANCODE_KP_MINUS:
-                keyCode = 0x6D;
+                keyCode = VK_SUBTRACT;
                 break;
             case SDL_SCANCODE_KP_PERIOD:
-                keyCode = 0x6E;
+                keyCode = VK_DECIMAL;
                 break;
             case SDL_SCANCODE_KP_DIVIDE:
-                keyCode = 0x6F;
+                keyCode = VK_DIVIDE;
                 break;
             case SDL_SCANCODE_NUMLOCKCLEAR:
-                keyCode = 0x90;
+                keyCode = VK_NUMLOCK;
                 break;
             case SDL_SCANCODE_SCROLLLOCK:
-                keyCode = 0x91;
+                keyCode = VK_SCROLL;
                 break;
             case SDL_SCANCODE_LSHIFT:
-                keyCode = 0xA0;
+                keyCode = VK_LSHIFT;
                 break;
             case SDL_SCANCODE_RSHIFT:
-                keyCode = 0xA1;
+                keyCode = VK_RSHIFT;
                 break;
             case SDL_SCANCODE_LCTRL:
-                keyCode = 0xA2;
+                keyCode = VK_LCONTROL;
                 break;
             case SDL_SCANCODE_RCTRL:
-                keyCode = 0xA3;
+                keyCode = VK_RCONTROL;
                 break;
             case SDL_SCANCODE_LALT:
-                keyCode = 0xA4;
+                keyCode = VK_LMENU;
                 break;
             case SDL_SCANCODE_RALT:
-                keyCode = 0xA5;
+                keyCode = VK_RMENU;
                 break;
             case SDL_SCANCODE_LGUI:
                 if (!isSystemKeyCaptureActive()) {
                     return;
                 }
-                keyCode = 0x5B;
+                keyCode = VK_LWIN;
                 break;
             case SDL_SCANCODE_RGUI:
                 if (!isSystemKeyCaptureActive()) {
                     return;
                 }
-                keyCode = 0x5C;
+                keyCode = VK_RWIN;
                 break;
             case SDL_SCANCODE_AC_BACK:
-                keyCode = 0xA6;
+                keyCode = VK_BROWSER_BACK;
                 break;
             case SDL_SCANCODE_AC_FORWARD:
-                keyCode = 0xA7;
+                keyCode = VK_BROWSER_FORWARD;
                 break;
             case SDL_SCANCODE_AC_REFRESH:
-                keyCode = 0xA8;
+                keyCode = VK_BROWSER_REFRESH;
                 break;
             case SDL_SCANCODE_AC_STOP:
-                keyCode = 0xA9;
+                keyCode = VK_BROWSER_STOP;
                 break;
             case SDL_SCANCODE_AC_SEARCH:
-                keyCode = 0xAA;
+                keyCode = VK_BROWSER_SEARCH;
                 break;
             case SDL_SCANCODE_AC_BOOKMARKS:
-                keyCode = 0xAB;
+                keyCode = VK_BROWSER_FAVORITES;
                 break;
             case SDL_SCANCODE_AC_HOME:
-                keyCode = 0xAC;
+                keyCode = VK_BROWSER_HOME;
                 break;
             case SDL_SCANCODE_SEMICOLON:
-                keyCode = 0xBA;
+                keyCode = VK_OEM_1;
                 break;
             case SDL_SCANCODE_EQUALS:
                 keyCode = 0xBB;
                 break;
             case SDL_SCANCODE_COMMA:
-                keyCode = 0xBC;
+                keyCode = VK_OEM_COMMA;
                 break;
             case SDL_SCANCODE_MINUS:
-                keyCode = 0xBD;
+                keyCode = VK_OEM_MINUS;
                 break;
             case SDL_SCANCODE_PERIOD:
-                keyCode = 0xBE;
+                keyCode = VK_OEM_PERIOD;
                 break;
             case SDL_SCANCODE_SLASH:
-                keyCode = 0xBF;
+                keyCode = VK_OEM_2;
                 break;
             case SDL_SCANCODE_GRAVE:
-                keyCode = 0xC0;
+                keyCode = VK_OEM_3;
                 break;
             case SDL_SCANCODE_LEFTBRACKET:
-                keyCode = 0xDB;
+                keyCode = VK_OEM_4;
                 break;
             case SDL_SCANCODE_BACKSLASH:
-                keyCode = 0xDC;
+                keyCode = VK_OEM_5;
                 break;
             case SDL_SCANCODE_RIGHTBRACKET:
-                keyCode = 0xDD;
+                keyCode = VK_OEM_6;
                 break;
             case SDL_SCANCODE_APOSTROPHE:
-                keyCode = 0xDE;
+                keyCode = VK_OEM_7;
                 break;
             case SDL_SCANCODE_NONUSBACKSLASH:
-                keyCode = 0xE2;
+                keyCode = VK_OEM_102;
                 break;
             default:
                 if (!keyCode) {

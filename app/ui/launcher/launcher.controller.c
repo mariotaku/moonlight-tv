@@ -397,7 +397,7 @@ static void cb_nav_key(lv_event_t *event) {
 }
 
 static void set_detail_opened(launcher_controller_t *controller, bool opened) {
-    bool key = ui_input_mode != UI_INPUT_MODE_POINTER;
+    bool key = ui_input_mode & UI_INPUT_MODE_BUTTON_FLAG;
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
         app_input_set_group(controller->detail_group);

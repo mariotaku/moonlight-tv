@@ -39,6 +39,7 @@ typedef struct configuration_t {
     bool viewonly;
     bool absmouse;
     bool swap_abxy;
+    bool syskey_capture;
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_MOONLIGHT "moonlight.conf"

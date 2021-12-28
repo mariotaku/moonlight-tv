@@ -14,11 +14,8 @@ set(WEBOS_PACKAGE_FILENAME ${WEBOS_APPINFO_ID}_${PROJECT_VERSION}_$ENV{ARCH}.ipk
 set(CPACK_GENERATOR "External")
 set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_BINARY_DIR}/CPackWebOS.cmake")
 
-add_custom_target(webos-package-moonlight
-        COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND npm run webos-gen-i18n -- -o ${CMAKE_INSTALL_WEBOS_PKGDIR}/resources ${I18N_LOCALES}
-        COMMAND ares-package ${CMAKE_INSTALL_WEBOS_PKGDIR} -e include -e cmake -e "libconfig\\\\+\\\\+\\\\..*"
-        )
+add_custom_target(webos-package-moonlight COMMAND cpack)
+add_dependencies(webos-package-moonlight moonlight)
 
 set_target_properties(moonlight PROPERTIES
         WEBOS_PACKAGE_TARGET webos-package-moonlight

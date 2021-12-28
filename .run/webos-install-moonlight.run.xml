@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="webos-install-moonlight" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" nameIsGenerated="true" PROGRAM_PARAMS=":1234 moonlight" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file:///media/developer/apps/usr/palm/applications/com.limelight.webos" PASS_PARENT_ENVS_2="true" PROJECT_NAME="moonlight" TARGET_NAME="webos-install-moonlight" CONFIG_NAME="webOS Debug" version="1" RUN_TARGET_PROJECT_NAME="moonlight" RUN_TARGET_NAME="moonlight">
+  <configuration default="false" name="moonlight" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" PROGRAM_PARAMS=":1234 moonlight" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file:///media/developer/apps/usr/palm/applications/com.limelight.webos" PASS_PARENT_ENVS_2="true" PROJECT_NAME="moonlight" TARGET_NAME="webos-install-moonlight" CONFIG_NAME="webOS Debug" version="1" RUN_TARGET_PROJECT_NAME="moonlight" RUN_TARGET_NAME="moonlight">
     <envs>
       <env name="XDG_RUNTIME_DIR" value="/tmp/xdg" />
       <env name="APPID" value="com.limelight.webos" />

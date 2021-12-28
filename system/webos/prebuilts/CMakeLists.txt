@@ -1,2 +1,0 @@
-install(FILES libconfig.so.9.2.0 DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(FILES libconfig.so.9 DESTINATION ${CMAKE_INSTALL_LIBDIR})
