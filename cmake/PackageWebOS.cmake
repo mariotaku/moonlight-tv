@@ -1,7 +1,7 @@
 # Copy all files under deploy/webos/ to package root
-install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_WEBOS_PKGDIR} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
+install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_PREFIX} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
 # Copy manifest
-configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json @ONLY)
+configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_PREFIX}/appinfo.json @ONLY)
 configure_file(cmake/CPackWebOS.cmake.in ${CMAKE_BINARY_DIR}/CPackWebOS.cmake @ONLY)
 
 add_custom_target(webos-generate-gamecontrollerdb

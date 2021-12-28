@@ -30,6 +30,8 @@ option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
 option(ENABLE_TESTING "Skip mbedtls testing" OFF)
 option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
 option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
+option(USE_STATIC_MBEDTLS_LIBRARY "Don't build mbed TLS static library." OFF)
+option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
 
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" ON)
@@ -58,11 +60,9 @@ if (TARGET_WEBOS)
     set(HAVE_SDL TRUE)
 
     set(WEBOS_APPINFO_ID "com.limelight.webos")
-    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos-unused-prefix)
-    set(CMAKE_INSTALL_WEBOS_PKGDIR ${CMAKE_BINARY_DIR}/webos_pkg_$ENV{ARCH})
-    set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_WEBOS_PKGDIR}/lib)
-    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
-    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_WEBOS_PKGDIR})
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/webos_pkg_$ENV{ARCH})
+    set(CMAKE_INSTALL_BINDIR ${CMAKE_INSTALL_PREFIX})
+    set(CMAKE_INSTALL_DATAROOTDIR ${CMAKE_INSTALL_PREFIX})
 elseif (TARGET_RASPI)
     set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/opt/vc/lib/pkgconfig/")
     set(TARGET_LINUX TRUE)
@@ -110,9 +110,9 @@ if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
     add_subdirectory(third_party/libconfig)
+    add_subdirectory(third_party/mbedtls)
     unset(BUILD_SHARED_LIBS)
 
-    add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
@@ -347,7 +347,7 @@ if (TARGET_WEBOS)
 
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE config)
-    target_link_libraries(moonlight PRIVATE mbedtls)
+    target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
@@ -475,7 +475,7 @@ if (TARGET_WEBOS)
         add_custom_command(TARGET ${package_target} POST_BUILD
                 COMMAND echo RELEASE_IPK_FILENAME=${package_filename} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
                 # Force PATH environment variable to use system python
-                COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/tools/gen_manifest.py -a ${CMAKE_INSTALL_WEBOS_PKGDIR}/appinfo.json
+                COMMAND PATH=/bin:/usr/bin ${CMAKE_SOURCE_DIR}/scripts/tools/gen_manifest.py -a ${CMAKE_INSTALL_DATAROOTDIR}/appinfo.json
                 -p ${CMAKE_BINARY_DIR}/${WEBOS_PACKAGE_FILENAME}
                 -o ${CMAKE_BINARY_DIR}/${WEBOS_HOMEBREW_MANIFEST_FILENAME}
                 COMMAND echo RELEASE_MANIFEST_FILENAME=${WEBOS_HOMEBREW_MANIFEST_FILENAME} >> ${CMAKE_CURRENT_BINARY_DIR}/github-release.env
