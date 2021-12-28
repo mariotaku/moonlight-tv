@@ -374,7 +374,7 @@ elseif (TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES} ${CONFIG_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES} ${CONFIG_LIBRARY})
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
@@ -397,7 +397,7 @@ elseif (TARGET_DESKTOP)
     target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES} ${CONFIG_LIBRARIES})
+    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES} ${CONFIG_LIBRARY})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
