@@ -346,8 +346,11 @@ if (TARGET_WEBOS)
     moonlight_add_module(TARGETS moonlight-ndlaud moonlight-ndlaud-webos5)
 
     target_link_libraries(moonlight PRIVATE opus)
-    target_link_libraries(moonlight PRIVATE config)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
+
+    get_target_property(CONFIG_INCLUDE_DIR config SOURCE_DIR)
+    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+    target_link_libraries(moonlight PRIVATE config)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
@@ -362,8 +365,8 @@ elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC HAVE_SURROUND_SOUND)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
 
-    target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
 
     moonlight_add_module(TARGETS moonlight-mmal LINK)
     moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
@@ -374,7 +377,10 @@ elseif (TARGET_RASPI)
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES} ${CONFIG_LIBRARY})
+    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+
+    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
@@ -392,15 +398,19 @@ elseif (TARGET_DESKTOP)
 
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
 
-    target_link_libraries(moonlight PRIVATE mbedtls)
+    target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
+    target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
 
-    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
+    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
+    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES} ${CONFIG_LIBRARY})
+    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
+
+    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()

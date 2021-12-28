@@ -3,22 +3,18 @@
 
 logvprintf_fn module_logvprintf;
 
-bool audio_init_pulse(int argc, char *argv[], PHOST_CONTEXT hctx)
-{
-    if (hctx)
-    {
+MODULE_API bool audio_init_pulse(int argc, char *argv[], const HOST_CONTEXT *hctx) {
+    if (hctx) {
         module_logvprintf = hctx->logvprintf;
     }
     return true;
 }
 
-bool audio_check_alsa(PAUDIO_INFO ainfo)
-{
+MODULE_API bool audio_check_alsa(PAUDIO_INFO ainfo) {
     ainfo->valid = true;
     ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
     return true;
 }
 
-void audio_finalize_alsa()
-{
+MODULE_API void audio_finalize_alsa() {
 }

@@ -26,7 +26,7 @@ static VideoConfig videoConfig;
 extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
 extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks;
 
-extern "C" bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
+extern "C" bool decoder_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     module_logvprintf = hctx->logvprintf;
     return true;
 }

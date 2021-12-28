@@ -39,7 +39,7 @@ const static uint8_t h264_test_frame[] = {
         0xa0, 0x00, 0x20, 0x00, 0x02, 0x16, 0xb8, 0x00, 0x08, 0x08
 };
 
-MODULE_API bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool decoder_init_lgnc(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
         module_logvprintf = hctx->logvprintf;
     }
@@ -64,7 +64,7 @@ MODULE_API bool decoder_init_lgnc(int argc, char *argv[], PHOST_CONTEXT hctx) {
     return lgnc_initialized;
 }
 
-MODULE_API bool decoder_post_init_lgnc(int arc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool decoder_post_init_lgnc(int arc, char *argv[], const HOST_CONTEXT *hctx) {
     if (!lgnc_initialized) return false;
     lgnc_ready_for_check = true;
     return true;

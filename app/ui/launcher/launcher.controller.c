@@ -28,7 +28,7 @@ static void controller_dtor(lv_obj_controller_t *self);
 
 static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view);
 
-static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view);
+static bool launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view);
 
 static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2);
 
@@ -184,7 +184,7 @@ static void launcher_view_init(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->first_created = false;
 }
 
-static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
+static bool launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     current_instance = NULL;
     app_input_set_group(NULL);
     pcmanager_auto_discovery_stop(pcmanager);
@@ -198,6 +198,7 @@ static void launcher_view_destroy(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_group_del(controller->detail_group);
 
     pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);
+    return false;
 }
 
 static bool launcher_event_cb(lv_obj_controller_t *self, int which, void *data1, void *data2) {

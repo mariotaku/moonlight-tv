@@ -6,14 +6,14 @@
 
 logvprintf_fn module_logvprintf;
 
-MODULE_API bool decoder_init_ffmpeg(int argc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool decoder_init_ffmpeg(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
         module_logvprintf = hctx->logvprintf;
     }
     return true;
 }
 
-bool decoder_check_ffmpeg(PDECODER_INFO info) {
+MODULE_API bool decoder_check_ffmpeg(PDECODER_INFO info) {
     if (avcodec_find_decoder(AV_CODEC_ID_HEVC)) {
         applog_i("FFMPEG", "Init with HEVC support");
         info->valid = true;

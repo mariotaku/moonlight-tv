@@ -57,7 +57,7 @@ enum AUDIO_T {
 };
 typedef enum AUDIO_T AUDIO;
 
-typedef bool (*MODULE_INIT_FN)(int argc, char *argv[], PHOST_CONTEXT host);
+typedef bool (*MODULE_INIT_FN)(int argc, char *argv[], const HOST_CONTEXT *host);
 
 typedef bool (*DECODER_CHECK_FN)(PDECODER_INFO);
 
@@ -110,7 +110,7 @@ extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
 
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
-extern HOST_CONTEXT module_host_context;
+extern const HOST_CONTEXT module_host_context;
 
 DECODER decoder_by_id(const char *id);
 

@@ -14,9 +14,9 @@
 
 static void settings_initialize(const char *confdir, PCONFIGURATION config);
 
-static bool settings_read(char *filename, PCONFIGURATION config);
+static bool settings_read(const char *filename, PCONFIGURATION config);
 
-static void settings_write(char *filename, PCONFIGURATION config);
+static void settings_write(const char *filename, PCONFIGURATION config);
 
 static int find_ch_idx_by_config(int config);
 
@@ -123,8 +123,8 @@ int settings_optimal_bitrate(int w, int h, int fps) {
     return calculated < suggested_max ? calculated : suggested_max;
 }
 
-bool settings_read(char *filename, PCONFIGURATION config) {
-    struct config_t libconfig;
+bool settings_read(const char *filename, PCONFIGURATION config) {
+    config_t libconfig;
     config_init(&libconfig);
     int options = config_get_options(&libconfig);
     options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
@@ -184,8 +184,8 @@ bool settings_read(char *filename, PCONFIGURATION config) {
     return true;
 }
 
-void settings_write(char *filename, PCONFIGURATION config) {
-    struct config_t libconfig;
+void settings_write(const char *filename, PCONFIGURATION config) {
+    config_t libconfig;
     config_init(&libconfig);
     int options = config_get_options(&libconfig);
     options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;

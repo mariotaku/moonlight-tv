@@ -26,6 +26,7 @@ void app_open_url(const char *url) {
 
 void app_init_locale() {
     if (app_configuration->language[0] && strcmp(app_configuration->language, "auto") != 0) {
+        applog_d("APP", "Override language to %s", app_configuration->language);
         i18n_setlocale(app_configuration->language);
         return;
     }

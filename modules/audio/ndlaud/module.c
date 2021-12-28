@@ -9,7 +9,7 @@
 static bool ndl_initialized = false;
 logvprintf_fn module_logvprintf;
 
-MODULE_API bool audio_init_ndlaud(int argc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool audio_init_ndlaud(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
         module_logvprintf = hctx->logvprintf;
     }

@@ -14,7 +14,7 @@ logvprintf_fn module_logvprintf;
 #define audio_check PLUGIN_SYMBOL_NAME(audio_check)
 #define audio_finalize PLUGIN_SYMBOL_NAME(audio_finalize)
 
-bool audio_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool audio_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
         module_logvprintf = hctx->logvprintf;
     }
@@ -28,7 +28,7 @@ bool audio_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
     return media_initialized;
 }
 
-bool audio_check(PAUDIO_INFO dinfo) {
+MODULE_API bool audio_check(PAUDIO_INFO dinfo) {
     if (!media_initialized) return false;
     dinfo->valid = true;
 #if DEBUG
@@ -37,7 +37,7 @@ bool audio_check(PAUDIO_INFO dinfo) {
     return true;
 }
 
-void audio_finalize() {
+MODULE_API void audio_finalize() {
     if (media_initialized) {
         NDL_DirectMediaQuit();
         media_initialized = false;

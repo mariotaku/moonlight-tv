@@ -36,7 +36,7 @@ const static uint8_t h264_test_frame[] = {
         0xa0, 0x00, 0x20, 0x00, 0x02, 0x16, 0xb8, 0x00, 0x08, 0x08
 };
 
-MODULE_API bool decoder_init_cgl(int argc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool decoder_init_cgl(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (cgl_initialized) {
         applog_w("CGL", "Already initialized");
         return true;

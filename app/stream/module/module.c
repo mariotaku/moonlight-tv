@@ -2,7 +2,10 @@
 #include "stream/platform.h"
 #include "util/logging.h"
 
-HOST_CONTEXT module_host_context;
+const HOST_CONTEXT module_host_context = {
+        .logvprintf = (void *) app_logvprintf,
+        .seterror = module_seterror,
+};
 
 static char module_error[1024];
 

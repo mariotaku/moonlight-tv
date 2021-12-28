@@ -65,8 +65,6 @@ int main(int argc, char *argv[]) {
         return ret;
     }
     app_init_locale();
-    module_host_context.logvprintf = (void (*)(int, const char *, const char *, va_list)) &app_logvprintf;
-    module_host_context.seterror = module_seterror;
 
     module_init(argc, argv);
 

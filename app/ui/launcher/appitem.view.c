@@ -97,9 +97,6 @@ void appitem_style_init(appitem_styles_t *style) {
 }
 
 void appitem_style_deinit(appitem_styles_t *style) {
-    lv_sdl_img_src_t src;
-    lv_sdl_img_src_parse(style->fav_indicator_src, &src);
-    SDL_DestroyTexture(src.data.texture);
 }
 
 static void appitem_holder_free_cb(lv_event_t *event) {

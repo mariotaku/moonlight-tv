@@ -16,7 +16,7 @@ logvprintf_fn module_logvprintf;
 #define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
 #define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
 
-MODULE_API bool decoder_init(int argc, char *argv[], PHOST_CONTEXT hctx) {
+MODULE_API bool decoder_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     module_logvprintf = hctx->logvprintf;
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0) {
         media_initialized = true;
