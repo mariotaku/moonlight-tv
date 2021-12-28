@@ -7,8 +7,6 @@
 #include "util/path.h"
 #include "stream/settings.h"
 
-#include "pclist.h"
-
 typedef struct known_host_t {
     char *uuid;
     char *mac;
@@ -81,7 +79,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
 void pcmanager_save_known_hosts(pcmanager_t *manager) {
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
     free(confdir);
-    FILE *fp = fopen(conffile, "w");
+    FILE *fp = fopen(conffile, "wb");
     free(conffile);
     if (!fp) return;
 
@@ -113,7 +111,7 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
 
 static inline void strlower(char *p) {
     for (; *p; ++p)
-        *p = SDL_tolower(*p);
+        *p = (char) SDL_tolower(*p);
 }
 
 static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value) {

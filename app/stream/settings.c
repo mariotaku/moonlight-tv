@@ -130,49 +130,43 @@ bool settings_read(const char *filename, PCONFIGURATION config) {
 }
 
 void settings_write(const char *filename, PCONFIGURATION config) {
-//    config_t libconfig;
-//    config_init(&libconfig);
-//    int options = config_get_options(&libconfig);
-//    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
-//    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
-//    config_set_options(&libconfig, options);
-//
-//    config_setting_t *root = config_root_setting(&libconfig);
-//    config_setting_t *streaming = config_setting_add(root, "streaming", CONFIG_TYPE_GROUP);
-//    config_setting_t *host = config_setting_add(root, "host", CONFIG_TYPE_GROUP);
-//    config_setting_t *input = config_setting_add(root, "input", CONFIG_TYPE_GROUP);
-//    config_setting_t *decoder = config_setting_add(root, "decoder", CONFIG_TYPE_GROUP);
-//
-//    config_setting_set_int_simple(streaming, "width", config->stream.width);
-//    config_setting_set_int_simple(streaming, "height", config->stream.height);
-//    config_setting_set_int_simple(streaming, "net_fps", config->stream.fps);
-//    config_setting_set_int_simple(streaming, "bitrate", config->stream.bitrate);
-//    config_setting_set_int_simple(streaming, "packetsize", config->stream.packetSize);
-//    config_setting_set_bool_simple(host, "sops", config->sops);
-//    config_setting_set_bool_simple(host, "localaudio", config->localaudio);
-//    config_setting_set_bool_simple(host, "quitappafter", config->quitappafter);
-//    config_setting_set_bool_simple(host, "viewonly", config->viewonly);
-//    config_setting_set_bool_simple(input, "absmouse", config->absmouse);
-//    config_setting_set_bool_simple(input, "swap_abxy", config->swap_abxy);
-//    config_setting_set_int_simple(streaming, "rotate", config->rotate);
-//    config_setting_set_string_simple(decoder, "platform", config->decoder);
-//    config_setting_set_string_simple(decoder, "audio_backend", config->audio_backend);
-//    if (!config->audio_device || !config->audio_device[0])
-//        config_setting_remove(decoder, "audio_device");
-//    else
-//        config_setting_set_string_simple(decoder, "audio_device", config->audio_device);
-//    config_setting_set_enum_simple(streaming, "surround", config->stream.audioConfiguration, serialize_audio_config);
-//
-//    config_setting_set_bool_simple(streaming, "hdr", config->stream.enableHdr);
-//    config_setting_set_bool_simple(streaming, "hevc", config->stream.supportsHevc);
-//    config_setting_set_string_simple(root, "language", config->language);
-//    config_setting_set_bool_simple(root, "fullscreen", config->fullscreen);
-//    config_setting_set_int_simple(root, "debug_level", config->debug_level);
-//
-//    if (config_write_file(&libconfig, filename) != CONFIG_TRUE) {
-//        applog_e("Settings", "Can't open configuration file for writing: %s", filename);
-//    }
-//    config_destroy(&libconfig);
+    FILE *fp = fopen(filename, "wb");
+    if (!fp) return;
+    ini_write_string(fp, "language", config->language);
+    ini_write_bool(fp, "fullscreen", config->fullscreen);
+    ini_write_int(fp, "debug_level", config->debug_level);
+
+    ini_write_section(fp, "streaming");
+    ini_write_int(fp, "width", config->stream.width);
+    ini_write_int(fp, "height", config->stream.height);
+    ini_write_int(fp, "net_fps", config->stream.fps);
+    ini_write_int(fp, "bitrate", config->stream.bitrate);
+    ini_write_int(fp, "packetsize", config->stream.packetSize);
+    ini_write_int(fp, "rotate", config->rotate);
+
+    ini_write_section(fp, "host");
+    ini_write_bool(fp, "sops", config->sops);
+    ini_write_bool(fp, "localaudio", config->localaudio);
+    ini_write_bool(fp, "quitappafter", config->quitappafter);
+    ini_write_bool(fp, "viewonly", config->viewonly);
+
+    ini_write_section(fp, "input");
+    ini_write_bool(fp, "absmouse", config->absmouse);
+    ini_write_bool(fp, "swap_abxy", config->swap_abxy);
+
+    ini_write_section(fp, "video");
+    ini_write_string(fp, "decoder", config->decoder);
+    ini_write_bool(fp, "hdr", config->stream.enableHdr);
+    ini_write_bool(fp, "hevc", config->stream.supportsHevc);
+
+    ini_write_section(fp, "audio");
+    ini_write_string(fp, "backend", config->audio_backend);
+    if (!config->audio_device || !config->audio_device[0]) {
+        ini_write_string(fp, "device", config->audio_device);
+    }
+    ini_write_string(fp, "surround", serialize_audio_config(config->stream.audioConfiguration));
+
+    fclose(fp);
 }
 
 bool audio_config_valid(int config) {
