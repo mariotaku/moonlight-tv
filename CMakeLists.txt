@@ -111,7 +111,10 @@ if (TARGET_WEBOS)
     add_subdirectory(third_party/opus)
     unset(BUILD_SHARED_LIBS)
 
+    set(BUILD_SHARED_LIBS OFF)
     add_subdirectory(third_party/libconfig)
+    unset(BUILD_SHARED_LIBS)
+
     add_subdirectory(third_party/mbedtls)
     add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
 
