@@ -112,7 +112,7 @@ if (TARGET_WEBOS)
     unset(BUILD_SHARED_LIBS)
 
     set(BUILD_SHARED_LIBS OFF)
-    add_subdirectory(third_party/libconfig)
+    add_subdirectory(third_party/libconfig EXCLUDE_FROM_ALL)
     unset(BUILD_SHARED_LIBS)
 
     add_subdirectory(third_party/mbedtls)

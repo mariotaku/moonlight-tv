@@ -1,11 +1,5 @@
 #include "libconfig_ext.h"
 
-#if _GNU_SOURCE
-
-#include <dlfcn.h>
-
-#endif
-
 #include <string.h>
 
 int config_setting_set_enum(config_setting_t *setting, int value, const char *(*converter)(int)) {
@@ -74,21 +68,3 @@ int config_lookup_bool_std(const config_t *config, const char *path, bool *value
     *value = value_int;
     return ret;
 }
-
-#if _GNU_SOURCE
-
-int config_get_options(const config_t *config) {
-    int (*fn)(const config_t *) = dlsym(RTLD_NEXT, "config_get_options");
-    if (!fn)
-        return 0;
-    return fn(config);
-}
-
-void config_set_options(config_t *config, int options) {
-    void (*fn)(config_t *, int) = dlsym(RTLD_NEXT, "config_set_options");
-    if (!fn)
-        return;
-    fn(config, options);
-}
-
-#endif
