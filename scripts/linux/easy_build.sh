@@ -26,7 +26,7 @@ case $os in
 	sudo apt-get install -y build-essential cmake
 	sudo apt-get install -y libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev    \
 	     libcurl4-openssl-dev libavcodec-dev libavutil-dev libexpat1-dev          \
-	     libmbedtls-dev libfontconfig1-dev libconfig-dev
+	     libmbedtls-dev libfontconfig1-dev
     ;;
 esac
 

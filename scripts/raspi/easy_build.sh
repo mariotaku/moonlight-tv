@@ -17,7 +17,7 @@ echo "Install dependencies. You may be prompted to enter password"
 sudo apt-get install -y build-essential cmake gettext
 sudo apt-get install -y libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev    \
      libcurl4-openssl-dev libavcodec-dev libavutil-dev libexpat1-dev          \
-     libmbedtls-dev libfontconfig1-dev libraspberrypi-dev libconfig-dev
+     libmbedtls-dev libfontconfig1-dev libraspberrypi-dev
 
 echo "Project configuration"
 if [ ! -d build ]; then

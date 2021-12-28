@@ -24,6 +24,6 @@ apt-get install symlinks
 # Install libraries and headers
 apt-get install -y libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev         \
      libcurl4-openssl-dev libavcodec-dev libavutil-dev libexpat1-dev          \
-     libmbedtls-dev libfontconfig1-dev libraspberrypi-dev libconfig-dev
+     libmbedtls-dev libfontconfig1-dev libraspberrypi-dev
 
 symlinks -cr /usr/lib

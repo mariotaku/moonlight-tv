@@ -22,7 +22,6 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS_LIST
         "libexpat1 (>= 2.0.1)"
         "libmbedcrypto3 (>= 2.13)"
         "libmbedx509-0 (>= 2.0)"
-        "libconfig9 (>= 1.5)"
         "libraspberrypi0"
         )
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST

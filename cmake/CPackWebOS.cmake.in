@@ -2,7 +2,5 @@ execute_process(COMMAND npm run webos-gen-i18n -- -o "@CMAKE_INSTALL_PREFIX@/res
 execute_process(COMMAND ares-package "@CMAKE_INSTALL_PREFIX@"
     -e include
     -e cmake
-    -e "libconfig[.]a"
-    -e "libconfig[+][+][.].*"
     -e "libmbedtls[.].*"
     )
