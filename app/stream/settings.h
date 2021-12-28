@@ -42,8 +42,8 @@ typedef struct configuration_t {
     bool syskey_capture;
 } CONFIGURATION, *PCONFIGURATION;
 
-#define CONF_NAME_MOONLIGHT "moonlight.conf"
-#define CONF_NAME_HOSTS "hosts.conf"
+#define CONF_NAME_MOONLIGHT "moonlight.ini"
+#define CONF_NAME_HOSTS "hosts.ini"
 
 #define RES_MERGE(w, h) (((w) & 0xFFFF) << 16 | ((h) & 0xFFFF))
 

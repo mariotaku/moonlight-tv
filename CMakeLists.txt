@@ -109,7 +109,6 @@ set(BUILD_SHARED_CORE_LIBS OFF)
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
-    add_subdirectory(third_party/libconfig)
     add_subdirectory(third_party/mbedtls)
     unset(BUILD_SHARED_LIBS)
 
@@ -125,7 +124,6 @@ elseif (TARGET_RASPI)
 
     find_package(BroadcomMMAL REQUIRED)
     find_package(MbedTLS REQUIRED)
-    find_package(Config REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -134,7 +132,6 @@ elseif (TARGET_RASPI)
     set(BUILD_SHARED_CORE_LIBS ON)
 elseif (TARGET_DESKTOP)
     find_package(MbedTLS REQUIRED)
-    find_package(Config REQUIRED)
 
     pkg_check_modules(SDL2 REQUIRED sdl2)
     pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
@@ -150,6 +147,7 @@ if (BUILD_SHARED_LIBS)
     install(TARGETS moonlight-common-c LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif ()
 unset(BUILD_SHARED_LIBS)
+include(BuildINIH)
 
 if (TARGET_DESKTOP)
     set(DECODER_FFMPEG_STATIC ON)
@@ -222,10 +220,10 @@ set(SOURCES
         app/util/path.c
         app/util/debugprint.c
         app/util/logging.c
-        app/util/libconfig_ext.c
         app/util/img_loader.c
         app/util/nullable.c
         app/util/font.c
+        app/util/ini_ext.c
         app/app_sdl.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c
@@ -306,8 +304,8 @@ endif ()
 target_include_directories(moonlight SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads
-        moonlight-common-c gamestream lvgl
-        Fontconfig::Fontconfig ${CURL_LIBRARIES} ${FREETYPE_LIBRARIES}
+        moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
+        Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
         moonlight-sdlaud
         )
 
@@ -348,10 +346,6 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
 
-    get_target_property(CONFIG_INCLUDE_DIR config SOURCE_DIR)
-    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-    target_link_libraries(moonlight PRIVATE config)
-
     target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
@@ -379,8 +373,6 @@ elseif (TARGET_RASPI)
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
@@ -400,9 +392,6 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${CONFIG_INCLUDE_DIR})
-    target_link_libraries(moonlight PRIVATE ${CONFIG_LIBRARY})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})

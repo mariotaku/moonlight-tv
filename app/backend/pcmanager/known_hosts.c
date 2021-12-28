@@ -1,114 +1,141 @@
 #include "priv.h"
 #include "pclist.h"
 
-#include <libconfig.h>
+#include "ini.h"
 
-#include "util/libconfig_ext.h"
+#include "util/ini_ext.h"
 #include "util/path.h"
 #include "stream/settings.h"
 
+#include "pclist.h"
 
-static void strlower(char *p);
+typedef struct known_host_t {
+    char *uuid;
+    char *mac;
+    char *hostname;
+    char *address;
+    bool selected;
+    struct known_host_t *next;
+} known_host_t;
+
+#define LINKEDLIST_IMPL
+#define LINKEDLIST_MODIFIER static
+#define LINKEDLIST_TYPE known_host_t
+#define LINKEDLIST_PREFIX hostlist
+
+#include "util/linked_list.h"
+
+#undef LINKEDLIST_TYPE
+#undef LINKEDLIST_PREFIX
+
+static inline void strlower(char *p);
+
+static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value);
+
+static int hostlist_find_uuid(known_host_t *node, void *v);
 
 void pcmanager_load_known_hosts(pcmanager_t *manager) {
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
     free(confdir);
-    config_t config;
-    config_init(&config);
-    int options = config_get_options(&config);
-    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
-    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
-    config_set_options(&config, options);
-    if (config_read_file(&config, conffile) != CONFIG_TRUE) {
+    known_host_t *hosts = NULL;
+    if (ini_parse(conffile, (ini_handler) known_hosts_parse, &hosts) != 0) {
         goto cleanup;
     }
-    config_setting_t *root = config_root_setting(&config);
+
     bool selected_set = false;
-    for (int i = 0, j = config_setting_length(root); i < j; i++) {
-        config_setting_t *item = config_setting_get_elem(root, i);
-        const char *mac = config_setting_get_string_simple(item, "mac"),
-                *hostname = config_setting_get_string_simple(item, "hostname"),
-                *address = config_setting_get_string_simple(item, "address");
+    for (known_host_t *cur = hosts; cur; cur = cur->next) {
+        const char *mac = cur->mac, *hostname = cur->hostname, *address = cur->address;
         if (!mac || !hostname || !address) {
             continue;
         }
-        const char *key = config_setting_name(item);
-        int keyoff = key[0] == '*' ? 1 : 0;
-        char *uuid = SDL_strdup(&key[keyoff]);
+
+        char *uuid = cur->uuid;
+        strlower(uuid);
         PSERVER_DATA server = serverdata_new();
         server->uuid = uuid;
-        server->mac = SDL_strdup(mac);
-        server->hostname = SDL_strdup(hostname);
-        server->serverInfo.address = SDL_strdup(address);
+        server->mac = mac;
+        server->hostname = hostname;
+        server->serverInfo.address = address;
 
         SERVER_LIST *node = pclist_insert_known(manager, server);
 
-        config_setting_t *favs = config_setting_get_member(item, "favorites");
-        if (favs) {
-            for (int bi = 0, bj = config_setting_length(favs); bi < bj; bi++) {
-                int appid = config_setting_get_int_elem(favs, bi);
-                if (!appid) continue;
-                pcmanager_favorite_app(node, appid, true);
-            }
-        }
+//        config_setting_t *favs = config_setting_get_member(item, "favorites");
+//        if (favs) {
+//            for (int bi = 0, bj = config_setting_length(favs); bi < bj; bi++) {
+//                int appid = config_setting_get_int_elem(favs, bi);
+//                if (!appid) continue;
+//                pcmanager_favorite_app(node, appid, true);
+//            }
+//        }
 
-        if (!selected_set && config_setting_get_bool_simple(item, "selected")) {
+        if (!selected_set && cur->selected) {
             node->selected = true;
             selected_set = true;
         }
     }
     cleanup:
-    config_destroy(&config);
+    hostlist_free(hosts, (hostlist_nodefree_fn *) free);
     free(conffile);
 }
 
 void pcmanager_save_known_hosts(pcmanager_t *manager) {
-    config_t config;
-    config_init(&config);
-    int options = config_get_options(&config);
-    options &= ~CONFIG_OPTION_OPEN_BRACE_ON_SEPARATE_LINE;
-    options &= ~CONFIG_OPTION_COLON_ASSIGNMENT_FOR_GROUPS;
-    config_set_options(&config, options);
-    config_setting_t *root = config_root_setting(&config);
+    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
+    free(confdir);
+    FILE *fp = fopen(conffile, "w");
+    free(conffile);
+    if (!fp) return;
+
     bool selected_set = false;
     for (PSERVER_LIST cur = manager->servers; cur != NULL; cur = cur->next) {
         if (!cur->server || !cur->known) {
             continue;
         }
         const SERVER_DATA *server = cur->server;
-        char key[38];
-        key[0] = '*';
-        SDL_memcpy(&key[1], server->uuid, 36);
-        key[37] = '\0';
-        strlower(&key[1]);
-        config_setting_t *item = config_setting_add(root, key, CONFIG_TYPE_GROUP);
-        if (!item) {
-            continue;
-        }
-        config_setting_set_string_simple(item, "mac", server->mac);
-        config_setting_set_string_simple(item, "hostname", server->hostname);
-        config_setting_set_string_simple(item, "address", server->serverInfo.address);
+        ini_write_section(fp, server->uuid);
+
+        ini_write_string(fp, "mac", server->mac);
+        ini_write_string(fp, "hostname", server->hostname);
+        ini_write_string(fp, "address", server->serverInfo.address);
         if (cur->favs) {
-            config_setting_t *favs = config_setting_add(item, "favorites", CONFIG_TYPE_ARRAY);
-            for (appid_list_t *idcur = cur->favs; idcur; idcur = idcur->next) {
-                config_setting_t *elem = config_setting_add(favs, NULL, CONFIG_TYPE_INT);
-                config_setting_set_int(elem, idcur->id);
-            }
+//            config_setting_t *favs = config_setting_add(item, "favorites", CONFIG_TYPE_ARRAY);
+//            for (appid_list_t *idcur = cur->favs; idcur; idcur = idcur->next) {
+//                config_setting_t *elem = config_setting_add(favs, NULL, CONFIG_TYPE_INT);
+//                config_setting_set_int(elem, idcur->id);
+//            }
         }
         if (!selected_set && cur->selected) {
-            config_setting_set_bool_simple(item, "selected", true);
+            ini_write_bool(fp, "selected", true);
             selected_set = true;
         }
     }
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
-    free(confdir);
-    config_write_file(&config, conffile);
-    cleanup:
-    config_destroy(&config);
-    free(conffile);
+    fclose(fp);
 }
 
 static inline void strlower(char *p) {
     for (; *p; ++p)
         *p = SDL_tolower(*p);
+}
+
+static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value) {
+    if (!section) return 1;
+    known_host_t *host = hostlist_find_by(*list, section, (hostlist_find_fn *) hostlist_find_uuid);
+    if (!host) {
+        host = hostlist_new();
+        host->uuid = SDL_strdup(section);
+        *list = hostlist_append(*list, host);
+    }
+    if (INI_NAME_MATCH("mac")) {
+        host->mac = SDL_strdup(value);
+    } else if (INI_NAME_MATCH("hostname")) {
+        host->hostname = SDL_strdup(value);
+    } else if (INI_NAME_MATCH("address")) {
+        host->address = SDL_strdup(value);
+    } else if (INI_NAME_MATCH("selected")) {
+        host->selected = INI_IS_TRUE(value);
+    }
+    return 1;
+}
+
+static int hostlist_find_uuid(known_host_t *node, void *v) {
+    return strncasecmp(node->uuid, v, 36);
 }
