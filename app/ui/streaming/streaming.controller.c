@@ -184,8 +184,15 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     lv_obj_t *notice = lv_obj_create(lv_layer_top());
     lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_align(notice, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
+    lv_obj_set_style_radius(notice, LV_DPX(5), 0);
+    lv_obj_set_style_pad_hor(notice, LV_DPX(5), 0);
+    lv_obj_set_style_pad_ver(notice, LV_DPX(3), 0);
+    lv_obj_set_style_border_opa(notice, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_bg_opa(notice, LV_OPA_40, 0);
+    lv_obj_set_style_bg_color(notice, lv_color_black(), 0);
     lv_obj_t *notice_label = lv_label_create(notice);
     lv_obj_set_size(notice_label, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_style_text_font(notice_label, lv_theme_get_font_small(view), 0);
     lv_obj_add_flag(notice, LV_OBJ_FLAG_HIDDEN);
 
     controller->notice = notice;

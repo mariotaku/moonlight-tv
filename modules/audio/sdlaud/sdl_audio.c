@@ -96,8 +96,6 @@ static void sdlaud_callback(void *userdata, Uint8 *stream, int len) {
     }
     size_t read_size = sdlaud_ringbuf_read(ringbuf, readbuf, len);
     if (read_size > 0) {
-        applog_d("SDLAud", "ring buffer delay: %.2f ms",
-                 (double) sdlaud_ringbuf_size(ringbuf) / (channelCount * sizeof(short) * (sampleRate / 1000.0)));
         SDL_memset(stream, 0, len);
         SDL_MixAudio(stream, readbuf, read_size, SDL_MIX_MAXVOLUME);
     }
