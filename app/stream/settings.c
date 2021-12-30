@@ -73,8 +73,8 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.height = 720;
     config->stream.fps = 60;
     config->stream.bitrate = settings_optimal_bitrate(1280, 720, 60);
-    config->stream.packetSize = 1024;
-    config->stream.streamingRemotely = 0;
+    config->stream.packetSize = 1392;
+    config->stream.streamingRemotely = STREAM_CFG_AUTO;
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
     config->stream.supportsHevc = true;
 

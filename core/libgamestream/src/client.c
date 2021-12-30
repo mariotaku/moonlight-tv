@@ -711,7 +711,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
 
 int
 gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio,
-             int gamepad_mask, char **rtsp_session_url) {
+             int gamepad_mask) {
     int ret = GS_OK;
     char *result = NULL;
     PHTTP_DATA data = NULL;
@@ -741,8 +741,6 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
 
     if (!correct_mode && !server->unsupported)
         return GS_NOT_SUPPORTED_MODE;
-    else if (sops && !supported_resolution)
-        return GS_NOT_SUPPORTED_SOPS_RESOLUTION;
 
     if (config->height >= 2160 && !server->supports4K)
         return GS_NOT_SUPPORTED_4K;
@@ -791,8 +789,9 @@ gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, i
         goto cleanup;
     }
 
-    if (xml_search(data->memory, data->size, "sessionUrl0", rtsp_session_url) != GS_OK) {
-        *rtsp_session_url = NULL;
+    if (xml_search(data->memory, data->size, "sessionUrl0", &result) == GS_OK) {
+        server->serverInfo.rtspSessionUrl = result;
+        result = NULL;
     }
 
     cleanup:

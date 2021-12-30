@@ -12,7 +12,7 @@ MODULE_API bool audio_init_pulse(int argc, char *argv[], const HOST_CONTEXT *hct
 
 MODULE_API bool audio_check_alsa(PAUDIO_INFO ainfo) {
     ainfo->valid = true;
-    ainfo->configuration = AUDIO_CONFIGURATION_51_SURROUND;
+    ainfo->configuration = AUDIO_CONFIGURATION_71_SURROUND;
     return true;
 }
 

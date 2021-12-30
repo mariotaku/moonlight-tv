@@ -62,7 +62,6 @@ static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert 
 
     mbedtls_x509write_crt_set_version(crt, MBEDTLS_X509_CRT_VERSION_2);
     mbedtls_x509write_crt_set_md_alg(crt, MBEDTLS_MD_SHA256);
-    mbedtls_x509write_crt_set_key_usage(crt, MBEDTLS_X509_KU_DIGITAL_SIGNATURE | MBEDTLS_X509_KU_KEY_ENCIPHERMENT);
 
     time_t now;
     time(&now);

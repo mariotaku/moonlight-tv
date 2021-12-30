@@ -144,10 +144,7 @@ int streaming_worker(session_t *session) {
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
     gs_set_timeout(client, 30);
-    char *rtsp_session_url = NULL;
-    int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask,
-                           &rtsp_session_url);
-    server->serverInfo.rtspSessionUrl = rtsp_session_url;
+    int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret != GS_OK) {
         streaming_set_status(STREAMING_ERROR);
         if (gs_error) {
