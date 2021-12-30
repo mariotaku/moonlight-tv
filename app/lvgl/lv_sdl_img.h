@@ -24,6 +24,7 @@ typedef struct {
         SDL_Texture *texture;
     } data;
     unsigned int data_len;
+    SDL_Rect rect;
 } lv_sdl_img_src_t;
 
 #define LV_SDL_IMG_LEN (8 + sizeof(lv_sdl_img_src_t) * 4 / 3 + 4)

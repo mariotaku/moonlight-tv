@@ -108,6 +108,10 @@ struct coverloader_t {
     refcounter_t refcounter;
 };
 
+typedef struct subimage_info_t {
+    int w, h;
+    SDL_Rect rect;
+} subimage_info_t;
 
 coverloader_t *coverloader_new() {
     coverloader_t *loader = malloc(sizeof(coverloader_t));
@@ -195,13 +199,23 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
         SDL_memset(result, 0, sizeof(lv_sdl_img_src_t));
         result->type = LV_SDL_IMG_TYPE_TEXTURE;
         result->cf = LV_IMG_CF_TRUE_COLOR;
-        result->w = cached->w;
-        result->h = cached->h;
+        if (cached->userdata) {
+            subimage_info_t *info = cached->userdata;
+            result->rect = info->rect;
+            result->w = info->w;
+            result->h = info->h;
+        } else {
+            result->w = cached->w;
+            result->h = cached->h;
+        }
         result->data.texture = SDL_CreateTextureFromSurface(renderer, cached);
         lv_lru_set(req->loader->mem_cache, &key, sizeof(key), result, result->w * result->h);
     }
     req->result = result;
     req->finished = true;
+    if (cached->userdata) {
+        SDL_free(cached->userdata);
+    }
     SDL_FreeSurface(cached);
 }
 
@@ -214,10 +228,6 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
         SDL_FreeSurface(decoded);
         return NULL;
     }
-    SDL_Surface *scaled = SDL_CreateRGBSurface(0, req->target_width, req->target_height,
-                                               decoded->format->BitsPerPixel, decoded->format->Rmask,
-                                               decoded->format->Gmask, decoded->format->Bmask,
-                                               decoded->format->Amask);
     double srcratio = decoded->w / (double) decoded->h, dstratio = req->target_width / (double) req->target_height;
     SDL_Rect srcrect;
     if (srcratio > dstratio) {
@@ -233,6 +243,18 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
         srcrect.x = 0;
         srcrect.y = (decoded->h - srcrect.h) / 2;
     }
+    if (decoded->w <= req->target_width && decoded->h <= req->target_height) {
+        subimage_info_t *info = SDL_malloc(sizeof(subimage_info_t));
+        info->rect = srcrect;
+        info->w = req->target_width;
+        info->h = req->target_height;
+        decoded->userdata = info;
+        return decoded;
+    }
+    SDL_Surface *scaled = SDL_CreateRGBSurface(0, req->target_width, req->target_height,
+                                               decoded->format->BitsPerPixel, decoded->format->Rmask,
+                                               decoded->format->Gmask, decoded->format->Bmask,
+                                               decoded->format->Amask);
     SDL_BlitScaled(decoded, &srcrect, scaled, NULL);
     SDL_FreeSurface(decoded);
     return scaled;
