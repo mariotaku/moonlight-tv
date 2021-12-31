@@ -220,6 +220,11 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
 }
 
 static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
+    SDL_version ver;
+    SDL_GetVersion(&ver);
+    if (SDL_VERSIONNUM(ver.major, ver.minor, ver.patch) <= SDL_VERSIONNUM(2, 0, 1)) {
+        return NULL;
+    }
     char path[4096];
     coverloader_cache_item_path(path, req);
     SDL_Surface *decoded = IMG_Load(path);
@@ -269,6 +274,11 @@ static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cache
 }
 
 static SDL_Surface *coverloader_fetch(coverloader_req_t *req) {
+    SDL_version ver;
+    SDL_GetVersion(&ver);
+    if (SDL_VERSIONNUM(ver.major, ver.minor, ver.patch) <= SDL_VERSIONNUM(2, 0, 1)) {
+        return NULL;
+    }
     char path[4096];
     coverloader_cache_item_path(path, req);
     if (gs_download_cover(req->loader->client, (PSERVER_DATA) req->node->server, req->id, path) != GS_OK) {
