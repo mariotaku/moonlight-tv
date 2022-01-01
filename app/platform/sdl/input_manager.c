@@ -16,7 +16,7 @@ void inputmgr_init() {
     int numofmappings = 0;
 
     char *condb = gamecontrollerdb_path();
-    applog_i("Input", "Load game controller mappping from %s", condb);
+    applog_i("Input", "Load game controller mapping from %s", condb);
     if (access(condb, F_OK) == 0) {
         numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
     }
