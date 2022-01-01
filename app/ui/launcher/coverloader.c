@@ -49,6 +49,7 @@ typedef struct coverloader_memcache_key_t {
 #undef LINKEDLIST_DOUBLE
 #define LINKEDLIST_IMPL
 
+#define COVER_SAFE_SIZE 512
 
 static char *coverloader_cache_dir();
 
@@ -236,35 +237,47 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
         SDL_FreeSurface(decoded);
         return NULL;
     }
-    double srcratio = decoded->w / (double) decoded->h, dstratio = req->target_width / (double) req->target_height;
+    int sw = decoded->w, sh = decoded->h;
+    while (sw > COVER_SAFE_SIZE || sh > COVER_SAFE_SIZE) {
+        sw /= 2;
+        sh /= 2;
+    }
+    if (!sw || !sh) {
+        // Image is too small to display
+        SDL_FreeSurface(decoded);
+        return NULL;
+    }
+    double srcratio = sw / (double) sh, dstratio = req->target_width / (double) req->target_height;
     SDL_Rect srcrect;
     if (srcratio > dstratio) {
         // Source is wider than destination
-        srcrect.h = decoded->h;
-        srcrect.w = decoded->h * dstratio;
+        srcrect.h = sh;
+        srcrect.w = sh * dstratio;
         srcrect.y = 0;
-        srcrect.x = (decoded->w - srcrect.w) / 2;
+        srcrect.x = (sw - srcrect.w) / 2;
     } else {
         // Destination is wider than source
-        srcrect.w = decoded->w;
-        srcrect.h = decoded->w / dstratio;
+        srcrect.w = sw;
+        srcrect.h = sw / dstratio;
         srcrect.x = 0;
-        srcrect.y = (decoded->h - srcrect.h) / 2;
+        srcrect.y = (sh - srcrect.h) / 2;
     }
-    if (decoded->w <= req->target_width && decoded->h <= req->target_height) {
-        subimage_info_t *info = SDL_malloc(sizeof(subimage_info_t));
-        info->rect = srcrect;
-        info->w = req->target_width;
-        info->h = req->target_height;
+    subimage_info_t *info = SDL_malloc(sizeof(subimage_info_t));
+    info->w = req->target_width;
+    info->h = req->target_height;
+    info->rect = srcrect;
+
+    if (sw == decoded->w && sh == decoded->h) {
         decoded->userdata = info;
         return decoded;
     }
-    SDL_Surface *scaled = SDL_CreateRGBSurface(0, req->target_width, req->target_height,
-                                               decoded->format->BitsPerPixel, decoded->format->Rmask,
-                                               decoded->format->Gmask, decoded->format->Bmask,
-                                               decoded->format->Amask);
-    SDL_BlitScaled(decoded, &srcrect, scaled, NULL);
+
+    const SDL_PixelFormat *format = decoded->format;
+    SDL_Surface *scaled = SDL_CreateRGBSurface(0, sw, sh, format->BitsPerPixel,
+                                               format->Rmask, format->Gmask, format->Bmask, format->Amask);
+    SDL_BlitScaled(decoded, NULL, scaled, NULL);
     SDL_FreeSurface(decoded);
+    scaled->userdata = info;
     return scaled;
 }
 
