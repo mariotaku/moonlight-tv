@@ -154,14 +154,17 @@ bool absinput_init_gamepad(int joystick_index) {
         }
 
         SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
+        SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
+        PGAMEPAD_STATE state = get_gamepad(sdl_id);
+
         SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
-        if (haptic && (SDL_HapticQuery(haptic) & SDL_HAPTIC_LEFTRIGHT) == 0) {
+        unsigned int haptic_bits = SDL_HapticQuery(haptic);
+        applog_d("Input", "Controller #%d has supported haptic bits: %lx", state->id, haptic_bits);
+        if (haptic && (haptic_bits & SDL_HAPTIC_LEFTRIGHT) == 0) {
             SDL_HapticClose(haptic);
             haptic = NULL;
         }
 
-        SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
-        PGAMEPAD_STATE state = get_gamepad(sdl_id);
         if (state->controller) {
             applog_i("Input", "Controller #%d (%s) already connected, sdl_id: %d, GUID: %s", state->id,
                      SDL_JoystickName(joystick), sdl_id, guidstr);
