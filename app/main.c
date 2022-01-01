@@ -50,14 +50,17 @@ static const lv_point_t button_points_empty[5] = {
         {.x= 0, .y = 0},
 };
 
+SDL_Window *app_create_window();
+
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
-SDL_Window *app_create_window();
+static void log_libs_version();
 
 int main(int argc, char *argv[]) {
     app_loginit();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
     applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
+    log_libs_version();
     app_gs_client_mutex = SDL_CreateMutex();
 
     int ret = app_init(argc, argv);
@@ -257,3 +260,10 @@ static void app_input_populate_group() {
     lv_indev_set_group(app_indev_button, group);
 }
 
+static void log_libs_version() {
+    SDL_version sdl_version;
+    SDL_GetVersion(&sdl_version);
+    applog_d("APP", "SDL version: %d.%d.%d", sdl_version.major, sdl_version.minor, sdl_version.patch);
+    const SDL_version *img_version = IMG_Linked_Version();
+    applog_d("APP", "SDL_image version: %d.%d.%d", img_version->major, img_version->minor, img_version->patch);
+}
