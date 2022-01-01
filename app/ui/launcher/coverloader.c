@@ -199,6 +199,9 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
         SDL_memset(result, 0, sizeof(lv_sdl_img_src_t));
         result->type = LV_SDL_IMG_TYPE_TEXTURE;
         result->cf = LV_IMG_CF_TRUE_COLOR;
+        if (SDL_ISPIXELFORMAT_ALPHA(cached->format->format)) {
+            result->cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+        }
         if (cached->userdata) {
             subimage_info_t *info = cached->userdata;
             result->rect = info->rect;
