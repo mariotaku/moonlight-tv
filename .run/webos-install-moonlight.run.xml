@@ -1,10 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="moonlight" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" PROGRAM_PARAMS=":1234 bin/moonlight" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file:///media/developer/apps/usr/palm/applications/com.limelight.webos" PASS_PARENT_ENVS_2="true" PROJECT_NAME="moonlight" TARGET_NAME="webos-install-moonlight" CONFIG_NAME="webOS Debug" version="1" RUN_TARGET_PROJECT_NAME="moonlight" RUN_TARGET_NAME="moonlight">
+  <configuration default="false" name="moonlight" type="com.jetbrains.cidr.remote.gdbserver.type" factoryName="com.jetbrains.cidr.remote.gdbserver.factory" PROGRAM_PARAMS=":1234 bin/moonlight" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" WORKING_DIR="file:///media/developer/apps/usr/palm/applications/com.limelight.webos" PASS_PARENT_ENVS_2="false" PROJECT_NAME="moonlight" TARGET_NAME="webos-install-moonlight" CONFIG_NAME="webOS Debug" version="1" RUN_TARGET_PROJECT_NAME="moonlight" RUN_TARGET_NAME="moonlight">
     <envs>
-      <env name="XDG_RUNTIME_DIR" value="/tmp/xdg" />
       <env name="APPID" value="com.limelight.webos" />
       <env name="LD_LIBRARY_PATH" value="/media/developer/apps/usr/palm/applications/com.limelight.webos/lib" />
       <env name="MOONLIGHT_OUTPUT_NOREDIR" value="1" />
+      <env name="HOME" value="/media/developer/apps/usr/palm/applications/com.limelight.webos" />
+      <env name="XDG_RUNTIME_DIR" value="/tmp/xdg" />
     </envs>
     <custom-gdb-server version="1" gdb-connect="lgtv:1234" executable="/media/developer/bin/gdbserver" warmup-ms="0" download-type="NONE" hostId="9d4cd16e-cf21-461e-8738-d3e3de276835" sshConfigName="root@lgtv:22 agent" uploadFile="/tmp/CLion/debug/moonlight" defaultGdbServerArgs=":1234 /tmp/CLion/debug/moonlight">
       <debugger kind="GDB" isBundled="true" />

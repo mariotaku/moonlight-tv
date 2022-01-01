@@ -21,8 +21,10 @@ void i18n_setlocale(const char *locale) {
         resBundle_destroy(bundle);
         bundle = NULL;
     }
+    const char *home = SDL_getenv("HOME");
+    if (!home) return;
     SDL_memcpy(locale_, locale, strlen(locale) + 1);
-    bundle = resBundle_createWithRootPath(locale, "cstrings.json", SDL_GetBasePath());
+    bundle = resBundle_createWithRootPath(locale, "cstrings.json", home);
     if (SDL_strlen(locale) > 2) {
         SDL_memcpy(language, locale, 2);
         language[2] = '\0';

@@ -44,7 +44,9 @@ PCONFIGURATION settings_load() {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
     settings_initialize(confdir, config);
-    settings_read(conffile, config);
+    if (!settings_read(conffile, config)) {
+        applog_w("Settings", "Failed to read settings %s", conffile);
+    }
     free(conffile);
     free(confdir);
     return config;

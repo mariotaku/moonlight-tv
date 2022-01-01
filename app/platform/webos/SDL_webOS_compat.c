@@ -106,25 +106,3 @@ SDL_BACKPORT int SDL_GameControllerAddMappingsFromRW(SDL_RWops *rw, int freerw) 
     SDL_free(buf);
     return controllers;
 }
-
-SDL_BACKPORT char *SDL_GetBasePath() {
-    char *(*fn)() = (void *) noop;
-    if (fn == (void *) noop) {
-        fn = dlsym(RTLD_NEXT, "SDL_GetBasePath");
-    }
-    if (!fn) {
-        return getcwd(malloc(4096), 4096);
-    }
-    return fn();
-}
-
-SDL_BACKPORT char *SDL_GetPrefPath(const char *org, const char *app) {
-    char *(*fn)(const char *, const char *) = (void *) noop;
-    if (fn == (void *) noop) {
-        fn = dlsym(RTLD_NEXT, "SDL_GetPrefPath");
-    }
-    if (!fn) {
-        return getcwd(malloc(4096), 4096);
-    }
-    return fn(org, app);
-}
