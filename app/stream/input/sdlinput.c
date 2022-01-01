@@ -141,12 +141,16 @@ void release_keyboard_keys(SDL_Event ev) {
 }
 
 bool absinput_init_gamepad(int joystick_index) {
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
+    char guidstr[33];
+    SDL_JoystickGetGUIDString(guid, guidstr, 33);
+    const char *name = SDL_JoystickNameForIndex(joystick_index);
     if (SDL_IsGameController(joystick_index)) {
-        sdl_gamepads++;
         SDL_GameController *controller = SDL_GameControllerOpen(joystick_index);
         if (!controller) {
-            applog_e("Input", "Could not open gamecontroller %i: %s", joystick_index, SDL_GetError());
-            return true;
+            applog_e("Input", "Could not open gamecontroller %i. GUID: %s, error: %s", joystick_index, guidstr,
+                     SDL_GetError());
+            return false;
         }
 
         SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
@@ -158,16 +162,19 @@ bool absinput_init_gamepad(int joystick_index) {
 
         SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
         PGAMEPAD_STATE state = get_gamepad(sdl_id);
+        if (state->controller) {
+            applog_i("Input", "Controller #%d (%s) already connected, sdl_id: %d, GUID: %s", state->id,
+                     SDL_JoystickName(joystick), sdl_id, guidstr);
+            return false;
+        }
         state->controller = controller;
         state->haptic = haptic;
         state->haptic_effect_id = -1;
-        applog_i("Input", "Controller #%d (%s) connected, sdl_id: %d", state->id, SDL_JoystickName(joystick), sdl_id);
+        applog_i("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id, SDL_JoystickName(joystick),
+                 sdl_id, guidstr);
+        sdl_gamepads++;
         return true;
     } else {
-        SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(joystick_index);
-        char guidstr[33];
-        SDL_JoystickGetGUIDString(guid, guidstr, 33);
-        const char *name = SDL_JoystickNameForIndex(joystick_index);
         applog_w("Input", "Unrecognized game controller %s. GUID: %s", name, guidstr);
     }
     return false;
