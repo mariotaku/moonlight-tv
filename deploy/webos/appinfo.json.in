@@ -3,7 +3,7 @@
     "version": "@PROJECT_VERSION@",
     "vendor": "Mariotaku Lee",
     "type": "native",
-    "main": "moonlight",
+    "main": "bin/moonlight",
     "title": "Moonlight",
     "icon": "icon.png",
     "largeIcon": "icon_large.png",

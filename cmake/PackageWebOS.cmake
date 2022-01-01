@@ -1,8 +1,10 @@
-# Copy all files under deploy/webos/ to package root
-install(DIRECTORY deploy/webos/ DESTINATION ${CMAKE_INSTALL_PREFIX} PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
 # Copy manifest
-configure_file(deploy/webos/appinfo.json.in ${CMAKE_INSTALL_PREFIX}/appinfo.json @ONLY)
-configure_file(cmake/CPackWebOS.cmake.in ${CMAKE_BINARY_DIR}/CPackWebOS.cmake @ONLY)
+configure_file(deploy/webos/appinfo.json.in ./appinfo.json @ONLY)
+
+# Copy all files under deploy/webos/ to package root
+install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
+install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
+install(CODE "execute_process(COMMAND npm run webos-gen-i18n -- -o \"\${CMAKE_INSTALL_PREFIX}/resources\" ${I18N_LOCALES})")
 
 add_custom_target(webos-generate-gamecontrollerdb
         COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
@@ -12,7 +14,8 @@ add_custom_target(webos-generate-gamecontrollerdb
 set(WEBOS_PACKAGE_FILENAME ${WEBOS_APPINFO_ID}_${PROJECT_VERSION}_$ENV{ARCH}.ipk)
 
 set(CPACK_GENERATOR "External")
-set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_BINARY_DIR}/CPackWebOS.cmake")
+set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_SOURCE_DIR}/cmake/AresPackage.cmake")
+set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
 
 add_custom_target(webos-package-moonlight COMMAND cpack)
 add_dependencies(webos-package-moonlight moonlight)

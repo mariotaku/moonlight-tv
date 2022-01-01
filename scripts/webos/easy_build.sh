@@ -30,10 +30,12 @@ if [ ! -d "${CMAKE_BINARY_DIR}" ]; then
   mkdir -p "${CMAKE_BINARY_DIR}"
 fi
 
-# shellcheck disable=SC2068
-$CMAKE_BIN -B"${CMAKE_BINARY_DIR}" -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" -DTARGET_WEBOS=ON -DBUILD_TESTS=OFF $@ || exit 1
+BUILD_OPTIONS="-DTARGET_WEBOS=ON -DBUILD_TESTS=OFF"
 
-$CMAKE_BIN --build "${CMAKE_BINARY_DIR}" --target install -- -j "$(nproc)" || exit 1
+# shellcheck disable=SC2068
+$CMAKE_BIN -B"${CMAKE_BINARY_DIR}" -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" $BUILD_OPTIONS $@ || exit 1
+
+$CMAKE_BIN --build "${CMAKE_BINARY_DIR}" -- -j "$(nproc)" || exit 1
 
 echo "Build package"
 cd "${CMAKE_BINARY_DIR}" || exit 1
