@@ -13,22 +13,20 @@ add_custom_target(webos-generate-gamecontrollerdb
 
 set(WEBOS_PACKAGE_FILENAME ${WEBOS_APPINFO_ID}_${PROJECT_VERSION}_$ENV{ARCH}.ipk)
 
+set(CPACK_PACKAGE_NAME "${WEBOS_APPINFO_ID}")
 set(CPACK_GENERATOR "External")
 set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_SOURCE_DIR}/cmake/AresPackage.cmake")
 set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
 set(CPACK_MONOLITHIC_INSTALL TRUE)
+set(CPACK_PACKAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/dist)
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${PROJECT_VERSION}_$ENV{ARCH}")
+# Will use all cores on CMake 3.20+
+set(CPACK_THREADS 0)
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     set(CPACK_STRIP_FILES TRUE)
 endif()
 
 add_custom_target(webos-package-moonlight COMMAND cpack)
-
-set_target_properties(moonlight PROPERTIES
-        WEBOS_PACKAGE_TARGET webos-package-moonlight
-        WEBOS_PACKAGE_PATH ${CMAKE_BINARY_DIR}/${WEBOS_PACKAGE_FILENAME}
-        WEBOS_PACKAGE_FILENAME ${WEBOS_PACKAGE_FILENAME}
-        WEBOS_APPINFO_ID ${WEBOS_APPINFO_ID}
-        )
 
 include(CPack)

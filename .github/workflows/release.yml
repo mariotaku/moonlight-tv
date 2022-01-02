@@ -49,11 +49,6 @@ jobs:
       - name: Run easy_build
         run: ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
-      - name: Set Environment for Release
-        working-directory: ${{github.workspace}}/build
-        shell: bash
-        run: cat github-release.env >> $GITHUB_ENV
-
       - name: Create Release (webOS)
         id: create_release_webos
         uses: ncipollo/release-action@v1
@@ -62,7 +57,7 @@ jobs:
           name: Release ${{ steps.tagName.outputs.tag }}
           prerelease: true
           allowUpdates: true
-          artifacts: build/${{ env.RELEASE_IPK_FILENAME }},build/${{env.RELEASE_MANIFEST_FILENAME}}
+          artifacts: dist/*.ipk,dist/*.manifest.json
 
   release-raspi:
     runs-on: ubuntu-latest
