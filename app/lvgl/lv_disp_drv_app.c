@@ -17,8 +17,7 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     lv_disp_draw_buf_t *draw_buf = malloc(sizeof(lv_disp_draw_buf_t));
-    SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, width,
-                                             height);
+    SDL_Texture *texture = lv_draw_sdl_create_screen_texture(renderer, width, height);
     lv_disp_draw_buf_init(draw_buf, texture, NULL, width * height);
     lv_disp_drv_t *driver = malloc(sizeof(lv_disp_drv_t));
     lv_disp_drv_init(driver);
@@ -31,9 +30,6 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     driver->clear_cb = lv_sdl_drv_fb_clear;
     driver->hor_res = (lv_coord_t) width;
     driver->ver_res = (lv_coord_t) height;
-    SDL_RendererInfo renderer_info;
-    SDL_GetRendererInfo(renderer, &renderer_info);
-    SDL_assert(renderer_info.flags & SDL_RENDERER_TARGETTEXTURE);
     SDL_SetRenderTarget(renderer, texture);
     lv_disp_t *disp = lv_disp_drv_register(driver);
     disp->bg_color = lv_color_make(0, 0, 0);
@@ -62,9 +58,6 @@ void lv_app_display_resize(lv_disp_t *disp, int width, int height) {
     lv_disp_draw_buf_init(driver->draw_buf, texture, NULL, width * height);
     driver->hor_res = (lv_coord_t) width;
     driver->ver_res = (lv_coord_t) height;
-    SDL_RendererInfo renderer_info;
-    SDL_GetRendererInfo(param->renderer, &renderer_info);
-    SDL_assert(renderer_info.flags & SDL_RENDERER_TARGETTEXTURE);
     SDL_SetRenderTarget(param->renderer, texture);
     lv_disp_drv_update(disp, driver);
 }
