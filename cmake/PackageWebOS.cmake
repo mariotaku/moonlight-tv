@@ -19,7 +19,6 @@ set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
 set(CPACK_MONOLITHIC_INSTALL TRUE)
 
 add_custom_target(webos-package-moonlight COMMAND cpack)
-add_dependencies(webos-package-moonlight moonlight)
 
 set_target_properties(moonlight PROPERTIES
         WEBOS_PACKAGE_TARGET webos-package-moonlight
