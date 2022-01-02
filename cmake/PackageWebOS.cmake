@@ -18,6 +18,10 @@ set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_SOURCE_DIR}/cmake/AresPackage.cmake")
 set(CPACK_EXTERNAL_ENABLE_STAGING TRUE)
 set(CPACK_MONOLITHIC_INSTALL TRUE)
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+    set(CPACK_STRIP_FILES TRUE)
+endif()
+
 add_custom_target(webos-package-moonlight COMMAND cpack)
 
 set_target_properties(moonlight PROPERTIES
