@@ -1,6 +1,8 @@
+#include "app.h"
+#include "config.h"
+
 #include "stream/session.h"
 #include "stream/settings.h"
-#include "app.h"
 
 #include "stream/platform.h"
 #include "util/bus.h"
@@ -82,12 +84,14 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
     config->stream.colorSpace = decoder_info.colorSpace;
     if (config->stream.enableHdr)
         config->stream.colorRange = decoder_info.colorRange;
-#if HAVE_SURROUND_SOUND
-    if (!config->stream.audioConfiguration)
+#if FEATURE_SURROUND_SOUND
+    if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration()) <
+        CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
+        config->stream.audioConfiguration = module_audio_configuration();
+    }
+    if (!config->stream.audioConfiguration) {
         config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
-    else if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration()) <
-             CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration))
-        config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
+    }
 #endif
     config->stream.encryptionFlags = ENCFLG_AUDIO;
 

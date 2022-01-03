@@ -53,3 +53,12 @@ void module_seterror(const char *error) {
 const char *module_geterror() {
     return module_error;
 }
+
+bool module_verify(const MODULE_DEFINITION *def) {
+    if (!def->liblen) return true;
+    system("/lib/ld-linux.so.3");
+//    for (int i = 0; i < def->liblen; ++i) {
+//        def->dynlibs[i];
+//    }
+    return false;
+}

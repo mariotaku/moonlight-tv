@@ -42,6 +42,7 @@ list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
 set(FEATURE_FORCE_FULLSCREEN OFF)
 set(FEATURE_I18N_GETTEXT ON)
 set(FEATURE_I18N_LANGUAGE_SETTINGS OFF)
+set(FEATURE_SURROUND_SOUND ON)
 
 include(LintOptions)
 
@@ -353,7 +354,6 @@ elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_SDL)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
-    target_compile_definitions(moonlight PUBLIC HAVE_SURROUND_SOUND)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
 
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
@@ -460,7 +460,7 @@ add_custom_target(iconfont-minify
 
 if (TARGET_WEBOS)
     include(PackageWebOS)
-    if (NOT $ENV{CI})
+    if (NOT ENV{CI})
         include(WebOSInstall)
         target_webos_install(moonlight)
     endif ()
