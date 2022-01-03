@@ -3,7 +3,6 @@
     <envs>
       <env name="APPID" value="com.limelight.webos" />
       <env name="LD_LIBRARY_PATH" value="/media/developer/apps/usr/palm/applications/com.limelight.webos/lib" />
-      <env name="MOONLIGHT_OUTPUT_NOREDIR" value="1" />
       <env name="HOME" value="/media/developer/apps/usr/palm/applications/com.limelight.webos" />
       <env name="XDG_RUNTIME_DIR" value="/tmp/xdg" />
     </envs>
