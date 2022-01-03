@@ -50,8 +50,8 @@ MODULE_API bool decoder_init_lgnc(int argc, char *argv[], const HOST_CONTEXT *hc
     for (int i = 0; i < argc; i++) {
         applog_d("LGNC", "LGNC_PLUGIN_Initialize. argv[%d] = %s", i, argv[i]);
     }
-    LGNC_PLUGIN_INIT_PARAM_T param = {};
-    if (LGNC_PLUGIN_Initialize(&param) == 0) {
+    LGNC_CALLBACKS_T callbacks = {NULL};
+    if (LGNC_PLUGIN_Initialize(&callbacks) == 0) {
         LGNC_PLUGIN_SetAppId(getenv("APPID"));
         signal(SIGUSR1, SIG_IGN);
         lgnc_initialized = true;
