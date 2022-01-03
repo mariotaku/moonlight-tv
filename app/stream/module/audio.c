@@ -10,6 +10,7 @@
 
 #include "util/os_info.h"
 #include "util/logging.h"
+#include "util/i18n.h"
 
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
 static MODULE_LIB_DEFINITION _alsa_lib = {"alsa", "alsa"};
@@ -49,6 +50,13 @@ MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
 #endif
         },
 };
+
+const audio_config_entry_t audio_configs[] = {
+        {AUDIO_CONFIGURATION_STEREO,      "stereo", translatable("Stereo")},
+        {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch",  translatable("5.1 Ch")},
+        {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch",  translatable("7.1 Ch")},
+};
+const size_t audio_config_len = sizeof(audio_configs) / sizeof(audio_config_entry_t);
 
 AUDIO audio_pref_requested;
 AUDIO audio_current = AUDIO_NONE;

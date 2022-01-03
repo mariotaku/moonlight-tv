@@ -112,11 +112,20 @@ typedef struct MODULE_DEFINITION {
 #endif
 } MODULE_DEFINITION;
 
+typedef struct audio_config_entry_t {
+    int configuration;
+    const char *value;
+    const char *name;
+} audio_config_entry_t;
+
 extern DECODER decoder_pref_requested;
 extern DECODER decoder_current;
 extern int decoder_current_libidx;
 extern DECODER_INFO decoder_info;
 extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
+
+extern const audio_config_entry_t audio_configs[];
+extern const size_t audio_config_len;
 
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 

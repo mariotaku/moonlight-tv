@@ -15,9 +15,13 @@ typedef struct decoder_pane_t {
     lv_obj_t *hdr_hint;
 
     pref_dropdown_string_entry_t vdec_entries[DECODER_COUNT + 1];
-    pref_dropdown_string_entry_t adec_entries[AUDIO_COUNT + 1];
     int vdec_entries_len;
+
+    pref_dropdown_string_entry_t adec_entries[AUDIO_COUNT + 1];
     int adec_entries_len;
+
+    pref_dropdown_int_entry_t surround_entries[3];
+    int surround_entries_len;
 } decoder_pane_t;
 
 static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
@@ -41,7 +45,6 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
     controller->parent = args;
     for (int type_idx = -1; type_idx < decoder_orders_len; type_idx++) {
         DECODER type = type_idx == -1 ? DECODER_AUTO : decoder_orders[type_idx];
-        int index = type_idx + 1;
         pref_dropdown_string_entry_t *entry = &controller->vdec_entries[controller->vdec_entries_len];
         if (type == DECODER_AUTO) {
             entry->name = locstr("Automatic");
@@ -61,7 +64,6 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
     }
     for (int type_idx = -1; type_idx < audio_orders_len; type_idx++) {
         AUDIO type = type_idx == -1 ? AUDIO_AUTO : audio_orders[type_idx];
-        int index = type_idx + 1;
         pref_dropdown_string_entry_t *entry = &controller->adec_entries[controller->adec_entries_len];
         if (type == AUDIO_AUTO) {
             entry->name = locstr("Automatic");
@@ -78,6 +80,21 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
         entry->value = def.id;
         entry->fallback = false;
         controller->adec_entries_len++;
+    }
+    int supported_ch = CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration());
+    if (!supported_ch) {
+        supported_ch = 2;
+    }
+    for (int i = 0; i < audio_config_len; i++) {
+        audio_config_entry_t config = audio_configs[i];
+        if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config.configuration) < supported_ch) {
+            continue;
+        }
+        struct pref_dropdown_int_entry_t *entry = &controller->surround_entries[controller->surround_entries_len];
+        entry->name = locstr(config.name);
+        entry->value = config.configuration;
+        entry->fallback = config.configuration == AUDIO_CONFIGURATION_STEREO;
+        controller->surround_entries_len++;
     }
 }
 
@@ -132,10 +149,17 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."), true);
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
+
+    pref_title_label(parent, locstr("Sound Channels"));
+
+    lv_obj_t *ch_dropdown = pref_dropdown_int(parent, controller->surround_entries, controller->surround_entries_len,
+                                              &app_configuration->stream.audioConfiguration);
+    lv_obj_set_width(ch_dropdown, LV_PCT(100));
+
     lv_obj_add_event_cb(vdec_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(adec_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(hevc_checkbox, hdr_state_update_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
 
     controller->hdr_checkbox = hdr_checkbox;
     controller->hdr_hint = hdr_hint;

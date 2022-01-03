@@ -11,6 +11,7 @@
 #include "util/nullable.h"
 #include "util/path.h"
 #include "util/logging.h"
+#include "util/i18n.h"
 
 static void settings_initialize(const char *confdir, PCONFIGURATION config);
 
@@ -33,12 +34,6 @@ struct audio_config {
     const char *value;
 };
 
-static struct audio_config audio_configs[3] = {
-        {AUDIO_CONFIGURATION_STEREO,      "stereo"},
-        {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch"},
-        {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch"},
-};
-static const int audio_config_len = sizeof(audio_configs) / sizeof(struct audio_config);
 
 PCONFIGURATION settings_load() {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
