@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include <util/os_info.h>
 #include "lvgl.h"
 #include "stream/module/api.h"
 #include "stream/settings.h"
@@ -11,6 +12,7 @@ extern PCONFIGURATION app_configuration;
 extern lv_controller_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
 extern SDL_Window *app_window;
+extern os_info_t app_os_info;
 
 int app_init(int argc, char *argv[]);
 

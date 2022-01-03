@@ -18,6 +18,8 @@
  */
 #pragma once
 
+#include "config.h"
+
 #include <Limelight.h>
 
 #include <stdbool.h>
@@ -90,6 +92,11 @@ typedef struct MODULE_LIB_DEFINITION {
     const char *library;
 } MODULE_LIB_DEFINITION;
 
+typedef struct MODULE_OS_REQUIREMENT {
+    uint32_t min_inclusive;
+    uint32_t max_exclusive;
+} MODULE_OS_REQUIREMENT;
+
 typedef struct MODULE_DEFINITION {
     const char *name;
     const char *id;
@@ -100,6 +107,9 @@ typedef struct MODULE_DEFINITION {
         const DECODER_SYMBOLS *decoder;
         const AUDIO_SYMBOLS *audio;
     } symbols;
+#if FEATURE_CHECK_MODULE_OS_VERSION
+    MODULE_OS_REQUIREMENT os_req;
+#endif
 } MODULE_DEFINITION;
 
 extern DECODER decoder_pref_requested;

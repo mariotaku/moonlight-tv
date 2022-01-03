@@ -42,7 +42,7 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
     for (int type_idx = -1; type_idx < decoder_orders_len; type_idx++) {
         DECODER type = type_idx == -1 ? DECODER_AUTO : decoder_orders[type_idx];
         int index = type_idx + 1;
-        pref_dropdown_string_entry_t *entry = &controller->vdec_entries[index];
+        pref_dropdown_string_entry_t *entry = &controller->vdec_entries[controller->vdec_entries_len];
         if (type == DECODER_AUTO) {
             entry->name = locstr("Automatic");
             entry->value = "auto";
@@ -62,7 +62,7 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
     for (int type_idx = -1; type_idx < audio_orders_len; type_idx++) {
         AUDIO type = type_idx == -1 ? AUDIO_AUTO : audio_orders[type_idx];
         int index = type_idx + 1;
-        pref_dropdown_string_entry_t *entry = &controller->adec_entries[index];
+        pref_dropdown_string_entry_t *entry = &controller->adec_entries[controller->adec_entries_len];
         if (type == AUDIO_AUTO) {
             entry->name = locstr("Automatic");
             entry->value = "auto";

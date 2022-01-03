@@ -5,6 +5,8 @@
 
 static bool read_field(char *dest, jvalue_ref body, const char *key);
 
+int parse_release(const char *release);
+
 int os_info_get(os_info_t *info) {
     memset(info, 0, sizeof(os_info_t));
     strncpy(info->name, "webOS", sizeof(info->name));
@@ -28,6 +30,7 @@ int os_info_get(os_info_t *info) {
     read_field(info->release, os_info, "webos_release");
     read_field(info->manufacturing_version, os_info, "webos_manufacturing_version");
     jdomparser_release(&parser);
+    info->version = parse_release(info->release);
     return 0;
 }
 
@@ -39,4 +42,17 @@ static bool read_field(char *dest, jvalue_ref body, const char *key) {
     dest[webos_release_buf.m_len] = 0;
     jstring_free_buffer(webos_release_buf);
     return true;
+}
+
+int parse_release(const char *release) {
+    char tmp[32];
+    strncpy(tmp, release, 32);
+    char *token = NULL;
+    int version = 0, factor = 10000;
+    while ((token = strtok(token ? NULL : tmp, ".")) != NULL) {
+        version += strtol(token, NULL, 10) * factor;
+        factor /= 100;
+        if (!factor) break;
+    }
+    return version;
 }

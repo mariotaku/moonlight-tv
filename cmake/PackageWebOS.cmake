@@ -25,7 +25,8 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     set(CPACK_STRIP_FILES TRUE)
 endif()
 
-add_custom_target(webos-package-moonlight COMMAND cpack)
+add_custom_target(webos-package-moonlight COMMAND cpack DEPENDS moonlight)
+
 
 # Used by webos-install-moonlight
 set_target_properties(moonlight PROPERTIES

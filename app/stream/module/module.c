@@ -56,9 +56,13 @@ const char *module_geterror() {
 
 bool module_verify(const MODULE_DEFINITION *def) {
     if (!def->liblen) return true;
-    system("/lib/ld-linux.so.3");
-//    for (int i = 0; i < def->liblen; ++i) {
-//        def->dynlibs[i];
-//    }
-    return false;
+#if FEATURE_CHECK_MODULE_OS_VERSION
+    if (!app_os_info.version) return true;
+    MODULE_OS_REQUIREMENT req = def->os_req;
+    // Return false if system is too old
+    if (req.min_inclusive && app_os_info.version < req.min_inclusive) return false;
+    // Return false if system is too new
+    if (req.max_exclusive && app_os_info.version >= req.max_exclusive) return false;
+#endif
+    return true;
 }

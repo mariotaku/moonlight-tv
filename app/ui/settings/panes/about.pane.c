@@ -1,10 +1,6 @@
-//
-// Created by Mariotaku on 2021/08/30.
-//
-
+#include "app.h"
 #include <malloc.h>
 #include <lvgl.h>
-#include <app.h>
 #include "stream/platform.h"
 #include "pref_obj.h"
 
@@ -23,7 +19,6 @@ typedef struct about_pane_t {
     lv_obj_controller_t base;
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
 #if TARGET_WEBOS
-    os_info_t webos_os_info;
     struct {
         int w, h;
         int rate;
@@ -76,11 +71,11 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     const char *audio_name = audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
     about_line(parent, locstr("Audio backend"), audio_name, rowcount++, 2);
 #if TARGET_WEBOS
-    if (strlen(controller->webos_os_info.release)) {
-        about_line(parent, locstr("webOS version"), controller->webos_os_info.release, rowcount++, 1);
+    if (strlen(app_os_info.release)) {
+        about_line(parent, locstr("webOS version"), app_os_info.release, rowcount++, 1);
     }
-    if (strlen(controller->webos_os_info.manufacturing_version)) {
-        about_line(parent, locstr("Firmware version"), controller->webos_os_info.manufacturing_version, rowcount++, 1);
+    if (strlen(app_os_info.manufacturing_version)) {
+        about_line(parent, locstr("Firmware version"), app_os_info.manufacturing_version, rowcount++, 1);
     }
     if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
         char resolution_text[16];
@@ -106,7 +101,6 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 #if TARGET_WEBOS
 
 static void load_webos_info(about_pane_t *controller) {
-    os_info_get(&controller->webos_os_info);
     SDL_webOSGetPanelResolution(&controller->webos_panel_info.w, &controller->webos_panel_info.h);
     SDL_webOSGetRefreshRate(&controller->webos_panel_info.rate);
 }

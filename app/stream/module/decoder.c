@@ -1,4 +1,6 @@
+#include "config.h"
 #include "stream/platform.h"
+#include "util/os_info.h"
 
 #include <string.h>
 
@@ -48,9 +50,22 @@ static MODULE_LIB_DEFINITION mmal_libs[] = {
 MODULE_DEFINITION decoder_definitions[DECODER_COUNT] = {
         {"Null",              "null", NULL,          0, NULL},
         {"FFMPEG (SW codec)", "ffmpeg", ffmpeg_libs, 1, DECODER_SYMBOLS_FFMPEG},
-        {"webOS NDL",         "ndl",    ndl_libs,    2, NULL},
-        {"NetCast Legacy",    "lgnc",   lgnc_libs,   2, NULL},
-        {"webOS SMP",         "smp",    smp_libs,    3, NULL},
+        {"webOS NDL",         "ndl",    ndl_libs,    2, NULL,
+#if FEATURE_CHECK_MODULE_OS_VERSION
+                {OS_VERSION_MAKE(4, 0, 0)}
+#endif
+        },
+        {"NetCast Legacy",    "lgnc",   lgnc_libs,   2, NULL,
+#if FEATURE_CHECK_MODULE_OS_VERSION
+                {OS_VERSION_MAKE(1, 0, 0),
+                        OS_VERSION_MAKE(5, 0, 0)}
+#endif
+        },
+        {"webOS SMP",         "smp",    smp_libs,    3, NULL,
+#if FEATURE_CHECK_MODULE_OS_VERSION
+                {OS_VERSION_MAKE(3, 0, 0)}
+#endif
+        },
         {"webOS DILE",        "dile",   dile_libs,   2, NULL},
         {"Raspberry Pi",      "pi",     pi_libs,     1, NULL},
         {"MMAL",              "mmal",   mmal_libs,   1, NULL},

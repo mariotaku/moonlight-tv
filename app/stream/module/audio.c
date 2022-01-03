@@ -8,6 +8,7 @@
 
 #endif
 
+#include "util/os_info.h"
 #include "util/logging.h"
 
 static MODULE_LIB_DEFINITION _pulse_lib = {"pulse", "pulse"};
@@ -38,11 +39,15 @@ const static AUDIO_SYMBOLS audio_sdl = {
 #endif
 
 MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
-        {"Null", "null", NULL, 0, NULL},
-        {"SDL Audio", "sdl", NULL, 0, AUDIO_SYMBOLS_SDL},
-        {"PulseAudio", "pulse", &_pulse_lib, 1, NULL},
-        {"ALSA", "alsa", &_alsa_lib, 1, NULL},
-        {"NDL Audio", "ndlaud", _ndl_libs, sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL},
+        {"Null",       "null", NULL,          0,                                                 NULL},
+        {"SDL Audio",  "sdl",  NULL,          0,                                                 AUDIO_SYMBOLS_SDL},
+        {"PulseAudio", "pulse",  &_pulse_lib, 1,                                                 NULL},
+        {"ALSA",       "alsa",   &_alsa_lib,  1,                                                 NULL},
+        {"NDL Audio",  "ndlaud", _ndl_libs,   sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL,
+#if FEATURE_CHECK_MODULE_OS_VERSION
+                {OS_VERSION_MAKE(4, 0, 0)}
+#endif
+        },
 };
 
 AUDIO audio_pref_requested;
