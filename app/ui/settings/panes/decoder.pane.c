@@ -87,7 +87,7 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
     }
     for (int i = 0; i < audio_config_len; i++) {
         audio_config_entry_t config = audio_configs[i];
-        if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config.configuration) < supported_ch) {
+        if (supported_ch < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config.configuration)) {
             continue;
         }
         struct pref_dropdown_int_entry_t *entry = &controller->surround_entries[controller->surround_entries_len];
@@ -150,7 +150,7 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
 
-    pref_title_label(parent, locstr("Sound Channels"));
+    pref_title_label(parent, locstr("Sound Channels (Experimental)"));
 
     lv_obj_t *ch_dropdown = pref_dropdown_int(parent, controller->surround_entries, controller->surround_entries_len,
                                               &app_configuration->stream.audioConfiguration);
@@ -163,6 +163,8 @@ static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
 
     controller->hdr_checkbox = hdr_checkbox;
     controller->hdr_hint = hdr_hint;
+
+    lv_obj_scroll_to_y(parent, 0, LV_ANIM_OFF);
     return NULL;
 }
 
