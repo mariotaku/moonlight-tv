@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 'use strict';
+
 const {po} = require('gettext-parser');
 const {ArgumentParser} = require('argparse');
 const path = require('path');
 const fs = require('fs');
 
-const parser = new ArgumentParser()
+const parser = new ArgumentParser();
 parser.add_argument('-o', '--output', {required: true});
 parser.add_argument('locales', {metavar: 'LOCALE', type: String, nargs: '+'})
 

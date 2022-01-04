@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "webos-gen-i18n": "node scripts/webos/gen_i18n.js",
-    "webos-gen-manifest": "node scripts/webos/gen_manifest.js",
+    "webos-gen-manifest": "node system/webos/utils/scripts/gen_webosbrew_manifest.js",
     "gen-mat-iconfont": "node scripts/tools/gen_mat_iconfont.js",
     "iconfont-minify": "node scripts/tools/iconfont_minify.js",
     "lv_font_conv": "lv_font_conv"
