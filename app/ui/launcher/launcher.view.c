@@ -138,7 +138,7 @@ static void detail_group_add(lv_event_t *event) {
     lv_obj_t *child = lv_event_get_param(event);
     launcher_controller_t *controller = lv_event_get_user_data(event);
     apps_controller_t *pane_controller = (apps_controller_t *) lv_fragment_manager_get_top(
-            controller->pane_manager);
+            controller->base.child_manager);
     if (!pane_controller) return;
     if (!child || !lv_obj_is_group_def(child)) return;
     if (lv_obj_get_group(child)) {

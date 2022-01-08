@@ -33,8 +33,7 @@ void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
                         event->button);
             return;
     }
-
-    LiSendMouseButtonEvent(event->type == SDL_MOUSEBUTTONDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
+    LiSendMouseButtonEvent(event->state == SDL_PRESSED ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
                            button);
 }
 

@@ -18,7 +18,6 @@ typedef struct {
     lv_obj_t *nav;
     lv_group_t *nav_group;
 
-    lv_fragment_manager_t *pane_manager;
     lv_obj_t *detail;
     lv_group_t *detail_group;
 

@@ -16,7 +16,6 @@ typedef struct {
     lv_obj_t *pclist;
     lv_obj_t *add_btn, *pref_btn, *help_btn, *quit_btn;
     lv_group_t *nav_group, *detail_group;
-    lv_fragment_manager_t *pane_manager;
     lv_style_transition_dsc_t tr_nav;
     lv_style_transition_dsc_t tr_detail;
     lv_style_t nav_host_style, nav_menu_style;

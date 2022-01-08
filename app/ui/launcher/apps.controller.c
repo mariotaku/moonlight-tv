@@ -396,7 +396,8 @@ static void launcher_launch_game(apps_controller_t *controller, const apploader_
             .app = &app->base,
     };
     lv_fragment_t *fragment = lv_fragment_create(&streaming_controller_class, &args);
-    lv_fragment_manager_push(app_uimanager, fragment);
+    lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(app_uimanager));
+    lv_fragment_manager_push(app_uimanager, fragment, container);
 }
 
 static void launcher_launch_game_async(appitem_viewholder_t *holder) {

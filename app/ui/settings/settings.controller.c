@@ -25,9 +25,11 @@ static const settings_entry_t entries[] = {
 };
 static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
-static void on_view_created(lv_fragment_t *controller, lv_obj_t *view);
+static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
-static void on_destroy_view(lv_fragment_t *controller, lv_obj_t *view);
+static bool obj_will_delete(lv_fragment_t *self, lv_obj_t *view);
+
+static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view);
 
 static void on_entry_focus(lv_event_t *event);
 
@@ -44,6 +46,8 @@ static void on_tab_content_key(lv_event_t *e);
 static void on_dropdown_clicked(lv_event_t *event);
 
 static void settings_controller_ctor(lv_fragment_t *self, void *args);
+
+static void settings_dtor(lv_fragment_t *self);
 
 static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2);
 
@@ -63,8 +67,10 @@ static void pane_child_added(lv_event_t *e);
 
 const lv_fragment_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
+        .destructor_cb = settings_dtor,
         .create_obj_cb = settings_win_create,
         .obj_created_cb = on_view_created,
+        .obj_will_delete_cb = obj_will_delete,
         .obj_deleted_cb = on_destroy_view,
         .event_cb = on_event,
         .instance_size = sizeof(settings_controller_t),
@@ -73,6 +79,10 @@ const lv_fragment_class_t settings_controller_cls = {
 static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     settings_controller_t *controller = (settings_controller_t *) self;
     controller->mini = controller->pending_mini = UI_IS_MINI(ui_display_width);
+}
+
+static void settings_dtor(lv_fragment_t *self) {
+    settings_controller_t *controller = (settings_controller_t *) self;
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
@@ -107,7 +117,6 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
             }
         }
     } else {
-        controller->pane_manager = lv_fragment_manager_create(controller->detail, self);
         controller->nav_group = lv_group_create();
         controller->detail_group = lv_group_create();
 
@@ -134,6 +143,14 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     }
 }
 
+static bool obj_will_delete(lv_fragment_t *self, lv_obj_t *view) {
+    settings_controller_t *controller = (settings_controller_t *) self;
+    if (!controller->mini) {
+        lv_obj_remove_event_cb(controller->nav, on_entry_focus);
+    }
+    return false;
+}
+
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     settings_save(app_configuration);
@@ -150,8 +167,6 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
 
         lv_group_del(controller->nav_group);
         lv_group_del(controller->detail_group);
-
-        lv_fragment_manager_del(controller->pane_manager);
     }
 }
 
@@ -171,14 +186,14 @@ static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
     if (controller->mini) {
         return false;
     }
-    return lv_fragment_manager_dispatch_event(controller->pane_manager, which, data1, data2);
+    return lv_fragment_manager_dispatch_event(self->child_manager, which, data1, data2);
 }
 
 static void on_entry_focus(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
-    lv_fragment_t *pane = lv_fragment_manager_get_top(controller->pane_manager);
+    lv_fragment_t *pane = lv_fragment_manager_get_top(controller->base.child_manager);
     lv_fragment_class_t *cls = target->user_data;
     if (pane && pane->cls == cls) {
         return;
@@ -196,7 +211,7 @@ static void on_entry_focus(lv_event_t *event) {
 
 static void show_pane(settings_controller_t *controller, const lv_fragment_class_t *cls) {
     lv_fragment_t *fragment = lv_fragment_create(cls, controller);
-    lv_fragment_manager_replace(controller->pane_manager, fragment);
+    lv_fragment_manager_replace(controller->base.child_manager, fragment, &controller->detail);
     lv_obj_t *focused = lv_group_get_focused(controller->detail_group);
     lv_event_send(focused, LV_EVENT_DEFOCUSED, NULL);
 }
@@ -413,27 +428,27 @@ static void on_dropdown_clicked(lv_event_t *event) {
 }
 
 static void settings_close(lv_event_t *e) {
-    settings_controller_t *controller = lv_event_get_user_data(e);
-    if (controller->needs_restart) {
+    settings_controller_t *fragment = lv_event_get_user_data(e);
+    if (fragment->needs_restart) {
         static const char *btn_txts[] = {translatable("Later"), translatable("Quit"), ""};
         lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, NULL, locstr("Some settings require a restart to take effect."),
                                                  btn_txts, false);
         lv_obj_center(msgbox);
-        lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, controller);
+        lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, fragment);
         return;
     }
-    lv_async_call((lv_async_cb_t) lv_fragment_remove_self, controller);
+    lv_fragment_remove_self((lv_fragment_t *) fragment);
 }
 
 static void restart_confirm_cb(lv_event_t *e) {
-    settings_controller_t *controller = lv_event_get_user_data(e);
+    settings_controller_t *fragment = lv_event_get_user_data(e);
     lv_obj_t *msgbox = lv_event_get_current_target(e);
     uint16_t selected = lv_msgbox_get_active_btn(msgbox);
     if (selected == 1) {
         app_request_exit();
     } else {
         lv_msgbox_close_async(msgbox);
-        lv_async_call((lv_async_cb_t) lv_fragment_remove_self, controller);
+        lv_fragment_remove_self((lv_fragment_t *) fragment);
     }
 }
 

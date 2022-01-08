@@ -111,9 +111,9 @@ int main(int argc, char *argv[]) {
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_opa(scr, 0, 0);
-    app_uimanager = lv_fragment_manager_create(scr, NULL);
+    app_uimanager = lv_fragment_manager_create(NULL);
     lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, NULL);
-    lv_fragment_manager_push(app_uimanager, fragment);
+    lv_fragment_manager_push(app_uimanager, fragment, &scr);
 
     while (running) {
         app_process_events();
