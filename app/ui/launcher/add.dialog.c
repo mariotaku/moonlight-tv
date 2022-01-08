@@ -23,7 +23,7 @@
 
 #endif
 
-static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent);
 
 static void dialog_cb(lv_event_t *event);
 
@@ -34,19 +34,19 @@ static void input_key_cb(lv_event_t *event);
 static void add_cb(const pcmanager_resp_t *resp, void *userdata);
 
 typedef struct add_dialog_controller_t {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     lv_obj_t *input;
     lv_obj_t *progress;
     lv_obj_t *btns;
     lv_obj_t *error;
 } add_dialog_controller_t;
 
-const lv_obj_controller_class_t add_dialog_class = {
+const lv_fragment_class_t add_dialog_class = {
         .create_obj_cb = create_dialog,
         .instance_size = sizeof(add_dialog_controller_t),
 };
 
-static lv_obj_t *create_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     add_dialog_controller_t *controller = (add_dialog_controller_t *) self;
     const static char *btn_texts[] = {translatable("Cancel"), translatable("OK"), ""};

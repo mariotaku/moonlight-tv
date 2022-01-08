@@ -9,13 +9,13 @@
 #include "util/i18n.h"
 
 typedef struct context_menu_t {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     PSERVER_LIST node;
 } context_menu_t;
 
-static void menu_ctor(lv_obj_controller_t *self, void *arg);
+static void menu_ctor(lv_fragment_t *self, void *arg);
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
 
 static void context_menu_key_cb(lv_event_t *e);
 
@@ -29,18 +29,18 @@ static void test_callback(const pcmanager_resp_t *resp, void *userdata);
 
 static void unpair_callback(const pcmanager_resp_t *resp, void *userdata);
 
-const lv_obj_controller_class_t server_menu_class = {
+const lv_fragment_class_t server_menu_class = {
         .constructor_cb = menu_ctor,
         .create_obj_cb = create_obj,
         .instance_size = sizeof(context_menu_t)
 };
 
-static void menu_ctor(lv_obj_controller_t *self, void *arg) {
+static void menu_ctor(lv_fragment_t *self, void *arg) {
     context_menu_t *controller = (context_menu_t *) self;
     controller->node = arg;
 }
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     context_menu_t *controller = (context_menu_t *) self;
     PSERVER_LIST node = controller->node;
     lv_obj_t *msgbox = lv_msgbox_create(NULL, node->server->hostname, NULL, NULL, false);

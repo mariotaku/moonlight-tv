@@ -45,7 +45,7 @@ bool ui_render_background() {
 
 bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;
-    handled |= lv_controller_manager_dispatch_event(app_uimanager, which, data1, data2);
+    handled |= lv_fragment_manager_dispatch_event(app_uimanager, which, data1, data2);
     if (!handled) {
         switch (which) {
             case USER_STREAM_OPEN: {

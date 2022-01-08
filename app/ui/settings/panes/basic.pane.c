@@ -9,7 +9,7 @@
 #include "util/i18n.h"
 
 typedef struct {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     settings_controller_t *parent;
 
     lv_obj_t *res_warning;
@@ -21,11 +21,11 @@ typedef struct {
     int lang_entries_len;
 } basic_pane_t;
 
-static void pane_ctor(lv_obj_controller_t *self, void *args);
+static void pane_ctor(lv_fragment_t *self, void *args);
 
-static void pane_dtor(lv_obj_controller_t *self);
+static void pane_dtor(lv_fragment_t *self);
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
 
 static void on_bitrate_changed(lv_event_t *e);
 
@@ -41,7 +41,7 @@ static void pref_mark_restart_cb(lv_event_t *e);
 
 static void update_bitrate_hint(basic_pane_t *pane);
 
-const lv_obj_controller_class_t settings_pane_basic_cls = {
+const lv_fragment_class_t settings_pane_basic_cls = {
         .constructor_cb = pane_ctor,
         .destructor_cb = pane_dtor,
         .create_obj_cb = create_obj,
@@ -66,7 +66,7 @@ static const pref_dropdown_int_entry_t supported_fps[] = {
 static const int supported_fps_len = sizeof(supported_fps) / sizeof(pref_dropdown_int_entry_t);
 #define BITRATE_STEP 1000
 
-static void pane_ctor(lv_obj_controller_t *self, void *args) {
+static void pane_ctor(lv_fragment_t *self, void *args) {
     basic_pane_t *pane = (basic_pane_t *) self;
     pane->parent = args;
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
@@ -74,14 +74,14 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
 #endif
 }
 
-static void pane_dtor(lv_obj_controller_t *self) {
+static void pane_dtor(lv_fragment_t *self) {
     basic_pane_t *pane = (basic_pane_t *) self;
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
     lv_mem_free(pane->lang_entries);
 #endif
 }
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_set_layout(parent, LV_LAYOUT_GRID);
     basic_pane_t *pane = (basic_pane_t *) self;
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_ROW_WRAP);

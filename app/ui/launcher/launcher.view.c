@@ -17,7 +17,7 @@ static void detail_group_add(lv_event_t *event);
 #define NAV_WIDTH_EXPANDED 240
 #define NAV_TRANSLATE_OFFSET (NAV_WIDTH_EXPANDED - NAV_WIDTH_COLLAPSED)
 
-lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
+lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, LV_DPX(NAV_WIDTH_COLLAPSED));
@@ -137,7 +137,7 @@ lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent) {
 static void detail_group_add(lv_event_t *event) {
     lv_obj_t *child = lv_event_get_param(event);
     launcher_controller_t *controller = lv_event_get_user_data(event);
-    apps_controller_t *pane_controller = (apps_controller_t *) lv_controller_manager_top_controller(
+    apps_controller_t *pane_controller = (apps_controller_t *) lv_fragment_manager_get_top(
             controller->pane_manager);
     if (!pane_controller) return;
     if (!child || !lv_obj_is_group_def(child)) return;

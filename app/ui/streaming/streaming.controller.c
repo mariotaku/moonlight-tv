@@ -24,15 +24,15 @@ static void hide_overlay(lv_event_t *event);
 
 static bool show_overlay(streaming_controller_t *controller);
 
-static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
+static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
-static bool on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view);
+static bool on_delete_obj(lv_fragment_t *self, lv_obj_t *view);
 
-static bool on_event(lv_obj_controller_t *, int, void *, void *);
+static bool on_event(lv_fragment_t *, int, void *, void *);
 
-static void streaming_controller_ctor(lv_obj_controller_t *self, void *args);
+static void streaming_controller_ctor(lv_fragment_t *self, void *args);
 
-static void controller_dtor(lv_obj_controller_t *self);
+static void controller_dtor(lv_fragment_t *self);
 
 static void session_error(streaming_controller_t *controller);
 
@@ -42,7 +42,7 @@ static void overlay_key_cb(lv_event_t *e);
 
 static void update_buttons_layout(streaming_controller_t *controller);
 
-const lv_obj_controller_class_t streaming_controller_class = {
+const lv_fragment_class_t streaming_controller_class = {
         .constructor_cb = streaming_controller_ctor,
         .destructor_cb = controller_dtor,
         .create_obj_cb = streaming_scene_create,
@@ -105,7 +105,7 @@ void streaming_notice_show(const char *message) {
     }
 }
 
-static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
+static void streaming_controller_ctor(lv_fragment_t *self, void *args) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     LV_ASSERT(current_controller == NULL);
     current_controller = controller;
@@ -117,11 +117,11 @@ static void streaming_controller_ctor(lv_obj_controller_t *self, void *args) {
     streaming_styles_init(controller);
 }
 
-static void controller_dtor(lv_obj_controller_t *self) {
+static void controller_dtor(lv_fragment_t *self) {
     current_controller = NULL;
 }
 
-static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     switch (which) {
         case USER_STREAM_CONNECTING: {
@@ -152,7 +152,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
                 session_error(controller);
                 break;
             }
-            lv_obj_controller_pop((lv_obj_controller_t *) controller);
+            lv_fragment_pop((lv_fragment_t *) controller);
             return true;
         }
         case USER_OPEN_OVERLAY: {
@@ -171,7 +171,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
     return false;
 }
 
-static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
+static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     app_input_set_group(controller->group);
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
@@ -199,7 +199,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     controller->notice_label = notice_label;
 }
 
-static bool on_delete_obj(lv_obj_controller_t *self, lv_obj_t *view) {
+static bool on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     if (controller->notice) {
         lv_obj_del(controller->notice);
@@ -261,7 +261,7 @@ static void session_error_dialog_cb(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *dialog = lv_event_get_current_target(event);
     lv_msgbox_close_async(dialog);
-    lv_obj_controller_pop((lv_obj_controller_t *) controller);
+    lv_fragment_pop((lv_fragment_t *) controller);
 }
 
 static void overlay_key_cb(lv_event_t *e) {

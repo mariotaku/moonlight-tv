@@ -506,7 +506,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*-----------
  * Extras
  *----------*/
-#define LV_USE_OBJ_CONTROLLER 1
+#define LV_USE_FRAGMENT 1
 
 /*==================
 * EXAMPLES

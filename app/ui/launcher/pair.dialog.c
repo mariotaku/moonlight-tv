@@ -6,7 +6,7 @@
 #include "util/i18n.h"
 
 typedef struct {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     SERVER_LIST *node;
     char pin[8];
 
@@ -15,26 +15,26 @@ typedef struct {
     lv_obj_t *btns;
 } pair_dialog_controller_t;
 
-static void pair_controller_ctor(lv_obj_controller_t *self, void *args);
+static void pair_controller_ctor(lv_fragment_t *self, void *args);
 
-static lv_obj_t *pair_dialog(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent);
 
 static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata);
 
 static void dialog_cb(lv_event_t *event);
 
-const lv_obj_controller_class_t pair_dialog_class = {
+const lv_fragment_class_t pair_dialog_class = {
         .constructor_cb = pair_controller_ctor,
         .create_obj_cb = pair_dialog,
         .instance_size = sizeof(pair_dialog_controller_t),
 };
 
-void pair_controller_ctor(lv_obj_controller_t *self, void *args) {
+void pair_controller_ctor(lv_fragment_t *self, void *args) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
     controller->node = args;
 }
 
-static lv_obj_t *pair_dialog(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
     static const char *btn_texts[] = {translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Pairing"), NULL, btn_texts, false);

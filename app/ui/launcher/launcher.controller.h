@@ -10,13 +10,13 @@
 #include "backend/pcmanager.h"
 
 typedef struct {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     lv_obj_t *nav;
     lv_obj_t *detail;
     lv_obj_t *pclist;
     lv_obj_t *add_btn, *pref_btn, *help_btn, *quit_btn;
     lv_group_t *nav_group, *detail_group;
-    lv_controller_manager_t *pane_manager;
+    lv_fragment_manager_t *pane_manager;
     lv_style_transition_dsc_t tr_nav;
     lv_style_transition_dsc_t tr_detail;
     lv_style_t nav_host_style, nav_menu_style;
@@ -29,10 +29,10 @@ typedef struct {
 } launcher_controller_t;
 
 
-lv_obj_t *launcher_win_create(lv_obj_controller_t *self, lv_obj_t *parent);
+lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent);
 
 launcher_controller_t *launcher_instance();
 
 void launcher_select_server(launcher_controller_t *controller, SERVER_LIST *node);
 
-extern const lv_obj_controller_class_t launcher_controller_class;
+extern const lv_fragment_class_t launcher_controller_class;

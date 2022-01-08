@@ -16,7 +16,7 @@
 #define MAXIMUM_ROWS 32
 
 typedef struct about_pane_t {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
 #if TARGET_WEBOS
     struct {
@@ -26,9 +26,9 @@ typedef struct about_pane_t {
 #endif
 } about_pane_t;
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
 
-static void pane_ctor(lv_obj_controller_t *self, void *args);
+static void pane_ctor(lv_fragment_t *self, void *args);
 
 #if TARGET_WEBOS
 
@@ -36,13 +36,13 @@ static void load_webos_info(about_pane_t *controller);
 
 #endif
 
-const lv_obj_controller_class_t settings_pane_about_cls = {
+const lv_fragment_class_t settings_pane_about_cls = {
         .constructor_cb = pane_ctor,
         .create_obj_cb = create_obj,
         .instance_size = sizeof(about_pane_t),
 };
 
-static void pane_ctor(lv_obj_controller_t *self, void *args) {
+static void pane_ctor(lv_fragment_t *self, void *args) {
     about_pane_t *controller = (about_pane_t *) self;
 #if TARGET_WEBOS
     load_webos_info(controller);
@@ -59,7 +59,7 @@ static inline void about_line(lv_obj_t *parent, const char *title, const char *t
     lv_obj_set_grid_cell(text_label, LV_GRID_ALIGN_END, 4 - text_span, text_span, LV_GRID_ALIGN_CENTER, row, 1);
 }
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     about_pane_t *controller = (about_pane_t *) self;
     lv_obj_set_layout(parent, LV_LAYOUT_GRID);
     static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),

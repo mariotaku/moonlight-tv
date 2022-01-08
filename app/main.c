@@ -38,7 +38,7 @@ SDL_Window *app_window = NULL;
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
 
-lv_controller_manager_t *app_uimanager;
+lv_fragment_manager_t *app_uimanager;
 
 static lv_indev_t *app_indev_key, *app_indev_wheel, *app_indev_button;
 
@@ -111,8 +111,9 @@ int main(int argc, char *argv[]) {
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_opa(scr, 0, 0);
-    app_uimanager = lv_controller_manager_create(scr, NULL);
-    lv_controller_manager_push(app_uimanager, &launcher_controller_class, NULL);
+    app_uimanager = lv_fragment_manager_create(scr, NULL);
+    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, NULL);
+    lv_fragment_manager_push(app_uimanager, fragment);
 
     while (running) {
         app_process_events();
@@ -122,7 +123,7 @@ int main(int argc, char *argv[]) {
 
     settings_save(app_configuration);
 
-    lv_controller_manager_del(app_uimanager);
+    lv_fragment_manager_del(app_uimanager);
 
     lv_sdl_deinit_button(indev_button);
     lv_sdl_deinit_pointer(indev_pointer);

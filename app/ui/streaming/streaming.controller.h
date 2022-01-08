@@ -6,7 +6,7 @@
 #include "stream/session.h"
 
 typedef struct {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     lv_obj_t *scene;
     lv_group_t *group;
     lv_obj_t *progress;
@@ -34,9 +34,9 @@ typedef struct {
     const APP_LIST *app;
 } streaming_scene_arg_t;
 
-extern const lv_obj_controller_class_t streaming_controller_class;
+extern const lv_fragment_class_t streaming_controller_class;
 
-lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent);
+lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent);
 
 void streaming_styles_init(streaming_controller_t *controller);
 

@@ -9,7 +9,7 @@
 #include "libgamestream/client.h"
 
 extern PCONFIGURATION app_configuration;
-extern lv_controller_manager_t *app_uimanager;
+extern lv_fragment_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
 extern SDL_Window *app_window;
 extern os_info_t app_os_info;

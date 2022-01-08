@@ -20,13 +20,13 @@
 #include "util/i18n.h"
 
 
-static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *parent);
 
-static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view);
+static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
-static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view);
+static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view);
 
-static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2);
+static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2);
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
 
@@ -66,9 +66,9 @@ static int adapter_item_id(lv_obj_t *, void *data, int position);
 
 static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata);
 
-static void apps_controller_ctor(lv_obj_controller_t *self, void *args);
+static void apps_controller_ctor(lv_fragment_t *self, void *args);
 
-static void apps_controller_dtor(lv_obj_controller_t *self);
+static void apps_controller_dtor(lv_fragment_t *self);
 
 static void appload_cb(apploader_t *loader, void *userdata);
 
@@ -101,7 +101,7 @@ const static pcmanager_listener_t pc_listeners = {
         .removed = on_host_removed,
 };
 
-const lv_obj_controller_class_t apps_controller_class = {
+const lv_fragment_class_t apps_controller_class = {
         .constructor_cb = apps_controller_ctor,
         .destructor_cb = apps_controller_dtor,
         .create_obj_cb = apps_view,
@@ -111,7 +111,7 @@ const lv_obj_controller_class_t apps_controller_class = {
         .instance_size = sizeof(apps_controller_t),
 };
 
-static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
+static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     apps_controller_t *controller = (apps_controller_t *) self;
     controller->node = args;
     controller->apploader = apploader_new(controller->node);
@@ -119,13 +119,13 @@ static void apps_controller_ctor(lv_obj_controller_t *self, void *args) {
     appitem_style_init(&controller->appitem_style);
 }
 
-static void apps_controller_dtor(lv_obj_controller_t *self) {
+static void apps_controller_dtor(lv_fragment_t *self) {
     apps_controller_t *controller = (apps_controller_t *) self;
     appitem_style_deinit(&controller->appitem_style);
     apploader_unref(controller->apploader);
 }
 
-static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *parent) {
     apps_controller_t *controller = (apps_controller_t *) self;
 
     lv_obj_t *applist = controller->applist = lv_gridview_create(parent);
@@ -164,7 +164,7 @@ static lv_obj_t *apps_view(lv_obj_controller_t *self, lv_obj_t *parent) {
     return NULL;
 }
 
-static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
+static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     apps_controller_t *controller = (apps_controller_t *) self;
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
@@ -205,7 +205,7 @@ static void update_grid_config(apps_controller_t *controller) {
     lv_gridview_set_config(applist, col_count, row_height);
 }
 
-static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
+static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     current_instance = NULL;
     apps_controller_t *controller = (apps_controller_t *) self;
 
@@ -213,7 +213,7 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
     coverloader_unref(controller->coverloader);
 }
 
-static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
     apps_controller_t *controller = (apps_controller_t *) self;
     switch (which) {
         case USER_SIZE_CHANGED: {
@@ -238,7 +238,7 @@ static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
 static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
-    lv_obj_controller_pop((lv_obj_controller_t *) controller);
+    lv_fragment_pop((lv_fragment_t *) controller);
 }
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
@@ -258,7 +258,7 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
 }
 
 static void update_view_state(apps_controller_t *controller) {
-    launcher_controller_t *parent_controller = (launcher_controller_t *) lv_controller_manager_parent(
+    launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_manager_get_parent(
             controller->base.manager);
     parent_controller->detail_changing = true;
     PSERVER_LIST node = controller->node;
@@ -395,7 +395,8 @@ static void launcher_launch_game(apps_controller_t *controller, const apploader_
             .server = controller->node->server,
             .app = &app->base,
     };
-    lv_controller_manager_push(app_uimanager, &streaming_controller_class, &args);
+    lv_fragment_t *fragment = lv_fragment_create(&streaming_controller_class, &args);
+    lv_fragment_manager_push(app_uimanager, fragment);
 }
 
 static void launcher_launch_game_async(appitem_viewholder_t *holder) {

@@ -8,7 +8,7 @@
 #include "util/i18n.h"
 
 typedef struct decoder_pane_t {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     settings_controller_t *parent;
 
     lv_obj_t *hdr_checkbox;
@@ -24,9 +24,9 @@ typedef struct decoder_pane_t {
     int surround_entries_len;
 } decoder_pane_t;
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
 
-static void pane_ctor(lv_obj_controller_t *self, void *args);
+static void pane_ctor(lv_fragment_t *self, void *args);
 
 static void pref_mark_restart_cb(lv_event_t *e);
 
@@ -34,13 +34,13 @@ static void hdr_state_update_cb(lv_event_t *e);
 
 static void hdr_more_click_cb(lv_event_t *e);
 
-const lv_obj_controller_class_t settings_pane_decoder_cls = {
+const lv_fragment_class_t settings_pane_decoder_cls = {
         .constructor_cb = pane_ctor,
         .create_obj_cb = create_obj,
         .instance_size = sizeof(decoder_pane_t),
 };
 
-static void pane_ctor(lv_obj_controller_t *self, void *args) {
+static void pane_ctor(lv_fragment_t *self, void *args) {
     decoder_pane_t *controller = (decoder_pane_t *) self;
     controller->parent = args;
     for (int type_idx = -1; type_idx < decoder_orders_len; type_idx++) {
@@ -98,7 +98,7 @@ static void pane_ctor(lv_obj_controller_t *self, void *args) {
     }
 }
 
-static lv_obj_t *create_obj(lv_obj_controller_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     decoder_pane_t *controller = (decoder_pane_t *) self;
     lv_obj_set_layout(parent, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);

@@ -13,7 +13,7 @@
 typedef struct {
     const char *icon;
     const char *name;
-    const lv_obj_controller_class_t *cls;
+    const lv_fragment_class_t *cls;
 } settings_entry_t;
 
 static const settings_entry_t entries[] = {
@@ -25,9 +25,9 @@ static const settings_entry_t entries[] = {
 };
 static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
-static void on_view_created(lv_obj_controller_t *controller, lv_obj_t *view);
+static void on_view_created(lv_fragment_t *controller, lv_obj_t *view);
 
-static void on_destroy_view(lv_obj_controller_t *controller, lv_obj_t *view);
+static void on_destroy_view(lv_fragment_t *controller, lv_obj_t *view);
 
 static void on_entry_focus(lv_event_t *event);
 
@@ -43,15 +43,15 @@ static void on_tab_content_key(lv_event_t *e);
 
 static void on_dropdown_clicked(lv_event_t *event);
 
-static void settings_controller_ctor(lv_obj_controller_t *self, void *args);
+static void settings_controller_ctor(lv_fragment_t *self, void *args);
 
-static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2);
+static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2);
 
 static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown);
 
 static bool detail_item_needs_lrkey(lv_obj_t *obj);
 
-static void show_pane(settings_controller_t *controller, const lv_obj_controller_class_t *cls);
+static void show_pane(settings_controller_t *controller, const lv_fragment_class_t *cls);
 
 static void settings_close(lv_event_t *e);
 
@@ -61,7 +61,7 @@ static void pane_child_added(lv_event_t *e);
 
 #define UI_IS_MINI(width) ((width) < 1440)
 
-const lv_obj_controller_class_t settings_controller_cls = {
+const lv_fragment_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
         .create_obj_cb = settings_win_create,
         .obj_created_cb = on_view_created,
@@ -70,12 +70,12 @@ const lv_obj_controller_class_t settings_controller_cls = {
         .instance_size = sizeof(settings_controller_t),
 };
 
-static void settings_controller_ctor(lv_obj_controller_t *self, void *args) {
+static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     settings_controller_t *controller = (settings_controller_t *) self;
     controller->mini = controller->pending_mini = UI_IS_MINI(ui_display_width);
 }
 
-static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
+static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     lv_obj_add_event_cb(controller->close_btn, settings_close, LV_EVENT_CLICKED, controller);
     if (controller->mini) {
@@ -97,7 +97,8 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
             lv_obj_t *page = lv_tabview_add_tab(controller->tabview, entry.icon);
             lv_obj_add_event_cb(page, cb_child_group_add, LV_EVENT_CHILD_CREATED, tab_group);
             lv_obj_add_event_cb(page, pane_child_added, LV_EVENT_CHILD_CREATED, controller);
-            lv_obj_controller_t *pane = lv_obj_controller_class_create_unmanaged(entry.cls, page, controller);
+            lv_fragment_t *pane = lv_fragment_create(entry.cls, controller);
+            lv_fragment_create_obj(pane, page);
             lv_obj_set_user_data(page, pane);
 
             lv_obj_t *tab_focused = lv_group_get_focused(tab_group);
@@ -106,7 +107,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
             }
         }
     } else {
-        controller->pane_manager = lv_controller_manager_create(controller->detail, self);
+        controller->pane_manager = lv_fragment_manager_create(controller->detail, self);
         controller->nav_group = lv_group_create();
         controller->detail_group = lv_group_create();
 
@@ -133,7 +134,7 @@ static void on_view_created(lv_obj_controller_t *self, lv_obj_t *view) {
     }
 }
 
-static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
+static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     settings_save(app_configuration);
 
@@ -150,11 +151,11 @@ static void on_destroy_view(lv_obj_controller_t *self, lv_obj_t *view) {
         lv_group_del(controller->nav_group);
         lv_group_del(controller->detail_group);
 
-        lv_controller_manager_del(controller->pane_manager);
+        lv_fragment_manager_del(controller->pane_manager);
     }
 }
 
-static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *data2) {
+static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
     settings_controller_t *controller = (settings_controller_t *) self;
     switch (which) {
         case USER_SIZE_CHANGED: {
@@ -162,7 +163,7 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
             bool mini = UI_IS_MINI(ui_display_width);
             if (mini != controller->mini) {
                 controller->pending_mini = mini;
-                lv_obj_controller_recreate_obj(self);
+                lv_fragment_recreate_obj(self);
             }
             break;
         }
@@ -170,15 +171,15 @@ static bool on_event(lv_obj_controller_t *self, int which, void *data1, void *da
     if (controller->mini) {
         return false;
     }
-    return lv_controller_manager_dispatch_event(controller->pane_manager, which, data1, data2);
+    return lv_fragment_manager_dispatch_event(controller->pane_manager, which, data1, data2);
 }
 
 static void on_entry_focus(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
-    lv_obj_controller_t *pane = lv_controller_manager_top_controller(controller->pane_manager);
-    lv_obj_controller_class_t *cls = target->user_data;
+    lv_fragment_t *pane = lv_fragment_manager_get_top(controller->pane_manager);
+    lv_fragment_class_t *cls = target->user_data;
     if (pane && pane->cls == cls) {
         return;
     }
@@ -193,8 +194,9 @@ static void on_entry_focus(lv_event_t *event) {
     show_pane(controller, cls);
 }
 
-static void show_pane(settings_controller_t *controller, const lv_obj_controller_class_t *cls) {
-    lv_controller_manager_replace(controller->pane_manager, cls, controller);
+static void show_pane(settings_controller_t *controller, const lv_fragment_class_t *cls) {
+    lv_fragment_t *fragment = lv_fragment_create(cls, controller);
+    lv_fragment_manager_replace(controller->pane_manager, fragment);
     lv_obj_t *focused = lv_group_get_focused(controller->detail_group);
     lv_event_send(focused, LV_EVENT_DEFOCUSED, NULL);
 }
@@ -420,7 +422,7 @@ static void settings_close(lv_event_t *e) {
         lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, controller);
         return;
     }
-    lv_async_call((lv_async_cb_t) lv_obj_controller_pop, controller);
+    lv_async_call((lv_async_cb_t) lv_fragment_pop, controller);
 }
 
 static void restart_confirm_cb(lv_event_t *e) {
@@ -431,7 +433,7 @@ static void restart_confirm_cb(lv_event_t *e) {
         app_request_exit();
     } else {
         lv_msgbox_close_async(msgbox);
-        lv_async_call((lv_async_cb_t) lv_obj_controller_pop, controller);
+        lv_async_call((lv_async_cb_t) lv_fragment_pop, controller);
     }
 }
 

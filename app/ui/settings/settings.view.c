@@ -8,7 +8,7 @@
 #include "util/font.h"
 #include "util/i18n.h"
 
-lv_obj_t *settings_win_create(struct lv_obj_controller_t *self, lv_obj_t *parent) {
+lv_obj_t *settings_win_create(struct lv_fragment_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, LV_DPX(50));

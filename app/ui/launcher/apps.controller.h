@@ -13,7 +13,7 @@ typedef struct {
 } appitem_styles_t;
 
 typedef struct {
-    lv_obj_controller_t base;
+    lv_fragment_t base;
     apploader_t *apploader;
     coverloader_t *coverloader;
     PSERVER_LIST node;
@@ -35,4 +35,4 @@ typedef struct {
     char cover_src[LV_SDL_IMG_LEN];
 } appitem_viewholder_t;
 
-extern const lv_obj_controller_class_t apps_controller_class;
+extern const lv_fragment_class_t apps_controller_class;

@@ -6,7 +6,7 @@
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title);
 
-lv_obj_t *streaming_scene_create(lv_obj_controller_t *self, lv_obj_t *parent) {
+lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     lv_obj_t *scene = lv_obj_create(parent);
     controller->group = lv_group_create();
