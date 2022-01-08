@@ -27,8 +27,6 @@ static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
-static bool obj_will_delete(lv_fragment_t *self, lv_obj_t *view);
-
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view);
 
 static void on_entry_focus(lv_event_t *event);
@@ -70,7 +68,6 @@ const lv_fragment_class_t settings_controller_cls = {
         .destructor_cb = settings_dtor,
         .create_obj_cb = settings_win_create,
         .obj_created_cb = on_view_created,
-        .obj_will_delete_cb = obj_will_delete,
         .obj_deleted_cb = on_destroy_view,
         .event_cb = on_event,
         .instance_size = sizeof(settings_controller_t),
@@ -141,14 +138,6 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
         }
         show_pane(controller, entries[0].cls);
     }
-}
-
-static bool obj_will_delete(lv_fragment_t *self, lv_obj_t *view) {
-    settings_controller_t *controller = (settings_controller_t *) self;
-    if (!controller->mini) {
-        lv_obj_remove_event_cb(controller->nav, on_entry_focus);
-    }
-    return false;
 }
 
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
