@@ -152,7 +152,7 @@ static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
                 session_error(controller);
                 break;
             }
-            lv_fragment_pop((lv_fragment_t *) controller);
+            lv_fragment_remove_self((lv_fragment_t *) controller);
             return true;
         }
         case USER_OPEN_OVERLAY: {
@@ -261,7 +261,7 @@ static void session_error_dialog_cb(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *dialog = lv_event_get_current_target(event);
     lv_msgbox_close_async(dialog);
-    lv_fragment_pop((lv_fragment_t *) controller);
+    lv_fragment_remove_self((lv_fragment_t *) controller);
 }
 
 static void overlay_key_cb(lv_event_t *e) {

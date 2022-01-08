@@ -163,7 +163,7 @@ static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
             bool mini = UI_IS_MINI(ui_display_width);
             if (mini != controller->mini) {
                 controller->pending_mini = mini;
-                lv_fragment_recreate_obj(self);
+                lv_fragment_manager_recreate_obj(self->manager, self);
             }
             break;
         }
@@ -422,7 +422,7 @@ static void settings_close(lv_event_t *e) {
         lv_obj_add_event_cb(msgbox, restart_confirm_cb, LV_EVENT_VALUE_CHANGED, controller);
         return;
     }
-    lv_async_call((lv_async_cb_t) lv_fragment_pop, controller);
+    lv_async_call((lv_async_cb_t) lv_fragment_remove_self, controller);
 }
 
 static void restart_confirm_cb(lv_event_t *e) {
@@ -433,7 +433,7 @@ static void restart_confirm_cb(lv_event_t *e) {
         app_request_exit();
     } else {
         lv_msgbox_close_async(msgbox);
-        lv_async_call((lv_async_cb_t) lv_fragment_pop, controller);
+        lv_async_call((lv_async_cb_t) lv_fragment_remove_self, controller);
     }
 }
 
