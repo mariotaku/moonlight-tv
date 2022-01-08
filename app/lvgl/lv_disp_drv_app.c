@@ -16,10 +16,10 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     SDL_GetWindowSize(window, &width, &height);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    lv_disp_draw_buf_t *draw_buf = malloc(sizeof(lv_disp_draw_buf_t));
+    lv_disp_draw_buf_t *draw_buf = lv_mem_alloc(sizeof(lv_disp_draw_buf_t));
     SDL_Texture *texture = lv_draw_sdl_create_screen_texture(renderer, width, height);
     lv_disp_draw_buf_init(draw_buf, texture, NULL, width * height);
-    lv_disp_drv_t *driver = malloc(sizeof(lv_disp_drv_t));
+    lv_disp_drv_t *driver = lv_mem_alloc(sizeof(lv_disp_drv_t));
     lv_disp_drv_init(driver);
 
     lv_draw_sdl_drv_param_t *param = lv_mem_alloc(sizeof(lv_draw_sdl_drv_param_t));
