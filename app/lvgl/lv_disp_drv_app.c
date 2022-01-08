@@ -45,6 +45,8 @@ void lv_app_display_deinit(lv_disp_t *disp) {
     SDL_DestroyRenderer(param->renderer);
     lv_mem_free(param);
 
+    disp->driver->draw_ctx_deinit(disp->driver, disp->driver->draw_ctx);
+
     lv_mem_free(disp->driver);
 }
 

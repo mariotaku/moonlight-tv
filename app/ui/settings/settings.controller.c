@@ -45,8 +45,6 @@ static void on_dropdown_clicked(lv_event_t *event);
 
 static void settings_controller_ctor(lv_fragment_t *self, void *args);
 
-static void settings_dtor(lv_fragment_t *self);
-
 static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2);
 
 static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown);
@@ -65,7 +63,6 @@ static void pane_child_added(lv_event_t *e);
 
 const lv_fragment_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
-        .destructor_cb = settings_dtor,
         .create_obj_cb = settings_win_create,
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,
@@ -76,10 +73,6 @@ const lv_fragment_class_t settings_controller_cls = {
 static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     settings_controller_t *controller = (settings_controller_t *) self;
     controller->mini = controller->pending_mini = UI_IS_MINI(ui_display_width);
-}
-
-static void settings_dtor(lv_fragment_t *self) {
-    settings_controller_t *controller = (settings_controller_t *) self;
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
