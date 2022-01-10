@@ -45,7 +45,7 @@ static void on_dropdown_clicked(lv_event_t *event);
 
 static void settings_controller_ctor(lv_fragment_t *self, void *args);
 
-static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2);
+static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
 static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown);
 
@@ -152,23 +152,21 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     }
 }
 
-static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
+static bool on_event(lv_fragment_t *self, int code, void *userdata) {
+    LV_UNUSED(userdata);
     settings_controller_t *controller = (settings_controller_t *) self;
-    switch (which) {
+    switch (code) {
         case USER_SIZE_CHANGED: {
             lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
             bool mini = UI_IS_MINI(ui_display_width);
             if (mini != controller->mini) {
                 controller->pending_mini = mini;
-                lv_fragment_manager_recreate_obj(self->manager, self);
+                lv_fragment_recreate_obj(self);
             }
             break;
         }
     }
-    if (controller->mini) {
-        return false;
-    }
-    return lv_fragment_manager_dispatch_event(self->child_manager, which, data1, data2);
+    return false;
 }
 
 static void on_entry_focus(lv_event_t *event) {

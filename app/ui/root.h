@@ -18,6 +18,11 @@ enum UI_INPUT_MODE {
     UI_INPUT_MODE_GAMEPAD = 0x22,
 };
 
+typedef struct {
+    void * data1;
+    void * data2;
+} ui_userevent_t;
+
 #define NAV_WIDTH_COLLAPSED 44
 #define NAV_LOGO_SIZE 24
 

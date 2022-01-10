@@ -1,4 +1,6 @@
 #include <ui/help/help.dialog.h>
+#include <Limelight.h>
+#include <PlatformCrypto.h>
 #include "app.h"
 #include "res.h"
 
@@ -30,7 +32,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view);
 
 static bool launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view);
 
-static bool launcher_event_cb(lv_fragment_t *self, int which, void *data1, void *data2);
+static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata);
 
 static void on_pc_added(const pcmanager_resp_t *resp, void *userdata);
 
@@ -198,9 +200,9 @@ static bool launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
     return false;
 }
 
-static bool launcher_event_cb(lv_fragment_t *self, int which, void *data1, void *data2) {
-    launcher_controller_t *controller = (launcher_controller_t *) self;
-    switch (which) {
+static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
+    LV_UNUSED(userdata);
+    switch (code) {
         case USER_SIZE_CHANGED: {
             lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
             break;

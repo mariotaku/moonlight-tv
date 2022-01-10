@@ -26,7 +26,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view);
 
-static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2);
+static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
 
@@ -213,9 +213,10 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     coverloader_unref(controller->coverloader);
 }
 
-static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
+static bool on_event(lv_fragment_t *self, int code, void *userdata) {
+    LV_UNUSED(userdata);
     apps_controller_t *controller = (apps_controller_t *) self;
-    switch (which) {
+    switch (code) {
         case USER_SIZE_CHANGED: {
             update_grid_config(controller);
             lv_grid_rebind(controller->applist);
@@ -258,8 +259,7 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
 }
 
 static void update_view_state(apps_controller_t *controller) {
-    launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_manager_get_parent(
-            controller->base.manager);
+    launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
     PSERVER_LIST node = controller->node;
     LV_ASSERT(node);

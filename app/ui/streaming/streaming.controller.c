@@ -28,7 +28,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
 static bool on_delete_obj(lv_fragment_t *self, lv_obj_t *view);
 
-static bool on_event(lv_fragment_t *, int, void *, void *);
+static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
 static void streaming_controller_ctor(lv_fragment_t *self, void *args);
 
@@ -121,9 +121,10 @@ static void controller_dtor(lv_fragment_t *self) {
     current_controller = NULL;
 }
 
-static bool on_event(lv_fragment_t *self, int which, void *data1, void *data2) {
+static bool on_event(lv_fragment_t *self, int code, void *userdata) {
+    LV_UNUSED(userdata);
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    switch (which) {
+    switch (code) {
         case USER_STREAM_CONNECTING: {
             controller->progress = progress_dialog_create(locstr("Connecting..."));
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
