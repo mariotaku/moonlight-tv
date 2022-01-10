@@ -3,6 +3,8 @@
 Moonlight TV is a community version of [Moonlight GameStream Client](https://moonlight-stream.org/), made for large
 screens. It works on LG webOS powered TVs, and Raspberry Pi running Raspbian.
 
+![Download Stats](https://img.shields.io/github/downloads/mariotaku/moonlight-tv/total)
+
 ## Features
 
 * High performance streaming for webOS
