@@ -267,7 +267,8 @@ static void cb_pc_longpress(lv_event_t *event) {
     lv_event_send(target, LV_EVENT_CANCEL, NULL);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
     lv_fragment_t *fragment = lv_fragment_create(&server_menu_class, selected);
-    lv_fragment_manager_show(app_uimanager, fragment);
+    lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
+    lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
 static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus) {
@@ -429,14 +430,16 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
 
 static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
     lv_fragment_t *fragment = lv_fragment_create(&pair_dialog_class, node);
-    lv_fragment_manager_show(app_uimanager, fragment);
+    lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
+    lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
 
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     lv_fragment_t *fragment = lv_fragment_create(&add_dialog_class, NULL);
-    lv_fragment_manager_show(app_uimanager, fragment);
+    lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
+    lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
 static void open_settings(lv_event_t *event) {

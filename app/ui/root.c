@@ -131,3 +131,11 @@ bool ui_render_queue_submit(void *data, unsigned int pts) {
     bus_pushaction_sync((bus_actionfunc) handle_queued_frame, &req);
     return true;
 }
+
+void ui_cb_destroy_fragment(lv_event_t *e) {
+    lv_fragment_t *fragment = lv_event_get_user_data(e);
+    if (fragment->cls->obj_deleted_cb) {
+        fragment->cls->obj_deleted_cb(fragment, lv_event_get_target(e));
+    }
+    lv_fragment_del(fragment);
+}

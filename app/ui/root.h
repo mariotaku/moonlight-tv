@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <SDL.h>
+#include <lvgl.h>
 
 #include "ui/config.h"
 
@@ -19,8 +20,8 @@ enum UI_INPUT_MODE {
 };
 
 typedef struct {
-    void * data1;
-    void * data2;
+    void *data1;
+    void *data2;
 } ui_userevent_t;
 
 #define NAV_WIDTH_COLLAPSED 44
@@ -45,3 +46,5 @@ bool ui_should_block_input();
 void ui_display_size(short width, short height);
 
 bool ui_set_input_mode(enum UI_INPUT_MODE mode);
+
+void ui_cb_destroy_fragment(lv_event_t *e);
