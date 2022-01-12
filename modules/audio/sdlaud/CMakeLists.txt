@@ -5,7 +5,7 @@ add_library(moonlight-sdlaud STATIC
         sdl_audio.c
         )
 target_include_directories(moonlight-sdlaud PRIVATE ${CMAKE_SOURCE_DIR}/app PRIVATE SYSTEM ${SDL2_INCLUDE_DIRS})
-target_link_libraries(moonlight-sdlaud PRIVATE moonlight-common-c ${SDL2_LIBRARIES})
+target_link_libraries(moonlight-sdlaud PRIVATE moonlight-common-c-headers ${SDL2_LIBRARIES})
 target_compile_definitions(moonlight-sdlaud PRIVATE APPLOG_HOST=1 "$<$<CONFIG:DEBUG>:DEBUG>")
 
 if (OPUS_LIBRARIES)

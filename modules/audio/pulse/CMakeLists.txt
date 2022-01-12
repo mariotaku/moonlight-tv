@@ -6,7 +6,7 @@ if (PULSE_FOUND)
     target_include_directories(moonlight-pulse PRIVATE ${CMAKE_SOURCE_DIR}/app)
 
     target_include_directories(moonlight-pulse PRIVATE ${PULSE_INCLUDE_DIRS})
-    target_link_libraries(moonlight-pulse PRIVATE moonlight-common-c ${PULSE_LIBRARIES})
+    target_link_libraries(moonlight-pulse PRIVATE moonlight-common-c-headers ${PULSE_LIBRARIES})
     if (TARGET opus)
         target_link_libraries(moonlight-pulse PRIVATE opus)
     else()

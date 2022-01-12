@@ -23,7 +23,7 @@ target_include_directories(moonlight-ffmpeg PRIVATE
     ${CMAKE_SOURCE_DIR}/app
 )
 
-target_link_libraries(moonlight-ffmpeg PRIVATE moonlight-common-c ${FFMPEG_LIBRARIES} ${SDL2_LIBRARIES})
+target_link_libraries(moonlight-ffmpeg PRIVATE moonlight-common-c-headers ${FFMPEG_LIBRARIES} ${SDL2_LIBRARIES})
 target_include_directories(moonlight-ffmpeg SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS}  ${SDL2_INCLUDE_DIRS})
 target_compile_definitions(moonlight-ffmpeg PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 if (DECODER_FFMPEG_STATIC)

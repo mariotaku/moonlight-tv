@@ -16,7 +16,7 @@ target_include_directories(moonlight-cgl PRIVATE
         ${PBNJSON_INCLUDE_DIRS}
         )
 
-target_link_libraries(moonlight-cgl PRIVATE moonlight-common-c opus cgl)
+target_link_libraries(moonlight-cgl PRIVATE moonlight-common-c-headers opus cgl)
 target_compile_definitions(moonlight-cgl PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
 install(TARGETS moonlight-cgl LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
