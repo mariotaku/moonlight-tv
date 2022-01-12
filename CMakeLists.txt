@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 project(moonlight
-        VERSION 1.3.0
+        VERSION 1.3.1
         LANGUAGES C
         )
 # To suppress warnings for MbedTLS
