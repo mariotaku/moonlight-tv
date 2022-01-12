@@ -2,7 +2,6 @@
 #include <SDL_gamecontroller.h>
 
 #include <dlfcn.h>
-#include <unistd.h>
 
 #define SDL_BACKPORT __attribute__((unused))
 #define SDL_CONTROLLER_PLATFORM_FIELD   "platform:"
@@ -50,26 +49,26 @@ SDL_BACKPORT int SDL_GameControllerAddMappingsFromRW(SDL_RWops *rw, int freerw) 
     if (rw == NULL) {
         return SDL_SetError("Invalid RWops");
     }
-    db_size = (size_t) SDL_RWsize(rw);
+    db_size = (size_t) rw->size(rw);
 
     buf = (char *) SDL_malloc(db_size + 1);
     if (buf == NULL) {
         if (freerw) {
-            SDL_RWclose(rw);
+            rw->close(rw);
         }
         return SDL_SetError("Could not allocate space to read DB into memory");
     }
 
-    if (SDL_RWread(rw, buf, db_size, 1) != 1) {
+    if (rw->read(rw, buf, db_size, 1) != 1) {
         if (freerw) {
-            SDL_RWclose(rw);
+            rw->close(rw);
         }
         SDL_free(buf);
         return SDL_SetError("Could not read DB");
     }
 
     if (freerw) {
-        SDL_RWclose(rw);
+        rw->close(rw);
     }
 
     buf[db_size] = '\0';
