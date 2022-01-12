@@ -132,6 +132,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*Use SDL draw backend */
 #define LV_USE_GPU_SDL    1
 #define LV_GPU_SDL_INCLUDE_PATH <SDL.h>
+#define LV_GPU_SDL_CUSTOM_BLEND_MODE 0
 
 /*-------------
  * Logging
