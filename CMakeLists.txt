@@ -105,6 +105,8 @@ find_package(Freetype REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
+pkg_check_modules(SDL2 REQUIRED sdl2 SDL2_image)
+
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
     add_subdirectory(third_party/opus)
@@ -113,8 +115,6 @@ if (TARGET_WEBOS)
 
     add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
 
-    pkg_check_modules(SDL2 REQUIRED sdl2)
-    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
@@ -124,16 +124,12 @@ elseif (TARGET_RASPI)
     find_package(BroadcomMMAL REQUIRED)
     find_package(MbedTLS REQUIRED)
 
-    pkg_check_modules(SDL2 REQUIRED sdl2)
-    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(OPUS REQUIRED opus)
 
     set(BUILD_SHARED_CORE_LIBS ON)
 elseif (TARGET_DESKTOP)
     find_package(MbedTLS REQUIRED)
 
-    pkg_check_modules(SDL2 REQUIRED sdl2)
-    pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
     pkg_check_modules(OPUS REQUIRED opus)
 else ()
     message(FATAL_ERROR "Unknown build platform")
@@ -299,9 +295,9 @@ else ()
     unset(BUILD_SHARED_LIBS)
 endif ()
 
-target_include_directories(moonlight SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(moonlight SYSTEM PRIVATE  ${SDL2_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
-        m ${CMAKE_DL_LIBS} Threads::Threads
+        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
         moonlight-sdlaud
@@ -345,9 +341,6 @@ if (TARGET_WEBOS)
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
-
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
@@ -364,9 +357,6 @@ elseif (TARGET_RASPI)
     moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
     moonlight_add_module(TARGETS moonlight-alsa LINK)
     moonlight_add_module(TARGETS moonlight-pulse LINK)
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
@@ -393,9 +383,6 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES})
 
     target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
 else ()
