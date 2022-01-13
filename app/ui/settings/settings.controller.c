@@ -265,6 +265,7 @@ static void on_detail_key(lv_event_t *e) {
         case LV_KEY_LEFT: {
             lv_obj_t *target = lv_event_get_target(e);
             if (detail_item_needs_lrkey(target)) return;
+            if (controller->active_dropdown) return;
             detail_defocus(controller, e);
             break;
         }
@@ -284,6 +285,10 @@ static void on_detail_key(lv_event_t *e) {
 static void on_back_request(lv_event_t *e) {
     if (lv_event_get_param(e) == NULL) return;
     settings_controller_t *controller = e->user_data;
+    if (controller->active_dropdown) {
+        controller->active_dropdown = NULL;
+        return;
+    }
     if (lv_obj_has_state(controller->detail, LV_STATE_FOCUS_KEY)) {
         detail_defocus(controller, e);
     } else {

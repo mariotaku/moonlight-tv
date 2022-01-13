@@ -245,11 +245,15 @@ if (TARGET_WEBOS)
 else ()
     list(APPEND SOURCES
             app/platform/sdl/path_sdl.c
-            app/platform/linux/os_info_linux.c
             app/platform/common/logging_stdio.c
             app/platform/common/app_common.c
             app/platform/common/i18n_gettext.c
             )
+    if (TARGET_WINDOWS)
+        list(APPEND SOURCES app/platform/windows/os_info_windows.c)
+    else ()
+        list(APPEND SOURCES app/platform/linux/os_info_linux.c)
+    endif ()
 endif ()
 
 if (NOT HAVE_SDL)
@@ -295,7 +299,7 @@ else ()
     unset(BUILD_SHARED_LIBS)
 endif ()
 
-target_include_directories(moonlight SYSTEM PRIVATE  ${SDL2_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
