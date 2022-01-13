@@ -245,6 +245,7 @@ static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (controller != current_instance) return;
+    if (!controller->base.managed->obj_created) return;
     if (resp->state.code == SERVER_STATE_ONLINE && !controller->apploader->apps) {
         apploader_load(controller->apploader, appload_cb, controller);
     }
@@ -253,12 +254,15 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
 static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (controller != current_instance) return;
+    if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     if (controller->node->state.code == SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 
 static void update_view_state(apps_controller_t *controller) {
+    if (controller != current_instance) return;
+    if (!controller->base.managed->obj_created) return;
     launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
     PSERVER_LIST node = controller->node;

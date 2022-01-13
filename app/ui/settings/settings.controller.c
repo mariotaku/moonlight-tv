@@ -145,8 +145,6 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
         lv_mem_free(controller->tab_groups);
         lv_group_del(controller->nav_group);
     } else {
-        lv_obj_remove_event_cb(controller->nav, on_entry_focus);
-
         lv_group_del(controller->nav_group);
         lv_group_del(controller->detail_group);
     }

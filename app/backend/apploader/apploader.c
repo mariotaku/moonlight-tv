@@ -26,6 +26,7 @@ struct apploader_task_t {
     apploader_cb cb;
     void *userdata;
     int code;
+    const char *error;
     apploader_item_t *result;
     int result_count;
     SDL_Thread *thread;
@@ -87,6 +88,7 @@ static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb
 
 static int apploader_task_execute(apploader_task_t *task) {
     int ret = GS_OK;
+    const char *error = NULL;
     GS_CLIENT client = NULL;
     if (task->cancelled) {
         goto finish;
@@ -94,6 +96,7 @@ static int apploader_task_execute(apploader_task_t *task) {
     PAPP_LIST ll = NULL;
     client = app_gs_client_new();
     if ((ret = gs_applist(client, task->loader->node->server, &ll)) != GS_OK) {
+        error = gs_error;
         goto finish;
     }
     if (task->cancelled) {
@@ -122,6 +125,7 @@ static int apploader_task_execute(apploader_task_t *task) {
     task->result_count = result_count;
     finish:
     task->code = ret;
+    task->error = error;
     gs_destroy(client);
     bus_pushaction((bus_actionfunc) apploader_task_finish, task);
     return ret;

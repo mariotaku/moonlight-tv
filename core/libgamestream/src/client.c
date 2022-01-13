@@ -155,6 +155,7 @@ static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
         printf("Generating certificate...");
         if (mkcert_generate(certificateFilePath, keyFilePath) != 0) {
             printf("failed.\n");
+            gs_error = "Failed to generate certificate.";
             mbedtls_x509_crt_free(&hnd->cert);
             return GS_FAILED;
         }
@@ -697,7 +698,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     if (data == NULL)
         return GS_OUT_OF_MEMORY;
 
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist2", NULL);
     if (http_request(hnd->http, url, data) != GS_OK)
         ret = GS_IO_ERROR;
     else if (xml_status(data->memory, data->size) == GS_ERROR)
@@ -709,9 +710,8 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     return ret;
 }
 
-int
-gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops, bool localaudio,
-             int gamepad_mask) {
+int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops,
+                 bool localaudio, int gamepad_mask) {
     int ret = GS_OK;
     char *result = NULL;
     PHTTP_DATA data = NULL;
