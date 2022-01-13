@@ -80,7 +80,7 @@ static void update_grid_config(apps_controller_t *controller);
 
 static void open_context_menu(apps_controller_t *controller, apploader_item_t *app);
 
-static void context_menu_key_cb(lv_event_t *event);
+static void context_menu_cancel_cb(lv_event_t *event);
 
 static void context_menu_click_cb(lv_event_t *event);
 
@@ -500,7 +500,7 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
     lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
 
-    lv_obj_add_event_cb(content, context_menu_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(content, context_menu_cancel_cb, LV_EVENT_CANCEL, controller);
     lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_SHORT_CLICKED, controller);
 
     int currentId = controller->node->server->currentGame;
@@ -531,12 +531,10 @@ static void open_context_menu(apps_controller_t *controller, apploader_item_t *a
     lv_obj_center(msgbox);
 }
 
-static void context_menu_key_cb(lv_event_t *e) {
+static void context_menu_cancel_cb(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     if (target->parent != lv_event_get_current_target(e)) return;
-    if (lv_event_get_key(e) == LV_KEY_ESC) {
-        lv_msgbox_close_async(lv_event_get_current_target(e)->parent);
-    }
+    lv_msgbox_close(lv_event_get_current_target(e)->parent);
 }
 
 static void context_menu_click_cb(lv_event_t *e) {

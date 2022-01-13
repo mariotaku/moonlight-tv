@@ -13,6 +13,8 @@ static void lv_start_text_input(lv_event_t *event);
 
 static void msgbox_key(lv_event_t *event);
 
+static void msgbox_cancel(lv_event_t *event);
+
 static void msgbox_destroy(lv_event_t *event);
 
 void lv_theme_moonlight_init(lv_theme_t *theme) {
@@ -68,6 +70,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         app_input_set_modal_group(group);
         lv_obj_add_event_cb(obj, cb_child_group_add, LV_EVENT_CHILD_CREATED, group);
         lv_obj_add_event_cb(obj, msgbox_key, LV_EVENT_KEY, NULL);
+        lv_obj_add_event_cb(obj, msgbox_cancel, LV_EVENT_CANCEL, NULL);
         lv_obj_add_event_cb(obj, msgbox_destroy, LV_EVENT_DELETE, group);
     } else if (lv_obj_check_type(obj, &lv_msgbox_backdrop_class)) {
         lv_obj_set_style_bg_color(obj, lv_color_black(), 0);
@@ -98,19 +101,10 @@ static void lv_start_text_input(lv_event_t *event) {
 }
 
 static void msgbox_key(lv_event_t *event) {
-    lv_obj_t *mbox = lv_event_get_current_target(event);
     lv_obj_t *target = lv_event_get_target(event);
     lv_group_t *group = lv_obj_get_group(target);
     if (!group) return;
     switch (lv_event_get_key(event)) {
-        case LV_KEY_ESC: {
-            lv_obj_t *btns = lv_msgbox_get_btns(mbox);
-            if (btns && !lv_obj_has_flag(btns, LV_OBJ_FLAG_HIDDEN) &&
-                !lv_btnmatrix_has_btn_ctrl(btns, 0, LV_BTNMATRIX_CTRL_DISABLED)) {
-                lv_msgbox_close_async(mbox);
-            }
-            break;
-        }
         case LV_KEY_UP: {
             lv_group_focus_prev(group);
             break;
@@ -122,6 +116,18 @@ static void msgbox_key(lv_event_t *event) {
         default: {
             break;
         }
+    }
+}
+
+static void msgbox_cancel(lv_event_t *event) {
+    lv_obj_t *mbox = lv_event_get_current_target(event);
+    lv_obj_t *target = lv_event_get_target(event);
+    lv_group_t *group = lv_obj_get_group(target);
+    if (!group) return;
+    lv_obj_t *btns = lv_msgbox_get_btns(mbox);
+    if (btns && !lv_obj_has_flag(btns, LV_OBJ_FLAG_HIDDEN) &&
+        !lv_btnmatrix_has_btn_ctrl(btns, 0, LV_BTNMATRIX_CTRL_DISABLED)) {
+        lv_msgbox_close(mbox);
     }
 }
 

@@ -94,6 +94,8 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e);
 
 static void key_cb(lv_grid_t *grid, lv_event_t *e);
 
+static void cancel_cb(lv_grid_t *grid, lv_event_t *e);
+
 static void press_cb(lv_grid_t *grid, lv_event_t *e);
 
 static void update_sizes(lv_grid_t *grid);
@@ -293,6 +295,9 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
         case LV_EVENT_KEY:
             key_cb(grid, e);
             break;
+        case LV_EVENT_CANCEL:
+            cancel_cb(grid, e);
+            break;
         case LV_EVENT_PRESSED:
         case LV_EVENT_PRESSING:
         case LV_EVENT_RELEASED:
@@ -362,9 +367,6 @@ static void key_cb(lv_grid_t *grid, lv_event_t *e) {
         case LV_KEY_DOWN:
             offset = grid->column_count;
             break;
-        case LV_KEY_ESC:
-            lv_gridview_focus((lv_obj_t *) grid, -1);
-            return;
         default:
             return;
     }
@@ -375,6 +377,10 @@ static void key_cb(lv_grid_t *grid, lv_event_t *e) {
         index += offset;
     }
     lv_gridview_focus((lv_obj_t *) grid, LV_CLAMP(0, index, grid->item_count - 1));
+}
+
+static void cancel_cb(lv_grid_t *grid, lv_event_t *e) {
+    lv_gridview_focus((lv_obj_t *) grid, -1);
 }
 
 static void press_cb(lv_grid_t *grid, lv_event_t *e) {

@@ -120,7 +120,8 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 }
 
 static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
-    NAVKEY navkey = navkey_from_sdl(event);
+    bool pressed = state->state == LV_INDEV_STATE_RELEASED;
+    NAVKEY navkey = navkey_from_sdl(event, &pressed);
     switch (navkey) {
         case NAVKEY_UP:
             state->key = LV_KEY_UP;
@@ -164,12 +165,12 @@ static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
 
     handled:
     (void) 0;
-    bool pressed = event->type == SDL_CONTROLLERBUTTONDOWN || event->type == SDL_KEYDOWN;
     state->state = pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
     return true;
 }
 
 static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *state) {
+    bool pressed = event->type == SDL_KEYDOWN;
     switch (event->keysym.sym) {
         case SDLK_UP:
             state->key = LV_KEY_UP;
@@ -215,7 +216,6 @@ static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *sta
             return false;
 #endif
     }
-    bool pressed = event->type == SDL_KEYDOWN;
     state->state = pressed ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
     return true;
 }

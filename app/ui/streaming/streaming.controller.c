@@ -181,6 +181,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->vmouse_btn, toggle_vmouse, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CANCEL, controller);
 
     lv_obj_t *notice = lv_obj_create(lv_layer_top());
     lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -274,9 +275,6 @@ static void overlay_key_cb(lv_event_t *e) {
             break;
         case LV_KEY_RIGHT:
             lv_group_focus_next(group);
-            break;
-        case LV_KEY_ESC:
-            hide_overlay(e);
             break;
         default:
             break;

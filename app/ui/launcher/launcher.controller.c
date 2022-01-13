@@ -52,7 +52,7 @@ static void cb_nav_key(lv_event_t *event);
 
 static void cb_detail_focused(lv_event_t *event);
 
-static void cb_detail_key(lv_event_t *event);
+static void cb_detail_cancel(lv_event_t *event);
 
 static void open_pair(launcher_controller_t *controller, PSERVER_LIST node);
 
@@ -150,8 +150,9 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     pcmanager_register_listener(pcmanager, &pcmanager_callbacks, controller);
     lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->nav, cb_nav_key, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->nav, app_quit_confirm, LV_EVENT_CANCEL, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
-    lv_obj_add_event_cb(controller->detail, cb_detail_key, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->detail, cb_detail_cancel, LV_EVENT_CANCEL, controller);
     lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_CLICKED, controller);
 //    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
@@ -354,14 +355,9 @@ static void cb_detail_focused(lv_event_t *event) {
     set_detail_opened(controller, true);
 }
 
-static void cb_detail_key(lv_event_t *event) {
+static void cb_detail_cancel(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
-    switch (lv_event_get_key(event)) {
-        case LV_KEY_ESC: {
-            set_detail_opened(controller, false);
-            break;
-        }
-    }
+    set_detail_opened(controller, false);
 }
 
 static void cb_nav_focused(lv_event_t *event) {
@@ -386,10 +382,6 @@ static void cb_nav_key(lv_event_t *event) {
         case LV_KEY_DOWN: {
             lv_group_t *group = controller->nav_group;
             lv_group_focus_next(group);
-            break;
-        }
-        case LV_KEY_ESC: {
-            app_quit_confirm();
             break;
         }
         case LV_KEY_RIGHT: {

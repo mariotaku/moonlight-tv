@@ -35,7 +35,9 @@ static void on_entry_click(lv_event_t *event);
 
 static void on_nav_key(lv_event_t *event);
 
-static void on_detail_key(lv_event_t *event);
+static void on_detail_key(lv_event_t *e);
+
+static void on_back_request(lv_event_t *e);
 
 static void on_tab_key(lv_event_t *event);
 
@@ -47,7 +49,7 @@ static void settings_controller_ctor(lv_fragment_t *self, void *args);
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
-static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown);
+static void detail_defocus(settings_controller_t *controller, lv_event_t *e);
 
 static bool detail_item_needs_lrkey(lv_obj_t *obj);
 
@@ -113,10 +115,12 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
         lv_obj_add_event_cb(controller->nav, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->nav_group);
         lv_obj_add_event_cb(controller->detail, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->detail_group);
         lv_obj_add_event_cb(controller->detail, pane_child_added, LV_EVENT_CHILD_CREATED, controller);
+        lv_obj_add_event_cb(controller->detail, on_back_request, LV_EVENT_CANCEL, controller);
 
         lv_obj_add_event_cb(controller->nav, on_entry_focus, LV_EVENT_FOCUSED, controller);
         lv_obj_add_event_cb(controller->nav, on_entry_click, LV_EVENT_CLICKED, controller);
         lv_obj_add_event_cb(controller->nav, on_nav_key, LV_EVENT_KEY, controller);
+        lv_obj_add_event_cb(controller->nav, on_back_request, LV_EVENT_CANCEL, controller);
 
         app_input_set_group(controller->nav_group);
 
@@ -216,10 +220,6 @@ static void on_entry_click(lv_event_t *event) {
 static void on_nav_key(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     switch (lv_event_get_key(event)) {
-        case LV_KEY_ESC: {
-            settings_close(event);
-            break;
-        }
         case LV_KEY_DOWN: {
             lv_obj_t *target = lv_event_get_target(event);
             if (lv_obj_get_parent(target) != controller->nav) return;
@@ -250,10 +250,6 @@ static void on_detail_key(lv_event_t *e) {
         return;
     }
     switch (lv_event_get_key(e)) {
-        case LV_KEY_ESC: {
-            detail_defocus(controller, e, true);
-            break;
-        }
         case LV_KEY_UP: {
             if (controller->active_dropdown) return;
             lv_group_t *group = controller->detail_group;
@@ -269,7 +265,7 @@ static void on_detail_key(lv_event_t *e) {
         case LV_KEY_LEFT: {
             lv_obj_t *target = lv_event_get_target(e);
             if (detail_item_needs_lrkey(target)) return;
-            detail_defocus(controller, e, false);
+            detail_defocus(controller, e);
             break;
         }
         case LV_KEY_RIGHT: {
@@ -285,13 +281,19 @@ static void on_detail_key(lv_event_t *e) {
     }
 }
 
+static void on_back_request(lv_event_t *e) {
+    if (lv_event_get_param(e) == NULL) return;
+    settings_controller_t *controller = e->user_data;
+    if (lv_obj_has_state(controller->detail, LV_STATE_FOCUS_KEY)) {
+        detail_defocus(controller, e);
+    } else {
+        settings_close(e);
+    }
+}
+
 static void on_tab_key(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     switch (lv_event_get_key(event)) {
-        case LV_KEY_ESC: {
-            settings_close(event);
-            break;
-        }
         case LV_KEY_LEFT: {
             uint16_t act = lv_tabview_get_tab_act(controller->tabview);
             if (act <= 0) return;
@@ -325,10 +327,6 @@ static void on_tab_key(lv_event_t *event) {
 static void on_tab_content_key(lv_event_t *e) {
     settings_controller_t *controller = e->user_data;
     switch (lv_event_get_key(e)) {
-        case LV_KEY_ESC: {
-            detail_defocus(controller, e, true);
-            break;
-        }
         case LV_KEY_DOWN: {
             if (controller->active_dropdown) return;
             lv_obj_t *target = lv_event_get_target(e);
@@ -373,21 +371,11 @@ static bool detail_item_needs_lrkey(lv_obj_t *obj) {
     }
 }
 
-static void detail_defocus(settings_controller_t *controller, lv_event_t *e, bool close_dropdown) {
-    lv_obj_t *target = lv_event_get_target(e);
-    if (!lv_obj_has_state(target, LV_STATE_FOCUS_KEY)) {
-        goto focus_nav;
+static void detail_defocus(settings_controller_t *controller, lv_event_t *e) {
+    lv_obj_t *detail_focused = lv_group_get_focused(controller->detail_group);
+    if (detail_focused) {
+        lv_event_send(detail_focused, LV_EVENT_DEFOCUSED, lv_indev_get_act());
     }
-    if (lv_obj_has_class(target, &lv_dropdown_class)) {
-        if (controller->active_dropdown) {
-            if (close_dropdown) {
-                controller->active_dropdown = NULL;
-            }
-            return;
-        }
-    }
-    lv_event_send(target, LV_EVENT_DEFOCUSED, lv_indev_get_act());
-    focus_nav:
     app_input_set_group(controller->nav_group);
     lv_obj_t *nav_focused = lv_group_get_focused(controller->nav_group);
     if (nav_focused) {
@@ -434,6 +422,7 @@ static void pane_child_added(lv_event_t *e) {
     settings_controller_t *controller = lv_event_get_user_data(e);
     lv_obj_t *child = lv_event_get_param(e);
     if (!child || !lv_obj_is_group_def(child)) return;
+    lv_obj_add_flag(child, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_event_cb(child, on_detail_key, LV_EVENT_KEY, controller);
     if (lv_obj_has_class(child, &lv_dropdown_class)) {
         lv_obj_add_event_cb(child, on_dropdown_clicked, LV_EVENT_CLICKED, controller);
