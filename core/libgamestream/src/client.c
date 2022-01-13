@@ -698,7 +698,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     if (data == NULL)
         return GS_OUT_OF_MEMORY;
 
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist2", NULL);
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
     if (http_request(hnd->http, url, data) != GS_OK)
         ret = GS_IO_ERROR;
     else if (xml_status(data->memory, data->size) == GS_ERROR)
