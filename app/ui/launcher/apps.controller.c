@@ -289,7 +289,7 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_label_set_text_static(controller->errorlabel, locstr("Select computer again to pair."));
             } else if (controller->apploader->state == APPLOADER_STATE_LOADING) {
                 // is loading apps
-                if (controller->apploader->apps_count) {
+                if (controller->apploader->apps) {
 
                 } else {
                     lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
@@ -313,7 +313,9 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_grid_set_data(controller->applist, controller->apploader->apps);
-                lv_group_focus_obj(controller->applist);
+                if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
+                    lv_group_focus_obj(controller->applist);
+                }
             }
             break;
         }
@@ -419,8 +421,9 @@ static void launcher_quit_game(apps_controller_t *controller) {
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
     apps_controller_t *controller = lv_obj_get_user_data(grid);
+    apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
-    return LV_MIN(controller->apploader->apps_count, 255 * controller->col_count);
+    return LV_MIN(list->count, 255 * controller->col_count);
 }
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
@@ -429,13 +432,15 @@ static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
 }
 
 static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, int position) {
-    apploader_item_t *apps = (apploader_item_t *) data;
+    apploader_list_t *list = data;
+    apploader_item_t *apps = &list->items;
     apps_controller_t *controller = lv_obj_get_user_data(grid);
     appitem_bind(controller, item_view, &apps[position]);
 }
 
 static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
-    apploader_item_t *apps = (apploader_item_t *) data;
+    apploader_list_t *list = data;
+    apploader_item_t *apps = &list->items;
     return apps[position].base.id;
 }
 

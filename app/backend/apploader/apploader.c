@@ -27,8 +27,7 @@ struct apploader_task_t {
     void *userdata;
     int code;
     const char *error;
-    apploader_item_t *result;
-    int result_count;
+    apploader_list_t *result;
     SDL_Thread *thread;
     bool cancelled;
 };
@@ -39,7 +38,7 @@ static int apploader_task_execute(apploader_task_t *task);
 
 static void apploader_task_finish(apploader_task_t *task);
 
-static void apploader_apps_free(apploader_t *loader);
+static void apploader_list_free(apploader_list_t *list);
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2);
 
@@ -49,7 +48,6 @@ apploader_t *apploader_new(const SERVER_LIST *node) {
     refcounter_init(&loader->refcounter);
     loader->node = node;
     loader->apps = NULL;
-    loader->apps_count = 0;
     return loader;
 }
 
@@ -70,7 +68,7 @@ void apploader_unref(apploader_t *loader) {
     if (!refcounter_unref(&loader->refcounter)) {
         return;
     }
-    apploader_apps_free(loader);
+    apploader_list_free(loader->apps);
     refcounter_destroy(&loader->refcounter);
     SDL_free(loader);
 }
@@ -105,24 +103,24 @@ static int apploader_task_execute(apploader_task_t *task) {
     // The app list is empty
     if (ll == NULL) {
         task->result = NULL;
-        task->result_count = 0;
         goto finish;
     }
-    int result_count = applist_len(ll);
-    apploader_item_t *result = SDL_malloc(result_count * sizeof(apploader_item_t));
+    int count = applist_len(ll);
+    apploader_list_t *result = SDL_malloc(sizeof(apploader_list_t) + (count - 1) * sizeof(apploader_item_t));
+    result->count = count;
+    apploader_item_t *items = &result->items;
     int index = 0;
     for (PAPP_LIST cur = ll; cur; cur = cur->next) {
-        apploader_item_t *item = &result[index];
+        apploader_item_t *item = &items[index];
         SDL_memcpy(item, cur, sizeof(APP_LIST));
         item->base.next = NULL;
         item->fav = pcmanager_is_favorite(task->loader->node, cur->id);
         index++;
     }
     applist_free(ll, (void (*)(APP_LIST *)) SDL_free);
-    SDL_qsort(result, result_count, sizeof(apploader_item_t),
+    SDL_qsort(items, result->count, sizeof(apploader_item_t),
               (int (*)(const void *, const void *)) applist_name_comparator);
     task->result = result;
-    task->result_count = result_count;
     finish:
     task->code = ret;
     task->error = error;
@@ -138,28 +136,28 @@ static void apploader_task_finish(apploader_task_t *task) {
         apploader_unref(loader);
         return;
     }
+    apploader_list_t *old_apps = loader->apps;
     if (task->code == GS_OK) {
-        apploader_apps_free(loader);
         loader->apps = task->result;
-        loader->apps_count = task->result_count;
+    } else {
+        loader->apps = NULL;
     }
     loader->code = task->code;
     loader->state = APPLOADER_STATE_IDLE;
     loader->task = NULL;
     task->cb(loader, task->userdata);
+    apploader_list_free(old_apps);
     SDL_free(task);
     apploader_unref(loader);
 }
 
-static void apploader_apps_free(apploader_t *loader) {
-    if (loader->apps) {
-        for (int i = 0; i < loader->apps_count; i++) {
-            SDL_free(loader->apps[i].base.name);
-        }
-        SDL_free(loader->apps);
+static void apploader_list_free(apploader_list_t *list) {
+    if (!list) return;
+    apploader_item_t *items = &list->items;
+    for (int i = 0; i < list->count; i++) {
+        SDL_free(items[i].base.name);
     }
-    loader->apps = NULL;
-    loader->apps_count = 0;
+    SDL_free(list);
 }
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2) {

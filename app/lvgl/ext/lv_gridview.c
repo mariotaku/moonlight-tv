@@ -167,14 +167,16 @@ void lv_grid_set_adapter(lv_obj_t *obj, const lv_grid_adapter_t *adapter) {
 
 void lv_grid_set_data(lv_obj_t *obj, void *data) {
     lv_grid_t *grid = (lv_grid_t *) obj;
-    if (grid->data == data) return;
+    lv_grid_adapter_t adapter = grid->adapter;
+    void *olddata = grid->data;
+    if (olddata == data) return;
     grid->data = data;
     if (grid->row_dsc) {
         lv_mem_free(grid->row_dsc);
         grid->row_dsc = NULL;
     }
     if (data) {
-        int item_count = grid->adapter.item_count(obj, data);
+        int item_count = adapter.item_count(obj, data);
         grid->item_count = item_count;
         int row_count = item_count / grid->column_count;
         if (grid->column_count * row_count < item_count) {

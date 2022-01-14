@@ -16,12 +16,16 @@ typedef struct apploader_item_t {
     bool fav;
 } apploader_item_t;
 
+typedef struct apploader_list_t {
+    size_t count;
+    apploader_item_t items;
+} apploader_list_t;
+
 typedef struct apploader_t {
     const SERVER_LIST *node;
     apploader_state_t state;
     int code;
-    apploader_item_t *apps;
-    int apps_count;
+    apploader_list_t *apps;
     apploader_task_t *task;
     refcounter_t refcounter;
 } apploader_t;
