@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <NDL_directmedia.h>
+#include <NDL_directmedia_v2.h>
 
 #include "ndl_common.h"
 #include "util/logging.h"

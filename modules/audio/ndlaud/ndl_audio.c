@@ -49,7 +49,7 @@ static void cleanup() {
 static void play_sample(char *data, int length) {
     int decodeLen = opus_multistream_decode(decoder, (unsigned char *) data, length, pcmBuffer, FRAME_SIZE, 0);
     if (decodeLen > 0) {
-        NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short));
+        NDL_DirectAudioPlay(pcmBuffer, decodeLen * channelCount * sizeof(short), 0);
     } else {
         applog_e("NDLAud", "Opus error from decode: %d", decodeLen);
     }

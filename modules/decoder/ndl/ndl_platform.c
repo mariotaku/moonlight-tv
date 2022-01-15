@@ -34,7 +34,7 @@ MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     NDL_DIRECTVIDEO_DATA_INFO info = {.width = 1270, .height = 720};
     if (NDL_DirectVideoOpen(&info) != 0)
         return false;
-    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame));
+    NDL_DirectVideoPlay(h264_test_frame, sizeof(h264_test_frame), 0);
     NDL_DirectVideoClose();
     dinfo->valid = true;
     dinfo->accelerated = true;

@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include <Limelight.h>
-#include <NDL_directmedia.h>
+#include <NDL_directmedia_v2.h>
 
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024

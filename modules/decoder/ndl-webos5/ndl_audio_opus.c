@@ -4,7 +4,7 @@
 #include "base64.h"
 #include "opus_constants.h"
 
-#include <NDL_directmedia.h>
+#include <NDL_directmedia_v2.h>
 
 #include <string.h>
 

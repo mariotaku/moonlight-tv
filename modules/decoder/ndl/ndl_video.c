@@ -47,7 +47,7 @@ static int submit(PDECODE_UNIT decodeUnit) {
             length += entry->length;
         }
 
-        if (NDL_DirectVideoPlay(ndl_buffer, length) != 0) {
+        if (NDL_DirectVideoPlay(ndl_buffer, length, 0) != 0) {
             applog_w("NDL", "NDL_DirectVideoPlay failed");
             return DR_NEED_IDR;
         }

@@ -8,7 +8,7 @@ add_library(moonlight-ndlaud-webos5 SHARED
 )
 
 target_include_directories(moonlight-ndlaud-webos5 PRIVATE ${CMAKE_SOURCE_DIR}/app)
-target_link_libraries(moonlight-ndlaud-webos5 PRIVATE moonlight-common-c-headers NDL_directmedia_es)
+target_link_libraries(moonlight-ndlaud-webos5 PRIVATE moonlight-common-c-headers NDL_directmedia)
 target_compile_definitions(moonlight-ndlaud-webos5 PRIVATE WEBOS_TARGET_VERSION_MAJOR=5 PLUGIN_SYMBOL_SUFFIX=ndlaud_webos5 "$<$<CONFIG:DEBUG>:DEBUG>")
 
 install(TARGETS moonlight-ndlaud-webos5 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
