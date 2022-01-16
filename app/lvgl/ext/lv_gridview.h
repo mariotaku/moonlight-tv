@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 #include "core/lv_obj.h"
+#include "extra/layouts/grid/lv_grid.h"
 
 /*********************
  *      INCLUDES
@@ -48,7 +49,8 @@ typedef struct lv_grid_adapter_t {
 
 lv_obj_t *lv_gridview_create(lv_obj_t *parent);
 
-void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height);
+void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height, lv_grid_align_t col_align,
+                            lv_grid_align_t row_align);
 
 void lv_grid_set_adapter(lv_obj_t *obj, const lv_grid_adapter_t *adapter);
 

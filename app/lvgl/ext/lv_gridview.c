@@ -34,6 +34,7 @@ typedef struct lv_grid_t {
     /*Configs*/
     int column_count;
     lv_coord_t row_height;
+    lv_grid_align_t column_align, row_align;
 
     void *data;
     /*States*/
@@ -137,7 +138,8 @@ lv_obj_t *lv_gridview_create(lv_obj_t *parent) {
     return obj;
 }
 
-void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height) {
+void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height, lv_grid_align_t col_align,
+                            lv_grid_align_t row_align) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     bool column_count_changed = grid->column_count != col_count;
     if (column_count_changed) {
@@ -146,6 +148,8 @@ void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height)
     }
     grid->column_count = col_count;
     grid->row_height = row_height;
+    grid->column_align = col_align;
+    grid->row_align = row_align;
     update_col_dsc(grid);
     if (column_count_changed) {
         int row_count = grid->item_count / grid->column_count;
@@ -203,7 +207,7 @@ void lv_gridview_focus(lv_obj_t *obj, int position) {
     if (!focused && position >= 0) {
         lv_obj_t *item = adapter_obtain_item(grid, position);
         int row_idx = position / grid->column_count, col_idx = position % grid->column_count;
-        lv_obj_set_grid_cell(item, LV_GRID_ALIGN_STRETCH, col_idx, 1, LV_GRID_ALIGN_STRETCH, row_idx, 1);
+        lv_obj_set_grid_cell(item, grid->column_align, col_idx, 1, grid->row_align, row_idx, 1);
         grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         focused = item;
     }
@@ -238,7 +242,7 @@ static void lv_gridview_constructor(const lv_obj_class_t *class_p, lv_obj_t *obj
     lv_grid_t *grid = (lv_grid_t *) obj;
     lv_obj_set_layout(obj, LV_LAYOUT_GRID);
 
-    lv_gridview_set_config(obj, 1, 1);
+    lv_gridview_set_config(obj, 1, 1, LV_GRID_ALIGN_STRETCH, LV_GRID_ALIGN_STRETCH);
 
     lv_obj_t *placeholder = lv_obj_create(obj);
 
@@ -346,7 +350,7 @@ static void update_row_dsc(lv_grid_t *adapter, int row_count) {
 
 static void update_row_count(lv_grid_t *adapter, int row_count) {
     if (row_count <= 0) return;
-    lv_obj_set_grid_cell(adapter->placeholder, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, row_count - 1, 1);
+    lv_obj_set_grid_cell(adapter->placeholder, adapter->column_align, 0, 1, adapter->row_align, row_count - 1, 1);
     adapter->row_count = row_count;
 }
 
@@ -467,7 +471,7 @@ static void fill_rows(lv_grid_t *grid, int row_start, int row_end) {
             int position = row_idx * grid->column_count + col_idx;
             if (position >= grid->item_count) continue;
             lv_obj_t *item = adapter_obtain_item(grid, position);
-            lv_obj_set_grid_cell(item, LV_GRID_ALIGN_STRETCH, col_idx, 1, LV_GRID_ALIGN_STRETCH, row_idx, 1);
+            lv_obj_set_grid_cell(item, grid->column_align, col_idx, 1, grid->row_align, row_idx, 1);
             grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         }
     }
@@ -476,7 +480,7 @@ static void fill_rows(lv_grid_t *grid, int row_start, int row_end) {
             int position = row_idx * grid->column_count + col_idx;
             if (position >= grid->item_count) continue;
             lv_obj_t *item = adapter_obtain_item(grid, position);
-            lv_obj_set_grid_cell(item, LV_GRID_ALIGN_STRETCH, col_idx, 1, LV_GRID_ALIGN_STRETCH, row_idx, 1);
+            lv_obj_set_grid_cell(item, grid->column_align, col_idx, 1, grid->row_align, row_idx, 1);
             grid->adapter.bind_view(&grid->obj, item, grid->data, position);
         }
     }

@@ -202,7 +202,7 @@ static void update_grid_config(apps_controller_t *controller) {
     controller->col_width = col_width;
     lv_coord_t row_height = col_width / 3 * 4;
     controller->col_height = row_height;
-    lv_gridview_set_config(applist, col_count, row_height);
+    lv_gridview_set_config(applist, col_count, row_height, LV_GRID_ALIGN_CENTER, LV_GRID_ALIGN_CENTER);
 }
 
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
