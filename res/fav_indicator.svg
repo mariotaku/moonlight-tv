@@ -20,10 +20,10 @@
   <defs
      id="defs2">
     <filter
-       style="color-interpolation-filters:sRGB;"
+       style="color-interpolation-filters:sRGB"
        inkscape:label="Drop Shadow"
        id="filter895"
-       x="-0.04853049"
+       x="-0.048530489"
        width="1.097061"
        y="-0.050880857"
        height="1.1017617">
@@ -97,7 +97,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="9.1328129"
      inkscape:cx="14.421825"
-     inkscape:cy="8.1599745"
+     inkscape:cy="7.7219933"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -107,10 +107,10 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="2560"
-     inkscape:window-height="1361"
-     inkscape:window-x="-9"
-     inkscape:window-y="284"
+     inkscape:window-width="1920"
+     inkscape:window-height="1010"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
      inkscape:window-maximized="1"
      objecttolerance="1"
      guidetolerance="1"
@@ -127,7 +127,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -137,25 +137,26 @@
      id="layer1">
     <path
        style="fill:#ffab00;fill-opacity:1;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter907)"
-       d="m -0.79375,-1.0583333 h 12.7 l -12.7,12.7000003 z"
+       d="m 4.2333333,-1.0583333 7.6729167,0 -12.7,12.7000003 0,-7.4083337 z"
        id="path841"
        inkscape:export-xdpi="192"
-       inkscape:export-ydpi="192" />
+       inkscape:export-ydpi="192"
+       sodipodi:nodetypes="ccccc" />
     <path
        sodipodi:type="star"
        style="mix-blend-mode:normal;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.265112;stroke-miterlimit:4;stroke-dasharray:none;filter:url(#filter895)"
        id="path843"
        sodipodi:sides="5"
-       sodipodi:cx="3.5363629"
-       sodipodi:cy="3.3822513"
-       sodipodi:r1="2.6000245"
-       sodipodi:r2="1.0140096"
-       sodipodi:arg1="0.95137651"
-       sodipodi:arg2="1.5796951"
+       sodipodi:cx="4.3807205"
+       sodipodi:cy="4.1222845"
+       sodipodi:r1="2.3515544"
+       sodipodi:r2="0.95205545"
+       sodipodi:arg1="0.14189709"
+       sodipodi:arg2="0.7702157"
        inkscape:flatsided="false"
        inkscape:rounded="0"
        inkscape:randomized="0"
-       d="M 5.0458405,5.4992313 3.5273396,4.3962207 1.9894495,5.4720326 2.5692323,3.6870034 1.0708402,2.5568271 2.9476666,2.556629 3.5594995,0.78232974 4.1396592,2.5672365 6.0161848,2.6008355 4.4979168,3.7041667 Z"
+       d="M 6.7086407,4.4548445 5.0640684,4.7851912 4.783804,6.4390347 3.9614249,4.9770362 2.3019198,5.2215547 3.4382338,3.9876433 2.6928676,2.4849206 4.2175275,3.1843198 5.4163709,2.0110676 5.2223485,3.6772315 Z"
        inkscape:transform-center-x="-0.018905904"
        inkscape:transform-center-y="-0.12685267"
        transform="matrix(0.79559569,0,0,0.79559569,0.21888435,0.15991157)" />

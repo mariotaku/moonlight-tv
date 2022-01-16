@@ -49,8 +49,6 @@ typedef struct coverloader_memcache_key_t {
 #undef LINKEDLIST_DOUBLE
 #define LINKEDLIST_IMPL
 
-#define COVER_SAFE_SIZE 512
-
 #ifndef DEBUG
 #define DEBUG 0
 #endif
@@ -244,7 +242,7 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
         return NULL;
     }
     int sw = decoded->w, sh = decoded->h;
-    while (sw > COVER_SAFE_SIZE || sh > COVER_SAFE_SIZE) {
+    while (sw > req->target_width * 1.5 || sh > req->target_height * 1.5) {
         sw /= 2;
         sh /= 2;
     }
