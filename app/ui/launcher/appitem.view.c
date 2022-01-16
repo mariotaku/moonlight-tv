@@ -18,6 +18,7 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     lv_obj_add_flag(item, LV_OBJ_FLAG_EVENT_BUBBLE | LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_clear_flag(item, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_style(item, &styles->cover, 0);
+    lv_obj_set_size(item, controller->col_width, controller->col_height);
 
     lv_obj_set_style_outline_opa(item, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
 
