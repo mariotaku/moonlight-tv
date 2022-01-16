@@ -13,8 +13,6 @@ static void notify_querying(upsert_args_t *args);
 
 int pair_worker(cm_request_t *req);
 
-int unpair_worker(cm_request_t *req);
-
 int test_worker(cm_request_t *req);
 
 int manual_add_worker(cm_request_t *req);
@@ -28,14 +26,6 @@ bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, 
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
     req->arg1 = strdup(pin);
     SDL_CreateThread((SDL_ThreadFunction) pair_worker, "pairing", req);
-    return true;
-}
-
-bool pcmanager_unpair(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
-                      void *userdata) {
-    if (!server->paired) return false;
-    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
-    SDL_CreateThread((SDL_ThreadFunction) unpair_worker, "unpairing", req);
     return true;
 }
 
@@ -137,29 +127,6 @@ int pair_worker(cm_request_t *req) {
     }
     pcmanager_worker_finalize(resp, req->callback, req->userdata);
     SDL_free(req->arg1);
-    SDL_free(req);
-    return 0;
-}
-
-int unpair_worker(cm_request_t *req) {
-    pcmanager_t *manager = req->manager;
-    GS_CLIENT client = app_gs_client_new();
-    PSERVER_DATA server = serverdata_clone(req->server);
-    gs_set_timeout(client, 5);
-    int ret = gs_unpair(client, server);
-    gs_destroy(client);
-
-    PPCMANAGER_RESP resp = serverinfo_resp_new();
-    if (ret == GS_OK) {
-        resp->result.code = GS_OK;
-        resp->state.code = SERVER_STATE_ONLINE;
-        resp->server = server;
-        pclist_upsert(manager, resp);
-    } else {
-        pcmanager_resp_setgserror(resp, ret, gs_error);
-        serverdata_free(server);
-    }
-    pcmanager_worker_finalize(resp, req->callback, req->userdata);
     SDL_free(req);
     return 0;
 }

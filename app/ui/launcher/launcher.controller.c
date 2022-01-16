@@ -153,8 +153,8 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->nav, app_quit_confirm, LV_EVENT_CANCEL, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
     lv_obj_add_event_cb(controller->detail, cb_detail_cancel, LV_EVENT_CANCEL, controller);
-    lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_CLICKED, controller);
-//    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
+    lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_SHORT_CLICKED, controller);
+    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
     lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->pref_btn, open_settings, LV_EVENT_CLICKED, controller);
     lv_obj_add_event_cb(controller->help_btn, open_help, LV_EVENT_CLICKED, controller);
@@ -265,7 +265,6 @@ static void cb_pc_selected(lv_event_t *event) {
 static void cb_pc_longpress(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
-    lv_event_send(target, LV_EVENT_CANCEL, NULL);
     PSERVER_LIST selected = lv_obj_get_user_data(target);
     lv_fragment_t *fragment = lv_fragment_create(&server_menu_class, selected);
     lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
