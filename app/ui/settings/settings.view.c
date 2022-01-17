@@ -60,8 +60,12 @@ lv_obj_t *settings_win_create(struct lv_fragment_t *self, lv_obj_t *parent) {
         lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
         lv_obj_t *detail = lv_obj_create(content);
+        lv_obj_set_layout(detail, LV_LAYOUT_FLEX);
+        lv_obj_set_flex_flow(detail, LV_FLEX_FLOW_COLUMN);
+        lv_obj_set_flex_align(detail, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
         lv_obj_set_style_clip_corner(detail, false, 0);
         lv_obj_set_style_radius(detail, 0, 0);
+        lv_obj_set_style_pad_all(detail, 0, 0);
         lv_obj_set_style_border_width(detail, 0, 0);
         lv_obj_set_grid_cell(detail, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
         controller->detail = detail;

@@ -165,7 +165,6 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     controller->hdr_checkbox = hdr_checkbox;
     controller->hdr_hint = hdr_hint;
 
-    lv_obj_scroll_to_y(container, 0, LV_ANIM_OFF);
     return view;
 }
 

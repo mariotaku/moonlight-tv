@@ -195,6 +195,7 @@ static void on_entry_focus(lv_event_t *event) {
 static void show_pane(settings_controller_t *controller, const lv_fragment_class_t *cls) {
     lv_fragment_t *fragment = lv_fragment_create(cls, controller);
     lv_fragment_manager_replace(controller->base.child_manager, fragment, &controller->detail);
+    lv_obj_scroll_to_y(controller->detail, 0, LV_ANIM_OFF);
     lv_obj_t *focused = lv_group_get_focused(controller->detail_group);
     lv_event_send(focused, LV_EVENT_DEFOCUSED, NULL);
 }
@@ -203,9 +204,12 @@ static void on_entry_click(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
+    lv_fragment_t *pane = lv_fragment_manager_find_by_container(controller->base.child_manager,
+                                                                controller->detail);
+    if (!pane) return;
     lv_obj_t *first_focusable = NULL;
-    for (int i = 0, j = (int) lv_obj_get_child_cnt(controller->detail); i < j; i++) {
-        lv_obj_t *child = lv_obj_get_child(controller->detail, i);
+    for (int i = 0, j = (int) lv_obj_get_child_cnt(pane->obj); i < j; i++) {
+        lv_obj_t *child = lv_obj_get_child(pane->obj, i);
         if (lv_obj_get_group(child)) {
             first_focusable = child;
             break;
