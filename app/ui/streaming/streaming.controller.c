@@ -26,7 +26,7 @@ static bool show_overlay(streaming_controller_t *controller);
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
-static bool on_delete_obj(lv_fragment_t *self, lv_obj_t *view);
+static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view);
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
@@ -201,14 +201,13 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     controller->notice_label = notice_label;
 }
 
-static bool on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
+static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     if (controller->notice) {
         lv_obj_del(controller->notice);
     }
     app_input_set_group(NULL);
     lv_group_del(controller->group);
-    return false;
 }
 
 static void exit_streaming(lv_event_t *event) {

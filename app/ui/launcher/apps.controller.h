@@ -18,7 +18,7 @@ typedef struct {
     coverloader_t *coverloader;
     PSERVER_LIST node;
     lv_obj_t *applist, *appload, *apperror;
-    lv_obj_t *errortitle, *errorlabel;
+    lv_obj_t *errortitle, *errorhint, *errordetail;
     lv_obj_t *actions;
 
     appitem_styles_t appitem_style;

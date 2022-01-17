@@ -125,10 +125,14 @@ static void apps_controller_dtor(lv_fragment_t *self) {
     apploader_unref(controller->apploader);
 }
 
-static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *parent) {
+static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
     apps_controller_t *controller = (apps_controller_t *) self;
+    lv_obj_t *view = lv_obj_create(container);
+    lv_obj_remove_style_all(view);
+    lv_obj_add_flag(view, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_size(view, LV_PCT(100), LV_PCT(100));
 
-    lv_obj_t *applist = controller->applist = lv_gridview_create(parent);
+    lv_obj_t *applist = controller->applist = lv_gridview_create(view);
     lv_obj_add_flag(applist, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_pad_all(applist, lv_dpx(24), 0);
     lv_obj_set_style_pad_gap(applist, lv_dpx(24), 0);
@@ -137,10 +141,10 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_set_style_bg_opa(applist, 0, 0);
     lv_obj_set_size(applist, LV_PCT(100), LV_PCT(100));
     lv_grid_set_adapter(applist, &apps_adapter);
-    lv_obj_t *appload = controller->appload = lv_spinner_create(parent, 1000, 60);
+    lv_obj_t *appload = controller->appload = lv_spinner_create(view, 1000, 60);
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
-    lv_obj_t *apperror = controller->apperror = lv_obj_create(parent);
+    lv_obj_t *apperror = controller->apperror = lv_obj_create(view);
     lv_obj_add_flag(apperror, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
     lv_obj_center(apperror);
@@ -149,19 +153,29 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_t *errortitle = controller->errortitle = lv_label_create(apperror);
     lv_obj_set_width(errortitle, LV_PCT(100));
     lv_obj_set_style_text_font(errortitle, lv_theme_get_font_large(apperror), 0);
-    lv_obj_t *errorlabel = controller->errorlabel = lv_label_create(apperror);
+    lv_obj_t *errorlabel = controller->errorhint = lv_label_create(apperror);
     lv_obj_set_width(errorlabel, LV_PCT(100));
-    lv_obj_set_flex_grow(errorlabel, 1);
+    lv_obj_t *errordetail = controller->errordetail = lv_label_create(apperror);
+    lv_obj_set_style_border_width(errordetail, LV_DPX(2), 0);
+    lv_obj_set_style_border_opa(errordetail, LV_OPA_50, 0);
+    lv_obj_set_style_border_color(errordetail, lv_palette_main(LV_PALETTE_BLUE_GREY), 0);
+    lv_obj_set_style_pad_all(errordetail, LV_DPX(10), 0);
+    lv_obj_set_style_radius(errordetail, LV_DPX(20), 0);
+    lv_obj_set_width(errordetail, LV_PCT(100));
+    lv_obj_set_flex_grow(errordetail, 1);
     controller->actions = lv_btnmatrix_create(apperror);
     lv_obj_set_style_border_side(controller->actions, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_set_size(controller->actions, LV_DPX(500), LV_SIZE_CONTENT);
+    lv_btnmatrix_set_btn_width(controller->actions, 0, LV_DPX(150));
+    lv_btnmatrix_set_btn_width(controller->actions, 1, LV_DPX(150));
+    lv_obj_set_size(controller->actions, LV_PCT(100), LV_SIZE_CONTENT);
     lv_obj_set_style_min_height(controller->actions, LV_DPX(80), 0);
     lv_obj_set_style_max_width(controller->actions, LV_PCT(100), 0);
     lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_CLICK_TRIG | LV_BTNMATRIX_CTRL_NO_REPEAT);
     static const char *actions_map[] = {translatable("Send Wake-On-LAN"), translatable("Retry"), ""};
     lv_btnmatrix_set_map(controller->actions, actions_map);
     lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_EVENT_BUBBLE);
-    return NULL;
+
+    return view;
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
@@ -181,13 +195,11 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 
     if (controller->node->state.code == SERVER_STATE_NONE) {
         pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
-        apploader_load(controller->apploader, appload_cb, controller);
     } else if (controller->node->state.code == SERVER_STATE_ONLINE) {
         apploader_load(controller->apploader, appload_cb, controller);
     }
-    update_view_state(controller);
-
     current_instance = controller;
+    update_view_state(controller);
 }
 
 static void update_grid_config(apps_controller_t *controller) {
@@ -262,7 +274,7 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
 
 static void update_view_state(apps_controller_t *controller) {
     if (controller != current_instance) return;
-    if (!controller->base.managed->obj_created) return;
+    if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) return;
     launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
     PSERVER_LIST node = controller->node;
@@ -286,7 +298,8 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
-                lv_label_set_text_static(controller->errorlabel, locstr("Select computer again to pair."));
+                lv_label_set_text_static(controller->errorhint, locstr("Select computer again to pair."));
+                lv_label_set_text_static(controller->errordetail, "");
             } else if (controller->apploader->state == APPLOADER_STATE_LOADING) {
                 // is loading apps
                 if (controller->apploader->apps) {
@@ -301,11 +314,12 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
+                lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+                lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_HIDDEN);
                 lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
-                lv_label_set_text_static(controller->errorlabel, locstr("Press \"Retry\" button to reload."
-                                                                        "Try restart the computer if error persists."));
+                lv_label_set_text_static(controller->errorhint, locstr("Press \"Retry\" button to reload."
+                                                                       "Try restart the computer if error persists."));
+                lv_label_set_text_static(controller->errordetail, controller->apploader->error);
             } else {
                 // has apps
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
@@ -327,7 +341,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Host error"));
-            lv_label_set_text_static(controller->errorlabel, locstr("Please restart your computer."));
+            lv_label_set_text_static(controller->errorhint, locstr("Please restart your computer."));
+            lv_label_set_text_static(controller->errordetail, node->state.error.errmsg);
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -340,7 +355,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Offline"));
-            lv_label_set_text_static(controller->errorlabel, locstr("Turn on the host computer and try again."));
+            lv_label_set_text_static(controller->errorhint, locstr("Turn on the host computer and try again."));
+            lv_label_set_text_static(controller->errordetail, "");
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;

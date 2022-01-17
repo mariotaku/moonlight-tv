@@ -24,7 +24,7 @@ typedef struct decoder_pane_t {
     int surround_entries_len;
 } decoder_pane_t;
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *view);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
 
@@ -98,29 +98,30 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
     }
 }
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     decoder_pane_t *controller = (decoder_pane_t *) self;
-    lv_obj_set_layout(parent, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    lv_obj_t *decoder_label = pref_title_label(parent, locstr("Video decoder"));
+    lv_obj_t *view = pref_pane_container(container);
+    lv_obj_set_layout(view, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(view, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(view, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    lv_obj_t *decoder_label = pref_title_label(view, locstr("Video decoder"));
     lv_label_set_text_fmt(decoder_label, locstr("Video decoder - using %s"),
                           decoder_definitions[decoder_current].name);
-    lv_obj_t *vdec_dropdown = pref_dropdown_string(parent, controller->vdec_entries, controller->vdec_entries_len,
+    lv_obj_t *vdec_dropdown = pref_dropdown_string(view, controller->vdec_entries, controller->vdec_entries_len,
                                                    &app_configuration->decoder);
     lv_obj_set_width(vdec_dropdown, LV_PCT(100));
-    lv_obj_t *audio_label = pref_title_label(parent, locstr("Audio backend"));
+    lv_obj_t *audio_label = pref_title_label(view, locstr("Audio backend"));
     const char *audio_name = audio_current == AUDIO_DECODER ? locstr("Decoder provided")
                                                             : audio_definitions[audio_current].name;
     lv_label_set_text_fmt(audio_label, locstr("Audio backend - using %s"), audio_name);
-    lv_obj_t *adec_dropdown = pref_dropdown_string(parent, controller->adec_entries, controller->adec_entries_len,
+    lv_obj_t *adec_dropdown = pref_dropdown_string(view, controller->adec_entries, controller->adec_entries_len,
                                                    &app_configuration->audio_backend);
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
 
-    lv_obj_t *hevc_checkbox = pref_checkbox(parent, locstr("Prefer H265 codec"),
+    lv_obj_t *hevc_checkbox = pref_checkbox(view, locstr("Prefer H265 codec"),
                                             &app_configuration->stream.supportsHevc,
                                             false);
-    lv_obj_t *hevc_hint = pref_desc_label(parent, NULL, false);
+    lv_obj_t *hevc_hint = pref_desc_label(view, NULL, false);
     if (!decoder_info.hevc) {
         lv_obj_add_state(hevc_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hevc_hint, locstr("%s decoder doesn't support H265 codec."),
@@ -131,9 +132,9 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
                                             "for using HDR."));
     }
 
-    lv_obj_t *hdr_checkbox = pref_checkbox(parent, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
+    lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
                                            false);
-    lv_obj_t *hdr_hint = pref_desc_label(parent, NULL, false);
+    lv_obj_t *hdr_hint = pref_desc_label(view, NULL, false);
     if (decoder_info.hdr == DECODER_HDR_NONE) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
@@ -146,13 +147,13 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
         lv_label_set_text(hdr_hint, locstr("HDR is only supported on certain games and "
                                            "when connecting to supported monitor."));
     }
-    lv_obj_t *hdr_more = pref_desc_label(parent, locstr("Learn more about HDR feature."), true);
+    lv_obj_t *hdr_more = pref_desc_label(view, locstr("Learn more about HDR feature."), true);
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
 
-    pref_title_label(parent, locstr("Sound Channels (Experimental)"));
+    pref_title_label(view, locstr("Sound Channels (Experimental)"));
 
-    lv_obj_t *ch_dropdown = pref_dropdown_int(parent, controller->surround_entries, controller->surround_entries_len,
+    lv_obj_t *ch_dropdown = pref_dropdown_int(view, controller->surround_entries, controller->surround_entries_len,
                                               &app_configuration->stream.audioConfiguration);
     lv_obj_set_width(ch_dropdown, LV_PCT(100));
 
@@ -164,8 +165,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     controller->hdr_checkbox = hdr_checkbox;
     controller->hdr_hint = hdr_hint;
 
-    lv_obj_scroll_to_y(parent, 0, LV_ANIM_OFF);
-    return NULL;
+    lv_obj_scroll_to_y(container, 0, LV_ANIM_OFF);
+    return view;
 }
 
 static void pref_mark_restart_cb(lv_event_t *e) {

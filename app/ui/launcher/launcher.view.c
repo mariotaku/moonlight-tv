@@ -136,16 +136,17 @@ lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent) {
 
 static void detail_group_add(lv_event_t *event) {
     lv_obj_t *child = lv_event_get_param(event);
-    launcher_controller_t *controller = lv_event_get_user_data(event);
-    apps_controller_t *pane_controller = (apps_controller_t *) lv_fragment_manager_get_top(
-            controller->base.child_manager);
-    if (!pane_controller) return;
+    launcher_controller_t *fragment = lv_event_get_user_data(event);
+    apps_controller_t *apps_fragment = (apps_controller_t *) lv_fragment_manager_find_by_container(
+            fragment->base.child_manager, fragment->detail);
+    lv_obj_t *view = lv_obj_get_child(fragment->detail, 0);
+    if (!apps_fragment || !view) return;
     if (!child || !lv_obj_is_group_def(child)) return;
     if (lv_obj_get_group(child)) {
         lv_group_remove_obj(child);
     }
-    if (child->parent != controller->detail && child->parent != pane_controller->apperror) {
+    if (child->parent != view && child->parent != apps_fragment->apperror) {
         return;
     }
-    lv_group_add_obj(controller->detail_group, child);
+    lv_group_add_obj(fragment->detail_group, child);
 }

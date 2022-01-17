@@ -59,34 +59,36 @@ static inline void about_line(lv_obj_t *parent, const char *title, const char *t
     lv_obj_set_grid_cell(text_label, LV_GRID_ALIGN_END, 4 - text_span, text_span, LV_GRID_ALIGN_CENTER, row, 1);
 }
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     about_pane_t *controller = (about_pane_t *) self;
-    lv_obj_set_layout(parent, LV_LAYOUT_GRID);
+    lv_obj_t *view = pref_pane_container(container);
+    lv_obj_set_layout(view, LV_LAYOUT_GRID);
     static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
                                          LV_GRID_TEMPLATE_LAST};
-    lv_obj_set_grid_dsc_array(parent, col_dsc, controller->row_dsc);
+    lv_obj_set_grid_dsc_array(view, col_dsc, controller->row_dsc);
     int rowcount = 0;
-    about_line(parent, locstr("Version"), APP_VERSION, rowcount++, 1);
-    about_line(parent, locstr("Video decoder"), decoder_definitions[decoder_current].name, rowcount++, 2);
-    const char *audio_name = audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
-    about_line(parent, locstr("Audio backend"), audio_name, rowcount++, 2);
+    about_line(view, locstr("Version"), APP_VERSION, rowcount++, 1);
+    about_line(view, locstr("Video decoder"), decoder_definitions[decoder_current].name, rowcount++, 2);
+    const char *audio_name =
+            audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
+    about_line(view, locstr("Audio backend"), audio_name, rowcount++, 2);
 #if TARGET_WEBOS
     if (strlen(app_os_info.release)) {
-        about_line(parent, locstr("webOS version"), app_os_info.release, rowcount++, 1);
+        about_line(view, locstr("webOS version"), app_os_info.release, rowcount++, 1);
     }
     if (strlen(app_os_info.manufacturing_version)) {
-        about_line(parent, locstr("Firmware version"), app_os_info.manufacturing_version, rowcount++, 1);
+        about_line(view, locstr("Firmware version"), app_os_info.manufacturing_version, rowcount++, 1);
     }
     if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
         char resolution_text[16];
         SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", controller->webos_panel_info.w,
                      controller->webos_panel_info.h);
-        about_line(parent, locstr("Screen resolution"), resolution_text, rowcount++, 1);
+        about_line(view, locstr("Screen resolution"), resolution_text, rowcount++, 1);
     }
     if (controller->webos_panel_info.rate) {
         char fps_text[16];
         SDL_snprintf(fps_text, sizeof(fps_text), "%4dFPS", controller->webos_panel_info.rate);
-        about_line(parent, locstr("Refresh rate"), fps_text, rowcount++, 1);
+        about_line(view, locstr("Refresh rate"), fps_text, rowcount++, 1);
     }
 #endif
     LV_ASSERT(rowcount <= MAXIMUM_ROWS);
@@ -95,7 +97,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     }
     controller->row_dsc[rowcount] = LV_GRID_TEMPLATE_LAST;
 
-    return NULL;
+    return view;
 }
 
 #if TARGET_WEBOS

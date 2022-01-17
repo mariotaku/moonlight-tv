@@ -25,6 +25,7 @@ typedef struct apploader_t {
     const SERVER_LIST *node;
     apploader_state_t state;
     int code;
+    const char *error;
     apploader_list_t *apps;
     apploader_task_t *task;
     refcounter_t refcounter;

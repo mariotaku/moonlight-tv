@@ -4,7 +4,7 @@
 
 #include "util/i18n.h"
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *view);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
 
@@ -18,17 +18,19 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
 
 }
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
-    lv_obj_set_layout(parent, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    pref_checkbox(parent, locstr("View-only mode"), &app_configuration->viewonly, false);
-    pref_desc_label(parent, locstr("Don't send mouse, keyboard or gamepad input to host computer."), false);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
+    lv_obj_t *view = pref_pane_container(container);
+    lv_obj_set_layout(view, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(view, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(view, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+    pref_checkbox(view, locstr("View-only mode"), &app_configuration->viewonly, false);
+    pref_desc_label(view, locstr("Don't send mouse, keyboard or gamepad input to host computer."), false);
 
-    pref_checkbox(parent, locstr("Absolute mouse mode"), &app_configuration->absmouse, false);
-    pref_desc_label(parent, locstr("Better for remote desktop. For some games, mouse will not work properly."), false);
+    pref_checkbox(view, locstr("Absolute mouse mode"), &app_configuration->absmouse, false);
+    pref_desc_label(view, locstr("Better for remote desktop. For some games, mouse will not work properly."), false);
 
-    pref_checkbox(parent, locstr("Swap ABXY buttons"), &app_configuration->swap_abxy, false);
-    pref_desc_label(parent, locstr("Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."), false);
-    return NULL;
+    pref_checkbox(view, locstr("Swap ABXY buttons"), &app_configuration->swap_abxy, false);
+    pref_desc_label(view, locstr("Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."),
+                    false);
+    return view;
 }

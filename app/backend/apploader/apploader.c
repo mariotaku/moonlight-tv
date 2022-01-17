@@ -143,6 +143,7 @@ static void apploader_task_finish(apploader_task_t *task) {
         loader->apps = NULL;
     }
     loader->code = task->code;
+    loader->error = task->error;
     loader->state = APPLOADER_STATE_IDLE;
     loader->task = NULL;
     task->cb(loader, task->userdata);

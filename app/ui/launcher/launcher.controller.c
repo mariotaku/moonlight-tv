@@ -30,7 +30,7 @@ static void controller_dtor(lv_fragment_t *self);
 
 static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view);
 
-static bool launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view);
+static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view);
 
 static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata);
 
@@ -186,7 +186,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     controller->first_created = false;
 }
 
-static bool launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
+static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
     current_instance = NULL;
     app_input_set_group(NULL);
     pcmanager_auto_discovery_stop(pcmanager);
@@ -198,7 +198,6 @@ static bool launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
     lv_group_del(controller->detail_group);
 
     pcmanager_unregister_listener(pcmanager, &pcmanager_callbacks);
-    return false;
 }
 
 static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
@@ -348,10 +347,12 @@ static const char *server_item_icon(const SERVER_LIST *node) {
 }
 
 static void cb_detail_focused(lv_event_t *event) {
-    launcher_controller_t *controller = lv_event_get_user_data(event);
-    if (!controller->pane_initialized || controller->detail_changing) return;
-    if (lv_obj_get_parent(event->target) != controller->detail) return;
-    set_detail_opened(controller, true);
+    launcher_controller_t *fragment = lv_event_get_user_data(event);
+    if (!fragment->pane_initialized || fragment->detail_changing) return;
+    lv_fragment_t *detail_fragment = lv_fragment_manager_find_by_container(fragment->base.child_manager,
+                                                                           fragment->detail);
+    if (!detail_fragment || lv_obj_get_parent(event->target) != detail_fragment->obj) return;
+    set_detail_opened(fragment, true);
 }
 
 static void cb_detail_cancel(lv_event_t *event) {

@@ -96,6 +96,7 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
         resp->server = existing->server;
         pclist_upsert(manager, resp);
     } else {
+        resp->state.code = SERVER_STATE_ERROR;
         pcmanager_resp_setgserror(resp, ret, gs_error);
         serverdata_free(server);
     }

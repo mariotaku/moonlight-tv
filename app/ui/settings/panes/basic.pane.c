@@ -81,13 +81,14 @@ static void pane_dtor(lv_fragment_t *self) {
 #endif
 }
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
-    lv_obj_set_layout(parent, LV_LAYOUT_GRID);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     basic_pane_t *pane = (basic_pane_t *) self;
-    lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_ROW_WRAP);
-    pref_title_label(parent, locstr("Resolution and FPS"));
+    lv_obj_t *view = pref_pane_container(container);
+    lv_obj_set_layout(view, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(view, LV_FLEX_FLOW_ROW_WRAP);
+    pref_title_label(view, locstr("Resolution and FPS"));
 
-    lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(parent, supported_resolutions, supported_resolutions_len,
+    lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(view, supported_resolutions, supported_resolutions_len,
                                                            &app_configuration->stream.width,
                                                            &app_configuration->stream.height);
     lv_obj_set_width(resolution_dropdown, LV_PCT(60));
@@ -98,44 +99,44 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     for (fps_len = supported_fps_len; fps_len > 0; fps_len--) {
         if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) break;
     }
-    lv_obj_t *fps_dropdown = pref_dropdown_int(parent, supported_fps, fps_len, &app_configuration->stream.fps);
+    lv_obj_t *fps_dropdown = pref_dropdown_int(view, supported_fps, fps_len, &app_configuration->stream.fps);
     lv_obj_set_flex_grow(fps_dropdown, 1);
     lv_obj_add_event_cb(fps_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
-    pane->res_warning = lv_label_create(parent);
+    pane->res_warning = lv_label_create(view);
     lv_obj_add_flag(pane->res_warning, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_width(pane->res_warning, LV_PCT(100));
-    lv_obj_set_style_text_font(pane->res_warning, lv_theme_get_font_small(parent), 0);
+    lv_obj_set_style_text_font(pane->res_warning, lv_theme_get_font_small(view), 0);
     lv_obj_set_style_text_color(pane->res_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_label_set_long_mode(pane->res_warning, LV_LABEL_LONG_WRAP);
 
-    pane->bitrate_label = pref_title_label(parent, locstr("Video bitrate"));
+    pane->bitrate_label = pref_title_label(view, locstr("Video bitrate"));
 
     int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 100000;
-    lv_obj_t *bitrate_slider = pref_slider(parent, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
+    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
 
-    pane->bitrate_warning = lv_label_create(parent);
+    pane->bitrate_warning = lv_label_create(view);
     lv_obj_add_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_width(pane->bitrate_warning, LV_PCT(100));
-    lv_obj_set_style_text_font(pane->bitrate_warning, lv_theme_get_font_small(parent), 0);
+    lv_obj_set_style_text_font(pane->bitrate_warning, lv_theme_get_font_small(view), 0);
     lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
 
 #if !FEATURE_FORCE_FULLSCREEN
-    lv_obj_t *checkbox = pref_checkbox(parent, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
+    lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
     lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
 #endif
 
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
-    lv_obj_t *lang_label = pref_title_label(parent, "Language");
+    lv_obj_t *lang_label = pref_title_label(view, "Language");
     if (strcmp(locstr("Language"), "Language") != 0) {
         lv_label_set_text_fmt(lang_label, "%s (Language)", locstr("Language"));
     }
 
-    lv_obj_t *language_dropdown = pref_dropdown_string(parent, pane->lang_entries, pane->lang_entries_len,
+    lv_obj_t *language_dropdown = pref_dropdown_string(view, pane->lang_entries, pane->lang_entries_len,
                                                        &app_configuration->language);
     lv_obj_add_event_cb(language_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, pane);
     lv_obj_set_width(language_dropdown, LV_PCT(100));
@@ -144,7 +145,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     update_bitrate_label(pane);
     update_bitrate_hint(pane);
 
-    return NULL;
+    return view;
 }
 
 static void on_bitrate_changed(lv_event_t *e) {

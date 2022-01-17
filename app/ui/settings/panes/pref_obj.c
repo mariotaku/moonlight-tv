@@ -47,6 +47,16 @@ static void pref_dropdown_string_change_cb(lv_event_t *event);
 
 static void pref_slider_value_write_back(lv_event_t *event);
 
+lv_obj_t *pref_pane_container(lv_obj_t *parent) {
+    lv_obj_t *view = lv_obj_create(parent);
+    lv_obj_set_size(view, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_all(view, 0, 0);
+    lv_obj_set_style_bg_opa(view, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_opa(view, LV_OPA_TRANSP, 0);
+    lv_obj_clear_flag(view, LV_OBJ_FLAG_SCROLLABLE);
+    return view;
+}
+
 lv_obj_t *pref_checkbox(lv_obj_t *parent, const char *title, bool *value, bool reverse) {
     lv_obj_t *checkbox = lv_checkbox_create(parent);
     lv_checkbox_set_text(checkbox, title);

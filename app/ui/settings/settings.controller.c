@@ -173,6 +173,7 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 
 static void on_entry_focus(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
+    if (controller->base.managed->destroying_obj) return;
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != controller->nav) return;
     lv_fragment_t *pane = lv_fragment_manager_get_top(controller->base.child_manager);
