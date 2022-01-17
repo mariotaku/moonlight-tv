@@ -5,13 +5,15 @@
 
 #include "util/i18n.h"
 
-#if !SDL_VERSION_ATLEAST(2, 0, 14)
+#define USE_OPENURL ((OS_DARWIN || OS_WINDOWS) && SDL_VERSION_ATLEAST(2, 0, 14))
+
+#if !USE_OPENURL
 #include <stdio.h>
 #include <stdlib.h>
 #endif
 
 void app_open_url(const char *url) {
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+#if USE_OPENURL
     SDL_OpenURL(url);
 #elif OS_LINUX
     char command[8192];
@@ -25,7 +27,7 @@ void app_open_url(const char *url) {
 }
 
 void app_init_locale() {
-    const char* textdomaindir = getenv("TEXTDOMAINDIR");
+    const char *textdomaindir = getenv("TEXTDOMAINDIR");
     if (textdomaindir) {
         bindtextdomain("moonlight-tv", textdomaindir);
         bind_textdomain_codeset("moonlight-tv", "UTF-8");
