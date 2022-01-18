@@ -10,19 +10,19 @@
 #include "module/logging.h"
 
 bool media_initialized = false;
-logvprintf_fn module_logvprintf;
+logvprintf_fn MODULE_LOGVPRINTF;
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
 #define decoder_check PLUGIN_SYMBOL_NAME(decoder_check)
 #define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
 
 MODULE_API bool decoder_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
-    module_logvprintf = hctx->logvprintf;
+    MODULE_LOGVPRINTF = hctx->logvprintf;
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0) {
         media_initialized = true;
     } else {
         media_initialized = false;
-        char *err = NDL_DirectMediaGetError();
+        const char *err = NDL_DirectMediaGetError();
         hctx->seterror(err);
         applog_e("NDL", "Unable to initialize NDL: %s", err);
     }

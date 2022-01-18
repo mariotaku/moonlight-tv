@@ -7,6 +7,8 @@
 #include <Limelight.h>
 #include <opus_multistream.h>
 
+logvprintf_fn MODULE_LOGVPRINTF;
+
 static SDL_AudioDeviceID dev = 0;
 static OpusMSDecoder *decoder = NULL;
 static sdlaud_ringbuf *ringbuf = NULL;
@@ -101,14 +103,21 @@ static void sdlaud_callback(void *userdata, Uint8 *stream, int len) {
     }
 }
 
-AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
+MODULE_API AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl = {
         .init = setup,
         .cleanup = cleanup,
         .decodeAndPlaySample = queue,
         .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
 
-bool audio_check_sdl(PAUDIO_INFO ainfo) {
+MODULE_API bool audio_init_sdl(int argc, char *argv[], const HOST_CONTEXT *host) {
+    if (host) {
+        MODULE_LOGVPRINTF = host->logvprintf;
+    }
+    return true;
+}
+
+MODULE_API bool audio_check_sdl(PAUDIO_INFO ainfo) {
     ainfo->valid = true;
     ainfo->configuration = AUDIO_CONFIGURATION_STEREO;
     return true;

@@ -26,8 +26,10 @@ static VideoConfig videoConfig;
 extern "C" DECODER_RENDERER_CALLBACKS decoder_callbacks;
 extern "C" AUDIO_RENDERER_CALLBACKS audio_callbacks;
 
+logvprintf_fn MODULE_LOGVPRINTF = nullptr;
+
 extern "C" bool decoder_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
-    module_logvprintf = hctx->logvprintf;
+    MODULE_LOGVPRINTF = hctx->logvprintf;
     return true;
 }
 
@@ -132,5 +134,3 @@ AUDIO_RENDERER_CALLBACKS audio_callbacks = {
         .decodeAndPlaySample = audioSubmit,
         .capabilities = CAPABILITY_DIRECT_SUBMIT,
 };
-
-logvprintf_fn module_logvprintf = NULL;

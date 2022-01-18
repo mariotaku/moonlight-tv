@@ -8,7 +8,7 @@
 #include "module/logging.h"
 
 bool media_initialized = false;
-logvprintf_fn module_logvprintf;
+logvprintf_fn MODULE_LOGVPRINTF;
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)
 #define decoder_post_init PLUGIN_SYMBOL_NAME(decoder_post_init)
@@ -17,7 +17,7 @@ logvprintf_fn module_logvprintf;
 
 MODULE_API bool decoder_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
-        module_logvprintf = hctx->logvprintf;
+        MODULE_LOGVPRINTF = hctx->logvprintf;
     }
     return true;
 }

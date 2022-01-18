@@ -7,7 +7,7 @@
 #include "module/logging.h"
 
 static bool cgl_initialized = false;
-logvprintf_fn module_logvprintf;
+logvprintf_fn MODULE_LOGVPRINTF;
 
 const static uint8_t h264_test_frame[] = {
         0x00, 0x00, 0x00, 0x01, 0x67, 0x64, 0x00, 0x20, 0xac, 0x2b, 0x40, 0x28, 0x02, 0xdd, 0x80, 0xb5, 0x06, 0x06,
@@ -41,7 +41,7 @@ MODULE_API bool decoder_init_cgl(int argc, char *argv[], const HOST_CONTEXT *hct
         applog_w("CGL", "Already initialized");
         return true;
     }
-    module_logvprintf = hctx->logvprintf;
+    MODULE_LOGVPRINTF = hctx->logvprintf;
     if (CGL_Initialize(getenv("APPID")) == 0) {
         cgl_initialized = true;
     } else {

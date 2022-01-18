@@ -8,7 +8,7 @@
 #include "module/logging.h"
 
 bool media_initialized = false;
-logvprintf_fn module_logvprintf;
+logvprintf_fn MODULE_LOGVPRINTF;
 
 #define audio_init PLUGIN_SYMBOL_NAME(audio_init)
 #define audio_check PLUGIN_SYMBOL_NAME(audio_check)
@@ -16,7 +16,7 @@ logvprintf_fn module_logvprintf;
 
 MODULE_API bool audio_init(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
-        module_logvprintf = hctx->logvprintf;
+        MODULE_LOGVPRINTF = hctx->logvprintf;
     }
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0) {
         media_initialized = true;

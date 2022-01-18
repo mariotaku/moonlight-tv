@@ -7,6 +7,13 @@ extern "C"
 
 #include <stdarg.h>
 
+#ifndef MODULE_LOGVPRINTF
+#define MODULE_LOGVPRINTF module_logvprintf
+#endif
+#ifndef MODULE_EMBEDDED
+#define MODULE_EMBEDDED 0
+#endif
+
 typedef enum applog_level_t {
     APPLOG_VERBOSE = 0,
     APPLOG_DEBUG,
@@ -19,16 +26,27 @@ typedef enum applog_level_t {
 
 typedef void (*logvprintf_fn)(int, const char *, const char *, va_list);
 
-extern logvprintf_fn module_logvprintf;
+#ifdef MODULE_EMBEDDED
+
+void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...);
+
+void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_list args);
+
+#else
+
+extern logvprintf_fn MODULE_LOGVPRINTF;
+
+#define app_logvprintf(lvl, tag, fmt, args) MODULE_LOGVPRINTF(lvl, tag, fmt, args)
 
 static void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...) {
-    if (!module_logvprintf)
+    if (!MODULE_LOGVPRINTF)
         return;
     va_list args;
     va_start(args, fmt);
-    module_logvprintf(lvl, tag, fmt, args);
+    MODULE_LOGVPRINTF(lvl, tag, fmt, args);
     va_end(args);
 }
+#endif
 
 #define applog(level, ...) app_logprintf(level, __VA_ARGS__)
 #define applog_f(...) app_logprintf(APPLOG_FATAL, __VA_ARGS__)

@@ -23,13 +23,15 @@ static MODULE_LIB_DEFINITION _ndl_libs[] = {
 
 #if HAVE_SDL
 
+bool audio_init_sdl(int argc, char *argv[], const HOST_CONTEXT *host);
+
 bool audio_check_sdl(PAUDIO_INFO ainfo);
 
 extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
 
 const static AUDIO_SYMBOLS audio_sdl = {
         true,
-        NULL,
+        &audio_init_sdl,
         &audio_check_sdl,
         NULL,
         &audio_callbacks_sdl,

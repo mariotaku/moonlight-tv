@@ -1,10 +1,10 @@
 #include "mmal_common.h"
 
-logvprintf_fn module_logvprintf;
+logvprintf_fn MODULE_LOGVPRINTF;
 
 MODULE_API bool decoder_init_mmal(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
-        module_logvprintf = hctx->logvprintf;
+        MODULE_LOGVPRINTF = hctx->logvprintf;
     }
     return true;
 }

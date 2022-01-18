@@ -8,7 +8,7 @@ __attribute__((unused)) int _CGL_LOG_DEBUG(const char *tag, const char *fmt, ...
     strcat(app_tag, tag);
     va_list arglist;
     va_start(arglist, fmt);
-    module_logvprintf(APPLOG_DEBUG, app_tag, fmt, arglist);
+    app_logvprintf(APPLOG_DEBUG, app_tag, fmt, arglist);
     va_end(arglist);
     return 0;
 }
@@ -19,7 +19,7 @@ __attribute__((unused)) int _CGL_LOG_INFO(const char *tag, const char *fmt, ...)
     strcat(app_tag, tag);
     va_list arglist;
     va_start(arglist, fmt);
-    module_logvprintf(APPLOG_INFO, app_tag, fmt, arglist);
+    app_logvprintf(APPLOG_INFO, app_tag, fmt, arglist);
     va_end(arglist);
     return 0;
 }
@@ -30,7 +30,7 @@ __attribute__((unused)) int _CGL_LOG_WARNING(const char *tag, const char *fmt, .
     strcat(app_tag, tag);
     va_list arglist;
     va_start(arglist, fmt);
-    module_logvprintf(APPLOG_WARN, app_tag, fmt, arglist);
+    app_logvprintf(APPLOG_WARN, app_tag, fmt, arglist);
     va_end(arglist);
     return 0;
 }
@@ -41,7 +41,7 @@ __attribute__((unused)) int _CGL_LOG_ERROR(const char *tag, const char *fmt, ...
     strcat(app_tag, tag);
     va_list arglist;
     va_start(arglist, fmt);
-    module_logvprintf(APPLOG_ERROR, app_tag, fmt, arglist);
+    app_logvprintf(APPLOG_ERROR, app_tag, fmt, arglist);
     va_end(arglist);
     return 0;
 }
@@ -49,7 +49,7 @@ __attribute__((unused)) int _CGL_LOG_ERROR(const char *tag, const char *fmt, ...
 __attribute__((unused)) int WCGL_DebugPrint(const char *fmt, ...) {
     va_list arglist;
     va_start(arglist, fmt);
-    module_logvprintf(APPLOG_DEBUG, "LGNC/WCGL", fmt, arglist);
+    app_logvprintf(APPLOG_DEBUG, "LGNC/WCGL", fmt, arglist);
     va_end(arglist);
     return 0;
 }

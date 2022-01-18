@@ -7,11 +7,11 @@
 #include "module/logging.h"
 
 static bool ndl_initialized = false;
-logvprintf_fn module_logvprintf;
+logvprintf_fn MODULE_LOGVPRINTF;
 
 MODULE_API bool audio_init_ndlaud(int argc, char *argv[], const HOST_CONTEXT *hctx) {
     if (hctx) {
-        module_logvprintf = hctx->logvprintf;
+        MODULE_LOGVPRINTF = hctx->logvprintf;
     }
     applog_d("NDLAud", "init");
     if (NDL_DirectMediaInit(getenv("APPID"), NULL) == 0) {
