@@ -27,11 +27,9 @@
 #include <libavcodec/avcodec.h>
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
 
-#include "util/debugprint.h"
-#include "util/logging.h"
+#include "module/logging.h"
 
 // General decoder and renderer state
 static AVPacket *pkt;

@@ -1,8 +1,9 @@
+#include "module/api.h"
+#include "module/logging.h"
+
 #include "ffmpeg_symbols.h"
 
 #include <libavcodec/avcodec.h>
-
-#include "util/logging.h"
 
 logvprintf_fn module_logvprintf;
 

@@ -66,8 +66,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_max_width(obj, LV_PCT(60), 0);
         lv_obj_set_style_flex_main_place(obj, LV_FLEX_ALIGN_END, 0);
         lv_group_t *group = lv_group_create();
-        group->user_data = app_input_get_modal_group();
-        app_input_set_modal_group(group);
+        app_input_push_modal_group(group);
         lv_obj_add_event_cb(obj, cb_child_group_add, LV_EVENT_CHILD_CREATED, group);
         lv_obj_add_event_cb(obj, msgbox_key, LV_EVENT_KEY, NULL);
         lv_obj_add_event_cb(obj, msgbox_cancel, LV_EVENT_CANCEL, NULL);
@@ -133,9 +132,7 @@ static void msgbox_cancel(lv_event_t *event) {
 
 static void msgbox_destroy(lv_event_t *event) {
     lv_group_t *group = lv_event_get_user_data(event);
-    if (app_input_get_modal_group() == group) {
-        app_input_set_modal_group(group->user_data);
-    }
+    app_input_remove_modal_group(group);
     lv_group_remove_all_objs(group);
     lv_group_del(group);
 }

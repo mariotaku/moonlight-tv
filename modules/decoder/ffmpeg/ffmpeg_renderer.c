@@ -1,6 +1,6 @@
+#include "module/logging.h"
+
 #include <stddef.h>
-#include <stdio.h>
-#include <assert.h>
 
 #include <Limelight.h>
 
@@ -8,7 +8,6 @@
 
 #include <libavcodec/avcodec.h>
 #include <SDL.h>
-#include "util/logging.h"
 
 static int width, height;
 

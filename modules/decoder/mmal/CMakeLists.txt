@@ -4,18 +4,12 @@ add_library(moonlight-mmal SHARED
         mmalvid.c
         )
 
-target_include_directories(moonlight-mmal PRIVATE
-        ${CMAKE_SOURCE_DIR}/app/stream/audio
-        ${CMAKE_SOURCE_DIR}/app/stream/video
-        ${CMAKE_SOURCE_DIR}/app
-        )
-
 target_link_libraries(moonlight-mmal PRIVATE gamestream-sps ${BROADCOM_MMAL_LIBRARIES})
 
 target_include_directories(moonlight-mmal PRIVATE ${BROADCOM_INCLUDE_DIRS})
 target_compile_definitions(moonlight-mmal PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
-target_link_libraries(moonlight-mmal PRIVATE moonlight-common-c-headers opus)
+target_link_libraries(moonlight-mmal PRIVATE moonlight-module-api opus)
 target_include_directories(moonlight-mmal SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 target_link_libraries(moonlight-mmal PRIVATE ${SDL2_LIBRARIES})
 

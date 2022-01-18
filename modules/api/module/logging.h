@@ -17,20 +17,18 @@ typedef enum applog_level_t {
     APPLOG_MAX = 0x7FFFFFFF,
 } applog_level_t;
 
-static const char *applog_level_str[] = {
-        "VERBOSE",
-        "DEBUG",
-        "INFO",
-        "WARN",
-        "ERROR",
-        "FATAL",
-};
+typedef void (*logvprintf_fn)(int, const char *, const char *, va_list);
 
-void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_list args);
+extern logvprintf_fn module_logvprintf;
 
-void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...);
-
-void app_loginit();
+static void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...) {
+    if (!module_logvprintf)
+        return;
+    va_list args;
+    va_start(args, fmt);
+    module_logvprintf(lvl, tag, fmt, args);
+    va_end(args);
+}
 
 #define applog(level, ...) app_logprintf(level, __VA_ARGS__)
 #define applog_f(...) app_logprintf(APPLOG_FATAL, __VA_ARGS__)

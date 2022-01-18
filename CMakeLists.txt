@@ -149,7 +149,7 @@ if (TARGET_DESKTOP)
 endif ()
 add_subdirectory(modules)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
-target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
+target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/app)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
@@ -157,6 +157,7 @@ target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
 set(SOURCES
         app/main.c
+        app/app/app_input.c
         app/backend/backend_root.c
         app/backend/pcmanager/pcmanager.c
         app/backend/pcmanager/pairing.c
@@ -304,7 +305,7 @@ target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
-        moonlight-sdlaud
+        moonlight-module-api moonlight-sdlaud
         )
 
 macro(moonlight_add_module)

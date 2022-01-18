@@ -585,9 +585,9 @@ static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *a
                           "Support HDR: %s",
                           app->base.id, app->base.hdr ? "Yes" : "No");
     lv_obj_center(msgbox);
-    lv_obj_add_event_cb(msgbox, app_detail_click_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(msgbox, app_detail_click_cb, LV_EVENT_CLICKED, NULL);
 }
 
 static void app_detail_click_cb(lv_event_t *event) {
-    lv_msgbox_close_async(lv_event_get_current_target(event));
+    lv_msgbox_close(lv_event_get_current_target(event));
 }

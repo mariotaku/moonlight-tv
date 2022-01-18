@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stream/module/api.h"
+#include "module/api.h"
 
 extern VIDEO_RENDER_CALLBACKS render_callbacks_ffmpeg;
 

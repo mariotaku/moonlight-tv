@@ -1,6 +1,6 @@
-#include "stream/module/api.h"
+#include "module/api.h"
+#include "module/logging.h"
 #include "ringbuf.h"
-#include "util/logging.h"
 
 #include <SDL.h>
 

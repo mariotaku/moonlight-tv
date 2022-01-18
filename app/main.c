@@ -40,15 +40,6 @@ static SDL_mutex *app_gs_client_mutex = NULL;
 
 lv_fragment_manager_t *app_uimanager;
 
-static lv_indev_t *app_indev_key, *app_indev_wheel, *app_indev_button;
-
-static const lv_point_t button_points_empty[5] = {
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-};
 
 SDL_Window *app_create_window();
 
@@ -99,14 +90,7 @@ int main(int argc, char *argv[]) {
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
-    lv_indev_t *indev_key = lv_sdl_init_key_input();
-    lv_indev_t *indev_wheel = lv_sdl_init_wheel();
-    lv_indev_t *indev_pointer = lv_sdl_init_pointer();
-    lv_indev_t *indev_button = lv_sdl_init_button();
-    app_indev_key = indev_key;
-    app_indev_wheel = indev_wheel;
-    app_indev_button = indev_button;
-    lv_indev_set_button_points(indev_button, button_points_empty);
+    app_input_init();
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
@@ -125,10 +109,7 @@ int main(int argc, char *argv[]) {
 
     lv_fragment_manager_del(app_uimanager);
 
-    lv_sdl_deinit_button(indev_button);
-    lv_sdl_deinit_pointer(indev_pointer);
-    lv_sdl_deinit_wheel(indev_wheel);
-    lv_sdl_deinit_key_input(indev_key);
+    app_input_deinit();
     lv_app_display_deinit(disp);
     lv_img_decoder_delete(img_decoder);
 
@@ -185,43 +166,6 @@ GS_CLIENT app_gs_client_new() {
     return client;
 }
 
-static void app_input_populate_group();
-
-static lv_group_t *app_group = NULL, *app_modal_group = NULL;
-
-void app_input_set_group(lv_group_t *group) {
-    app_group = group;
-    app_input_populate_group();
-}
-
-lv_group_t *app_input_get_group() {
-    return app_group;
-}
-
-lv_group_t *app_input_get_modal_group() {
-    return app_modal_group;
-}
-
-void app_input_set_modal_group(lv_group_t *group) {
-    app_modal_group = group;
-    app_input_populate_group();
-}
-
-void app_input_set_button_points(const lv_point_t *points) {
-    lv_indev_set_button_points(app_indev_button, points ? points : button_points_empty);
-}
-
-void app_start_text_input(int x, int y, int w, int h) {
-    if (w > 0 && h > 0) {
-        struct SDL_Rect rect = {x, y, w, h};
-        SDL_SetTextInputRect(&rect);
-    } else {
-        SDL_SetTextInputRect(NULL);
-    }
-    lv_sdl_key_input_release_key(app_indev_key);
-    if (SDL_IsTextInputActive()) return;
-    SDL_StartTextInput();
-}
 
 void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
     static const applog_level_t priority_name[SDL_NUM_LOG_PRIORITIES] = {APPLOG_VERBOSE, APPLOG_DEBUG, APPLOG_INFO,
@@ -248,18 +192,6 @@ void app_set_fullscreen(bool fullscreen) {
     SDL_SetWindowFullscreen(app_window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
 
-static void app_input_populate_group() {
-    lv_group_t *group = app_modal_group;
-    if (!group) {
-        group = app_group;
-    }
-    if (!group) {
-        group = lv_group_get_default();
-    }
-    lv_indev_set_group(app_indev_key, group);
-    lv_indev_set_group(app_indev_wheel, group);
-    lv_indev_set_group(app_indev_button, group);
-}
 
 static void log_libs_version() {
     SDL_version sdl_version;

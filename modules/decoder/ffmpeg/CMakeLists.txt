@@ -17,14 +17,8 @@ else()
     add_library(moonlight-ffmpeg SHARED ${FFMPEG_SRC})
 endif()
 
-target_include_directories(moonlight-ffmpeg PRIVATE 
-    ${CMAKE_SOURCE_DIR}/app/stream/audio
-    ${CMAKE_SOURCE_DIR}/app/stream/video
-    ${CMAKE_SOURCE_DIR}/app
-)
-
-target_link_libraries(moonlight-ffmpeg PRIVATE moonlight-common-c-headers ${FFMPEG_LIBRARIES} ${SDL2_LIBRARIES})
-target_include_directories(moonlight-ffmpeg SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS}  ${SDL2_INCLUDE_DIRS})
+target_link_libraries(moonlight-ffmpeg PRIVATE moonlight-module-api ${FFMPEG_LIBRARIES} ${SDL2_LIBRARIES})
+target_include_directories(moonlight-ffmpeg SYSTEM PRIVATE ${FFMPEG_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 target_compile_definitions(moonlight-ffmpeg PRIVATE SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 if (DECODER_FFMPEG_STATIC)
     target_compile_definitions(moonlight-ffmpeg PUBLIC DECODER_FFMPEG_STATIC=1)

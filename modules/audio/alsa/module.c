@@ -1,5 +1,5 @@
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 logvprintf_fn module_logvprintf;
 

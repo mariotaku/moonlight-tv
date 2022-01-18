@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stream/module/api.h"
+#include "module/api.h"
 
 #define SDL_BUFFER_FRAMES 2
 

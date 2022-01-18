@@ -38,13 +38,17 @@ bool app_get_mouse_relative();
 
 void app_set_keep_awake(bool);
 
+void app_input_init();
+
+void app_input_deinit();
+
 void app_input_set_group(lv_group_t *group);
 
-void app_input_set_modal_group(lv_group_t *group);
+void app_input_push_modal_group(lv_group_t *group);
+
+void app_input_remove_modal_group(lv_group_t *group);
 
 lv_group_t *app_input_get_group();
-
-lv_group_t *app_input_get_modal_group();
 
 void app_input_set_button_points(const lv_point_t *points);
 
