@@ -58,7 +58,8 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
 void appitem_style_init(appitem_styles_t *style) {
     lv_style_init(&style->cover);
     lv_style_set_pad_all(&style->cover, 0);
-    lv_style_set_radius(&style->cover, 0);
+    lv_style_set_radius(&style->cover, LV_DPX(2));
+    lv_style_set_clip_corner(&style->cover, true);
     lv_style_set_shadow_opa(&style->cover, LV_OPA_40);
     lv_style_set_shadow_width(&style->cover, LV_DPX(15));
     lv_style_set_shadow_ofs_y(&style->cover, LV_DPX(3));
