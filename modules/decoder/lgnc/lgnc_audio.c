@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <opus_multistream.h>
 
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 #define MAX_CHANNEL_COUNT 6
 #define FRAME_SIZE 240

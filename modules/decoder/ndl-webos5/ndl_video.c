@@ -1,5 +1,5 @@
 #include "ndl_common.h"
-#include "util/logging.h"
+#include "module/logging.h"
 
 #include <stdlib.h>
 #include <string.h>

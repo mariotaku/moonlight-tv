@@ -11,7 +11,6 @@
 #include "lvgl/lv_sdl_drv_input.h"
 #include "lvgl/lv_sdl_img.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
-#include "draw/sdl/lv_draw_sdl.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"

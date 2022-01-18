@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "ndl_common.h"
-#include "util/logging.h"
+#include "module/logging.h"
 
 #define media_load_callback PLUGIN_SYMBOL_NAME(decoder_media_load_callback)
 

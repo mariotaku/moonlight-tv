@@ -3,7 +3,7 @@
 #include <SDL.h>
 #include <util/os_info.h>
 #include "lvgl.h"
-#include "stream/module/api.h"
+#include "module/api.h"
 #include "stream/settings.h"
 #include "backend/pcmanager.h"
 #include "libgamestream/client.h"

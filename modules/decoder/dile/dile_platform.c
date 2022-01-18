@@ -6,7 +6,7 @@
 #include <dlfcn.h>
 
 #include "util/os_info.h"
-#include "stream/module/api.h"
+#include "module/api.h"
 #include "media_services.h"
 
 #define decoder_init PLUGIN_SYMBOL_NAME(decoder_init)

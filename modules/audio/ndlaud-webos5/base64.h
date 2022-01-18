@@ -1,4 +1,4 @@
-#include "stream/module/api.h"
+#include "module/api.h"
 #include <stddef.h>
 
 #define base64_encode PLUGIN_SYMBOL_NAME(base64_encode)

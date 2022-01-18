@@ -1,5 +1,5 @@
 #include "ndl_common.h"
-#include "util/logging.h"
+#include "module/logging.h"
 
 #include "base64.h"
 #include "opus_constants.h"

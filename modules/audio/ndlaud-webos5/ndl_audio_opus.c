@@ -1,6 +1,6 @@
 #include "ndl_common.h"
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 #include "base64.h"
 #include "opus_constants.h"

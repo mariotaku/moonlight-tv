@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "util/logging.h"
+#include "module/logging.h"
 
 __attribute__((unused)) int _CGL_LOG_DEBUG(const char *tag, const char *fmt, ...) {
     char app_tag[64];

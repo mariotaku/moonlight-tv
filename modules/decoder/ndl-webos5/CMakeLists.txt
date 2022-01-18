@@ -7,12 +7,6 @@ add_library(moonlight-ndl-webos5 SHARED
     ndl_webos5.c
     base64.c
 )
-target_include_directories(moonlight-ndl-webos5 PRIVATE 
-    ${CMAKE_SOURCE_DIR}/src/stream/audio
-    ${CMAKE_SOURCE_DIR}/src/stream/video
-    ${CMAKE_SOURCE_DIR}/src
-    ${PBNJSON_INCLUDE_DIRS}
-)
 target_link_libraries(moonlight-ndl-webos5 PRIVATE moonlight-module-api opus NDL_directmedia)
 target_compile_definitions(moonlight-ndl-webos5 PRIVATE WEBOS_TARGET_VERSION_MAJOR=5 PLUGIN_SYMBOL_SUFFIX=ndl_webos5 "$<$<CONFIG:DEBUG>:DEBUG>")
 

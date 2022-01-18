@@ -6,8 +6,8 @@
 #include <NDL_directmedia.h>
 
 #include "ndl_common.h"
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 bool media_initialized = false;
 logvprintf_fn module_logvprintf;

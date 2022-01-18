@@ -14,12 +14,6 @@ else ()
     add_library(moonlight-lgnc SHARED ${DECODER_LGNC_SRC})
 endif ()
 
-target_include_directories(moonlight-lgnc PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/stream/audio
-        ${CMAKE_SOURCE_DIR}/src/stream/video
-        ${CMAKE_SOURCE_DIR}/src
-        ${PBNJSON_INCLUDE_DIRS}
-        )
 target_link_libraries(moonlight-lgnc PRIVATE moonlight-module-api opus lgncopenapi)
 target_compile_definitions(moonlight-lgnc PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 

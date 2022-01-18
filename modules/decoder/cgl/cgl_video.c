@@ -4,8 +4,8 @@
 #include <Limelight.h>
 #include <cgl.h>
 
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE 2048 * 1024

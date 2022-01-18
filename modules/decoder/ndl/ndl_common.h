@@ -2,7 +2,7 @@
 
 #include <NDL_directmedia.h>
 
-#include "stream/module/api.h"
+#include "module/api.h"
 
 #define media_initialized PLUGIN_SYMBOL_NAME(decoder_media_initialized)
 #define media_loaded PLUGIN_SYMBOL_NAME(decoder_media_loaded)

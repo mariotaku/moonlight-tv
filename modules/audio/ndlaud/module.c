@@ -3,8 +3,8 @@
 
 #include <NDL_directmedia.h>
 
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 static bool ndl_initialized = false;
 logvprintf_fn module_logvprintf;

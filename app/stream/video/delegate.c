@@ -1,10 +1,9 @@
 #include "delegate.h"
 
 #include <stddef.h>
-#include <memory.h>
 
 #include "stream/session.h"
-#include "stream/module/api.h"
+#include "module/api.h"
 
 #include "util/bus.h"
 #include "ui/streaming/streaming.controller.h"

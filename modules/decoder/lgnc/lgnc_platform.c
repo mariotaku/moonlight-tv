@@ -5,8 +5,8 @@
 #include <lgnc_plugin.h>
 #include <lgnc_directvideo.h>
 
-#include "stream/module/api.h"
-#include "util/logging.h"
+#include "module/api.h"
+#include "module/logging.h"
 
 static bool lgnc_initialized = false;
 static bool lgnc_ready_for_check = false;

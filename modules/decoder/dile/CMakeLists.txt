@@ -19,12 +19,6 @@ if (DECODER_DILE_CURRENT_ENABLED)
 
 add_library(moonlight-dile SHARED ${COMMON_SRC} current/services_current.c current/VideoOutputService.c)
 
-target_include_directories(moonlight-dile PRIVATE
-        .
-    ${CMAKE_SOURCE_DIR}/src/stream/audio
-    ${CMAKE_SOURCE_DIR}/src/stream/video
-    ${CMAKE_SOURCE_DIR}/src
-)
 target_link_libraries(moonlight-dile PRIVATE moonlight-module-api opus dile_audio_direct dile_vdec_direct helpers
     ${GLIB_LIBRARIES} ${PBNJSON_LIBRARIES} ${LUNA_SERVICE_LIBRARIES} resource_mgr_client_c ${MEDIARESCALC_LIBRARIES})
 target_include_directories(moonlight-dile SYSTEM PRIVATE
@@ -42,13 +36,6 @@ add_library(moonlight-dile-legacy SHARED ${COMMON_SRC}
     legacy/services_legacy.c
     legacy/VideoSinkManagerService.c
     legacy/TVService.c
-)
-
-target_include_directories(moonlight-dile-legacy PRIVATE
-        .
-    ${CMAKE_SOURCE_DIR}/src/stream/audio
-    ${CMAKE_SOURCE_DIR}/src/stream/video
-    ${CMAKE_SOURCE_DIR}/src
 )
 
 target_link_libraries(moonlight-dile-legacy PRIVATE moonlight-module-api opus dile_audio_direct dile_vdec_direct helpers AcbAPI

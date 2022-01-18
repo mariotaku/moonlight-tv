@@ -1,9 +1,9 @@
 #include "AVStreamPlayer.h"
-#include "util/logging.h"
+#include "module/logging.h"
 
 #include <cassert>
 
-#include "stream/module/api.h"
+#include "module/api.h"
 
 #include <memory>
 #include <cstring>

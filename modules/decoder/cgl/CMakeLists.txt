@@ -9,13 +9,6 @@ set(DECODER_CGL_SRC
 
 add_library(moonlight-cgl SHARED ${DECODER_CGL_SRC})
 
-target_include_directories(moonlight-cgl PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/stream/audio
-        ${CMAKE_SOURCE_DIR}/src/stream/video
-        ${CMAKE_SOURCE_DIR}/src
-        ${PBNJSON_INCLUDE_DIRS}
-        )
-
 target_link_libraries(moonlight-cgl PRIVATE moonlight-module-api opus cgl)
 target_compile_definitions(moonlight-cgl PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 

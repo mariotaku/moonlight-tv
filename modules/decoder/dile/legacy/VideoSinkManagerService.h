@@ -1,5 +1,5 @@
 #pragma once
-#include "stream/module/api.h"
+#include "module/api.h"
 
 #include <stdbool.h>
 
