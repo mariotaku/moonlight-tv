@@ -3,8 +3,14 @@
 #include "lvgl/ext/lv_child_group.h"
 
 #include "util/i18n.h"
+#include "util/font.h"
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title);
+
+static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title);
+
+static void pin_toggle(lv_event_t *e);
+
 
 lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
@@ -57,13 +63,18 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
 
     lv_obj_t *stats = lv_obj_create(scene);
     lv_obj_remove_style_all(stats);
-    lv_obj_set_style_pad_all(stats, LV_DPX(15), 0);
+    lv_obj_set_style_text_color(stats, lv_color_white(), 0);
     lv_obj_set_style_pad_gap(stats, LV_DPX(5), 0);
-    lv_obj_set_style_bg_opa(stats, LV_OPA_40, 0);
     lv_obj_set_style_bg_color(stats, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(stats, LV_OPA_40, 0);
+    lv_obj_set_style_bg_opa(stats, LV_OPA_30, LV_STATE_USER_1);
+    lv_obj_set_style_pad_bottom(stats, LV_DPX(10), 0);
     lv_obj_set_size(stats, LV_PCT(40), LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(stats, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_align(stats, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
+    lv_obj_set_user_data(stats, controller);
+
+    overlay_title(stats, locstr("Performance"));
 
     controller->stats_items.resolution = stat_label(stats, "Resolution");
     controller->stats_items.decoder = stat_label(stats, "Decoder");
@@ -139,6 +150,7 @@ static lv_obj_t *stat_label(lv_obj_t *parent, const char *title) {
     lv_obj_t *container = lv_obj_create(parent);
     lv_obj_remove_style_all(container);
     lv_obj_set_size(container, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_hor(container, LV_DPX(15), 0);
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_ROW);
     lv_obj_set_style_flex_main_place(container, LV_FLEX_ALIGN_SPACE_BETWEEN, 0);
     lv_obj_t *label = lv_label_create(container);
@@ -147,4 +159,57 @@ static lv_obj_t *stat_label(lv_obj_t *parent, const char *title) {
     lv_obj_t *value = lv_label_create(container);
     lv_obj_set_style_text_font(value, lv_theme_get_font_small(container), 0);
     return value;
+}
+
+static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title) {
+    lv_obj_t *stats_title = lv_label_create(parent);
+    lv_label_set_text_static(stats_title, title);
+    lv_obj_set_width(stats_title, LV_PCT(100));
+    lv_obj_set_flex_grow(stats_title, 1);
+    lv_obj_set_style_bg_opa(stats_title, LV_OPA_20, 0);
+    lv_obj_set_style_bg_color(stats_title, lv_color_black(), 0);
+    lv_obj_set_style_pad_hor(stats_title, LV_DPX(15), 0);
+    lv_obj_set_style_pad_ver(stats_title, LV_DPX(10), 0);
+    lv_obj_t *stats_pin = lv_btn_create(stats_title);
+    lv_group_remove_obj(stats_pin);
+    lv_obj_add_flag(stats_pin, LV_OBJ_FLAG_CHECKABLE);
+    lv_obj_set_style_bg_color(stats_pin, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(stats_pin, LV_OPA_20, 0);
+    lv_obj_set_style_pad_all(stats_pin, 0, 0);
+    lv_obj_set_style_radius(stats_pin, LV_DPX(4), 0);
+    lv_obj_set_style_transform_width(stats_pin, LV_DPX(5), 0);
+    lv_obj_set_style_transform_height(stats_pin, LV_DPX(5), 0);
+    lv_obj_set_style_text_opa(stats_pin, LV_OPA_50, 0);
+
+    lv_obj_set_style_transform_width(stats_pin, LV_DPX(5), LV_STATE_PRESSED);
+    lv_obj_set_style_transform_height(stats_pin, LV_DPX(5), LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(stats_pin, LV_OPA_40, LV_STATE_PRESSED);
+
+    lv_obj_set_style_bg_color(stats_pin, lv_color_black(), LV_STATE_CHECKED);
+    lv_obj_set_style_text_opa(stats_pin, LV_OPA_COVER, LV_STATE_CHECKED);
+    lv_obj_set_style_bg_opa(stats_pin, LV_OPA_10, LV_STATE_CHECKED);
+    lv_obj_set_ext_click_area(stats_pin, LV_DPX(5));
+
+    lv_obj_t *stat_pin_content = lv_img_create(stats_pin);
+    lv_obj_set_style_text_font(stat_pin_content, app_iconfonts.small, 0);
+    lv_img_set_src(stat_pin_content, MAT_SYMBOL_PUSH_PIN);
+
+    lv_obj_align(stats_pin, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_obj_add_event_cb(stats_pin, pin_toggle, LV_EVENT_VALUE_CHANGED, parent);
+    return stats_title;
+}
+
+static void pin_toggle(lv_event_t *e) {
+    lv_obj_t *toggle_view = lv_event_get_user_data(e);
+    lv_fragment_t *fragment = lv_obj_get_user_data(toggle_view);
+    bool checked = lv_obj_has_state(lv_event_get_current_target(e), LV_STATE_CHECKED);
+    bool pinned = toggle_view->parent != fragment->obj;
+    if (checked == pinned) return;
+    if (checked) {
+        lv_obj_set_parent(toggle_view, lv_layer_top());
+        lv_obj_add_state(toggle_view, LV_STATE_USER_1);
+    } else {
+        lv_obj_set_parent(toggle_view, fragment->obj);
+        lv_obj_clear_state(toggle_view, LV_STATE_USER_1);
+    }
 }

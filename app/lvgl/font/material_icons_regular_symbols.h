@@ -16,3 +16,4 @@
 #define MAT_SYMBOL_ARROW_DROP_DOWN "\xee\x97\x85"
 #define MAT_SYMBOL_CHECK "\xee\x97\x8a"
 #define MAT_SYMBOL_PLAY_ARROW "\xee\x80\xb7"
+#define MAT_SYMBOL_PUSH_PIN "\xef\x84\x8d"

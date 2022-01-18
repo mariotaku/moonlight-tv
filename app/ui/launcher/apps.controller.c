@@ -193,7 +193,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     update_grid_config(controller);
     lv_obj_set_user_data(controller->applist, controller);
 
-    if (controller->node->state.code == SERVER_STATE_NONE) {
+    if (controller->node->state.code != SERVER_STATE_QUERYING) {
         pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
     } else if (controller->node->state.code == SERVER_STATE_ONLINE) {
         apploader_load(controller->apploader, appload_cb, controller);

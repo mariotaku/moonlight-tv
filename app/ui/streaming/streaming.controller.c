@@ -42,6 +42,8 @@ static void overlay_key_cb(lv_event_t *e);
 
 static void update_buttons_layout(streaming_controller_t *controller);
 
+bool stats_showing(streaming_controller_t *controller);
+
 const lv_fragment_class_t streaming_controller_class = {
         .constructor_cb = streaming_controller_ctor,
         .destructor_cb = controller_dtor,
@@ -59,10 +61,14 @@ bool streaming_overlay_shown() {
     return overlay_showing;
 }
 
+bool stats_showing(streaming_controller_t *controller) {
+    return streaming_overlay_shown() || controller->stats->parent != controller->scene;
+}
+
 bool streaming_refresh_stats() {
     streaming_controller_t *controller = current_controller;
     if (!controller) return false;
-    if (!streaming_overlay_shown()) {
+    if (!stats_showing(controller)) {
         return false;
     }
     const struct VIDEO_STATS *dst = &vdec_summary_stats;
@@ -180,10 +186,10 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->vmouse_btn, toggle_vmouse, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
-    lv_obj_add_event_cb(controller->base.obj, overlay_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->scene, overlay_key_cb, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CANCEL, controller);
 
-    lv_obj_t *notice = lv_obj_create(lv_layer_top());
+    lv_obj_t *notice = lv_obj_create(lv_layer_sys());
     lv_obj_set_size(notice, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_align(notice, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
     lv_obj_set_style_radius(notice, LV_DPX(5), 0);
@@ -205,6 +211,9 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
     if (controller->notice) {
         lv_obj_del(controller->notice);
+    }
+    if (controller->stats->parent != controller->scene) {
+        lv_obj_del(controller->stats);
     }
     app_input_set_group(NULL);
     lv_group_del(controller->group);
