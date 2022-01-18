@@ -26,7 +26,7 @@ typedef enum applog_level_t {
 
 typedef void (*logvprintf_fn)(int, const char *, const char *, va_list);
 
-#ifdef MODULE_EMBEDDED
+#if MODULE_EMBEDDED
 
 void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...);
 
