@@ -13,6 +13,15 @@ enum STREAMING_STATUS {
 };
 typedef enum STREAMING_STATUS STREAMING_STATUS;
 
+typedef enum streaming_interrupt_reason_t {
+    STREAMING_INTERRUPT_USER,
+    STREAMING_INTERRUPT_WATCHDOG,
+    STREAMING_INTERRUPT_NETWORK,
+    STREAMING_INTERRUPT_DECODER,
+    STREAMING_INTERRUPT_BACKGROUND,
+    STREAMING_INTERRUPT_QUIT,
+} streaming_interrupt_reason_t;
+
 typedef struct VIDEO_STATS {
     uint32_t totalFrames;
     uint32_t receivedFrames;
@@ -50,7 +59,7 @@ bool streaming_running();
 
 int streaming_begin(const SERVER_DATA *server, const APP_LIST *app);
 
-void streaming_interrupt(bool quitapp);
+void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason);
 
 void streaming_wait_for_stop();
 
@@ -61,3 +70,12 @@ void streaming_enter_fullscreen();
 void streaming_enter_overlay(int x, int y, int w, int h);
 
 void streaming_error(int code, const char *fmt, ...);
+
+/**
+ * Start a timer to interrupt stream if no video frame received after a period of time
+ */
+void streaming_watchdog_start();
+
+void streaming_watchdog_stop();
+
+void streaming_watchdog_reset();

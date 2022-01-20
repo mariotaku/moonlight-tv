@@ -87,7 +87,7 @@ void performPendingSpecialKeyCombo() {
         case KeyComboQuit:
             SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
                         "Detected quit key combo");
-            streaming_interrupt(false);
+            streaming_interrupt(false, STREAMING_INTERRUPT_USER);
             break;
 
         case KeyComboUngrabInput:

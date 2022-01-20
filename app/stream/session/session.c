@@ -54,7 +54,7 @@ void streaming_init() {
 }
 
 void streaming_destroy() {
-    streaming_interrupt(false);
+    streaming_interrupt(false, STREAMING_INTERRUPT_QUIT);
     streaming_wait_for_stop();
 
     SDL_DestroyMutex(streaming_state_lock);
@@ -107,7 +107,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
     return 0;
 }
 
-void streaming_interrupt(bool quitapp) {
+void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason) {
     session_t *session = session_active;
     if (!session || session->interrupted) {
         return;
@@ -198,6 +198,7 @@ int streaming_worker(session_t *session) {
         goto thread_cleanup;
     }
     streaming_set_status(STREAMING_STREAMING);
+    streaming_watchdog_start();
     session->pres = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
     SDL_LockMutex(session->mutex);
@@ -206,6 +207,7 @@ int streaming_worker(session_t *session) {
         SDL_CondWait(session->cond, session->mutex);
     }
     SDL_UnlockMutex(session->mutex);
+    streaming_watchdog_stop();
     session->pres = NULL;
     bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
 

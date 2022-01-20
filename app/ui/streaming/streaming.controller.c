@@ -220,11 +220,11 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
 }
 
 static void exit_streaming(lv_event_t *event) {
-    streaming_interrupt(true);
+    streaming_interrupt(true, STREAMING_INTERRUPT_USER);
 }
 
 static void suspend_streaming(lv_event_t *event) {
-    streaming_interrupt(false);
+    streaming_interrupt(false, STREAMING_INTERRUPT_USER);
 }
 
 static void open_keyboard(lv_event_t *event) {

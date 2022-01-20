@@ -98,8 +98,9 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         }
         vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
         vdec_temp_stats.decodedFrames++;
+        streaming_watchdog_reset();
     } else if (err == DR_INTERRUPT) {
-        streaming_interrupt(false);
+        streaming_interrupt(false, STREAMING_INTERRUPT_DECODER);
         err = DR_OK;
     }
     return err;

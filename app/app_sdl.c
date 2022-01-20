@@ -52,7 +52,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
     switch (event->type) {
         case SDL_APP_WILLENTERBACKGROUND: {
             // Interrupt streaming because app will go to background
-            streaming_interrupt(false);
+            streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
             break;
         }
         case SDL_APP_DIDENTERFOREGROUND: {
@@ -69,7 +69,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
 #if !FEATURE_FORCE_FULLSCREEN
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
-                        streaming_interrupt(false);
+                        streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
                     }
 #endif
                     window_focus_gained = false;
@@ -83,7 +83,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
-                        streaming_interrupt(false);
+                        streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
                     }
                     break;
                 case SDL_WINDOWEVENT_EXPOSED:

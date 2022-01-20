@@ -175,6 +175,7 @@ set(SOURCES
         app/stream/module/symbols.c
         app/stream/session/session.c
         app/stream/session/connection.c
+        app/stream/session/watchdog.c
         app/stream/settings.c
         app/stream/audio/stats.c
         app/stream/video/delegate.c

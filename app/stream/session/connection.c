@@ -7,7 +7,7 @@
 static void connection_terminated(int errorCode) {
     applog_e("Session", "Connection terminated, errorCode = 0x%x", errorCode);
     streaming_error(0, "Connection terminated, errorCode = 0x%x", errorCode);
-    streaming_interrupt(false);
+    streaming_interrupt(false, STREAMING_INTERRUPT_NETWORK);
 }
 
 static void connection_log_message(const char *format, ...) {
