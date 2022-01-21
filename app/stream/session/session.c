@@ -115,6 +115,22 @@ void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason) {
     SDL_LockMutex(session->mutex);
     session->quitapp = quitapp;
     session->interrupted = true;
+    if (reason >= STREAMING_INTERRUPT_ERROR) {
+        switch (reason) {
+            case STREAMING_INTERRUPT_NETWORK:
+                streaming_error(reason, "Network error happened");
+                break;
+            case STREAMING_INTERRUPT_WATCHDOG:
+                streaming_error(reason, "Stream stalled");
+                break;
+            case STREAMING_INTERRUPT_DECODER:
+                streaming_error(reason, "Decoder reported error");
+                break;
+            default:
+                streaming_error(reason, "Error occurred while in streaming");
+                break;
+        }
+    }
     SDL_CondSignal(session->cond);
     SDL_UnlockMutex(session->mutex);
 }

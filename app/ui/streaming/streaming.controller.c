@@ -147,6 +147,7 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
         case USER_STREAM_CLOSE: {
             controller->progress = progress_dialog_create(locstr("Disconnecting..."));
             lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->stats, LV_OBJ_FLAG_HIDDEN);
             break;
         }
         case USER_STREAM_FINISHED: {
