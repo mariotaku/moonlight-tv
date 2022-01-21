@@ -119,7 +119,7 @@ typedef struct subimage_info_t {
 coverloader_t *coverloader_new() {
     coverloader_t *loader = malloc(sizeof(coverloader_t));
     refcounter_init(&loader->refcounter);
-    loader->mem_cache = lv_lru_new(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
+    loader->mem_cache = lv_lru_create(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
     loader->base_loader = img_loader_create(&coverloader_impl);
     loader->client = app_gs_client_new();
     loader->reqlist = NULL;
@@ -132,7 +132,7 @@ void coverloader_unref(coverloader_t *loader) {
     }
     gs_destroy(loader->client);
     img_loader_destroy(loader->base_loader);
-    lv_lru_free(loader->mem_cache);
+    lv_lru_del(loader->mem_cache);
     refcounter_destroy(&loader->refcounter);
     free(loader);
 }
