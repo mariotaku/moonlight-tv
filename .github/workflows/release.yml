@@ -26,7 +26,7 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Install webOS CLI
         run: sudo npm install -g @webosose/ares-cli
@@ -38,13 +38,16 @@ jobs:
         run: sudo apt-get -y -qq install cmake
 
       - name: Download webOS NDK
-        run: wget -q https://github.com/webosbrew/meta-lg-webos-ndk/releases/download/1.0.g-rev.5/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -P ${{github.workspace}}/temp
+        run: wget -q https://github.com/openlgtv/buildroot-nc4/releases/download/webos-6e2e155/arm-webos-linux-gnueabi_sdk-buildroot.tar.gz -P /tmp
 
-      - name: Install webOS NDK
-        run: chmod 755 ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh && sudo ${{github.workspace}}/temp/webos-sdk-x86_64-armv7a-neon-toolchain-1.0.g.sh -y
+      - name: Extract webOS NDK
+        run: |
+          cd /tmp
+          tar xzf arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
+          ./arm-webos-linux-gnueabi_sdk-buildroot/relocate-sdk.sh
 
       - name: Run easy_build
-        run: ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: TOOLCHAIN_FILE=/tmp/arm-webos-linux-gnueabi_sdk-buildroot/usr/share/buildroot/toolchainfile.cmake ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
       - name: Create Release (webOS)
         id: create_release_webos
