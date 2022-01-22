@@ -73,10 +73,13 @@ jobs:
 
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Install webOS CLI
         run: sudo npm install -g @webosose/ares-cli
+
+      - name: Install Compatibility checker
+        run: sudo npm install -g @webosbrew/compat-checker
 
       - name: Install Dev Dependency
         run: npm install
@@ -92,6 +95,9 @@ jobs:
 
       - name: Run easy_build
         run: ./scripts/webos/easy_build.sh
+
+      - name: Verify compatibility
+        run: webosbrew-ipk-compat-checker dist/*.ipk
 
       - uses: actions/upload-artifact@v2
         with:
