@@ -1,11 +1,8 @@
 name: Release
 
 on:
-  push:
-    branches-ignore:
-      - '*'
-    tags:
-      - 'v*.*.*'
+  release:
+    types: [created]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -55,8 +52,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Release ${{ steps.tagName.outputs.tag }}
-          prerelease: true
           allowUpdates: true
+          omitNameDuringUpdate: true
           artifacts: dist/*.ipk,dist/*.manifest.json
 
   release-raspi:
@@ -133,6 +130,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Release ${{ steps.tagName.outputs.tag }}
-          prerelease: true
           allowUpdates: true
+          omitNameDuringUpdate: true
           artifacts: build/*.deb,build/Release
