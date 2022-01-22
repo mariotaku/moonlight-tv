@@ -21,9 +21,11 @@ if [ -z "$CI" ]; then
   git submodule update --init --recursive
 fi
 
-echo "Setup environment"
-. /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi
-TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake
+if [ -z "${TOOLCHAIN_FILE}" ]; then
+  echo "Setup environment"
+  . /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi
+  TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake
+fi
 
 echo "Configure project"
 if [ ! -d "${CMAKE_BINARY_DIR}" ]; then
