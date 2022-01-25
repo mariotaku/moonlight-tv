@@ -251,7 +251,7 @@ static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
 static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (resp->server != controller->node->server) return;
-    lv_fragment_remove_self((lv_fragment_t *) controller);
+    lv_fragment_del((lv_fragment_t *) controller);
 }
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {

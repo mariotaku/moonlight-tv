@@ -46,7 +46,7 @@ bool ui_render_background() {
 bool ui_dispatch_userevent(int which, void *data1, void *data2) {
     bool handled = false;
     ui_userevent_t userdata = {data1, data2};
-    handled |= lv_fragment_manager_dispatch_event(app_uimanager, which, &userdata);
+    handled |= lv_fragment_manager_send_event(app_uimanager, which, &userdata);
     if (!handled) {
         switch (which) {
             case USER_STREAM_OPEN: {
@@ -137,5 +137,6 @@ void ui_cb_destroy_fragment(lv_event_t *e) {
     if (fragment->cls->obj_deleted_cb) {
         fragment->cls->obj_deleted_cb(fragment, lv_event_get_target(e));
     }
+    fragment->obj = NULL;
     lv_fragment_del(fragment);
 }
