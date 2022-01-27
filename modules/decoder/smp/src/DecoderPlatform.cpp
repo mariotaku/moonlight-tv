@@ -44,7 +44,7 @@ extern "C" bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->hdr = DECODER_HDR_ALWAYS;
     dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->colorRange = COLOR_RANGE_FULL;
-    dinfo->maxBitrate = 60000;
+    dinfo->maxBitrate = 65000;
     dinfo->suggestedBitrate = 35000;
     return true;
 }

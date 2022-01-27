@@ -40,7 +40,7 @@ MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->accelerated = true;
     dinfo->audio = true;
     dinfo->colorSpace = COLORSPACE_REC_709;
-    dinfo->maxBitrate = 50000;
+    dinfo->maxBitrate = 65000;
     dinfo->suggestedBitrate = 35000;
     return true;
 }
