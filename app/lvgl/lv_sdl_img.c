@@ -1,5 +1,4 @@
 #include "lv_sdl_img.h"
-#include "lv_disp_drv_app.h"
 
 #include <mbedtls/base64.h>
 

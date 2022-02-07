@@ -30,7 +30,7 @@ typedef struct {
     bool needs_restart;
 } settings_controller_t;
 
-lv_obj_t *settings_win_create(struct lv_fragment_t *self, lv_obj_t *parent);
+lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent);
 
 extern const lv_fragment_class_t settings_controller_cls;
 extern const lv_fragment_class_t settings_pane_basic_cls;
