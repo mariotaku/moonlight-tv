@@ -13,6 +13,7 @@
 #define decoder_finalize PLUGIN_SYMBOL_NAME(decoder_finalize)
 #define decoder_callbacks PLUGIN_SYMBOL_NAME(decoder_callbacks)
 #define audio_callbacks PLUGIN_SYMBOL_NAME(audio_callbacks)
+#define presenter_callbacks PLUGIN_SYMBOL_NAME(presenter_callbacks)
 
 using SMP_DECODER_NS::AudioConfig;
 using SMP_DECODER_NS::AVStreamPlayer;
@@ -41,7 +42,7 @@ extern "C" bool decoder_check(PDECODER_INFO dinfo) {
     dinfo->audioConfig = AUDIO_CONFIGURATION_51_SURROUND;
 #endif
     dinfo->hevc = true;
-    dinfo->hdr = DECODER_HDR_ALWAYS;
+    dinfo->hdr = DECODER_HDR_SUPPORTED;
     dinfo->colorSpace = COLORSPACE_REC_709;
     dinfo->colorRange = COLOR_RANGE_FULL;
     dinfo->maxBitrate = 65000;
@@ -95,6 +96,12 @@ static int videoSubmit(PDECODE_UNIT decodeUnit) {
     return streamPlayer->submitVideo(decodeUnit);
 }
 
+static int videoSetHdr(bool hdr) {
+    if (!streamPlayer)
+        return DR_OK;
+    return streamPlayer->setHdr(hdr);
+}
+
 static void audioSubmit(char *sampleData, int sampleLength) {
     if (!streamPlayer)
         return;
@@ -117,7 +124,7 @@ static void audioCleanup() {
     _destroyPlayer();
 }
 
-DECODER_RENDERER_CALLBACKS decoder_callbacks = {
+MODULE_API DECODER_RENDERER_CALLBACKS decoder_callbacks = {
         .setup = videoSetup,
         .start = nullptr,
         .stop = avStop,
@@ -126,11 +133,15 @@ DECODER_RENDERER_CALLBACKS decoder_callbacks = {
         .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
 };
 
-AUDIO_RENDERER_CALLBACKS audio_callbacks = {
+MODULE_API AUDIO_RENDERER_CALLBACKS audio_callbacks = {
         .init = _audioSetup,
         .start = nullptr,
         .stop = avStop,
         .cleanup = audioCleanup,
         .decodeAndPlaySample = audioSubmit,
         .capabilities = CAPABILITY_DIRECT_SUBMIT,
+};
+
+MODULE_API VIDEO_PRESENTER_CALLBACKS presenter_callbacks = {
+        .setHdr = videoSetHdr,
 };

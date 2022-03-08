@@ -253,14 +253,22 @@ int streaming_worker(session_t *session) {
 
 void streaming_enter_fullscreen() {
     app_set_mouse_grab(true);
-    if (session_active->pres)
+    if (session_active->pres && session_active->pres->enterFullScreen) {
         session_active->pres->enterFullScreen();
+    }
 }
 
 void streaming_enter_overlay(int x, int y, int w, int h) {
     app_set_mouse_grab(false);
-    if (session_active->pres)
+    if (session_active->pres && session_active->pres->enterOverlay) {
         session_active->pres->enterOverlay(x, y, w, h);
+    }
+}
+
+void streaming_set_hdr(bool hdr) {
+    if (session_active->pres && session_active->pres->setHdr) {
+        session_active->pres->setHdr(hdr);
+    }
 }
 
 void streaming_set_status(STREAMING_STATUS status) {

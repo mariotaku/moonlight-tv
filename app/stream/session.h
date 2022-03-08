@@ -70,6 +70,8 @@ void streaming_enter_fullscreen();
 
 void streaming_enter_overlay(int x, int y, int w, int h);
 
+void streaming_set_hdr(bool hdr);
+
 void streaming_error(int code, const char *fmt, ...);
 
 /**

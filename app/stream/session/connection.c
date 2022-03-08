@@ -47,4 +47,5 @@ CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
         .logMessage = connection_log_message,
         .rumble = absinput_rumble,
         .connectionStatusUpdate = connection_status_update,
+        .setHdrMode = streaming_set_hdr
 };

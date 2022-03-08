@@ -80,6 +80,8 @@ typedef void (*PresenterEnterFullScreen)(void);
 
 typedef void (*PresenterEnterOverlay)(int x, int y, int w, int h);
 
+typedef void (*PresenterSetHDR)(bool hdr);
+
 typedef bool (*RenderQueueSubmit)(void *);
 
 typedef bool (*RenderSetup)(PSTREAM_CONFIGURATION conf, HOST_RENDER_CONTEXT *host_ctx);
@@ -93,6 +95,7 @@ typedef void (*RenderCleanup)();
 typedef struct _VIDEO_PRESENTER_CALLBACKS {
     PresenterEnterFullScreen enterFullScreen;
     PresenterEnterOverlay enterOverlay;
+    PresenterSetHDR setHdr;
 } VIDEO_PRESENTER_CALLBACKS, *PVIDEO_PRESENTER_CALLBACKS;
 
 typedef struct _VIDEO_RENDER_CALLBACKS {

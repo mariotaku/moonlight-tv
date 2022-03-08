@@ -32,7 +32,7 @@ namespace SMP_DECODER_NS
         int submitVideo(PDECODE_UNIT decodeUnit);
         void submitAudio(char *sampleData, int sampleLength);
         void sendEOS();
-        bool restart();
+        void setHdr(bool hdr);
 
         VideoConfig videoConfig;
         AudioConfig audioConfig;
@@ -47,7 +47,7 @@ namespace SMP_DECODER_NS
             EOS,
         };
 
-        std::string makeLoadPayload(VideoConfig &videoConfig, AudioConfig &audioConfig, uint64_t time);
+        std::string makeLoadPayload(VideoConfig &vidCfg, AudioConfig &audCfg, uint64_t time);
         std::string makeOpusHeader(OPUS_MULTISTREAM_CONFIGURATION &opusConfig);
         bool submitBuffer(const void *data, size_t size, uint64_t pts, int esData);
 
@@ -63,6 +63,7 @@ namespace SMP_DECODER_NS
         char *video_buffer_;
         unsigned long long video_pts_;
         bool request_interrupt_;
+        bool hdr_;
 #ifdef USE_ACB
         void AcbHandler(long acb_id, long task_id, long event_type, long app_state, long play_state, const char *reply);
         std::unique_ptr<Acb> acb_client_;

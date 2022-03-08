@@ -132,7 +132,7 @@ bool AVStreamPlayer::submitBuffer(const void *data, size_t size, uint64_t pts, i
         return false;
     }
     char payload[256];
-    snprintf(payload, sizeof(payload), "{\"bufferAddr\":\"%p\",\"bufferSize\":%u,\"pts\":%llu,\"esData\":%d}",
+    snprintf(payload, sizeof(payload), R"({"bufferAddr":"%p","bufferSize":%u,"pts":%llu,"esData":%d})",
              data, size, pts, esData);
     std::string result = starfish_media_apis_->Feed(payload);
     std::size_t found = result.find(std::string("Ok"));
@@ -162,7 +162,11 @@ void AVStreamPlayer::sendEOS() {
     starfish_media_apis_->pushEOS();
 }
 
-std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfig &audioConfig, uint64_t time) {
+void AVStreamPlayer::setHdr(bool hdr) {
+    hdr_ = hdr;
+}
+
+std::string AVStreamPlayer::makeLoadPayload(VideoConfig &vidCfg, AudioConfig &audCfg, uint64_t time) {
     pj::JValue payload = pj::Object();
     pj::JValue args = pj::Array();
     pj::JValue arg = pj::Object();
@@ -179,25 +183,25 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
 
     arg.put("mediaTransportType", "BUFFERSTREAM");
     pj::JValue adaptiveStreaming = pj::Object();
-    adaptiveStreaming.put("maxWidth", videoConfig.width);
-    adaptiveStreaming.put("maxHeight", videoConfig.height);
-    adaptiveStreaming.put("maxFrameRate", videoConfig.fps);
+    adaptiveStreaming.put("maxWidth", vidCfg.width);
+    adaptiveStreaming.put("maxHeight", vidCfg.height);
+    adaptiveStreaming.put("maxFrameRate", vidCfg.fps);
 
-    if (videoConfig.format & VIDEO_FORMAT_MASK_H264) {
+    if (vidCfg.format & VIDEO_FORMAT_MASK_H264) {
         codec.put("video", "H264");
-    } else if (videoConfig.format & VIDEO_FORMAT_MASK_H265) {
+    } else if (vidCfg.format & VIDEO_FORMAT_MASK_H265) {
         codec.put("video", "H265");
     }
 
-    if (audioConfig.type) {
+    if (audCfg.type) {
         pj::JValue audioSink = pj::Object();
         audioSink.put("type", "main_sound");
         avSink.put("audioSink", audioSink);
         codec.put("audio", "OPUS");
         pj::JValue opusInfo = pj::Object();
-        opusInfo.put("channels", std::to_string(audioConfig.opusConfig.channelCount));
-        opusInfo.put("sampleRate", static_cast<double>(audioConfig.opusConfig.sampleRate) / 1000.0);
-        opusInfo.put("streamHeader", makeOpusHeader(audioConfig.opusConfig));
+        opusInfo.put("channels", std::to_string(audCfg.opusConfig.channelCount));
+        opusInfo.put("sampleRate", static_cast<double>(audCfg.opusConfig.sampleRate) / 1000.0);
+        opusInfo.put("streamHeader", makeOpusHeader(audCfg.opusConfig));
         contents.put("opusInfo", opusInfo);
     }
     contents.put("codec", codec);
@@ -240,7 +244,7 @@ std::string AVStreamPlayer::makeLoadPayload(VideoConfig &videoConfig, AudioConfi
     // Seems useful on webOS 5+
     option.put("lowDelayMode", true);
     option.put("transmission", transmission);
-    option.put("needAudio", audioConfig.type != 0);
+    option.put("needAudio", audCfg.type != 0);
 #ifdef USE_SDL_WEBOS
     option.put("windowId", window_id_);
 #endif
@@ -296,7 +300,7 @@ void AVStreamPlayer::SetMediaVideoData(const char *data) {
     pj::JSchema schema = pj::JSchema::AllSchema();
     pj::JValue parsed = pj::JDomParser::fromString(data, schema);
     pj::JValue video = parsed["video"];
-    if (videoConfig.format == VIDEO_FORMAT_H265_MAIN10 && video["hdrType"].asString() != "HDR10") {
+    if (hdr_ && videoConfig.format == VIDEO_FORMAT_H265_MAIN10 && video["hdrType"].asString() != "HDR10") {
         video.put("hdrType", "HDR10");
         applog_i("SMP", "Add missing HDR type");
     }
@@ -358,6 +362,5 @@ void AVStreamPlayer::AcbHandler(long acb_id, long task_id, long event_type, long
 #endif
 
 void AVStreamPlayer::LoadCallback(int type, int64_t numValue, const char *strValue, void *data) {
-    AVStreamPlayer *player = static_cast<AVStreamPlayer *>(data);
-    player->LoadCallback(type, numValue, strValue);
+    static_cast<AVStreamPlayer *>(data)->LoadCallback(type, numValue, strValue);
 }
