@@ -30,7 +30,7 @@ typedef struct view_pool_ll_t {
 
 typedef struct lv_grid_t {
     lv_obj_t obj;
-    lv_grid_adapter_t adapter;
+    lv_gridview_adapter_t adapter;
     /*Configs*/
     int column_count;
     lv_coord_t row_height;
@@ -165,13 +165,13 @@ void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height,
     }
 }
 
-void lv_grid_set_adapter(lv_obj_t *obj, const lv_grid_adapter_t *adapter) {
-    lv_memcpy(&((lv_grid_t *) obj)->adapter, adapter, sizeof(lv_grid_adapter_t));
+void lv_gridview_set_adapter(lv_obj_t *obj, const lv_gridview_adapter_t *adapter) {
+    lv_memcpy(&((lv_grid_t *) obj)->adapter, adapter, sizeof(lv_gridview_adapter_t));
 }
 
-void lv_grid_set_data(lv_obj_t *obj, void *data) {
+void lv_gridview_set_data(lv_obj_t *obj, void *data) {
     lv_grid_t *grid = (lv_grid_t *) obj;
-    lv_grid_adapter_t adapter = grid->adapter;
+    lv_gridview_adapter_t adapter = grid->adapter;
     void *olddata = grid->data;
     if (olddata == data) return;
     grid->data = data;
@@ -221,7 +221,7 @@ int lv_gridview_get_focused_index(lv_obj_t *obj) {
     return grid->focused_index;
 }
 
-void lv_grid_rebind(lv_obj_t *obj) {
+void lv_gridview_rebind(lv_obj_t *obj) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     for (int row_idx = LV_MAX(0, grid->row_start); row_idx <= grid->row_end; row_idx++) {
         for (int col_idx = 0; col_idx < grid->column_count; col_idx++) {
@@ -443,7 +443,7 @@ static void update_grid(lv_grid_t *grid, bool rebind) {
     if (grid->row_start != row_start || grid->row_end != row_end) {
         fill_rows(grid, row_start, row_end);
     } else if (rebind) {
-        lv_grid_rebind(obj);
+        lv_gridview_rebind(obj);
     }
 }
 

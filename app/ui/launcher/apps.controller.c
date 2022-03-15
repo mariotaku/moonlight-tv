@@ -90,7 +90,7 @@ static void app_detail_click_cb(lv_event_t *event);
 
 static apps_controller_t *current_instance = NULL;
 
-const static lv_grid_adapter_t apps_adapter = {
+const static lv_gridview_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
         .bind_view = adapter_bind_view,
@@ -140,7 +140,7 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_style_border_side(applist, LV_BORDER_SIDE_NONE, 0);
     lv_obj_set_style_bg_opa(applist, 0, 0);
     lv_obj_set_size(applist, LV_PCT(100), LV_PCT(100));
-    lv_grid_set_adapter(applist, &apps_adapter);
+    lv_gridview_set_adapter(applist, &apps_adapter);
     lv_obj_t *appload = controller->appload = lv_spinner_create(view, 1000, 60);
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
@@ -231,7 +231,7 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
     switch (code) {
         case USER_SIZE_CHANGED: {
             update_grid_config(controller);
-            lv_grid_rebind(controller->applist);
+            lv_gridview_rebind(controller->applist);
             break;
         }
         default:
@@ -326,7 +326,7 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_grid_set_data(controller->applist, controller->apploader->apps);
+                lv_gridview_set_data(controller->applist, controller->apploader->apps);
                 if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
                     lv_group_focus_obj(controller->applist);
                 }
@@ -476,7 +476,7 @@ static void applist_focus_leave(lv_event_t *event) {
 
 static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = userdata;
-    lv_grid_rebind(controller->applist);
+    lv_gridview_rebind(controller->applist);
     if (resp->result.code == GS_OK) {
         return;
     }

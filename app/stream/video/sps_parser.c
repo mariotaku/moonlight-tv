@@ -261,7 +261,6 @@ bool sps_parse_dimension_h264(const unsigned char *data, sps_dimension_t *dimens
     return true;
 }
 
-
 bool sps_parse_dimension_hevc(const unsigned char *data, sps_dimension_t *dimension) {
     uint8_t subwc[] = {1, 2, 2, 1, 1};
     uint8_t subhc[] = {1, 2, 1, 1, 1};
