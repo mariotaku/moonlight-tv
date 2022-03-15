@@ -89,6 +89,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->viewonly = false;
     config->rotate = 0;
     config->absmouse = true;
+    config->virtual_mouse = false;
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
@@ -149,6 +150,7 @@ void settings_write(const char *filename, PCONFIGURATION config) {
 
     ini_write_section(fp, "input");
     ini_write_bool(fp, "absmouse", config->absmouse);
+    ini_write_bool(fp, "virtual_mouse", config->virtual_mouse);
     ini_write_bool(fp, "swap_abxy", config->swap_abxy);
 
     ini_write_section(fp, "video");
@@ -226,6 +228,8 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
         config->viewonly = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("absmouse")) {
         config->absmouse = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("virtual_mouse")) {
+        config->virtual_mouse = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("swap_abxy")) {
         config->swap_abxy = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("video", "decoder")) {

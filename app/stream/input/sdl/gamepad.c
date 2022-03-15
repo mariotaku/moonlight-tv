@@ -111,12 +111,12 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
         } else if (vmouse_combo_pressed) {
             vmouse_combo_pressed = false;
             release_buttons(gamepad);
-            if (absinput_virtual_mouse) {
+            if (absinput_get_virtual_mouse()) {
                 vmouse_set_vector(0, 0);
                 vmouse_set_trigger(0, 0);
-                absinput_virtual_mouse = false;
+                absinput_set_virtual_mouse(false);
             } else {
-                absinput_virtual_mouse = true;
+                absinput_set_virtual_mouse(true);
             }
             return;
         }
@@ -132,7 +132,7 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
 void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event) {
     PGAMEPAD_STATE gamepad = get_gamepad(event->which);
     bool vmouse_intercepted = false;
-    bool vmouse = absinput_virtual_mouse;
+    bool vmouse = absinput_get_virtual_mouse();
     switch (event->axis) {
         case SDL_CONTROLLER_AXIS_LEFTX:
             gamepad->leftStickX = SDL_max(event->value, -32767);
@@ -250,7 +250,7 @@ static short calc_mouse_movement(short axis) {
 }
 
 static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
-    if (!absinput_virtual_mouse) return 0;
+    if (!absinput_get_virtual_mouse()) return 0;
     if (!vmouse_state.x && !vmouse_state.y) {
         return 0;
     }

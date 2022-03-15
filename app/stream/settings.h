@@ -38,6 +38,7 @@ typedef struct configuration_t {
     bool quitappafter;
     bool viewonly;
     bool absmouse;
+    bool virtual_mouse;
     bool swap_abxy;
     bool syskey_capture;
 } CONFIGURATION, *PCONFIGURATION;

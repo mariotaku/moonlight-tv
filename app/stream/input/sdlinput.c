@@ -18,6 +18,8 @@ static void release_keyboard_keys(SDL_Event ev);
 
 static void sdlinput_handle_input_result(SDL_Event ev, int ret);
 
+static bool absinput_virtual_mouse;
+
 void sdlinput_handle_key_event(SDL_KeyboardEvent *event);
 
 void sdlinput_handle_text_event(SDL_TextInputEvent *event);
@@ -34,7 +36,6 @@ void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 
 bool absinput_started;
 bool absinput_no_control;
-bool absinput_virtual_mouse;
 
 GAMEPAD_STATE gamepads[4];
 short activeGamepadMask = 0;
@@ -210,4 +211,12 @@ bool absinput_gamepad_known(SDL_JoystickID sdl_id) {
         if (gamepads[i].initialized && gamepads[i].sdl_id == sdl_id) return true;
     }
     return false;
+}
+
+void absinput_set_virtual_mouse(bool enabled) {
+    absinput_virtual_mouse = app_configuration->virtual_mouse && enabled;
+}
+
+bool absinput_get_virtual_mouse() {
+    return absinput_virtual_mouse;
 }

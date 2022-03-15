@@ -233,7 +233,7 @@ static void open_keyboard(lv_event_t *event) {
 }
 
 static void toggle_vmouse(lv_event_t *event) {
-    absinput_virtual_mouse = !absinput_virtual_mouse;
+    absinput_set_virtual_mouse(!absinput_get_virtual_mouse());
 }
 
 bool show_overlay(streaming_controller_t *controller) {

@@ -5,8 +5,6 @@
 
 extern bool absinput_no_control;
 
-extern bool absinput_virtual_mouse;
-
 void absinput_init();
 
 void absinput_destroy();
@@ -22,3 +20,7 @@ void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMoto
 void absinput_start();
 
 void absinput_stop();
+
+void absinput_set_virtual_mouse(bool enabled);
+
+bool absinput_get_virtual_mouse();
