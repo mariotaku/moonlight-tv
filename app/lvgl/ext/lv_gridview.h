@@ -36,7 +36,7 @@ extern const lv_obj_class_t lv_gridview_class;
 typedef struct _lv_gridview_adapter_t {
     int (*item_count)(lv_obj_t *, void *data);
 
-    lv_obj_t *(*create_view)(lv_obj_t *parent);
+    lv_obj_t *(*create_view)(lv_obj_t *);
 
     void (*bind_view)(lv_obj_t *, lv_obj_t *item_view, void *data, int position);
 
@@ -55,6 +55,8 @@ void lv_gridview_set_config(lv_obj_t *obj, int col_count, lv_coord_t row_height,
 void lv_gridview_set_adapter(lv_obj_t *obj, const lv_gridview_adapter_t *adapter);
 
 void lv_gridview_set_data(lv_obj_t *obj, void *data);
+
+void *lv_gridview_get_data(lv_obj_t *obj);
 
 void lv_gridview_focus(lv_obj_t *obj, int position);
 

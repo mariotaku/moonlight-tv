@@ -37,6 +37,7 @@ typedef struct lv_grid_t {
     lv_grid_align_t column_align, row_align;
 
     void *data;
+    int data_size;
     /*States*/
     int item_count, row_count;
     int row_start, row_end;
@@ -172,8 +173,9 @@ void lv_gridview_set_adapter(lv_obj_t *obj, const lv_gridview_adapter_t *adapter
 void lv_gridview_set_data(lv_obj_t *obj, void *data) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     lv_gridview_adapter_t adapter = grid->adapter;
-    void *olddata = grid->data;
-    if (olddata == data) return;
+    void *old_data = grid->data;
+    int old_size = grid->data_size;
+    if (old_data == data && old_size == adapter.item_count(obj, data)) return;
     grid->data = data;
     if (grid->row_dsc) {
         lv_mem_free(grid->row_dsc);
@@ -191,6 +193,11 @@ void lv_gridview_set_data(lv_obj_t *obj, void *data) {
         update_row_count(grid, row_count);
     }
     update_grid(grid, true);
+}
+
+void *lv_gridview_get_data(lv_obj_t *obj) {
+    lv_grid_t *grid = (lv_grid_t *) obj;
+    return grid->data;
 }
 
 void lv_gridview_focus(lv_obj_t *obj, int position) {
@@ -281,6 +288,8 @@ static void lv_gridview_destructor(const lv_obj_class_t *class_p, lv_obj_t *obj)
         lv_mem_free(grid->row_dsc);
     }
     lv_mem_free(grid->col_dsc);
+    lv_style_reset(&grid->style_scrollbar);
+    lv_style_reset(&grid->style_scrollbar_scrolled);
 }
 
 static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
