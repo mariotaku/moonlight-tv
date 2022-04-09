@@ -30,7 +30,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_desc_label(view, locstr("Better for remote desktop. For some games, mouse will not work properly."), false);
 
     pref_checkbox(view, locstr("Virtual mouse"), &app_configuration->virtual_mouse, false);
-    pref_desc_label(view, locstr("Press LB + Right stick to move mouse cursor with sticks. "
+    pref_desc_label(view, locstr("Press LB + RT to move mouse cursor with sticks. "
                                  "LT/RT for left/right mouse buttons."), false);
 
     pref_checkbox(view, locstr("Swap ABXY buttons"), &app_configuration->swap_abxy, false);

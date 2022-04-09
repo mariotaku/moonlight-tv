@@ -96,10 +96,10 @@ static int videoSubmit(PDECODE_UNIT decodeUnit) {
     return streamPlayer->submitVideo(decodeUnit);
 }
 
-static int videoSetHdr(bool hdr) {
+static void videoSetHdr(bool hdr) {
     if (!streamPlayer)
-        return DR_OK;
-    return streamPlayer->setHdr(hdr);
+        return;
+    streamPlayer->setHdr(hdr);
 }
 
 static void audioSubmit(char *sampleData, int sampleLength) {

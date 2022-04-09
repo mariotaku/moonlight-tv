@@ -99,6 +99,8 @@ void appitem_style_init(appitem_styles_t *style) {
 }
 
 void appitem_style_deinit(appitem_styles_t *style) {
+    lv_style_reset(&style->cover);
+    lv_style_reset(&style->btn);
 }
 
 static void appitem_holder_free_cb(lv_event_t *event) {
