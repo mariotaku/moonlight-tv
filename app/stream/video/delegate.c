@@ -5,9 +5,11 @@
 #include "stream/session.h"
 #include "module/api.h"
 
-#include "util/bus.h"
-#include "ui/streaming/streaming.controller.h"
 #include "sps_parser.h"
+
+#include "ui/streaming/streaming.controller.h"
+#include "util/bus.h"
+#include "util/logging.h"
 
 #include <SDL.h>
 
@@ -108,28 +110,14 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
 
 void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     struct VIDEO_STATS *dst = &vdec_summary_stats;
+    memcpy(dst, src, sizeof(struct VIDEO_STATS));
     unsigned long delta = now - dst->measurementStartTimestamp;
     if (delta <= 0) return;
-    memcpy(dst, src, sizeof(struct VIDEO_STATS));
     dst->totalFps = (float) dst->totalFrames / ((float) delta / 1000);
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
     dst->decodedFps = (float) dst->decodedFrames / ((float) delta / 1000);
     LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
     bus_pushaction((bus_actionfunc) streaming_refresh_stats, NULL);
-}
-
-void vdec_stat_refresh() {
-    unsigned long ticksms = SDL_GetTicks();
-    // Flip stats windows roughly every second
-    if (vdec_temp_stats.measurementStartTimestamp <= 0) {
-        vdec_temp_stats.measurementStartTimestamp = ticksms;
-    } else if (ticksms - vdec_temp_stats.measurementStartTimestamp > 1000) {
-        vdec_stat_submit(&vdec_temp_stats, ticksms);
-
-        // Move this window into the last window slot and clear it for next window
-        memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
-        vdec_temp_stats.measurementStartTimestamp = ticksms;
-    }
 }
 
 void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {

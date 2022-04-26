@@ -436,6 +436,7 @@ static void launcher_quit_game(apps_controller_t *controller) {
 }
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
+    if (data == NULL) return 0;
     apps_controller_t *controller = lv_obj_get_user_data(grid);
     apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)

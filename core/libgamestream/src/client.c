@@ -131,8 +131,12 @@ static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
             fclose(fd);
         }
         fd = fopen(uniqueFilePath, "w");
-        if (fd == NULL)
+        if (fd == NULL) {
+            static char msg[1024];
+            snprintf(msg, 1023, "Failed to open unique ID file %s", uniqueFilePath);
+            gs_error = msg;
             return GS_FAILED;
+        }
 
         fwrite(hnd->unique_id, UNIQUEID_CHARS, 1, fd);
     }

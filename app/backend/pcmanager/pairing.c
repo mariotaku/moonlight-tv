@@ -92,6 +92,7 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
         resp->server = server;
         pclist_upsert(manager, resp);
     } else if (existing && ret == GS_IO_ERROR) {
+        applog_w("PCManager", "IO error while updating status from %s: %s", address, gs_error);
         resp->state.code = SERVER_STATE_OFFLINE;
         resp->server = existing->server;
         pclist_upsert(manager, resp);

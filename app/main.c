@@ -160,6 +160,9 @@ GS_CLIENT app_gs_client_new() {
     SDL_LockMutex(app_gs_client_mutex);
     SDL_assert(app_configuration);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+    if (client == NULL) {
+        applog_f("APP", "Failed to create GameStream client: %s", gs_error);
+    }
     SDL_assert(client);
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;

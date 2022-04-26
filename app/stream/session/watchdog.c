@@ -35,6 +35,5 @@ static Uint32 watchdog_check() {
         return 0;
     }
     counter++;
-    vdec_stat_refresh();
     return CHECK_INTERVAL;
 }
