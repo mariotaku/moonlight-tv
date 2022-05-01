@@ -57,8 +57,9 @@ MODULE_API bool decoder_check(PDECODER_INFO dinfo) {
 #else
     dinfo->audioConfig = AUDIO_CONFIGURATION_STEREO;
 #endif
-    dinfo->hdr = DECODER_HDR_SUPPORTED;
+    dinfo->hdr = DECODER_HDR_ALWAYS;
     dinfo->colorSpace = COLORSPACE_REC_709;
+    dinfo->colorRange = COLOR_RANGE_FULL;
     dinfo->maxBitrate = 65000;
     dinfo->suggestedBitrate = 35000;
     return true;

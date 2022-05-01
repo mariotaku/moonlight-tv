@@ -11,6 +11,7 @@
 #define DECODER_BUFFER_SIZE 2048 * 1024
 
 #define decoder_callbacks PLUGIN_SYMBOL_NAME(decoder_callbacks)
+#define presenter_callbacks PLUGIN_SYMBOL_NAME(presenter_callbacks)
 
 static char *ndl_buffer;
 
@@ -89,9 +90,38 @@ static int ndl_submit_decode_unit(PDECODE_UNIT decodeUnit) {
     return DR_OK;
 }
 
-DECODER_RENDERER_CALLBACKS decoder_callbacks = {
+static void ndl_sethdr(bool hdr) {
+    applog_i("NDL", "SetHDR(%u)", hdr);
+    NDL_DIRECTVIDEO_HDR_INFO v = hdr_info.value;
+    if (hdr) {
+        v.displayPrimariesX0 = 13250;
+        v.displayPrimariesY0 = 34500;
+        v.displayPrimariesX1 = 7500;
+        v.displayPrimariesY1 = 3000;
+        v.displayPrimariesX2 = 34000;
+        v.displayPrimariesY2 = 16000;
+        v.whitePointX = 15635;
+        v.whitePointY = 16450;
+        v.maxDisplayMasteringLuminance = 1000;
+        v.minDisplayMasteringLuminance = 50;
+        v.maxContentLightLevel = 1000;
+        v.maxPicAverageLightLevel = 400;
+    } else {
+        memset(&v, 0, sizeof(NDL_DIRECTVIDEO_HDR_INFO));
+    }
+    NDL_DirectVideoSetHDRInfo(v.displayPrimariesX0, v.displayPrimariesY0, v.displayPrimariesX1,
+                              v.displayPrimariesY1, v.displayPrimariesX2, v.displayPrimariesY2,
+                              v.whitePointX, v.whitePointY, v.maxDisplayMasteringLuminance,
+                              v.minDisplayMasteringLuminance, v.maxContentLightLevel, v.maxPicAverageLightLevel);
+}
+
+MODULE_API DECODER_RENDERER_CALLBACKS decoder_callbacks = {
         .setup = ndl_setup,
         .cleanup = ndl_cleanup,
         .submitDecodeUnit = ndl_submit_decode_unit,
         .capabilities = CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT,
+};
+
+MODULE_API VIDEO_PRESENTER_CALLBACKS presenter_callbacks = {
+        .setHdr = ndl_sethdr,
 };

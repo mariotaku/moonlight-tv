@@ -82,8 +82,12 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
     config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server->supportsHdr &&
                                 (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
     config->stream.colorSpace = decoder_info.colorSpace;
-    if (config->stream.enableHdr)
+    if (config->stream.enableHdr) {
         config->stream.colorRange = decoder_info.colorRange;
+    }
+    applog_i("Session", "enableHdr=%u", config->stream.enableHdr);
+    applog_i("Session", "colorSpace=%d", config->stream.colorSpace);
+    applog_i("Session", "colorRange=%d", config->stream.colorRange);
 #if FEATURE_SURROUND_SOUND
     if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration()) <
         CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
