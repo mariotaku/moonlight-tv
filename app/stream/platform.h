@@ -147,6 +147,8 @@ PVIDEO_RENDER_CALLBACKS decoder_get_render();
 
 void decoder_finalize();
 
+bool decoder_max_dimension(int *width, int *height);
+
 int decoder_max_framerate();
 
 extern AUDIO audio_pref_requested;

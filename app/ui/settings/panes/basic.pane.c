@@ -88,7 +88,19 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_ROW_WRAP);
     pref_title_label(view, locstr("Resolution and FPS"));
 
-    lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(view, supported_resolutions, supported_resolutions_len,
+
+    int res_len = supported_resolutions_len;
+    int max_width, max_height;
+    if (decoder_max_dimension(&max_width, &max_height)) {
+        for (res_len = supported_resolutions_len; res_len > 0; res_len--) {
+            if (supported_resolutions[res_len - 1].value_a <= max_width &&
+                supported_resolutions[res_len - 1].value_b <= max_height) {
+                break;
+            }
+        }
+    }
+
+    lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(view, supported_resolutions, res_len,
                                                            &app_configuration->stream.width,
                                                            &app_configuration->stream.height);
     lv_obj_set_width(resolution_dropdown, LV_PCT(60));

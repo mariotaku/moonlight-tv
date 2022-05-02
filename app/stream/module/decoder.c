@@ -322,6 +322,14 @@ DECODER decoder_by_id(const char *id) {
     return DECODER_NONE;
 }
 
+bool decoder_max_dimension(int *width, int *height) {
+#if TARGET_WEBOS
+    return SDL_webOSGetPanelResolution(width, height) == SDL_TRUE;
+#else
+    return false;
+#endif
+}
+
 int decoder_max_framerate() {
     int framerate = decoder_info.maxFramerate;
 #if TARGET_WEBOS
