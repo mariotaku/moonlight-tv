@@ -17,7 +17,6 @@
 #include "util/i18n.h"
 
 PCONFIGURATION app_configuration = NULL;
-os_info_t app_os_info;
 
 static bool window_focus_gained;
 static SDL_Cursor *blank_cursor = NULL;
@@ -25,13 +24,14 @@ static SDL_Cursor *blank_cursor = NULL;
 static void quit_confirm_cb(lv_event_t *e);
 
 int app_init(int argc, char *argv[]) {
+    (void) argc;
+    (void) argv;
     app_configuration = settings_load();
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
 #endif
-    os_info_get(&app_os_info);
     return 0;
 }
 

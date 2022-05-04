@@ -34,6 +34,7 @@ void app_init_locale() {
     applog_d("APP", "Get system locale settings");
     if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}",
                               true, &payload) || !payload) {
+        applog_w("APP", "Failed to get system locale settings. Falling back to English.");
         return;
     }
     JSchemaInfo schemaInfo;

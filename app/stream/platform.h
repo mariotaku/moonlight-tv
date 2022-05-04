@@ -28,6 +28,7 @@
 #include <stddef.h>
 
 #include "module/api.h"
+#include "util/os_info.h"
 
 enum DECODER_T {
     DECODER_AUTO = -1,
@@ -198,4 +199,4 @@ void module_seterror(const char *error);
 
 const char *module_geterror();
 
-bool module_verify(const MODULE_DEFINITION *def);
+bool module_verify(const os_info_t *os_info, const MODULE_DEFINITION *def);

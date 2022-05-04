@@ -1,4 +1,5 @@
 #include "util/os_info.h"
+#include "util/logging.h"
 
 #include <pbnjson.h>
 
@@ -16,6 +17,7 @@ int os_info_get(os_info_t *info) {
                          "{\"keys\":[\"firmwareVersion\", \"sdkVersion\"]}", true, &payload) || !payload) {
         strncpy(info->release, "0.0.0", sizeof(info->release));
         strncpy(info->manufacturing_version, "0.0.0", sizeof(info->manufacturing_version));
+        applog_w("OSInfo", "Failed to call luna://com.webos.service.tv.systemproperty/getSystemInfo");
         return -1;
     }
     JSchemaInfo schemaInfo;

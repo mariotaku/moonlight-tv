@@ -9,7 +9,7 @@
     "lv_font_conv": "lv_font_conv"
   },
   "devDependencies": {
-    "@webosbrew/pub-utils": "^1.0.2",
+    "@webosbrew/pub-utils": "^1.0.3",
     "argparse": "^2.0.1",
     "fontmin": "^0.9.9",
     "gettext-parser": "^4.2.0",

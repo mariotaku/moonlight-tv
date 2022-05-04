@@ -54,7 +54,7 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
             continue;
         }
         MODULE_DEFINITION def = decoder_definitions[type];
-        if (!module_verify(&def)) {
+        if (!module_verify(&controller->parent->os_info, &def)) {
             continue;
         }
         entry->name = def.name;
@@ -73,7 +73,7 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
             continue;
         }
         MODULE_DEFINITION def = audio_definitions[type];
-        if (!module_verify(&def)) {
+        if (!module_verify(&controller->parent->os_info, &def)) {
             continue;
         }
         entry->name = def.name;

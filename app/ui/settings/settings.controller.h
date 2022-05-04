@@ -3,13 +3,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <lvgl.h>
+
+#include "app.h"
+
 #include "ui/config.h"
 #include "util/navkey.h"
-
-#include "lvgl.h"
+#include "util/os_info.h"
 
 #include "stream/settings.h"
-#include "app.h"
 
 typedef struct {
     lv_fragment_t base;
@@ -27,6 +29,8 @@ typedef struct {
     lv_obj_t *close_btn;
 
     lv_obj_t *active_dropdown;
+
+    os_info_t os_info;
     bool needs_restart;
 } settings_controller_t;
 

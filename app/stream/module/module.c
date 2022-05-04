@@ -54,15 +54,15 @@ const char *module_geterror() {
     return module_error;
 }
 
-bool module_verify(const MODULE_DEFINITION *def) {
+bool module_verify(const os_info_t *os_info, const MODULE_DEFINITION *def) {
     if (!def->liblen) return true;
 #if FEATURE_CHECK_MODULE_OS_VERSION
-    if (!app_os_info.version) return true;
+    if (!os_info->version) return true;
     MODULE_OS_REQUIREMENT req = def->os_req;
     // Return false if system is too old
-    if (req.min_inclusive && app_os_info.version < req.min_inclusive) return false;
+    if (req.min_inclusive && os_info->version < req.min_inclusive) return false;
     // Return false if system is too new
-    if (req.max_exclusive && app_os_info.version >= req.max_exclusive) return false;
+    if (req.max_exclusive && os_info->version >= req.max_exclusive) return false;
 #endif
     return true;
 }

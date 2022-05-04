@@ -10,6 +10,7 @@
 
 #include <SDL_webOS.h>
 #include "util/os_info.h"
+#include "ui/settings/settings.controller.h"
 
 #endif
 
@@ -17,6 +18,8 @@
 
 typedef struct about_pane_t {
     lv_fragment_t base;
+    settings_controller_t *parent;
+
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
 #if TARGET_WEBOS
     struct {
@@ -44,6 +47,7 @@ const lv_fragment_class_t settings_pane_about_cls = {
 
 static void pane_ctor(lv_fragment_t *self, void *args) {
     about_pane_t *controller = (about_pane_t *) self;
+    controller->parent = args;
 #if TARGET_WEBOS
     load_webos_info(controller);
 #endif
@@ -61,6 +65,7 @@ static inline void about_line(lv_obj_t *parent, const char *title, const char *t
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     about_pane_t *controller = (about_pane_t *) self;
+
     lv_obj_t *view = pref_pane_container(container);
     lv_obj_set_layout(view, LV_LAYOUT_GRID);
     static const lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1),
@@ -73,11 +78,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
             audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
     about_line(view, locstr("Audio backend"), audio_name, rowcount++, 2);
 #if TARGET_WEBOS
-    if (strlen(app_os_info.release)) {
-        about_line(view, locstr("webOS version"), app_os_info.release, rowcount++, 1);
+    const os_info_t *os_info = &controller->parent->os_info;
+    if (strlen(os_info->release)) {
+        about_line(view, locstr("webOS version"), os_info->release, rowcount++, 1);
     }
-    if (strlen(app_os_info.manufacturing_version)) {
-        about_line(view, locstr("Firmware version"), app_os_info.manufacturing_version, rowcount++, 1);
+    if (strlen(os_info->manufacturing_version)) {
+        about_line(view, locstr("Firmware version"), os_info->manufacturing_version, rowcount++, 1);
     }
     if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
         char resolution_text[16];
