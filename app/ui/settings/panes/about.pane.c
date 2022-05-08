@@ -3,14 +3,14 @@
 #include <lvgl.h>
 #include "stream/platform.h"
 #include "pref_obj.h"
+#include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
+#include "util/os_info.h"
 
 #if TARGET_WEBOS
 
 #include <SDL_webOS.h>
-#include "util/os_info.h"
-#include "ui/settings/settings.controller.h"
 
 #endif
 
