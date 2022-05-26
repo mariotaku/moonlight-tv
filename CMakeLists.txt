@@ -121,10 +121,12 @@ if (TARGET_WEBOS)
 elseif (TARGET_RASPI)
     add_subdirectory(third_party/h264bitstream)
 
-    find_package(BroadcomMMAL REQUIRED)
     find_package(MbedTLS REQUIRED)
 
     pkg_check_modules(OPUS REQUIRED opus)
+    pkg_check_modules(BCM_HOST REQUIRED bcm_host)
+    pkg_check_modules(MMAL REQUIRED mmal)
+    pkg_check_modules(VCSM REQUIRED vcsm)
 
     set(BUILD_SHARED_CORE_LIBS ON)
 elseif (TARGET_DESKTOP)

@@ -4,9 +4,9 @@ add_library(moonlight-mmal SHARED
         mmalvid.c
         )
 
-target_link_libraries(moonlight-mmal PRIVATE gamestream-sps ${BROADCOM_MMAL_LIBRARIES})
+target_link_libraries(moonlight-mmal PRIVATE gamestream-sps ${MMAL_LIBRARIES})
 
-target_include_directories(moonlight-mmal PRIVATE ${BROADCOM_INCLUDE_DIRS})
+target_include_directories(moonlight-mmal PRIVATE ${MMAL_INCLUDE_DIRS})
 target_compile_definitions(moonlight-mmal PRIVATE "$<$<CONFIG:DEBUG>:DEBUG>")
 
 target_link_libraries(moonlight-mmal PRIVATE moonlight-module-api opus)
