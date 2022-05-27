@@ -112,7 +112,7 @@ if (TARGET_WEBOS)
     add_subdirectory(third_party/mbedtls)
     unset(BUILD_SHARED_LIBS)
 
-    add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
+    add_subdirectory(system/webos/tv-native-apis)
     set(CURL_LIBRARIES curl-shim)
 
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
