@@ -20,7 +20,10 @@ int manual_add_worker(cm_request_t *req);
 
 bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
                     void *userdata) {
-    if (server->paired || server->currentGame) return false;
+    if (server->paired) return false;
+    if (server->currentGame) {
+        applog_i("PCManager", "The server %s is in game", server->hostname);
+    }
     int pin_num = pin_random(0, 9999);
     SDL_snprintf(pin, 5, "%04d", pin_num);
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
