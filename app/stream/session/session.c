@@ -218,7 +218,9 @@ int streaming_worker(session_t *session) {
         goto thread_cleanup;
     }
     streaming_set_status(STREAMING_STREAMING);
-    streaming_watchdog_start();
+    if (config->stop_on_stall) {
+        streaming_watchdog_start();
+    }
     session->pres = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
     SDL_LockMutex(session->mutex);

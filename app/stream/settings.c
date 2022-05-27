@@ -90,6 +90,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->rotate = 0;
     config->absmouse = true;
     config->virtual_mouse = false;
+    config->stop_on_stall = false;
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
@@ -141,6 +142,7 @@ void settings_write(const char *filename, PCONFIGURATION config) {
     ini_write_int(fp, "bitrate", config->stream.bitrate);
     ini_write_int(fp, "packetsize", config->stream.packetSize);
     ini_write_int(fp, "rotate", config->rotate);
+    ini_write_int(fp, "stop_on_stall", config->stop_on_stall);
 
     ini_write_section(fp, "host");
     ini_write_bool(fp, "sops", config->sops);
@@ -212,6 +214,8 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
         config->stream.packetSize = atoi(value);
     } else if (INI_FULL_MATCH("streaming", "rotate")) {
         config->rotate = atoi(value);
+    } else if (INI_FULL_MATCH("streaming", "stop_on_stall")) {
+        config->stop_on_stall = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hevc")) {
         config->stream.supportsHevc = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hdr")) {

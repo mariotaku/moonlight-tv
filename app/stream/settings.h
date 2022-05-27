@@ -41,6 +41,7 @@ typedef struct configuration_t {
     bool virtual_mouse;
     bool swap_abxy;
     bool syskey_capture;
+    bool stop_on_stall;
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_MOONLIGHT "moonlight.ini"
