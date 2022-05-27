@@ -98,7 +98,6 @@ find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
-find_package(CURL REQUIRED)
 find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
@@ -114,6 +113,7 @@ if (TARGET_WEBOS)
     unset(BUILD_SHARED_LIBS)
 
     add_subdirectory(system/webos/tv-native-apis EXCLUDE_FROM_ALL)
+    set(CURL_LIBRARIES curl-shim)
 
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
@@ -121,6 +121,7 @@ if (TARGET_WEBOS)
 elseif (TARGET_RASPI)
     add_subdirectory(third_party/h264bitstream)
 
+    find_package(CURL REQUIRED)
     find_package(MbedTLS REQUIRED)
 
     pkg_check_modules(OPUS REQUIRED opus)
@@ -130,6 +131,7 @@ elseif (TARGET_RASPI)
 
     set(BUILD_SHARED_CORE_LIBS ON)
 elseif (TARGET_DESKTOP)
+    find_package(CURL REQUIRED)
     find_package(MbedTLS REQUIRED)
 
     pkg_check_modules(OPUS REQUIRED opus)
