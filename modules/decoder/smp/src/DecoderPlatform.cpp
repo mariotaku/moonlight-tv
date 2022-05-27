@@ -143,5 +143,7 @@ MODULE_API AUDIO_RENDERER_CALLBACKS audio_callbacks = {
 };
 
 MODULE_API VIDEO_PRESENTER_CALLBACKS presenter_callbacks = {
+        .enterFullScreen = nullptr,
+        .enterOverlay = nullptr,
         .setHdr = videoSetHdr,
 };
