@@ -326,7 +326,6 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_gridview_set_data(controller->applist, controller->apploader->apps);
                 if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
                     lv_group_focus_obj(controller->applist);
                 }
@@ -493,6 +492,7 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
 static void appload_cb(apploader_t *loader, void *userdata) {
     apps_controller_t *controller = userdata;
     if (controller != current_instance) return;
+    lv_gridview_set_data(controller->applist, controller->apploader->apps);
     update_view_state(controller);
 }
 

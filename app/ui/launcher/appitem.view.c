@@ -22,6 +22,9 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
 
     lv_obj_set_style_outline_opa(item, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
 
+    lv_obj_set_style_transform_pivot_x(item, controller->col_width / 2, 0);
+    lv_obj_set_style_transform_pivot_y(item, controller->col_height / 2, 0);
+
     lv_obj_set_style_transform_zoom(item, 256 * 99 / 100, LV_STATE_PRESSED);
     lv_obj_set_style_transform_zoom(item, 256 * 102 / 100, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_transition(item, &styles->tr_pressed, LV_STATE_PRESSED | LV_STATE_FOCUS_KEY);
@@ -113,19 +116,13 @@ static void appitem_draw_decor(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     appitem_viewholder_t *holder = lv_obj_get_user_data(target);
     if (!holder->app->fav) return;
-    lv_area_t target_coords;
-    lv_obj_get_coords(target, &target_coords);
-    lv_point_t pivot = {lv_area_get_width(&target_coords) / 2, lv_area_get_height(&target_coords) / 2};
-    SDL_Rect zoomed_rect;
-    lv_coord_t zoom = lv_obj_get_style_transform_zoom(target, LV_PART_MAIN);
-    lv_area_zoom_to_sdl_rect(&target_coords, &zoomed_rect, zoom, &pivot);
+    lv_area_t coords;
+    lv_obj_get_coords(target, &coords);
+    lv_area_set_width(&coords, LV_DPX(48));
+    lv_area_set_height(&coords, LV_DPX(48));
 
     lv_draw_img_dsc_t dsc;
     lv_draw_img_dsc_init(&dsc);
-    lv_area_t coords = {
-            zoomed_rect.x, zoomed_rect.y,
-            zoomed_rect.x + LV_DPX(48) - 1, zoomed_rect.y + LV_DPX(48) - 1
-    };
     lv_draw_ctx_t *ctx = lv_event_get_draw_ctx(e);
     lv_draw_img(ctx, &dsc, &coords, styles->fav_indicator_src);
 }

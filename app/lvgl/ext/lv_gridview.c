@@ -37,7 +37,6 @@ typedef struct lv_grid_t {
     lv_grid_align_t column_align, row_align;
 
     void *data;
-    int data_size;
     /*States*/
     int item_count, row_count;
     int row_start, row_end;
@@ -173,9 +172,6 @@ void lv_gridview_set_adapter(lv_obj_t *obj, const lv_gridview_adapter_t *adapter
 void lv_gridview_set_data(lv_obj_t *obj, void *data) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     lv_gridview_adapter_t adapter = grid->adapter;
-    void *old_data = grid->data;
-    int old_size = grid->data_size;
-    if (old_data == data && old_size == adapter.item_count(obj, data)) return;
     grid->data = data;
     if (grid->row_dsc) {
         lv_mem_free(grid->row_dsc);
