@@ -27,7 +27,7 @@ function writeHeader(p) {
     }
     source += '};\n';
     source += `extern const unsigned char res_${basename}_data[];\n`;
-    source += `const static unsigned int res_${basename}_size = ${stat.size};\n`;
+    source += `#define res_${basename}_size ${stat.size}\n`;
 
     fs.writeFileSync(path.join(output, `${basename}.h`), source);
 }

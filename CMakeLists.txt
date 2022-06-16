@@ -102,6 +102,10 @@ find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
 
+find_program(NPM_COMMAND npm REQUIRED)
+
+execute_process(COMMAND ${NPM_COMMAND} install --quiet)
+
 set(BUILD_SHARED_CORE_LIBS OFF)
 
 pkg_check_modules(SDL2 REQUIRED sdl2 SDL2_image)
@@ -320,7 +324,7 @@ target_link_libraries(moonlight PRIVATE
         )
 
 add_custom_target(moonlight-res
-        COMMAND npm run gen-res-headers -- -i ${RES} -o app/res
+        COMMAND ${NPM_COMMAND} run gen-res-headers -- -i ${RES} -o app/res
         SOURCES ${RES})
 add_dependencies(moonlight moonlight-res)
 
@@ -463,7 +467,7 @@ add_custom_target(i18n-merge-po
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_custom_target(iconfont-minify
-        COMMAND npm run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
+        COMMAND ${NPM_COMMAND} run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
         -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
         )
 
