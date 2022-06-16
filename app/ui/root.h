@@ -30,7 +30,7 @@ typedef struct {
 extern short ui_display_width, ui_display_height;
 extern enum UI_INPUT_MODE ui_input_mode;
 
-const char *ui_logo_src();
+const lv_img_dsc_t *ui_logo_src();
 
 bool ui_has_stream_renderer();
 

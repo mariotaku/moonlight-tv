@@ -20,7 +20,7 @@ short ui_display_width, ui_display_height;
 static unsigned int last_pts = 0;
 
 enum UI_INPUT_MODE ui_input_mode;
-char ui_logo_src_[LV_SDL_IMG_LEN] = "\0";
+lv_img_dsc_t ui_logo_src_ = {.data_size = 0};
 
 typedef struct render_frame_req_t {
     void *data;
@@ -97,18 +97,16 @@ bool ui_set_input_mode(enum UI_INPUT_MODE mode) {
     return true;
 }
 
-const char *ui_logo_src() {
-    lv_sdl_img_src_t logo_src = {
-            .w = LV_DPX(NAV_LOGO_SIZE),
-            .h = LV_DPX(NAV_LOGO_SIZE),
-            .type = LV_SDL_IMG_TYPE_CONST_PTR,
-            .data.constptr = res_logo_96_data,
-            .data_len = res_logo_96_size,
-    };
-    if (!ui_logo_src_[0]) {
-        lv_sdl_img_src_stringify(&logo_src, ui_logo_src_);
+const lv_img_dsc_t *ui_logo_src() {
+    if (ui_logo_src_.data_size == 0) {
+        ui_logo_src_.header.w = LV_DPX(NAV_LOGO_SIZE);
+        ui_logo_src_.header.h = LV_DPX(NAV_LOGO_SIZE);
+        ui_logo_src_.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+
+        ui_logo_src_.data_size = sizeof(lv_sdl_img_data_logo_96);
+        ui_logo_src_.data = (const uint8_t *) &lv_sdl_img_data_logo_96;
     }
-    return ui_logo_src_;
+    return &ui_logo_src_;
 }
 
 static void handle_queued_frame(render_frame_req_t *req) {

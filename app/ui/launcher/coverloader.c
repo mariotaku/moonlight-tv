@@ -25,7 +25,7 @@ typedef struct coverloader_request {
     PSERVER_LIST node;
     lv_obj_t *target;
     lv_coord_t target_width, target_height;
-    lv_sdl_img_src_t *result;
+    lv_sdl_img_data_t *result;
     bool finished;
     img_loader_task_t *task;
     struct coverloader_request *prev;
@@ -77,7 +77,7 @@ static void img_loader_result_cb(coverloader_req_t *req);
 
 static void img_loader_cancel_cb(coverloader_req_t *req);
 
-static void memcache_item_free(lv_sdl_img_src_t *item);
+static void memcache_item_free(lv_sdl_img_data_t *item);
 
 static void coverloader_req_free(coverloader_req_t *req);
 
@@ -175,7 +175,7 @@ static void coverloader_cache_item_path(char path[4096], const coverloader_req_t
 
 static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
     // Uses result cache instead
-    lv_sdl_img_src_t *result = NULL;
+    lv_sdl_img_data_t *result = NULL;
     coverloader_memcache_key_t key = {
             .id = req->id,
             .target_width = req->target_width,
@@ -188,7 +188,7 @@ static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
 }
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
-    lv_sdl_img_src_t *result = NULL;
+    lv_sdl_img_data_t *result = NULL;
     coverloader_memcache_key_t key = {
             .id = req->id,
             .target_width = req->target_width,
@@ -198,24 +198,24 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     if (!result) {
         lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
         SDL_Renderer *renderer = param->renderer;
-        result = malloc(sizeof(lv_sdl_img_src_t));
-        SDL_memset(result, 0, sizeof(lv_sdl_img_src_t));
+        result = malloc(sizeof(lv_sdl_img_data_t));
+        SDL_memset(result, 0, sizeof(lv_sdl_img_data_t));
         result->type = LV_SDL_IMG_TYPE_TEXTURE;
-        result->cf = LV_IMG_CF_TRUE_COLOR;
         if (SDL_ISPIXELFORMAT_ALPHA(cached->format->format)) {
-            result->cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
         }
+        int value_length = cached->w * cached->h;
         if (cached->userdata) {
             subimage_info_t *info = cached->userdata;
             result->rect = info->rect;
-            result->w = info->w;
-            result->h = info->h;
+            value_length = info->w * info->h;
+//            result->w = info->w;
+//            result->h = info->h;
         } else {
-            result->w = cached->w;
-            result->h = cached->h;
+//            result->w = cached->w;
+//            result->h = cached->h;
         }
         result->data.texture = SDL_CreateTextureFromSurface(renderer, cached);
-        lv_lru_set(req->loader->mem_cache, &key, sizeof(key), result, result->w * result->h);
+        lv_lru_set(req->loader->mem_cache, &key, sizeof(key), result, value_length);
     }
     req->result = result;
     req->finished = true;
@@ -316,16 +316,8 @@ static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void
 
 static void img_loader_start_cb(coverloader_req_t *req) {
     appitem_viewholder_t *holder = req->target->user_data;
-    lv_sdl_img_src_t src = {
-            .w = req->target_width,
-            .h = req->target_height,
-            .type = LV_SDL_IMG_TYPE_CONST_PTR,
-            .cf = LV_IMG_CF_TRUE_COLOR,
-            .data.constptr = res_default_cover_data,
-            .data_len = res_default_cover_size,
-    };
-    lv_sdl_img_src_stringify(&src, holder->cover_src);
-    lv_img_set_src(req->target, holder->cover_src);
+    holder->cover_data = lv_sdl_img_data_defcover;
+    lv_img_set_src(req->target, &holder->cover_src);
     lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -339,21 +331,13 @@ static void img_loader_result_cb(coverloader_req_t *req) {
     }
     appitem_viewholder_t *holder = req->target->user_data;
     if (req->result) {
-        lv_sdl_img_src_stringify(req->result, holder->cover_src);
+        holder->cover_data = *req->result;
         lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_sdl_img_src_t src = {
-                .w = req->target_width,
-                .h = req->target_height,
-                .type = LV_SDL_IMG_TYPE_CONST_PTR,
-                .cf = LV_IMG_CF_TRUE_COLOR,
-                .data.constptr = res_default_cover_data,
-                .data_len = res_default_cover_size,
-        };
-        lv_sdl_img_src_stringify(&src, holder->cover_src);
+        holder->cover_data = lv_sdl_img_data_defcover;
         lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_img_set_src(req->target, holder->cover_src);
+    lv_img_set_src(req->target, &holder->cover_src);
     done:
     loader->reqlist = reqlist_remove(loader->reqlist, req);
     coverloader_req_free(req);
@@ -371,7 +355,7 @@ static void img_loader_cancel_cb(coverloader_req_t *req) {
     coverloader_unref(loader);
 }
 
-static void memcache_item_free(lv_sdl_img_src_t *item) {
+static void memcache_item_free(lv_sdl_img_data_t *item) {
     SDL_DestroyTexture(item->data.texture);
     free(item);
 }

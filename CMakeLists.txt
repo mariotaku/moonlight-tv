@@ -161,6 +161,7 @@ target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
 set(SOURCES
         app/main.c
+        app/res.c
         app/app/app_input.c
         app/backend/backend_root.c
         app/backend/pcmanager/pcmanager.c
@@ -232,8 +233,7 @@ set(SOURCES
         app/platform/sdl/bus.c
         app/platform/sdl/input_manager.c
         app/platform/sdl/navkey_sdl.c
-        app/platform/common/i18n_common.c
-        )
+        app/platform/common/i18n_common.c)
 
 if (TARGET_WEBOS)
     list(APPEND SOURCES
@@ -262,6 +262,13 @@ else ()
     endif ()
 endif ()
 
+set(RES
+        res/moonlight.png
+        res/defcover.png
+        res/fav_indicator.png
+        app/lvgl/font/material_icons_regular.ttf)
+
+
 if (NOT HAVE_SDL)
     message(FATAL_ERROR "SDL2 required")
 endif ()
@@ -288,7 +295,6 @@ target_compile_definitions(moonlight PRIVATE LV_LVGL_H_INCLUDE_SIMPLE=1)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/modules)
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
-target_include_directories(moonlight SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/third_party/incbin)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
 
@@ -312,6 +318,11 @@ target_link_libraries(moonlight PRIVATE
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
         moonlight-module-api moonlight-sdlaud
         )
+
+add_custom_target(moonlight-res
+        COMMAND npm run gen-res-headers -- -i ${RES} -o app/res
+        SOURCES ${RES})
+add_dependencies(moonlight moonlight-res)
 
 macro(moonlight_add_module)
     set(multiValueArgs TARGETS)

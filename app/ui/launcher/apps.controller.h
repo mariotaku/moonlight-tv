@@ -9,7 +9,7 @@ typedef struct {
     lv_style_t btn;
     lv_style_transition_dsc_t tr_pressed;
     lv_style_transition_dsc_t tr_released;
-    char fav_indicator_src[LV_SDL_IMG_LEN];
+    lv_img_dsc_t fav_indicator_src;
 } appitem_styles_t;
 
 typedef struct {
@@ -32,7 +32,8 @@ typedef struct {
     apps_controller_t *controller;
     lv_obj_t *play_indicator;
     lv_obj_t *title;
-    char cover_src[LV_SDL_IMG_LEN];
+    lv_sdl_img_data_t cover_data;
+    lv_img_dsc_t cover_src;
 } appitem_viewholder_t;
 
 extern const lv_fragment_class_t apps_controller_class;

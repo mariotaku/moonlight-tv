@@ -1,7 +1,5 @@
 #include "lv_sdl_img.h"
 
-#include <mbedtls/base64.h>
-
 #include <SDL_image.h>
 #include "draw/sdl/lv_draw_sdl_utils.h"
 #include "draw/sdl/lv_draw_sdl_texture_cache.h"
@@ -16,39 +14,23 @@ static bool is_sdl_img_src(const void *src);
 
 static lv_draw_sdl_dec_dsc_userdata_t *lv_gpu_sdl_dec_dsc_userdata_new();
 
-void lv_sdl_img_decoder_init(lv_img_decoder_t *decoder) {
-    IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+lv_img_decoder_t *lv_sdl_img_decoder_init(int flags) {
+    IMG_Init(flags);
+    lv_img_decoder_t *decoder = lv_img_decoder_create();
     lv_img_decoder_set_info_cb(decoder, sdl_img_decoder_info);
     lv_img_decoder_set_open_cb(decoder, sdl_img_decoder_open);
     lv_img_decoder_set_close_cb(decoder, sdl_img_decoder_close);
-}
-
-void lv_sdl_img_src_stringify(const lv_sdl_img_src_t *src, char *str) {
-    SDL_memcpy(str, LV_SDL_IMG_HEAD, 8);
-    size_t olen;
-    int ret = mbedtls_base64_encode((unsigned char *) &str[8], LV_SDL_IMG_LEN - 8, &olen,
-                                    (const unsigned char *) src, sizeof(lv_sdl_img_src_t));
-    LV_ASSERT(ret == 0);
-    (void) ret;
-}
-
-void lv_sdl_img_src_parse(const char *str, lv_sdl_img_src_t *src) {
-    size_t olen, slen = SDL_strlen(str) - 8;
-    int ret = mbedtls_base64_decode((unsigned char *) src, sizeof(lv_sdl_img_src_t), &olen,
-                                    (unsigned char *) &str[8], slen);
-    LV_ASSERT(ret == 0);
-    (void) ret;
+    return decoder;
 }
 
 lv_res_t sdl_img_decoder_info(struct _lv_img_decoder_t *decoder, const void *src, lv_img_header_t *header) {
     if (!is_sdl_img_src(src)) {
         return LV_RES_INV;
     }
-    lv_sdl_img_src_t sdl_src;
-    lv_sdl_img_src_parse(src, &sdl_src);
-    header->w = sdl_src.w;
-    header->h = sdl_src.h;
-    header->cf = sdl_src.cf;
+    const lv_img_dsc_t *dsc = (lv_img_dsc_t *) src;
+    header->w = dsc->header.w;
+    header->h = dsc->header.h;
+    header->cf = dsc->header.cf;
     return LV_RES_OK;
 }
 
@@ -56,26 +38,25 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
     if (!is_sdl_img_src(dsc->src)) {
         return LV_RES_INV;
     }
-    lv_sdl_img_src_t sdl_src;
-    lv_sdl_img_src_parse(dsc->src, &sdl_src);
+    const lv_sdl_img_data_t *sdl_src = (const lv_sdl_img_data_t *) ((lv_img_dsc_t *) dsc->src)->data;
     lv_draw_sdl_dec_dsc_userdata_t *userdata = lv_gpu_sdl_dec_dsc_userdata_new();
-    switch (sdl_src.type) {
+    switch (sdl_src->type) {
         case LV_SDL_IMG_TYPE_TEXTURE: {
-            userdata->texture = sdl_src.data.texture;
+            userdata->texture = sdl_src->data.texture;
             userdata->texture_managed = true;
             break;
         }
         case LV_SDL_IMG_TYPE_PATH: {
             lv_disp_drv_t *driver = _lv_refr_get_disp_refreshing()->driver;
-            SDL_Renderer *renderer = ((lv_draw_sdl_drv_param_t *)driver->user_data)->renderer;
-            SDL_Texture *texture = IMG_LoadTexture(renderer, sdl_src.data.path);
+            SDL_Renderer *renderer = ((lv_draw_sdl_drv_param_t *) driver->user_data)->renderer;
+            SDL_Texture *texture = IMG_LoadTexture(renderer, sdl_src->data.path);
             userdata->texture = texture;
             break;
         }
         case LV_SDL_IMG_TYPE_CONST_PTR: {
             lv_disp_drv_t *driver = _lv_refr_get_disp_refreshing()->driver;
-            SDL_Renderer *renderer = ((lv_draw_sdl_drv_param_t *)driver->user_data)->renderer;
-            SDL_RWops *src = SDL_RWFromConstMem(sdl_src.data.constptr, (int) sdl_src.data_len);
+            SDL_Renderer *renderer = ((lv_draw_sdl_drv_param_t *) driver->user_data)->renderer;
+            SDL_RWops *src = SDL_RWFromConstMem(sdl_src->data.constptr, (int) sdl_src->data_len);
             SDL_Texture *texture = IMG_LoadTexture_RW(renderer, src, 1);
             userdata->texture = texture;
             break;
@@ -85,7 +66,7 @@ lv_res_t sdl_img_decoder_open(struct _lv_img_decoder_t *decoder, struct _lv_img_
             return LV_RES_INV;
         }
     }
-    userdata->rect = sdl_src.rect;
+    userdata->rect = sdl_src->rect;
     dsc->img_data = NULL;
     dsc->user_data = userdata;
     return LV_RES_OK;
@@ -95,8 +76,6 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
     if (!is_sdl_img_src(dsc->src)) {
         return;
     }
-    lv_sdl_img_src_t sdl_src;
-    lv_sdl_img_src_parse(dsc->src, &sdl_src);
     lv_draw_sdl_dec_dsc_userdata_t *userdata = dsc->user_data;
     if (!userdata) {
         return;
@@ -108,7 +87,8 @@ void sdl_img_decoder_close(struct _lv_img_decoder_t *decoder, struct _lv_img_dec
 }
 
 static inline bool is_sdl_img_src(const void *src) {
-    return ((char *) src)[0] == '!' && SDL_memcmp(src, LV_SDL_IMG_HEAD, 8) == 0;
+    return lv_img_src_get_type(src) == LV_IMG_SRC_VARIABLE &&
+           ((lv_img_dsc_t *) src)->data_size == sizeof(lv_sdl_img_data_t);
 }
 
 static lv_draw_sdl_dec_dsc_userdata_t *lv_gpu_sdl_dec_dsc_userdata_new() {

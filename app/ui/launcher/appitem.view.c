@@ -50,6 +50,12 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
 
     appitem_viewholder_t *holder = (appitem_viewholder_t *) malloc(sizeof(appitem_viewholder_t));
     memset(holder, 0, sizeof(appitem_viewholder_t));
+    holder->cover_src.data = (const uint8_t *) &holder->cover_data;
+    holder->cover_src.data_size = sizeof(lv_sdl_img_data_t);
+    holder->cover_src.header.cf = LV_IMG_CF_TRUE_COLOR;
+    holder->cover_src.header.w = controller->col_width;
+    holder->cover_src.header.h = controller->col_height;
+
     holder->controller = controller;
     holder->play_indicator = play_indicator;
     holder->title = title;
@@ -90,15 +96,12 @@ void appitem_style_init(appitem_styles_t *style) {
                                  0, NULL);
     lv_style_transition_dsc_init(&style->tr_released, trans_props, lv_anim_path_linear, LV_THEME_DEFAULT_TRANSITON_TIME,
                                  70, NULL);
-    lv_sdl_img_src_t src = {
-            .w = LV_DPX(48),
-            .h = LV_DPX(48),
-            .type = LV_SDL_IMG_TYPE_CONST_PTR,
-            .cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-            .data.constptr = res_fav_indicator_data,
-            .data_len = res_fav_indicator_size,
-    };
-    lv_sdl_img_src_stringify(&src, style->fav_indicator_src);
+
+    style->fav_indicator_src.header.w = LV_DPX(48);
+    style->fav_indicator_src.header.h = LV_DPX(48);
+    style->fav_indicator_src.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+    style->fav_indicator_src.data_size = sizeof(lv_sdl_img_data_t);
+    style->fav_indicator_src.data = (const uint8_t *) &lv_sdl_img_data_fav_indicator;
 }
 
 void appitem_style_deinit(appitem_styles_t *style) {
@@ -124,7 +127,7 @@ static void appitem_draw_decor(lv_event_t *e) {
     lv_draw_img_dsc_t dsc;
     lv_draw_img_dsc_init(&dsc);
     lv_draw_ctx_t *ctx = lv_event_get_draw_ctx(e);
-    lv_draw_img(ctx, &dsc, &coords, styles->fav_indicator_src);
+    lv_draw_img(ctx, &dsc, &coords, &styles->fav_indicator_src);
 }
 
 static void appitem_selected(lv_event_t *e) {

@@ -5,6 +5,7 @@
     "webos-gen-i18n": "node scripts/webos/gen_i18n.js",
     "webos-gen-manifest": "webosbrew-gen-manifest",
     "gen-mat-iconfont": "node scripts/tools/gen_mat_iconfont.js",
+    "gen-res-headers": "node scripts/tools/gen_res_headers.js",
     "iconfont-minify": "node scripts/tools/iconfont_minify.js",
     "lv_font_conv": "lv_font_conv"
   },
@@ -15,6 +16,7 @@
     "gettext-parser": "^4.2.0",
     "gulp-rename": "^2.0.0",
     "lv_font_conv": "^1.5.2",
+    "snake-case": "^3.0.4",
     "vinyl-fs": "^3.0.3"
   }
 }

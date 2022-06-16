@@ -1,10 +1,6 @@
 #include "app.h"
 
-#define RES_IMPL
-
 #include "res.h"
-
-#undef RES_IMPL
 
 #include "lvgl.h"
 #include "lvgl/lv_disp_drv_app.h"
@@ -83,8 +79,7 @@ int main(int argc, char *argv[]) {
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
-    lv_img_decoder_t *img_decoder = lv_img_decoder_create();
-    lv_sdl_img_decoder_init(img_decoder);
+    lv_img_decoder_t *img_decoder = lv_sdl_img_decoder_init(IMG_INIT_JPG | IMG_INIT_PNG);
 
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
@@ -141,7 +136,9 @@ SDL_Window *app_create_window() {
     SDL_Window *win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                        window_width, window_height, window_flags);
     SDL_assert(win);
-    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(res_logo_96_data, (int) res_logo_96_size), SDL_TRUE);
+
+    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(lv_sdl_img_data_logo_96.data.constptr,
+                                                          (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
     SDL_SetWindowMinimumSize(win, 640, 480);

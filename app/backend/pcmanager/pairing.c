@@ -48,18 +48,20 @@ bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_c
 
 int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
                             void *userdata) {
+    char *address_dup = strdup(address);
     pcmanager_list_lock(manager);
-    PSERVER_LIST existing = pcmanager_find_by_address(manager, address);
+    PSERVER_LIST existing = pcmanager_find_by_address(manager, address_dup);
+    int ret = 0;
     if (existing) {
         SERVER_STATE_ENUM state = existing->state.code;
         if (state == SERVER_STATE_QUERYING) {
-            applog_v("PCManager", "Skip upsert for querying node. address: %s", address);
+            applog_v("PCManager", "Skip upsert for querying node. address: %s", address_dup);
             pcmanager_list_unlock(manager);
-            return 0;
+            goto done;
         }
         if (!refresh && state == SERVER_STATE_ONLINE) {
             pcmanager_list_unlock(manager);
-            return 0;
+            goto done;
         }
         existing->state.code = SERVER_STATE_QUERYING;
         pcmanager_resp_t resp = {
@@ -74,7 +76,8 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     pcmanager_list_unlock(manager);
     PSERVER_DATA server = serverdata_new();
     GS_CLIENT client = app_gs_client_new();
-    int ret = gs_init(client, server, strdup(address), app_configuration->unsupported);
+    ret = gs_init(client, server, address_dup, app_configuration->unsupported);
+    address_dup = NULL;
     gs_destroy(client);
     if (existing) {
         pcmanager_list_lock(manager);
@@ -95,7 +98,7 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
         resp->server = server;
         pclist_upsert(manager, resp);
     } else if (existing && ret == GS_IO_ERROR) {
-        applog_w("PCManager", "IO error while updating status from %s: %s", address, gs_error);
+        applog_w("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address, gs_error);
         resp->state.code = SERVER_STATE_OFFLINE;
         resp->server = existing->server;
         pclist_upsert(manager, resp);
@@ -105,6 +108,10 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
         serverdata_free(server);
     }
     pcmanager_worker_finalize(resp, callback, userdata);
+    done:
+    if (address_dup) {
+        free(address_dup);
+    }
     return ret;
 }
 
