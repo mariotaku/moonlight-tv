@@ -58,6 +58,8 @@ jobs:
           name: Release ${{ steps.tagName.outputs.tag }}
           allowUpdates: true
           omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
           artifacts: dist/*.ipk,dist/*.manifest.json
 
   release-raspi:
@@ -136,4 +138,6 @@ jobs:
           name: Release ${{ steps.tagName.outputs.tag }}
           allowUpdates: true
           omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
           artifacts: build/*.deb,build/Release
