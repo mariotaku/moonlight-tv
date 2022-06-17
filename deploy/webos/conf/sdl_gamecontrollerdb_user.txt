@@ -1,0 +1,1 @@
+03000000c82d00000531000011010000,8BitDo Receiver,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b2,leftshoulder:b6,leftstick:b13,lefttrigger:a5,leftx:a1,lefty:a0,rightshoulder:b7,rightstick:b14,righttrigger:a4,rightx:a3,righty:a2,start:b11,x:b3,y:b4,platform:webOS,

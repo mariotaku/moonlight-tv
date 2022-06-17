@@ -31,6 +31,12 @@ char *gamecontrollerdb_path() {
     return condb;
 }
 
+char *gamecontrollerdb_user_path() {
+    char *confdir = path_pref(), *condb = path_join(confdir, "sdl_gamecontrollerdb_user.txt");
+    free(confdir);
+    return condb;
+}
+
 static void write_mapping_lines(WRITE_CONTEXT *ctx) {
     if (!ctx->fp)
         return;

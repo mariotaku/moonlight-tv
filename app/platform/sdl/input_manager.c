@@ -22,6 +22,13 @@ void inputmgr_init() {
     }
     free(condb);
 
+    char *userdb = gamecontrollerdb_user_path();
+    applog_i("Input", "Load user game controller mapping from %s", userdb);
+    if (access(userdb, F_OK) == 0) {
+        numofmappings = SDL_GameControllerAddMappingsFromFile(userdb);
+    }
+    free(userdb);
+
     gamecontrollerdb_update();
 
     applog_i("Input", "Input manager init, %d game controller mappings loaded", numofmappings);
