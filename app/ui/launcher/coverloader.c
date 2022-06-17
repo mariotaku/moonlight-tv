@@ -19,23 +19,29 @@
 #include "util/logging.h"
 #include "res.h"
 
+typedef struct coverloader_memcache_key_t {
+    int id;
+    lv_coord_t target_width, target_height;
+} coverloader_memcache_key_t;
+
+typedef struct coverloader_memcache_item_t {
+    lv_img_dsc_t src;
+    lv_sdl_img_data_t data;
+    lv_obj_t *obj;
+} coverloader_memcache_item_t;
+
 typedef struct coverloader_request {
     coverloader_t *loader;
     int id;
     PSERVER_LIST node;
     lv_obj_t *target;
     lv_coord_t target_width, target_height;
-    lv_sdl_img_data_t *result;
+    coverloader_memcache_item_t *src;
     bool finished;
     img_loader_task_t *task;
     struct coverloader_request *prev;
     struct coverloader_request *next;
 } coverloader_req_t;
-
-typedef struct coverloader_memcache_key_t {
-    int id;
-    lv_coord_t target_width, target_height;
-} coverloader_memcache_key_t;
 
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_TYPE coverloader_req_t
@@ -77,7 +83,7 @@ static void img_loader_result_cb(coverloader_req_t *req);
 
 static void img_loader_cancel_cb(coverloader_req_t *req);
 
-static void memcache_item_free(lv_sdl_img_data_t *item);
+static void memcache_item_free(coverloader_memcache_item_t *item);
 
 static void coverloader_req_free(coverloader_req_t *req);
 
@@ -86,6 +92,8 @@ static int reqlist_find_by_target(coverloader_req_t *p, const void *v);
 static bool cover_is_placeholder(const SDL_Surface *surface);
 
 static void target_deleted_cb(lv_event_t *e);
+
+static void target_src_unlink_cb(lv_event_t *e);
 
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
@@ -175,20 +183,20 @@ static void coverloader_cache_item_path(char path[4096], const coverloader_req_t
 
 static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
     // Uses result cache instead
-    lv_sdl_img_data_t *result = NULL;
-    coverloader_memcache_key_t key = {
-            .id = req->id,
-            .target_width = req->target_width,
-            .target_height = req->target_height
-    };
+    coverloader_memcache_item_t *result = NULL;
+    coverloader_memcache_key_t key;
+    memset(&key, 0, sizeof(key));
+    key.id = req->id;
+    key.target_width = req->target_width;
+    key.target_height = req->target_height;
     lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
-    req->result = result;
+    req->src = result;
     // Must return something not falsy or loader will think this is a cache miss
-    return (SDL_Surface *) (size_t) (result != NULL);
+    return (SDL_Surface *) (result != NULL);
 }
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
-    lv_sdl_img_data_t *result = NULL;
+    coverloader_memcache_item_t *result = NULL;
     coverloader_memcache_key_t key = {
             .id = req->id,
             .target_width = req->target_width,
@@ -198,26 +206,31 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     if (!result) {
         lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
         SDL_Renderer *renderer = param->renderer;
-        result = malloc(sizeof(lv_sdl_img_data_t));
-        SDL_memset(result, 0, sizeof(lv_sdl_img_data_t));
-        result->type = LV_SDL_IMG_TYPE_TEXTURE;
+        result = SDL_calloc(1, sizeof(coverloader_memcache_item_t));
+        lv_img_dsc_t *src = &result->src;
+        lv_sdl_img_data_t *data = &result->data;
+        data->type = LV_SDL_IMG_TYPE_TEXTURE;
+        src->header.cf = LV_IMG_CF_TRUE_COLOR;
         if (SDL_ISPIXELFORMAT_ALPHA(cached->format->format)) {
+            src->header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
         }
         int value_length = cached->w * cached->h;
         if (cached->userdata) {
             subimage_info_t *info = cached->userdata;
-            result->rect = info->rect;
+            data->rect = info->rect;
             value_length = info->w * info->h;
-//            result->w = info->w;
-//            result->h = info->h;
+            src->header.w = info->w;
+            src->header.h = info->h;
         } else {
-//            result->w = cached->w;
-//            result->h = cached->h;
+            src->header.w = cached->w;
+            src->header.h = cached->h;
         }
-        result->data.texture = SDL_CreateTextureFromSurface(renderer, cached);
+        data->data.texture = SDL_CreateTextureFromSurface(renderer, cached);
+        src->data_size = sizeof(lv_sdl_img_data_t);
+        src->data = (const uint8_t *) data;
         lv_lru_set(req->loader->mem_cache, &key, sizeof(key), result, value_length);
     }
-    req->result = result;
+    req->src = result;
     req->finished = true;
     if (cached->userdata) {
         SDL_free(cached->userdata);
@@ -317,7 +330,8 @@ static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void
 static void img_loader_start_cb(coverloader_req_t *req) {
     appitem_viewholder_t *holder = req->target->user_data;
     holder->cover_data = lv_sdl_img_data_defcover;
-    lv_img_set_src(req->target, &holder->cover_src);
+    lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
+    lv_img_set_src(req->target, &holder->styles->defcover_src);
     lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -329,15 +343,18 @@ static void img_loader_result_cb(coverloader_req_t *req) {
     } else {
         goto done;
     }
+    lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
     appitem_viewholder_t *holder = req->target->user_data;
-    if (req->result) {
-        holder->cover_data = *req->result;
+    if (req->src) {
+        lv_img_set_src(req->target, req->src);
+        req->src->obj = req->target;
+        // If the object is deleted, mark the src orphaned. So it will not access obj when recycled.
+        lv_obj_add_event_cb(req->target, target_src_unlink_cb, LV_EVENT_DELETE, NULL);
         lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     } else {
-        holder->cover_data = lv_sdl_img_data_defcover;
+        lv_img_set_src(req->target, &holder->styles->defcover_src);
         lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
-    lv_img_set_src(req->target, &holder->cover_src);
     done:
     loader->reqlist = reqlist_remove(loader->reqlist, req);
     coverloader_req_free(req);
@@ -347,6 +364,7 @@ static void img_loader_result_cb(coverloader_req_t *req) {
 static void img_loader_cancel_cb(coverloader_req_t *req) {
     if (req->target) {
         lv_obj_remove_event_cb(req->target, target_deleted_cb);
+        lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
     }
     req->task = NULL;
     coverloader_t *loader = req->loader;
@@ -355,8 +373,12 @@ static void img_loader_cancel_cb(coverloader_req_t *req) {
     coverloader_unref(loader);
 }
 
-static void memcache_item_free(lv_sdl_img_data_t *item) {
-    SDL_DestroyTexture(item->data.texture);
+static void memcache_item_free(coverloader_memcache_item_t *item) {
+    // Make sure the obj isn't referencing the src anymore
+    if (item->obj) {
+        lv_img_set_src(item->obj, NULL);
+    }
+    SDL_DestroyTexture(item->data.data.texture);
     free(item);
 }
 
@@ -371,4 +393,11 @@ static int reqlist_find_by_target(coverloader_req_t *p, const void *v) {
 static void target_deleted_cb(lv_event_t *e) {
     coverloader_req_t *req = lv_event_get_user_data(e);
     req->target = NULL;
+}
+
+static void target_src_unlink_cb(lv_event_t *e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+    const coverloader_memcache_item_t *item = lv_img_get_src(obj);
+    if (item->obj != obj) return;
+    ((coverloader_memcache_item_t *) item)->obj = NULL;
 }

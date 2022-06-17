@@ -10,6 +10,7 @@ typedef struct {
     lv_style_transition_dsc_t tr_pressed;
     lv_style_transition_dsc_t tr_released;
     lv_img_dsc_t fav_indicator_src;
+    lv_img_dsc_t defcover_src;
 } appitem_styles_t;
 
 typedef struct {
@@ -30,6 +31,7 @@ typedef struct {
 typedef struct {
     apploader_item_t *app;
     apps_controller_t *controller;
+    const appitem_styles_t *styles;
     lv_obj_t *play_indicator;
     lv_obj_t *title;
     lv_sdl_img_data_t cover_data;

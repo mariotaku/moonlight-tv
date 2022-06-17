@@ -57,6 +57,7 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     holder->cover_src.header.h = controller->col_height;
 
     holder->controller = controller;
+    holder->styles = styles;
     holder->play_indicator = play_indicator;
     holder->title = title;
     lv_obj_set_user_data(item, holder);
@@ -102,6 +103,12 @@ void appitem_style_init(appitem_styles_t *style) {
     style->fav_indicator_src.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
     style->fav_indicator_src.data_size = sizeof(lv_sdl_img_data_t);
     style->fav_indicator_src.data = (const uint8_t *) &lv_sdl_img_data_fav_indicator;
+
+    style->defcover_src.header.w = 0;
+    style->defcover_src.header.h = 0;
+    style->defcover_src.header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
+    style->defcover_src.data_size = sizeof(lv_sdl_img_data_t);
+    style->defcover_src.data = (const uint8_t *) &lv_sdl_img_data_defcover;
 }
 
 void appitem_style_deinit(appitem_styles_t *style) {
