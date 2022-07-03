@@ -3,7 +3,7 @@
 	url = https://github.com/webosbrew/native-dev-utils.git
 [submodule "third_party/opus"]
 	path = third_party/opus
-	url = https://gitlab.xiph.org/xiph/opus.git
+	url = https://github.com/xiph/opus.git
 [submodule "core/moonlight-common-c"]
 	path = core/moonlight-common-c
 	url = https://github.com/moonlight-stream/moonlight-common-c.git
