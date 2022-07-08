@@ -71,7 +71,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
@@ -82,23 +82,10 @@ jobs:
       - name: Install Compatibility checker
         run: sudo npm install -g @webosbrew/compat-checker
 
-      - name: Install Dev Dependency
-        run: npm install
-
-      - name: Install Required Build Tools
-        run: sudo apt-get -y -qq install cmake
-
-      - name: Download webOS NDK
-        run: wget -q https://github.com/openlgtv/buildroot-nc4/releases/download/webos-6e2e155/arm-webos-linux-gnueabi_sdk-buildroot.tar.gz -P /tmp
-
-      - name: Extract webOS NDK
-        run: | 
-          cd /tmp
-          tar xzf arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
-          ./arm-webos-linux-gnueabi_sdk-buildroot/relocate-sdk.sh
-
-      - name: Run easy_build
-        run: TOOLCHAIN_FILE=/tmp/arm-webos-linux-gnueabi_sdk-buildroot/usr/share/buildroot/toolchainfile.cmake ./scripts/webos/easy_build.sh
+      - name: webOS Build
+        uses: ./.github/actions/build-webos
+        with:
+          build-type: 'Debug'
 
       - name: Verify compatibility
         run: webosbrew-ipk-compat-checker dist/*.ipk

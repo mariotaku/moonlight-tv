@@ -1,0 +1,33 @@
+name: "Build webOS"
+description: "Install dependencies and build binaries for webOS"
+inputs:
+  build-type:
+    description: 'CMake build type'
+    default: 'Debug'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Dev Dependency
+      shell: bash
+      run: npm install
+
+    - name: Install Required Build Tools
+      shell: bash
+      run: sudo apt-get -y -qq install cmake
+
+    - name: Download webOS NDK
+      shell: bash
+      run: wget -q https://github.com/openlgtv/buildroot-nc4/releases/download/webos-6e2e155/arm-webos-linux-gnueabi_sdk-buildroot.tar.gz -P /tmp
+
+    - name: Extract webOS NDK
+      shell: bash
+      working-directory: /tmp
+      run: |
+        tar xzf arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
+        ./arm-webos-linux-gnueabi_sdk-buildroot/relocate-sdk.sh
+
+    - name: Run easy_build
+      shell: bash
+      run: TOOLCHAIN_FILE=/tmp/arm-webos-linux-gnueabi_sdk-buildroot/usr/share/buildroot/toolchainfile.cmake ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }}
