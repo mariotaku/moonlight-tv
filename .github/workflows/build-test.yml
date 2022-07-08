@@ -106,32 +106,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache sysroot
-        uses: actions/cache@v2
-        id: sysroot-cache
+      - name: Prepare Sysroot
+        uses: ./.github/actions/raspi-sysroot
         with:
-          path: |
-            /opt/pi-sysroot/bin
-            /opt/pi-sysroot/lib
-            /opt/pi-sysroot/opt
-            /opt/pi-sysroot/usr
-          key: ${{ runner.os }}-${{ env.RASPBIAN_VERSION }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
-
-      - name: Update packages
-        run: sudo apt-get -qq update || true
-
-      - name: Install Required Build Tools
-        # Use qemu to support cross-architecture debootstrap
-        run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
-
-      - name: Install Sysroot
-        if: steps.sysroot-cache.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get -y -qq install debootstrap qemu-user-static
-          sudo update-binfmts --enable qemu-arm
-          sudo mkdir -p ${SYSROOT}
-          sudo debootstrap --arch=armhf --no-check-gpg bullseye ${SYSROOT} http://raspbian.raspberrypi.org/raspbian/
-          sudo RELEASE=${RASPBIAN_VERSION} chroot ${SYSROOT} bash < ${{github.workspace}}/scripts/raspi/pi-sysroot-setup.sh
+          path: ${{ env.SYSROOT }}
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -142,11 +120,14 @@ jobs:
         # Use a bash shell so we can use the same syntax for environment variable
         # access regardless of the host operating system
         shell: bash
+        env:
+          PI_SYSROOT: ${{ env.SYSROOT }}
         working-directory: ${{github.workspace}}/build
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
         run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTARGET_RASPI=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/scripts/raspi/PiCrossToolchain.cmake
+
 
       - name: Build
         working-directory: ${{github.workspace}}/build

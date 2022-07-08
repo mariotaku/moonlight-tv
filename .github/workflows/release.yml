@@ -35,20 +35,10 @@ jobs:
       - name: Install Dev Dependency
         run: npm install
 
-      - name: Install Required Build Tools
-        run: sudo apt-get -y -qq install cmake
-
-      - name: Download webOS NDK
-        run: wget -q https://github.com/openlgtv/buildroot-nc4/releases/download/webos-6e2e155/arm-webos-linux-gnueabi_sdk-buildroot.tar.gz -P /tmp
-
-      - name: Extract webOS NDK
-        run: |
-          cd /tmp
-          tar xzf arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
-          ./arm-webos-linux-gnueabi_sdk-buildroot/relocate-sdk.sh
-
-      - name: Run easy_build
-        run: TOOLCHAIN_FILE=/tmp/arm-webos-linux-gnueabi_sdk-buildroot/usr/share/buildroot/toolchainfile.cmake ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      - name: webOS Build
+        uses: ./.github/actions/build-webos
+        with:
+          build-type: ${{ env.BUILD_TYPE }}
 
       - name: Create Release (webOS)
         id: create_release_webos
@@ -66,7 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SYSROOT: "/opt/pi-sysroot"
-      RASPBIAN_VERSION: "bullseye"
 
     steps:
       - uses: actions/checkout@v2
@@ -76,32 +65,10 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1
         id: tagName
 
-      - name: Cache sysroot
-        uses: actions/cache@v2
-        id: sysroot-cache
+      - name: Prepare Sysroot
+        uses: ./.github/actions/raspi-sysroot
         with:
-          path: |
-            /opt/pi-sysroot/bin
-            /opt/pi-sysroot/lib
-            /opt/pi-sysroot/opt
-            /opt/pi-sysroot/usr
-          key: ${{ runner.os }}-${{ env.RASPBIAN_VERSION }}-${{ hashFiles('./scripts/raspi/pi-sysroot-setup.sh') }}
-
-      - name: Update packages
-        run: sudo apt-get -qq update || true
-
-      - name: Install Required Build Tools
-        # Use qemu to support cross-architecture debootstrap
-        run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
-
-      - name: Install Sysroot
-        if: steps.sysroot-cache.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get -y -qq install debootstrap qemu-user-static
-          sudo update-binfmts --enable qemu-arm
-          sudo mkdir -p ${SYSROOT}
-          sudo debootstrap --arch=armhf --no-check-gpg bullseye ${SYSROOT} http://raspbian.raspberrypi.org/raspbian/
-          sudo RELEASE=${RASPBIAN_VERSION} chroot ${SYSROOT} bash < ${{github.workspace}}/scripts/raspi/pi-sysroot-setup.sh
+          path: ${{ env.SYSROOT }}
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -112,6 +79,8 @@ jobs:
         # Use a bash shell so we can use the same syntax for environment variable
         # access regardless of the host operating system
         shell: bash
+        env:
+          PI_SYSROOT: ${{ env.SYSROOT }}
         working-directory: ${{github.workspace}}/build
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
