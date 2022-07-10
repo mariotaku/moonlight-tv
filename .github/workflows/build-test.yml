@@ -97,9 +97,6 @@ jobs:
 
   build-raspi:
     runs-on: ubuntu-latest
-    env:
-      SYSROOT: "/opt/pi-sysroot"
-      RASPBIAN_VERSION: "bullseye"
 
     steps:
       - uses: actions/checkout@v2
@@ -107,9 +104,17 @@ jobs:
           submodules: recursive
 
       - name: Prepare Sysroot
-        uses: ./.github/actions/raspi-sysroot
+        id: pi-sysroot
+        uses: mariotaku/raspbian-sysroot-action@main
         with:
-          path: ${{ env.SYSROOT }}
+          packages: >
+            libsdl2-dev libsdl2-image-dev libopus-dev uuid-dev libcurl4-openssl-dev libavcodec-dev libavutil-dev 
+            libexpat1-dev libmbedtls-dev libfontconfig1-dev libraspberrypi-dev
+
+      - name: Install Build Tools
+        shell: bash
+        # apt-get update was implicitly called, so we don't have to call it here
+        run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
 
       - name: Create Build Environment
         # Some projects don't allow in-source building, so create a separate build directory
@@ -120,13 +125,12 @@ jobs:
         # Use a bash shell so we can use the same syntax for environment variable
         # access regardless of the host operating system
         shell: bash
-        env:
-          PI_SYSROOT: ${{ env.SYSROOT }}
         working-directory: ${{github.workspace}}/build
         # Note the current convention is to use the -S and -B options here to specify source
         # and build directories, but this is only available with CMake 3.13 and higher.
         # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTARGET_RASPI=ON -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/scripts/raspi/PiCrossToolchain.cmake
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTARGET_RASPI=ON 
+          -DCMAKE_TOOLCHAIN_FILE=${{steps.pi-sysroot.outputs.cmake-toolchain}}
 
 
       - name: Build
