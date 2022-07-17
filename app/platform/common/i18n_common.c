@@ -20,7 +20,7 @@ static const i18n_entry_t i18n_locales[] = {
         {"ro", "Română"},
         {"ru", "Русский"},
         {"zh-CN", "简体中文",
-#if TARGET_WINDOWS
+#if OS_WINDOWS
                 .font =        "Microsoft YaHei"
 #endif
         },

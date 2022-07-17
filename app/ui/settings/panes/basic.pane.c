@@ -138,8 +138,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
 
 #if !FEATURE_FORCE_FULLSCREEN
-    lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
-    lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
+    if (decoder_info.canResize) {
+        lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
+        lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
+    }
 #endif
 
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS

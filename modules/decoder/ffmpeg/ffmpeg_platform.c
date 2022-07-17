@@ -29,6 +29,6 @@ MODULE_API bool decoder_check_ffmpeg(PDECODER_INFO info) {
     info->audio = false;
     info->hasRenderer = true;
     info->suggestedBitrate = 50000;
-
+    info->canResize = true;
     return true;
 }

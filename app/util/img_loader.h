@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 struct img_loader_t;
 struct img_loader_task_t;
 
@@ -10,7 +12,7 @@ typedef void (*img_loader_fn)(void *);
 
 typedef void (*img_loader_fn2)(void *, void *);
 
-typedef void *(*img_loader_get_fn)(void *);
+typedef bool (*img_loader_get_fn)(void *request, void **cached);
 
 typedef struct lv_img_loader_cb_t {
     img_loader_fn start_cb;

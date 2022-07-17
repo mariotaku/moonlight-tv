@@ -16,7 +16,6 @@
 #include "util/img_loader.h"
 #include "util/refcounter.h"
 
-#include "util/logging.h"
 #include "res.h"
 
 typedef struct coverloader_memcache_key_t {
@@ -63,17 +62,15 @@ static char *coverloader_cache_dir();
 
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req);
 
-static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req);
+static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cached);
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached);
 
-static void coverloader_memcache_put_wait(coverloader_req_t *req);
-
-static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req);
+static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cached);
 
 static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cached);
 
-static SDL_Surface *coverloader_fetch(coverloader_req_t *req);
+static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached);
 
 static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void *args);
 
@@ -181,7 +178,7 @@ static void coverloader_cache_item_path(char path[4096], const coverloader_req_t
     free(cachedir);
 }
 
-static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
+static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cached) {
     // Uses result cache instead
     coverloader_memcache_item_t *result = NULL;
     coverloader_memcache_key_t key;
@@ -189,10 +186,15 @@ static SDL_Surface *coverloader_memcache_get(coverloader_req_t *req) {
     key.id = req->id;
     key.target_width = req->target_width;
     key.target_height = req->target_height;
+
+    (void) key.target_width;
+    (void) key.target_height;
+
     lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
     req->src = result;
-    // Must return something not falsy or loader will think this is a cache miss
-    return (SDL_Surface *) (result != NULL);
+
+    (void) cached;
+    return result != NULL;
 }
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
@@ -238,21 +240,21 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     SDL_FreeSurface(cached);
 }
 
-static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
+static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cached) {
 #if !DEBUG
     SDL_version ver;
     SDL_GetVersion(&ver);
     if (SDL_VERSIONNUM(ver.major, ver.minor, ver.patch) <= SDL_VERSIONNUM(2, 0, 1)) {
-        return NULL;
+        return false;
     }
 #endif
     char path[4096];
     coverloader_cache_item_path(path, req);
     SDL_Surface *decoded = IMG_Load(path);
-    if (!decoded) return NULL;
+    if (!decoded) return false;
     if (cover_is_placeholder(decoded)) {
         SDL_FreeSurface(decoded);
-        return NULL;
+        return false;
     }
     int sw = decoded->w, sh = decoded->h;
     while (sw > req->target_width * 1.5 || sh > req->target_height * 1.5) {
@@ -262,20 +264,20 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
     if (!sw || !sh) {
         // Image is too small to display
         SDL_FreeSurface(decoded);
-        return NULL;
+        return false;
     }
     double srcratio = sw / (double) sh, dstratio = req->target_width / (double) req->target_height;
     SDL_Rect srcrect;
     if (srcratio > dstratio) {
         // Source is wider than destination
         srcrect.h = sh;
-        srcrect.w = sh * dstratio;
+        srcrect.w = (int) (sh * dstratio);
         srcrect.y = 0;
         srcrect.x = (sw - srcrect.w) / 2;
     } else {
         // Destination is wider than source
         srcrect.w = sw;
-        srcrect.h = sw / dstratio;
+        srcrect.h = (int) (sw / dstratio);
         srcrect.x = 0;
         srcrect.y = (sh - srcrect.h) / 2;
     }
@@ -286,7 +288,8 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
 
     if (sw == decoded->w && sh == decoded->h) {
         decoded->userdata = info;
-        return decoded;
+        *cached = decoded;
+        return true;
     }
 
     const SDL_PixelFormat *format = decoded->format;
@@ -295,7 +298,8 @@ static SDL_Surface *coverloader_filecache_get(coverloader_req_t *req) {
     SDL_BlitScaled(decoded, NULL, scaled, NULL);
     SDL_FreeSurface(decoded);
     scaled->userdata = info;
-    return scaled;
+    *cached = scaled;
+    return true;
 }
 
 static bool cover_is_placeholder(const SDL_Surface *surface) {
@@ -304,9 +308,11 @@ static bool cover_is_placeholder(const SDL_Surface *surface) {
 
 static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cached) {
     // This was done in fetch step
+    (void) req;
+    (void) cached;
 }
 
-static SDL_Surface *coverloader_fetch(coverloader_req_t *req) {
+static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached) {
 #if !DEBUG
     SDL_version ver;
     SDL_GetVersion(&ver);
@@ -319,7 +325,7 @@ static SDL_Surface *coverloader_fetch(coverloader_req_t *req) {
     if (gs_download_cover(req->loader->client, (PSERVER_DATA) req->node->server, req->id, path) != GS_OK) {
         return NULL;
     }
-    return coverloader_filecache_get(req);
+    return coverloader_filecache_get(req, cached);
 }
 
 static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void *args) {

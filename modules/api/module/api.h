@@ -61,6 +61,7 @@ typedef struct DECODER_INFO {
     /* Handles video renderer on screen */
     bool hasRenderer;
     int suggestedBitrate;
+    bool canResize;
 } *PDECODER_INFO, DECODER_INFO;
 
 typedef struct AUDIO_INFO {

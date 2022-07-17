@@ -17,7 +17,7 @@ set(SRC
 add_library(gamestream ${HEADERS} ${SRC})
 set_target_properties(gamestream PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED TRUE)
 
-if (TARGET_WINDOWS)
+if (OS_WINDOWS)
     target_link_libraries(gamestream PRIVATE rpcrt4)
 else()
     pkg_check_modules(UUID REQUIRED uuid)

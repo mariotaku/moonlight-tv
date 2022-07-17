@@ -81,9 +81,9 @@ void img_loader_destroy(img_loader_t *loader) {
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
     SDL_assert(!loader->destroyed);
     cb->start_cb(request);
-    void *cached = loader->impl.memcache_get(request);
+    void *cached = NULL;
     // Memory cache found, finish loading
-    if (cached) {
+    if (loader->impl.memcache_get(request, &cached)) {
         cb->complete_cb(request, cached);
         return NULL;
     }
@@ -145,17 +145,15 @@ static img_loader_task_t *loader_task_poll(img_loader_t *loader) {
 
 static void loader_task_execute(img_loader_t *loader, img_loader_task_t *task) {
     void *request = task->request;
-    void *cached = loader->impl.filecache_get(request);
-    if (loader->destroyed) return;
-    if (!cached) {
-        cached = loader->impl.fetch(request);
-        if (loader->destroyed) return;
-        if (!cached) {
+    void *cached = NULL;
+    if (!loader->impl.filecache_get(request, &cached)) {
+        if (!loader->impl.fetch(request, &cached)) {
             // call fail_cb
             img_loader_fn cb = task->cancelled ? task->cb.cancel_cb : task->cb.fail_cb;
             run_on_main(loader, (img_loader_fn2) cb, request, NULL);
             return;
         }
+        if (loader->destroyed) return;
         loader->impl.filecache_put(request, cached);
     }
     if (loader->destroyed) return;
