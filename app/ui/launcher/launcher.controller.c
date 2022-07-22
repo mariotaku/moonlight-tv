@@ -23,6 +23,7 @@
 #include "util/i18n.h"
 #include "util/user_event.h"
 #include "util/logging.h"
+#include "backend/pcmanager/priv.h"
 
 static void launcher_controller(lv_fragment_t *self, void *args);
 
@@ -98,7 +99,8 @@ launcher_controller_t *launcher_instance() {
     return current_instance;
 }
 
-void launcher_select_server(launcher_controller_t *controller, SERVER_LIST *node) {
+void launcher_select_server(launcher_controller_t *controller, const char *uuid) {
+    PSERVER_LIST node = uuid ? pcmanager_find_by_uuid(pcmanager, uuid) : NULL;
     if (!node) {
         set_detail_opened(controller, false);
         select_pc(controller, NULL, false);
@@ -258,7 +260,7 @@ static void cb_pc_selected(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);
     if (lv_fragment_manager_get_top(app_uimanager) != (void *) controller) return;
     PSERVER_LIST selected = lv_obj_get_user_data(target);
-    launcher_select_server(controller, selected);
+    launcher_select_server(controller, selected->server->uuid);
 }
 
 static void cb_pc_longpress(lv_event_t *event) {

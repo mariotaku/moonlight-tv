@@ -4,10 +4,11 @@
 
 #include "errors.h"
 #include "util/i18n.h"
+#include "backend/pcmanager/priv.h"
 
 typedef struct {
     lv_fragment_t base;
-    SERVER_LIST *node;
+    char *uuid;
     char pin[8];
 
     lv_obj_t *message_label;
@@ -17,6 +18,8 @@ typedef struct {
 
 static void pair_controller_ctor(lv_fragment_t *self, void *args);
 
+static void pair_controller_dtor(lv_fragment_t *self);
+
 static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent);
 
 static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata);
@@ -25,13 +28,19 @@ static void dialog_cb(lv_event_t *event);
 
 const lv_fragment_class_t pair_dialog_class = {
         .constructor_cb = pair_controller_ctor,
+        .destructor_cb = pair_controller_dtor,
         .create_obj_cb = pair_dialog,
         .instance_size = sizeof(pair_dialog_controller_t),
 };
 
 void pair_controller_ctor(lv_fragment_t *self, void *args) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
-    controller->node = args;
+    controller->uuid = strdup(((SERVER_LIST *) args)->server->uuid);
+}
+
+static void pair_controller_dtor(lv_fragment_t *self) {
+    pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
+    free(controller->uuid);
 }
 
 static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
@@ -42,7 +51,8 @@ static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
     controller->btns = lv_msgbox_get_btns(dialog);
     lv_obj_add_flag(controller->btns, LV_OBJ_FLAG_HIDDEN);
 
-    if (!pcmanager_pair(pcmanager, controller->node->server, controller->pin, pair_result_cb, controller)) {
+    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, controller->uuid);
+    if (!node || !pcmanager_pair(pcmanager, node->server, controller->pin, pair_result_cb, controller)) {
         lv_msgbox_close_async(dialog);
         return dialog;
     }
@@ -73,7 +83,7 @@ static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata) {
     if (resp->result.code == GS_OK) {
         launcher_controller_t *launcher_controller = launcher_instance();
         if (launcher_controller) {
-            launcher_select_server(launcher_controller, controller->node);
+            launcher_select_server(launcher_controller, controller->uuid);
         }
         lv_msgbox_close_async(controller->base.obj);
         return;

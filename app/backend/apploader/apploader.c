@@ -17,6 +17,7 @@
 #define LINKEDLIST_PREFIX applist
 
 #include "util/linked_list.h"
+#include "backend/pcmanager/priv.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -46,7 +47,7 @@ apploader_t *apploader_new(const SERVER_LIST *node) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
     refcounter_init(&loader->refcounter);
-    loader->node = node;
+    loader->uuid = strdup(node->server->uuid);
     loader->apps = NULL;
     return loader;
 }
@@ -69,6 +70,7 @@ void apploader_unref(apploader_t *loader) {
         return;
     }
     apploader_list_free(loader->apps);
+    free(loader->uuid);
     refcounter_destroy(&loader->refcounter);
     SDL_free(loader);
 }
@@ -91,9 +93,14 @@ static int apploader_task_execute(apploader_task_t *task) {
     if (task->cancelled) {
         goto finish;
     }
+    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, task->loader->uuid);
+    if (node == NULL) {
+        ret = GS_ERROR;
+        goto finish;
+    }
     PAPP_LIST ll = NULL;
     client = app_gs_client_new();
-    if ((ret = gs_applist(client, task->loader->node->server, &ll)) != GS_OK) {
+    if ((ret = gs_applist(client, node->server, &ll)) != GS_OK) {
         error = gs_error;
         goto finish;
     }
@@ -114,7 +121,7 @@ static int apploader_task_execute(apploader_task_t *task) {
         apploader_item_t *item = &items[index];
         SDL_memcpy(item, cur, sizeof(APP_LIST));
         item->base.next = NULL;
-        item->fav = pcmanager_is_favorite(task->loader->node, cur->id);
+        item->fav = pcmanager_is_favorite(node, cur->id);
         index++;
     }
     applist_free(ll, (void (*)(APP_LIST *)) SDL_free);

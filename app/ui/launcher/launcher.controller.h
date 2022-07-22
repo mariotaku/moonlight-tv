@@ -32,6 +32,6 @@ lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent);
 
 launcher_controller_t *launcher_instance();
 
-void launcher_select_server(launcher_controller_t *controller, SERVER_LIST *node);
+void launcher_select_server(launcher_controller_t *controller, const char *uuid);
 
 extern const lv_fragment_class_t launcher_controller_class;

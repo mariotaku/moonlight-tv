@@ -22,7 +22,7 @@ typedef struct apploader_list_t {
 } apploader_list_t;
 
 typedef struct apploader_t {
-    const SERVER_LIST *node;
+    char *uuid;
     apploader_state_t state;
     int code;
     const char *error;
