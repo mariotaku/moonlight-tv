@@ -842,7 +842,7 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
     return ret;
 }
 
-int gs_download_cover(GS_CLIENT hnd, PSERVER_DATA server, int appid, const char *path) {
+int gs_download_cover(GS_CLIENT hnd, const SERVER_DATA *server, int appid, const char *path) {
     int ret = GS_OK;
     char url[4096];
     PHTTP_DATA data = http_create_data();

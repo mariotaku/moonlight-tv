@@ -142,6 +142,11 @@ PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr
     return serverlist_find_by(manager->servers, srvaddr, serverlist_find_address);
 }
 
+PSERVER_LIST pcmanager_find_by_uuid(pcmanager_t *manager, const char *uuid) {
+    SDL_assert(uuid);
+    return serverlist_find_by(manager->servers, uuid, serverlist_compare_uuid);
+}
+
 static void upsert_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;
     const pcmanager_resp_t *resp = args->resp;

@@ -46,7 +46,7 @@ typedef struct _SERVER_DATA {
 
 typedef struct GS_CLIENT_T *GS_CLIENT;
 
-extern const char* gs_error;
+extern const char *gs_error;
 
 GS_CLIENT gs_new(const char *keydir, int log_level);
 
@@ -67,4 +67,4 @@ int gs_pair(GS_CLIENT, PSERVER_DATA server, const char *pin);
 
 int gs_quit_app(GS_CLIENT, PSERVER_DATA server);
 
-int gs_download_cover(GS_CLIENT, PSERVER_DATA server, int appId, const char *path);
+int gs_download_cover(GS_CLIENT, const SERVER_DATA *server, int appId, const char *path);

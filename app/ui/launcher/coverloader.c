@@ -32,7 +32,7 @@ typedef struct coverloader_memcache_item_t {
 typedef struct coverloader_request {
     coverloader_t *loader;
     int id;
-    PSERVER_LIST node;
+    char *server_id;
     lv_obj_t *target;
     lv_coord_t target_width, target_height;
     coverloader_memcache_item_t *src;
@@ -48,6 +48,7 @@ typedef struct coverloader_request {
 #define LINKEDLIST_DOUBLE 1
 
 #include "util/linked_list.h"
+#include "backend/pcmanager/priv.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -142,8 +143,8 @@ void coverloader_unref(coverloader_t *loader) {
     free(loader);
 }
 
-void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_obj_t *target, lv_coord_t target_width,
-                         lv_coord_t target_height) {
+void coverloader_display(coverloader_t *loader, const SERVER_LIST *node, int id, lv_obj_t *target,
+                         lv_coord_t target_width, lv_coord_t target_height) {
     coverloader_req_t *existing = reqlist_find_by(loader->reqlist, target, reqlist_find_by_target);
     if (existing && existing->task) {
         img_loader_cancel(loader->base_loader, existing->task);
@@ -152,7 +153,7 @@ void coverloader_display(coverloader_t *loader, PSERVER_LIST node, int id, lv_ob
     coverloader_req_t *req = reqlist_new();
     req->loader = loader;
     req->id = id;
-    req->node = node;
+    req->server_id = strdup(node->server->uuid);
     req->target = target;
     req->target_width = target_width;
     req->target_height = target_height;
@@ -173,7 +174,7 @@ static char *coverloader_cache_dir() {
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req) {
     char *cachedir = coverloader_cache_dir();
     char basename[128];
-    SDL_snprintf(basename, 128, "%s_%d", req->node->server->uuid, req->id);
+    SDL_snprintf(basename, 128, "%s_%d", req->server_id, req->id);
     path_join_to(path, 4096, cachedir, basename);
     free(cachedir);
 }
@@ -320,10 +321,14 @@ static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached) {
         return NULL;
     }
 #endif
+    const SERVER_LIST *node = pcmanager_find_by_uuid(pcmanager, req->server_id);
+    if (!node) {
+        return false;
+    }
     char path[4096];
     coverloader_cache_item_path(path, req);
-    if (gs_download_cover(req->loader->client, (PSERVER_DATA) req->node->server, req->id, path) != GS_OK) {
-        return NULL;
+    if (gs_download_cover(req->loader->client, node->server, req->id, path) != GS_OK) {
+        return false;
     }
     return coverloader_filecache_get(req, cached);
 }
@@ -389,6 +394,7 @@ static void memcache_item_free(coverloader_memcache_item_t *item) {
 }
 
 static inline void coverloader_req_free(coverloader_req_t *req) {
+    free(req->server_id);
     free(req);
 }
 

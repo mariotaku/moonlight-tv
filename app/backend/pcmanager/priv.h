@@ -57,6 +57,8 @@ void pcmanager_worker_finalize(pcmanager_resp_t *resp, pcmanager_callback_t call
 
 PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr);
 
+PSERVER_LIST pcmanager_find_by_uuid(pcmanager_t *manager, const char *uuid);
+
 void pcmanager_load_known_hosts(pcmanager_t *manager);
 
 void pcmanager_save_known_hosts(pcmanager_t *manager);
