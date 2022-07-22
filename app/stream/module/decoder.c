@@ -77,8 +77,6 @@ DECODER_INFO decoder_info;
 
 static void dlerror_log();
 
-static bool checkinit(DECODER system, int libidx, int argc, char *argv[]);
-
 static bool decoder_init_simple(DECODER platform, int libidx, int argc, char *argv[]);
 
 static bool decoder_post_init_simple(DECODER platform, int libidx, int argc, char *argv[]);

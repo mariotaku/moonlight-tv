@@ -61,7 +61,7 @@ AUDIO audio_current = AUDIO_NONE;
 int audio_current_libidx;
 AUDIO_INFO audio_info;
 
-static bool checkinit(AUDIO system, int libidx, int argc, char *argv[]);
+static bool audio_check_init(AUDIO system, int libidx, int argc, char *argv[]);
 
 static bool audio_try_init(AUDIO audio, int argc, char *argv[]);
 
@@ -156,7 +156,7 @@ bool audio_try_init(AUDIO audio, int argc, char *argv[]) {
     char libname[64];
     MODULE_DEFINITION pdef = audio_definitions[audio];
     if (pdef.symbols.ptr && pdef.symbols.audio->valid) {
-        if (checkinit(audio, -1, argc, argv)) {
+        if (audio_check_init(audio, -1, argc, argv)) {
             audio_current = audio;
             audio_current_libidx = -1;
             return true;
@@ -171,7 +171,7 @@ bool audio_try_init(AUDIO audio, int argc, char *argv[]) {
                 dlerror_log();
                 continue;
             }
-            if (checkinit(audio, i, argc, argv)) {
+            if (audio_check_init(audio, i, argc, argv)) {
                 audio_current = audio;
                 audio_current_libidx = i;
                 return true;
@@ -182,7 +182,7 @@ bool audio_try_init(AUDIO audio, int argc, char *argv[]) {
     return false;
 }
 
-bool checkinit(AUDIO system, int libidx, int argc, char *argv[]) {
+bool audio_check_init(AUDIO system, int libidx, int argc, char *argv[]) {
     if (!audio_init_simple(system, libidx, argc, argv))
         return false;
     if (!audio_check_simple(system, libidx)) {
