@@ -333,13 +333,9 @@ static const char *server_item_icon(const SERVER_LIST *node) {
         case SERVER_STATE_QUERYING:
             return MAT_SYMBOL_TV;
         case SERVER_STATE_ONLINE:
-            if (!node->server->paired) {
-                return MAT_SYMBOL_LOCK;
-            } else if (node->server->currentGame) {
-                return MAT_SYMBOL_ONDEMAND_VIDEO;
-            } else {
-                return MAT_SYMBOL_TV;
-            }
+            return node->server->currentGame ? MAT_SYMBOL_ONDEMAND_VIDEO : MAT_SYMBOL_TV;
+        case SERVER_STATE_NOT_PAIRED:
+            return MAT_SYMBOL_LOCK;
         case SERVER_STATE_ERROR:
         case SERVER_STATE_OFFLINE:
             return MAT_SYMBOL_WARNING;

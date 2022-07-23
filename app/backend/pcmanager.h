@@ -61,8 +61,6 @@ PSERVER_LIST pcmanager_servers(pcmanager_t *manager);
 bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
                     void *userdata);
 
-bool pcmanager_test(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
-
 bool pcmanager_quitapp(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
 
 void pcmanager_request_update(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,

@@ -295,15 +295,7 @@ static void update_view_state(apps_controller_t *controller) {
             break;
         }
         case SERVER_STATE_ONLINE: {
-            if (!node->server->paired) {
-                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
-                lv_label_set_text_static(controller->errorhint, locstr("Select computer again to pair."));
-                lv_label_set_text_static(controller->errordetail, "");
-            } else if (controller->apploader->state == APPLOADER_STATE_LOADING) {
+            if (controller->apploader->state == APPLOADER_STATE_LOADING) {
                 // is loading apps
                 if (controller->apploader->apps) {
 
@@ -317,6 +309,7 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
                 lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_HIDDEN);
                 lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
@@ -335,11 +328,22 @@ static void update_view_state(apps_controller_t *controller) {
             }
             break;
         }
+        case SERVER_STATE_NOT_PAIRED: {
+            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+            lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
+            lv_label_set_text_static(controller->errorhint, locstr("Select computer again to pair."));
+            break;
+        }
         case SERVER_STATE_ERROR: {
             // server has error
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Host error"));
@@ -354,6 +358,7 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Offline"));
