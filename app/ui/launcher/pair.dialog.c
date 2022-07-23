@@ -5,6 +5,7 @@
 #include "errors.h"
 #include "util/i18n.h"
 #include "backend/pcmanager/priv.h"
+#include "ui/root.h"
 
 typedef struct {
     lv_fragment_t base;
@@ -33,9 +34,15 @@ const lv_fragment_class_t pair_dialog_class = {
         .instance_size = sizeof(pair_dialog_controller_t),
 };
 
-void pair_controller_ctor(lv_fragment_t *self, void *args) {
+void pair_dialog_open(const SERVER_LIST *node) {
+    lv_fragment_t *fragment = lv_fragment_create(&pair_dialog_class, (void *) node);
+    lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
+    lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
+}
+
+static void pair_controller_ctor(lv_fragment_t *self, void *args) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
-    controller->uuid = strdup(((SERVER_LIST *) args)->server->uuid);
+    controller->uuid = strdup(((const SERVER_LIST *) args)->server->uuid);
 }
 
 static void pair_controller_dtor(lv_fragment_t *self) {

@@ -87,7 +87,7 @@ static int quit_app_worker(cm_request_t *req) {
     resp->result.code = ret;
     resp->server = req->server;
     if (ret == GS_OK) {
-        resp->state.code = SERVER_STATE_ONLINE;
+        resp->state.code = SERVER_STATE_AVAILABLE;
         pclist_upsert(req->manager, resp);
     } else {
         resp->result.error.message = gs_error;

@@ -18,9 +18,11 @@
 
 #include "util/user_event.h"
 #include "util/i18n.h"
+#include "pair.dialog.h"
 
+typedef void (*action_cb_t)(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
 
-static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *parent);
+static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container);
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
@@ -76,6 +78,12 @@ static void quit_dialog_cb(lv_event_t *event);
 
 static void actions_click_cb(lv_event_t *event);
 
+static void action_cb_wol(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+
+static void action_cb_host_reload(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+
+static void action_cb_pair(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+
 static void update_grid_config(apps_controller_t *controller);
 
 static void open_context_menu(apps_controller_t *controller, apploader_item_t *app);
@@ -87,6 +95,8 @@ static void context_menu_click_cb(lv_event_t *event);
 static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app);
 
 static void app_detail_click_cb(lv_event_t *event);
+
+static void set_actions(apps_controller_t *controller, const char **labels, const action_cb_t *callbacks);
 
 static apps_controller_t *current_instance = NULL;
 
@@ -110,6 +120,14 @@ const lv_fragment_class_t apps_controller_class = {
         .event_cb = on_event,
         .instance_size = sizeof(apps_controller_t),
 };
+
+static const char *action_labels_offline[] = {translatable("Send Wake-On-LAN"), translatable("Retry"), ""};
+static const action_cb_t action_callbacks_offline[] = {action_cb_wol, action_cb_host_reload};
+static const char *action_labels_error[] = {translatable("Retry"), ""};
+static const action_cb_t action_callbacks_error[] = {action_cb_host_reload};
+static const char *actions_unpaired[] = {translatable("Pair"), ""};
+static const action_cb_t action_callbacks_unpaired[] = {action_cb_pair};
+static const char *actions_apps_none[] = {""};
 
 static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     apps_controller_t *controller = (apps_controller_t *) self;
@@ -149,7 +167,7 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
     lv_obj_center(apperror);
     lv_obj_set_flex_flow(apperror, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(apperror, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
+    lv_obj_set_flex_align(apperror, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_CENTER);
     lv_obj_t *errortitle = controller->errortitle = lv_label_create(apperror);
     lv_obj_set_width(errortitle, LV_PCT(100));
     lv_obj_set_style_text_font(errortitle, lv_theme_get_font_large(apperror), 0);
@@ -164,15 +182,15 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_width(errordetail, LV_PCT(100));
     lv_obj_set_flex_grow(errordetail, 1);
     controller->actions = lv_btnmatrix_create(apperror);
+    lv_obj_set_style_outline_width(controller->actions, 0, 0);
+    lv_obj_set_style_outline_width(controller->actions, 0, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_border_side(controller->actions, LV_BORDER_SIDE_NONE, 0);
-    lv_btnmatrix_set_btn_width(controller->actions, 0, LV_DPX(150));
-    lv_btnmatrix_set_btn_width(controller->actions, 1, LV_DPX(150));
-    lv_obj_set_size(controller->actions, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_obj_set_size(controller->actions, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_style_min_height(controller->actions, LV_DPX(80), 0);
+    lv_obj_set_style_min_width(controller->actions, LV_PCT(30), 0);
     lv_obj_set_style_max_width(controller->actions, LV_PCT(100), 0);
     lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_CLICK_TRIG | LV_BTNMATRIX_CTRL_NO_REPEAT);
-    static const char *actions_map[] = {translatable("Send Wake-On-LAN"), translatable("Retry"), ""};
-    lv_btnmatrix_set_map(controller->actions, actions_map);
+    set_actions(controller, actions_apps_none, NULL);
     lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_EVENT_BUBBLE);
 
     return view;
@@ -195,7 +213,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 
     if (controller->node->state.code != SERVER_STATE_QUERYING) {
         pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
-    } else if (controller->node->state.code == SERVER_STATE_ONLINE) {
+    } else if (controller->node->state.code == SERVER_STATE_AVAILABLE) {
         apploader_load(controller->apploader, appload_cb, controller);
     }
     current_instance = controller;
@@ -261,7 +279,8 @@ static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = (apps_controller_t *) userdata;
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
-    if (resp->state.code == SERVER_STATE_ONLINE && !controller->apploader->apps) {
+    lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
+    if (resp->state.code == SERVER_STATE_AVAILABLE && !controller->apploader->apps) {
         apploader_load(controller->apploader, appload_cb, controller);
     }
 }
@@ -271,7 +290,7 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
-    if (controller->node->state.code == SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
+    if (controller->node->state.code & SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 
@@ -294,7 +313,7 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
             break;
         }
-        case SERVER_STATE_ONLINE: {
+        case SERVER_STATE_AVAILABLE: {
             if (controller->apploader->state == APPLOADER_STATE_LOADING) {
                 // is loading apps
                 if (controller->apploader->apps) {
@@ -309,19 +328,23 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
                 lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-                lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_HIDDEN);
+
                 lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
-                lv_label_set_text_static(controller->errorhint, locstr("Press \"Retry\" button to reload."
-                                                                       "Try restart the computer if error persists."));
+                lv_label_set_text_static(controller->errorhint, locstr("Try restart the computer if error persists."));
                 lv_label_set_text_static(controller->errordetail, controller->apploader->error);
+                set_actions(controller, action_labels_error, action_callbacks_error);
+
+                lv_group_focus_obj(controller->actions);
+                lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             } else {
                 // has apps
                 lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+
                 if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
                     lv_group_focus_obj(controller->applist);
                 }
@@ -332,10 +355,14 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
+            lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
             lv_label_set_text_static(controller->errorhint, locstr("Select computer again to pair."));
+            set_actions(controller, actions_unpaired, action_callbacks_unpaired);
+
+            lv_group_focus_obj(controller->actions);
+            lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
         }
         case SERVER_STATE_ERROR: {
@@ -343,12 +370,13 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_style_opa(controller->errordetail, LV_OPA_100, 0);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-            lv_btnmatrix_set_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Host error"));
             lv_label_set_text_static(controller->errorhint, locstr("Please restart your computer."));
             lv_label_set_text_static(controller->errordetail, node->state.error.errmsg);
+            set_actions(controller, action_labels_error, action_callbacks_error);
+
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -358,12 +386,13 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(controller->errordetail, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Offline"));
             lv_label_set_text_static(controller->errorhint, locstr("Turn on the host computer and try again."));
-            lv_label_set_text_static(controller->errordetail, "");
+            set_actions(controller, action_labels_offline, action_callbacks_offline);
+
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -511,17 +540,23 @@ static void quit_dialog_cb(lv_event_t *event) {
 
 static void actions_click_cb(lv_event_t *event) {
     apps_controller_t *controller = lv_event_get_user_data(event);
-    switch (lv_btnmatrix_get_selected_btn(controller->actions)) {
-        case 0: {
-            lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
-            pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
-            break;
-        }
-        case 1: {
-            pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
-            break;
-        }
-    }
+    uint16_t index = lv_btnmatrix_get_selected_btn(controller->actions);
+    const action_cb_t *actions = lv_obj_get_user_data(controller->actions);
+    actions[index](controller, controller->actions, index);
+}
+
+static void action_cb_wol(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index) {
+    lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
+    pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
+}
+
+static void action_cb_host_reload(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index) {
+    lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
+    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
+}
+
+static void action_cb_pair(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index) {
+    pair_dialog_open(controller->node);
 }
 
 static void open_context_menu(apps_controller_t *controller, apploader_item_t *app) {
@@ -600,4 +635,9 @@ static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *a
 
 static void app_detail_click_cb(lv_event_t *event) {
     lv_msgbox_close(lv_event_get_current_target(event));
+}
+
+static void set_actions(apps_controller_t *controller, const char **labels, const action_cb_t *callbacks) {
+    lv_btnmatrix_set_map(controller->actions, labels);
+    lv_obj_set_user_data(controller->actions, (void *) callbacks);
 }

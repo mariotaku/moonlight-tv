@@ -2,7 +2,6 @@
 #include <Limelight.h>
 #include <PlatformCrypto.h>
 #include "app.h"
-#include "res.h"
 
 #include "add.dialog.h"
 #include "apps.controller.h"
@@ -15,7 +14,6 @@
 #include "lvgl/font/material_icons_regular_symbols.h"
 #include "lvgl/ext/lv_gridview.h"
 #include "lvgl/util/lv_app_utils.h"
-#include "lvgl/lv_disp_drv_app.h"
 
 #include "stream/platform.h"
 
@@ -54,8 +52,6 @@ static void cb_nav_key(lv_event_t *event);
 static void cb_detail_focused(lv_event_t *event);
 
 static void cb_detail_cancel(lv_event_t *event);
-
-static void open_pair(launcher_controller_t *controller, PSERVER_LIST node);
 
 static void open_manual_add(lv_event_t *event);
 
@@ -106,8 +102,8 @@ void launcher_select_server(launcher_controller_t *controller, const char *uuid)
         select_pc(controller, NULL, false);
         return;
     }
-    if (node->state.code == SERVER_STATE_ONLINE && !node->server->paired) {
-        open_pair(controller, node);
+    if (node->state.code == SERVER_STATE_NOT_PAIRED) {
+        pair_dialog_open(node);
         return;
     }
     set_detail_opened(controller, true);
@@ -332,7 +328,7 @@ static const char *server_item_icon(const SERVER_LIST *node) {
         case SERVER_STATE_NONE:
         case SERVER_STATE_QUERYING:
             return MAT_SYMBOL_TV;
-        case SERVER_STATE_ONLINE:
+        case SERVER_STATE_AVAILABLE:
             return node->server->currentGame ? MAT_SYMBOL_ONDEMAND_VIDEO : MAT_SYMBOL_TV;
         case SERVER_STATE_NOT_PAIRED:
             return MAT_SYMBOL_LOCK;
@@ -370,20 +366,24 @@ static void cb_nav_focused(lv_event_t *event) {
 }
 
 static void cb_nav_key(lv_event_t *event) {
-    launcher_controller_t *controller = lv_event_get_user_data(event);
+    launcher_controller_t *fragment = lv_event_get_user_data(event);
     switch (lv_event_get_key(event)) {
         case LV_KEY_UP: {
-            lv_group_t *group = controller->nav_group;
+            lv_group_t *group = fragment->nav_group;
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_DOWN: {
-            lv_group_t *group = controller->nav_group;
+            lv_group_t *group = fragment->nav_group;
             lv_group_focus_next(group);
             break;
         }
         case LV_KEY_RIGHT: {
-            set_detail_opened(controller, true);
+            lv_fragment_t *detail_fragment = lv_fragment_manager_find_by_container(fragment->base.child_manager,
+                                                                                   fragment->detail);
+            if (detail_fragment) {
+                set_detail_opened(fragment, true);
+            }
             break;
         }
     }
@@ -415,15 +415,6 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
     }
     controller->detail_opened = opened;
 }
-
-/** Pairing functions */
-
-static void open_pair(launcher_controller_t *controller, PSERVER_LIST node) {
-    lv_fragment_t *fragment = lv_fragment_create(&pair_dialog_class, node);
-    lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
-    lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
-}
-
 
 static void open_manual_add(lv_event_t *event) {
     launcher_controller_t *controller = lv_event_get_user_data(event);

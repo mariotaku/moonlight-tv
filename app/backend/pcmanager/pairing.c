@@ -49,7 +49,7 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
             pcmanager_list_unlock(manager);
             goto done;
         }
-        if (!refresh && state == SERVER_STATE_ONLINE) {
+        if (!refresh && state & SERVER_STATE_ONLINE) {
             pcmanager_list_unlock(manager);
             goto done;
         }
@@ -84,7 +84,7 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     }
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     if (ret == GS_OK) {
-        resp->state.code = server->paired ? SERVER_STATE_ONLINE : SERVER_STATE_NOT_PAIRED;
+        resp->state.code = server->paired ? SERVER_STATE_AVAILABLE : SERVER_STATE_NOT_PAIRED;
         resp->server = server;
         pclist_upsert(manager, resp);
     } else if (existing && ret == GS_IO_ERROR) {
@@ -120,7 +120,7 @@ int pair_worker(cm_request_t *req) {
     PPCMANAGER_RESP resp = serverinfo_resp_new();
     if (ret == GS_OK) {
         resp->result.code = GS_OK;
-        resp->state.code = SERVER_STATE_ONLINE;
+        resp->state.code = SERVER_STATE_AVAILABLE;
         resp->server = server;
         pclist_upsert(manager, resp);
     } else {
