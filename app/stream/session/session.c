@@ -68,18 +68,20 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
     if (session_active != NULL) {
         return -1;
     }
+    PSERVER_DATA server_clone = serverdata_clone(server);
     PCONFIGURATION config = settings_load();
 
-    if (config->stream.bitrate < 0)
+    if (config->stream.bitrate < 0) {
         config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height,
                                                           config->stream.fps);
+    }
     // Cap framerate to platform request
     if (decoder_info.maxBitrate && config->stream.bitrate > decoder_info.maxBitrate)
         config->stream.bitrate = decoder_info.maxBitrate;
-    config->sops &= streaming_sops_supported(server->modes, config->stream.width, config->stream.height,
+    config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
     config->stream.supportsHevc &= decoder_info.hevc;
-    config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server->supportsHdr &&
+    config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server_clone->supportsHdr &&
                                 (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
     config->stream.colorSpace = decoder_info.colorSpace;
     if (config->stream.enableHdr) {
@@ -101,7 +103,7 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
 
     session_t *req = malloc(sizeof(session_t));
     SDL_memset(req, 0, sizeof(session_t));
-    req->server = serverdata_clone(server);
+    req->server = server_clone;
     req->config = config;
     req->appId = app->id;
     req->mutex = SDL_CreateMutex();

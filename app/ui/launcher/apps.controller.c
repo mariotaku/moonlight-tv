@@ -442,7 +442,7 @@ static void item_click_cb(lv_event_t *event) {
         }
         return;
     }
-    lv_async_call((lv_async_cb_t) launcher_launch_game_async, holder);
+    launcher_launch_game(holder->controller, holder->app);
 }
 
 static void item_longpress_cb(lv_event_t *event) {

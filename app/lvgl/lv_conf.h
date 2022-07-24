@@ -130,6 +130,11 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_GPU_NXP_VG_LITE   0
 
 /*Use SDL draw backend */
+#define LV_USE_DRAW_SDL    1
+#define LV_DRAW_SDL_INCLUDE_PATH <SDL.h>
+#define LV_DRAW_SDL_CUSTOM_BLEND_MODE 0
+
+/* Remove this after LVGL 9.0 */
 #define LV_USE_GPU_SDL    1
 #define LV_GPU_SDL_INCLUDE_PATH <SDL.h>
 #define LV_GPU_SDL_CUSTOM_BLEND_MODE 0

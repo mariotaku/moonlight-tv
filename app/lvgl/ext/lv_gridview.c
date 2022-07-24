@@ -255,7 +255,8 @@ static void lv_gridview_constructor(const lv_obj_class_t *class_p, lv_obj_t *obj
     lv_style_set_radius(&grid->style_scrollbar, lv_obj_get_style_radius(placeholder, LV_PART_SCROLLBAR));
     lv_style_set_pad_right(&grid->style_scrollbar, lv_obj_get_style_pad_right(placeholder, LV_PART_SCROLLBAR));
     lv_style_set_pad_top(&grid->style_scrollbar, lv_obj_get_style_pad_top(placeholder, LV_PART_SCROLLBAR));
-    lv_style_set_size(&grid->style_scrollbar, lv_obj_get_style_width(placeholder, LV_PART_SCROLLBAR));
+    lv_style_set_width(&grid->style_scrollbar, lv_obj_get_style_width(placeholder, LV_PART_SCROLLBAR));
+    lv_style_set_height(&grid->style_scrollbar, lv_obj_get_style_height(placeholder, LV_PART_SCROLLBAR));
     lv_style_set_bg_opa(&grid->style_scrollbar, lv_obj_get_style_bg_opa(placeholder, LV_PART_SCROLLBAR));
     lv_style_set_transition(&grid->style_scrollbar, lv_obj_get_style_transition(placeholder, LV_PART_SCROLLBAR));
 

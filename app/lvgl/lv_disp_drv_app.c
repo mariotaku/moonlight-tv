@@ -1,11 +1,8 @@
-//
-// Created by Mariotaku on 2021/09/10.
-//
-
-#include <ui/root.h>
-#include <stream/platform.h>
-#include <draw/sdl/lv_draw_sdl_utils.h>
+#include "ui/root.h"
+#include "stream/platform.h"
 #include "lv_disp_drv_app.h"
+
+#include "draw/sdl/lv_draw_sdl.h"
 
 static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *src);
 

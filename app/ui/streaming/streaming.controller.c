@@ -30,7 +30,7 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view);
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
-static void streaming_controller_ctor(lv_fragment_t *self, void *args);
+static void constructor(lv_fragment_t *self, void *args);
 
 static void controller_dtor(lv_fragment_t *self);
 
@@ -45,7 +45,7 @@ static void update_buttons_layout(streaming_controller_t *controller);
 bool stats_showing(streaming_controller_t *controller);
 
 const lv_fragment_class_t streaming_controller_class = {
-        .constructor_cb = streaming_controller_ctor,
+        .constructor_cb = constructor,
         .destructor_cb = controller_dtor,
         .create_obj_cb = streaming_scene_create,
         .obj_created_cb = on_view_created,
@@ -111,20 +111,22 @@ void streaming_notice_show(const char *message) {
     }
 }
 
-static void streaming_controller_ctor(lv_fragment_t *self, void *args) {
+static void constructor(lv_fragment_t *self, void *args) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    LV_ASSERT(current_controller == NULL);
     current_controller = controller;
-    const streaming_scene_arg_t *req = (streaming_scene_arg_t *) args;
-    streaming_begin(req->server, req->app);
 
     overlay_showing = false;
 
     streaming_styles_init(controller);
+
+    const streaming_scene_arg_t *req = (streaming_scene_arg_t *) args;
+    streaming_begin(req->server, req->app);
 }
 
 static void controller_dtor(lv_fragment_t *self) {
-    current_controller = NULL;
+    if (current_controller == (streaming_controller_t *) self) {
+        current_controller = NULL;
+    }
 }
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata) {

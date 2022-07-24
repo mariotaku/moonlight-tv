@@ -33,11 +33,11 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
     lv_obj_add_event_cb(item, appitem_selected, LV_EVENT_FOCUSED, NULL);
     lv_obj_add_event_cb(item, appitem_deselected, LV_EVENT_DEFOCUSED, NULL);
 
-    lv_obj_t *play_indicator = lv_obj_create(item);
+    lv_obj_t *play_indicator = lv_label_create(item);
     lv_obj_clear_flag(play_indicator, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_remove_style_all(play_indicator);
     lv_obj_add_style(play_indicator, &styles->btn, 0);
-    lv_obj_set_style_bg_img_src(play_indicator, MAT_SYMBOL_PLAY_ARROW, 0);
+    lv_label_set_text(play_indicator, MAT_SYMBOL_PLAY_ARROW);
     lv_obj_center(play_indicator);
     lv_obj_t *title = lv_label_create(item);
     const lv_font_t *font = lv_theme_get_font_small(item);
@@ -79,7 +79,8 @@ void appitem_style_init(appitem_styles_t *style) {
     lv_style_set_outline_pad(&style->cover, LV_DPX(3));
 
     lv_style_init(&style->btn);
-    lv_style_set_size(&style->btn, LV_DPX(40));
+    lv_style_set_width(&style->btn, LV_DPX(40));
+    lv_style_set_height(&style->btn, LV_DPX(40));
     lv_style_set_radius(&style->btn, LV_RADIUS_CIRCLE);
     lv_style_set_bg_color(&style->btn, lv_color_white());
     lv_style_set_bg_opa(&style->btn, LV_OPA_COVER);
@@ -89,6 +90,9 @@ void appitem_style_init(appitem_styles_t *style) {
     lv_style_set_shadow_width(&style->btn, LV_DPX(4));
     lv_style_set_shadow_color(&style->btn, lv_color_black());
     lv_style_set_shadow_opa(&style->btn, LV_OPA_30);
+    /* Temporary solution for LVGL 8.3.0 */
+    lv_style_set_text_align(&style->btn, LV_TEXT_ALIGN_CENTER);
+    lv_style_set_pad_ver(&style->btn, LV_DPX(10));
 
     static const lv_style_prop_t trans_props[] = {
             LV_STYLE_OUTLINE_OPA, LV_STYLE_TRANSFORM_WIDTH, LV_STYLE_TRANSFORM_HEIGHT, LV_STYLE_TRANSFORM_ZOOM, 0

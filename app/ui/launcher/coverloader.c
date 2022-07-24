@@ -11,7 +11,7 @@
 #include "libgamestream/errors.h"
 
 #include <SDL_image.h>
-#include "draw/sdl/lv_draw_sdl_utils.h"
+#include "draw/sdl/lv_draw_sdl.h"
 #include "misc/lv_lru.h"
 #include "util/img_loader.h"
 #include "util/refcounter.h"
