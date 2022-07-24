@@ -88,7 +88,7 @@ jobs:
           build-type: 'Debug'
 
       - name: Compatibility Check
-        run: webosbrew-ipk-compat-checker --markdown dist/*.ipk >> $GITHUB_STEP_SUMMARY
+        run: webosbrew-ipk-compat-checker --markdown --quiet dist/*.ipk >> $GITHUB_STEP_SUMMARY
 
       - uses: actions/upload-artifact@v2
         with:
