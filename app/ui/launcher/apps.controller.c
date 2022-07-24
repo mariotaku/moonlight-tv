@@ -121,7 +121,7 @@ const lv_fragment_class_t apps_controller_class = {
         .instance_size = sizeof(apps_controller_t),
 };
 
-static const char *action_labels_offline[] = {translatable("Send Wake-On-LAN"), translatable("Retry"), ""};
+static const char *action_labels_offline[] = {translatable("Wake"), translatable("Retry"), ""};
 static const action_cb_t action_callbacks_offline[] = {action_cb_wol, action_cb_host_reload};
 static const char *action_labels_error[] = {translatable("Retry"), ""};
 static const action_cb_t action_callbacks_error[] = {action_cb_host_reload};
@@ -181,17 +181,19 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_style_radius(errordetail, LV_DPX(20), 0);
     lv_obj_set_width(errordetail, LV_PCT(100));
     lv_obj_set_flex_grow(errordetail, 1);
-    controller->actions = lv_btnmatrix_create(apperror);
-    lv_obj_set_style_outline_width(controller->actions, 0, 0);
-    lv_obj_set_style_outline_width(controller->actions, 0, LV_STATE_FOCUS_KEY);
-    lv_obj_set_style_border_side(controller->actions, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_set_size(controller->actions, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_style_min_height(controller->actions, LV_DPX(80), 0);
-    lv_obj_set_style_min_width(controller->actions, LV_PCT(30), 0);
-    lv_obj_set_style_max_width(controller->actions, LV_PCT(100), 0);
-    lv_btnmatrix_set_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_CLICK_TRIG | LV_BTNMATRIX_CTRL_NO_REPEAT);
+
+    lv_obj_t *actions = controller->actions = lv_btnmatrix_create(apperror);
+    lv_obj_set_style_outline_width(actions, 0, 0);
+    lv_obj_set_style_outline_width(actions, 0, LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_pad_all(actions, LV_DPX(5), LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_border_side(actions, LV_BORDER_SIDE_NONE, 0);
+    const lv_font_t *font = lv_obj_get_style_text_font(actions, LV_PART_ITEMS);
+    lv_obj_set_height(actions, lv_font_get_line_height(font) + LV_DPI_DEF / 10 + LV_DPX(5) * 2);
+    lv_obj_set_style_max_width(actions, LV_PCT(100), 0);
+    lv_obj_add_flag(actions, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_btnmatrix_set_btn_ctrl_all(actions, LV_BTNMATRIX_CTRL_CLICK_TRIG | LV_BTNMATRIX_CTRL_NO_REPEAT);
+
     set_actions(controller, actions_apps_none, NULL);
-    lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_EVENT_BUBBLE);
 
     return view;
 }
@@ -332,7 +334,8 @@ static void update_view_state(apps_controller_t *controller) {
                 lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
 
                 lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
-                lv_label_set_text_static(controller->errorhint, locstr("Try restart the computer if error persists."));
+                lv_label_set_text_static(controller->errorhint, locstr(
+                        "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
                 lv_label_set_text_static(controller->errordetail, controller->apploader->error);
                 set_actions(controller, action_labels_error, action_callbacks_error);
 
@@ -358,7 +361,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
-            lv_label_set_text_static(controller->errorhint, locstr("Select computer again to pair."));
+            lv_label_set_text_static(controller->errorhint, locstr(
+                    "Press \"Pair\", and input PIN code on your computer to pair."));
             set_actions(controller, actions_unpaired, action_callbacks_unpaired);
 
             lv_group_focus_obj(controller->actions);
@@ -373,7 +377,8 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_set_style_opa(controller->errordetail, LV_OPA_100, 0);
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_label_set_text_static(controller->errortitle, locstr("Host error"));
-            lv_label_set_text_static(controller->errorhint, locstr("Please restart your computer."));
+            lv_label_set_text_static(controller->errorhint, locstr(
+                    "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
             lv_label_set_text_static(controller->errordetail, node->state.error.errmsg);
             set_actions(controller, action_labels_error, action_callbacks_error);
 
@@ -390,7 +395,11 @@ static void update_view_state(apps_controller_t *controller) {
             lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
             lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_label_set_text_static(controller->errortitle, locstr("Offline"));
-            lv_label_set_text_static(controller->errorhint, locstr("Turn on the host computer and try again."));
+            lv_label_set_text_static(controller->errorhint, locstr(
+                    "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, "
+                    "press \"Retry\" to connect again.\n\n"
+                    "Try restart your computer if these doesn't work."
+            ));
             set_actions(controller, action_labels_offline, action_callbacks_offline);
 
             lv_group_focus_obj(controller->actions);
@@ -639,5 +648,10 @@ static void app_detail_click_cb(lv_event_t *event) {
 
 static void set_actions(apps_controller_t *controller, const char **labels, const action_cb_t *callbacks) {
     lv_btnmatrix_set_map(controller->actions, labels);
+    int num_actions = 0;
+    for (int i = 0; labels[i][0] != '\0'; i++) {
+        num_actions++;
+    }
+    lv_obj_set_style_min_width(controller->actions, LV_PCT(20 * num_actions), 0);
     lv_obj_set_user_data(controller->actions, (void *) callbacks);
 }

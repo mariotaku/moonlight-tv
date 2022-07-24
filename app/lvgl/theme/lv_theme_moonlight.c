@@ -27,7 +27,7 @@ void lv_theme_moonlight_init(lv_theme_t *theme) {
 }
 
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
-    bool set_font = true;
+    bool set_font = true, set_line_space = true;
     if (lv_obj_has_class(obj, &lv_btn_class)) {
         lv_obj_set_style_flex_cross_place(obj, LV_FLEX_ALIGN_CENTER, 0);
     }
@@ -38,16 +38,19 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
             if (lv_obj_check_type(parent, &lv_msgbox_class) && lv_msgbox_get_title(parent) == NULL) {
                 lv_obj_set_style_text_font(obj, theme->font_large, 0);
                 set_font = false;
+                set_line_space = false;
             } else {
                 lv_obj_t *parent2 = lv_obj_get_parent(parent);
                 if (parent2) {
                     if (lv_obj_has_class(parent2, &lv_win_class) && lv_win_get_header(parent2) == parent) {
                         lv_obj_set_style_text_font(obj, theme->font_large, 0);
                         set_font = false;
+                        set_line_space = false;
                     } else if (lv_obj_check_type(parent2, &lv_msgbox_class) &&
                                lv_msgbox_get_close_btn(parent2) == parent) {
                         lv_obj_set_style_text_font(obj, app_iconfonts.large, 0);
                         set_font = false;
+                        set_line_space = false;
                     }
                 }
             }
@@ -90,6 +93,9 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
     }
     if (set_font) {
         lv_obj_set_style_text_font(obj, theme->font_normal, 0);
+    }
+    if (set_line_space) {
+        lv_obj_set_style_text_line_space(obj, LV_DPX(5), 0);
     }
 }
 

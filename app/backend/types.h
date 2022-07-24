@@ -16,9 +16,6 @@ typedef union SERVER_STATE {
     SERVER_STATE_ENUM code;
     struct {
         SERVER_STATE_ENUM code;
-    } offline;
-    struct {
-        SERVER_STATE_ENUM code;
         int errcode;
         const char *errmsg;
     } error;
