@@ -29,6 +29,7 @@ static SDL_mutex *streaming_state_lock;
 static SDL_Thread *streaming_thread;
 
 typedef struct {
+    /* SERVER_DATA and CONFIGURATION is cloned rather than referenced */
     SERVER_DATA *server;
     CONFIGURATION *config;
     int appId;

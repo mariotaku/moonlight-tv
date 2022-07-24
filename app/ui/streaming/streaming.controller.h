@@ -29,6 +29,7 @@ typedef struct {
     lv_point_t button_points[5];
 } streaming_controller_t;
 
+/* Usually references to SERVER_DATA and APP_LIST should not be kept, but in this struct, they will only be used once */
 typedef struct {
     const SERVER_DATA *server;
     const APP_LIST *app;
