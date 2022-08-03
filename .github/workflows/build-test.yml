@@ -90,6 +90,11 @@ jobs:
       - name: Compatibility Check
         run: webosbrew-ipk-compat-checker --markdown --github-emoji --quiet dist/*.ipk >> $GITHUB_STEP_SUMMARY
 
+      - name: Add Commit Hash Suffix
+        shell: bash
+        working-directory: dist
+        run: for file in *.ipk ; do mv $file ${file//_arm/-${GITHUB_SHA:0:8}_arm} ; done
+
       - uses: actions/upload-artifact@v2
         with:
           name: webos-snapshot
