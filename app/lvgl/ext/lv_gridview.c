@@ -266,11 +266,7 @@ static void lv_gridview_constructor(const lv_obj_class_t *class_p, lv_obj_t *obj
     lv_obj_add_style(obj, &grid->style_scrollbar, LV_PART_SCROLLBAR);
     lv_obj_add_style(obj, &grid->style_scrollbar_scrolled, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
 
-
-    lv_obj_set_style_radius(placeholder, 0, 0);
-    lv_obj_set_style_border_side(placeholder, LV_BORDER_SIDE_NONE, 0);
-    lv_obj_set_style_bg_opa(placeholder, 0, 0);
-    lv_obj_set_style_clip_corner(placeholder, false, 0);
+    lv_obj_remove_style_all(placeholder);
     grid->placeholder = placeholder;
     grid->row_start = -1;
     grid->row_end = -1;
