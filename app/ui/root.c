@@ -52,7 +52,7 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
             case USER_STREAM_OPEN: {
                 lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
                 ui_stream_render_host_context.renderer = param->renderer;
-                ui_stream_render = decoder_get_render(decoder_current);
+                ui_stream_render = decoder_get_render();
                 if (ui_stream_render) {
                     ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);
                 }
