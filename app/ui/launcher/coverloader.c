@@ -18,16 +18,16 @@
 
 #include "res.h"
 
-typedef struct coverloader_memcache_key_t {
+typedef struct memcache_key_t {
     int id;
     lv_coord_t target_width, target_height;
-} coverloader_memcache_key_t;
+} memcache_key_t;
 
-typedef struct coverloader_memcache_item_t {
+typedef struct memcache_item_t {
     lv_img_dsc_t src;
     lv_sdl_img_data_t data;
-    lv_obj_t *obj;
-} coverloader_memcache_item_t;
+    lv_ll_t objs;
+} memcache_item_t;
 
 typedef struct coverloader_request {
     coverloader_t *loader;
@@ -35,7 +35,7 @@ typedef struct coverloader_request {
     char *server_id;
     lv_obj_t *target;
     lv_coord_t target_width, target_height;
-    coverloader_memcache_item_t *src;
+    memcache_item_t *src;
     bool finished;
     img_loader_task_t *task;
     struct coverloader_request *prev;
@@ -81,7 +81,16 @@ static void img_loader_result_cb(coverloader_req_t *req);
 
 static void img_loader_cancel_cb(coverloader_req_t *req);
 
-static void memcache_item_free(coverloader_memcache_item_t *item);
+/**
+ *
+ * @param obj lv_img instance
+ * @param src loaded image, NULL will fallback to default cover
+ */
+static void img_set_cover(lv_obj_t *obj, memcache_item_t *src);
+
+static struct memcache_item_t *memcache_item_new();
+
+static void memcache_item_free(memcache_item_t *item);
 
 static void coverloader_req_free(coverloader_req_t *req);
 
@@ -92,6 +101,10 @@ static bool cover_is_placeholder(const SDL_Surface *surface);
 static void target_deleted_cb(lv_event_t *e);
 
 static void target_src_unlink_cb(lv_event_t *e);
+
+static void memcache_item_ref_obj(memcache_item_t *item, lv_obj_t *obj);
+
+static void memcache_item_unref_obj(memcache_item_t *item, const lv_obj_t *obj);
 
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
@@ -181,8 +194,8 @@ static void coverloader_cache_item_path(char path[4096], const coverloader_req_t
 
 static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cached) {
     // Uses result cache instead
-    coverloader_memcache_item_t *result = NULL;
-    coverloader_memcache_key_t key;
+    memcache_item_t *result = NULL;
+    memcache_key_t key;
     memset(&key, 0, sizeof(key));
     key.id = req->id;
     key.target_width = req->target_width;
@@ -199,8 +212,8 @@ static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cache
 }
 
 static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
-    coverloader_memcache_item_t *result = NULL;
-    coverloader_memcache_key_t key = {
+    memcache_item_t *result = NULL;
+    memcache_key_t key = {
             .id = req->id,
             .target_width = req->target_width,
             .target_height = req->target_height
@@ -209,7 +222,8 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     if (!result) {
         lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
         SDL_Renderer *renderer = param->renderer;
-        result = SDL_calloc(1, sizeof(coverloader_memcache_item_t));
+
+        result = memcache_item_new();
         lv_img_dsc_t *src = &result->src;
         lv_sdl_img_data_t *data = &result->data;
         data->type = LV_SDL_IMG_TYPE_TEXTURE;
@@ -340,9 +354,7 @@ static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void
 
 static void img_loader_start_cb(coverloader_req_t *req) {
     appitem_viewholder_t *holder = req->target->user_data;
-    holder->cover_data = lv_sdl_img_data_defcover;
-    lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
-    lv_img_set_src(req->target, &holder->styles->defcover_src);
+    img_set_cover(req->target, NULL);
     lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -356,14 +368,10 @@ static void img_loader_result_cb(coverloader_req_t *req) {
     }
     lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
     appitem_viewholder_t *holder = req->target->user_data;
+    img_set_cover(req->target, req->src);
     if (req->src) {
-        lv_img_set_src(req->target, req->src);
-        req->src->obj = req->target;
-        // If the object is deleted, mark the src orphaned. So it will not access obj when recycled.
-        lv_obj_add_event_cb(req->target, target_src_unlink_cb, LV_EVENT_DELETE, NULL);
         lv_obj_add_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_img_set_src(req->target, &holder->styles->defcover_src);
         lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
     done:
@@ -384,13 +392,71 @@ static void img_loader_cancel_cb(coverloader_req_t *req) {
     coverloader_unref(loader);
 }
 
-static void memcache_item_free(coverloader_memcache_item_t *item) {
-    // Make sure the obj isn't referencing the src anymore
-    if (item->obj) {
-        lv_img_set_src(item->obj, NULL);
+static void img_set_cover(lv_obj_t *obj, memcache_item_t *src) {
+    appitem_viewholder_t *holder = lv_obj_get_user_data(obj);
+
+    /* If the old src is not default cover, assume it's memcache item and unref this obj from it */
+    const void *old_src = lv_img_get_src(obj);
+    bool skip_add_del_cb = false;
+    if (old_src != NULL && lv_img_src_get_type(old_src) == LV_IMG_SRC_VARIABLE) {
+        const memcache_item_t *old_img = old_src;
+        /* for memcache item, src.data is pointer to data */
+        if (old_img->src.data == (const void *) &old_img->data && old_img->src.data_size == sizeof(lv_sdl_img_data_t)) {
+            memcache_item_unref_obj((memcache_item_t *) old_img, obj);
+            skip_add_del_cb = true;
+        }
+    }
+
+    if (src != NULL) {
+        lv_img_set_src(obj, src);
+        memcache_item_ref_obj(src, obj);
+        // If the object is deleted, mark the src orphaned. So it will not access obj when recycled.
+        if (!skip_add_del_cb) {
+            lv_obj_add_event_cb(obj, target_src_unlink_cb, LV_EVENT_DELETE, NULL);
+        }
+    } else {
+        lv_img_set_src(obj, &holder->styles->defcover_src);
+        lv_obj_remove_event_cb(obj, target_src_unlink_cb);
+    }
+}
+
+struct memcache_item_t *memcache_item_new() {
+    memcache_item_t *item = SDL_calloc(1, sizeof(memcache_item_t));
+    _lv_ll_init(&item->objs, sizeof(lv_obj_t *));
+    return item;
+}
+
+static void memcache_item_free(memcache_item_t *item) {
+    /* Make sure the obj isn't referencing the src anymore */
+    lv_obj_t **i;
+    _LV_LL_READ(&item->objs, i) {
+        lv_obj_t *obj = *i;
+        if (obj == NULL) continue;
+        appitem_viewholder_t *holder = lv_obj_get_user_data(obj);
+        lv_img_set_src(obj, &holder->styles->defcover_src);
+        lv_obj_remove_event_cb(obj, target_src_unlink_cb);
     }
     SDL_DestroyTexture(item->data.data.texture);
+    /* unref all objs to this item */
+    _lv_ll_clear(&item->objs);
     free(item);
+}
+
+static void memcache_item_ref_obj(memcache_item_t *item, lv_obj_t *obj) {
+    lv_obj_t **node = _lv_ll_ins_tail(&item->objs);
+    *node = obj;
+}
+
+static void memcache_item_unref_obj(memcache_item_t *item, const lv_obj_t *obj) {
+    lv_obj_t **i;
+    _LV_LL_READ_BACK(&item->objs, i) {
+        if (obj == *i) {
+            break;
+        }
+    }
+    if (i == NULL) return;
+    _lv_ll_remove(&item->objs, i);
+    lv_mem_free(i);
 }
 
 static inline void coverloader_req_free(coverloader_req_t *req) {
@@ -409,7 +475,5 @@ static void target_deleted_cb(lv_event_t *e) {
 
 static void target_src_unlink_cb(lv_event_t *e) {
     lv_obj_t *obj = lv_event_get_target(e);
-    const coverloader_memcache_item_t *item = lv_img_get_src(obj);
-    if (item->obj != obj) return;
-    ((coverloader_memcache_item_t *) item)->obj = NULL;
+    memcache_item_unref_obj((memcache_item_t *) lv_img_get_src(obj), obj);
 }

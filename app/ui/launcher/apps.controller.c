@@ -416,8 +416,8 @@ static void update_view_state(apps_controller_t *controller) {
 static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploader_item_t *app) {
     appitem_viewholder_t *holder = lv_obj_get_user_data(item);
 
-    coverloader_display(controller->coverloader, controller->node, app->base.id, item, controller->col_width,
-                        controller->col_height);
+    coverloader_display(controller->coverloader, controller->node, app->base.id, item,
+                        controller->col_width, controller->col_height);
     lv_label_set_text(holder->title, app->base.name);
 
     if (controller->node->server->currentGame == app->base.id) {
@@ -486,7 +486,7 @@ static int adapter_item_count(lv_obj_t *grid, void *data) {
     apps_controller_t *controller = lv_obj_get_user_data(grid);
     apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
-    return LV_MIN(list->count, 255 * controller->col_count);
+    return LV_MIN(list->count * 13, 255 * controller->col_count);
 }
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
@@ -498,13 +498,14 @@ static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, i
     apploader_list_t *list = data;
     apploader_item_t *apps = &list->items;
     apps_controller_t *controller = lv_obj_get_user_data(grid);
-    appitem_bind(controller, item_view, &apps[position]);
+    apploader_item_t *item = &apps[position % list->count];
+    appitem_bind(controller, item_view, item);
 }
 
 static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
     apploader_list_t *list = data;
     apploader_item_t *apps = &list->items;
-    return apps[position].base.id;
+    return position;
 }
 
 

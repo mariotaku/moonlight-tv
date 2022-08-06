@@ -50,11 +50,6 @@ lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
 
     appitem_viewholder_t *holder = (appitem_viewholder_t *) malloc(sizeof(appitem_viewholder_t));
     memset(holder, 0, sizeof(appitem_viewholder_t));
-    holder->cover_src.data = (const uint8_t *) &holder->cover_data;
-    holder->cover_src.data_size = sizeof(lv_sdl_img_data_t);
-    holder->cover_src.header.cf = LV_IMG_CF_TRUE_COLOR;
-    holder->cover_src.header.w = controller->col_width;
-    holder->cover_src.header.h = controller->col_height;
 
     holder->controller = controller;
     holder->styles = styles;

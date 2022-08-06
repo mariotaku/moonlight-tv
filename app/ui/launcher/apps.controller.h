@@ -34,8 +34,6 @@ typedef struct {
     const appitem_styles_t *styles;
     lv_obj_t *play_indicator;
     lv_obj_t *title;
-    lv_sdl_img_data_t cover_data;
-    lv_img_dsc_t cover_src;
 } appitem_viewholder_t;
 
 extern const lv_fragment_class_t apps_controller_class;
