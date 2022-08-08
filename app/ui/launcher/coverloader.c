@@ -361,12 +361,11 @@ static void img_loader_start_cb(coverloader_req_t *req) {
 static void img_loader_result_cb(coverloader_req_t *req) {
     req->task = NULL;
     coverloader_t *loader = req->loader;
-    if (req->target) {
-        lv_obj_remove_event_cb(req->target, target_deleted_cb);
-    } else {
+    if (req->target == NULL) {
         goto done;
     }
-    lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
+
+    lv_obj_remove_event_cb(req->target, target_deleted_cb);
     appitem_viewholder_t *holder = req->target->user_data;
     img_set_cover(req->target, req->src);
     if (req->src) {
@@ -383,7 +382,6 @@ static void img_loader_result_cb(coverloader_req_t *req) {
 static void img_loader_cancel_cb(coverloader_req_t *req) {
     if (req->target) {
         lv_obj_remove_event_cb(req->target, target_deleted_cb);
-        lv_obj_remove_event_cb(req->target, target_src_unlink_cb);
     }
     req->task = NULL;
     coverloader_t *loader = req->loader;

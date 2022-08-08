@@ -7,17 +7,21 @@ app_fontset_t app_iconfonts;
 
 static bool fontset_load_fc(app_fontset_t *set, FcPattern *font);
 
-static bool fontset_load_mem(app_fontset_t *set, const void *mem, size_t size);
+static bool fontset_load_mem(app_fontset_t *set, const char *name, const void *mem, size_t size);
 
-bool app_font_init(lv_theme_t *theme) {
+static void fontset_destroy_fonts(app_fontset_t *fontset);
+
+app_fonts_t *app_font_init(lv_theme_t *theme) {
     app_fontset_t fontset = {.small_size = LV_DPX(14), .normal_size = LV_DPX(16), .large_size = LV_DPX(19)};
-    app_fontset_t fontset_fallback = fontset;
     app_iconfonts = fontset;
-    fontset_load_mem(&app_iconfonts, res_mat_iconfont_data, res_mat_iconfont_size);
-    //does not necessarily has to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
+    if (!fontset_load_mem(&app_iconfonts, "MaterialIcons", res_mat_iconfont_data, res_mat_iconfont_size)) {
+        return NULL;
+    }
+    //does not necessarily have to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
     FcPattern *pattern = FcNameParse((const FcChar8 *) FONT_FAMILY);
-    if (!pattern)
-        return false;
+    if (!pattern) {
+        return NULL;
+    }
 
     FcConfigSubstitute(NULL, pattern, FcMatchPattern);
     FcDefaultSubstitute(pattern);
@@ -50,12 +54,16 @@ bool app_font_init(lv_theme_t *theme) {
         FcDefaultSubstitute(pattern);
 
         font = FcFontMatch(NULL, pattern, &result);
-        if (font && fontset_load_fc(&fontset_fallback, font)) {
-            fontset.normal->fallback = fontset_fallback.normal;
-            fontset.large->fallback = fontset_fallback.large;
-            fontset.small->fallback = fontset_fallback.small;
-        }
         if (font) {
+            fontset.fallback = SDL_calloc(1, sizeof(app_fontset_t));
+            if (fontset_load_fc(fontset.fallback, font)) {
+                fontset.normal->fallback = fontset.fallback->normal;
+                fontset.large->fallback = fontset.fallback->large;
+                fontset.small->fallback = fontset.fallback->small;
+            } else {
+                SDL_free(fontset.fallback);
+                fontset.fallback = NULL;
+            }
             FcPatternDestroy(font);
             font = NULL;
         }
@@ -64,10 +72,19 @@ bool app_font_init(lv_theme_t *theme) {
         pattern = NULL;
     }
 #endif
-    return true;
+    app_fonts_t *fonts = SDL_calloc(1, sizeof(app_fonts_t));
+    fonts->fonts = fontset;
+    fonts->icons = app_iconfonts;
+    return fonts;
 }
 
-bool fontset_load_fc(app_fontset_t *set, FcPattern *font) {
+void app_font_deinit(app_fonts_t *fonts) {
+    fontset_destroy_fonts(&fonts->fonts);
+    fontset_destroy_fonts(&fonts->icons);
+    SDL_free(fonts);
+}
+
+static bool fontset_load_fc(app_fontset_t *set, FcPattern *font) {
     //The pointer stored in 'file' is tied to 'font'; therefore, when 'font' is freed, this pointer is freed automatically.
     //If you want to return the filename of the selected font, pass a buffer and copy the file name into that buffer
     FcChar8 *file = NULL;
@@ -90,21 +107,49 @@ bool fontset_load_fc(app_fontset_t *set, FcPattern *font) {
     return false;
 }
 
-bool fontset_load_mem(app_fontset_t *set, const void *mem, size_t size) {
-    lv_ft_info_t ft_info = {.name = "MaterialIcons", .mem=mem, .mem_size = size, .style = FT_FONT_STYLE_NORMAL,
+static bool fontset_load_mem(app_fontset_t *set, const char *name, const void *mem, size_t size) {
+    lv_ft_info_t ft_info = {.name = name, .mem=mem, .mem_size = size, .style = FT_FONT_STYLE_NORMAL,
             .weight = set->normal_size};
     if (lv_ft_font_init(&ft_info)) {
         set->normal = ft_info.font;
     }
-    lv_ft_info_t ft_info_lg = {.name = "MaterialIcons", .mem=mem, .mem_size = size, .style = FT_FONT_STYLE_NORMAL,
+    lv_ft_info_t ft_info_lg = {.name = name, .mem=mem, .mem_size = size, .style = FT_FONT_STYLE_NORMAL,
             .weight = set->large_size};
     if (lv_ft_font_init(&ft_info_lg)) {
         set->large = ft_info_lg.font;
     }
-    lv_ft_info_t ft_info_sm = {.name = "MaterialIcons", .mem=mem, .mem_size = size, .style = FT_FONT_STYLE_NORMAL,
+    lv_ft_info_t ft_info_sm = {.name = name, .mem=mem, .mem_size = size, .style = FT_FONT_STYLE_NORMAL,
             .weight = set->small_size};
     if (lv_ft_font_init(&ft_info_sm)) {
         set->small = ft_info_sm.font;
     }
+    if (!set->small || !set->normal || !set->large) {
+        if (set->small) {
+            lv_ft_font_destroy(set->small);
+            set->small = NULL;
+        }
+        if (set->normal) {
+            lv_ft_font_destroy(set->normal);
+            set->normal = NULL;
+        }
+        if (set->large) {
+            lv_ft_font_destroy(set->large);
+            set->large = NULL;
+        }
+        return false;
+    }
     return true;
+}
+
+static void fontset_destroy_fonts(app_fontset_t *fontset) {
+    lv_ft_font_destroy(fontset->large);
+    lv_ft_font_destroy(fontset->normal);
+    lv_ft_font_destroy(fontset->small);
+    app_fontset_t *fallback = fontset->fallback;
+    if (fallback) {
+        lv_ft_font_destroy(fallback->large);
+        lv_ft_font_destroy(fallback->normal);
+        lv_ft_font_destroy(fallback->small);
+        SDL_free(fallback);
+    }
 }

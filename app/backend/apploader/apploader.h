@@ -18,7 +18,7 @@ typedef struct apploader_item_t {
 
 typedef struct apploader_list_t {
     size_t count;
-    apploader_item_t items;
+    apploader_item_t *items;
 } apploader_list_t;
 
 typedef struct apploader_t {

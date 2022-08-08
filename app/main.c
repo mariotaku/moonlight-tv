@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     theme_app.color_secondary = parent_theme->color_secondary;
     lv_theme_set_parent(&theme_app, parent_theme);
     lv_theme_moonlight_init(&theme_app);
-    app_font_init(&theme_app);
+    app_fonts_t *fonts = app_font_init(&theme_app);
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
     lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, NULL);
     lv_fragment_manager_push(app_uimanager, fragment, &scr);
 
-    while (running) {
+    while (app_is_running()) {
         app_process_events();
         lv_task_handler();
         SDL_Delay(1);
@@ -106,12 +106,13 @@ int main(int argc, char *argv[]) {
     app_input_deinit();
     lv_app_display_deinit(disp);
     lv_img_decoder_delete(img_decoder);
+    app_font_deinit(fonts);
 
     SDL_DestroyWindow(app_window);
 
     backend_destroy();
-    decoder_finalize(decoder_current);
-    audio_finalize(decoder_current);
+    decoder_finalize();
+    audio_finalize();
     settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);
@@ -151,6 +152,10 @@ SDL_Window *app_create_window() {
 
 void app_request_exit() {
     running = false;
+}
+
+bool app_is_running() {
+    return running;
 }
 
 GS_CLIENT app_gs_client_new() {
