@@ -2,8 +2,6 @@
 
 #include "lvgl.h"
 
-#include <fontconfig/fontconfig.h>
-
 typedef struct app_fontset_t {
     int small_size;
     int normal_size;

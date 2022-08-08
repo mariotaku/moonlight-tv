@@ -3,6 +3,8 @@
 #include "i18n.h"
 #include "res.h"
 
+#include <fontconfig/fontconfig.h>
+
 app_fontset_t app_iconfonts;
 
 static bool fontset_load_fc(app_fontset_t *set, FcPattern *font);
