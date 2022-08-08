@@ -215,8 +215,8 @@ static void init_locale_entries(basic_pane_t *pane) {
         def_entry->fallback = i == 0;
         pane->lang_entries_len++;
     }
-    char *tok = strdup(I18N_LOCALES);
-    while ((tok = strtok(tok, ";")) != NULL) {
+    char *input = strdup(I18N_LOCALES), *tok = NULL, *saveptr = NULL;
+    while ((tok = strtok_r(saveptr == NULL ? input : NULL, ";", &saveptr)) != NULL) {
         const i18n_entry_t *entry = i18n_entry(tok);
         if (entry) {
             pref_dropdown_string_entry_t *pref_entry = &pane->lang_entries[pane->lang_entries_len];
@@ -224,8 +224,8 @@ static void init_locale_entries(basic_pane_t *pane) {
             pref_entry->name = entry->name;
             pane->lang_entries_len++;
         }
-        tok = NULL;
     }
+    free(input);
 }
 
 static void pref_mark_restart_cb(lv_event_t *e) {

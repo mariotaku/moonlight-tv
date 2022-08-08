@@ -59,6 +59,7 @@ void app_input_remove_modal_group(lv_group_t *group) {
     }
     if (node) {
         _lv_ll_remove(&modal_groups, node);
+        lv_mem_free(node);
     }
     app_input_populate_group();
 }

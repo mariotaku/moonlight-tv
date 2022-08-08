@@ -818,13 +818,15 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
         return GS_OUT_OF_MEMORY;
 
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
-    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
+    }
 
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "cancel", &result)) != GS_OK)
+    } else if ((ret = xml_search(data->memory, data->size, "cancel", &result)) != GS_OK) {
         goto cleanup;
+    }
 
     if (strcmp(result, "0") == 0) {
         ret = GS_FAILED;

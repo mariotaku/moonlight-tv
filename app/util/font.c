@@ -57,13 +57,13 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
 
         font = FcFontMatch(NULL, pattern, &result);
         if (font) {
-            fontset.fallback = SDL_calloc(1, sizeof(app_fontset_t));
+            fontset.fallback = calloc(1, sizeof(app_fontset_t));
             if (fontset_load_fc(fontset.fallback, font)) {
                 fontset.normal->fallback = fontset.fallback->normal;
                 fontset.large->fallback = fontset.fallback->large;
                 fontset.small->fallback = fontset.fallback->small;
             } else {
-                SDL_free(fontset.fallback);
+                free(fontset.fallback);
                 fontset.fallback = NULL;
             }
             FcPatternDestroy(font);
@@ -74,7 +74,7 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
         pattern = NULL;
     }
 #endif
-    app_fonts_t *fonts = SDL_calloc(1, sizeof(app_fonts_t));
+    app_fonts_t *fonts = calloc(1, sizeof(app_fonts_t));
     fonts->fonts = fontset;
     fonts->icons = app_iconfonts;
     return fonts;
@@ -83,7 +83,7 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
 void app_font_deinit(app_fonts_t *fonts) {
     fontset_destroy_fonts(&fonts->fonts);
     fontset_destroy_fonts(&fonts->icons);
-    SDL_free(fonts);
+    free(fonts);
 }
 
 static bool fontset_load_fc(app_fontset_t *set, FcPattern *font) {
@@ -152,6 +152,6 @@ static void fontset_destroy_fonts(app_fontset_t *fontset) {
         lv_ft_font_destroy(fallback->large);
         lv_ft_font_destroy(fallback->normal);
         lv_ft_font_destroy(fallback->small);
-        SDL_free(fallback);
+        free(fallback);
     }
 }

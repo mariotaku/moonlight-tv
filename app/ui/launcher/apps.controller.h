@@ -22,6 +22,8 @@ typedef struct {
     lv_obj_t *errortitle, *errorhint, *errordetail;
     lv_obj_t *actions;
 
+    lv_obj_t * quit_progress;
+
     appitem_styles_t appitem_style;
     int col_count;
     lv_coord_t col_width, col_height;

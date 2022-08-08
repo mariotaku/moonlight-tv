@@ -419,7 +419,7 @@ static void img_set_cover(lv_obj_t *obj, memcache_item_t *src) {
 }
 
 struct memcache_item_t *memcache_item_new() {
-    memcache_item_t *item = SDL_calloc(1, sizeof(memcache_item_t));
+    memcache_item_t *item = calloc(1, sizeof(memcache_item_t));
     _lv_ll_init(&item->objs, sizeof(lv_obj_t *));
     return item;
 }

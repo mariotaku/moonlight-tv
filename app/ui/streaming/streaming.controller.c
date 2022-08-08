@@ -9,8 +9,7 @@
 
 #include "util/user_event.h"
 #include "util/i18n.h"
-
-lv_obj_t *progress_dialog_create(const char *message);
+#include "ui/common/progress_dialog.h"
 
 static void exit_streaming(lv_event_t *event);
 

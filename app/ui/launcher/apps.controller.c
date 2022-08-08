@@ -19,6 +19,7 @@
 #include "util/user_event.h"
 #include "util/i18n.h"
 #include "pair.dialog.h"
+#include "ui/common/progress_dialog.h"
 
 typedef void (*action_cb_t)(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
 
@@ -43,8 +44,6 @@ static void item_click_cb(lv_event_t *event);
 static void item_longpress_cb(lv_event_t *event);
 
 static void launcher_launch_game(apps_controller_t *controller, const apploader_item_t *app);
-
-static void launcher_launch_game_async(appitem_viewholder_t *holder);
 
 static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app);
 
@@ -468,16 +467,13 @@ static void launcher_launch_game(apps_controller_t *controller, const apploader_
     lv_fragment_manager_push(app_uimanager, fragment, container);
 }
 
-static void launcher_launch_game_async(appitem_viewholder_t *holder) {
-    launcher_launch_game(holder->controller, holder->app);
-}
-
 static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app) {
     pcmanager_favorite_app(controller->node, app->base.id, !app->fav);
     apploader_load(controller->apploader, appload_cb, controller);
 }
 
 static void launcher_quit_game(apps_controller_t *controller) {
+    controller->quit_progress = progress_dialog_create(locstr("Quitting game..."));
     pcmanager_quitapp(pcmanager, controller->node->server, quitgame_cb, controller);
 }
 
@@ -522,6 +518,10 @@ static void applist_focus_leave(lv_event_t *event) {
 
 static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     apps_controller_t *controller = userdata;
+    if (controller->quit_progress) {
+        lv_msgbox_close(controller->quit_progress);
+        controller->quit_progress = NULL;
+    }
     lv_gridview_rebind(controller->applist);
     if (resp->result.code == GS_OK) {
         return;
