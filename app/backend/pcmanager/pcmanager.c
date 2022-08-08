@@ -29,7 +29,7 @@ void pcmanager_destroy(pcmanager_t *manager) {
     SDL_free(manager);
 }
 
-cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+cm_request_t *cm_request_new(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
                              void *userdata) {
     cm_request_t *req = malloc(sizeof(cm_request_t));
     req->manager = manager;
@@ -39,7 +39,7 @@ cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pc
     return req;
 }
 
-bool pcmanager_quitapp(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
+bool pcmanager_quitapp(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
     if (server->currentGame == 0) {
         return false;
     }
@@ -48,7 +48,7 @@ bool pcmanager_quitapp(pcmanager_t *manager, const SERVER_DATA *server, pcmanage
     return true;
 }
 
-void pcmanager_request_update(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+void pcmanager_request_update(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
                               void *userdata) {
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
     SDL_CreateThread((SDL_ThreadFunction) request_update_worker, "pcupdate", req);

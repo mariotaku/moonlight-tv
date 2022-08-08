@@ -8,7 +8,7 @@
 #include <NDL_directmedia_v2.h>
 
 // 2MB decode size should be fairly enough for everything
-#define DECODER_BUFFER_SIZE 2048 * 1024
+#define DECODER_BUFFER_SIZE (2048 * 1024)
 
 #define decoder_callbacks PLUGIN_SYMBOL_NAME(decoder_callbacks)
 #define presenter_callbacks PLUGIN_SYMBOL_NAME(presenter_callbacks)

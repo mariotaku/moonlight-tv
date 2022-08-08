@@ -29,7 +29,7 @@ typedef struct about_pane_t {
 #endif
 } about_pane_t;
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
 
@@ -78,7 +78,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
             audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
     about_line(view, locstr("Audio backend"), audio_name, rowcount++, 2);
 #if TARGET_WEBOS
-    const os_info_t *os_info = &controller->parent->os_info;
+    const os_info_t *os_info = &controller->container->os_info;
     if (strlen(os_info->release)) {
         about_line(view, locstr("webOS version"), os_info->release, rowcount++, 1);
     }

@@ -199,7 +199,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
     }
 
     // Set keycode. We explicitly use scancode here because GFE will try to correct
-    // for AZERTY layouts on the host but it depends on receiving VK_ values matching
+    // for AZERTY layouts on the host, but it depends on receiving VK_ values matching
     // a QWERTY layout to work.
     if (event->keysym.scancode >= SDL_SCANCODE_1 && event->keysym.scancode <= SDL_SCANCODE_9) {
         // SDL defines SDL_SCANCODE_0 > SDL_SCANCODE_9, so we need to handle that manually
@@ -411,7 +411,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
         }
     }
 
-    // Track the key state so we always know which keys are down
+    // Track the key state, so we always know which keys are down
     if (event->state == SDL_PRESSED) {
         struct KeysDown *node = keys_new();
         node->keyCode = keyCode;

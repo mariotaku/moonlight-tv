@@ -31,6 +31,8 @@ static void connection_status_update(int status) {
             applog_w("Session", "Connection is poor");
             streaming_notice_show(locstr("Unstable connection."));
             break;
+        default:
+            break;
     }
 }
 

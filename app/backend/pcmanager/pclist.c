@@ -37,6 +37,11 @@ static void remove_perform(upsert_args_t *args);
 
 static void serverlist_nodefree(PSERVER_LIST node);
 
+static int serverlist_find_address(PSERVER_LIST other, const void *v);
+
+static int serverlist_find_uuid(PSERVER_LIST other, const void *v);
+
+static int favlist_find_id(appid_list_t *other, const void *v);
 
 SERVER_LIST *pclist_insert_known(pcmanager_t *manager, SERVER_DATA *server) {
     SERVER_LIST *node = serverlist_new();
@@ -47,7 +52,7 @@ SERVER_LIST *pclist_insert_known(pcmanager_t *manager, SERVER_DATA *server) {
     return node;
 }
 
-void pclist_upsert(pcmanager_t *manager, const pcmanager_resp_t *resp) {
+void pclist_upsert(pcmanager_t *manager, pcmanager_resp_t *resp) {
     assert(manager);
     assert(resp);
     upsert_args_t args = {.manager = manager, .resp = resp};
@@ -58,7 +63,7 @@ void pclist_upsert(pcmanager_t *manager, const pcmanager_resp_t *resp) {
     }
 }
 
-void pclist_remove(pcmanager_t *manager, const SERVER_DATA *server) {
+void pclist_remove(pcmanager_t *manager, SERVER_DATA *server) {
     assert(manager);
     assert(server);
     pcmanager_resp_t resp = {
@@ -88,10 +93,6 @@ void pcmanager_list_unlock(pcmanager_t *manager) {
     SDL_UnlockMutex(manager->servers_lock);
 }
 
-static int favlist_find_id(appid_list_t *other, const void *v) {
-    return other->id - *((const int *) v);
-}
-
 void pcmanager_favorite_app(SERVER_LIST *node, int appid, bool state) {
     appid_list_t *existing = favlist_find_by(node->favs, &appid, favlist_find_id);
     if (state) {
@@ -108,14 +109,13 @@ bool pcmanager_is_favorite(const SERVER_LIST *node, int appid) {
     return favlist_find_by(node->favs, &appid, favlist_find_id) != NULL;
 }
 
-void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp) {
+void pclist_node_apply(PSERVER_LIST node, pcmanager_resp_t *resp) {
     assert(resp->server);
     if (resp->state.code != SERVER_STATE_NONE) {
         memcpy(&node->state, &resp->state, sizeof(SERVER_STATE));
     }
     if (node->server && node->server != resp->server) {
-        // Although it's const pointer, we free it and assign a new one.
-        serverdata_free((SERVER_DATA *) node->server);
+        serverdata_free(node->server);
     }
     node->server = resp->server;
     node->known |= resp->server->paired;
@@ -132,14 +132,6 @@ void serverlist_nodefree(PSERVER_LIST node) {
 }
 
 
-static int serverlist_find_address(PSERVER_LIST other, const void *v) {
-    return SDL_strcmp(other->server->serverInfo.address, (char *) v);
-}
-
-int serverlist_compare_uuid(PSERVER_LIST other, const void *v) {
-    return SDL_strcasecmp(v, other->server->uuid);
-}
-
 PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr) {
     SDL_assert(srvaddr);
     return serverlist_find_by(manager->servers, srvaddr, serverlist_find_address);
@@ -147,14 +139,34 @@ PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr
 
 PSERVER_LIST pcmanager_find_by_uuid(pcmanager_t *manager, const char *uuid) {
     SDL_assert(uuid);
-    return serverlist_find_by(manager->servers, uuid, serverlist_compare_uuid);
+    return serverlist_find_by(manager->servers, uuid, serverlist_find_uuid);
+}
+
+static int serverlist_find_address(PSERVER_LIST other, const void *v) {
+    SDL_assert(v);
+    SDL_assert(other);
+    SDL_assert(other->server);
+    SDL_assert(other->server->serverInfo.address);
+    return SDL_strcmp(other->server->serverInfo.address, (const char *) v);
+}
+
+static int serverlist_find_uuid(PSERVER_LIST other, const void *v) {
+    SDL_assert(v);
+    SDL_assert(other);
+    SDL_assert(other->server);
+    SDL_assert(other->server->serverInfo.address);
+    return SDL_strcasecmp(other->server->uuid, (const char *) v);
+}
+
+static int favlist_find_id(appid_list_t *other, const void *v) {
+    return other->id - *((const int *) v);
 }
 
 static void upsert_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;
-    const pcmanager_resp_t *resp = args->resp;
+    pcmanager_resp_t *resp = args->resp;
     pcmanager_list_lock(manager);
-    SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_compare_uuid);
+    SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_find_uuid);
     bool updated = node != NULL;
     if (!node) {
         node = serverlist_new();
@@ -169,7 +181,7 @@ static void remove_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;
     const pcmanager_resp_t *resp = args->resp;
     pcmanager_list_lock(manager);
-    SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_compare_uuid);
+    SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_find_uuid);
     if (!node) return;
     manager->servers = serverlist_remove(manager->servers, node);
     pcmanager_list_unlock(manager);

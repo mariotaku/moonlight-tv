@@ -15,7 +15,7 @@ int pair_worker(cm_request_t *req);
 
 int manual_add_worker(cm_request_t *req);
 
-bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
+bool pcmanager_pair(pcmanager_t *manager, SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
                     void *userdata) {
     if (server->paired) return false;
     if (server->currentGame) {
@@ -105,10 +105,6 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     return ret;
 }
 
-static int pin_random(int min, int max) {
-    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
-}
-
 int pair_worker(cm_request_t *req) {
     pcmanager_t *manager = req->manager;
     GS_CLIENT client = app_gs_client_new();
@@ -140,6 +136,16 @@ int manual_add_worker(cm_request_t *req) {
     SDL_free(req);
     return 0;
 }
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "ConstantParameter"
+#pragma ide diagnostic ignored "cert-msc50-cpp"
+
+static int pin_random(int min, int max) {
+    return min + rand() / (RAND_MAX / (max - min + 1) + 1);
+}
+
+#pragma clang diagnostic pop
 
 static void notify_querying(upsert_args_t *args) {
     pcmanager_listeners_notify(args->manager, args->resp, PCMANAGER_NOTIFY_UPDATED);

@@ -25,7 +25,7 @@ static void pane_ctor(lv_fragment_t *self, void *args);
 
 static void pane_dtor(lv_fragment_t *self);
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container);
 
 static void on_bitrate_changed(lv_event_t *e);
 

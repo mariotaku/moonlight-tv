@@ -8,7 +8,7 @@ NAVKEY navkey_from_sdl_webos(const SDL_Event *ev)
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-        switch (ev->key.keysym.scancode)
+        switch ((int) ev->key.keysym.scancode)
         {
         case SDL_WEBOS_SCANCODE_RED:
             return NAVKEY_NEGATIVE;

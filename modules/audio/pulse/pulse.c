@@ -93,7 +93,7 @@ static int pulse_renderer_init(int audioConfiguration, POPUS_MULTISTREAM_CONFIGU
 
 static void pulse_renderer_decode_and_play_sample(char *data, int length)
 {
-    int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
+    int decodeLen = opus_multistream_decode(decoder, (unsigned char *) data, length, pcmBuffer, FRAME_SIZE, 0);
     if (decodeLen > 0)
     {
         int error;

@@ -44,7 +44,7 @@ static void aud_cleanup() {
 }
 
 static void aud_submit(char *data, int length) {
-    int decodeLen = opus_multistream_decode(decoder, data, length, pcmBuffer, FRAME_SIZE, 0);
+    int decodeLen = opus_multistream_decode(decoder, (unsigned char *) data, length, pcmBuffer, FRAME_SIZE, 0);
     if (decodeLen > 0) {
         CGL_PlayAudio(pcmBuffer, decodeLen * channelCount * sizeof(short));
     } else {

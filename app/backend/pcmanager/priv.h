@@ -13,7 +13,7 @@ typedef enum pcmanager_notify_type_t {
 
 typedef struct {
     pcmanager_t *manager;
-    const pcmanager_resp_t *resp;
+    pcmanager_resp_t *resp;
 } upsert_args_t;
 
 struct pcmanager_t {
@@ -25,7 +25,7 @@ struct pcmanager_t {
 
 typedef struct CM_PIN_REQUEST_T {
     pcmanager_t *manager;
-    const SERVER_DATA *server;
+    SERVER_DATA *server;
     void *arg1;
     void *userdata;
 
@@ -50,7 +50,7 @@ PSERVER_DATA serverdata_clone(const SERVER_DATA *src);
 
 PPCMANAGER_RESP serverinfo_resp_new();
 
-void pclist_node_apply(PSERVER_LIST node, const pcmanager_resp_t *resp);
+void pclist_node_apply(PSERVER_LIST node, pcmanager_resp_t *resp);
 
 void pcmanager_worker_finalize(pcmanager_resp_t *resp, pcmanager_callback_t callback,
                                void *userdata);
@@ -70,5 +70,5 @@ void pcmanager_list_unlock(pcmanager_t *manager);
 int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
                             void *userdata);
 
-cm_request_t *cm_request_new(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+cm_request_t *cm_request_new(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
                              void *userdata);

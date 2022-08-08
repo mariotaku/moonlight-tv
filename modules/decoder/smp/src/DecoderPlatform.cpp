@@ -56,7 +56,7 @@ extern "C" void decoder_finalize() {
 static int _initPlayerWhenReady() {
     if (!streamPlayer)
         streamPlayer.reset(new AVStreamPlayer());
-    // Don't setup before video comes in
+    // Don't set up before video comes in
     if (!videoConfig.format)
         return 0;
     streamPlayer->videoConfig = videoConfig;

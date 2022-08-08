@@ -123,7 +123,7 @@ bool media_services_feed_arrived(MEDIA_SERVICES_HANDLE hnd)
 
 bool media_services_supported()
 {
-    // True if you you can link to libAcbAPI
+    // True if you can link to libAcbAPI
     return true;
 }
 

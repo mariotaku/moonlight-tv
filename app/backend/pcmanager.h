@@ -18,7 +18,7 @@ typedef struct PCMANAGER_RESP_T {
     } result;
     bool known;
     SERVER_STATE state;
-    const SERVER_DATA *server;
+    SERVER_DATA *server;
 } pcmanager_resp_t, *PPCMANAGER_RESP;
 
 typedef void (*pcmanager_callback_t)(const pcmanager_resp_t *, void *);
@@ -58,12 +58,12 @@ PSERVER_LIST pcmanager_servers(pcmanager_t *manager);
  * @param p 
  * @param pin 
  */
-bool pcmanager_pair(pcmanager_t *manager, const SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
+bool pcmanager_pair(pcmanager_t *manager, SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
                     void *userdata);
 
-bool pcmanager_quitapp(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
+bool pcmanager_quitapp(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback, void *userdata);
 
-void pcmanager_request_update(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+void pcmanager_request_update(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
                               void *userdata);
 
 bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,

@@ -272,7 +272,7 @@ static void set_int(int *field, const char *value) {
         return;
     }
     errno = 0;
-    int val = strtol(value, NULL, 10);
+    int val = (int) strtol(value, NULL, 10);
     if (errno != 0) {
         *field = 0;
         return;
