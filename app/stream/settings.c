@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "ini.h"
 
@@ -28,6 +29,10 @@ static const char *serialize_audio_config(int config);
 static int parse_audio_config(const char *value);
 
 static int settings_parse(PCONFIGURATION config, const char *section, const char *name, const char *value);
+
+static void set_string(char **field, const char *value);
+
+static void set_int(int *field, const char *value);
 
 struct audio_config {
     int configuration;
@@ -76,9 +81,9 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.supportsHevc = true;
 
     config->debug_level = 0;
-    config->language = strdup("auto");
-    config->audio_backend = strdup("auto");
-    config->decoder = strdup("auto");
+    set_string(&config->language, "auto");
+    set_string(&config->audio_backend, "auto");
+    set_string(&config->decoder, "auto");
     config->audio_device = NULL;
     config->sops = true;
     config->localaudio = false;
@@ -203,17 +208,17 @@ int find_ch_idx_by_value(const char *value) {
 
 static int settings_parse(PCONFIGURATION config, const char *section, const char *name, const char *value) {
     if (INI_FULL_MATCH("streaming", "width")) {
-        config->stream.width = atoi(value);
+        set_int(&config->stream.width, value);
     } else if (INI_FULL_MATCH("streaming", "height")) {
-        config->stream.height = atoi(value);
+        set_int(&config->stream.height, value);
     } else if (INI_FULL_MATCH("streaming", "net_fps")) {
-        config->stream.fps = atoi(value);
+        set_int(&config->stream.fps, value);
     } else if (INI_FULL_MATCH("streaming", "bitrate")) {
-        config->stream.bitrate = atoi(value);
+        set_int(&config->stream.bitrate, value);
     } else if (INI_FULL_MATCH("streaming", "packetsize")) {
-        config->stream.packetSize = atoi(value);
+        set_int(&config->stream.packetSize, value);
     } else if (INI_FULL_MATCH("streaming", "rotate")) {
-        config->rotate = atoi(value);
+        set_int(&config->rotate, value);
     } else if (INI_FULL_MATCH("streaming", "stop_on_stall")) {
         config->stop_on_stall = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hevc")) {
@@ -237,13 +242,13 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
     } else if (INI_NAME_MATCH("swap_abxy")) {
         config->swap_abxy = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("video", "decoder")) {
-        config->decoder = strdup(value);
+        set_string(&config->decoder, value);
     } else if (INI_FULL_MATCH("audio", "backend")) {
-        config->audio_backend = strdup(value);
+        set_string(&config->audio_backend, value);
     } else if (INI_FULL_MATCH("audio", "device")) {
-        config->audio_device = strdup(value);
+        set_string(&config->audio_device, value);
     } else if (INI_NAME_MATCH("language")) {
-        config->language = strdup(value);
+        set_string(&config->language, value);
     } else if (INI_NAME_MATCH("fullscreen")) {
 #if TARGET_WEBOS
         config->fullscreen = true;
@@ -251,7 +256,26 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
         config->fullscreen = INI_IS_TRUE(value);
 #endif
     } else if (INI_NAME_MATCH("debug_level")) {
-        config->debug_level = atoi(value);
+        set_int(&config->debug_level, value);
     }
     return 1;
+}
+
+static void set_string(char **field, const char *value) {
+    free_nullable(*field);
+    *field = value != NULL ? strdup(value) : NULL;
+}
+
+static void set_int(int *field, const char *value) {
+    if (value == NULL) {
+        *field = 0;
+        return;
+    }
+    errno = 0;
+    int val = strtol(value, NULL, 10);
+    if (errno != 0) {
+        *field = 0;
+        return;
+    }
+    *field = val;
 }

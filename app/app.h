@@ -17,6 +17,8 @@ int app_init(int argc, char *argv[]);
 
 void app_init_video();
 
+void app_uninit_video();
+
 void app_process_events();
 
 void app_request_exit();

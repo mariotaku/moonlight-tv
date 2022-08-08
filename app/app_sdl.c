@@ -19,6 +19,7 @@
 PCONFIGURATION app_configuration = NULL;
 
 static bool window_focus_gained;
+static SDL_Surface *blank_surface = NULL;
 static SDL_Cursor *blank_cursor = NULL;
 
 static void quit_confirm_cb(lv_event_t *e);
@@ -39,11 +40,16 @@ void app_init_video() {
     SDL_Init(SDL_INIT_VIDEO);
     // This will occupy SDL_USEREVENT
     SDL_RegisterEvents(1);
-    SDL_Surface *surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-    blank_cursor = SDL_CreateColorCursor(surface, 0, 0);
+    blank_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    blank_cursor = SDL_CreateColorCursor(blank_surface, 0, 0);
     if (!blank_cursor) {
         applog_w("Input", "Failed to create blank cursor: %s", SDL_GetError());
     }
+}
+
+void app_uninit_video() {
+    SDL_FreeCursor(blank_cursor);
+    SDL_FreeSurface(blank_surface);
 }
 
 void inputmgr_sdl_handle_event(SDL_Event *ev);

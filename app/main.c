@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
     app_font_deinit(fonts);
 
     SDL_DestroyWindow(app_window);
+    app_uninit_video();
 
     backend_destroy();
     decoder_finalize();

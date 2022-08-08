@@ -124,7 +124,10 @@ static void constructor(lv_fragment_t *self, void *args) {
 }
 
 static void controller_dtor(lv_fragment_t *self) {
-    if (current_controller == (streaming_controller_t *) self) {
+    streaming_controller_t *fragment = (streaming_controller_t *) self;
+    lv_style_reset(&fragment->overlay_button_label_style);
+    lv_style_reset(&fragment->overlay_button_style);
+    if (current_controller == fragment) {
         current_controller = NULL;
     }
 }

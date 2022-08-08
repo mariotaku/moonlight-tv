@@ -44,6 +44,9 @@ void lv_app_display_deinit(lv_disp_t *disp) {
 
     disp->driver->draw_ctx_deinit(disp->driver, disp->driver->draw_ctx);
 
+    if (disp->driver->draw_ctx != NULL) {
+        lv_mem_free(disp->driver->draw_ctx);
+    }
     lv_mem_free(disp->driver);
 }
 

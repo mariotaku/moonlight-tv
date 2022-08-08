@@ -141,6 +141,8 @@ static void launcher_controller(lv_fragment_t *self, void *args) {
 
 static void controller_dtor(lv_fragment_t *self) {
     launcher_controller_t *controller = (launcher_controller_t *) self;
+    lv_style_reset(&controller->nav_menu_style);
+    lv_style_reset(&controller->nav_host_style);
 }
 
 static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
