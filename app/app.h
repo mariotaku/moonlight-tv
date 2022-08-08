@@ -31,6 +31,8 @@ void app_start_text_input(int x, int y, int w, int h);
 
 void app_stop_text_input();
 
+bool app_text_input_active();
+
 bool ui_render_queue_submit(void *data, unsigned int pts);
 
 GS_CLIENT app_gs_client_new();

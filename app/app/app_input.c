@@ -81,6 +81,38 @@ void app_start_text_input(int x, int y, int w, int h) {
     SDL_StartTextInput();
 }
 
+void app_stop_text_input() {
+    SDL_StopTextInput();
+}
+
+bool app_text_input_active() {
+    return SDL_IsTextInputActive();
+}
+
+void app_set_mouse_grab(bool grab) {
+#if HAVE_RELATIVE_MOUSE_HACK
+    if (grab) {
+        applog_d("Input", "Set cursor to blank bitmap: %p", blank_cursor);
+        SDL_SetCursor(blank_cursor);
+    } else {
+        SDL_SetCursor(SDL_GetDefaultCursor());
+    }
+#else
+    SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
+    if (!grab) {
+        SDL_ShowCursor(SDL_TRUE);
+    }
+#endif
+}
+
+bool app_get_mouse_relative() {
+#if HAVE_RELATIVE_MOUSE_HACK
+    return !app_configuration->absmouse;
+#else
+    return SDL_GetRelativeMouseMode() == SDL_TRUE;
+#endif
+}
+
 static void app_input_populate_group() {
     lv_group_t *group = NULL;
     lv_group_t *const *tail = _lv_ll_get_tail(&modal_groups);

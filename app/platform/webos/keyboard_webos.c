@@ -12,6 +12,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#define TV_REMOTE_TOGGLE_SOFT_INPUT 0
+
 bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode) {
     switch ((unsigned int) event->keysym.scancode) {
         case SDL_WEBOS_SCANCODE_EXIT: {
@@ -34,9 +36,25 @@ bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode) {
             if (ui_input_mode & UI_INPUT_MODE_POINTER_FLAG) {
                 LiSendMouseButtonEvent(event->type == SDL_KEYDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
                                        BUTTON_RIGHT);
+                return true;
             } else {
                 *keyCode = VK_MENU;
+                return false;
             }
+#if TV_REMOTE_TOGGLE_SOFT_INPUT
+        case SDL_WEBOS_SCANCODE_BLUE:
+            if (absinput_no_control) return true;
+            if (!app_text_input_active()) {
+                app_start_text_input(0, 0, ui_display_width, ui_display_height);
+            } else {
+                app_stop_text_input();
+            }
+            return true;
+        case SDL_WEBOS_SCANCODE_GREEN:
+            if (absinput_no_control) return true;
+            absinput_set_virtual_mouse(!absinput_get_virtual_mouse());
+            return true;
+#endif
         default:
             return false;
     }
