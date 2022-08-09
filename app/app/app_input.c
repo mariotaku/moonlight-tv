@@ -1,7 +1,13 @@
 #include "app.h"
+
 #include "lvgl/lv_sdl_drv_input.h"
 
+#include "util/logging.h"
+
 static void app_input_populate_group();
+
+static SDL_Surface *blank_surface = NULL;
+static SDL_Cursor *blank_cursor = NULL;
 
 static lv_group_t *app_group = NULL;
 static lv_ll_t modal_groups;
@@ -17,6 +23,12 @@ static const lv_point_t button_points_empty[5] = {
 };
 
 void app_input_init() {
+    blank_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    blank_cursor = SDL_CreateColorCursor(blank_surface, 0, 0);
+    if (!blank_cursor) {
+        applog_w("Input", "Failed to create blank cursor: %s", SDL_GetError());
+    }
+
     _lv_ll_init(&modal_groups, sizeof(lv_group_t *));
     lv_indev_t *indev_key = lv_sdl_init_key_input();
     lv_indev_t *indev_wheel = lv_sdl_init_wheel();
@@ -34,6 +46,9 @@ void app_input_deinit() {
     lv_sdl_deinit_pointer(app_indev_pointer);
     lv_sdl_deinit_wheel(app_indev_wheel);
     lv_sdl_deinit_key_input(app_indev_key);
+
+    SDL_FreeCursor(blank_cursor);
+    SDL_FreeSurface(blank_surface);
 }
 
 void app_input_set_group(lv_group_t *group) {

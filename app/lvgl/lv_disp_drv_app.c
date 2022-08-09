@@ -39,10 +39,13 @@ void lv_app_display_deinit(lv_disp_t *disp) {
     lv_mem_free(disp->driver->draw_buf);
 
     lv_draw_sdl_drv_param_t *param = disp->driver->user_data;
-    SDL_DestroyRenderer(param->renderer);
+    SDL_Renderer *renderer = param->renderer;
     lv_mem_free(param);
 
     disp->driver->draw_ctx_deinit(disp->driver, disp->driver->draw_ctx);
+
+    /* Textures will be also freed by this call, so free it after draw_ctx */
+    SDL_DestroyRenderer(renderer);
 
     if (disp->driver->draw_ctx != NULL) {
         lv_mem_free(disp->driver->draw_ctx);
