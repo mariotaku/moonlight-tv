@@ -155,6 +155,7 @@ static void apploader_task_finish(apploader_task_t *task) {
     loader->task = NULL;
     task->cb(loader, task->userdata);
     apploader_list_free(old_apps);
+    SDL_DetachThread(task->thread);
     SDL_free(task);
     apploader_unref(loader);
 }

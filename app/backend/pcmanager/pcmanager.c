@@ -20,9 +20,6 @@ pcmanager_t *pcmanager_new() {
 
 void pcmanager_destroy(pcmanager_t *manager) {
     pcmanager_auto_discovery_stop(manager);
-#if DEBUG
-    pcmanager_auto_discovery_join(manager);
-#endif
     pcmanager_save_known_hosts(manager);
     pclist_free(manager);
     SDL_DestroyMutex(manager->servers_lock);
@@ -44,14 +41,16 @@ bool pcmanager_quitapp(pcmanager_t *manager, SERVER_DATA *server, pcmanager_call
         return false;
     }
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
-    SDL_CreateThread((SDL_ThreadFunction) quit_app_worker, "quitapp", req);
+    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) quit_app_worker, "quitapp", req);
+    SDL_DetachThread(thread);
     return true;
 }
 
 void pcmanager_request_update(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
                               void *userdata) {
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
-    SDL_CreateThread((SDL_ThreadFunction) request_update_worker, "pcupdate", req);
+    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) request_update_worker, "pcupdate", req);
+    SDL_DetachThread(thread);
 }
 
 

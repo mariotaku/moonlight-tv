@@ -22,7 +22,8 @@ typedef struct WRITE_CONTEXT {
 static int gamecontrollerdb_update_worker();
 
 void gamecontrollerdb_update() {
-    SDL_CreateThread((SDL_ThreadFunction) gamecontrollerdb_update_worker, "gcdb_upd", NULL);
+    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) gamecontrollerdb_update_worker, "gcdb_upd", NULL);
+    SDL_DetachThread(thread);
 }
 
 char *gamecontrollerdb_path() {

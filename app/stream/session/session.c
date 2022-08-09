@@ -102,15 +102,15 @@ int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
 #endif
     config->stream.encryptionFlags = ENCFLG_AUDIO;
 
-    session_t *req = malloc(sizeof(session_t));
-    SDL_memset(req, 0, sizeof(session_t));
-    req->server = server_clone;
-    req->config = config;
-    req->appId = app->id;
-    req->mutex = SDL_CreateMutex();
-    req->cond = SDL_CreateCond();
-    req->thread = SDL_CreateThread((SDL_ThreadFunction) streaming_worker, "session", req);
-    session_active = req;
+    session_t *session = malloc(sizeof(session_t));
+    SDL_memset(session, 0, sizeof(session_t));
+    session->server = server_clone;
+    session->config = config;
+    session->appId = app->id;
+    session->mutex = SDL_CreateMutex();
+    session->cond = SDL_CreateCond();
+    session->thread = SDL_CreateThread((SDL_ThreadFunction) streaming_worker, "session", session);
+    session_active = session;
     return 0;
 }
 
@@ -255,6 +255,7 @@ int streaming_worker(session_t *session) {
     settings_free(config);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
+    SDL_DetachThread(session->thread);
     free(session);
     session_active = NULL;
     return 0;

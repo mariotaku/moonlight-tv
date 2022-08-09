@@ -25,14 +25,16 @@ bool pcmanager_pair(pcmanager_t *manager, SERVER_DATA *server, char *pin, pcmana
     SDL_snprintf(pin, 5, "%04d", pin_num);
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
     req->arg1 = strdup(pin);
-    SDL_CreateThread((SDL_ThreadFunction) pair_worker, "pairing", req);
+    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) pair_worker, "pairing", req);
+    SDL_DetachThread(thread);
     return true;
 }
 
 bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata) {
     cm_request_t *req = cm_request_new(manager, NULL, callback, userdata);
     req->arg1 = strdup(address);
-    SDL_CreateThread((SDL_ThreadFunction) manual_add_worker, "add_svr", req);
+    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) manual_add_worker, "add_svr", req);
+    SDL_DetachThread(thread);
     return true;
 }
 

@@ -72,10 +72,12 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
 
 void img_loader_destroy(img_loader_t *loader) {
     SDL_assert(!loader->destroyed);
+    SDL_Thread *thread = loader->worker_thread;
     SDL_LockMutex(loader->queue_lock);
     loader->destroyed = true;
     SDL_CondSignal(loader->queue_cond);
     SDL_UnlockMutex(loader->queue_lock);
+    SDL_DetachThread(thread);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {

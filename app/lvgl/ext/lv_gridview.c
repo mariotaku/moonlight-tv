@@ -173,10 +173,6 @@ void lv_gridview_set_data(lv_obj_t *obj, void *data) {
     lv_grid_t *grid = (lv_grid_t *) obj;
     lv_gridview_adapter_t adapter = grid->adapter;
     grid->data = data;
-    if (grid->row_dsc) {
-        lv_mem_free(grid->row_dsc);
-        grid->row_dsc = NULL;
-    }
     if (data) {
         int item_count = adapter.item_count(obj, data);
         grid->item_count = item_count;

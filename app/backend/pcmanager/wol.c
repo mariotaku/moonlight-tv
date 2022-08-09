@@ -23,7 +23,8 @@ static bool wol_build_packet(const char *macstr, uint8_t *packet);
 bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
                         void *userdata) {
     cm_request_t *req = cm_request_new(manager, serverdata_clone(server), callback, userdata);
-    SDL_CreateThread((SDL_ThreadFunction) pcmanager_send_wol_action, "wol", req);
+    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) pcmanager_send_wol_action, "wol", req);
+    SDL_DetachThread(thread);
     return true;
 }
 

@@ -20,19 +20,15 @@ void pcmanager_auto_discovery_start(pcmanager_t *manager) {
     if (discovery_task) return;
     discovery_task_t *task = SDL_malloc(sizeof(discovery_task_t));
     task->manager = manager;
-    task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
     task->stop = false;
+    task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
     discovery_task = task;
 }
 
 void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
     if (!discovery_task) return;
     discovery_task->stop = SDL_TRUE;
-}
-
-void pcmanager_auto_discovery_join(pcmanager_t *manager) {
-    if (!discovery_task) return;
-    SDL_WaitThread(discovery_task->thread, NULL);
+    SDL_DetachThread(discovery_task->thread);
 }
 
 static int discovery_worker(discovery_task_t *task) {
