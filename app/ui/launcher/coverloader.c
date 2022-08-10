@@ -433,6 +433,7 @@ static void memcache_item_free(memcache_item_t *item) {
         appitem_viewholder_t *holder = lv_obj_get_user_data(obj);
         lv_img_set_src(obj, &holder->styles->defcover_src);
         lv_obj_remove_event_cb(obj, target_src_unlink_cb);
+        lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
     SDL_DestroyTexture(item->data.data.texture);
     /* unref all objs to this item */
