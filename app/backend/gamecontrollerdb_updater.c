@@ -6,6 +6,7 @@
 
 #include "util/path.h"
 #include "util/logging.h"
+#include "util/bus.h"
 
 #ifndef GAMECONTROLLERDB_PLATFORM_USE
 #define GAMECONTROLLERDB_PLATFORM_USE GAMECONTROLLERDB_PLATFORM
@@ -19,11 +20,17 @@ typedef struct WRITE_CONTEXT {
     int status;
 } WRITE_CONTEXT;
 
-static int gamecontrollerdb_update_worker();
+static int update_thread_run();
+
+static void update_thread_wait(SDL_Thread *thread);
+
+static SDL_Thread *update_thread;
 
 void gamecontrollerdb_update() {
-    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) gamecontrollerdb_update_worker, "gcdb_upd", NULL);
-    SDL_DetachThread(thread);
+    if (update_thread != NULL) {
+        return;
+    }
+    update_thread = SDL_CreateThread((SDL_ThreadFunction) update_thread_run, "gcdb_upd", NULL);
 }
 
 char *gamecontrollerdb_path() {
@@ -161,7 +168,7 @@ static void load_headers(struct curl_slist **headers) {
     fclose(fp);
 }
 
-static int gamecontrollerdb_update_worker() {
+static int update_thread_run() {
     CURL *curl = curl_easy_init();
     char *const url = "https://github.com/gabomdq/SDL_GameControllerDB/raw/master/gamecontrollerdb.txt";
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -202,5 +209,11 @@ static int gamecontrollerdb_update_worker() {
         curl_slist_free_all(headers);
     }
     curl_easy_cleanup(curl);
+    bus_pushaction((bus_actionfunc) update_thread_wait, update_thread);
     return res;
+}
+
+static void update_thread_wait(SDL_Thread *thread) {
+    SDL_WaitThread(thread, NULL);
+    update_thread = NULL;
 }

@@ -11,7 +11,9 @@ static int pin_random(int min, int max);
 
 static void notify_querying(upsert_args_t *args);
 
-int pair_worker(cm_request_t *req);
+static int pair_worker(cm_request_t *req);
+
+static void worker_cleanup(cm_request_t *req, int cancelled);
 
 int manual_add_worker(cm_request_t *req);
 
@@ -25,16 +27,16 @@ bool pcmanager_pair(pcmanager_t *manager, SERVER_DATA *server, char *pin, pcmana
     SDL_snprintf(pin, 5, "%04d", pin_num);
     cm_request_t *req = cm_request_new(manager, server, callback, userdata);
     req->arg1 = strdup(pin);
-    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) pair_worker, "pairing", req);
-    SDL_DetachThread(thread);
+    executor_execute(manager->executor, (executor_action_cb) pair_worker,
+                     (executor_cleanup_cb) worker_cleanup, req);
     return true;
 }
 
 bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata) {
     cm_request_t *req = cm_request_new(manager, NULL, callback, userdata);
     req->arg1 = strdup(address);
-    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) manual_add_worker, "add_svr", req);
-    SDL_DetachThread(thread);
+    executor_execute(manager->executor, (executor_action_cb) manual_add_worker,
+                     (executor_cleanup_cb) worker_cleanup, req);
     return true;
 }
 
@@ -126,16 +128,20 @@ int pair_worker(cm_request_t *req) {
         serverdata_free(server);
     }
     pcmanager_worker_finalize(resp, req->callback, req->userdata);
-    SDL_free(req->arg1);
-    SDL_free(req);
     return 0;
+}
+
+static void worker_cleanup(cm_request_t *req, int cancelled) {
+    (void) cancelled;
+    if (req->arg1 != NULL) {
+        SDL_free(req->arg1);
+    }
+    SDL_free(req);
 }
 
 int manual_add_worker(cm_request_t *req) {
     pcmanager_t *manager = req->manager;
     pcmanager_upsert_worker(manager, req->arg1, true, req->callback, req->userdata);
-    SDL_free(req->arg1);
-    SDL_free(req);
     return 0;
 }
 

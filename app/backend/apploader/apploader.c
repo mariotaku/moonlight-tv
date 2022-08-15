@@ -23,76 +23,81 @@
 #undef LINKEDLIST_PREFIX
 
 struct apploader_task_t {
-    apploader_t *loader;
-    apploader_cb cb;
-    void *userdata;
     int code;
     const char *error;
     apploader_list_t *result;
-    SDL_Thread *thread;
-    bool cancelled;
+    apploader_t *loader;
+    const executor_task_t *task;
 };
 
-static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb cb, void *userdata);
+struct apploader_t {
+    char *uuid;
+    apploader_cb_t callback;
+    executor_t *executor;
+    apploader_state_t state;
+    void *userdata;
+};
 
-static int apploader_task_execute(apploader_task_t *task);
+static void apploader_free(executor_t *executor);
 
-static void apploader_task_finish(apploader_task_t *task);
+static apploader_task_t *task_create(apploader_t *loader);
 
-static void apploader_list_free(apploader_list_t *list);
+static void task_run(apploader_task_t *task);
+
+static void task_finalize(apploader_task_t *task, int cancelled);
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2);
 
-apploader_t *apploader_new(const SERVER_LIST *node) {
+static void task_callback(apploader_task_t *task);
+
+static apploader_list_t *apps_create(const struct SERVER_LIST_T *node, PAPP_LIST ll);
+
+apploader_t *apploader_create(const SERVER_LIST *node, const apploader_cb_t *cb, void *userdata) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
-    refcounter_init(&loader->refcounter);
+    loader->executor = executor_create("apploader", apploader_free);
+    loader->callback = *cb;
+    loader->userdata = userdata;
     loader->uuid = strdup(node->server->uuid);
-    loader->apps = NULL;
+    executor_set_userdata(loader->executor, loader);
     return loader;
 }
 
-void apploader_load(apploader_t *loader, apploader_cb cb, void *userdata) {
-    if (loader->state != APPLOADER_STATE_IDLE) return;
-    loader->state = APPLOADER_STATE_LOADING;
-    apploader_task_t *task = apploader_task_create(loader, cb, userdata);
-    refcounter_ref(&loader->refcounter);
-    task->thread = SDL_CreateThread((SDL_ThreadFunction) apploader_task_execute, "loadapps", task);
-    loader->task = task;
-}
-
-void apploader_unref(apploader_t *loader) {
-    if (loader->task) {
-        SDL_assert(!loader->task->cancelled);
-        loader->task->cancelled = true;
-    }
-    if (!refcounter_unref(&loader->refcounter)) {
+void apploader_load(apploader_t *loader) {
+    if (executor_is_active(loader->executor)) {
         return;
     }
-    apploader_list_free(loader->apps);
+    loader->state = APPLOADER_STATE_LOADING;
+    loader->callback.start(loader->userdata);
+    apploader_task_t *task = task_create(loader);
+    task->task = executor_execute(loader->executor, (executor_action_cb) task_run,
+                                  (executor_cleanup_cb) task_finalize, task);
+}
+
+void apploader_destroy(apploader_t *loader) {
+    executor_destroy(loader->executor, 0);
+}
+
+apploader_state_t apploader_state(apploader_t *loader) {
+    return loader->state;
+}
+
+static void apploader_free(executor_t *executor) {
+    apploader_t *loader = executor_get_userdata(executor);
     free(loader->uuid);
-    refcounter_destroy(&loader->refcounter);
     SDL_free(loader);
 }
 
-
-static apploader_task_t *apploader_task_create(apploader_t *loader, apploader_cb cb, void *userdata) {
-    apploader_task_t *task = SDL_malloc(sizeof(apploader_task_t));
-    SDL_memset(task, 0, sizeof(apploader_task_t));
+static apploader_task_t *task_create(apploader_t *loader) {
+    apploader_task_t *task = SDL_calloc(1, sizeof(apploader_task_t));
     task->loader = loader;
-    task->cb = cb;
-    task->userdata = userdata;
-    task->cancelled = false;
     return task;
 }
 
-static int apploader_task_execute(apploader_task_t *task) {
+static void task_run(apploader_task_t *task) {
     int ret = GS_OK;
     const char *error = NULL;
     GS_CLIENT client = NULL;
-    if (task->cancelled) {
-        goto finish;
-    }
     PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, task->loader->uuid);
     if (node == NULL) {
         ret = GS_ERROR;
@@ -104,14 +109,44 @@ static int apploader_task_execute(apploader_task_t *task) {
         error = gs_error;
         goto finish;
     }
-    if (task->cancelled) {
-        goto finish;
-    }
-    // The app list is empty
     if (ll == NULL) {
-        task->result = NULL;
+        ret = GS_ERROR;
         goto finish;
     }
+    apploader_list_t *result = apps_create(node, ll);
+    applist_free(ll, (applist_nodefree_fn) SDL_free);
+    task->result = result;
+    finish:
+    task->code = ret;
+    task->error = error;
+    if (client != NULL) {
+        gs_destroy(client);
+    }
+}
+
+static void task_finalize(apploader_task_t *task, int cancelled) {
+    if (cancelled) {
+        if (task->result != NULL) {
+            apploader_list_free(task->result);
+        }
+    } else {
+        bus_pushaction_sync((bus_actionfunc) task_callback, task);
+    }
+    SDL_free(task);
+}
+
+static void task_callback(apploader_task_t *task) {
+    apploader_t *loader = task->loader;
+    if (task->code == GS_OK) {
+        loader->state = APPLOADER_STATE_IDLE;
+        loader->callback.data(task->result, loader->userdata);
+    } else {
+        loader->state = APPLOADER_STATE_ERROR;
+        loader->callback.error(task->code, task->error, loader->userdata);
+    }
+}
+
+static apploader_list_t *apps_create(const struct SERVER_LIST_T *node, PAPP_LIST ll) {
     int count = applist_len(ll);
     apploader_list_t *result = SDL_malloc(sizeof(apploader_list_t) + count * sizeof(apploader_item_t));
     result->count = count;
@@ -124,43 +159,12 @@ static int apploader_task_execute(apploader_task_t *task) {
         item->fav = pcmanager_is_favorite(node, cur->id);
         index++;
     }
-    applist_free(ll, (void (*)(APP_LIST *)) SDL_free);
     SDL_qsort(result->items, result->count, sizeof(apploader_item_t),
               (int (*)(const void *, const void *)) applist_name_comparator);
-    task->result = result;
-    finish:
-    task->code = ret;
-    task->error = error;
-    gs_destroy(client);
-    bus_pushaction((bus_actionfunc) apploader_task_finish, task);
-    return ret;
+    return result;
 }
 
-static void apploader_task_finish(apploader_task_t *task) {
-    apploader_t *loader = task->loader;
-    if (task->cancelled) {
-        loader->task = NULL;
-        apploader_unref(loader);
-        return;
-    }
-    apploader_list_t *old_apps = loader->apps;
-    if (task->code == GS_OK) {
-        loader->apps = task->result;
-    } else {
-        loader->apps = NULL;
-    }
-    loader->code = task->code;
-    loader->error = task->error;
-    loader->state = APPLOADER_STATE_IDLE;
-    loader->task = NULL;
-    task->cb(loader, task->userdata);
-    apploader_list_free(old_apps);
-    SDL_DetachThread(task->thread);
-    SDL_free(task);
-    apploader_unref(loader);
-}
-
-static void apploader_list_free(apploader_list_t *list) {
+void apploader_list_free(apploader_list_t *list) {
     if (!list) return;
     for (int i = 0; i < list->count; i++) {
         SDL_free(list->items[i].base.name);

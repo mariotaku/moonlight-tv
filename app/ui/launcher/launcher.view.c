@@ -137,7 +137,7 @@ lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent) {
 static void detail_group_add(lv_event_t *event) {
     lv_obj_t *child = lv_event_get_param(event);
     launcher_controller_t *fragment = lv_event_get_user_data(event);
-    apps_controller_t *apps_fragment = (apps_controller_t *) lv_fragment_manager_find_by_container(
+    apps_fragment_t *apps_fragment = (apps_fragment_t *) lv_fragment_manager_find_by_container(
             fragment->base.child_manager, fragment->detail);
     lv_obj_t *view = lv_obj_get_child(fragment->detail, 0);
     if (!apps_fragment || !view) return;

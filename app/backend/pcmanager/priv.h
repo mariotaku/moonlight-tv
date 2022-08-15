@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../pcmanager.h"
+#include "util/executor.h"
 #include <SDL.h>
 
 typedef struct pcmanager_listener_list pcmanager_listener_list;
@@ -18,6 +19,7 @@ typedef struct {
 
 struct pcmanager_t {
     SDL_threadID thread_id;
+    executor_t *executor;
     SERVER_LIST *servers;
     SDL_mutex *servers_lock;
     pcmanager_listener_list *listeners;

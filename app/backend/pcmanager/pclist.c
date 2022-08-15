@@ -126,7 +126,7 @@ void serverlist_nodefree(PSERVER_LIST node) {
         serverdata_free((PSERVER_DATA) node->server);
     }
     if (node->favs) {
-        favlist_free(node->favs, (favlist_nodefree_fn *) free);
+        favlist_free(node->favs, (favlist_nodefree_fn) free);
     }
     free(node);
 }

@@ -13,26 +13,32 @@ typedef struct {
     lv_img_dsc_t defcover_src;
 } appitem_styles_t;
 
+
 typedef struct {
     lv_fragment_t base;
     apploader_t *apploader;
     coverloader_t *coverloader;
     PSERVER_LIST node;
+    apploader_cb_t apploader_cb;
+
+    apploader_list_t *apploader_apps;
+    const char *apploader_error;
+
     lv_obj_t *applist, *appload, *apperror;
     lv_obj_t *errortitle, *errorhint, *errordetail;
     lv_obj_t *actions;
 
-    lv_obj_t * quit_progress;
+    lv_obj_t *quit_progress;
 
     appitem_styles_t appitem_style;
     int col_count;
     lv_coord_t col_width, col_height;
     int focus_backup;
-} apps_controller_t;
+} apps_fragment_t;
 
 typedef struct {
     apploader_item_t *app;
-    apps_controller_t *controller;
+    apps_fragment_t *controller;
     const appitem_styles_t *styles;
     lv_obj_t *play_indicator;
     lv_obj_t *title;

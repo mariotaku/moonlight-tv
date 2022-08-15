@@ -12,7 +12,7 @@ static void appitem_selected(lv_event_t *e);
 
 static void appitem_deselected(lv_event_t *e);
 
-lv_obj_t *appitem_view(apps_controller_t *controller, lv_obj_t *parent) {
+lv_obj_t *appitem_view(apps_fragment_t *controller, lv_obj_t *parent) {
     appitem_styles_t *styles = &controller->appitem_style;
     lv_obj_t *item = lv_img_create(parent);
     lv_obj_add_flag(item, LV_OBJ_FLAG_EVENT_BUBBLE | LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLL_ON_FOCUS);

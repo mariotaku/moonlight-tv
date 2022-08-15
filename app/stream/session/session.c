@@ -49,6 +49,8 @@ static void streaming_set_status(STREAMING_STATUS status);
 
 static bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps);
 
+static void streaming_thread_wait(SDL_Thread *thread);
+
 void streaming_init() {
     streaming_status = STREAMING_NONE;
     streaming_state_lock = SDL_CreateMutex();
@@ -255,9 +257,10 @@ int streaming_worker(session_t *session) {
     settings_free(config);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
-    SDL_DetachThread(session->thread);
+    SDL_Thread *thread = session->thread;
     free(session);
     session_active = NULL;
+    bus_pushaction((bus_actionfunc) streaming_thread_wait, thread);
     return 0;
 }
 
@@ -303,4 +306,8 @@ bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
             return true;
     }
     return false;
+}
+
+static void streaming_thread_wait(SDL_Thread *thread) {
+    SDL_WaitThread(thread, NULL);
 }

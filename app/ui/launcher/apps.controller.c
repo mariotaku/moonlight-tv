@@ -21,7 +21,7 @@
 #include "pair.dialog.h"
 #include "ui/common/progress_dialog.h"
 
-typedef void (*action_cb_t)(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+typedef void (*action_cb_t)(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
 
 static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container);
 
@@ -43,19 +43,19 @@ static void item_click_cb(lv_event_t *event);
 
 static void item_longpress_cb(lv_event_t *event);
 
-static void launcher_launch_game(apps_controller_t *controller, const apploader_item_t *app);
+static void launcher_launch_game(apps_fragment_t *controller, const apploader_item_t *app);
 
-static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app);
+static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_item_t *app);
 
-static void launcher_quit_game(apps_controller_t *controller);
+static void launcher_quit_game(apps_fragment_t *controller);
 
 static void applist_focus_enter(lv_event_t *event);
 
 static void applist_focus_leave(lv_event_t *event);
 
-static void update_view_state(apps_controller_t *controller);
+static void update_view_state(apps_fragment_t *controller);
 
-static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploader_item_t *app);
+static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_item_t *app);
 
 static int adapter_item_count(lv_obj_t *, void *data);
 
@@ -71,33 +71,37 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args);
 
 static void apps_controller_dtor(lv_fragment_t *self);
 
-static void appload_cb(apploader_t *loader, void *userdata);
+static void appload_started(void *userdata);
+
+static void appload_loaded(apploader_list_t *apps, void *userdata);
+
+static void appload_errored(int code, const char *error, void *userdata);
 
 static void quit_dialog_cb(lv_event_t *event);
 
 static void actions_click_cb(lv_event_t *event);
 
-static void action_cb_wol(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+static void action_cb_wol(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
 
-static void action_cb_host_reload(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+static void action_cb_host_reload(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
 
-static void action_cb_pair(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index);
+static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
 
-static void update_grid_config(apps_controller_t *controller);
+static void update_grid_config(apps_fragment_t *controller);
 
-static void open_context_menu(apps_controller_t *controller, apploader_item_t *app);
+static void open_context_menu(apps_fragment_t *fragment, apploader_item_t *app);
 
 static void context_menu_cancel_cb(lv_event_t *event);
 
 static void context_menu_click_cb(lv_event_t *event);
 
-static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app);
+static void app_detail_dialog(apps_fragment_t *controller, apploader_item_t *app);
 
 static void app_detail_click_cb(lv_event_t *event);
 
-static void set_actions(apps_controller_t *controller, const char **labels, const action_cb_t *callbacks);
+static void set_actions(apps_fragment_t *controller, const char **labels, const action_cb_t *callbacks);
 
-static apps_controller_t *current_instance = NULL;
+static apps_fragment_t *current_instance = NULL;
 
 const static lv_gridview_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
@@ -117,7 +121,7 @@ const lv_fragment_class_t apps_controller_class = {
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,
         .event_cb = on_event,
-        .instance_size = sizeof(apps_controller_t),
+        .instance_size = sizeof(apps_fragment_t),
 };
 
 static const char *action_labels_offline[] = {translatable("Wake"), translatable("Retry"), ""};
@@ -129,21 +133,27 @@ static const action_cb_t action_callbacks_unpaired[] = {action_cb_pair};
 static const char *actions_apps_none[] = {""};
 
 static void apps_controller_ctor(lv_fragment_t *self, void *args) {
-    apps_controller_t *controller = (apps_controller_t *) self;
+    apps_fragment_t *controller = (apps_fragment_t *) self;
+    controller->apploader_cb.start = appload_started;
+    controller->apploader_cb.data = appload_loaded;
+    controller->apploader_cb.error = appload_errored;
     controller->node = args;
-    controller->apploader = apploader_new(controller->node);
+    controller->apploader = apploader_create(controller->node, &controller->apploader_cb, controller);
 
     appitem_style_init(&controller->appitem_style);
 }
 
 static void apps_controller_dtor(lv_fragment_t *self) {
-    apps_controller_t *controller = (apps_controller_t *) self;
-    appitem_style_deinit(&controller->appitem_style);
-    apploader_unref(controller->apploader);
+    apps_fragment_t *fragment = (apps_fragment_t *) self;
+    appitem_style_deinit(&fragment->appitem_style);
+    apploader_destroy(fragment->apploader);
+    if (fragment->apploader_apps != NULL) {
+        apploader_list_free(fragment->apploader_apps);
+    }
 }
 
 static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
-    apps_controller_t *controller = (apps_controller_t *) self;
+    apps_fragment_t *controller = (apps_fragment_t *) self;
     lv_obj_t *view = lv_obj_create(container);
     lv_obj_remove_style_all(view);
     lv_obj_add_flag(view, LV_OBJ_FLAG_EVENT_BUBBLE);
@@ -198,7 +208,7 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
-    apps_controller_t *controller = (apps_controller_t *) self;
+    apps_fragment_t *controller = (apps_fragment_t *) self;
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
@@ -215,13 +225,13 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     if (controller->node->state.code != SERVER_STATE_QUERYING) {
         pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
     } else if (controller->node->state.code == SERVER_STATE_AVAILABLE) {
-        apploader_load(controller->apploader, appload_cb, controller);
+        apploader_load(controller->apploader);
     }
     current_instance = controller;
     update_view_state(controller);
 }
 
-static void update_grid_config(apps_controller_t *controller) {
+static void update_grid_config(apps_fragment_t *controller) {
     lv_obj_t *applist = controller->applist;
     lv_obj_update_layout(applist);
     lv_coord_t applist_width = lv_obj_get_width(applist);
@@ -241,7 +251,7 @@ static void update_grid_config(apps_controller_t *controller) {
 
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     current_instance = NULL;
-    apps_controller_t *controller = (apps_controller_t *) self;
+    apps_fragment_t *controller = (apps_fragment_t *) self;
 
     pcmanager_unregister_listener(pcmanager, &pc_listeners);
     coverloader_unref(controller->coverloader);
@@ -249,7 +259,7 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata) {
     LV_UNUSED(userdata);
-    apps_controller_t *controller = (apps_controller_t *) self;
+    apps_fragment_t *controller = (apps_fragment_t *) self;
     switch (code) {
         case USER_SIZE_CHANGED: {
             update_grid_config(controller);
@@ -263,31 +273,31 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 }
 
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
-    apps_controller_t *controller = (apps_controller_t *) userdata;
+    apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
     if (resp->server != controller->node->server) return;
-    apploader_load(controller->apploader, appload_cb, controller);
+    apploader_load(controller->apploader);
     update_view_state(controller);
 }
 
 static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
-    apps_controller_t *controller = (apps_controller_t *) userdata;
+    apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (resp->server != controller->node->server) return;
     lv_fragment_del((lv_fragment_t *) controller);
 }
 
 static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
-    apps_controller_t *controller = (apps_controller_t *) userdata;
+    apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
-    if (resp->state.code == SERVER_STATE_AVAILABLE && !controller->apploader->apps) {
-        apploader_load(controller->apploader, appload_cb, controller);
+    if (resp->state.code == SERVER_STATE_AVAILABLE && !controller->apploader_apps) {
+        apploader_load(controller->apploader);
     }
 }
 
 static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
-    apps_controller_t *controller = (apps_controller_t *) userdata;
+    apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
@@ -295,7 +305,7 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 
-static void update_view_state(apps_controller_t *controller) {
+static void update_view_state(apps_fragment_t *controller) {
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) return;
     launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_get_parent(&controller->base);
@@ -315,40 +325,46 @@ static void update_view_state(apps_controller_t *controller) {
             break;
         }
         case SERVER_STATE_AVAILABLE: {
-            if (controller->apploader->state == APPLOADER_STATE_LOADING) {
-                // is loading apps
-                if (controller->apploader->apps) {
-
-                } else {
+            switch (apploader_state(controller->apploader)) {
+                case APPLOADER_STATE_LOADING: {
+                    // is loading apps
+                    if (controller->apploader_apps) {
+                        break;
+                    }
                     lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
                     lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
                     lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                    break;
                 }
-            } else if (controller->apploader->code != 0) {
-                // apploader has error
-                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
-                lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+                case APPLOADER_STATE_ERROR: {
+                    // apploader has error
+                    lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
+                    lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
 
-                lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
-                lv_label_set_text_static(controller->errorhint, locstr(
-                        "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
-                lv_label_set_text_static(controller->errordetail, controller->apploader->error);
-                set_actions(controller, action_labels_error, action_callbacks_error);
+                    lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
+                    lv_label_set_text_static(controller->errorhint, locstr(
+                            "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
+                    lv_label_set_text_static(controller->errordetail, controller->apploader_error);
+                    set_actions(controller, action_labels_error, action_callbacks_error);
 
-                lv_group_focus_obj(controller->actions);
-                lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
-            } else {
-                // has apps
-                lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+                    lv_group_focus_obj(controller->actions);
+                    lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
+                    break;
+                }
+                case APPLOADER_STATE_IDLE: {
+                    // has apps
+                    lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                    lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
 
-                if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
-                    lv_group_focus_obj(controller->applist);
+                    if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
+                        lv_group_focus_obj(controller->applist);
+                    }
+                    break;
                 }
             }
             break;
@@ -412,7 +428,28 @@ static void update_view_state(apps_controller_t *controller) {
     parent_controller->detail_changing = false;
 }
 
-static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploader_item_t *app) {
+
+static void appload_started(void *userdata) {
+    apps_fragment_t *fragment = userdata;
+    update_view_state(fragment);
+}
+
+static void appload_loaded(apploader_list_t *apps, void *userdata) {
+    apps_fragment_t *fragment = userdata;
+    lv_gridview_set_data(fragment->applist, apps);
+    apploader_list_free(fragment->apploader_apps);
+    fragment->apploader_apps = apps;
+    update_view_state(fragment);
+}
+
+static void appload_errored(int code, const char *error, void *userdata) {
+    LV_UNUSED(code);
+    apps_fragment_t *fragment = userdata;
+    fragment->apploader_error = error;
+    update_view_state(fragment);
+}
+
+static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_item_t *app) {
     appitem_viewholder_t *holder = lv_obj_get_user_data(item);
 
     coverloader_display(controller->coverloader, controller->node, app->base.id, item,
@@ -428,7 +465,7 @@ static void appitem_bind(apps_controller_t *controller, lv_obj_t *item, apploade
 }
 
 static void item_click_cb(lv_event_t *event) {
-    apps_controller_t *controller = lv_event_get_user_data(event);
+    apps_fragment_t *controller = lv_event_get_user_data(event);
     lv_obj_t *target = lv_event_get_target(event);
     lv_obj_t *target_parent = lv_obj_get_parent(target);
     if (target_parent != controller->applist) {
@@ -445,7 +482,7 @@ static void item_click_cb(lv_event_t *event) {
 }
 
 static void item_longpress_cb(lv_event_t *event) {
-    apps_controller_t *controller = lv_event_get_user_data(event);
+    apps_fragment_t *controller = lv_event_get_user_data(event);
     lv_obj_t *target = lv_event_get_target(event);
     lv_obj_t *target_parent = lv_obj_get_parent(target);
     if (target_parent != controller->applist) {
@@ -456,7 +493,7 @@ static void item_longpress_cb(lv_event_t *event) {
     open_context_menu(controller, holder->app);
 }
 
-static void launcher_launch_game(apps_controller_t *controller, const apploader_item_t *app) {
+static void launcher_launch_game(apps_fragment_t *controller, const apploader_item_t *app) {
     streaming_scene_arg_t args = {
             .server = controller->node->server,
             .app = &app->base,
@@ -467,33 +504,37 @@ static void launcher_launch_game(apps_controller_t *controller, const apploader_
     lv_fragment_manager_push(app_uimanager, fragment, container);
 }
 
-static void launcher_toggle_fav(apps_controller_t *controller, const apploader_item_t *app) {
+static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_item_t *app) {
     pcmanager_favorite_app(controller->node, app->base.id, !app->fav);
-    apploader_load(controller->apploader, appload_cb, controller);
+    apploader_load(controller->apploader);
 }
 
-static void launcher_quit_game(apps_controller_t *controller) {
+static void launcher_quit_game(apps_fragment_t *controller) {
     controller->quit_progress = progress_dialog_create(locstr("Quitting game..."));
     pcmanager_quitapp(pcmanager, controller->node->server, quitgame_cb, controller);
 }
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
     if (data == NULL) return 0;
-    apps_controller_t *controller = lv_obj_get_user_data(grid);
+    apps_fragment_t *controller = lv_obj_get_user_data(grid);
     apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
     return LV_MIN(list->count, 255 * controller->col_count);
 }
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
-    apps_controller_t *controller = lv_obj_get_user_data(parent);
+    apps_fragment_t *controller = lv_obj_get_user_data(parent);
     return appitem_view(controller, parent);
 }
 
 static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, int position) {
-    apps_controller_t *controller = lv_obj_get_user_data(grid);
+    apps_fragment_t *controller = lv_obj_get_user_data(grid);
     apploader_list_t *list = data;
     appitem_bind(controller, item_view, &list->items[position]);
+
+    // IDE seems to be pretty confused...
+    LV_UNUSED(list);
+    LV_UNUSED(position);
 }
 
 static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
@@ -505,19 +546,19 @@ static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
 
 static void applist_focus_enter(lv_event_t *event) {
     if (event->target != event->current_target) return;
-    apps_controller_t *controller = lv_event_get_user_data(event);
+    apps_fragment_t *controller = lv_event_get_user_data(event);
     lv_gridview_focus(controller->applist, controller->focus_backup);
 }
 
 static void applist_focus_leave(lv_event_t *event) {
     if (event->target != event->current_target) return;
-    apps_controller_t *controller = lv_event_get_user_data(event);
+    apps_fragment_t *controller = lv_event_get_user_data(event);
     controller->focus_backup = lv_gridview_get_focused_index(controller->applist);
     lv_gridview_focus(controller->applist, -1);
 }
 
 static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
-    apps_controller_t *controller = userdata;
+    apps_fragment_t *controller = userdata;
     if (controller->quit_progress) {
         lv_msgbox_close(controller->quit_progress);
         controller->quit_progress = NULL;
@@ -534,50 +575,47 @@ static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
     lv_obj_center(dialog);
 }
 
-static void appload_cb(apploader_t *loader, void *userdata) {
-    apps_controller_t *controller = userdata;
-    if (controller != current_instance) return;
-    lv_gridview_set_data(controller->applist, controller->apploader->apps);
-    update_view_state(controller);
-}
-
 static void quit_dialog_cb(lv_event_t *event) {
     lv_obj_t *dialog = lv_event_get_current_target(event);
     lv_msgbox_close_async(dialog);
 }
 
 static void actions_click_cb(lv_event_t *event) {
-    apps_controller_t *controller = lv_event_get_user_data(event);
+    apps_fragment_t *controller = lv_event_get_user_data(event);
     uint16_t index = lv_btnmatrix_get_selected_btn(controller->actions);
     const action_cb_t *actions = lv_obj_get_user_data(controller->actions);
     actions[index](controller, controller->actions, index);
 }
 
-static void action_cb_wol(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index) {
+static void action_cb_wol(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
+    LV_UNUSED(index);
     lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
     pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
 }
 
-static void action_cb_host_reload(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index) {
+static void action_cb_host_reload(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
+    LV_UNUSED(index);
     lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
     pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
 }
 
-static void action_cb_pair(apps_controller_t *controller, lv_obj_t *buttons, uint16_t index) {
+static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
+    LV_UNUSED(buttons);
+    LV_UNUSED(index);
     pair_dialog_open(controller->node);
 }
 
-static void open_context_menu(apps_controller_t *controller, apploader_item_t *app) {
+static void open_context_menu(apps_fragment_t *fragment, apploader_item_t *app) {
     lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, NULL, NULL, false);
     lv_obj_set_user_data(msgbox, app);
     lv_obj_t *content = lv_msgbox_get_content(msgbox);
     lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
 
-    lv_obj_add_event_cb(content, context_menu_cancel_cb, LV_EVENT_CANCEL, controller);
-    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_SHORT_CLICKED, controller);
+    lv_obj_add_event_cb(content, context_menu_cancel_cb, LV_EVENT_CANCEL, fragment);
+    lv_obj_add_event_cb(content, context_menu_click_cb, LV_EVENT_SHORT_CLICKED, fragment);
 
-    int currentId = controller->node->server->currentGame;
+    int currentId = fragment->node->server->currentGame;
 
     if (!currentId || currentId == app->base.id) {
         lv_obj_t *start_btn = lv_list_add_btn(content, NULL,
@@ -616,7 +654,7 @@ static void context_menu_click_cb(lv_event_t *e) {
     lv_obj_t *current_target = lv_event_get_current_target(e);
     if (target->parent != current_target) return;
     lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
-    apps_controller_t *controller = lv_event_get_user_data(e);
+    apps_fragment_t *controller = lv_event_get_user_data(e);
     if (lv_obj_get_user_data(target) == launcher_quit_game) {
         launcher_quit_game(controller);
     } else if (lv_obj_get_user_data(target) == launcher_launch_game) {
@@ -629,7 +667,8 @@ static void context_menu_click_cb(lv_event_t *e) {
     lv_msgbox_close_async(mbox);
 }
 
-static void app_detail_dialog(apps_controller_t *controller, apploader_item_t *app) {
+static void app_detail_dialog(apps_fragment_t *fragment, apploader_item_t *app) {
+    LV_UNUSED(fragment);
     static const char *btn_txts[] = {translatable("OK"), ""};
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, app->base.name, "text", btn_txts, false);
     lv_obj_t *msgobj = lv_msgbox_get_text(msgbox);
@@ -645,7 +684,7 @@ static void app_detail_click_cb(lv_event_t *event) {
     lv_msgbox_close(lv_event_get_current_target(event));
 }
 
-static void set_actions(apps_controller_t *controller, const char **labels, const action_cb_t *callbacks) {
+static void set_actions(apps_fragment_t *controller, const char **labels, const action_cb_t *callbacks) {
     lv_btnmatrix_set_map(controller->actions, labels);
     int num_actions = 0;
     for (int i = 0; labels[i][0] != '\0'; i++) {

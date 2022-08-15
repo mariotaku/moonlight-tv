@@ -129,7 +129,7 @@ static inline void strlower(char *p) {
 
 static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value) {
     if (!section) return 1;
-    known_host_t *host = hostlist_find_by(*list, section, (hostlist_find_fn *) hostlist_find_uuid);
+    known_host_t *host = hostlist_find_by(*list, section, (hostlist_find_fn) hostlist_find_uuid);
     if (!host) {
         host = hostlist_new();
         host->uuid = SDL_strdup(section);
@@ -157,7 +157,7 @@ static int hostlist_find_uuid(known_host_t *node, void *v) {
 
 static void hostlist_node_free(known_host_t *node) {
     if (node->favs) {
-        favlist_free(node->favs, (favlist_nodefree_fn *) free);
+        favlist_free(node->favs, (favlist_nodefree_fn) free);
     }
     free(node);
 }

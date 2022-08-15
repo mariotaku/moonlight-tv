@@ -46,6 +46,17 @@ bool bus_pushaction_sync(bus_actionfunc action, void *data) {
     return true;
 }
 
+void bus_finalize() {
+    SDL_Event event;
+    while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_USEREVENT, SDL_USEREVENT) > 0) {
+        if (event.user.code != BUS_INT_EVENT_ACTION) {
+            continue;
+        }
+        bus_actionfunc actionfn = event.user.data1;
+        actionfn(event.user.data2);
+    }
+}
+
 static void invoke_action_sync(bus_action_sync_t *sync) {
     SDL_LockMutex(sync->mutex);
     sync->action(sync->data);

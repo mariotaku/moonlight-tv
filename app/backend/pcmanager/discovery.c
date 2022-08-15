@@ -1,6 +1,7 @@
 #include "priv.h"
 #include <microdns/microdns.h>
 #include "util/logging.h"
+#include "util/bus.h"
 
 typedef struct {
     pcmanager_t *manager;
@@ -13,6 +14,8 @@ static int discovery_worker(discovery_task_t *task);
 static bool discovery_stop(discovery_task_t *task);
 
 static void discovery_callback(discovery_task_t *task, int status, const struct rr_entry *entries);
+
+static void discovery_thread_wait(SDL_Thread *thread);
 
 static discovery_task_t *discovery_task = NULL;
 
@@ -28,7 +31,6 @@ void pcmanager_auto_discovery_start(pcmanager_t *manager) {
 void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
     if (!discovery_task) return;
     discovery_task->stop = SDL_TRUE;
-    SDL_DetachThread(discovery_task->thread);
 }
 
 static int discovery_worker(discovery_task_t *task) {
@@ -50,8 +52,10 @@ static int discovery_worker(discovery_task_t *task) {
     }
     applog_i("Discovery", "Stop mDNS discovery");
     mdns_destroy(ctx);
+    SDL_Thread *thread = task->thread;
     SDL_free(task);
     discovery_task = NULL;
+    bus_pushaction((bus_actionfunc) discovery_thread_wait, thread);
     return 0;
 }
 
@@ -74,3 +78,6 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
     }
 }
 
+static void discovery_thread_wait(SDL_Thread *thread) {
+    SDL_WaitThread(thread, NULL);
+}

@@ -17,6 +17,7 @@
 #include "util/font.h"
 #include "util/i18n.h"
 #include "util/logging.h"
+#include "util/bus.h"
 
 #include <SDL_image.h>
 
@@ -114,6 +115,9 @@ int main(int argc, char *argv[]) {
     backend_destroy();
     decoder_finalize();
     audio_finalize();
+
+    bus_finalize();
+
     settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);

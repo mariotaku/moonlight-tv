@@ -18,13 +18,15 @@
 
 static int pcmanager_send_wol_action(cm_request_t *req);
 
+static void pcmanager_send_wol_cleanup(cm_request_t *req);
+
 static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
 bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
                         void *userdata) {
     cm_request_t *req = cm_request_new(manager, serverdata_clone(server), callback, userdata);
-    SDL_Thread *thread = SDL_CreateThread((SDL_ThreadFunction) pcmanager_send_wol_action, "wol", req);
-    SDL_DetachThread(thread);
+    executor_execute(manager->executor, (executor_action_cb) pcmanager_send_wol_action,
+                     (executor_cleanup_cb) pcmanager_send_wol_cleanup, req);
     return true;
 }
 
@@ -89,9 +91,12 @@ static int pcmanager_send_wol_action(cm_request_t *req) {
         resp->result.code = ret;
         pcmanager_worker_finalize(resp, req->callback, req->userdata);
     }
+    return ret;
+}
+
+static void pcmanager_send_wol_cleanup(cm_request_t *req) {
     serverdata_free((SERVER_DATA *) req->server);
     free(req);
-    return ret;
 }
 
 static bool wol_build_packet(const char *macstr, uint8_t *packet) {
