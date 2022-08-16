@@ -51,7 +51,9 @@ static int discovery_worker(discovery_task_t *task) {
         applog_e("Discovery", "fatal: %s", err);
     }
     applog_i("Discovery", "Stop mDNS discovery");
-    mdns_destroy(ctx);
+    if (ctx != NULL) {
+        mdns_destroy(ctx);
+    }
     SDL_Thread *thread = task->thread;
     SDL_free(task);
     discovery_task = NULL;

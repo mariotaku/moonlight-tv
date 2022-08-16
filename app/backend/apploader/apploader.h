@@ -37,9 +37,11 @@ typedef void (*apploader_cb)(apploader_t *loader, void *userdata);
 
 apploader_t *apploader_create(const SERVER_LIST *node, const apploader_cb_t *cb, void *userdata);
 
+void apploader_destroy(apploader_t *loader);
+
 void apploader_load(apploader_t *loader);
 
-void apploader_destroy(apploader_t *loader);
+void apploader_cancel(apploader_t *loader);
 
 apploader_state_t apploader_state(apploader_t *loader);
 

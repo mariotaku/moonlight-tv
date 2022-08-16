@@ -74,6 +74,10 @@ void apploader_load(apploader_t *loader) {
                                   (executor_cleanup_cb) task_finalize, task);
 }
 
+void apploader_cancel(apploader_t *loader) {
+    executor_cancel(loader->executor, NULL);
+}
+
 void apploader_destroy(apploader_t *loader) {
     executor_destroy(loader->executor, 0);
 }

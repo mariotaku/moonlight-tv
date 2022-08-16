@@ -27,6 +27,8 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container);
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
+static void obj_will_delete(lv_fragment_t *self, lv_obj_t *obj);
+
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view);
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata);
@@ -118,6 +120,7 @@ const lv_fragment_class_t apps_controller_class = {
         .constructor_cb = apps_controller_ctor,
         .destructor_cb = apps_controller_dtor,
         .create_obj_cb = apps_view,
+        .obj_will_delete_cb = obj_will_delete,
         .obj_created_cb = on_view_created,
         .obj_deleted_cb = on_destroy_view,
         .event_cb = on_event,
@@ -229,6 +232,12 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     }
     current_instance = controller;
     update_view_state(controller);
+}
+
+static void obj_will_delete(lv_fragment_t *self, lv_obj_t *obj) {
+    LV_UNUSED(obj);
+    apps_fragment_t *fragment = (apps_fragment_t *) self;
+    apploader_cancel(fragment->apploader);
 }
 
 static void update_grid_config(apps_fragment_t *controller) {

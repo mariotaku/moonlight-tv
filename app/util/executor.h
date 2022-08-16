@@ -17,6 +17,11 @@ void executor_destroy(executor_t *executor, int wait);
 const executor_task_t *executor_execute(executor_t *executor, executor_action_cb action, executor_cleanup_cb finalize,
                                         void *arg);
 
+/**
+ *
+ * @param executor
+ * @param task Task to cancel. If null, all tasks will be cancelled
+ */
 void executor_cancel(executor_t *executor, const executor_task_t *task);
 
 void *executor_get_userdata(executor_t *executor);

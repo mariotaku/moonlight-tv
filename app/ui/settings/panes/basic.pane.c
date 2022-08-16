@@ -215,8 +215,8 @@ static void init_locale_entries(basic_pane_t *pane) {
         def_entry->fallback = i == 0;
         pane->lang_entries_len++;
     }
-    char *input = strdup(I18N_LOCALES), *tok = NULL, *saveptr = NULL;
-    while ((tok = strtok_r(saveptr == NULL ? input : NULL, ";", &saveptr)) != NULL) {
+    char *input = strdup(I18N_LOCALES), *tok = NULL, *saveptr = input;
+    while ((tok = strtok_r(saveptr, ";", &saveptr)) != NULL) {
         const i18n_entry_t *entry = i18n_entry(tok);
         if (entry) {
             pref_dropdown_string_entry_t *pref_entry = &pane->lang_entries[pane->lang_entries_len];

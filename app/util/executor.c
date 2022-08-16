@@ -18,7 +18,7 @@ struct executor_t {
     SDL_cond *cond;
     executor_task_t *queue;
     executor_free_cb free;
-    SDL_bool active;
+    executor_task_t *active;
     SDL_bool destroyed;
     SDL_bool wait;
 
@@ -91,9 +91,22 @@ const executor_task_t *executor_execute(executor_t *executor, executor_action_cb
 
 void executor_cancel(executor_t *executor, const executor_task_t *task) {
     SDL_LockMutex(executor->lock);
-    executor_task_t *queue_task = tasks_find_by(executor->queue, task, task_identical);
-    if (queue_task) {
-        queue_task->cancelled = SDL_TRUE;
+    if (task != NULL) {
+        if (task == executor->active) {
+            executor->active->cancelled = SDL_TRUE;
+        } else {
+            executor_task_t *queue_task = tasks_find_by(executor->queue, task, task_identical);
+            if (queue_task) {
+                queue_task->cancelled = SDL_TRUE;
+            }
+        }
+    } else {
+        if (executor->active != NULL) {
+            executor->active->cancelled = SDL_TRUE;
+        }
+        for (executor_task_t *cur = executor->queue; cur; cur = cur->next) {
+            cur->cancelled = SDL_TRUE;
+        }
     }
     SDL_UnlockMutex(executor->lock);
 }
@@ -118,7 +131,7 @@ int executor_is_cancelled(executor_t *executor, const executor_task_t *task) {
 }
 
 int executor_is_active(executor_t *executor) {
-    return executor->active;
+    return executor->active != NULL;
 }
 
 static executor_task_t *tasks_poll(executor_t *executor) {
@@ -139,13 +152,13 @@ static executor_task_t *tasks_poll(executor_t *executor) {
 static int thread_worker(void *context) {
     executor_t *executor = context;
     for (executor_task_t *task = NULL; (task = tasks_poll(executor)) != NULL;) {
-        executor->active = SDL_TRUE;
+        executor->active = task;
         task->action(task->arg);
         if (task->finalize) {
             task->finalize(task->arg, task->cancelled);
         }
         free(task);
-        executor->active = SDL_FALSE;
+        executor->active = NULL;
     }
 
     SDL_LockMutex(executor->lock);
