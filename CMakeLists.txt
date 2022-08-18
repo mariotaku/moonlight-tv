@@ -231,6 +231,7 @@ set(SOURCES
         app/util/font.c
         app/util/ini_ext.c
         app/util/executor.c
+        app/util/uuidstr.c
         app/app_sdl.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c

@@ -17,7 +17,6 @@
 #define LINKEDLIST_PREFIX applist
 
 #include "util/linked_list.h"
-#include "backend/pcmanager/priv.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -31,7 +30,7 @@ struct apploader_task_t {
 };
 
 struct apploader_t {
-    char *uuid;
+    uuidstr_t uuid;
     apploader_cb_t callback;
     executor_t *executor;
     apploader_state_t state;
@@ -52,13 +51,13 @@ static void task_callback(apploader_task_t *task);
 
 static apploader_list_t *apps_create(const struct SERVER_LIST_T *node, PAPP_LIST ll);
 
-apploader_t *apploader_create(const SERVER_LIST *node, const apploader_cb_t *cb, void *userdata) {
+apploader_t *apploader_create(const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
     loader->executor = executor_create("apploader", apploader_free);
     loader->callback = *cb;
     loader->userdata = userdata;
-    loader->uuid = strdup(node->server->uuid);
+    loader->uuid = *uuid;
     executor_set_userdata(loader->executor, loader);
     return loader;
 }
@@ -88,7 +87,6 @@ apploader_state_t apploader_state(apploader_t *loader) {
 
 static void apploader_free(executor_t *executor) {
     apploader_t *loader = executor_get_userdata(executor);
-    free(loader->uuid);
     SDL_free(loader);
 }
 
@@ -102,7 +100,7 @@ static void task_run(apploader_task_t *task) {
     int ret = GS_OK;
     const char *error = NULL;
     GS_CLIENT client = NULL;
-    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, task->loader->uuid);
+    const SERVER_LIST *node = pcmanager_node(pcmanager, &task->loader->uuid);
     if (node == NULL) {
         ret = GS_ERROR;
         goto finish;
@@ -160,7 +158,7 @@ static apploader_list_t *apps_create(const struct SERVER_LIST_T *node, PAPP_LIST
         apploader_item_t *item = &result->items[index];
         SDL_memcpy(&item->base, cur, sizeof(APP_LIST));
         item->base.next = NULL;
-        item->fav = pcmanager_is_favorite(node, cur->id);
+        item->fav = pcmanager_node_is_app_favorite(node, cur->id);
         index++;
     }
     SDL_qsort(result->items, result->count, sizeof(apploader_item_t),

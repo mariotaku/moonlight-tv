@@ -20,8 +20,6 @@
 #include "util/font.h"
 #include "util/i18n.h"
 #include "util/user_event.h"
-#include "util/logging.h"
-#include "backend/pcmanager/priv.h"
 
 static void launcher_controller(lv_fragment_t *self, void *args);
 
@@ -59,11 +57,13 @@ static void open_settings(lv_event_t *event);
 
 static void open_help(lv_event_t *event);
 
-static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus);
+static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, bool refocus);
 
 static void set_detail_opened(launcher_controller_t *controller, bool opened);
 
-static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_LIST cur);
+static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const SERVER_LIST *node);
+
+static void pclist_item_deleted(lv_event_t *e);
 
 static const char *server_item_icon(const SERVER_LIST *node);
 
@@ -95,20 +95,20 @@ launcher_controller_t *launcher_instance() {
     return current_instance;
 }
 
-void launcher_select_server(launcher_controller_t *controller, const char *uuid) {
-    PSERVER_LIST node = uuid ? pcmanager_find_by_uuid(pcmanager, uuid) : NULL;
+void launcher_select_server(launcher_controller_t *controller, const uuidstr_t *uuid) {
+    const SERVER_LIST *node = uuid ? pcmanager_node(pcmanager, uuid) : NULL;
     if (!node) {
         set_detail_opened(controller, false);
         select_pc(controller, NULL, false);
         return;
     }
     if (node->state.code == SERVER_STATE_NOT_PAIRED) {
-        pair_dialog_open(node);
+        pair_dialog_open(uuid);
         return;
     }
     set_detail_opened(controller, true);
     if (node->selected) return;
-    select_pc(controller, node, false);
+    select_pc(controller, uuid, false);
 }
 
 static void launcher_controller(lv_fragment_t *self, void *args) {
@@ -146,6 +146,7 @@ static void controller_dtor(lv_fragment_t *self) {
 }
 
 static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
+    LV_UNUSED(view);
     launcher_controller_t *controller = (launcher_controller_t *) self;
     pcmanager_register_listener(pcmanager, &pcmanager_callbacks, controller);
     lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
@@ -163,14 +164,16 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     update_pclist(controller);
 
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+        uuidstr_t uuid;
         if (cur->selected) {
-            select_pc(controller, cur, true);
+            uuidstr_copy_t(&uuid, cur->server->uuid);
+            select_pc(controller, &uuid, true);
             if (controller->first_created) {
                 controller->detail_opened = true;
             }
             continue;
         }
-        pcmanager_request_update(pcmanager, cur->server, NULL, NULL);
+        pcmanager_request_update(pcmanager, &uuid, NULL, NULL);
     }
     controller->pane_initialized = true;
     set_detail_opened(controller, controller->detail_opened);
@@ -187,6 +190,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
 }
 
 static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
+    LV_UNUSED(view);
     current_instance = NULL;
     app_input_set_group(NULL);
     pcmanager_auto_discovery_stop(pcmanager);
@@ -202,11 +206,8 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
 
 static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
     LV_UNUSED(userdata);
-    switch (code) {
-        case USER_SIZE_CHANGED: {
-            lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
-            break;
-        }
+    if (code == USER_SIZE_CHANGED) {
+        lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
     }
     return false;
 }
@@ -227,12 +228,12 @@ void on_pc_added(const pcmanager_resp_t *resp, void *userdata) {
 
 void on_pc_updated(const pcmanager_resp_t *resp, void *userdata) {
     launcher_controller_t *controller = userdata;
-    if (!resp->server) return;
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
-        SERVER_LIST *cur = lv_obj_get_user_data(child);
-        if (resp->server == cur->server) {
-            const char *icon = server_item_icon(cur);
+        const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(child);
+        if (uuidstr_t_equals_t(uuid, &resp->uuid)) {
+            const SERVER_LIST *node = pcmanager_node(pcmanager, &resp->uuid);
+            const char *icon = server_item_icon(node);
             lv_btn_set_icon(child, icon);
             break;
         }
@@ -241,11 +242,10 @@ void on_pc_updated(const pcmanager_resp_t *resp, void *userdata) {
 
 void on_pc_removed(const pcmanager_resp_t *resp, void *userdata) {
     launcher_controller_t *controller = userdata;
-    if (!resp->server) return;
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
-        SERVER_LIST *cur = lv_obj_get_user_data(child);
-        if (resp->server == cur->server) {
+        const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(child);
+        if (uuidstr_t_equals_t(uuid, &resp->uuid)) {
             lv_obj_del(child);
             break;
         }
@@ -257,33 +257,37 @@ static void cb_pc_selected(lv_event_t *event) {
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
     launcher_controller_t *controller = lv_event_get_user_data(event);
     if (lv_fragment_manager_get_top(app_uimanager) != (void *) controller) return;
-    PSERVER_LIST selected = lv_obj_get_user_data(target);
-    launcher_select_server(controller, selected->server->uuid);
+    const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(target);
+    launcher_select_server(controller, uuid);
 }
 
 static void cb_pc_longpress(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
-    PSERVER_LIST selected = lv_obj_get_user_data(target);
-    lv_fragment_t *fragment = lv_fragment_create(&server_menu_class, selected);
+    const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(target);
+    lv_fragment_t *fragment = lv_fragment_create(&server_menu_class, (void *) uuid);
     lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
     lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
-static void select_pc(launcher_controller_t *controller, PSERVER_LIST selected, bool refocus) {
-    if (selected) {
-        lv_fragment_t *fragment = lv_fragment_create(&apps_controller_class, selected);
+static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, bool refocus) {
+    if (uuid) {
+        lv_fragment_t *fragment = lv_fragment_create(&apps_controller_class, (void *) uuid);
         lv_fragment_manager_replace(controller->base.child_manager, fragment, &controller->detail);
     } else {
         lv_fragment_manager_pop(controller->base.child_manager);
     }
     for (int i = 0, pclen = (int) lv_obj_get_child_cnt(controller->pclist); i < pclen; i++) {
         lv_obj_t *pcitem = lv_obj_get_child(controller->pclist, i);
-        PSERVER_LIST cur = (PSERVER_LIST) lv_obj_get_user_data(pcitem);
-        cur->selected = cur == selected;
-        pcitem_set_selected(pcitem, cur->selected);
-        if (refocus && cur->selected) {
-            lv_group_focus_obj(pcitem);
+        const uuidstr_t *cur_id = (const uuidstr_t *) lv_obj_get_user_data(pcitem);
+        if (uuidstr_t_equals_t(cur_id, uuid)) {
+            pcmanager_select(pcmanager, uuid);
+            pcitem_set_selected(pcitem, true);
+            if (refocus) {
+                lv_group_focus_obj(pcitem);
+            }
+        } else {
+            pcitem_set_selected(pcitem, false);
         }
     }
 }
@@ -307,9 +311,9 @@ static void pcitem_set_selected(lv_obj_t *pcitem, bool selected) {
     }
 }
 
-static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_LIST cur) {
-    const SERVER_DATA *server = cur->server;
-    const char *icon = server_item_icon(cur);
+static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const SERVER_LIST *node) {
+    const SERVER_DATA *server = node->server;
+    const char *icon = server_item_icon(node);
     lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
     lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(pcitem, &controller->nav_host_style, 0);
@@ -321,11 +325,23 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, PSERVER_L
     lv_obj_set_style_outline_color(btn_img, lv_color_white(), LV_STATE_CHECKED);
     lv_obj_set_style_outline_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
     lv_obj_set_style_outline_width(btn_img, LV_DPX(2), LV_STATE_CHECKED);
-    lv_obj_set_user_data(pcitem, cur);
+    uuidstr_t *uuid = SDL_malloc(sizeof(uuidstr_t));
+    uuidstr_copy_t(uuid, node->server->uuid);
+    lv_obj_set_user_data(pcitem, uuid);
+    lv_obj_add_event_cb(pcitem, pclist_item_deleted, LV_EVENT_DELETE, NULL);
     return pcitem;
 }
 
+static void pclist_item_deleted(lv_event_t *e) {
+    lv_obj_t *target = lv_event_get_target(e);
+    void *uuid = lv_obj_get_user_data(target);
+    SDL_free(uuid);
+}
+
 static const char *server_item_icon(const SERVER_LIST *node) {
+    if (node == NULL) {
+        return MAT_SYMBOL_WARNING;
+    }
     switch (node->state.code) {
         case SERVER_STATE_NONE:
         case SERVER_STATE_QUERYING:
@@ -419,20 +435,21 @@ static void set_detail_opened(launcher_controller_t *controller, bool opened) {
 }
 
 static void open_manual_add(lv_event_t *event) {
-    launcher_controller_t *controller = lv_event_get_user_data(event);
+    LV_UNUSED(event);
     lv_fragment_t *fragment = lv_fragment_create(&add_dialog_class, NULL);
     lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
     lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
 static void open_settings(lv_event_t *event) {
-    launcher_controller_t *launcher = event->user_data;
+    LV_UNUSED(event);
     lv_fragment_t *fragment = lv_fragment_create(&settings_controller_cls, NULL);
     lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(app_uimanager));
     lv_fragment_manager_push(app_uimanager, fragment, container);
 }
 
 static void show_decoder_error(launcher_controller_t *controller) {
+    LV_UNUSED(controller);
     static const char *btn_txts[] = {translatable("OK"), ""};
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
@@ -457,5 +474,6 @@ static void decoder_error_cb(lv_event_t *e) {
 }
 
 static void open_help(lv_event_t *event) {
+    LV_UNUSED(event);
     help_dialog_create();
 }

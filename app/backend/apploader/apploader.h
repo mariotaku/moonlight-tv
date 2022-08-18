@@ -4,6 +4,7 @@
 #include "client.h"
 #include "util/refcounter.h"
 #include "util/executor.h"
+#include "util/uuidstr.h"
 
 typedef struct apploader_task_t apploader_task_t;
 
@@ -35,7 +36,7 @@ typedef struct apploader_cb_t {
 
 typedef void (*apploader_cb)(apploader_t *loader, void *userdata);
 
-apploader_t *apploader_create(const SERVER_LIST *node, const apploader_cb_t *cb, void *userdata);
+apploader_t *apploader_create(const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata);
 
 void apploader_destroy(apploader_t *loader);
 

@@ -131,7 +131,6 @@ static void input_changed_cb(lv_event_t *event) {
 }
 
 static void input_key_cb(lv_event_t *event) {
-    add_dialog_controller_t *controller = lv_event_get_user_data(event);
     switch (lv_event_get_key(event)) {
         case LV_KEY_UP: {
             lv_group_t *group = lv_obj_get_group(lv_event_get_target(event));

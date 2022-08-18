@@ -8,11 +8,10 @@
 #include "util/i18n.h"
 #include "backend/pcmanager/pclist.h"
 #include "lvgl/util/lv_app_utils.h"
-#include "backend/pcmanager/priv.h"
 
 typedef struct context_menu_t {
     lv_fragment_t base;
-    char *uuid;
+    uuidstr_t uuid;
     bool single_clicked;
 } context_menu_t;
 
@@ -36,25 +35,25 @@ static void info_action_cb(lv_event_t *e);
 
 const lv_fragment_class_t server_menu_class = {
         .constructor_cb = menu_ctor,
+        .destructor_cb = menu_dtor,
         .create_obj_cb = create_obj,
         .instance_size = sizeof(context_menu_t)
 };
 
 static void menu_ctor(lv_fragment_t *self, void *arg) {
     context_menu_t *controller = (context_menu_t *) self;
-    controller->uuid = strdup(((SERVER_LIST *) arg)->server->uuid);
+    controller->uuid = *(const uuidstr_t *) arg;
 }
 
 static void menu_dtor(lv_fragment_t *self) {
-    context_menu_t *controller = (context_menu_t *) self;
-    free(controller->uuid);
+    LV_UNUSED(self);
 }
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     context_menu_t *controller = (context_menu_t *) self;
 
-    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, controller->uuid);
+    const SERVER_LIST *node = pcmanager_node(pcmanager, &controller->uuid);
     if (!node) {
         lv_obj_t *empty = lv_msgbox_create(NULL, "Unknown", NULL, NULL, false);
         lv_msgbox_close_async(empty);
@@ -104,7 +103,7 @@ static void context_menu_click_cb(lv_event_t *e) {
     if (target->parent != current_target) return;
     void *target_userdata = lv_obj_get_user_data(target);
     lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
-    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, controller->uuid);
+    const SERVER_LIST *node = pcmanager_node(pcmanager, &controller->uuid);
     lv_msgbox_close(mbox);
     if (!node) {
         return;

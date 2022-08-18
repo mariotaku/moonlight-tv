@@ -2,6 +2,7 @@
 
 #include "../pcmanager.h"
 #include "util/executor.h"
+#include "util/uuidstr.h"
 #include <SDL.h>
 
 typedef struct pcmanager_listener_list pcmanager_listener_list;
@@ -27,7 +28,7 @@ struct pcmanager_t {
 
 typedef struct CM_PIN_REQUEST_T {
     pcmanager_t *manager;
-    SERVER_DATA *server;
+    uuidstr_t uuid;
     void *arg1;
     void *userdata;
 
@@ -72,5 +73,5 @@ void pcmanager_list_unlock(pcmanager_t *manager);
 int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
                             void *userdata);
 
-cm_request_t *cm_request_new(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
+cm_request_t *cm_request_new(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                              void *userdata);

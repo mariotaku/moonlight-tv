@@ -22,7 +22,7 @@ static void pcmanager_send_wol_cleanup(cm_request_t *req);
 
 static bool wol_build_packet(const char *macstr, uint8_t *packet);
 
-bool pcmanager_send_wol(pcmanager_t *manager, const SERVER_DATA *server, pcmanager_callback_t callback,
+bool pcmanager_send_wol(pcmanager_t *manager, const char *uuid, pcmanager_callback_t callback,
                         void *userdata) {
     cm_request_t *req = cm_request_new(manager, serverdata_clone(server), callback, userdata);
     executor_execute(manager->executor, (executor_action_cb) pcmanager_send_wol_action,

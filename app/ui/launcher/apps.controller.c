@@ -140,8 +140,8 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     controller->apploader_cb.start = appload_started;
     controller->apploader_cb.data = appload_loaded;
     controller->apploader_cb.error = appload_errored;
-    controller->node = args;
-    controller->apploader = apploader_create(controller->node, &controller->apploader_cb, controller);
+    controller->uuid = *(const uuidstr_t *) args;
+    controller->apploader = apploader_create(&controller->uuid, &controller->apploader_cb, controller);
 
     appitem_style_init(&controller->appitem_style);
 }
@@ -225,10 +225,12 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     update_grid_config(controller);
     lv_obj_set_user_data(controller->applist, controller);
 
-    if (controller->node->state.code != SERVER_STATE_QUERYING) {
-        pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
-    } else if (controller->node->state.code == SERVER_STATE_AVAILABLE) {
-        apploader_load(controller->apploader);
+    const SERVER_STATE *state = pcmanager_state(pcmanager, controller->uuid);
+    if (state->code != SERVER_STATE_QUERYING) {
+        pcmanager_request_update(pcmanager, controller->uuid, host_info_cb, controller);
+        if (state->code == SERVER_STATE_AVAILABLE) {
+            apploader_load(controller->apploader);
+        }
     }
     current_instance = controller;
     update_view_state(controller);
@@ -284,14 +286,14 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
-    if (resp->server != controller->node->server) return;
+    if (!uuidstr_equals(resp->server->uuid, controller->uuid)) return;
     apploader_load(controller->apploader);
     update_view_state(controller);
 }
 
 static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (resp->server != controller->node->server) return;
+    if (!uuidstr_equals(resp->server->uuid, controller->uuid)) return;
     lv_fragment_del((lv_fragment_t *) controller);
 }
 
@@ -310,8 +312,10 @@ static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
-    if (controller->node->state.code & SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
-    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
+    const SERVER_STATE *state = pcmanager_state(pcmanager, controller->uuid);
+    SDL_assert(state != NULL);
+    if (state->code & SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
+    pcmanager_request_update(pcmanager, controller->uuid, host_info_cb, controller);
 }
 
 static void update_view_state(apps_fragment_t *controller) {
@@ -319,12 +323,12 @@ static void update_view_state(apps_fragment_t *controller) {
     if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) return;
     launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
-    PSERVER_LIST node = controller->node;
-    LV_ASSERT(node);
     lv_obj_t *applist = controller->applist;
     lv_obj_t *appload = controller->appload;
     lv_obj_t *apperror = controller->apperror;
-    switch (node->state.code) {
+    const SERVER_STATE *state = pcmanager_state(pcmanager, controller->uuid);
+    SDL_assert(state != NULL);
+    switch (state->code) {
         case SERVER_STATE_NONE:
         case SERVER_STATE_QUERYING: {
             // waiting to load server info
@@ -403,7 +407,7 @@ static void update_view_state(apps_fragment_t *controller) {
             lv_label_set_text_static(controller->errortitle, locstr("Host error"));
             lv_label_set_text_static(controller->errorhint, locstr(
                     "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
-            lv_label_set_text_static(controller->errordetail, node->state.error.errmsg);
+            lv_label_set_text_static(controller->errordetail, state->error.errmsg);
             set_actions(controller, action_labels_error, action_callbacks_error);
 
             lv_group_focus_obj(controller->actions);
@@ -461,11 +465,12 @@ static void appload_errored(int code, const char *error, void *userdata) {
 static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_item_t *app) {
     appitem_viewholder_t *holder = lv_obj_get_user_data(item);
 
-    coverloader_display(controller->coverloader, controller->node, app->base.id, item,
+    coverloader_display(controller->coverloader, controller->uuid, app->base.id, item,
                         controller->col_width, controller->col_height);
     lv_label_set_text(holder->title, app->base.name);
 
-    if (controller->node->server->currentGame == app->base.id) {
+    int appid = pcmanager_server_current_app(pcmanager, controller->uuid);
+    if (appid == app->base.id) {
         lv_obj_clear_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
@@ -481,8 +486,9 @@ static void item_click_cb(lv_event_t *event) {
         return;
     }
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
-    if (controller->node->server->currentGame) {
-        if (holder->app->base.id == controller->node->server->currentGame) {
+    int appid = pcmanager_server_current_app(pcmanager, controller->uuid);
+    if (appid != 0) {
+        if (holder->app->base.id == appid) {
             open_context_menu(controller, holder->app);
         }
         return;
@@ -514,13 +520,13 @@ static void launcher_launch_game(apps_fragment_t *controller, const apploader_it
 }
 
 static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_item_t *app) {
-    pcmanager_favorite_app(controller->node, app->base.id, !app->fav);
+    pcmanager_favorite_app(pcmanager, controller->uuid, app->base.id, !app->fav);
     apploader_load(controller->apploader);
 }
 
 static void launcher_quit_game(apps_fragment_t *controller) {
     controller->quit_progress = progress_dialog_create(locstr("Quitting game..."));
-    pcmanager_quitapp(pcmanager, controller->node->server, quitgame_cb, controller);
+    pcmanager_quitapp(pcmanager, controller->uuid, quitgame_cb, controller);
 }
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
@@ -599,13 +605,13 @@ static void actions_click_cb(lv_event_t *event) {
 static void action_cb_wol(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
     LV_UNUSED(index);
     lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
-    pcmanager_send_wol(pcmanager, controller->node->server, send_wol_cb, controller);
+    pcmanager_send_wol(pcmanager, controller->uuid, send_wol_cb, controller);
 }
 
 static void action_cb_host_reload(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
     LV_UNUSED(index);
     lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
-    pcmanager_request_update(pcmanager, controller->node->server, host_info_cb, controller);
+    pcmanager_request_update(pcmanager, controller->uuid, host_info_cb, controller);
 }
 
 static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {

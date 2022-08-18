@@ -26,6 +26,7 @@
 #define LINKEDLIST_DOUBLE 1
 
 #include "util/linked_list.h"
+#include "util/uuidstr.h"
 
 #undef LINKEDLIST_DOUBLE
 #undef LINKEDLIST_TYPE
@@ -93,9 +94,13 @@ void pcmanager_list_unlock(pcmanager_t *manager) {
     SDL_UnlockMutex(manager->servers_lock);
 }
 
-void pcmanager_favorite_app(SERVER_LIST *node, int appid, bool state) {
+bool pcmanager_node_is_app_favorite(const SERVER_LIST *node, int appid) {
+    return favlist_find_by(node->favs, &appid, favlist_find_id) != NULL;
+}
+
+void pcmanager_node_set_app_favorite(SERVER_LIST *node, int appid, bool favorite) {
     appid_list_t *existing = favlist_find_by(node->favs, &appid, favlist_find_id);
-    if (state) {
+    if (favorite) {
         if (existing) return;
         appid_list_t *item = favlist_new();
         item->id = appid;
@@ -103,10 +108,6 @@ void pcmanager_favorite_app(SERVER_LIST *node, int appid, bool state) {
     } else if (existing) {
         node->favs = favlist_remove(node->favs, existing);
     }
-}
-
-bool pcmanager_is_favorite(const SERVER_LIST *node, int appid) {
-    return favlist_find_by(node->favs, &appid, favlist_find_id) != NULL;
 }
 
 void pclist_node_apply(PSERVER_LIST node, pcmanager_resp_t *resp) {
@@ -133,7 +134,7 @@ void serverlist_nodefree(PSERVER_LIST node) {
 
 
 PSERVER_LIST pcmanager_find_by_address(pcmanager_t *manager, const char *srvaddr) {
-    SDL_assert(srvaddr);
+    SDL_assert(srvaddr != NULL);
     return serverlist_find_by(manager->servers, srvaddr, serverlist_find_address);
 }
 
@@ -155,7 +156,7 @@ static int serverlist_find_uuid(PSERVER_LIST other, const void *v) {
     SDL_assert(other);
     SDL_assert(other->server);
     SDL_assert(other->server->serverInfo.address);
-    return SDL_strcasecmp(other->server->uuid, (const char *) v);
+    return !uuidstr_equals(other->server->uuid, (const char *) v);
 }
 
 static int favlist_find_id(appid_list_t *other, const void *v) {

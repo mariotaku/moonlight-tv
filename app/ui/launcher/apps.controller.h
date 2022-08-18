@@ -3,6 +3,7 @@
 #include "lvgl.h"
 #include "coverloader.h"
 #include "backend/apploader/apploader.h"
+#include "util/uuidstr.h"
 
 typedef struct {
     lv_style_t cover;
@@ -16,9 +17,10 @@ typedef struct {
 
 typedef struct {
     lv_fragment_t base;
+    uuidstr_t uuid;
+
     apploader_t *apploader;
     coverloader_t *coverloader;
-    PSERVER_LIST node;
     apploader_cb_t apploader_cb;
 
     apploader_list_t *apploader_apps;

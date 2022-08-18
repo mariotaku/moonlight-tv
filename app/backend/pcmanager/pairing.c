@@ -17,8 +17,11 @@ static void worker_cleanup(cm_request_t *req, int cancelled);
 
 int manual_add_worker(cm_request_t *req);
 
-bool pcmanager_pair(pcmanager_t *manager, SERVER_DATA *server, char *pin, pcmanager_callback_t callback,
+bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcmanager_callback_t callback,
                     void *userdata) {
+    SDL_assert(manager != NULL);
+    SDL_assert(uuid != NULL);
+    SDL_assert(pin != NULL);
     if (server->paired) return false;
     if (server->currentGame) {
         applog_i("PCManager", "The server %s is in game", server->hostname);
@@ -42,6 +45,8 @@ bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_c
 
 int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refresh, pcmanager_callback_t callback,
                             void *userdata) {
+    SDL_assert(manager != NULL);
+    SDL_assert(address != NULL);
     char *address_dup = strdup(address);
     pcmanager_list_lock(manager);
     PSERVER_LIST existing = pcmanager_find_by_address(manager, address_dup);

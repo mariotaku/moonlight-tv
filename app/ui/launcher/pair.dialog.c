@@ -9,7 +9,7 @@
 
 typedef struct {
     lv_fragment_t base;
-    char *uuid;
+    uuidstr_t uuid;
     char pin[8];
 
     lv_obj_t *message_label;
@@ -34,23 +34,23 @@ const lv_fragment_class_t pair_dialog_class = {
         .instance_size = sizeof(pair_dialog_controller_t),
 };
 
-void pair_dialog_open(const SERVER_LIST *node) {
-    lv_fragment_t *fragment = lv_fragment_create(&pair_dialog_class, (void *) node);
+void pair_dialog_open(const uuidstr_t *uuid) {
+    lv_fragment_t *fragment = lv_fragment_create(&pair_dialog_class, (void *) uuid);
     lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
     lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
 static void pair_controller_ctor(lv_fragment_t *self, void *args) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
-    controller->uuid = strdup(((const SERVER_LIST *) args)->server->uuid);
+    controller->uuid = *(const uuidstr_t *) args;
 }
 
 static void pair_controller_dtor(lv_fragment_t *self) {
-    pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
-    free(controller->uuid);
+    LV_UNUSED(self);
 }
 
 static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
+    LV_UNUSED(parent);
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) self;
     static const char *btn_texts[] = {translatable("OK"), ""};
     lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Pairing"), NULL, btn_texts, false);
@@ -58,8 +58,7 @@ static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
     controller->btns = lv_msgbox_get_btns(dialog);
     lv_obj_add_flag(controller->btns, LV_OBJ_FLAG_HIDDEN);
 
-    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, controller->uuid);
-    if (!node || !pcmanager_pair(pcmanager, node->server, controller->pin, pair_result_cb, controller)) {
+    if (!pcmanager_pair(pcmanager, &controller->uuid, controller->pin, pair_result_cb, controller)) {
         lv_msgbox_close_async(dialog);
         return dialog;
     }
@@ -90,7 +89,7 @@ static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata) {
     if (resp->result.code == GS_OK) {
         launcher_controller_t *launcher_controller = launcher_instance();
         if (launcher_controller) {
-            launcher_select_server(launcher_controller, controller->uuid);
+            launcher_select_server(launcher_controller, (const char *) &controller->uuid);
         }
         lv_msgbox_close_async(controller->base.obj);
         return;

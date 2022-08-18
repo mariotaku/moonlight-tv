@@ -30,32 +30,70 @@ void pcmanager_destroy(pcmanager_t *manager) {
     SDL_free(manager);
 }
 
-cm_request_t *cm_request_new(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
+cm_request_t *cm_request_new(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                              void *userdata) {
     cm_request_t *req = malloc(sizeof(cm_request_t));
     req->manager = manager;
-    req->server = server;
+    req->uuid = *uuid;
     req->callback = callback;
     req->userdata = userdata;
     return req;
 }
 
-bool pcmanager_quitapp(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback, void *userdata) {
-    if (server->currentGame == 0) {
+bool pcmanager_quitapp(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback, void *userdata) {
+    if (pcmanager_server_current_app(pcmanager, uuid) == 0) {
         return false;
     }
-    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
+    cm_request_t *req = cm_request_new(manager, uuid, callback, userdata);
     executor_execute(manager->executor, (executor_action_cb) quit_app_worker, (executor_cleanup_cb) SDL_free, req);
     return true;
 }
 
-void pcmanager_request_update(pcmanager_t *manager, SERVER_DATA *server, pcmanager_callback_t callback,
+void pcmanager_request_update(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                               void *userdata) {
-    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
+    cm_request_t *req = cm_request_new(manager, uuid, callback, userdata);
     executor_execute(manager->executor, (executor_action_cb) request_update_worker, (executor_cleanup_cb) SDL_free,
                      req);
 }
 
+void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int appid, bool favorite) {
+    pcmanager_list_lock(manager);
+    SERVER_LIST *node = pcmanager_node(manager, uuid);
+    if (!node) {
+        goto unlock;
+    }
+    pcmanager_node_set_app_favorite(node, appid, favorite);
+    unlock:
+    pcmanager_list_unlock(manager);
+}
+
+bool pcmanager_is_favorite(pcmanager_t *manager, const uuidstr_t *uuid, int appid) {
+    const SERVER_LIST *node = pcmanager_node(manager, uuid);
+    if (!node) {
+        return false;
+    }
+    return pcmanager_node_is_app_favorite(node, appid);
+}
+
+const SERVER_LIST *pcmanager_node(pcmanager_t *manager, const uuidstr_t *uuid) {
+    return pcmanager_find_by_uuid(manager, (const char *) uuid);
+}
+
+const SERVER_STATE *pcmanager_state(pcmanager_t *manager, const uuidstr_t *uuid) {
+    const SERVER_LIST *node = pcmanager_node(manager, uuid);
+    if (!node) {
+        return NULL;
+    }
+    return &node->state;
+}
+
+int pcmanager_server_current_app(pcmanager_t *manager, const uuidstr_t *uuid) {
+    const SERVER_LIST *node = pcmanager_node(manager, uuid);
+    if (!node) {
+        return 0;
+    }
+    return node->server->currentGame;
+}
 
 void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg) {
     state->code = SERVER_STATE_ERROR;
@@ -80,7 +118,8 @@ static void request_update_worker(cm_request_t *req) {
 static void quit_app_worker(cm_request_t *req) {
     GS_CLIENT client = app_gs_client_new();
     pcmanager_list_lock(req->manager);
-    int ret = gs_quit_app(client, (SERVER_DATA *) req->server);
+    PSERVER_LIST node = pcmanager_find_by_uuid(req->manager, (const char *) &req->uuid);
+    int ret = gs_quit_app(client, node->server);
     pcmanager_list_unlock(req->manager);
     pcmanager_resp_t *resp = serverinfo_resp_new();
     resp->known = true;
