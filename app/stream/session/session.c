@@ -67,11 +67,15 @@ bool streaming_running() {
     return streaming_status == STREAMING_STREAMING;
 }
 
-int streaming_begin(const SERVER_DATA *server, const APP_LIST *app) {
+int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
     if (session_active != NULL) {
         return -1;
     }
-    PSERVER_DATA server_clone = serverdata_clone(server);
+    const SERVER_LIST *node = pcmanager_node(pcmanager, uuid);
+    if (node == NULL) {
+        return -1;
+    }
+    PSERVER_DATA server_clone = serverdata_clone(node->server);
     PCONFIGURATION config = settings_load();
 
     if (config->stream.bitrate < 0) {
@@ -126,11 +130,11 @@ void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason) {
     session->interrupted = true;
     if (reason >= STREAMING_INTERRUPT_ERROR) {
         switch (reason) {
-            case STREAMING_INTERRUPT_NETWORK:
-                streaming_error(reason, "Network error happened");
-                break;
             case STREAMING_INTERRUPT_WATCHDOG:
                 streaming_error(reason, "Stream stalled");
+                break;
+            case STREAMING_INTERRUPT_NETWORK:
+                streaming_error(reason, "Network error happened");
                 break;
             case STREAMING_INTERRUPT_DECODER:
                 streaming_error(reason, "Decoder reported error");

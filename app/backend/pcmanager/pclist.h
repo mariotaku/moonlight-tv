@@ -19,3 +19,7 @@ void pclist_upsert(pcmanager_t *manager, pcmanager_resp_t *resp);
 void pclist_remove(pcmanager_t *manager, SERVER_DATA *server);
 
 void pclist_free(pcmanager_t *manager);
+
+void pclist_lock(pcmanager_t *manager);
+
+void pclist_unlock(pcmanager_t *manager);

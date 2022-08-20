@@ -11,7 +11,7 @@ static int pin_random(int min, int max);
 
 static void notify_querying(upsert_args_t *args);
 
-static int pair_worker(cm_request_t *req);
+static void pair_worker(cm_request_t *req);
 
 static void worker_cleanup(cm_request_t *req, int cancelled);
 
@@ -22,13 +22,18 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
     SDL_assert(manager != NULL);
     SDL_assert(uuid != NULL);
     SDL_assert(pin != NULL);
+    PSERVER_LIST node = pcmanager_find_by_uuid(manager, (const char *) uuid);
+    if (node == NULL) {
+        return false;
+    }
+    SERVER_DATA *server = node->server;
     if (server->paired) return false;
     if (server->currentGame) {
         applog_i("PCManager", "The server %s is in game", server->hostname);
     }
     int pin_num = pin_random(0, 9999);
     SDL_snprintf(pin, 5, "%04d", pin_num);
-    cm_request_t *req = cm_request_new(manager, server, callback, userdata);
+    cm_request_t *req = cm_request_new(manager, uuid, callback, userdata);
     req->arg1 = strdup(pin);
     executor_execute(manager->executor, (executor_action_cb) pair_worker,
                      (executor_cleanup_cb) worker_cleanup, req);
@@ -48,18 +53,18 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     SDL_assert(manager != NULL);
     SDL_assert(address != NULL);
     char *address_dup = strdup(address);
-    pcmanager_list_lock(manager);
+    pclist_lock(manager);
     PSERVER_LIST existing = pcmanager_find_by_address(manager, address_dup);
     int ret = 0;
     if (existing) {
         SERVER_STATE_ENUM state = existing->state.code;
         if (state == SERVER_STATE_QUERYING) {
             applog_v("PCManager", "Skip upsert for querying node. address: %s", address_dup);
-            pcmanager_list_unlock(manager);
+            pclist_unlock(manager);
             goto done;
         }
         if (!refresh && state & SERVER_STATE_ONLINE) {
-            pcmanager_list_unlock(manager);
+            pclist_unlock(manager);
             goto done;
         }
         existing->state.code = SERVER_STATE_QUERYING;
@@ -72,23 +77,23 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
         upsert_args_t args = {.manager = manager, .resp = &resp};
         bus_pushaction_sync((bus_actionfunc) notify_querying, &args);
     }
-    pcmanager_list_unlock(manager);
+    pclist_unlock(manager);
     PSERVER_DATA server = serverdata_new();
     GS_CLIENT client = app_gs_client_new();
     ret = gs_init(client, server, address_dup, app_configuration->unsupported);
     address_dup = NULL;
     gs_destroy(client);
     if (existing) {
-        pcmanager_list_lock(manager);
+        pclist_lock(manager);
         bool should_remove = ret == GS_OK && SDL_strcasecmp(existing->server->uuid, server->uuid) != 0;
-        pcmanager_list_unlock(manager);
+        pclist_unlock(manager);
         if (should_remove) {
             pclist_remove(manager, existing->server);
             existing = NULL;
         } else {
-            pcmanager_list_lock(manager);
+            pclist_lock(manager);
             existing->state.code = SERVER_STATE_NONE;
-            pcmanager_list_unlock(manager);
+            pclist_unlock(manager);
         }
     }
     PPCMANAGER_RESP resp = serverinfo_resp_new();
@@ -114,10 +119,11 @@ int pcmanager_upsert_worker(pcmanager_t *manager, const char *address, bool refr
     return ret;
 }
 
-int pair_worker(cm_request_t *req) {
+void pair_worker(cm_request_t *req) {
     pcmanager_t *manager = req->manager;
+    SERVER_LIST *node = pcmanager_find_by_uuid(manager, (const char *) &req->uuid);
     GS_CLIENT client = app_gs_client_new();
-    PSERVER_DATA server = serverdata_clone(req->server);
+    PSERVER_DATA server = serverdata_clone(node->server);
     gs_set_timeout(client, 60);
     int ret = gs_pair(client, server, req->arg1);
     gs_destroy(client);
@@ -133,7 +139,6 @@ int pair_worker(cm_request_t *req) {
         serverdata_free(server);
     }
     pcmanager_worker_finalize(resp, req->callback, req->userdata);
-    return 0;
 }
 
 static void worker_cleanup(cm_request_t *req, int cancelled) {

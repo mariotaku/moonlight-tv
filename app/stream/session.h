@@ -59,7 +59,7 @@ void streaming_destroy();
 
 bool streaming_running();
 
-int streaming_begin(const SERVER_DATA *server, const APP_LIST *app);
+int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app);
 
 void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason);
 

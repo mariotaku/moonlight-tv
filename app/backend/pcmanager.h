@@ -75,9 +75,9 @@ void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int app
 
 bool pcmanager_is_favorite(pcmanager_t *manager, const uuidstr_t *uuid, int appid);
 
-const SERVER_LIST *pcmanager_node(pcmanager_t *manager, const uuidstr_t *uuid);
+void pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid);
 
-const SERVER_LIST *pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid);
+const SERVER_LIST *pcmanager_node(pcmanager_t *manager, const uuidstr_t *uuid);
 
 const SERVER_STATE *pcmanager_state(pcmanager_t *manager, const uuidstr_t *uuid);
 

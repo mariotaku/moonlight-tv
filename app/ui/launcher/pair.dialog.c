@@ -89,7 +89,7 @@ static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata) {
     if (resp->result.code == GS_OK) {
         launcher_controller_t *launcher_controller = launcher_instance();
         if (launcher_controller) {
-            launcher_select_server(launcher_controller, (const char *) &controller->uuid);
+            launcher_select_server(launcher_controller, &controller->uuid);
         }
         lv_msgbox_close_async(controller->base.obj);
         return;

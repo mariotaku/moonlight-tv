@@ -89,9 +89,9 @@ bool streaming_refresh_stats() {
 
     if (dst->decodedFrames) {
         lv_label_set_text_fmt(controller->stats_items.drop_rate, "%.2f%%",
-                              (float) dst->networkDroppedFrames / dst->totalFrames * 100);
+                              (float) dst->networkDroppedFrames / (float) dst->totalFrames * 100);
         lv_label_set_text_fmt(controller->stats_items.decode_time, "%.2f ms",
-                              (float) dst->totalDecodeTime / dst->decodedFrames);
+                              (float) dst->totalDecodeTime / (float) dst->decodedFrames);
     } else {
         lv_label_set_text(controller->stats_items.drop_rate, "-");
         lv_label_set_text_fmt(controller->stats_items.decode_time, "-");
@@ -119,7 +119,7 @@ static void constructor(lv_fragment_t *self, void *args) {
     streaming_styles_init(controller);
 
     const streaming_scene_arg_t *req = (streaming_scene_arg_t *) args;
-    streaming_begin(req->server, req->app);
+    streaming_begin(&req->uuid, &req->app);
 }
 
 static void controller_dtor(lv_fragment_t *self) {
@@ -213,6 +213,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 }
 
 static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
+    LV_UNUSED(view);
     streaming_controller_t *controller = (streaming_controller_t *) self;
     if (controller->notice) {
         lv_obj_del(controller->notice);
@@ -225,18 +226,22 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
 }
 
 static void exit_streaming(lv_event_t *event) {
+    LV_UNUSED(event);
     streaming_interrupt(true, STREAMING_INTERRUPT_USER);
 }
 
 static void suspend_streaming(lv_event_t *event) {
+    LV_UNUSED(event);
     streaming_interrupt(false, STREAMING_INTERRUPT_USER);
 }
 
 static void open_keyboard(lv_event_t *event) {
+    LV_UNUSED(event);
     app_start_text_input(0, 0, ui_display_width, ui_display_height);
 }
 
 static void toggle_vmouse(lv_event_t *event) {
+    LV_UNUSED(event);
     absinput_set_virtual_mouse(!absinput_get_virtual_mouse());
 }
 

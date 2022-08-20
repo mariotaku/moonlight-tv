@@ -86,11 +86,11 @@ void pclist_free(pcmanager_t *manager) {
 }
 
 
-void pcmanager_list_lock(pcmanager_t *manager) {
+void pclist_lock(pcmanager_t *manager) {
     SDL_LockMutex(manager->servers_lock);
 }
 
-void pcmanager_list_unlock(pcmanager_t *manager) {
+void pclist_unlock(pcmanager_t *manager) {
     SDL_UnlockMutex(manager->servers_lock);
 }
 
@@ -156,7 +156,7 @@ static int serverlist_find_uuid(PSERVER_LIST other, const void *v) {
     SDL_assert(other);
     SDL_assert(other->server);
     SDL_assert(other->server->serverInfo.address);
-    return !uuidstr_equals(other->server->uuid, (const char *) v);
+    return !uuidstr_strequals(other->server->uuid, (const char *) v);
 }
 
 static int favlist_find_id(appid_list_t *other, const void *v) {
@@ -166,7 +166,7 @@ static int favlist_find_id(appid_list_t *other, const void *v) {
 static void upsert_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;
     pcmanager_resp_t *resp = args->resp;
-    pcmanager_list_lock(manager);
+    pclist_lock(manager);
     SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_find_uuid);
     bool updated = node != NULL;
     if (!node) {
@@ -174,18 +174,18 @@ static void upsert_perform(upsert_args_t *args) {
         manager->servers = serverlist_append(manager->servers, node);
     }
     pclist_node_apply(node, resp);
-    pcmanager_list_unlock(manager);
+    pclist_unlock(manager);
     pcmanager_listeners_notify(manager, resp, updated ? PCMANAGER_NOTIFY_UPDATED : PCMANAGER_NOTIFY_ADDED);
 }
 
 static void remove_perform(upsert_args_t *args) {
     pcmanager_t *manager = args->manager;
     const pcmanager_resp_t *resp = args->resp;
-    pcmanager_list_lock(manager);
+    pclist_lock(manager);
     SERVER_LIST *node = serverlist_find_by(manager->servers, resp->server->uuid, serverlist_find_uuid);
     if (!node) return;
     manager->servers = serverlist_remove(manager->servers, node);
-    pcmanager_list_unlock(manager);
+    pclist_unlock(manager);
     pcmanager_listeners_notify(manager, resp, PCMANAGER_NOTIFY_REMOVED);
     serverlist_nodefree(node);
 }

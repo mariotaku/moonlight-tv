@@ -31,8 +31,8 @@ typedef struct {
 
 /* Usually references to SERVER_DATA and APP_LIST should not be kept, but in this struct, they will only be used once */
 typedef struct {
-    const SERVER_DATA *server;
-    const APP_LIST *app;
+    uuidstr_t uuid;
+    APP_LIST app;
 } streaming_scene_arg_t;
 
 extern const lv_fragment_class_t streaming_controller_class;

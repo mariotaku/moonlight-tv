@@ -170,7 +170,6 @@ set(SOURCES
         app/backend/backend_root.c
         app/backend/pcmanager/pcmanager.c
         app/backend/pcmanager/pairing.c
-        app/backend/pcmanager/wol.c
         app/backend/pcmanager/pcmanager_common.c
         app/backend/pcmanager/known_hosts.c
         app/backend/pcmanager/discovery.c
@@ -232,6 +231,7 @@ set(SOURCES
         app/util/ini_ext.c
         app/util/executor.c
         app/util/uuidstr.c
+        app/util/wol.c
         app/app_sdl.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c

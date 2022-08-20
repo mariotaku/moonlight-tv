@@ -166,7 +166,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         uuidstr_t uuid;
         if (cur->selected) {
-            uuidstr_copy_t(&uuid, cur->server->uuid);
+            uuidstr_fromstr(&uuid, cur->server->uuid);
             select_pc(controller, &uuid, true);
             if (controller->first_created) {
                 controller->detail_opened = true;
@@ -326,7 +326,7 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const SER
     lv_obj_set_style_outline_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
     lv_obj_set_style_outline_width(btn_img, LV_DPX(2), LV_STATE_CHECKED);
     uuidstr_t *uuid = SDL_malloc(sizeof(uuidstr_t));
-    uuidstr_copy_t(uuid, node->server->uuid);
+    uuidstr_fromstr(uuid, node->server->uuid);
     lv_obj_set_user_data(pcitem, uuid);
     lv_obj_add_event_cb(pcitem, pclist_item_deleted, LV_EVENT_DELETE, NULL);
     return pcitem;
