@@ -2,6 +2,7 @@
 #include <microdns/microdns.h>
 #include "util/logging.h"
 #include "util/bus.h"
+#include "backend/pcmanager/worker/worker.h"
 
 typedef struct {
     pcmanager_t *manager;
@@ -76,7 +77,9 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
     if (task->stop) return;
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         if (cur->type != RR_A) continue;
-        pcmanager_upsert_worker(task->manager, cur->data.A.addr_str, false, NULL, NULL);
+        worker_context_t *ctx = worker_context_new(task->manager, NULL, NULL, NULL);
+        ctx->arg1 = strdup(cur->data.A.addr_str);
+        pcmanager_worker_queue(task->manager, worker_host_discovered, ctx);
     }
 }
 

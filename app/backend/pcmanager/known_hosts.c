@@ -70,7 +70,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->hostname = hostname;
         server->serverInfo.address = address;
 
-        SERVER_LIST *node = pclist_insert_known(manager, server);
+        pclist_t *node = pclist_insert_known(manager, server);
 
         if (cur->favs) {
             for (appid_list_t *fcur = cur->favs; fcur; fcur = fcur->next) {
@@ -98,7 +98,7 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
     if (!fp) return;
 
     bool selected_set = false;
-    for (PSERVER_LIST cur = manager->servers; cur != NULL; cur = cur->next) {
+    for (pclist_t *cur = manager->servers; cur != NULL; cur = cur->next) {
         if (!cur->server || !cur->known) {
             continue;
         }

@@ -4,13 +4,13 @@ typedef struct executor_t executor_t;
 
 typedef struct executor_task_t executor_task_t;
 
-typedef void (*executor_action_cb)(void *arg);
+typedef int (*executor_action_cb)(void *arg);
 
-typedef void (*executor_cleanup_cb)(void *arg, int cancelled);
+typedef void (*executor_cleanup_cb)(void *arg, int result);
 
-typedef void (*executor_free_cb)(executor_t *executor);
+typedef void (*executor_finalize_cb)(executor_t *executor);
 
-executor_t *executor_create(const char *name, executor_free_cb free_fn);
+executor_t *executor_create(const char *name, executor_finalize_cb finalize_fn);
 
 void executor_destroy(executor_t *executor, int wait);
 

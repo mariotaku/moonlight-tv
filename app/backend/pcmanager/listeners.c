@@ -25,12 +25,12 @@ typedef struct pcmanager_listener_list {
 
 static int pcmanager_callbacks_comparator(pcmanager_listener_list *p1, const void *p2);
 
-void pcmanager_listeners_notify(pcmanager_t *manager, const pcmanager_resp_t *resp, pcmanager_notify_type_t type) {
+void pcmanager_listeners_notify(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_notify_type_t type) {
     assert(SDL_ThreadID() == manager->thread_id);
     for (pcmanager_listener_list *cur = manager->listeners; cur != NULL;) {
         pcmanager_listener_list *next = cur->next;
         const pcmanager_listener_t *l = cur->listener;
-        void (*fn)(const pcmanager_resp_t *, void *) = NULL;
+        pcmanager_listener_fn fn = NULL;
         switch (type) {
             case PCMANAGER_NOTIFY_ADDED:
                 fn = l->added;
@@ -45,7 +45,7 @@ void pcmanager_listeners_notify(pcmanager_t *manager, const pcmanager_resp_t *re
                 break;
         }
         if (fn) {
-            fn(resp, cur->userdata);
+            fn(uuid, cur->userdata);
         }
         cur = next;
     }

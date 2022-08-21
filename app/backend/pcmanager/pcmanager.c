@@ -1,22 +1,12 @@
-#include <errors.h>
-#include <errno.h>
+
 #include "backend/pcmanager.h"
 #include "priv.h"
 
 #include "pclist.h"
 #include "app.h"
-#include "util/logging.h"
-#include "util/wol.h"
-
-static void request_update_worker(cm_request_t *req);
-
-static void quit_app_worker(cm_request_t *req);
+#include "backend/pcmanager/worker/worker.h"
 
 static void pcmanager_free(executor_t *executor);
-
-static void wol_worker(cm_request_t *req);
-
-static void wol_worker_cleanup(cm_request_t *req);
 
 pcmanager_t *pcmanager_new() {
     pcmanager_t *manager = SDL_calloc(1, sizeof(pcmanager_t));
@@ -37,35 +27,24 @@ void pcmanager_destroy(pcmanager_t *manager) {
     SDL_free(manager);
 }
 
-cm_request_t *cm_request_new(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
-                             void *userdata) {
-    cm_request_t *req = malloc(sizeof(cm_request_t));
-    req->manager = manager;
-    req->uuid = *uuid;
-    req->callback = callback;
-    req->userdata = userdata;
-    return req;
-}
-
 bool pcmanager_quitapp(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback, void *userdata) {
     if (pcmanager_server_current_app(pcmanager, uuid) == 0) {
         return false;
     }
-    cm_request_t *req = cm_request_new(manager, uuid, callback, userdata);
-    executor_execute(manager->executor, (executor_action_cb) quit_app_worker, (executor_cleanup_cb) SDL_free, req);
+    cm_request_t *req = worker_context_new(manager, uuid, callback, userdata);
+    pcmanager_worker_queue(manager, worker_quit_app, req);
     return true;
 }
 
 void pcmanager_request_update(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                               void *userdata) {
-    cm_request_t *req = cm_request_new(manager, uuid, callback, userdata);
-    executor_execute(manager->executor, (executor_action_cb) request_update_worker, (executor_cleanup_cb) SDL_free,
-                     req);
+    cm_request_t *req = worker_context_new(manager, uuid, callback, userdata);
+    pcmanager_worker_queue(manager, worker_host_update, req);
 }
 
 void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int appid, bool favorite) {
     pclist_lock(manager);
-    SERVER_LIST *node = pcmanager_find_by_uuid(manager, (const char *) uuid);
+    pclist_t *node = pclist_find_by_uuid(manager, uuid);
     if (!node) {
         goto unlock;
     }
@@ -75,27 +54,42 @@ void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int app
 }
 
 bool pcmanager_is_favorite(pcmanager_t *manager, const uuidstr_t *uuid, int appid) {
-    const SERVER_LIST *node = pcmanager_node(manager, uuid);
+    const pclist_t *node = pcmanager_node(manager, uuid);
     if (!node) {
         return false;
     }
     return pcmanager_node_is_app_favorite(node, appid);
 }
 
-void pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid) {
+bool pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid) {
     pclist_lock(manager);
-    for (SERVER_LIST *cur = pcmanager_servers(pcmanager); cur; cur = cur->next) {
-        cur->selected = uuidstr_t_equals_s(uuid, cur->server->uuid);
+    const pclist_t *node = pcmanager_node(manager, uuid);
+    if (node == NULL) {
+        pclist_unlock(manager);
+        return false;
+    }
+    for (pclist_t *cur = pcmanager_servers(pcmanager); cur; cur = cur->next) {
+        cur->selected = node == cur;
     }
     pclist_unlock(manager);
+    return true;
 }
 
-const SERVER_LIST *pcmanager_node(pcmanager_t *manager, const uuidstr_t *uuid) {
-    return pcmanager_find_by_uuid(manager, (const char *) uuid);
+bool pcmanager_forget(pcmanager_t *manager, const uuidstr_t *uuid) {
+    const pclist_t *node = pcmanager_node(manager, uuid);
+    if (node == NULL) {
+        return false;
+    }
+    pclist_remove(manager, uuid);
+    return true;
+}
+
+const pclist_t *pcmanager_node(pcmanager_t *manager, const uuidstr_t *uuid) {
+    return pclist_find_by_uuid(manager, uuid);
 }
 
 const SERVER_STATE *pcmanager_state(pcmanager_t *manager, const uuidstr_t *uuid) {
-    const SERVER_LIST *node = pcmanager_node(manager, uuid);
+    const pclist_t *node = pcmanager_node(manager, uuid);
     if (!node) {
         return NULL;
     }
@@ -103,95 +97,22 @@ const SERVER_STATE *pcmanager_state(pcmanager_t *manager, const uuidstr_t *uuid)
 }
 
 int pcmanager_server_current_app(pcmanager_t *manager, const uuidstr_t *uuid) {
-    const SERVER_LIST *node = pcmanager_node(manager, uuid);
+    const pclist_t *node = pcmanager_node(manager, uuid);
     if (!node) {
         return 0;
     }
     return node->server->currentGame;
 }
 
-void serverstate_setgserror(SERVER_STATE *state, int code, const char *msg) {
-    state->code = SERVER_STATE_ERROR;
-    state->error.errcode = code;
-    state->error.errmsg = msg;
-}
-
-void pcmanager_resp_setgserror(PPCMANAGER_RESP resp, int code, const char *msg) {
-    resp->result.code = code;
-    resp->result.error.message = msg;
-}
-
 bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                         void *userdata) {
-    cm_request_t *req = cm_request_new(manager, uuid, callback, userdata);
-    executor_execute(manager->executor, (executor_action_cb) wol_worker,
-                     (executor_cleanup_cb) wol_worker_cleanup, req);
+    cm_request_t *req = worker_context_new(manager, uuid, callback, userdata);
+    pcmanager_worker_queue(manager, worker_wol, req);
     return true;
 }
 
-PSERVER_LIST pcmanager_servers(pcmanager_t *manager) {
+pclist_t *pcmanager_servers(pcmanager_t *manager) {
     return manager->servers;
-}
-
-static void request_update_worker(cm_request_t *req) {
-    PSERVER_LIST node = pcmanager_find_by_uuid(pcmanager, (const char *) &req->uuid);
-    pcmanager_upsert_worker(req->manager, node->server->serverInfo.address, true, req->callback, req->userdata);
-}
-
-static void quit_app_worker(cm_request_t *req) {
-    GS_CLIENT client = app_gs_client_new();
-    pclist_lock(req->manager);
-    PSERVER_LIST node = pcmanager_find_by_uuid(req->manager, (const char *) &req->uuid);
-    if (node == NULL) {
-        pclist_unlock(req->manager);
-        return;
-    }
-    int ret = gs_quit_app(client, node->server);
-    pclist_unlock(req->manager);
-    pcmanager_resp_t *resp = serverinfo_resp_new();
-    resp->known = true;
-    resp->result.code = ret;
-    resp->server = node->server;
-    if (ret == GS_OK) {
-        resp->state.code = SERVER_STATE_AVAILABLE;
-        pclist_upsert(req->manager, resp);
-    } else {
-        resp->result.error.message = gs_error;
-    }
-    pcmanager_worker_finalize(resp, req->callback, req->userdata);
-}
-
-
-static void wol_worker(cm_request_t *req) {
-    PSERVER_LIST node = pcmanager_find_by_uuid(req->manager, (const char *) &req->uuid);
-    if (node == NULL) {
-        pclist_unlock(req->manager);
-        return;
-    }
-    SERVER_DATA *server = node->server;
-    wol_broadcast(server->mac);
-    Uint32 timeout = SDL_GetTicks() + 15000;
-    GS_CLIENT gs = app_gs_client_new();
-    int ret;
-    while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
-        PSERVER_DATA tmpserver = serverdata_new();
-        ret = gs_init(gs, tmpserver, strdup(server->serverInfo.address), false);
-        serverdata_free(tmpserver);
-        applog_d("WoL", "gs_init returned %d, errno=%d", (int) ret, errno);
-        if (ret == 0 || errno == ECONNREFUSED) {
-            break;
-        }
-        SDL_Delay(3000);
-    }
-    gs_destroy(gs);
-    pcmanager_resp_t *resp = serverinfo_resp_new();
-    resp->server = server;
-    resp->result.code = ret;
-    pcmanager_worker_finalize(resp, req->callback, req->userdata);
-}
-
-static void wol_worker_cleanup(cm_request_t *req) {
-
 }
 
 static void pcmanager_free(executor_t *executor) {

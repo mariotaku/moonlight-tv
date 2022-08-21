@@ -33,7 +33,7 @@ static void input_key_cb(lv_event_t *event);
 
 static void input_cancel_cb(lv_event_t *event);
 
-static void add_cb(const pcmanager_resp_t *resp, void *userdata);
+static void add_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
 typedef struct add_dialog_controller_t {
     lv_fragment_t base;
@@ -151,13 +151,13 @@ static void input_cancel_cb(lv_event_t *event) {
     lv_group_focus_obj(btns);
 }
 
-static void add_cb(const pcmanager_resp_t *resp, void *userdata) {
+static void add_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     add_dialog_controller_t *controller = userdata;
     lv_obj_t *btns = lv_msgbox_get_btns(controller->base.obj);
     lv_obj_clear_state(btns, LV_STATE_DISABLED);
     lv_obj_clear_state(controller->input, LV_STATE_DISABLED);
     lv_obj_add_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
-    if (resp->result.code == GS_OK) {
+    if (result == GS_OK) {
         lv_msgbox_close_async(controller->base.obj);
     } else {
         lv_obj_clear_flag(controller->error, LV_OBJ_FLAG_HIDDEN);

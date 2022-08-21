@@ -1,20 +1,5 @@
-#include <util/bus.h>
 #include <util/nullable.h>
 #include "priv.h"
-
-PPCMANAGER_RESP serverinfo_resp_new() {
-    PPCMANAGER_RESP resp = malloc(sizeof(pcmanager_resp_t));
-    SDL_memset(resp, 0, sizeof(pcmanager_resp_t));
-    return resp;
-}
-
-static void finalizer_notify(pcmanager_finalizer_args *args);
-
-void pcmanager_worker_finalize(pcmanager_resp_t *resp, pcmanager_callback_t callback, void *userdata) {
-    pcmanager_finalizer_args args = {.resp=resp, .callback=callback, .userdata=userdata};
-    bus_pushaction_sync((bus_actionfunc) finalizer_notify, &args);
-    free(args.resp);
-}
 
 
 PSERVER_DATA serverdata_new() {
@@ -71,8 +56,3 @@ void serverdata_free(PSERVER_DATA data) {
     free(data);
 }
 
-static void finalizer_notify(pcmanager_finalizer_args *args) {
-    if (args->callback) {
-        args->callback(args->resp, args->userdata);
-    }
-}

@@ -41,7 +41,7 @@ static void apploader_free(executor_t *executor);
 
 static apploader_task_t *task_create(apploader_t *loader);
 
-static void task_run(apploader_task_t *task);
+static int task_run(apploader_task_t *task);
 
 static void task_finalize(apploader_task_t *task, int cancelled);
 
@@ -49,7 +49,7 @@ static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2);
 
 static void task_callback(apploader_task_t *task);
 
-static apploader_list_t *apps_create(const struct SERVER_LIST_T *node, PAPP_LIST ll);
+static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll);
 
 apploader_t *apploader_create(const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
@@ -96,11 +96,11 @@ static apploader_task_t *task_create(apploader_t *loader) {
     return task;
 }
 
-static void task_run(apploader_task_t *task) {
+static int task_run(apploader_task_t *task) {
     int ret = GS_OK;
     const char *error = NULL;
     GS_CLIENT client = NULL;
-    const SERVER_LIST *node = pcmanager_node(pcmanager, &task->loader->uuid);
+    const pclist_t *node = pcmanager_node(pcmanager, &task->loader->uuid);
     if (node == NULL) {
         ret = GS_ERROR;
         goto finish;
@@ -124,6 +124,7 @@ static void task_run(apploader_task_t *task) {
     if (client != NULL) {
         gs_destroy(client);
     }
+    return ret;
 }
 
 static void task_finalize(apploader_task_t *task, int cancelled) {
@@ -148,7 +149,7 @@ static void task_callback(apploader_task_t *task) {
     }
 }
 
-static apploader_list_t *apps_create(const struct SERVER_LIST_T *node, PAPP_LIST ll) {
+static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll) {
     int count = applist_len(ll);
     apploader_list_t *result = SDL_malloc(sizeof(apploader_list_t) + count * sizeof(apploader_item_t));
     result->count = count;

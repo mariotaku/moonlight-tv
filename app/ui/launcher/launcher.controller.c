@@ -31,11 +31,11 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view);
 
 static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata);
 
-static void on_pc_added(const pcmanager_resp_t *resp, void *userdata);
+static void on_pc_added(const uuidstr_t *uuid, void *userdata);
 
-static void on_pc_updated(const pcmanager_resp_t *resp, void *userdata);
+static void on_pc_updated(const uuidstr_t *uuid, void *userdata);
 
-static void on_pc_removed(const pcmanager_resp_t *resp, void *userdata);
+static void on_pc_removed(const uuidstr_t *uuid, void *userdata);
 
 static void update_pclist(launcher_controller_t *controller);
 
@@ -61,11 +61,11 @@ static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, 
 
 static void set_detail_opened(launcher_controller_t *controller, bool opened);
 
-static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const SERVER_LIST *node);
+static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const pclist_t *node);
 
 static void pclist_item_deleted(lv_event_t *e);
 
-static const char *server_item_icon(const SERVER_LIST *node);
+static const char *server_item_icon(const pclist_t *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 
@@ -96,7 +96,7 @@ launcher_controller_t *launcher_instance() {
 }
 
 void launcher_select_server(launcher_controller_t *controller, const uuidstr_t *uuid) {
-    const SERVER_LIST *node = uuid ? pcmanager_node(pcmanager, uuid) : NULL;
+    const pclist_t *node = uuid ? pcmanager_node(pcmanager, uuid) : NULL;
     if (!node) {
         set_detail_opened(controller, false);
         select_pc(controller, NULL, false);
@@ -163,7 +163,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
 
     update_pclist(controller);
 
-    for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+    for (pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         uuidstr_t uuid;
         if (cur->selected) {
             uuidstr_fromstr(&uuid, cur->server->uuid);
@@ -212,27 +212,20 @@ static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
     return false;
 }
 
-void on_pc_added(const pcmanager_resp_t *resp, void *userdata) {
+void on_pc_added(const uuidstr_t *uuid, void *userdata) {
     launcher_controller_t *controller = userdata;
-    if (!resp->server) return;
-    PSERVER_LIST cur = NULL;
-    for (cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
-        const SERVER_DATA *server = cur->server;
-        if (server == resp->server) {
-            break;
-        }
-    }
-    if (!cur) return;
-    pclist_item_create(controller, cur);
+    const pclist_t *node = pcmanager_node(pcmanager, uuid);
+    if (node == NULL) return;
+    pclist_item_create(controller, node);
 }
 
-void on_pc_updated(const pcmanager_resp_t *resp, void *userdata) {
+void on_pc_updated(const uuidstr_t *uuid, void *userdata) {
     launcher_controller_t *controller = userdata;
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
-        const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(child);
-        if (uuidstr_t_equals_t(uuid, &resp->uuid)) {
-            const SERVER_LIST *node = pcmanager_node(pcmanager, &resp->uuid);
+        const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
+        if (uuidstr_t_equals_t(uuid, item_id)) {
+            const pclist_t *node = pcmanager_node(pcmanager, item_id);
             const char *icon = server_item_icon(node);
             lv_btn_set_icon(child, icon);
             break;
@@ -240,12 +233,12 @@ void on_pc_updated(const pcmanager_resp_t *resp, void *userdata) {
     }
 }
 
-void on_pc_removed(const pcmanager_resp_t *resp, void *userdata) {
+void on_pc_removed(const uuidstr_t *uuid, void *userdata) {
     launcher_controller_t *controller = userdata;
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
-        const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(child);
-        if (uuidstr_t_equals_t(uuid, &resp->uuid)) {
+        const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
+        if (uuidstr_t_equals_t(uuid, item_id)) {
             lv_obj_del(child);
             break;
         }
@@ -294,7 +287,7 @@ static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, 
 
 static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);
-    for (PSERVER_LIST cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+    for (pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         lv_obj_t *pcitem = pclist_item_create(controller, cur);
         pcitem_set_selected(pcitem, cur->selected);
     }
@@ -311,7 +304,7 @@ static void pcitem_set_selected(lv_obj_t *pcitem, bool selected) {
     }
 }
 
-static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const SERVER_LIST *node) {
+static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const pclist_t *node) {
     const SERVER_DATA *server = node->server;
     const char *icon = server_item_icon(node);
     lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
@@ -338,7 +331,7 @@ static void pclist_item_deleted(lv_event_t *e) {
     SDL_free(uuid);
 }
 
-static const char *server_item_icon(const SERVER_LIST *node) {
+static const char *server_item_icon(const pclist_t *node) {
     if (node == NULL) {
         return MAT_SYMBOL_WARNING;
     }

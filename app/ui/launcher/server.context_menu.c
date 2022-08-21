@@ -6,7 +6,6 @@
 #include "backend/types.h"
 
 #include "util/i18n.h"
-#include "backend/pcmanager/pclist.h"
 #include "lvgl/util/lv_app_utils.h"
 
 typedef struct context_menu_t {
@@ -27,9 +26,9 @@ static void context_menu_short_click_cb(lv_event_t *e);
 
 static void context_menu_click_cb(lv_event_t *e);
 
-static void open_info(const SERVER_LIST *node);
+static void open_info(const pclist_t *node);
 
-static void forget_host(const SERVER_LIST *node);
+static void forget_host(const pclist_t *node);
 
 static void info_action_cb(lv_event_t *e);
 
@@ -53,7 +52,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     LV_UNUSED(parent);
     context_menu_t *controller = (context_menu_t *) self;
 
-    const SERVER_LIST *node = pcmanager_node(pcmanager, &controller->uuid);
+    const pclist_t *node = pcmanager_node(pcmanager, &controller->uuid);
     if (!node) {
         lv_obj_t *empty = lv_msgbox_create(NULL, "Unknown", NULL, NULL, false);
         lv_msgbox_close_async(empty);
@@ -103,7 +102,7 @@ static void context_menu_click_cb(lv_event_t *e) {
     if (target->parent != current_target) return;
     void *target_userdata = lv_obj_get_user_data(target);
     lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
-    const SERVER_LIST *node = pcmanager_node(pcmanager, &controller->uuid);
+    const pclist_t *node = pcmanager_node(pcmanager, &controller->uuid);
     lv_msgbox_close(mbox);
     if (!node) {
         return;
@@ -115,7 +114,7 @@ static void context_menu_click_cb(lv_event_t *e) {
     }
 }
 
-static void open_info(const SERVER_LIST *node) {
+static void open_info(const pclist_t *node) {
     static const char *btn_txts[] = {translatable("OK"), ""};
     lv_obj_t *mbox = lv_msgbox_create_i18n(NULL, node->server->hostname, "placeholder", btn_txts, false);
     lv_obj_t *message = lv_msgbox_get_text(mbox);
@@ -129,9 +128,9 @@ static void open_info(const SERVER_LIST *node) {
     lv_obj_center(mbox);
 }
 
-static void forget_host(const SERVER_LIST *node) {
+static void forget_host(const pclist_t *node) {
     bool selected = node->selected;
-    pclist_remove(pcmanager, node->server);
+    pcmanager_forget(pcmanager, &node->id);
     if (selected) {
         launcher_controller_t *launcher = launcher_instance();
         launcher_select_server(launcher, NULL);

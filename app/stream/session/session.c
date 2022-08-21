@@ -71,7 +71,7 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
     if (session_active != NULL) {
         return -1;
     }
-    const SERVER_LIST *node = pcmanager_node(pcmanager, uuid);
+    const pclist_t *node = pcmanager_node(pcmanager, uuid);
     if (node == NULL) {
         return -1;
     }
@@ -249,7 +249,7 @@ int streaming_worker(session_t *session) {
         applog_i("Session", "Sending app quit request ...");
         gs_quit_app(client, server);
     }
-    pcmanager_upsert_worker(pcmanager, server->serverInfo.address, true, NULL, NULL);
+    pcmanager_update_by_ip(pcmanager, server->serverInfo.address, true);
 
     // Don't always reset status as error state should be kept
     streaming_set_status(STREAMING_NONE);

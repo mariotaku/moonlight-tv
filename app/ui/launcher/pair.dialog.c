@@ -23,7 +23,7 @@ static void pair_controller_dtor(lv_fragment_t *self);
 
 static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent);
 
-static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata);
+static void pair_result_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
 static void dialog_cb(lv_event_t *event);
 
@@ -84,18 +84,18 @@ static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
     return dialog;
 }
 
-static void pair_result_cb(const pcmanager_resp_t *resp, void *userdata) {
+static void pair_result_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) userdata;
-    if (resp->result.code == GS_OK) {
+    if (result == GS_OK) {
         launcher_controller_t *launcher_controller = launcher_instance();
         if (launcher_controller) {
-            launcher_select_server(launcher_controller, &controller->uuid);
+            launcher_select_server(launcher_controller, uuid);
         }
         lv_msgbox_close_async(controller->base.obj);
         return;
     }
     lv_obj_clear_flag(controller->btns, LV_OBJ_FLAG_HIDDEN);
-    lv_label_set_text(controller->message_label, resp->result.error.message);
+    lv_label_set_text(controller->message_label, error);
     lv_obj_add_flag(controller->pin_label, LV_OBJ_FLAG_HIDDEN);
 }
 

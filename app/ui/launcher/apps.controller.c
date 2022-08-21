@@ -33,13 +33,13 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view);
 
 static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
-static void host_info_cb(const pcmanager_resp_t *resp, void *userdata);
+static void host_info_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
-static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata);
+static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
-static void on_host_updated(const pcmanager_resp_t *resp, void *userdata);
+static void on_host_updated(const uuidstr_t *uuid, void *userdata);
 
-static void on_host_removed(const pcmanager_resp_t *resp, void *userdata);
+static void on_host_removed(const uuidstr_t *uuid, void *userdata);
 
 static void item_click_cb(lv_event_t *event);
 
@@ -67,7 +67,7 @@ static void adapter_bind_view(lv_obj_t *, lv_obj_t *, void *data, int position);
 
 static int adapter_item_id(lv_obj_t *, void *data, int position);
 
-static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata);
+static void quitgame_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
 static void apps_controller_ctor(lv_fragment_t *self, void *args);
 
@@ -97,7 +97,7 @@ static void context_menu_cancel_cb(lv_event_t *event);
 
 static void context_menu_click_cb(lv_event_t *event);
 
-static void app_detail_dialog(apps_fragment_t *controller, apploader_item_t *app);
+static void app_detail_dialog(apps_fragment_t *fragment, apploader_item_t *app);
 
 static void app_detail_click_cb(lv_event_t *event);
 
@@ -211,6 +211,7 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
+    LV_UNUSED(view);
     apps_fragment_t *controller = (apps_fragment_t *) self;
     controller->coverloader = coverloader_new();
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
@@ -261,6 +262,7 @@ static void update_grid_config(apps_fragment_t *controller) {
 }
 
 static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
+    LV_UNUSED(view);
     current_instance = NULL;
     apps_fragment_t *controller = (apps_fragment_t *) self;
 
@@ -283,38 +285,39 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
     return false;
 }
 
-static void on_host_updated(const pcmanager_resp_t *resp, void *userdata) {
+static void on_host_updated(const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
-    if (!uuidstr_t_equals_t(&controller->uuid, &resp->uuid)) return;
-    apploader_load(controller->apploader);
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) return;
+    const SERVER_STATE *state = pcmanager_state(pcmanager, uuid);
+    SDL_assert(state != NULL);
+    if (state->code == SERVER_STATE_AVAILABLE) {
+        apploader_load(controller->apploader);
+    }
     update_view_state(controller);
 }
 
-static void on_host_removed(const pcmanager_resp_t *resp, void *userdata) {
+static void on_host_removed(const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (!uuidstr_t_equals_t(&controller->uuid, &resp->uuid)) return;
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) return;
     lv_fragment_del((lv_fragment_t *) controller);
 }
 
-static void host_info_cb(const pcmanager_resp_t *resp, void *userdata) {
+static void host_info_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
-    if (resp->state.code == SERVER_STATE_AVAILABLE && !controller->apploader_apps) {
-        apploader_load(controller->apploader);
-    }
 }
 
-static void send_wol_cb(const pcmanager_resp_t *resp, void *userdata) {
+static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
     SDL_assert(state != NULL);
-    if (state->code & SERVER_STATE_ONLINE || resp->result.code != GS_OK) return;
+    if (state->code & SERVER_STATE_ONLINE || result != GS_OK) return;
     pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
 }
 
@@ -572,14 +575,14 @@ static void applist_focus_leave(lv_event_t *event) {
     lv_gridview_focus(controller->applist, -1);
 }
 
-static void quitgame_cb(const pcmanager_resp_t *resp, void *userdata) {
+static void quitgame_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = userdata;
     if (controller->quit_progress) {
         lv_msgbox_close(controller->quit_progress);
         controller->quit_progress = NULL;
     }
     lv_gridview_rebind(controller->applist);
-    if (resp->result.code == GS_OK) {
+    if (result == GS_OK) {
         return;
     }
     static const char *btn_texts[] = {translatable("OK"), ""};

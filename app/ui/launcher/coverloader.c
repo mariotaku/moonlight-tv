@@ -334,7 +334,7 @@ static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached) {
         return NULL;
     }
 #endif
-    const SERVER_LIST *node = pcmanager_node(pcmanager, &req->server_id);
+    const pclist_t *node = pcmanager_node(pcmanager, &req->server_id);
     if (!node) {
         return false;
     }

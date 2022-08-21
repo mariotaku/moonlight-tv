@@ -1,7 +1,7 @@
 #include "executor.h"
 
 #include <stdlib.h>
-
+#include <errno.h>
 #include <SDL2/SDL.h>
 
 typedef struct executor_task_t {
@@ -17,7 +17,7 @@ struct executor_t {
     SDL_mutex *lock;
     SDL_cond *cond;
     executor_task_t *queue;
-    executor_free_cb free;
+    executor_finalize_cb finalize;
     executor_task_t *active;
     SDL_bool destroyed;
     SDL_bool wait;
@@ -50,12 +50,12 @@ static void thread_wait(SDL_Thread *thread);
 
 static void thread_wait_async(SDL_Thread *thread);
 
-executor_t *executor_create(const char *name, executor_free_cb free_fn) {
+executor_t *executor_create(const char *name, executor_finalize_cb finalize_fn) {
     executor_t *executor = calloc(1, sizeof(executor_t));
     executor->destroyed = SDL_FALSE;
     executor->lock = SDL_CreateMutex();
     executor->cond = SDL_CreateCond();
-    executor->free = free_fn;
+    executor->finalize = finalize_fn;
     executor->thread = SDL_CreateThread(thread_worker, name, executor);
     return executor;
 }
@@ -69,8 +69,8 @@ void executor_destroy(executor_t *executor, int wait) {
     SDL_UnlockMutex(executor->lock);
     if (wait) {
         thread_wait(executor->thread);
-        if (executor->free != NULL) {
-            executor->free(executor);
+        if (executor->finalize != NULL) {
+            executor->finalize(executor);
         }
         free(executor);
     }
@@ -153,9 +153,9 @@ static int thread_worker(void *context) {
     executor_t *executor = context;
     for (executor_task_t *task = NULL; (task = tasks_poll(executor)) != NULL;) {
         executor->active = task;
-        task->action(task->arg);
+        int result = task->action(task->arg);
         if (task->finalize) {
-            task->finalize(task->arg, task->cancelled);
+            task->finalize(task->arg, result);
         }
         free(task);
         executor->active = NULL;
@@ -172,8 +172,8 @@ static int thread_worker(void *context) {
     executor->lock = NULL;
     if (!executor->wait) {
         thread_wait_async(executor->thread);
-        if (executor->free != NULL) {
-            executor->free(executor);
+        if (executor->finalize != NULL) {
+            executor->finalize(executor);
         }
         free(executor);
     }
@@ -186,7 +186,7 @@ static int task_identical(executor_task_t *p, const void *fv) {
 
 static void task_destroy(executor_task_t *task) {
     if (task->finalize) {
-        task->finalize(task->arg, 1);
+        task->finalize(task->arg, ECANCELED);
     }
     free(task);
 }

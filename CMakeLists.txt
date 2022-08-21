@@ -175,6 +175,12 @@ set(SOURCES
         app/backend/pcmanager/discovery.c
         app/backend/pcmanager/pclist.c
         app/backend/pcmanager/listeners.c
+        app/backend/pcmanager/worker/request.c
+        app/backend/pcmanager/worker/pairing.c
+        app/backend/pcmanager/worker/quit_app.c
+        app/backend/pcmanager/worker/wol.c
+        app/backend/pcmanager/worker/manual_add.c
+        app/backend/pcmanager/worker/update.c
         app/backend/gamecontrollerdb_updater.c
         app/backend/apploader/apploader.c
         app/stream/module/module.c
