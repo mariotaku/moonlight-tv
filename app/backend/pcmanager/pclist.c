@@ -122,13 +122,15 @@ void pclist_node_apply(pclist_t *node, const SERVER_STATE *state, SERVER_DATA *s
     if (state != NULL && state->code != SERVER_STATE_NONE) {
         node->state = *state;
     }
-    if (server != NULL && node->server != server) {
-        if (node->server) {
-            serverdata_free(node->server);
+    if (server != NULL) {
+        if (node->server != server) {
+            if (node->server) {
+                serverdata_free(node->server);
+            }
+            node->server = server;
         }
-        node->server = server;
+        node->known |= server->paired;
     }
-    node->known |= server->paired;
 }
 
 void pclist_ll_nodefree(pclist_t *node) {

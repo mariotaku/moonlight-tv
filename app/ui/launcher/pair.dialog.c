@@ -4,7 +4,6 @@
 
 #include "errors.h"
 #include "util/i18n.h"
-#include "backend/pcmanager/priv.h"
 #include "ui/root.h"
 
 typedef struct {

@@ -7,7 +7,14 @@
 #include <stdio.h>
 #include <errno.h>
 
+#if __WIN32__
+#include <winsock2.h>
+typedef uint8_t sockchar;
+#else
+typedef int SOCKET;
+typedef char sockchar;
 #include <arpa/inet.h>
+#endif
 #include <unistd.h>
 
 
@@ -19,8 +26,12 @@ int wol_broadcast(const char *mac) {
         return -1;
     }
     int ret = 0;
+#if __WIN32__
+    char broadcast = 1;
+#else
     int broadcast = 1;
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+#endif
+    SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast)) {
         applog_e("WoL", "setsockopt() error: %d %s", errno, strerror(errno));
         ret = -1;
@@ -43,7 +54,7 @@ int wol_broadcast(const char *mac) {
     server.sin_addr.s_addr = inet_addr("255.255.255.255");
     server.sin_port = htons(9);
 
-    sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *) &server, sizeof(server));
+    sendto(sockfd, packet, sizeof(packet), 0, (struct sockaddr *) &server, sizeof(server));
     if (errno) {
         applog_e("WoL", "sendto() error: %d %s", errno, strerror(errno));
         ret = -1;
@@ -56,7 +67,7 @@ int wol_broadcast(const char *mac) {
     return ret;
 }
 
-static bool wol_build_packet(const char *macstr, uint8_t *packet) {
+static bool wol_build_packet(const char *macstr, sockchar *packet) {
     unsigned int values[6];
     if (sscanf(macstr, "%x:%x:%x:%x:%x:%x%*c", &values[0], &values[1], &values[2], &values[3], &values[4],
                &values[5]) != 6) {

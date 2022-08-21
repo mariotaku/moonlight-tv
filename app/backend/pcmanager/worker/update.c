@@ -19,29 +19,27 @@ int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force) {
     SDL_assert(manager != NULL);
     SDL_assert(ip != NULL);
     char *ip_dup = strdup(ip);
-    pclist_lock(manager);
     pclist_t *existing = pclist_find_by_ip(manager, ip_dup);
     int ret = 0;
     if (existing) {
         SERVER_STATE_ENUM state = existing->state.code;
         if (state == SERVER_STATE_QUERYING) {
             applog_v("PCManager", "Skip upsert for querying node. ip: %s", ip_dup);
-            pclist_unlock(manager);
             goto done;
         }
         if (!force && state & SERVER_STATE_ONLINE) {
-            pclist_unlock(manager);
             goto done;
         }
+        pclist_lock(manager);
         pclist_update_context_t args = {
                 .manager = manager,
+                .uuid = existing->id,
                 .state = {.code = SERVER_STATE_QUERYING},
-                .server = existing->server,
-                existing->id
         };
+        existing->state = args.state;
+        pclist_unlock(manager);
         bus_pushaction_sync((bus_actionfunc) notify_querying, &args);
     }
-    pclist_unlock(manager);
     PSERVER_DATA server = serverdata_new();
     GS_CLIENT client = app_gs_client_new();
     ret = gs_init(client, server, ip_dup, app_configuration->unsupported);

@@ -6,10 +6,8 @@
 
 int worker_quit_app(worker_context_t *context) {
     GS_CLIENT client = app_gs_client_new();
-    pclist_lock(context->manager);
     pclist_t *node = pclist_find_by_uuid(context->manager, &context->uuid);
     if (node == NULL) {
-        pclist_unlock(context->manager);
         return GS_ERROR;
     }
     int ret = gs_quit_app(client, node->server);
