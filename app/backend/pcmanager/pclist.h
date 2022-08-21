@@ -18,6 +18,8 @@ void pclist_upsert(pcmanager_t *manager, const uuidstr_t *uuid, const SERVER_STA
 
 void pclist_node_apply(pclist_t *node, const SERVER_STATE *state, SERVER_DATA *server);
 
+bool pclist_node_set_app_favorite(pclist_t *node, int appid, bool favorite);
+
 void pclist_remove(pcmanager_t *manager, const uuidstr_t *uuid);
 
 void pclist_free(pcmanager_t *manager);

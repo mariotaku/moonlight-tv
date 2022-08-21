@@ -76,7 +76,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
             for (appid_list_t *fcur = cur->favs; fcur; fcur = fcur->next) {
                 int appid = fcur->id;
                 if (!appid) continue;
-                pcmanager_node_set_app_favorite(node, appid, true);
+                pclist_node_set_app_favorite(node, appid, true);
             }
         }
 

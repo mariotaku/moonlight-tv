@@ -163,7 +163,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
 
     update_pclist(controller);
 
-    for (pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+    for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         uuidstr_t uuid;
         if (cur->selected) {
             uuidstr_fromstr(&uuid, cur->server->uuid);
@@ -287,7 +287,7 @@ static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, 
 
 static void update_pclist(launcher_controller_t *controller) {
     lv_obj_clean(controller->pclist);
-    for (pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+    for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         lv_obj_t *pcitem = pclist_item_create(controller, cur);
         pcitem_set_selected(pcitem, cur->selected);
     }

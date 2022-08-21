@@ -141,6 +141,7 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     controller->apploader_cb.data = appload_loaded;
     controller->apploader_cb.error = appload_errored;
     controller->uuid = *(const uuidstr_t *) args;
+    controller->node = pcmanager_node(pcmanager, &controller->uuid);
     controller->apploader = apploader_create(&controller->uuid, &controller->apploader_cb, controller);
 
     appitem_style_init(&controller->appitem_style);
@@ -300,6 +301,7 @@ static void on_host_updated(const uuidstr_t *uuid, void *userdata) {
 static void on_host_removed(const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
     if (!uuidstr_t_equals_t(&controller->uuid, uuid)) return;
+    controller->node = NULL;
     lv_fragment_del((lv_fragment_t *) controller);
 }
 
@@ -472,7 +474,8 @@ static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_
                         controller->col_width, controller->col_height);
     lv_label_set_text(holder->title, app->base.name);
 
-    int appid = pcmanager_server_current_app(pcmanager, &controller->uuid);
+    SDL_assert(controller->node);
+    int appid = pcmanager_node_current_app(controller->node);
     if (appid == app->base.id) {
         lv_obj_clear_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     } else {

@@ -48,7 +48,7 @@ void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int app
     if (!node) {
         goto unlock;
     }
-    pcmanager_node_set_app_favorite(node, appid, favorite);
+    pclist_node_set_app_favorite(node, appid, favorite);
     unlock:
     pclist_unlock(manager);
 }
@@ -68,7 +68,7 @@ bool pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid) {
         pclist_unlock(manager);
         return false;
     }
-    for (pclist_t *cur = pcmanager_servers(pcmanager); cur; cur = cur->next) {
+    for (pclist_t *cur = pcmanager->servers; cur; cur = cur->next) {
         cur->selected = node == cur;
     }
     pclist_unlock(manager);
@@ -101,6 +101,11 @@ int pcmanager_server_current_app(pcmanager_t *manager, const uuidstr_t *uuid) {
     if (!node) {
         return 0;
     }
+    return pcmanager_node_current_app(node);
+}
+
+int pcmanager_node_current_app(const pclist_t *node) {
+    SDL_assert(node != NULL);
     return node->server->currentGame;
 }
 
@@ -111,7 +116,7 @@ bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_c
     return true;
 }
 
-pclist_t *pcmanager_servers(pcmanager_t *manager) {
+const pclist_t *pcmanager_servers(pcmanager_t *manager) {
     return manager->servers;
 }
 

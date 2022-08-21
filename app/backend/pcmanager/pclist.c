@@ -105,16 +105,17 @@ bool pcmanager_node_is_app_favorite(const pclist_t *node, int appid) {
     return favlist_ll_find_by(node->favs, &appid, favlist_find_id) != NULL;
 }
 
-void pcmanager_node_set_app_favorite(pclist_t *node, int appid, bool favorite) {
+bool pclist_node_set_app_favorite(pclist_t *node, int appid, bool favorite) {
     appid_list_t *existing = favlist_ll_find_by(node->favs, &appid, favlist_find_id);
     if (favorite) {
-        if (existing) return;
+        if (existing) return false;
         appid_list_t *item = favlist_ll_new();
         item->id = appid;
         node->favs = favlist_ll_append(node->favs, item);
     } else if (existing) {
         node->favs = favlist_ll_remove(node->favs, existing);
     }
+    return true;
 }
 
 void pclist_node_apply(pclist_t *node, const SERVER_STATE *state, SERVER_DATA *server) {

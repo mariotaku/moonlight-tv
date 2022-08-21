@@ -18,6 +18,7 @@ typedef struct {
 typedef struct {
     lv_fragment_t base;
     uuidstr_t uuid;
+    const pclist_t *node;
 
     apploader_t *apploader;
     coverloader_t *coverloader;
