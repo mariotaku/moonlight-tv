@@ -8,20 +8,24 @@
 #include <errno.h>
 
 #if __WIN32__
+
 #include <winsock2.h>
-typedef uint8_t sockchar;
+#define INVSOCKET NULL
+
 #else
-typedef int SOCKET;
-typedef char sockchar;
 #include <arpa/inet.h>
-#endif
 #include <unistd.h>
 
+typedef int SOCKET;
+#define closesocket(s) close(s)
+#define INVSOCKET (-1)
 
-static bool wol_build_packet(const char *macstr, uint8_t *packet);
+#endif
+
+static bool wol_build_packet(const char *macstr, char *packet);
 
 int wol_broadcast(const char *mac) {
-    uint8_t packet[102];
+    char packet[102];
     if (!wol_build_packet(mac, packet)) {
         return -1;
     }
@@ -61,13 +65,13 @@ int wol_broadcast(const char *mac) {
         goto cleanup;
     }
     cleanup:
-    if (sockfd > 0) {
-        close(sockfd);
+    if (sockfd != INVSOCKET) {
+        closesocket(sockfd);
     }
     return ret;
 }
 
-static bool wol_build_packet(const char *macstr, sockchar *packet) {
+static bool wol_build_packet(const char *macstr, char *packet) {
     unsigned int values[6];
     if (sscanf(macstr, "%x:%x:%x:%x:%x:%x%*c", &values[0], &values[1], &values[2], &values[3], &values[4],
                &values[5]) != 6) {

@@ -8,6 +8,7 @@
 #include "errors.h"
 #include "util/bus.h"
 
+#include <errno.h>
 #include <SDL.h>
 
 #define LINKEDLIST_IMPL
@@ -43,7 +44,7 @@ static apploader_task_t *task_create(apploader_t *loader);
 
 static int task_run(apploader_task_t *task);
 
-static void task_finalize(apploader_task_t *task, int cancelled);
+static void task_finalize(apploader_task_t *task, int result);
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2);
 
@@ -127,8 +128,8 @@ static int task_run(apploader_task_t *task) {
     return ret;
 }
 
-static void task_finalize(apploader_task_t *task, int cancelled) {
-    if (cancelled) {
+static void task_finalize(apploader_task_t *task, int result) {
+    if (result == ECANCELED) {
         if (task->result != NULL) {
             apploader_list_free(task->result);
         }

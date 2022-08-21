@@ -155,7 +155,7 @@ static int thread_worker(void *context) {
         executor->active = task;
         int result = task->action(task->arg);
         if (task->finalize) {
-            task->finalize(task->arg, result);
+            task->finalize(task->arg, task->cancelled ? ECANCELED : result);
         }
         free(task);
         executor->active = NULL;

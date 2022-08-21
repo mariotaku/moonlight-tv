@@ -33,7 +33,7 @@ static void task_execute(img_loader_task_t *task);
 
 static bool task_cancelled(img_loader_task_t *task);
 
-static void task_destroy(img_loader_task_t *task, int cancelled);
+static void task_destroy(img_loader_task_t *task, int result);
 
 static void notify_cb(notify_cb_t *args);
 
@@ -99,7 +99,7 @@ static void task_execute(img_loader_task_t *task) {
     run_on_main(loader, cb, request, cached);
 }
 
-static void task_destroy(img_loader_task_t *task, int cancelled) {
+static void task_destroy(img_loader_task_t *task, int result) {
     SDL_free(task);
 }
 

@@ -2,6 +2,7 @@
 #include "backend/pcmanager/priv.h"
 #include "util/bus.h"
 
+#include <errno.h>
 #include <malloc.h>
 
 static void worker_callback(worker_context_t *args);
@@ -20,7 +21,9 @@ worker_context_t *worker_context_new(pcmanager_t *manager, const uuidstr_t *uuid
 
 void worker_context_finalize(worker_context_t *context, int result) {
     context->result = result;
-    bus_pushaction_sync((bus_actionfunc) worker_callback, context);
+    if (result != ECANCELED) {
+        bus_pushaction_sync((bus_actionfunc) worker_callback, context);
+    }
     if (context->arg1 != NULL) {
         free(context->arg1);
     }
