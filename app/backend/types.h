@@ -4,13 +4,20 @@
 #include "util/uuidstr.h"
 
 typedef enum SERVER_STATE_ENUM {
+    /** Initial state */
     SERVER_STATE_NONE = 0x0,
+    /** PCManager is requesting server info */
     SERVER_STATE_QUERYING = 0x10,
+    /** Server is online */
     SERVER_STATE_ONLINE = 0x20,
+    /** Server is online and paired */
     SERVER_STATE_AVAILABLE = SERVER_STATE_ONLINE | 0x01,
+    /** Server is online but not paired */
     SERVER_STATE_NOT_PAIRED = SERVER_STATE_ONLINE | 0x02,
-    SERVER_STATE_OFFLINE,
-    SERVER_STATE_ERROR,
+    /** Can't reach server */
+    SERVER_STATE_OFFLINE = 0x30,
+    /** Server returned error */
+    SERVER_STATE_ERROR = 0x40,
 } SERVER_STATE_ENUM;
 
 typedef union SERVER_STATE {
