@@ -47,7 +47,7 @@ int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force) {
     gs_destroy(client);
     if (existing) {
         pclist_lock(manager);
-        bool should_remove = ret == GS_OK && uuidstr_t_equals_s(&existing->id, server->uuid) != 0;
+        bool should_remove = ret == GS_OK && !uuidstr_t_equals_s(&existing->id, server->uuid);
         pclist_unlock(manager);
         if (should_remove) {
             pclist_remove(manager, &existing->id);
