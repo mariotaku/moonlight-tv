@@ -28,6 +28,8 @@ void *executor_get_userdata(executor_t *executor);
 
 void executor_set_userdata(executor_t *executor, void *userdata);
 
-int executor_is_cancelled(executor_t *executor, const executor_task_t *task);
+int executor_is_cancelled(const executor_t *executor, const executor_task_t *task);
 
-int executor_is_active(executor_t *executor);
+int executor_is_active(const executor_t *executor);
+
+int executor_is_destroyed(const executor_t *executor);

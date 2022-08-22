@@ -141,6 +141,12 @@ static void task_finalize(apploader_task_t *task, int result) {
 
 static void task_callback(apploader_task_t *task) {
     apploader_t *loader = task->loader;
+    if (executor_is_destroyed(loader->executor)) {
+        if (task->result != NULL) {
+            apploader_list_free(task->result);
+        }
+        return;
+    }
     if (task->code == GS_OK) {
         loader->state = APPLOADER_STATE_IDLE;
         loader->callback.data(task->result, loader->userdata);

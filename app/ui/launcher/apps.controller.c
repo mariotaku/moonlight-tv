@@ -454,6 +454,9 @@ static void appload_started(void *userdata) {
 
 static void appload_loaded(apploader_list_t *apps, void *userdata) {
     apps_fragment_t *fragment = userdata;
+    if (!fragment->base.managed->obj_created || fragment->base.managed->destroying_obj) {
+        return;
+    }
     lv_gridview_set_data(fragment->applist, apps);
     apploader_list_free(fragment->apploader_apps);
     fragment->apploader_apps = apps;

@@ -91,6 +91,9 @@ int xml_applist(char *data, size_t len, PAPP_LIST *app_list) {
     }
 
     XML_ParserFree(parser);
+    if (query.memory) {
+        free(query.memory);
+    }
     *app_list = (PAPP_LIST) query.data;
 
     return GS_OK;
@@ -113,6 +116,9 @@ int xml_modelist(char *data, size_t len, PDISPLAY_MODE *mode_list) {
     }
 
     XML_ParserFree(parser);
+    if (query.memory) {
+        free(query.memory);
+    }
     *mode_list = (PDISPLAY_MODE) query.data;
 
     return GS_OK;
@@ -176,11 +182,13 @@ void end_applist_element(void *userData, const char *name) {
         if (strcmp("ID", name) == 0) {
             list->id = atoi(search->memory);
             free(search->memory);
+            search->memory = NULL;
         } else if (strcmp("AppTitle", name) == 0) {
             list->name = search->memory;
         } else if (strcmp("IsHdrSupported", name) == 0) {
             list->hdr = atoi(search->memory);
             free(search->memory);
+            search->memory = NULL;
         }
         search->start = 0;
     }
@@ -214,6 +222,7 @@ void end_mode_element(void *userData, const char *name) {
             mode->refresh = atoi(search->memory);
 
         free(search->memory);
+        search->memory = NULL;
         search->start = 0;
     }
 }

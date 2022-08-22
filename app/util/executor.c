@@ -119,7 +119,7 @@ void executor_set_userdata(executor_t *executor, void *userdata) {
     executor->userdata = userdata;
 }
 
-int executor_is_cancelled(executor_t *executor, const executor_task_t *task) {
+int executor_is_cancelled(const executor_t *executor, const executor_task_t *task) {
     SDL_bool cancelled = SDL_FALSE;
     SDL_LockMutex(executor->lock);
     executor_task_t *queue_task = tasks_find_by(executor->queue, task, task_identical);
@@ -130,8 +130,12 @@ int executor_is_cancelled(executor_t *executor, const executor_task_t *task) {
     return cancelled;
 }
 
-int executor_is_active(executor_t *executor) {
+int executor_is_active(const executor_t *executor) {
     return executor->active != NULL;
+}
+
+int executor_is_destroyed(const executor_t *executor) {
+    return executor->destroyed;
 }
 
 static executor_task_t *tasks_poll(executor_t *executor) {
@@ -155,7 +159,7 @@ static int thread_worker(void *context) {
         executor->active = task;
         int result = task->action(task->arg);
         if (task->finalize) {
-            task->finalize(task->arg, task->cancelled ? ECANCELED : result);
+            task->finalize(task->arg, executor->destroyed || task->cancelled ? ECANCELED : result);
         }
         free(task);
         executor->active = NULL;
