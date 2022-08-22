@@ -222,12 +222,11 @@ void on_pc_updated(const uuidstr_t *uuid, void *userdata) {
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
         const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
-        if (uuidstr_t_equals_t(uuid, item_id)) {
-            const pclist_t *node = pcmanager_node(pcmanager, item_id);
-            const char *icon = server_item_icon(node);
-            lv_btn_set_icon(child, icon);
-            break;
-        }
+        if (!uuidstr_t_equals_t(uuid, item_id)) continue;
+        const pclist_t *node = pcmanager_node(pcmanager, item_id);
+        const char *icon = server_item_icon(node);
+        lv_btn_set_icon(child, icon);
+        break;
     }
 }
 
@@ -236,10 +235,9 @@ void on_pc_removed(const uuidstr_t *uuid, void *userdata) {
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
         const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
-        if (uuidstr_t_equals_t(uuid, item_id)) {
-            lv_obj_del(child);
-            break;
-        }
+        if (!uuidstr_t_equals_t(uuid, item_id)) continue;
+        lv_obj_del(child);
+        break;
     }
 }
 

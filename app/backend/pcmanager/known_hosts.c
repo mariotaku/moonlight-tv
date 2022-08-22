@@ -34,6 +34,7 @@ typedef struct known_host_t {
 #define LINKEDLIST_DOUBLE 1
 
 #include "util/linked_list.h"
+#include "util/logging.h"
 
 #undef LINKEDLIST_DOUBLE
 #undef LINKEDLIST_TYPE
@@ -46,6 +47,7 @@ static int hostlist_find_uuid(known_host_t *node, void *v);
 static void hostlist_node_free(known_host_t *node);
 
 void pcmanager_load_known_hosts(pcmanager_t *manager) {
+    applog_i("PCManager", "Load unknown hosts");
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
     free(confdir);
     known_host_t *hosts = NULL;
@@ -57,6 +59,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
     for (known_host_t *cur = hosts; cur; cur = cur->next) {
         const char *mac = cur->mac, *hostname = cur->hostname, *address = cur->address;
         if (!mac || !hostname || !address) {
+            applog_w("PCManager", "Unknown host entry: mac=%s, hostname=%s, address=%s", mac, hostname, address);
             continue;
         }
 
@@ -77,6 +80,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         }
 
         if (!selected_set && cur->selected) {
+            applog_i("PCManager", "Known host %s was selected", hosts);
             node->selected = true;
             selected_set = true;
         }
@@ -143,7 +147,7 @@ static int known_hosts_parse(known_host_t **list, const char *section, const cha
 }
 
 static int hostlist_find_uuid(known_host_t *node, void *v) {
-    return uuidstr_t_equals_s(&node->uuid, v);
+    return !uuidstr_t_equals_s(&node->uuid, v);
 }
 
 static void hostlist_node_free(known_host_t *node) {
