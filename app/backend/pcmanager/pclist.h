@@ -7,7 +7,7 @@
 
 #include "../pcmanager.h"
 
-pclist_t *pclist_insert_known(pcmanager_t *manager, SERVER_DATA *server);
+pclist_t *pclist_insert_known(pcmanager_t *manager, const uuidstr_t *uuid, SERVER_DATA *server);
 
 /**
  * Update item in server list if exists. Otherwise insert.

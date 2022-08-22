@@ -164,16 +164,14 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     update_pclist(controller);
 
     for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
-        uuidstr_t uuid;
         if (cur->selected) {
-            uuidstr_fromstr(&uuid, cur->server->uuid);
-            select_pc(controller, &uuid, true);
+            select_pc(controller, &cur->id, true);
             if (controller->first_created) {
                 controller->detail_opened = true;
             }
             continue;
         }
-        pcmanager_request_update(pcmanager, &uuid, NULL, NULL);
+        pcmanager_request_update(pcmanager, &cur->id, NULL, NULL);
     }
     controller->pane_initialized = true;
     set_detail_opened(controller, controller->detail_opened);
@@ -319,7 +317,7 @@ static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const pcl
     lv_obj_set_style_outline_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
     lv_obj_set_style_outline_width(btn_img, LV_DPX(2), LV_STATE_CHECKED);
     uuidstr_t *uuid = SDL_malloc(sizeof(uuidstr_t));
-    uuidstr_fromstr(uuid, node->server->uuid);
+    *uuid = node->id;
     lv_obj_set_user_data(pcitem, uuid);
     lv_obj_add_event_cb(pcitem, pclist_item_deleted, LV_EVENT_DELETE, NULL);
     return pcitem;

@@ -8,7 +8,7 @@
 #include "stream/settings.h"
 
 typedef struct known_host_t {
-    char *uuid;
+    uuidstr_t uuid;
     char *mac;
     char *hostname;
     char *address;
@@ -39,8 +39,6 @@ typedef struct known_host_t {
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
 
-static inline void strlower(char *p);
-
 static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value);
 
 static int hostlist_find_uuid(known_host_t *node, void *v);
@@ -62,15 +60,13 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
             continue;
         }
 
-        char *uuid = cur->uuid;
-        strlower(uuid);
         PSERVER_DATA server = serverdata_new();
-        server->uuid = uuid;
+        server->uuid = uuidstr_tostr(&cur->uuid);
         server->mac = mac;
         server->hostname = hostname;
         server->serverInfo.address = address;
 
-        pclist_t *node = pclist_insert_known(manager, server);
+        pclist_t *node = pclist_insert_known(manager, &cur->uuid, server);
 
         if (cur->favs) {
             for (appid_list_t *fcur = cur->favs; fcur; fcur = fcur->next) {
@@ -122,17 +118,12 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
     fclose(fp);
 }
 
-static inline void strlower(char *p) {
-    for (; *p; ++p)
-        *p = (char) SDL_tolower(*p);
-}
-
 static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value) {
     if (!section) return 1;
     known_host_t *host = hostlist_find_by(*list, section, (hostlist_find_fn) hostlist_find_uuid);
     if (!host) {
         host = hostlist_new();
-        host->uuid = SDL_strdup(section);
+        uuidstr_fromstr(&host->uuid, section);
         *list = hostlist_append(*list, host);
     }
     if (INI_NAME_MATCH("mac")) {
@@ -152,7 +143,7 @@ static int known_hosts_parse(known_host_t **list, const char *section, const cha
 }
 
 static int hostlist_find_uuid(known_host_t *node, void *v) {
-    return strncasecmp(node->uuid, v, 36);
+    return uuidstr_t_equals_s(&node->uuid, v);
 }
 
 static void hostlist_node_free(known_host_t *node) {

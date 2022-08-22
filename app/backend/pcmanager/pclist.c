@@ -43,9 +43,9 @@ static int pclist_ll_compare_uuid(pclist_t *other, const void *v);
 
 static int favlist_find_id(appid_list_t *other, const void *v);
 
-pclist_t *pclist_insert_known(pcmanager_t *manager, SERVER_DATA *server) {
+pclist_t *pclist_insert_known(pcmanager_t *manager, const uuidstr_t *id, SERVER_DATA *server) {
     pclist_t *node = pclist_ll_new();
-    uuidstr_fromstr(&node->id, server->uuid);
+    node->id = *id;
     node->state.code = SERVER_STATE_NONE;
     node->server = server;
     node->known = true;
@@ -127,6 +127,7 @@ void pclist_node_apply(pclist_t *node, const SERVER_STATE *state, SERVER_DATA *s
             if (node->server) {
                 serverdata_free(node->server);
             }
+            uuidstr_fromstr(&node->id, server->uuid);
             node->server = server;
         }
         node->known |= server->paired;
@@ -203,4 +204,3 @@ static void remove_perform(pclist_update_context_t *context) {
     pcmanager_listeners_notify(manager, &context->uuid, PCMANAGER_NOTIFY_REMOVED);
     pclist_ll_nodefree(node);
 }
-
