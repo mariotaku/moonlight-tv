@@ -22,6 +22,10 @@
 
 #include <stdbool.h>
 
+typedef struct window_state_t {
+    int x, y, w, h;
+} window_state_t;
+
 typedef struct configuration_t {
     STREAM_CONFIGURATION stream;
     int debug_level;
@@ -33,6 +37,7 @@ typedef struct configuration_t {
     bool sops;
     bool localaudio;
     bool fullscreen;
+    window_state_t window_state;
     int rotate;
     bool unsupported;
     bool quitappafter;

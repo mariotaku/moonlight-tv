@@ -23,7 +23,7 @@
  **********************/
 
 typedef struct view_pool_ll_t {
-    int id, position;
+    int position;
     lv_obj_t *item;
     struct view_pool_ll_t *prev, *next;
 } view_pool_ll_t;
@@ -75,15 +75,13 @@ static lv_obj_t *view_pool_take_by_position(view_pool_ll_t **pool, int position)
 
 static bool view_pool_remove_by_instance(view_pool_ll_t **pool, const lv_obj_t *obj);
 
-static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id);
-
 static view_pool_ll_t *view_pool_node_by_position(view_pool_ll_t *pool, int position);
 
 static view_pool_ll_t *view_pool_node_by_instance(view_pool_ll_t *pool, const lv_obj_t *obj);
 
 static lv_obj_t *view_pool_poll(view_pool_ll_t **pool);
 
-static void view_pool_put(view_pool_ll_t **pool, int id, int position, lv_obj_t *value);
+static void view_pool_put(view_pool_ll_t **pool, int position, lv_obj_t *value);
 
 static void view_pool_reset(view_pool_ll_t **pool);
 
@@ -175,14 +173,17 @@ void lv_gridview_set_data(lv_obj_t *obj, void *data) {
     grid->data = data;
     if (data) {
         int item_count = adapter.item_count(obj, data);
+        bool count_changed = grid->item_count != item_count;
         grid->item_count = item_count;
-        int row_count = item_count / grid->column_count;
-        if (grid->column_count * row_count < item_count) {
-            row_count++;
+        if (count_changed) {
+            int row_count = item_count / grid->column_count;
+            if (grid->column_count * row_count < item_count) {
+                row_count++;
+            }
+            update_row_dsc(grid, row_count);
+            lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
+            update_row_count(grid, row_count);
         }
-        update_row_dsc(grid, row_count);
-        lv_obj_set_grid_dsc_array(obj, grid->col_dsc, grid->row_dsc);
-        update_row_count(grid, row_count);
     }
     update_grid(grid, true);
 }
@@ -227,10 +228,17 @@ void lv_gridview_rebind(lv_obj_t *obj) {
             int position = row_idx * grid->column_count + col_idx;
             if (position >= grid->item_count) continue;
             view_pool_ll_t *node = view_pool_node_by_position(grid->pool_inuse, position);
-            if (!node)return;
+            if (!node) return;
             grid->adapter.bind_view(&grid->obj, node->item, grid->data, position);
         }
     }
+}
+
+void lv_gridview_rebind_item(lv_obj_t *obj, int position) {
+    lv_grid_t *grid = (lv_grid_t *) obj;
+    view_pool_ll_t *node = view_pool_node_by_position(grid->pool_inuse, position);
+    if (!node) return;
+    grid->adapter.bind_view(&grid->obj, node->item, grid->data, position);
 }
 
 /**********************
@@ -326,7 +334,7 @@ static void lv_gridview_event(const lv_obj_class_t *class_p, lv_event_t *e) {
 
 static void update_col_dsc(lv_grid_t *adapter) {
     int column_count = adapter->column_count;
-    lv_coord_t *col_dsc = lv_mem_realloc(adapter->col_dsc, (column_count + 1) * sizeof(lv_coord_t));
+    lv_coord_t * col_dsc = lv_mem_realloc(adapter->col_dsc, (column_count + 1) * sizeof(lv_coord_t));
     for (int i = 0; i < column_count; i++) {
         col_dsc[i] = LV_GRID_FR(1);
     }
@@ -338,7 +346,7 @@ static void update_row_dsc(lv_grid_t *adapter, int row_count) {
     if (!row_count) {
         row_count = 1;
     }
-    lv_coord_t *row_dsc = lv_mem_realloc(adapter->row_dsc, (row_count + 1) * sizeof(lv_coord_t));
+    lv_coord_t * row_dsc = lv_mem_realloc(adapter->row_dsc, (row_count + 1) * sizeof(lv_coord_t));
     for (int i = 0; i < row_count; i++) {
         row_dsc[i] = adapter->row_height;
     }
@@ -498,13 +506,13 @@ static void adapter_recycle_item(lv_grid_t *adapter, int position) {
     lv_obj_t *item = view_pool_take_by_position(&adapter->pool_inuse, position);
     LV_ASSERT_MSG(item, "should never recycle invalid item");
     lv_obj_add_flag(item, LV_OBJ_FLAG_HIDDEN);
-    view_pool_put(&adapter->pool_free, -1, -1, item);
+    view_pool_put(&adapter->pool_free, -1, item);
 }
 
 static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int position) {
     int id = adapter_item_id(grid, position);
     // Move item from free pool to inuse pool, or create one
-    view_pool_ll_t *cur = view_pool_node_by_id(grid->pool_inuse, id);
+    view_pool_ll_t *cur = view_pool_node_by_position(grid->pool_inuse, position);
     lv_obj_t *item = cur ? cur->item : NULL;
     if (item) return item;
     item = view_pool_poll(&grid->pool_free);
@@ -513,7 +521,7 @@ static lv_obj_t *adapter_obtain_item(lv_grid_t *grid, int position) {
         lv_obj_add_event_cb(item, item_delete_cb, LV_EVENT_DELETE, grid);
     }
     lv_obj_clear_flag(item, LV_OBJ_FLAG_HIDDEN);
-    view_pool_put(&grid->pool_inuse, id, position, item);
+    view_pool_put(&grid->pool_inuse, position, item);
     return item;
 }
 
@@ -532,15 +540,6 @@ static bool view_pool_remove_by_instance(view_pool_ll_t **pool, const lv_obj_t *
     (*pool) = view_pool_remove_item(*pool, node);
     lv_mem_free(node);
     return true;
-}
-
-static view_pool_ll_t *view_pool_node_by_id(view_pool_ll_t *pool, int id) {
-    for (view_pool_ll_t *cur = pool; cur != NULL; cur = cur->next) {
-        if (cur->id == id) {
-            return cur;
-        }
-    }
-    return NULL;
 }
 
 static view_pool_ll_t *view_pool_node_by_position(view_pool_ll_t *pool, int position) {
@@ -573,11 +572,10 @@ static lv_obj_t *view_pool_poll(view_pool_ll_t **pool) {
     return item;
 }
 
-static void view_pool_put(view_pool_ll_t **pool, int id, int position, lv_obj_t *value) {
+static void view_pool_put(view_pool_ll_t **pool, int position, lv_obj_t *value) {
     view_pool_ll_t *head = lv_mem_alloc(sizeof(view_pool_ll_t));
     lv_memset_00(head, sizeof(view_pool_ll_t));
     head->item = value;
-    head->id = id;
     head->position = position;
     view_pool_ll_t *old_head = *pool;
     head->next = old_head;

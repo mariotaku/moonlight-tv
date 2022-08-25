@@ -88,6 +88,10 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->sops = true;
     config->localaudio = false;
     config->fullscreen = true;
+    if (!config->fullscreen) {
+        config->window_state.w = 1280;
+        config->window_state.h = 720;
+    }
     // TODO make this automatic
     config->unsupported = true;
     config->quitappafter = false;
@@ -171,6 +175,14 @@ void settings_write(const char *filename, PCONFIGURATION config) {
         ini_write_string(fp, "device", config->audio_device);
     }
     ini_write_string(fp, "surround", serialize_audio_config(config->stream.audioConfiguration));
+
+    if (!config->fullscreen) {
+        ini_write_section(fp, "window");
+        ini_write_int(fp, "x", config->window_state.x);
+        ini_write_int(fp, "y", config->window_state.y);
+        ini_write_int(fp, "width", config->window_state.w);
+        ini_write_int(fp, "height", config->window_state.h);
+    }
 
     fclose(fp);
 }
@@ -257,6 +269,14 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
 #endif
     } else if (INI_NAME_MATCH("debug_level")) {
         set_int(&config->debug_level, value);
+    } else if (INI_FULL_MATCH("window", "x")) {
+        set_int(&config->window_state.x, value);
+    } else if (INI_FULL_MATCH("window", "y")) {
+        set_int(&config->window_state.y, value);
+    } else if (INI_FULL_MATCH("window", "width")) {
+        set_int(&config->window_state.w, value);
+    } else if (INI_FULL_MATCH("window", "height")) {
+        set_int(&config->window_state.h, value);
     }
     return 1;
 }

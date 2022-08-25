@@ -63,6 +63,8 @@ void lv_gridview_focus(lv_obj_t *obj, int position);
 int lv_gridview_get_focused_index(lv_obj_t *obj);
 
 void lv_gridview_rebind(lv_obj_t *obj);
+
+void lv_gridview_rebind_item(lv_obj_t *obj, int position);
 /**********************
  *      MACROS
  **********************/

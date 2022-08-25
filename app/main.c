@@ -41,6 +41,8 @@ SDL_Window *app_create_window();
 
 static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
+static void applog_lvlog(const char *msg);
+
 static void log_libs_version();
 
 int main(int argc, char *argv[]) {
@@ -67,6 +69,7 @@ int main(int argc, char *argv[]) {
 
     module_post_init(argc, argv);
 
+    lv_log_register_print_cb(applog_lvlog);
     lv_init();
     lv_disp_t *disp = lv_app_display_init(app_window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
@@ -100,7 +103,6 @@ int main(int argc, char *argv[]) {
         SDL_Delay(1);
     }
 
-    settings_save(app_configuration);
 
     lv_fragment_manager_del(app_uimanager);
 
@@ -108,6 +110,11 @@ int main(int argc, char *argv[]) {
     lv_app_display_deinit(disp);
     lv_img_decoder_delete(img_decoder);
     app_font_deinit(fonts);
+
+    if (!app_configuration->fullscreen) {
+        SDL_GetWindowPosition(app_window, &app_configuration->window_state.x, &app_configuration->window_state.y);
+        SDL_GetWindowSize(app_window, &app_configuration->window_state.w, &app_configuration->window_state.h);
+    }
 
     SDL_DestroyWindow(app_window);
     app_uninit_video();
@@ -118,6 +125,7 @@ int main(int argc, char *argv[]) {
 
     bus_finalize();
 
+    settings_save(app_configuration);
     settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);
@@ -128,20 +136,25 @@ int main(int argc, char *argv[]) {
 }
 
 SDL_Window *app_create_window() {
-    Uint32 window_flags = SDL_WINDOW_RESIZABLE;
-    int window_width = 1920, window_height = 1080;
+    Uint32 win_flags = SDL_WINDOW_RESIZABLE;
+    int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED,
+            win_width = 1920, win_height = 1080;
     if (app_configuration->fullscreen) {
-        window_flags |= APP_FULLSCREEN_FLAG;
+        win_flags |= APP_FULLSCREEN_FLAG;
         SDL_DisplayMode mode;
         SDL_GetDisplayMode(0, 0, &mode);
         if (mode.w > 0 && mode.h > 0) {
-            window_width = mode.w;
-            window_height = mode.h;
+            win_width = mode.w;
+            win_height = mode.h;
         }
+    } else {
+        win_x = app_configuration->window_state.x;
+        win_y = app_configuration->window_state.y;
+        win_width = app_configuration->window_state.w;
+        win_height = app_configuration->window_state.h;
     }
-    SDL_Window *win = SDL_CreateWindow("Moonlight", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                                       window_width, window_height, window_flags);
-    SDL_assert(win);
+    SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
+    SDL_assert(win != NULL);
 
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(lv_sdl_img_data_logo_96.data.constptr,
                                                           (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);
@@ -195,6 +208,21 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
         return;
 #endif
     applog(priority_name[priority], category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], message);
+}
+
+static void applog_lvlog(const char *msg) {
+    const char *start = strchr(msg, '\t') + 1;
+    static const applog_level_t level_value[] = {
+            APPLOG_VERBOSE, APPLOG_INFO, APPLOG_WARN, APPLOG_ERROR, APPLOG_DEBUG,
+    };
+    static const char *level_name[] = {
+            "Trace", "Info", "Warn", "Error", "User",
+    };
+    for (int i = 0; i < sizeof(level_value) / sizeof(applog_level_t); i++) {
+        if (strncmp(level_name[i], msg + 1, (start - msg - 3)) == 0) {
+            applog(level_value[i], "LVGL", start);
+        }
+    }
 }
 
 void app_set_fullscreen(bool fullscreen) {

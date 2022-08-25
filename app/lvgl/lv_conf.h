@@ -158,7 +158,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 
 /*1: Print the log with 'printf';
  *0: User need to register a callback with `lv_log_register_print_cb()`*/
-#  define LV_LOG_PRINTF   1
+#  define LV_LOG_PRINTF   0
 
 /*Enable/disable LV_LOG_TRACE in modules that produces a huge number of logs*/
 #  define LV_LOG_TRACE_MEM            1
@@ -185,8 +185,9 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_ASSERT_OBJ           DEBUG /*Check the object's type and existence (e.g. not deleted). (Slow)*/
 
 /*Add a custom handler when assert happens e.g. to restart the MCU*/
-#define LV_ASSERT_HANDLER_INCLUDE   <stdlib.h>
-#define LV_ASSERT_HANDLER   abort();   /*Halt by default*/
+#define LV_ASSERT_HANDLER_INCLUDE   <SDL.h>
+static const int lv_abort = 0;
+#define LV_ASSERT_HANDLER   SDL_assert_always(lv_abort);   /*Halt by default*/
 
 /*-------------
  * Others
