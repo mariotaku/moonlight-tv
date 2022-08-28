@@ -73,7 +73,7 @@ void evmouse_listen(evmouse_t *mouse, evmouse_listener_t listener, void *userdat
             FD_SET(mouse->fds[i], &fds);
         }
         struct timeval timeout = {.tv_sec = 0, .tv_usec = 1000};
-        if (select(FD_SETSIZE, &fds, NULL, NULL, NULL) <= 0) {
+        if (select(FD_SETSIZE, &fds, NULL, NULL, &timeout) <= 0) {
             continue;
         }
 

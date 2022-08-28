@@ -304,6 +304,9 @@ static int mouse_worker(session_t *session) {
 }
 
 static void mouse_listener(const evmouse_event_t *event, void *userdata) {
+    if (!absinput_should_accept()) {
+        return;
+    }
     switch (event->type) {
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP: {
