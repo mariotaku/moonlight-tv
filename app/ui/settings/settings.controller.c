@@ -112,6 +112,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     } else {
         controller->nav_group = lv_group_create();
         controller->detail_group = lv_group_create();
+        lv_group_set_wrap(controller->detail_group, false);
 
         lv_obj_add_event_cb(controller->nav, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->nav_group);
         lv_obj_add_event_cb(controller->detail, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->detail_group);

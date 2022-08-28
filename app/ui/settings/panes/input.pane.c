@@ -39,7 +39,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_checkbox(view, locstr("View-only mode"), &app_configuration->viewonly, false);
     pref_desc_label(view, locstr("Don't send mouse, keyboard or gamepad input to host computer."), false);
 
-    pref_header(view, "Mouse");
+    pref_header(view, locstr("Mouse"));
 
 #if FEATURE_INPUT_EVMOUSE
     lv_obj_t *hwmouse_toggle = pref_checkbox(view, locstr("Use mouse hardware"),
@@ -55,7 +55,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pane->absmouse_hint = pref_desc_label(view, locstr("Better for remote desktop. "
                                                        "For some games, mouse will not work properly."), false);
 
-    pref_header(view, "Gamepad");
+    pref_header(view, locstr("Gamepad"));
 
     pref_checkbox(view, locstr("Virtual mouse"), &app_configuration->virtual_mouse, false);
     pref_desc_label(view, locstr("Press LB + RT to move mouse cursor with sticks. "

@@ -104,12 +104,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_layout(view, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(view, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+
     lv_obj_t *decoder_label = pref_title_label(view, locstr("Video decoder"));
     lv_label_set_text_fmt(decoder_label, locstr("Video decoder - using %s"),
                           decoder_definitions[decoder_current].name);
     lv_obj_t *vdec_dropdown = pref_dropdown_string(view, controller->vdec_entries, controller->vdec_entries_len,
                                                    &app_configuration->decoder);
     lv_obj_set_width(vdec_dropdown, LV_PCT(100));
+
     lv_obj_t *audio_label = pref_title_label(view, locstr("Audio backend"));
     const char *audio_name = audio_current == AUDIO_DECODER ? locstr("Decoder provided")
                                                             : audio_definitions[audio_current].name;
@@ -117,6 +119,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *adec_dropdown = pref_dropdown_string(view, controller->adec_entries, controller->adec_entries_len,
                                                    &app_configuration->audio_backend);
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
+
+    pref_header(view, "Video Settings");
 
     lv_obj_t *hevc_checkbox = pref_checkbox(view, locstr("Prefer H265 codec"),
                                             &app_configuration->stream.supportsHevc,
@@ -150,6 +154,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *hdr_more = pref_desc_label(view, locstr("Learn more about HDR feature."), true);
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
+
+    pref_header(view, "Audio Settings");
 
     pref_title_label(view, locstr("Sound Channels (Experimental)"));
 
