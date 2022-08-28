@@ -113,9 +113,13 @@ void app_set_mouse_grab(bool grab) {
         SDL_SetCursor(SDL_GetDefaultCursor());
     }
 #else
-    SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
-    if (!grab) {
-        SDL_ShowCursor(SDL_TRUE);
+    if (app_configuration->hardware_mouse) {
+        SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
+    } else {
+        SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
+        if (!grab) {
+            SDL_ShowCursor(SDL_TRUE);
+        }
     }
 #endif
 }
