@@ -59,6 +59,7 @@ if (TARGET_WEBOS)
         endif ()
     endif ()
     set(THREADS_PTHREAD_ARG "2" CACHE STRING "Result from TRY_RUN" FORCE)
+    set(OS_LINUX TRUE)
     set(HAVE_SDL TRUE)
 
     set(WEBOS_APPINFO_ID "com.limelight.webos")
@@ -242,51 +243,16 @@ set(SOURCES
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c
         app/stream/input/sdl/gamepad.c
-        app/stream/input/sdl/mouse.c
-        app/platform/sdl/bus.c
-        app/platform/sdl/input_manager.c
-        app/platform/sdl/navkey_sdl.c
-        app/platform/common/i18n_common.c)
-
-if (TARGET_WEBOS)
-    list(APPEND SOURCES
-            app/platform/webos/keyboard_webos.c
-            app/platform/webos/navkey_sdl_webos.c
-            app/platform/webos/path_webos.c
-            app/platform/webos/os_info.c
-            app/platform/webos/SDL_webOS_compat.c
-            app/platform/webos/pbnjson_compat.c
-            app/platform/webos/logging_pmlog.c
-            app/platform/webos/app_webos.c
-            app/platform/webos/lunasynccall.c
-            app/platform/webos/i18n_webos.c
-            )
-else ()
-    list(APPEND SOURCES
-            app/platform/sdl/path_sdl.c
-            app/platform/common/logging_stdio.c
-            app/platform/common/app_common.c
-            app/platform/common/i18n_gettext.c
-            )
-    if (OS_WINDOWS)
-        list(APPEND SOURCES app/platform/windows/os_info_windows.c)
-    else ()
-        list(APPEND SOURCES app/platform/linux/os_info_linux.c)
-    endif ()
-endif ()
-
-set(RES
-        res/moonlight.png
-        res/defcover.png
-        res/fav_indicator.png
-        app/lvgl/font/material_icons_regular.ttf)
-
+        app/stream/input/sdl/mouse.c)
 
 if (NOT HAVE_SDL)
     message(FATAL_ERROR "SDL2 required")
 endif ()
 
 add_executable(moonlight ${SOURCES})
+add_subdirectory(app/platform)
+add_subdirectory(res)
+
 if (WITH_SANITIZE)
     target_compile_options(moonlight PRIVATE -fsanitize=${WITH_SANITIZE} -g3 -O0)
     target_link_options(moonlight PRIVATE -fsanitize=${WITH_SANITIZE} -static-libasan)
@@ -332,10 +298,6 @@ target_link_libraries(moonlight PRIVATE
         moonlight-module-api moonlight-sdlaud
         )
 
-add_custom_target(moonlight-res
-        COMMAND ${NPM_COMMAND} run gen-res-headers -- -i ${RES} -o app/res
-        SOURCES ${RES})
-add_dependencies(moonlight moonlight-res)
 
 macro(moonlight_add_module)
     set(multiValueArgs TARGETS)

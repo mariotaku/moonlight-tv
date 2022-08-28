@@ -1,13 +1,16 @@
 const {snakeCase} = require('snake-case');
 
-const {ArgumentParser} = require("argparse");
-const fs = require("fs");
-const path = require("path");
-const parser = new ArgumentParser()
+const {ArgumentParser} = require('argparse');
+const fs = require('fs');
+const path = require('path');
+const process = require('process');
+
+const parser = new ArgumentParser();
 parser.add_argument('-i', '--input', {nargs: '+', required: true});
 parser.add_argument('-o', '--output', {required: true});
+parser.add_argument('-d', '--directory', {default: process.cwd()});
 
-const {input, output} = parser.parse_args();
+const {input, output, directory} = parser.parse_args();
 
 function writeHeader(p) {
     const basename = snakeCase(path.basename(p));
@@ -33,5 +36,5 @@ function writeHeader(p) {
 }
 
 for (const item of input) {
-    writeHeader(item);
+    writeHeader(path.resolve(directory, item));
 }
