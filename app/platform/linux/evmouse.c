@@ -64,7 +64,10 @@ static int mouse_fd_default() {
         dev_path[31] = '\0';
         int fd = open(dev_path, O_RDONLY);
         if (fd < 0) {
-            applog_w("EvMouse", "Failed to open %s: %s", dev_path, strerror(errno));
+            // Silently ignore "No such device or address"
+            if (errno != ENXIO) {
+                applog_w("EvMouse", "Failed to open %s: %d (%s)", dev_path, errno, strerror(errno));
+            }
             continue;
         }
         mouse_info_t mouse_info;
