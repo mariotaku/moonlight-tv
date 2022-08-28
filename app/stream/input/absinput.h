@@ -3,7 +3,10 @@
 #include <stdbool.h>
 #include <Limelight.h>
 
+typedef struct sessinput_t sessinput_t;
+
 extern bool absinput_no_control;
+extern bool absinput_no_sdl_mouse;
 
 void absinput_init();
 

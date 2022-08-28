@@ -32,3 +32,7 @@ bool absinput_gamepad_known(SDL_JoystickID sdl_id);
 
 PGAMEPAD_STATE get_gamepad(SDL_JoystickID sdl_id);
 
+
+void sdlinput_handle_mbutton_event(const SDL_MouseButtonEvent *event);
+
+void sdlinput_handle_mwheel_event(const SDL_MouseWheelEvent *event);

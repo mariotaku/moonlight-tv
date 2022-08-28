@@ -21,21 +21,35 @@ typedef struct mouse_info_t {
     struct input_id id;
 } mouse_info_t;
 
-static int mouse_fd_default();
+#define MOUSE_MAX_FDS 8
+
+typedef bool (*mouse_filter_fn)(const mouse_info_t *info);
+
+static int mouse_fds_find(int *fds, int max, mouse_filter_fn filter);
+
+static bool mouse_filter_any(const mouse_info_t *info);
 
 static bool is_mouse(int fd, mouse_info_t *info);
 
 static inline bool has_bit(const uint8_t *bits, uint32_t bit);
 
+static void dispatch_motion(const struct input_event *raw, evmouse_listener_t listener, void *userdata);
+
+static void dispatch_wheel(const struct input_event *raw, evmouse_listener_t listener, void *userdata);
+
+static void dispatch_button(const struct input_event *raw, evmouse_listener_t listener, void *userdata);
+
 struct evmouse_t {
-    int fd;
+    int fds[MOUSE_MAX_FDS];
+    int nfds;
+    bool listening;
 };
 
 evmouse_t *evmouse_open_default() {
     evmouse_t *mouse = malloc(sizeof(evmouse_t));
     memset(mouse, 0, sizeof(evmouse_t));
-    mouse->fd = mouse_fd_default();
-    if (mouse->fd < 0) {
+    mouse->nfds = mouse_fds_find(mouse->fds, MOUSE_MAX_FDS, mouse_filter_any);
+    if (mouse->nfds <= 0) {
         free(mouse);
         return NULL;
     }
@@ -44,19 +58,74 @@ evmouse_t *evmouse_open_default() {
 
 void evmouse_close(evmouse_t *mouse) {
     assert(mouse != NULL);
-    assert(mouse->fd >= 0);
-    close(mouse->fd);
+    for (int i = 0; i < mouse->nfds; i++) {
+        close(mouse->fds[i]);
+    }
     free(mouse);
 }
 
-static int mouse_fd_default() {
+void evmouse_listen(evmouse_t *mouse, evmouse_listener_t listener, void *userdata) {
+    mouse->listening = true;
+    while (mouse->listening) {
+        fd_set fds;
+        FD_ZERO(&fds);
+        for (int i = 0; i < mouse->nfds; i++) {
+            FD_SET(mouse->fds[i], &fds);
+        }
+        struct timeval timeout = {.tv_sec = 0, .tv_usec = 1000};
+        if (select(FD_SETSIZE, &fds, NULL, NULL, NULL) <= 0) {
+            continue;
+        }
+
+        for (int i = 0; i < mouse->nfds; i++) {
+            int fd = mouse->fds[i];
+            if (!FD_ISSET(fd, &fds)) {
+                continue;
+            }
+            struct input_event raw_ev;
+            if (read(fd, &raw_ev, sizeof(raw_ev)) != sizeof(raw_ev)) {
+                continue;
+            }
+            switch (raw_ev.type) {
+                case EV_REL:
+                    switch (raw_ev.code) {
+                        case REL_X:
+                        case REL_Y:
+                            dispatch_motion(&raw_ev, listener, userdata);
+                            break;
+                        case REL_HWHEEL:
+                        case REL_WHEEL:
+                            dispatch_wheel(&raw_ev, listener, userdata);
+                            break;
+                    }
+                    break;
+                case EV_KEY:
+                    switch (raw_ev.code) {
+                        case BTN_LEFT:
+                        case BTN_RIGHT:
+                        case BTN_MIDDLE:
+                            dispatch_button(&raw_ev, listener, userdata);
+                            break;
+                    }
+                    break;
+            }
+        }
+    }
+}
+
+void evmouse_interrupt(evmouse_t *mouse) {
+    mouse->listening = false;
+}
+
+static int mouse_fds_find(int *fds, int max, mouse_filter_fn filter) {
     DIR *dir = opendir("/dev/input");
     if (dir == NULL) {
-        return -1;
+        return 0;
     }
     struct dirent *ent;
     char dev_path[32] = "/dev/input/";
-    while ((ent = readdir(dir))) {
+    int nfds = 0;
+    while (nfds < max && (ent = readdir(dir))) {
         if (strncmp(ent->d_name, "event", 5) != 0) {
             continue;
         }
@@ -71,17 +140,14 @@ static int mouse_fd_default() {
             continue;
         }
         mouse_info_t mouse_info;
-        if (is_mouse(fd, &mouse_info)) {
-            char name[256];
-            if (ioctl(fd, EVIOCGNAME(sizeof(name)), name) >= 0) {
-                applog_i("EvMouse", "Device %s is a mouse: %s", dev_path, name);
-            }
-            return fd;
+        if (is_mouse(fd, &mouse_info) && (!filter || filter(&mouse_info))) {
+            fds[nfds++] = fd;
+            continue;
         }
         close(fd);
     }
     closedir(dir);
-    return -1;
+    return nfds;
 }
 
 static bool is_mouse(int fd, mouse_info_t *info) {
@@ -91,7 +157,6 @@ static bool is_mouse(int fd, mouse_info_t *info) {
 
     uint8_t keycaps[(KEY_MAX / 8) + 1];
     uint8_t relcaps[(REL_MAX / 8) + 1];
-    uint8_t abscaps[(ABS_MAX / 8) + 1];
 
     if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keycaps)), keycaps) < 0) {
         return false;
@@ -107,6 +172,57 @@ static bool is_mouse(int fd, mouse_info_t *info) {
     return false;
 }
 
+static bool mouse_filter_any(const mouse_info_t *info) {
+    return true;
+}
+
 static inline bool has_bit(const uint8_t *bits, uint32_t bit) {
     return (bits[bit / 8] & 1 << (bit % 8)) != 0;
+}
+
+static void dispatch_motion(const struct input_event *raw, evmouse_listener_t listener, void *userdata) {
+    evmouse_event_t event = {.motion = {.type=SDL_MOUSEMOTION}};
+    switch (raw->code) {
+        case REL_X:
+            event.motion.xrel = raw->value;
+            break;
+        case REL_Y:
+            event.motion.yrel = raw->value;
+            break;
+    }
+    listener(&event, userdata);
+}
+
+static void dispatch_wheel(const struct input_event *raw, evmouse_listener_t listener, void *userdata) {
+    evmouse_event_t event = {.wheel = {.type=SDL_MOUSEWHEEL}};
+    switch (raw->code) {
+        case REL_WHEEL:
+            event.wheel.y = raw->value;
+            break;
+        case REL_HWHEEL:
+            event.wheel.x = raw->value;
+            break;
+    }
+    listener(&event, userdata);
+}
+
+static void dispatch_button(const struct input_event *raw, evmouse_listener_t listener, void *userdata) {
+    evmouse_event_t event = {
+            .button = {
+                    .type=raw->value ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP,
+                    .state = raw->value ? SDL_PRESSED : SDL_RELEASED
+            }
+    };
+    switch (raw->code) {
+        case BTN_LEFT:
+            event.button.button = SDL_BUTTON_LEFT;
+            break;
+        case BTN_RIGHT:
+            event.button.button = SDL_BUTTON_RIGHT;
+            break;
+        case BTN_MIDDLE:
+            event.button.button = SDL_BUTTON_MIDDLE;
+            break;
+    }
+    listener(&event, userdata);
 }

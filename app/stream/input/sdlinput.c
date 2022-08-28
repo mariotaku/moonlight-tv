@@ -28,14 +28,11 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event);
 
 void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event);
 
-void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event);
-
-void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event);
-
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event);
 
 bool absinput_started;
 bool absinput_no_control;
+bool absinput_no_sdl_mouse;
 
 GAMEPAD_STATE gamepads[4];
 short activeGamepadMask = 0;
@@ -123,11 +120,15 @@ bool absinput_dispatch_event(SDL_Event *event) {
             sdlinput_handle_mmotion_event(&event->motion);
             break;
         case SDL_MOUSEWHEEL:
-            sdlinput_handle_mwheel_event(&event->wheel);
+            if (!absinput_no_control && !absinput_no_sdl_mouse) {
+                sdlinput_handle_mwheel_event(&event->wheel);
+            }
             break;
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
-            sdlinput_handle_mbutton_event(&event->button);
+            if (!absinput_no_control && !absinput_no_sdl_mouse) {
+                sdlinput_handle_mbutton_event(&event->button);
+            }
             break;
         case SDL_TEXTINPUT:
             sdlinput_handle_text_event(&event->text);

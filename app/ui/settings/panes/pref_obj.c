@@ -217,6 +217,18 @@ lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title, bool focusable) {
     return label;
 }
 
+lv_obj_t *pref_header(lv_obj_t *parent, const char *title) {
+    lv_obj_t *header = lv_label_create(parent);
+    lv_label_set_text(header, title);
+    lv_obj_set_width(header, LV_PCT(100));
+    lv_obj_set_style_pad_bottom(header, LV_DPX(4), 0);
+    lv_obj_set_style_border_side(header, LV_BORDER_SIDE_BOTTOM, 0);
+    lv_obj_set_style_border_opa(header, LV_OPA_30, 0);
+    lv_obj_set_style_border_color(header, lv_palette_main(LV_PALETTE_GREY), 0);
+    lv_obj_set_style_border_width(header, LV_DPX(1), 0);
+    return header;
+}
+
 static void pref_attrs_free(lv_event_t *event) {
     lv_mem_free(lv_event_get_user_data(event));
 }

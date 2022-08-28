@@ -12,7 +12,6 @@
 #include "util/nullable.h"
 #include "util/path.h"
 #include "util/logging.h"
-#include "util/i18n.h"
 
 static void settings_initialize(const char *confdir, PCONFIGURATION config);
 
@@ -33,12 +32,6 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
 static void set_string(char **field, const char *value);
 
 static void set_int(int *field, const char *value);
-
-struct audio_config {
-    int configuration;
-    const char *value;
-};
-
 
 PCONFIGURATION settings_load() {
     PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
@@ -162,6 +155,9 @@ void settings_write(const char *filename, PCONFIGURATION config) {
     ini_write_section(fp, "input");
     ini_write_bool(fp, "absmouse", config->absmouse);
     ini_write_bool(fp, "virtual_mouse", config->virtual_mouse);
+#if FEATURE_INPUT_EVMOUSE
+    ini_write_bool(fp, "hardware_mouse", config->hardware_mouse);
+#endif
     ini_write_bool(fp, "swap_abxy", config->swap_abxy);
 
     ini_write_section(fp, "video");
@@ -251,6 +247,10 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
         config->absmouse = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("virtual_mouse")) {
         config->virtual_mouse = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("hardware_mouse")) {
+#if FEATURE_INPUT_EVMOUSE
+        config->hardware_mouse = INI_IS_TRUE(value);
+#endif
     } else if (INI_NAME_MATCH("swap_abxy")) {
         config->swap_abxy = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("video", "decoder")) {

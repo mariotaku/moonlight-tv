@@ -43,6 +43,7 @@ typedef struct configuration_t {
     bool quitappafter;
     bool viewonly;
     bool absmouse;
+    bool hardware_mouse;
     bool virtual_mouse;
     bool swap_abxy;
     bool syskey_capture;

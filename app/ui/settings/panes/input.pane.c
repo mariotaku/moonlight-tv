@@ -1,4 +1,5 @@
 #include "app.h"
+#include "config.h"
 
 #include "pref_obj.h"
 
@@ -26,8 +27,17 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_checkbox(view, locstr("View-only mode"), &app_configuration->viewonly, false);
     pref_desc_label(view, locstr("Don't send mouse, keyboard or gamepad input to host computer."), false);
 
+    pref_header(view, "Mouse");
+
+#if FEATURE_INPUT_EVMOUSE
+    pref_checkbox(view, locstr("Only use real mouse"), &app_configuration->hardware_mouse, false);
+    pref_desc_label(view, locstr("Use real mouse device while in stream. This will have better performance."), false);
+#endif
+
     pref_checkbox(view, locstr("Absolute mouse mode"), &app_configuration->absmouse, false);
     pref_desc_label(view, locstr("Better for remote desktop. For some games, mouse will not work properly."), false);
+
+    pref_header(view, "Gamepad");
 
     pref_checkbox(view, locstr("Virtual mouse"), &app_configuration->virtual_mouse, false);
     pref_desc_label(view, locstr("Press LB + RT to move mouse cursor with sticks. "

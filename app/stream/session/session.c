@@ -16,6 +16,10 @@
 #include "libgamestream/errors.h"
 
 #include "util/logging.h"
+#include "platform/linux/evmouse.h"
+#include "stream/input/sdlinput.h"
+
+#include <errno.h>
 
 extern CONNECTION_LISTENER_CALLBACKS connection_callbacks;
 
@@ -38,12 +42,20 @@ typedef struct {
     SDL_cond *cond;
     SDL_mutex *mutex;
     SDL_Thread *thread;
+    struct {
+        SDL_Thread *thread;
+        evmouse_t *dev;
+    } mouse;
     PVIDEO_PRESENTER_CALLBACKS pres;
 } session_t;
 
 static session_t *session_active;
 
 static int streaming_worker(session_t *session);
+
+static void mouse_listener(const evmouse_event_t *event, void *userdata);
+
+static int mouse_worker(session_t *session);
 
 static void streaming_set_status(STREAMING_STATUS status);
 
@@ -116,6 +128,9 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
     session->mutex = SDL_CreateMutex();
     session->cond = SDL_CreateCond();
     session->thread = SDL_CreateThread((SDL_ThreadFunction) streaming_worker, "session", session);
+    if (!config->viewonly && config->hardware_mouse) {
+        session->mouse.thread = SDL_CreateThread((SDL_ThreadFunction) mouse_worker, "sessinput", session);
+    }
     session_active = session;
     return 0;
 }
@@ -126,6 +141,9 @@ void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason) {
         return;
     }
     SDL_LockMutex(session->mutex);
+    if (session->mouse.dev != NULL) {
+        evmouse_interrupt(session->mouse.dev);
+    }
     session->quitapp = quitapp;
     session->interrupted = true;
     if (reason >= STREAMING_INTERRUPT_ERROR) {
@@ -166,6 +184,7 @@ int streaming_worker(session_t *session) {
     PSERVER_DATA server = session->server;
     PCONFIGURATION config = session->config;
     absinput_no_control = config->viewonly;
+    absinput_no_sdl_mouse = config->hardware_mouse;
     absinput_set_virtual_mouse(false);
     int appId = session->appId;
 
@@ -261,11 +280,43 @@ int streaming_worker(session_t *session) {
     settings_free(config);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
+    if (session->mouse.thread != NULL) {
+        SDL_WaitThread(session->mouse.thread, NULL);
+    }
     SDL_Thread *thread = session->thread;
     free(session);
     session_active = NULL;
     bus_pushaction((bus_actionfunc) streaming_thread_wait, thread);
     return 0;
+}
+
+static int mouse_worker(session_t *session) {
+    session->mouse.dev = evmouse_open_default();
+    if (session->mouse.dev == NULL) {
+        applog_w("Session", "No mouse device available");
+        return ENODEV;
+    }
+    applog_i("Session", "EvMouse opened");
+    evmouse_listen(session->mouse.dev, mouse_listener, session);
+    evmouse_close(session->mouse.dev);
+    applog_i("Session", "EvMouse closed");
+    return 0;
+}
+
+static void mouse_listener(const evmouse_event_t *event, void *userdata) {
+    switch (event->type) {
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP: {
+            sdlinput_handle_mbutton_event(&event->button);
+            break;
+        }
+        case SDL_MOUSEMOTION:
+            LiSendMouseMoveEvent((short) event->motion.xrel, (short) event->motion.yrel);
+            break;
+        case SDL_MOUSEWHEEL:
+            sdlinput_handle_mwheel_event(&event->wheel);
+            break;
+    }
 }
 
 void streaming_enter_fullscreen() {

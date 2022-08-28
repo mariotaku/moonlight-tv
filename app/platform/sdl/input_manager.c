@@ -40,13 +40,6 @@ void inputmgr_init() {
 
     applog_i("Input", "Input manager init, %d game controller mappings loaded", numofmappings);
     absinput_init();
-
-#if FEATURE_INPUT_EVMOUSE
-    evmouse_t *mouse = evmouse_open_default();
-    if (mouse != NULL) {
-        evmouse_close(mouse);
-    }
-#endif
 }
 
 void inputmgr_destroy() {

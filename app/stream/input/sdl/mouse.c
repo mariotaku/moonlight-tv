@@ -7,9 +7,7 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
-    if (absinput_no_control)
-        return;
+void sdlinput_handle_mbutton_event(const SDL_MouseButtonEvent *event) {
     int button = 0;
     switch (event->button) {
         case SDL_BUTTON_LEFT:
@@ -37,13 +35,12 @@ void sdlinput_handle_mbutton_event(SDL_MouseButtonEvent *event) {
                            button);
 }
 
-void sdlinput_handle_mwheel_event(SDL_MouseWheelEvent *event) {
-    if (absinput_no_control) return;
+void sdlinput_handle_mwheel_event(const SDL_MouseWheelEvent *event) {
     LiSendScrollEvent((signed char) event->y);
 }
 
 void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event) {
-    if (absinput_no_control) return;
+    if (absinput_no_control || absinput_no_sdl_mouse) return;
     if (app_get_mouse_relative()) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
     } else {
