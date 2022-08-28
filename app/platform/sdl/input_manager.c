@@ -10,6 +10,13 @@
 #include "util/logging.h"
 
 #include "backend/gamecontrollerdb_updater.h"
+#include "config.h"
+
+#if FEATURE_INPUT_EVMOUSE
+
+#include "platform/linux/evmouse.h"
+
+#endif
 
 void inputmgr_init() {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
@@ -33,6 +40,13 @@ void inputmgr_init() {
 
     applog_i("Input", "Input manager init, %d game controller mappings loaded", numofmappings);
     absinput_init();
+
+#if FEATURE_INPUT_EVMOUSE
+    evmouse_t *mouse = evmouse_open_default();
+    if (mouse != NULL) {
+        evmouse_close(mouse);
+    }
+#endif
 }
 
 void inputmgr_destroy() {
