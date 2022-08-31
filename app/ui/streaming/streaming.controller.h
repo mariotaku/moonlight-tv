@@ -7,8 +7,9 @@
 
 typedef struct {
     lv_fragment_t base;
-    lv_obj_t *scene;
+    lv_obj_t *overlay;
     lv_group_t *group;
+    lv_obj_t *hint;
     lv_obj_t *progress;
     lv_obj_t *video;
     lv_obj_t *kbd_btn, *vmouse_btn;

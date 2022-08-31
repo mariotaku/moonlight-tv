@@ -208,6 +208,7 @@ set(SOURCES
         app/ui/launcher/coverloader.c
         app/ui/streaming/streaming.view.c
         app/ui/streaming/streaming.controller.c
+        app/ui/streaming/hints.c
         app/ui/settings/settings.controller.c
         app/ui/settings/settings.view.c
         app/ui/settings/panes/basic.pane.c

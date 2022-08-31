@@ -61,7 +61,7 @@ bool streaming_overlay_shown() {
 }
 
 bool stats_showing(streaming_controller_t *controller) {
-    return streaming_overlay_shown() || controller->stats->parent != controller->scene;
+    return streaming_overlay_shown() || controller->stats->parent != controller->overlay;
 }
 
 bool streaming_refresh_stats() {
@@ -137,7 +137,13 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
     switch (code) {
         case USER_STREAM_CONNECTING: {
             controller->progress = progress_dialog_create(locstr("Connecting..."));
-            lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
+            if (lv_obj_check_type(controller->progress->parent, &lv_msgbox_backdrop_class)) {
+                lv_obj_set_style_bg_opa(controller->progress->parent, LV_OPA_TRANSP, 0);
+            }
+            lv_obj_set_width(controller->progress, LV_DPX(300));
+            lv_obj_set_height(controller->progress, LV_DPX(100));
+            lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
             return true;
         }
         case USER_STREAM_OPEN: {
@@ -145,13 +151,15 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
                 lv_msgbox_close(controller->progress);
                 controller->progress = NULL;
             }
-            lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
             break;
         }
         case USER_STREAM_CLOSE: {
             controller->progress = progress_dialog_create(locstr("Disconnecting..."));
-            lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(controller->stats, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
             break;
         }
         case USER_STREAM_FINISHED: {
@@ -159,7 +167,8 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
                 lv_msgbox_close(controller->progress);
                 controller->progress = NULL;
             }
-            lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
             if (streaming_errno != 0) {
                 session_error(controller);
                 break;
@@ -191,7 +200,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->vmouse_btn, toggle_vmouse, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CLICKED, self);
-    lv_obj_add_event_cb(controller->scene, overlay_key_cb, LV_EVENT_KEY, controller);
+    lv_obj_add_event_cb(controller->overlay, overlay_key_cb, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(controller->base.obj, hide_overlay, LV_EVENT_CANCEL, controller);
 
     lv_obj_t *notice = lv_obj_create(lv_layer_sys());
@@ -218,7 +227,7 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     if (controller->notice) {
         lv_obj_del(controller->notice);
     }
-    if (controller->stats->parent != controller->scene) {
+    if (controller->stats->parent != controller->overlay) {
         lv_obj_del(controller->stats);
     }
     app_input_set_group(NULL);

@@ -4,6 +4,7 @@
 
 #include "util/i18n.h"
 #include "util/font.h"
+#include "hints.h"
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title);
 
@@ -13,22 +14,34 @@ static void pin_toggle(lv_event_t *e);
 
 lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    lv_obj_t *scene = lv_obj_create(parent);
+    lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_remove_style_all(obj);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(obj, LV_PCT(100), LV_PCT(100));
+
+    lv_obj_t *hint = lv_label_create(obj);
+    lv_obj_set_style_pad_all(hint, LV_DPX(20), 0);
+    lv_obj_align(hint, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_label_set_text_fmt(hint, locstr("Hint: %s"), hints_obtain());
+    controller->hint = hint;
+
+    lv_obj_t *overlay = lv_obj_create(obj);
+    lv_obj_remove_style_all(overlay);
+    controller->overlay = overlay;
+
     controller->group = lv_group_create();
-    controller->scene = scene;
-    lv_obj_add_event_cb(scene, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->group);
+    lv_obj_add_event_cb(overlay, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->group);
 
-    lv_obj_remove_style_all(scene);
-    lv_obj_clear_flag(scene, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(scene, LV_PCT(100), LV_PCT(100));
+    lv_obj_clear_flag(overlay, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_size(overlay, LV_PCT(100), LV_PCT(100));
 
-    lv_obj_t *video = lv_obj_create(scene);
+    lv_obj_t *video = lv_obj_create(overlay);
     lv_obj_remove_style_all(video);
     lv_obj_set_size(video, LV_PCT(50), LV_PCT(50));
     lv_obj_align(video, LV_ALIGN_TOP_LEFT, LV_DPX(20), LV_DPX(20));
     lv_obj_clear_flag(video, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *kbd_btn = lv_btn_create(scene);
+    lv_obj_t *kbd_btn = lv_btn_create(overlay);
     lv_obj_add_flag(kbd_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(kbd_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(kbd_btn, lv_palette_main(LV_PALETTE_BLUE), 0);
@@ -36,7 +49,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_style(kbd_label, &controller->overlay_button_label_style, 0);
     lv_label_set_text(kbd_label, locstr("Soft keyboard"));
 
-    lv_obj_t *vmouse_btn = lv_btn_create(scene);
+    lv_obj_t *vmouse_btn = lv_btn_create(overlay);
     lv_obj_add_flag(vmouse_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(vmouse_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(vmouse_btn, lv_palette_main(LV_PALETTE_GREEN), 0);
@@ -44,7 +57,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_style(vmouse_label, &controller->overlay_button_label_style, 0);
     lv_label_set_text(vmouse_label, locstr("Virtual Mouse"));
 
-    lv_obj_t *suspend_btn = lv_btn_create(scene);
+    lv_obj_t *suspend_btn = lv_btn_create(overlay);
     lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(suspend_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(suspend_btn, lv_palette_main(LV_PALETTE_AMBER), 0);
@@ -52,7 +65,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_style(suspend_lbl, &controller->overlay_button_label_style, 0);
     lv_label_set_text(suspend_lbl, locstr("Disconnect"));
 
-    lv_obj_t *exit_btn = lv_btn_create(scene);
+    lv_obj_t *exit_btn = lv_btn_create(overlay);
     lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(exit_btn, &controller->overlay_button_style, 0);
     lv_obj_set_style_bg_color(exit_btn, lv_palette_main(LV_PALETTE_RED), 0);
@@ -60,7 +73,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_style(exit_lbl, &controller->overlay_button_label_style, 0);
     lv_label_set_text(exit_lbl, locstr("Quit game"));
 
-    lv_obj_t *stats = lv_obj_create(scene);
+    lv_obj_t *stats = lv_obj_create(overlay);
     lv_obj_remove_style_all(stats);
     lv_obj_set_style_text_color(stats, lv_color_white(), 0);
     lv_obj_set_style_pad_gap(stats, LV_DPX(5), 0);
@@ -85,7 +98,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     controller->stats_items.decode_time = stat_label(stats, "Decode time");
 
 
-    lv_obj_add_flag(scene, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 
     controller->video = video;
     controller->kbd_btn = kbd_btn;
@@ -96,7 +109,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
 
     streaming_overlay_resized(controller);
 
-    return scene;
+    return overlay;
 }
 
 void streaming_styles_init(streaming_controller_t *controller) {
@@ -122,7 +135,7 @@ void streaming_overlay_resized(streaming_controller_t *controller) {
     lv_obj_align_to(controller->vmouse_btn, controller->kbd_btn, LV_ALIGN_OUT_RIGHT_MID, LV_DPX(10), 0);
     lv_obj_align_to(controller->suspend_btn, controller->quit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
 
-    lv_obj_update_layout(controller->scene);
+    lv_obj_update_layout(controller->overlay);
 }
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title) {
