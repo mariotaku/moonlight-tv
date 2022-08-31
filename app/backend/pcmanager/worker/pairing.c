@@ -19,6 +19,7 @@ int worker_pairing(cm_request_t *context) {
     int ret = gs_pair(client, server, context->arg1);
     gs_destroy(client);
     if (ret != GS_OK) {
+        context->error = gs_error;
         serverdata_free(server);
         return ret;
     }

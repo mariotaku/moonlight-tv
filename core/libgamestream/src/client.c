@@ -452,16 +452,21 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     data = http_create_data();
     assert(data);
 
-    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
+        gs_error = "Failed to request pairing. Check connection.";
         goto cleanup;
+    }
 
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size)) != GS_OK) {
+        gs_error = "Host returned malformed data.";
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK)
+    } else if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK) {
+        gs_error = "Host returned incorrect response.";
         goto cleanup;
+    }
 
     if (strcmp(result, "1") != 0) {
-        gs_error = "Failed pairing at stage #1";
+        gs_error = "Pairing was declined.";
         ret = GS_FAILED;
         goto cleanup;
     }
