@@ -232,6 +232,8 @@ static void decoder_renderer_cleanup() {
         mmal_pool_destroy(pool_out);
 
     vcos_semaphore_delete(&semaphore);
+
+    gs_sps_finalize();
 }
 
 static int decoder_renderer_submit_decode_unit(PDECODE_UNIT decodeUnit) {

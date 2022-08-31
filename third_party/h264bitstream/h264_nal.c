@@ -76,6 +76,7 @@ void h264_free(h264_stream_t* h)
         }
         free(h->seis);
     }
+    free(h->slice_data);
     free(h->sh);
     free(h);
 }
