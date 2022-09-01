@@ -363,6 +363,7 @@ elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
 
     if (OS_DARWIN)
+        target_link_directories(moonlight PUBLIC ${SDL2_LIBRARY_DIRS})
         target_compile_definitions(moonlight PUBLIC OS_DARWIN)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif (OS_LINUX)

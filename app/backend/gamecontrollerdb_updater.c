@@ -1,8 +1,8 @@
 #include <SDL.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <curl/curl.h>
-#include <sys/file.h>
 
 #include "util/path.h"
 #include "util/logging.h"

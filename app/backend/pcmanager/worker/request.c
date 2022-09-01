@@ -3,7 +3,7 @@
 #include "util/bus.h"
 
 #include <errno.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 static void worker_callback(worker_context_t *args);
 

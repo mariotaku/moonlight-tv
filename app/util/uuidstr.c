@@ -1,7 +1,7 @@
 #include "uuidstr.h"
 
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 void uuidstr_fromstr(uuidstr_t *dest, const char *src) {
     memcpy(dest->data, src, UUIDSTR_LENGTH);

@@ -8,7 +8,7 @@ int os_info_get(os_info_t *info) {
     if (fp != NULL && fgets(info->name, sizeof(info->name), fp)) {
         info->name[strlen(info->name) - 1] = '\0';
     } else {
-        strncpy(info->name, "Linux", sizeof(info->name));
+        strncpy(info->name, "Linux", sizeof(info->name) - 1);
     }
     if (fp) {
         fclose(fp);
@@ -17,7 +17,7 @@ int os_info_get(os_info_t *info) {
     if (fp != NULL && fgets(info->release, sizeof(info->release), fp)) {
         info->release[strlen(info->release) - 1] = '\0';
     } else {
-        strncpy(info->release, "unknown", sizeof(info->release));
+        strncpy(info->release, "unknown", sizeof(info->release) - 1);
     }
     if (fp) {
         fclose(fp);

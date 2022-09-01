@@ -16,8 +16,11 @@
 #include "libgamestream/errors.h"
 
 #include "util/logging.h"
-#include "platform/linux/evmouse.h"
 #include "stream/input/sdlinput.h"
+
+#if FEATURE_INPUT_EVMOUSE
+#include "platform/linux/evmouse.h"
+#endif
 
 #include <errno.h>
 
@@ -42,10 +45,12 @@ typedef struct {
     SDL_cond *cond;
     SDL_mutex *mutex;
     SDL_Thread *thread;
+#if FEATURE_INPUT_EVMOUSE
     struct {
         SDL_Thread *thread;
         evmouse_t *dev;
     } mouse;
+#endif
     PVIDEO_PRESENTER_CALLBACKS pres;
 } session_t;
 
@@ -53,9 +58,11 @@ static session_t *session_active;
 
 static int streaming_worker(session_t *session);
 
+#if FEATURE_INPUT_EVMOUSE
 static void mouse_listener(const evmouse_event_t *event, void *userdata);
 
 static int mouse_worker(session_t *session);
+#endif
 
 static void streaming_set_status(STREAMING_STATUS status);
 
@@ -129,7 +136,9 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
     session->cond = SDL_CreateCond();
     session->thread = SDL_CreateThread((SDL_ThreadFunction) streaming_worker, "session", session);
     if (!config->viewonly && config->hardware_mouse) {
+#if FEATURE_INPUT_EVMOUSE
         session->mouse.thread = SDL_CreateThread((SDL_ThreadFunction) mouse_worker, "sessinput", session);
+#endif
     }
     session_active = session;
     return 0;
@@ -141,9 +150,11 @@ void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason) {
         return;
     }
     SDL_LockMutex(session->mutex);
+#if FEATURE_INPUT_EVMOUSE
     if (session->mouse.dev != NULL) {
         evmouse_interrupt(session->mouse.dev);
     }
+#endif
     session->quitapp = quitapp;
     session->interrupted = true;
     if (reason >= STREAMING_INTERRUPT_ERROR) {
@@ -188,10 +199,10 @@ int streaming_worker(session_t *session) {
     absinput_set_virtual_mouse(false);
     int appId = session->appId;
 
-    int gamepads = absinput_gamepads();
     int gamepad_mask = 0;
-    for (int i = 0; i < gamepads && i < 4; i++)
+    for (int i = 0, cnt = absinput_gamepads(); i < cnt && i < 4; i++) {
         gamepad_mask = (gamepad_mask << 1) + 1;
+    }
 
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
@@ -280,9 +291,11 @@ int streaming_worker(session_t *session) {
     settings_free(config);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
+#if FEATURE_INPUT_EVMOUSE
     if (session->mouse.thread != NULL) {
         SDL_WaitThread(session->mouse.thread, NULL);
     }
+#endif
     SDL_Thread *thread = session->thread;
     free(session);
     session_active = NULL;
@@ -290,6 +303,7 @@ int streaming_worker(session_t *session) {
     return 0;
 }
 
+#if FEATURE_INPUT_EVMOUSE
 static int mouse_worker(session_t *session) {
     session->mouse.dev = evmouse_open_default();
     if (session->mouse.dev == NULL) {
@@ -321,6 +335,7 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
             break;
     }
 }
+#endif
 
 void streaming_enter_fullscreen() {
     app_set_mouse_grab(true);

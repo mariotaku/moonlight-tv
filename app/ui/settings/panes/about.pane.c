@@ -1,5 +1,5 @@
 #include "app.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <lvgl.h>
 #include "stream/platform.h"
 #include "pref_obj.h"
