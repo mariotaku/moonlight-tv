@@ -36,7 +36,7 @@ option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
 option(BUILD_EXAMPLES "" OFF)
 option(BUILD_TESTS "" ON)
 
-set(I18N_LOCALES "cs" "de" "fr" "it" "nl" "pl" "pt-BR" "ro" "ja" "zh-CN")
+set(I18N_LOCALES "cs" "de" "fr" "it" "nl" "pl" "pt-BR" "ro" "ru" "ja" "zh-CN")
 list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
 
 set(FEATURE_FORCE_FULLSCREEN OFF)
