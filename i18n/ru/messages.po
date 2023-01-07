@@ -503,3 +503,19 @@ msgstr "Открыть moonlight-stream Wiki"
 #: app/app_sdl.c:155
 msgid "Quit Moonlight?"
 msgstr "Выйти из Moonlight?"
+
+#: app/ui/streaming/hints.c:8
+msgid "Long press BACK (or press EXIT for traditional TV remote) while streaming, to open status overlay."
+msgstr "Зажмите BACK (или нажмите EXIT для обычного пульта) во время трансляции, чтобы открыть оверлей"
+
+#: app/ui/streaming/hints.c:9
+msgid "Frequent lagging on 5GHz Wi-Fi? Try changing to another channel, check Help for details."
+msgstr "Частые тормоза на 5Ghz Wi-Fi? Попробуйте сменить канал, загляните в раздел Помощь для подробностей."
+
+#: app/ui/streaming/hints.c:10
+msgid "Xbox One/Series controller can't be directly connected via cable or official adapter."
+msgstr "Подключение геймпада от Xbox One/Series кабелем напрямую или через официальный адаптер не поддерживается."
+
+#: app/ui/streaming/hints.c:11
+msgid "If you have ultra-wide monitor, you may need to change its resolution to fit 16:9 for streaming."
+msgstr "Если у Вас ультраширокий монитор, Вам придётся поменять разрешение формата 16:9 для трансляции."
