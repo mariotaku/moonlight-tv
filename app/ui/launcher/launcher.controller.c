@@ -20,6 +20,7 @@
 #include "util/font.h"
 #include "util/i18n.h"
 #include "util/user_event.h"
+#include "util/logging.h"
 
 static void launcher_controller(lv_fragment_t *self, void *args);
 
@@ -72,6 +73,8 @@ static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 static void show_decoder_error(launcher_controller_t *controller);
 
 static void decoder_error_cb(lv_event_t *e);
+
+static void populate_selected_host(launcher_controller_t *controller);
 
 const lv_fragment_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -137,6 +140,11 @@ static void launcher_controller(lv_fragment_t *self, void *args) {
     controller->detail_opened = false;
     controller->pane_initialized = false;
     controller->first_created = true;
+
+    if (app_configuration->default_host_uuid[0] != '\0') {
+        uuidstr_fromstr(&controller->def_host, app_configuration->default_host_uuid);
+        controller->def_app = app_configuration->default_app_id;
+    }
 }
 
 static void controller_dtor(lv_fragment_t *self) {
@@ -162,6 +170,8 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_add_event_cb(controller->quit_btn, app_quit_confirm, LV_EVENT_CLICKED, controller);
 
     update_pclist(controller);
+
+    populate_selected_host(controller);
 
     for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
@@ -195,6 +205,8 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
 
     launcher_controller_t *controller = (launcher_controller_t *) self;
     controller->pane_initialized = false;
+    memset(&controller->def_host, 0, sizeof(uuidstr_t));
+    controller->def_app = 0;
 
     lv_group_del(controller->nav_group);
     lv_group_del(controller->detail_group);
@@ -215,6 +227,8 @@ void on_pc_added(const uuidstr_t *uuid, void *userdata) {
     const pclist_t *node = pcmanager_node(pcmanager, uuid);
     if (node == NULL) return;
     pclist_item_create(controller, node);
+
+    populate_selected_host(controller);
 }
 
 void on_pc_updated(const uuidstr_t *uuid, void *userdata) {
@@ -261,7 +275,12 @@ static void cb_pc_longpress(lv_event_t *event) {
 
 static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, bool refocus) {
     if (uuid) {
-        lv_fragment_t *fragment = lv_fragment_create(&apps_controller_class, (void *) uuid);
+        apps_fragment_arg_t arg = {.host = *uuid};
+        if (!controller->def_app_requested && uuidstr_t_equals_t(uuid, &controller->def_host)) {
+            controller->def_app_requested = true;
+            arg.def_app = controller->def_app;
+        }
+        lv_fragment_t *fragment = lv_fragment_create(&apps_controller_class, &arg);
         lv_fragment_manager_replace(controller->base.child_manager, fragment, &controller->detail);
     } else {
         lv_fragment_manager_pop(controller->base.child_manager);
@@ -465,4 +484,19 @@ static void decoder_error_cb(lv_event_t *e) {
 static void open_help(lv_event_t *event) {
     LV_UNUSED(event);
     help_dialog_create();
+}
+
+static void populate_selected_host(launcher_controller_t *controller) {
+    // Easy and dirty way to select preferred host
+    if (uuidstr_is_empty(&controller->def_host) || controller->def_host_selected) {
+        return;
+    }
+    for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
+        if (uuidstr_t_equals_t(&cur->id, &controller->def_host)) {
+            applog_i("UI", "Host %s was selected", cur->server->hostname);
+            pcmanager_select(pcmanager, &cur->id);
+            controller->def_host_selected = true;
+            break;
+        }
+    }
 }

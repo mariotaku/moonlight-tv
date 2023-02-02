@@ -28,7 +28,7 @@ static const char *applog_level_str[] = {
 
 void app_logvprintf(applog_level_t lvl, const char *tag, const char *fmt, va_list args);
 
-void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...);
+void app_logprintf(applog_level_t lvl, const char *tag, const char *fmt, ...) __attribute__ ((format (printf, 3, 4)));
 
 void app_loginit();
 

@@ -17,3 +17,5 @@ char *uuidstr_tostr(const uuidstr_t *src);
 bool uuidstr_t_equals_s(const uuidstr_t *a, const char *b);
 
 bool uuidstr_t_equals_t(const uuidstr_t *a, const uuidstr_t *b);
+
+bool uuidstr_is_empty(const uuidstr_t *uuid);
