@@ -294,7 +294,7 @@ endif ()
 
 target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
-        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
+        m rt ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
         moonlight-module-api moonlight-sdlaud
