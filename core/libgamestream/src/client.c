@@ -182,12 +182,22 @@ static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
 
     fclose(fd);
 
+    mbedtls_ctr_drbg_context ctr_drbg;
+    mbedtls_ctr_drbg_init(&ctr_drbg);
+
     mbedtls_pk_init(&hnd->pk);
-    if (mbedtls_pk_parse_keyfile(&hnd->pk, keyFilePath, NULL) != 0) {
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+    if (mbedtls_pk_parse_keyfile(&hnd->pk, keyFilePath, NULL, mbedtls_ctr_drbg_random, &ctr_drbg) != 0)
+#else
+    if (mbedtls_pk_parse_keyfile(&hnd->pk, keyFilePath, NULL) != 0)
+#endif
+    {
         mbedtls_pk_free(&hnd->pk);
+        mbedtls_ctr_drbg_free(&ctr_drbg);
         gs_error = "Error loading key into memory";
         return GS_FAILED;
     }
+    mbedtls_ctr_drbg_free(&ctr_drbg);
 
     return GS_OK;
 }
@@ -561,7 +571,12 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     struct challenge_response_t challenge_response;
     memcpy(challenge_response.challenge, &dec_server_challenge_response[hash_length],
            sizeof(challenge_response.challenge));
+
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+    memcpy(challenge_response.signature, hnd->cert.private_sig.p, sizeof(challenge_response.signature));
+#else
     memcpy(challenge_response.signature, hnd->cert.sig.p, sizeof(challenge_response.signature));
+#endif
     memcpy(challenge_response.secret, client_secret, sizeof(challenge_response.secret));
 
     unsigned char challenge_response_hash[32];
@@ -615,7 +630,11 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     // Ensure the server challenge matched what we expected (aka the PIN was correct)
     struct challenge_response_t expected_response_data;
     memcpy(expected_response_data.challenge, random_challenge, 16);
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+    memcpy(expected_response_data.signature, server_cert.private_sig.p, 256);
+#else
     memcpy(expected_response_data.signature, server_cert.sig.p, 256);
+#endif
     memcpy(expected_response_data.secret, pairing_secret.secret, 16);
 
     unsigned char expected_hash[32];
@@ -631,7 +650,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     // Send the server our signed secret
     struct pairing_secret_t client_pairing_secret;
     memcpy(client_pairing_secret.secret, client_secret, 16);
-    size_t s_len;
+    size_t s_len = sizeof(client_pairing_secret.signature);
     if (!generateSignature(client_pairing_secret.secret, 16, client_pairing_secret.signature, &s_len,
                            (struct mbedtls_pk_context *) &hnd->pk, &ctr_drbg)) {
         gs_error = "Failed to sign data";
