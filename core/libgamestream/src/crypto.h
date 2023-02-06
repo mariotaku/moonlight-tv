@@ -10,6 +10,10 @@
 #include <mbedtls/sha256.h>
 #include <mbedtls/x509_crt.h>
 
+static int sha1(const unsigned char *input, size_t ilen, unsigned char *output);
+
+static int sha256(const unsigned char *input, size_t ilen, unsigned char *output, int is224);
+
 static int hash_data(mbedtls_md_type_t type, const unsigned char *input, size_t ilen, unsigned char *output, size_t *olen)
 {
   switch (type)
@@ -17,11 +21,11 @@ static int hash_data(mbedtls_md_type_t type, const unsigned char *input, size_t 
   case MBEDTLS_MD_SHA1:
     if (olen)
       *olen = 20;
-    return mbedtls_sha1_ret(input, ilen, output);
+    return sha1(input, ilen, output);
   case MBEDTLS_MD_SHA256:
     if (olen)
       *olen = 32;
-    return mbedtls_sha256_ret(input, ilen, output, 0);
+    return sha256(input, ilen, output, 0);
   default:
     return -1;
   }
@@ -43,12 +47,15 @@ static bool generateSignature(const unsigned char *msg, size_t mlen, unsigned ch
 {
   int result = 0;
   unsigned char hash[32];
-  if ((result = mbedtls_sha256_ret(msg, mlen, hash, 0)) != 0)
+  if ((result = sha256(msg, mlen, hash, 0)) != 0)
   {
     goto cleanup;
   }
-
-  if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, slen, mbedtls_ctr_drbg_random, rng)) != 0)
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+  if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, *slen, slen, mbedtls_ctr_drbg_random, rng)) != 0)
+#else
+  if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, *slen, mbedtls_ctr_drbg_random, rng)) != 0)
+#endif
   {
     goto cleanup;
   }
@@ -61,7 +68,7 @@ static bool verifySignature(const unsigned char *msg, size_t mlen, const unsigne
 {
   int result = 0;
   unsigned char hash[32];
-  if ((result = mbedtls_sha256_ret(msg, mlen, hash, 0)) != 0)
+  if ((result = sha256(msg, mlen, hash, 0)) != 0)
   {
     return false;
   }
@@ -69,4 +76,20 @@ static bool verifySignature(const unsigned char *msg, size_t mlen, const unsigne
   result = mbedtls_pk_verify(&cert->pk, MBEDTLS_MD_SHA256, hash, 32, sig, slen);
 
   return result == 0;
+}
+
+static int sha1(const unsigned char *input, size_t ilen, unsigned char *output) {
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+    return mbedtls_sha1(input, ilen, output);
+#else
+    return mbedtls_sha1_ret(input, ilen, output);
+#endif
+}
+
+static int sha256(const unsigned char *input, size_t ilen, unsigned char *output, int is224) {
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+    return mbedtls_sha256(input, ilen, output, is224);
+#else
+    return mbedtls_sha256_ret(input, ilen, output, is224);
+#endif
 }

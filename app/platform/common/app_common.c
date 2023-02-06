@@ -35,3 +35,7 @@ void app_init_locale() {
     textdomain("moonlight-tv");
     i18n_setlocale("");
 }
+
+void app_handle_launch(int argc, char* argv[]) {
+    // Do nothing
+}

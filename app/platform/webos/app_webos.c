@@ -54,3 +54,36 @@ void app_init_locale() {
     }
     jdomparser_release(&parser);
 }
+
+void app_handle_launch(int argc, char *argv[]) {
+    if (argc < 2) {
+        return;
+    }
+    applog_i("APP", "Launched with parameters %s", argv[1]);
+    JSchemaInfo schema_info;
+    jschema_info_init(&schema_info, jschema_all(), NULL, NULL);
+    jdomparser_ref parser = jdomparser_create(&schema_info, 0);
+    jdomparser_feed(parser, argv[1], (int) strlen(argv[1]));
+    jdomparser_end(parser);
+    jvalue_ref params_obj = jdomparser_get_result(parser);
+    jvalue_ref host_uuid = jobject_get(params_obj, J_CSTR_TO_BUF("host_uuid"));
+    if (jis_string(host_uuid)) {
+        raw_buffer buf = jstring_get(host_uuid);
+        strncpy(app_configuration->default_host_uuid, buf.m_str, sizeof(app_configuration->default_host_uuid));
+    }
+    jvalue_ref host_app_id = jobject_get(params_obj, J_CSTR_TO_BUF("host_app_id"));
+    if (jis_number(host_app_id)) {
+        if (jnumber_get_i32(host_app_id, &app_configuration->default_app_id) != CONV_OK) {
+            app_configuration->default_app_id = 0;
+        }
+    } else if (jis_string(host_app_id)) {
+        raw_buffer buf = jstring_get(host_app_id);
+        char *id_str = strndup(buf.m_str, buf.m_len);
+        app_configuration->default_app_id = strtol(id_str, NULL, 10);
+        if (app_configuration->default_app_id < 0) {
+            app_configuration->default_app_id = 0;
+        }
+        free(id_str);
+    }
+    jdomparser_release(&parser);
+}

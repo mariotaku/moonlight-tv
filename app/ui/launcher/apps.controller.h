@@ -20,6 +20,9 @@ typedef struct {
     uuidstr_t uuid;
     const pclist_t *node;
 
+    int def_app;
+    bool def_app_launched;
+
     apploader_t *apploader;
     coverloader_t *coverloader;
     apploader_cb_t apploader_cb;
@@ -46,5 +49,10 @@ typedef struct {
     lv_obj_t *play_indicator;
     lv_obj_t *title;
 } appitem_viewholder_t;
+
+typedef struct {
+    uuidstr_t host;
+    int def_app;
+} apps_fragment_arg_t;
 
 extern const lv_fragment_class_t apps_controller_class;

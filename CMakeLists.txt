@@ -34,7 +34,12 @@ option(USE_STATIC_MBEDTLS_LIBRARY "Don't build mbed TLS static library." OFF)
 option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
 
 option(BUILD_EXAMPLES "" OFF)
-option(BUILD_TESTS "" ON)
+
+if (TARGET_WEBOS)
+    option(BUILD_TESTS "" OFF)
+else ()
+    option(BUILD_TESTS "" ON)
+endif ()
 
 set(I18N_LOCALES "cs" "de" "fr" "it" "nl" "pl" "pt-BR" "ro" "ru" "ja" "zh-CN")
 list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
@@ -338,6 +343,7 @@ if (TARGET_WEBOS)
 
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
+    target_link_libraries(moonlight PRIVATE rt)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})

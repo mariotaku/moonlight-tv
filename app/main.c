@@ -69,6 +69,13 @@ int main(int argc, char *argv[]) {
 
     module_post_init(argc, argv);
 
+    app_handle_launch(argc, argv);
+
+    if (strlen(app_configuration->default_host_uuid) > 0) {
+        applog_i("APP", "Will launch with host %s and app %d", app_configuration->default_host_uuid,
+                 app_configuration->default_app_id);
+    }
+
     lv_log_register_print_cb(applog_lvlog);
     lv_init();
     lv_disp_t *disp = lv_app_display_init(app_window);
@@ -207,7 +214,8 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
     if (priority <= SDL_LOG_PRIORITY_INFO)
         return;
 #endif
-    applog(priority_name[priority], category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], message);
+    applog(priority_name[priority - SDL_LOG_PRIORITY_VERBOSE],
+           category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], message);
 }
 
 static void applog_lvlog(const char *msg) {
