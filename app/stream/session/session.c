@@ -47,13 +47,13 @@ typedef struct {
     SDL_cond *cond;
     SDL_mutex *mutex;
     SDL_Thread *thread;
+    SS4S_Player *player;
 #if FEATURE_INPUT_EVMOUSE
     struct {
         SDL_Thread *thread;
         evmouse_t *dev;
     } mouse;
 #endif
-    PVIDEO_PRESENTER_CALLBACKS pres;
 } session_t;
 
 static session_t *session_active;
@@ -205,7 +205,7 @@ int streaming_worker(session_t *session) {
     for (int i = 0, cnt = absinput_gamepads(); i < cnt && i < 4; i++) {
         gamepad_mask = (gamepad_mask << 1) + 1;
     }
-    SS4S_Player *player = NULL;
+    session->player = NULL;
 
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
@@ -226,10 +226,11 @@ int streaming_worker(session_t *session) {
              config->stream.fps, config->stream.bitrate);
     applog_i("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
-    player = SS4S_PlayerOpen();
+    session->player = SS4S_PlayerOpen();
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
-                                        &ss4s_dec_callbacks, NULL, player, 0, NULL, 0);
+                                        &ss4s_dec_callbacks, &ss4s_aud_callbacks,
+                                        session->player, 0, session->player, 0);
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         switch (startResult) {
@@ -260,7 +261,6 @@ int streaming_worker(session_t *session) {
     if (config->stop_on_stall) {
         streaming_watchdog_start();
     }
-//    session->pres = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
     SDL_LockMutex(session->mutex);
     while (!session->interrupted) {
@@ -269,7 +269,6 @@ int streaming_worker(session_t *session) {
     }
     SDL_UnlockMutex(session->mutex);
     streaming_watchdog_stop();
-    session->pres = NULL;
     bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
 
     streaming_set_status(STREAMING_DISCONNECTING);
@@ -284,12 +283,11 @@ int streaming_worker(session_t *session) {
     // Don't always reset status as error state should be kept
     streaming_set_status(STREAMING_NONE);
     thread_cleanup:
-    if (player != NULL) {
-        SS4S_PlayerClose(player);
+    if (session->player != NULL) {
+        SS4S_PlayerClose(session->player);
     }
     gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
-    session->pres = NULL;
     serverdata_free(session->server);
     settings_free(config);
     SDL_DestroyCond(session->cond);
@@ -341,22 +339,44 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
 #endif
 
 void streaming_enter_fullscreen() {
+    if (session_active == NULL) {
+        return;
+    }
     app_set_mouse_grab(true);
-    if (session_active->pres && session_active->pres->enterFullScreen) {
-        session_active->pres->enterFullScreen();
+    if (!(SS4S_GetVideoCapabilities() & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING)) {
+        SS4S_PlayerVideoSetDisplayArea(session_active->player, NULL, NULL);
     }
 }
 
 void streaming_enter_overlay(int x, int y, int w, int h) {
+    if (session_active == NULL) {
+        return;
+    }
     app_set_mouse_grab(false);
-    if (session_active->pres && session_active->pres->enterOverlay) {
-        session_active->pres->enterOverlay(x, y, w, h);
+    SS4S_VideoRect dst = {x, y, w, h};
+    if (!(SS4S_GetVideoCapabilities() & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING)) {
+        SS4S_PlayerVideoSetDisplayArea(session_active->player, NULL, &dst);
     }
 }
 
 void streaming_set_hdr(bool hdr) {
-    if (session_active->pres && session_active->pres->setHdr) {
-        session_active->pres->setHdr(hdr);
+    if (session_active == NULL) {
+        return;
+    }
+    if (hdr) {
+        SS4S_VideoHDRInfo info = {
+                .displayPrimariesX = {13250, 7500, 34000},
+                .displayPrimariesY = {34500, 3000, 16000},
+                .whitePointX = 15635,
+                .whitePointY = 16450,
+                .maxDisplayMasteringLuminance = 1000,
+                .minDisplayMasteringLuminance = 50,
+                .maxContentLightLevel = 1000,
+                .maxPicAverageLightLevel = 400,
+        };
+        SS4S_PlayerVideoSetHDRInfo(session_active->player, &info);
+    } else {
+        SS4S_PlayerVideoSetHDRInfo(session_active->player, NULL);
     }
 }
 

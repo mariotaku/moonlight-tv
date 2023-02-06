@@ -20,25 +20,9 @@ static MODULE_LIB_DEFINITION _ndl_libs[] = {
         {"ndlaud", "ndlaud"},
 };
 
-bool audio_init_sdl(int argc, char *argv[], const HOST_CONTEXT *host);
-
-bool audio_check_sdl(PAUDIO_INFO ainfo);
-
-extern AUDIO_RENDERER_CALLBACKS audio_callbacks_sdl;
-
-const static AUDIO_SYMBOLS audio_sdl = {
-        true,
-        &audio_init_sdl,
-        &audio_check_sdl,
-        NULL,
-        &audio_callbacks_sdl,
-};
-#define AUDIO_SYMBOLS_SDL &audio_sdl
-
 
 MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
         {"Null",       "null", NULL,          0,                                                 NULL},
-        {"SDL Audio",  "sdl",  NULL,          0,                                                 AUDIO_SYMBOLS_SDL},
         {"PulseAudio", "pulse",  &_pulse_lib, 1,                                                 NULL},
         {"ALSA",       "alsa",   &_alsa_lib,  1,                                                 NULL},
         {"NDL Audio",  "ndlaud", _ndl_libs,   sizeof(_ndl_libs) / sizeof(MODULE_LIB_DEFINITION), NULL,

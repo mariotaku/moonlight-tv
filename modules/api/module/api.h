@@ -39,7 +39,8 @@
 
 typedef struct HOST_CONTEXT {
     void (*logvprintf)(int, const char *, const char *, va_list);
-    void (*seterror)(const char*);
+
+    void (*seterror)(const char *);
 } HOST_CONTEXT;
 
 typedef struct DECODER_INFO {
@@ -72,18 +73,10 @@ typedef struct AUDIO_INFO {
 typedef struct SDL_Renderer HOST_RENDERER;
 
 typedef struct HOST_RENDER_CONTEXT {
-    bool (*const queueSubmit)(void * data, unsigned int pts);
+    bool (*const queueSubmit)(void *data, unsigned int pts);
 
     HOST_RENDERER *renderer;
 } HOST_RENDER_CONTEXT;
-
-typedef void (*PresenterEnterFullScreen)(void);
-
-typedef void (*PresenterEnterOverlay)(int x, int y, int w, int h);
-
-typedef void (*PresenterSetHDR)(bool hdr);
-
-typedef bool (*RenderQueueSubmit)(void *);
 
 typedef bool (*RenderSetup)(PSTREAM_CONFIGURATION conf, HOST_RENDER_CONTEXT *host_ctx);
 
@@ -94,9 +87,6 @@ typedef bool (*RenderDraw)();
 typedef void (*RenderCleanup)();
 
 typedef struct _VIDEO_PRESENTER_CALLBACKS {
-    PresenterEnterFullScreen enterFullScreen;
-    PresenterEnterOverlay enterOverlay;
-    PresenterSetHDR setHdr;
 } VIDEO_PRESENTER_CALLBACKS, *PVIDEO_PRESENTER_CALLBACKS;
 
 typedef struct _VIDEO_RENDER_CALLBACKS {

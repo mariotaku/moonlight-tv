@@ -307,8 +307,7 @@ target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
-        moonlight-module-api moonlight-sdlaud
-        )
+        moonlight-module-api)
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
@@ -360,8 +359,6 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-
-    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
