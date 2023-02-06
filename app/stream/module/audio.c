@@ -8,7 +8,6 @@
 
 #endif
 
-#include "util/os_info.h"
 #include "util/logging.h"
 #include "util/i18n.h"
 
@@ -56,147 +55,8 @@ const audio_config_entry_t audio_configs[] = {
 };
 const size_t audio_config_len = sizeof(audio_configs) / sizeof(audio_config_entry_t);
 
-AUDIO audio_pref_requested;
 AUDIO audio_current = AUDIO_NONE;
-int audio_current_libidx;
 AUDIO_INFO audio_info;
-
-static bool audio_check_init(AUDIO system, int libidx, int argc, char *argv[]);
-
-static bool audio_try_init(AUDIO audio, int argc, char *argv[]);
-
-static void dlerror_log();
-
-AUDIO audio_init(const char *name, int argc, char *argv[]) {
-    AUDIO audio = audio_by_id(name);
-    audio_pref_requested = audio;
-    // Has explicitly specified audio backend
-    if (audio != AUDIO_AUTO) {
-        // Has preferred value
-        if (audio_try_init(audio, argc, argv)) {
-            return audio;
-        }
-    }
-    // Has audio backend provided by decoder
-    if (decoder_info.audio) {
-        audio_current = AUDIO_DECODER;
-        audio_pref_requested = AUDIO_AUTO;
-        return AUDIO_DECODER;
-    }
-    for (int i = 0; i < audio_orders_len; i++) {
-        AUDIO attempt = audio_orders[i];
-        if (audio != attempt && audio_try_init(attempt, argc, argv)) {
-            return attempt;
-        }
-    }
-    return AUDIO_SDL;
-}
-
-static void *module_sym(char *fmt, AUDIO audio, int libidx) {
-    char symbol[128];
-    snprintf(symbol, sizeof(symbol), fmt, audio_definitions[audio].dynlibs[libidx].suffix);
-#if __WIN32
-    return NULL;
-#else
-    return dlsym(RTLD_DEFAULT, symbol);
-#endif
-}
-
-PAUDIO_RENDERER_CALLBACKS audio_get_callbacks(const char *audio_device) {
-    if (audio_current < 0)
-        return NULL;
-    MODULE_DEFINITION pdef = audio_definitions[audio_current];
-    if (pdef.symbols.ptr)
-        return pdef.symbols.audio->callbacks;
-    PAUDIO_RENDERER_CALLBACKS cb = module_sym("audio_callbacks_%s", audio_current, audio_current_libidx);
-    if (cb)
-        return cb;
-    return &audio_callbacks_sdl;
-}
-
-static bool audio_init_simple(AUDIO audio, int libidx, int argc, char *argv[]) {
-    MODULE_DEFINITION pdef = audio_definitions[audio];
-    MODULE_INIT_FN fn;
-    if (pdef.symbols.ptr) {
-        fn = pdef.symbols.audio->init;
-    } else {
-        fn = module_sym("audio_init_%s", audio, libidx);
-    }
-    return !fn || fn(argc, argv, &module_host_context);
-}
-
-static void audio_finalize_simple(AUDIO audio, int libidx) {
-    MODULE_DEFINITION pdef = audio_definitions[audio];
-    MODULE_FINALIZE_FN fn;
-    if (pdef.symbols.ptr) {
-        fn = pdef.symbols.audio->finalize;
-    } else {
-        fn = module_sym("audio_finalize_%s", audio, libidx);
-    }
-    if (fn)
-        fn();
-}
-
-static bool audio_check_simple(AUDIO audio, int libidx) {
-    memset(&audio_info, 0, sizeof(audio_info));
-    MODULE_DEFINITION pdef = audio_definitions[audio];
-    AUDIO_CHECK_FN fn;
-    if (pdef.symbols.ptr)
-        fn = pdef.symbols.audio->check;
-    else
-        fn = module_sym("audio_check_%s", audio, libidx);
-    if (fn == NULL) {
-        audio_info.valid = true;
-        return true;
-    }
-    return fn(&audio_info) && audio_info.valid;
-}
-
-bool audio_try_init(AUDIO audio, int argc, char *argv[]) {
-    char libname[64];
-    MODULE_DEFINITION pdef = audio_definitions[audio];
-    if (pdef.symbols.ptr && pdef.symbols.audio->valid) {
-        if (audio_check_init(audio, -1, argc, argv)) {
-            audio_current = audio;
-            audio_current_libidx = -1;
-            return true;
-        }
-    } else {
-#ifndef __WIN32
-        for (int i = 0; i < pdef.liblen; i++) {
-            snprintf(libname, sizeof(libname), "libmoonlight-%s.so", pdef.dynlibs[i].library);
-            applog_d("APP", "Loading audio module %s", libname);
-            // Lazy load to test if this library can be linked
-            if (!dlopen(libname, RTLD_NOW | RTLD_GLOBAL)) {
-                dlerror_log();
-                continue;
-            }
-            if (audio_check_init(audio, i, argc, argv)) {
-                audio_current = audio;
-                audio_current_libidx = i;
-                return true;
-            }
-        }
-#endif
-    }
-    return false;
-}
-
-bool audio_check_init(AUDIO system, int libidx, int argc, char *argv[]) {
-    if (!audio_init_simple(system, libidx, argc, argv))
-        return false;
-    if (!audio_check_simple(system, libidx)) {
-        audio_finalize_simple(system, libidx);
-        return false;
-    }
-    return true;
-}
-
-void audio_finalize() {
-    if (audio_current < 0)
-        return;
-    audio_finalize_simple(audio_current, audio_current_libidx);
-}
 
 AUDIO audio_by_id(const char *id) {
     if (!id || id[0] == 0 || strcmp(id, "auto") == 0)
@@ -211,8 +71,3 @@ AUDIO audio_by_id(const char *id) {
     return AUDIO_SDL;
 }
 
-void dlerror_log() {
-#ifndef __WIN32
-    applog_w("APP", "Unable to load audio module: %s\n", dlerror());
-#endif
-}

@@ -35,6 +35,8 @@ void app_stop_text_input();
 
 bool app_text_input_active();
 
+void app_input_inject_key(lv_key_t key, bool pressed);
+
 bool ui_render_queue_submit(void *data, unsigned int pts);
 
 GS_CLIENT app_gs_client_new();

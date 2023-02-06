@@ -50,6 +50,7 @@ set(FEATURE_I18N_LANGUAGE_SETTINGS OFF)
 set(FEATURE_SURROUND_SOUND ON)
 set(FEATURE_CHECK_MODULE_OS_VERSION OFF)
 set(FEATURE_INPUT_EVMOUSE OFF)
+set(FEATURE_LIBCEC ON)
 
 include(LintOptions)
 
@@ -115,7 +116,7 @@ execute_process(COMMAND ${NPM_COMMAND} install --quiet)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
-pkg_check_modules(SDL2 REQUIRED sdl2 SDL2_image)
+pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
 
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
@@ -159,6 +160,10 @@ endif ()
 unset(BUILD_SHARED_LIBS)
 include(BuildINIH)
 
+option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
+
+add_subdirectory(third_party/ss4s)
+
 if (TARGET_DESKTOP)
     set(DECODER_FFMPEG_STATIC ON)
 endif ()
@@ -166,7 +171,7 @@ add_subdirectory(modules)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
-target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
@@ -257,7 +262,7 @@ if (NOT HAVE_SDL)
 endif ()
 
 add_executable(moonlight ${SOURCES})
-add_subdirectory(app/platform)
+add_subdirectory(app)
 add_subdirectory(res)
 
 if (WITH_SANITIZE)
@@ -297,49 +302,24 @@ else ()
     unset(BUILD_SHARED_LIBS)
 endif ()
 
-target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
-        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
+        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
         moonlight-module-api moonlight-sdlaud
         )
-
-
-macro(moonlight_add_module)
-    set(multiValueArgs TARGETS)
-    set(oneValueArgs UNUSED)
-    set(options LINK)
-    cmake_parse_arguments(MOONLIGHT_ADD_MODULE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    foreach (module ${MOONLIGHT_ADD_MODULE_TARGETS})
-        if (NOT TARGET ${module})
-            continue()
-        endif ()
-        target_compile_lint(${module})
-        if (${MOONLIGHT_ADD_MODULE_LINK})
-            target_link_libraries(moonlight PRIVATE ${module})
-        else ()
-            add_dependencies(moonlight ${module})
-        endif ()
-    endforeach ()
-endmacro()
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
     set(FEATURE_I18N_GETTEXT OFF)
     set(FEATURE_I18N_LANGUAGE_SETTINGS ON)
     set(FEATURE_CHECK_MODULE_OS_VERSION ON)
+    set(FEATURE_LIBCEC OFF)
 
     target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
-
-    moonlight_add_module(TARGETS moonlight-smp moonlight-smp-webos4 moonlight-smp-webos3)
-    moonlight_add_module(TARGETS moonlight-dile-legacy)
-    moonlight_add_module(TARGETS moonlight-ndl-webos5 moonlight-ndl)
-    moonlight_add_module(TARGETS moonlight-cgl moonlight-lgnc)
-    moonlight_add_module(TARGETS moonlight-pulse)
-    moonlight_add_module(TARGETS moonlight-ndlaud moonlight-ndlaud-webos5)
 
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
@@ -356,11 +336,6 @@ elseif (TARGET_RASPI)
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
 
-    moonlight_add_module(TARGETS moonlight-mmal LINK)
-    moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
-    moonlight_add_module(TARGETS moonlight-alsa LINK)
-    moonlight_add_module(TARGETS moonlight-pulse LINK)
-
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
 
@@ -369,7 +344,7 @@ elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
 
     if (OS_DARWIN)
-        target_link_directories(moonlight PUBLIC ${SDL2_LIBRARY_DIRS})
+        target_link_directories(moonlight PUBLIC ${SDL2_AND_IMAGES_LIBRARY_DIRS})
         target_compile_definitions(moonlight PUBLIC OS_DARWIN)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif (OS_LINUX)
@@ -390,6 +365,8 @@ elseif (TARGET_DESKTOP)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
+
+target_link_libraries(moonlight PRIVATE ss4s ss4s-module-dummy)
 
 configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

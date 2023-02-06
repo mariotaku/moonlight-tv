@@ -6,6 +6,7 @@
 #include "stream/platform.h"
 
 #include "util/i18n.h"
+#include "ss4s.h"
 
 typedef struct decoder_pane_t {
     lv_fragment_t base;
@@ -54,7 +55,7 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
             continue;
         }
         MODULE_DEFINITION def = decoder_definitions[type];
-        if (!module_verify(&controller->parent->os_info, &def)) {
+        if (!SS4S_IsDriverAvailable(def.name)) {
             continue;
         }
         entry->name = def.name;
@@ -73,7 +74,7 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
             continue;
         }
         MODULE_DEFINITION def = audio_definitions[type];
-        if (!module_verify(&controller->parent->os_info, &def)) {
+        if (!SS4S_IsDriverAvailable(def.name)) {
             continue;
         }
         entry->name = def.name;

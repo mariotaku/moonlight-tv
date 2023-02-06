@@ -17,6 +17,8 @@
 
 #include "util/logging.h"
 #include "stream/input/sdlinput.h"
+#include "callbacks.h"
+#include "ss4s.h"
 
 #if FEATURE_INPUT_EVMOUSE
 #include "platform/linux/evmouse.h"
@@ -203,6 +205,7 @@ int streaming_worker(session_t *session) {
     for (int i = 0, cnt = absinput_gamepads(); i < cnt && i < 4; i++) {
         gamepad_mask = (gamepad_mask << 1) + 1;
     }
+    SS4S_Player *player = NULL;
 
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
@@ -223,13 +226,10 @@ int streaming_worker(session_t *session) {
              config->stream.fps, config->stream.bitrate);
     applog_i("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
-    PDECODER_RENDERER_CALLBACKS vdec = decoder_get_video();
-    PAUDIO_RENDERER_CALLBACKS adec = module_get_audio(config->audio_device);
-    PVIDEO_PRESENTER_CALLBACKS pres = decoder_get_presenter();
-    DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
+    player = SS4S_PlayerOpen();
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
-                                        &vdec_delegate, adec, vdec, 0, (void *) config->audio_device, 0);
+                                        &ss4s_dec_callbacks, NULL, player, 0, NULL, 0);
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         switch (startResult) {
@@ -260,7 +260,7 @@ int streaming_worker(session_t *session) {
     if (config->stop_on_stall) {
         streaming_watchdog_start();
     }
-    session->pres = pres;
+//    session->pres = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
     SDL_LockMutex(session->mutex);
     while (!session->interrupted) {
@@ -284,6 +284,9 @@ int streaming_worker(session_t *session) {
     // Don't always reset status as error state should be kept
     streaming_set_status(STREAMING_NONE);
     thread_cleanup:
+    if (player != NULL) {
+        SS4S_PlayerClose(player);
+    }
     gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
     session->pres = NULL;

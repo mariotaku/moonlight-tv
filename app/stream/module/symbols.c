@@ -2,7 +2,6 @@
 // Created by Mariotaku on 2021/09/12.
 //
 
-#include "symbols.h"
 
 #if DECODER_FFMPEG_STATIC
 

@@ -104,6 +104,10 @@ bool app_text_input_active() {
     return SDL_IsTextInputActive();
 }
 
+void app_input_inject_key(lv_key_t key, bool pressed) {
+    lv_sdl_key_input_inject_key(app_indev_key, key, pressed);
+}
+
 void app_set_mouse_grab(bool grab) {
 #if HAVE_RELATIVE_MOUSE_HACK
     if (grab) {

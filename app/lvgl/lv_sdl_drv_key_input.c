@@ -15,12 +15,13 @@
 #include "lv_sdl_drv_input.h"
 
 typedef struct {
-    uint32_t key;
+    uint32_t key, ev_key;
     lv_indev_state_t state;
     char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
     uint32_t text_len;
     uint8_t text_remain;
     uint32_t text_next;
+    bool changed;
 } indev_key_state_t;
 
 static bool read_event(const SDL_Event *event, indev_key_state_t *state);
@@ -64,6 +65,24 @@ void lv_sdl_key_input_release_key(lv_indev_t *indev) {
 void lv_sdl_deinit_key_input(lv_indev_t *indev) {
     free(indev->driver->user_data);
     free(indev->driver);
+}
+
+void lv_sdl_key_input_inject_key(lv_indev_t *indev, lv_key_t key, bool pressed) {
+    indev_key_state_t *state = indev->driver->user_data;
+    if (pressed) {
+        if (state->key == 0) {
+            state->key = state->ev_key = key;
+            state->state = LV_INDEV_STATE_PRESSED;
+            state->changed = true;
+        }
+    } else {
+        if (state->key == key) {
+            state->ev_key = key;
+            state->key = 0;
+            state->state = LV_INDEV_STATE_RELEASED;
+            state->changed = true;
+        }
+    }
 }
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {

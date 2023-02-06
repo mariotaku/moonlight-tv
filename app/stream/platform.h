@@ -121,7 +121,6 @@ typedef struct audio_config_entry_t {
 
 extern DECODER decoder_pref_requested;
 extern DECODER decoder_current;
-extern int decoder_current_libidx;
 extern DECODER_INFO decoder_info;
 extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
 
@@ -130,41 +129,19 @@ extern const size_t audio_config_len;
 
 extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
 
-extern const HOST_CONTEXT module_host_context;
-
 DECODER decoder_by_id(const char *id);
 
-DECODER decoder_init(const char *name, int argc, char *argv[]);
-
-bool decoder_post_init(DECODER decoder, int libidx, int argc, char *argv[]);
-
-bool decoder_check_info(DECODER platform, int libidx);
-
-PDECODER_RENDERER_CALLBACKS decoder_get_video();
-
-PVIDEO_PRESENTER_CALLBACKS decoder_get_presenter();
-
 PVIDEO_RENDER_CALLBACKS decoder_get_render();
-
-void decoder_finalize();
 
 bool decoder_max_dimension(int *width, int *height);
 
 int decoder_max_framerate();
 
-extern AUDIO audio_pref_requested;
 extern AUDIO audio_current;
-extern int audio_current_libidx;
 extern AUDIO_INFO audio_info;
 extern MODULE_DEFINITION audio_definitions[AUDIO_COUNT];
 
 AUDIO audio_by_id(const char *id);
-
-AUDIO audio_init(const char *name, int argc, char *argv[]);
-
-void audio_finalize();
-
-PAUDIO_RENDERER_CALLBACKS module_get_audio(const char *audio_device);
 
 int module_audio_configuration();
 
@@ -191,12 +168,5 @@ static const AUDIO audio_orders[] = {
 static const int audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);
 
 
-void module_init(int argc, char *argv[]);
-
-void module_post_init(int argc, char *argv[]);
-
-void module_seterror(const char *error);
-
 const char *module_geterror();
 
-bool module_verify(const os_info_t *os_info, const MODULE_DEFINITION *def);
