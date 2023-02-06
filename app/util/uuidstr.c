@@ -21,3 +21,7 @@ bool uuidstr_t_equals_s(const uuidstr_t *a, const char *b) {
 bool uuidstr_t_equals_t(const uuidstr_t *a, const uuidstr_t *b) {
     return strncasecmp(a->data, b->data, UUIDSTR_LENGTH) == 0;
 }
+
+bool uuidstr_is_empty(const uuidstr_t *uuid) {
+    return uuid->data[0] == '0';
+}

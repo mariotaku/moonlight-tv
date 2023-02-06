@@ -1,5 +1,5 @@
 # Copy manifest
-configure_file(deploy/webos/appinfo.json.in ./appinfo.json @ONLY)
+configure_file(deploy/webos/appinfo.in.json ./appinfo.json @ONLY)
 
 # Copy all files under deploy/webos/ to package root
 install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)

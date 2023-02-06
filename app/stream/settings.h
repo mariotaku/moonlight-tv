@@ -48,6 +48,10 @@ typedef struct configuration_t {
     bool swap_abxy;
     bool syskey_capture;
     bool stop_on_stall;
+
+    /*Volatile fields*/
+    char default_host_uuid[40];
+    int default_app_id;
 } CONFIGURATION, *PCONFIGURATION;
 
 #define CONF_NAME_MOONLIGHT "moonlight.ini"

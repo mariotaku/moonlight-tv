@@ -140,7 +140,9 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     controller->apploader_cb.start = appload_started;
     controller->apploader_cb.data = appload_loaded;
     controller->apploader_cb.error = appload_errored;
-    controller->uuid = *(const uuidstr_t *) args;
+    apps_fragment_arg_t *arg = args;
+    controller->uuid = arg->host;
+    controller->def_app = arg->def_app;
     controller->node = pcmanager_node(pcmanager, &controller->uuid);
     controller->apploader = apploader_create(&controller->uuid, &controller->apploader_cb, controller);
 
@@ -245,6 +247,7 @@ static void obj_will_delete(lv_fragment_t *self, lv_obj_t *obj) {
     LV_UNUSED(obj);
     apps_fragment_t *fragment = (apps_fragment_t *) self;
     apploader_cancel(fragment->apploader);
+    fragment->def_app = 0;
 }
 
 static void update_grid_config(apps_fragment_t *controller) {
@@ -464,6 +467,20 @@ static void appload_loaded(apploader_list_t *apps, void *userdata) {
     apploader_list_free(fragment->apploader_apps);
     fragment->apploader_apps = apps;
     update_view_state(fragment);
+
+    if (fragment->def_app > 0 && !fragment->def_app_launched) {
+        fragment->def_app_launched = true;
+        const apploader_item_t *app = NULL;
+        for (int i = 0; i < apps->count; ++i) {
+            if (apps->items[i].base.id == fragment->def_app) {
+                app = &apps->items[i];
+                break;
+            }
+        }
+        if (app != NULL) {
+            launcher_launch_game(fragment, app);
+        }
+    }
 }
 
 static void appload_errored(int code, const char *error, void *userdata) {

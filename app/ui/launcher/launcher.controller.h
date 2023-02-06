@@ -25,6 +25,11 @@ typedef struct {
     bool pane_initialized;
     bool first_created;
     bool detail_changing;
+
+    uuidstr_t def_host;
+    int def_app;
+    bool def_host_selected;
+    bool def_app_requested;
 } launcher_controller_t;
 
 
