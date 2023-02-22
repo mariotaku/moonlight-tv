@@ -27,8 +27,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#include "module/api.h"
-#include "util/os_info.h"
+#include "os_info.h"
 
 enum DECODER_T {
     DECODER_AUTO = -1,
@@ -60,39 +59,6 @@ enum AUDIO_T {
 };
 typedef enum AUDIO_T AUDIO;
 
-typedef bool (*MODULE_INIT_FN)(int argc, char *argv[], const HOST_CONTEXT *host);
-
-typedef bool (*DECODER_CHECK_FN)(PDECODER_INFO);
-
-typedef bool (*AUDIO_CHECK_FN)(PAUDIO_INFO);
-
-typedef void (*MODULE_FINALIZE_FN)();
-
-typedef struct DECODER_SYMBOLS_T {
-    bool valid;
-    MODULE_INIT_FN init;
-    MODULE_INIT_FN post_init;
-    DECODER_CHECK_FN check;
-    MODULE_FINALIZE_FN finalize;
-    PAUDIO_RENDERER_CALLBACKS adec;
-    PDECODER_RENDERER_CALLBACKS vdec;
-    PVIDEO_PRESENTER_CALLBACKS pres;
-    PVIDEO_RENDER_CALLBACKS rend;
-} DECODER_SYMBOLS;
-
-typedef struct AUDIO_SYMBOLS_T {
-    bool valid;
-    MODULE_INIT_FN init;
-    AUDIO_CHECK_FN check;
-    MODULE_FINALIZE_FN finalize;
-    PAUDIO_RENDERER_CALLBACKS callbacks;
-} AUDIO_SYMBOLS;
-
-typedef struct MODULE_LIB_DEFINITION {
-    const char *suffix;
-    const char *library;
-} MODULE_LIB_DEFINITION;
-
 typedef struct MODULE_OS_REQUIREMENT {
     uint32_t min_inclusive;
     uint32_t max_exclusive;
@@ -101,17 +67,37 @@ typedef struct MODULE_OS_REQUIREMENT {
 typedef struct MODULE_DEFINITION {
     const char *name;
     const char *id;
-    const MODULE_LIB_DEFINITION *dynlibs;
-    const size_t liblen;
-    const union {
-        const void *ptr;
-        const DECODER_SYMBOLS *decoder;
-        const AUDIO_SYMBOLS *audio;
-    } symbols;
 #if FEATURE_CHECK_MODULE_OS_VERSION
     MODULE_OS_REQUIREMENT os_req;
 #endif
 } MODULE_DEFINITION;
+
+typedef struct DECODER_INFO {
+    /* Decoder passes the check */
+    bool valid;
+    /* Decoder supports hardware acceleration */
+    bool accelerated;
+    /* Decoder has built-in audio feature */
+    bool audio;
+    /* Decoder supports HEVC video stream */
+    bool hevc;
+    /* Decoder supports HDR */
+    int hdr;
+    int colorSpace;
+    int colorRange;
+    int maxBitrate;
+    int maxFramerate;
+    int audioConfig;
+    /* Handles video renderer on screen */
+    bool hasRenderer;
+    int suggestedBitrate;
+    bool canResize;
+} *PDECODER_INFO, DECODER_INFO;
+
+typedef struct AUDIO_INFO {
+    bool valid;
+    int configuration;
+} *PAUDIO_INFO, AUDIO_INFO;
 
 typedef struct audio_config_entry_t {
     int configuration;
@@ -127,18 +113,13 @@ extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
 extern const audio_config_entry_t audio_configs[];
 extern const size_t audio_config_len;
 
-extern DECODER_RENDERER_CALLBACKS decoder_callbacks_dummy;
-
 DECODER decoder_by_id(const char *id);
-
-PVIDEO_RENDER_CALLBACKS decoder_get_render();
 
 bool decoder_max_dimension(int *width, int *height);
 
 int decoder_max_framerate();
 
 extern AUDIO audio_current;
-extern AUDIO_INFO audio_info;
 extern MODULE_DEFINITION audio_definitions[AUDIO_COUNT];
 
 AUDIO audio_by_id(const char *id);

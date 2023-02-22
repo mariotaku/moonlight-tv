@@ -3,23 +3,31 @@
 #include <SDL.h>
 
 #include "lvgl.h"
-#include "module/api.h"
 #include "stream/settings.h"
 #include "backend/pcmanager.h"
 #include "libgamestream/client.h"
+#include "os_info.h"
+#include "array_list.h"
 
 extern PCONFIGURATION app_configuration;
 extern lv_fragment_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
 extern SDL_Window *app_window;
 
-int app_init(int argc, char *argv[]);
+typedef struct app_t {
+    os_info_t os_info;
+    array_list_t modules;
+} app_t;
+
+int app_init(app_t *app, int argc, char *argv[]);
+
+void app_deinit(app_t *app);
 
 void app_init_video();
 
 void app_uninit_video();
 
-void app_handle_launch(int argc, char* argv[]);
+void app_handle_launch(int argc, char *argv[]);
 
 void app_process_events();
 

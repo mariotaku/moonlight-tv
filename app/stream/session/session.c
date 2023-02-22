@@ -110,7 +110,7 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
                                              config->stream.fps);
     config->stream.supportsHevc &= decoder_info.hevc;
     config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server_clone->supportsHdr &&
-                                (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
+                                (decoder_info.hdr == 1 || app->hdr != 0);
     config->stream.colorSpace = decoder_info.colorSpace;
     if (config->stream.enableHdr) {
         config->stream.colorRange = decoder_info.colorRange;
@@ -234,18 +234,18 @@ int streaming_worker(session_t *session) {
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         switch (startResult) {
-            case ERROR_UNKNOWN_CODEC:
-                streaming_error(GS_WRONG_STATE, "Unsupported codec.");
-                break;
-            case ERROR_DECODER_OPEN_FAILED:
-                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
-                break;
-            case ERROR_AUDIO_OPEN_FAILED:
-                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
-                break;
-            case ERROR_AUDIO_OPUS_INIT_FAILED:
-                streaming_error(GS_WRONG_STATE, "Opus init failed.");
-                break;
+//            case ERROR_UNKNOWN_CODEC:
+//                streaming_error(GS_WRONG_STATE, "Unsupported codec.");
+//                break;
+//            case ERROR_DECODER_OPEN_FAILED:
+//                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
+//                break;
+//            case ERROR_AUDIO_OPEN_FAILED:
+//                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
+//                break;
+//            case ERROR_AUDIO_OPUS_INIT_FAILED:
+//                streaming_error(GS_WRONG_STATE, "Opus init failed.");
+//                break;
             default: {
                 if (!streaming_errno) {
                     streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d (%s)",

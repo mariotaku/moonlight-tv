@@ -25,7 +25,7 @@
 
 #if FEATURE_LIBCEC
 
-#include "cec/cec_support.h"
+#include "cec_support.h"
 
 #endif
 
@@ -61,19 +61,12 @@ int main(int argc, char *argv[]) {
     log_libs_version();
     app_gs_client_mutex = SDL_CreateMutex();
 
-    int ret = app_init(argc, argv);
+    app_t app_;
+    int ret = app_init(&app_, argc, argv);
     if (ret != 0) {
         return ret;
     }
     app_init_locale();
-
-    SS4S_Config ss4s_config = {
-            .audioDriver = "sdl",
-            .videoDriver = "mmal",
-            .loggingFunction = applog_ss4s,
-    };
-    SS4S_Init(argc, argv, &ss4s_config);
-
     backend_init();
 
     // DO not init video subsystem before NDL/LGNC initialization
@@ -152,7 +145,6 @@ int main(int argc, char *argv[]) {
     app_uninit_video();
 
     backend_destroy();
-    SS4S_Quit();
 
     bus_finalize();
 
@@ -160,6 +152,9 @@ int main(int argc, char *argv[]) {
     settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);
+
+    app_deinit(&app_);
+
     SDL_Quit();
 
     applog_i("APP", "Quitted gracefully :)");
@@ -268,32 +263,4 @@ static void log_libs_version() {
     applog_d("APP", "SDL version: %d.%d.%d", sdl_version.major, sdl_version.minor, sdl_version.patch);
     const SDL_version *img_version = IMG_Linked_Version();
     applog_d("APP", "SDL_image version: %d.%d.%d", img_version->major, img_version->minor, img_version->patch);
-}
-
-static void applog_ss4s(SS4S_LogLevel level, const char *tag, const char *fmt, ...) {
-    applog_level_t app_level;
-    switch (level) {
-        case SS4S_LogLevelFatal:
-            app_level = APPLOG_FATAL;
-            break;
-        case SS4S_LogLevelError:
-            app_level = APPLOG_ERROR;
-            break;
-        case SS4S_LogLevelWarn:
-            app_level = APPLOG_WARN;
-            break;
-        case SS4S_LogLevelInfo:
-            app_level = APPLOG_INFO;
-            break;
-        case SS4S_LogLevelDebug:
-            app_level = APPLOG_DEBUG;
-            break;
-        case SS4S_LogLevelVerbose:
-            app_level = APPLOG_VERBOSE;
-            break;
-    }
-    va_list args;
-    va_start(args, fmt);
-    app_logvprintf(app_level, tag, fmt, args);
-    va_end(args);
 }

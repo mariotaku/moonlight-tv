@@ -15,6 +15,10 @@
 #include "util/user_event.h"
 #include "util/logging.h"
 #include "util/i18n.h"
+#include "util/logging_subsystems.h"
+
+#include "ss4s_modules.h"
+#include "ss4s.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -22,16 +26,32 @@ static bool window_focus_gained;
 
 static void quit_confirm_cb(lv_event_t *e);
 
-int app_init(int argc, char *argv[]) {
+int app_init(app_t *app, int argc, char *argv[]) {
     (void) argc;
     (void) argv;
+    os_info_get(&app->os_info);
+    modules_load(&app->modules, &app->os_info);
     app_configuration = settings_load();
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
 #endif
+
+    SS4S_Config ss4s_config = {
+            .audioDriver = "sdl",
+            .videoDriver = "mmal",
+            .loggingFunction = applog_ss4s,
+    };
+    SS4S_Init(argc, argv, &ss4s_config);
+
     return 0;
+}
+
+void app_deinit(app_t *app) {
+    SS4S_Quit();
+
+    modules_clear(&app->modules);
 }
 
 void app_init_video() {

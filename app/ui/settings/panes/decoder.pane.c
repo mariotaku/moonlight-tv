@@ -55,7 +55,7 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
             continue;
         }
         MODULE_DEFINITION def = decoder_definitions[type];
-        if (!SS4S_IsDriverAvailable(def.name)) {
+        if (!SS4S_ModuleAvailable(def.name, SS4S_MODULE_CHECK_VIDEO)) {
             continue;
         }
         entry->name = def.name;
@@ -74,7 +74,7 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
             continue;
         }
         MODULE_DEFINITION def = audio_definitions[type];
-        if (!SS4S_IsDriverAvailable(def.name)) {
+        if (!SS4S_ModuleAvailable(def.name, SS4S_MODULE_CHECK_AUDIO)) {
             continue;
         }
         entry->name = def.name;
@@ -140,7 +140,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
                                            false);
     lv_obj_t *hdr_hint = pref_desc_label(view, NULL, false);
-    if (decoder_info.hdr == DECODER_HDR_NONE) {
+    if (decoder_info.hdr == 0) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
                               decoder_definitions[decoder_current].name);
@@ -183,7 +183,7 @@ static void pref_mark_restart_cb(lv_event_t *e) {
 }
 
 static void hdr_state_update_cb(lv_event_t *e) {
-    if (decoder_info.hdr == DECODER_HDR_NONE) return;
+    if (decoder_info.hdr == 0) return;
     decoder_pane_t *controller = (decoder_pane_t *) lv_event_get_user_data(e);
     if (!app_configuration->stream.supportsHevc) {
         lv_obj_add_state(controller->hdr_checkbox, LV_STATE_DISABLED);

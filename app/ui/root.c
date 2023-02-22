@@ -27,19 +27,20 @@ typedef struct render_frame_req_t {
     unsigned int pts;
 } render_frame_req_t;
 
-static PVIDEO_RENDER_CALLBACKS ui_stream_render;
-static HOST_RENDER_CONTEXT ui_stream_render_host_context = {
-        .queueSubmit = ui_render_queue_submit
-};
+//static PVIDEO_RENDER_CALLBACKS ui_stream_render;
+//static HOST_RENDER_CONTEXT ui_stream_render_host_context = {
+//        .queueSubmit = ui_render_queue_submit
+//};
 
 bool ui_has_stream_renderer() {
-    return ui_stream_render != NULL && ui_stream_render->renderDraw;
+//    return ui_stream_render != NULL && ui_stream_render->renderDraw;
+    return false;
 }
 
 bool ui_render_background() {
-    if (streaming_status == STREAMING_STREAMING && ui_stream_render && ui_stream_render->renderDraw) {
-        return ui_stream_render->renderDraw();
-    }
+//    if (streaming_status == STREAMING_STREAMING && ui_stream_render && ui_stream_render->renderDraw) {
+//        return ui_stream_render->renderDraw();
+//    }
     return false;
 }
 
@@ -51,11 +52,12 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
         switch (which) {
             case USER_STREAM_OPEN: {
                 lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
-                ui_stream_render_host_context.renderer = param->renderer;
-                ui_stream_render = decoder_get_render();
-                if (ui_stream_render) {
-                    ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);
-                }
+                // TODO: setup renderer
+//                ui_stream_render_host_context.renderer = param->renderer;
+//                ui_stream_render = decoder_get_render();
+//                if (ui_stream_render) {
+//                    ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);
+//                }
                 absinput_start();
                 app_set_keep_awake(true);
                 streaming_enter_fullscreen();
@@ -63,14 +65,15 @@ bool ui_dispatch_userevent(int which, void *data1, void *data2) {
                 return true;
             }
             case USER_STREAM_CLOSE:
-                if (ui_stream_render) {
-                    ui_stream_render->renderCleanup();
-                }
+                // TODO: close renderer
+//                if (ui_stream_render) {
+//                    ui_stream_render->renderCleanup();
+//                }
                 app_set_keep_awake(false);
                 app_set_mouse_grab(false);
                 absinput_stop();
-                ui_stream_render = NULL;
-                ui_stream_render_host_context.renderer = NULL;
+//                ui_stream_render = NULL;
+//                ui_stream_render_host_context.renderer = NULL;
                 return true;
             default:
                 break;
@@ -115,9 +118,9 @@ static void handle_queued_frame(render_frame_req_t *req) {
         applog_w("Stream", "Ignore late frame pts: %d", req->pts);
         return;
     }
-    if (ui_stream_render && ui_stream_render->renderSubmit(req->data)) {
-        redraw = true;
-    }
+//    if (ui_stream_render && ui_stream_render->renderSubmit(req->data)) {
+//        redraw = true;
+//    }
     if (redraw) {
         lv_app_redraw_now(lv_disp_get_default()->driver);
     }

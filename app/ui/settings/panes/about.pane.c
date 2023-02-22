@@ -6,7 +6,7 @@
 #include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
-#include "util/os_info.h"
+#include "os_info.h"
 
 #if TARGET_WEBOS
 

@@ -163,11 +163,8 @@ include(BuildINIH)
 option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 
 add_subdirectory(third_party/ss4s)
+add_subdirectory(third_party/commons EXCLUDE_FROM_ALL)
 
-if (TARGET_DESKTOP)
-    set(DECODER_FFMPEG_STATIC ON)
-endif ()
-add_subdirectory(modules)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
@@ -306,8 +303,7 @@ target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DI
 target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
-        Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
-        moonlight-module-api)
+        Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
@@ -327,6 +323,7 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
+    target_link_libraries(moonlight PRIVATE commons-luna-sync)
 elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
@@ -364,6 +361,12 @@ else ()
 endif ()
 
 target_link_libraries(moonlight PRIVATE ss4s ss4s-module-dummy)
+if (FEATURE_LIBCEC AND TARGET commons-cec)
+    target_link_libraries(moonlight PRIVATE commons-cec)
+else()
+    set(FEATURE_LIBCEC OFF)
+endif()
+target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
 
 configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

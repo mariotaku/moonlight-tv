@@ -9,7 +9,7 @@
 
 #include "ui/config.h"
 #include "util/navkey.h"
-#include "util/os_info.h"
+#include "os_info.h"
 
 #include "stream/settings.h"
 
