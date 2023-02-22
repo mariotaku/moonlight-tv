@@ -173,8 +173,6 @@ target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
 set(SOURCES
-        app/main.c
-        app/res.c
         app/app/app_input.c
         app/backend/backend_root.c
         app/backend/pcmanager/pcmanager.c
@@ -248,7 +246,6 @@ set(SOURCES
         app/util/executor.c
         app/util/uuidstr.c
         app/util/wol.c
-        app/app_sdl.c
         app/stream/input/sdlinput.c
         app/stream/input/sdl/keyboard.c
         app/stream/input/sdl/gamepad.c
