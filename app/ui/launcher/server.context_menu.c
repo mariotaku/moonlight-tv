@@ -132,7 +132,7 @@ static void forget_host(const pclist_t *node) {
     bool selected = node->selected;
     pcmanager_forget(pcmanager, &node->id);
     if (selected) {
-        launcher_controller_t *launcher = launcher_instance();
+        launcher_fragment_t *launcher = launcher_instance();
         launcher_select_server(launcher, NULL);
     }
 }

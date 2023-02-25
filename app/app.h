@@ -13,6 +13,8 @@
 
 #if FEATURE_LIBCEC
 #include "cec_sdl.h"
+#include "ss4s_modules.h"
+
 #endif
 
 extern PCONFIGURATION app_configuration;
@@ -22,7 +24,10 @@ extern SDL_Window *app_window;
 
 typedef struct app_t {
     os_info_t os_info;
-    array_list_t modules;
+    struct {
+        array_list_t modules;
+        module_selection_t selection;
+    } ss4s;
 #if FEATURE_LIBCEC
     cec_sdl_ctx_t cec;
 #endif

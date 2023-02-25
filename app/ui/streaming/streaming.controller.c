@@ -70,6 +70,7 @@ bool streaming_refresh_stats() {
     if (!stats_showing(controller)) {
         return false;
     }
+    app_t *app = controller->global;
     const struct VIDEO_STATS *dst = &vdec_summary_stats;
     const struct VIDEO_INFO *info = &vdec_stream_info;
     if (info->width > 0 && info->height > 0) {
@@ -77,13 +78,9 @@ bool streaming_refresh_stats() {
     } else {
         lv_label_set_text(controller->stats_items.resolution, "N/A");
     }
-    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name,
+    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", app->ss4s.selection.video_driver,
                           vdec_stream_info.format);
-    if (audio_current == AUDIO_DECODER) {
-        lv_label_set_text_static(controller->stats_items.audio, "Decoder provided");
-    } else {
-        lv_label_set_text_static(controller->stats_items.audio, audio_definitions[audio_current].name);
-    }
+    lv_label_set_text_static(controller->stats_items.audio, app->ss4s.selection.audio_driver);
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 
@@ -118,8 +115,9 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     streaming_styles_init(controller);
 
-    const streaming_scene_arg_t *req = (streaming_scene_arg_t *) args;
-    streaming_begin(&req->uuid, &req->app);
+    const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
+    controller->global = arg->global;
+    streaming_begin(&arg->uuid, &arg->app);
 }
 
 static void controller_dtor(lv_fragment_t *self) {

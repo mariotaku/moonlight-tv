@@ -27,11 +27,11 @@ static bool window_focus_gained;
 static void quit_confirm_cb(lv_event_t *e);
 
 int app_init(app_t *app, int argc, char *argv[]) {
-    (void) argc;
-    (void) argv;
+    memset(app, 0, sizeof(*app));
     os_info_get(&app->os_info);
-    modules_load(&app->modules, &app->os_info);
+    modules_load(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
+    module_select(&app->ss4s.modules, &app->ss4s.selection);
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
@@ -44,7 +44,6 @@ int app_init(app_t *app, int argc, char *argv[]) {
             .loggingFunction = applog_ss4s,
     };
     SS4S_Init(argc, argv, &ss4s_config);
-
 
 
 #if FEATURE_LIBCEC
@@ -60,7 +59,7 @@ void app_deinit(app_t *app) {
 #endif
     SS4S_Quit();
 
-    modules_clear(&app->modules);
+    modules_clear(&app->ss4s.modules);
 }
 
 void app_init_video() {

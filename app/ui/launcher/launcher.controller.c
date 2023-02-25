@@ -38,7 +38,7 @@ static void on_pc_updated(const uuidstr_t *uuid, void *userdata);
 
 static void on_pc_removed(const uuidstr_t *uuid, void *userdata);
 
-static void update_pclist(launcher_controller_t *controller);
+static void update_pclist(launcher_fragment_t *controller);
 
 static void cb_pc_selected(lv_event_t *event);
 
@@ -58,11 +58,11 @@ static void open_settings(lv_event_t *event);
 
 static void open_help(lv_event_t *event);
 
-static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, bool refocus);
+static void select_pc(launcher_fragment_t *controller, const uuidstr_t *uuid, bool refocus);
 
-static void set_detail_opened(launcher_controller_t *controller, bool opened);
+static void set_detail_opened(launcher_fragment_t *controller, bool opened);
 
-static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const pclist_t *node);
+static lv_obj_t *pclist_item_create(launcher_fragment_t *controller, const pclist_t *node);
 
 static void pclist_item_deleted(lv_event_t *e);
 
@@ -70,11 +70,11 @@ static const char *server_item_icon(const pclist_t *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 
-static void show_decoder_error(launcher_controller_t *controller);
+static void show_decoder_error(launcher_fragment_t *controller);
 
 static void decoder_error_cb(lv_event_t *e);
 
-static void populate_selected_host(launcher_controller_t *controller);
+static void populate_selected_host(launcher_fragment_t *controller);
 
 const lv_fragment_class_t launcher_controller_class = {
         .constructor_cb = launcher_controller,
@@ -83,7 +83,7 @@ const lv_fragment_class_t launcher_controller_class = {
         .obj_created_cb = launcher_view_init,
         .obj_will_delete_cb = launcher_view_destroy,
         .event_cb = launcher_event_cb,
-        .instance_size = sizeof(launcher_controller_t),
+        .instance_size = sizeof(launcher_fragment_t),
 };
 
 static const pcmanager_listener_t pcmanager_callbacks = {
@@ -92,13 +92,13 @@ static const pcmanager_listener_t pcmanager_callbacks = {
         .removed = on_pc_removed,
 };
 
-static launcher_controller_t *current_instance = NULL;
+static launcher_fragment_t *current_instance = NULL;
 
-launcher_controller_t *launcher_instance() {
+launcher_fragment_t *launcher_instance() {
     return current_instance;
 }
 
-void launcher_select_server(launcher_controller_t *controller, const uuidstr_t *uuid) {
+void launcher_select_server(launcher_fragment_t *controller, const uuidstr_t *uuid) {
     const pclist_t *node = uuid ? pcmanager_node(pcmanager, uuid) : NULL;
     if (!node) {
         set_detail_opened(controller, false);
@@ -115,86 +115,87 @@ void launcher_select_server(launcher_controller_t *controller, const uuidstr_t *
 }
 
 static void launcher_controller(lv_fragment_t *self, void *args) {
-    (void) args;
-    launcher_controller_t *controller = (launcher_controller_t *) self;
+    launcher_fragment_t *fragment = (launcher_fragment_t *) self;
+    fragment->global = args;
     static const lv_style_prop_t props[] = {
             LV_STYLE_OPA, LV_STYLE_BG_OPA, LV_STYLE_TRANSLATE_X, LV_STYLE_TRANSLATE_Y, 0
     };
-    lv_style_transition_dsc_init(&controller->tr_detail, props, lv_anim_path_ease_out, 300, 0, NULL);
-    lv_style_transition_dsc_init(&controller->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
+    lv_style_transition_dsc_init(&fragment->tr_detail, props, lv_anim_path_ease_out, 300, 0, NULL);
+    lv_style_transition_dsc_init(&fragment->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
 
-    lv_style_init(&controller->nav_host_style);
+    lv_style_init(&fragment->nav_host_style);
     int ico_width_def = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), app_iconfonts.normal, 0, 0);
     int host_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_def) / 2;
-    lv_style_set_pad_left(&controller->nav_host_style, host_icon_pad);
-    lv_style_set_pad_gap(&controller->nav_host_style, host_icon_pad);
+    lv_style_set_pad_left(&fragment->nav_host_style, host_icon_pad);
+    lv_style_set_pad_gap(&fragment->nav_host_style, host_icon_pad);
 
-    lv_style_init(&controller->nav_menu_style);
-    lv_style_set_border_side(&controller->nav_menu_style, LV_BORDER_SIDE_NONE);
-    lv_style_set_pad_ver(&controller->nav_menu_style, LV_DPX(10));
+    lv_style_init(&fragment->nav_menu_style);
+    lv_style_set_border_side(&fragment->nav_menu_style, LV_BORDER_SIDE_NONE);
+    lv_style_set_pad_ver(&fragment->nav_menu_style, LV_DPX(10));
     int ico_width_sm = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), app_iconfonts.small, 0, 0);
     int nav_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_sm) / 2;
-    lv_style_set_pad_left(&controller->nav_menu_style, nav_icon_pad);
-    lv_style_set_pad_gap(&controller->nav_menu_style, nav_icon_pad);
+    lv_style_set_pad_left(&fragment->nav_menu_style, nav_icon_pad);
+    lv_style_set_pad_gap(&fragment->nav_menu_style, nav_icon_pad);
 
-    controller->detail_opened = false;
-    controller->pane_initialized = false;
-    controller->first_created = true;
+    fragment->detail_opened = false;
+    fragment->pane_initialized = false;
+    fragment->first_created = true;
 
     if (app_configuration->default_host_uuid[0] != '\0') {
-        uuidstr_fromstr(&controller->def_host, app_configuration->default_host_uuid);
-        controller->def_app = app_configuration->default_app_id;
+        uuidstr_fromstr(&fragment->def_host, app_configuration->default_host_uuid);
+        fragment->def_app = app_configuration->default_app_id;
     }
 }
 
 static void controller_dtor(lv_fragment_t *self) {
-    launcher_controller_t *controller = (launcher_controller_t *) self;
+    launcher_fragment_t *controller = (launcher_fragment_t *) self;
     lv_style_reset(&controller->nav_menu_style);
     lv_style_reset(&controller->nav_host_style);
 }
 
 static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     LV_UNUSED(view);
-    launcher_controller_t *controller = (launcher_controller_t *) self;
-    pcmanager_register_listener(pcmanager, &pcmanager_callbacks, controller);
-    lv_obj_add_event_cb(controller->nav, cb_nav_focused, LV_EVENT_FOCUSED, controller);
-    lv_obj_add_event_cb(controller->nav, cb_nav_key, LV_EVENT_KEY, controller);
-    lv_obj_add_event_cb(controller->nav, app_quit_confirm, LV_EVENT_CANCEL, controller);
-    lv_obj_add_event_cb(controller->detail, cb_detail_focused, LV_EVENT_FOCUSED, controller);
-    lv_obj_add_event_cb(controller->detail, cb_detail_cancel, LV_EVENT_CANCEL, controller);
-    lv_obj_add_event_cb(controller->pclist, cb_pc_selected, LV_EVENT_SHORT_CLICKED, controller);
-    lv_obj_add_event_cb(controller->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, controller);
-    lv_obj_add_event_cb(controller->add_btn, open_manual_add, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(controller->pref_btn, open_settings, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(controller->help_btn, open_help, LV_EVENT_CLICKED, controller);
-    lv_obj_add_event_cb(controller->quit_btn, app_quit_confirm, LV_EVENT_CLICKED, controller);
+    launcher_fragment_t *fragment = (launcher_fragment_t *) self;
+    pcmanager_register_listener(pcmanager, &pcmanager_callbacks, fragment);
+    lv_obj_add_event_cb(fragment->nav, cb_nav_focused, LV_EVENT_FOCUSED, fragment);
+    lv_obj_add_event_cb(fragment->nav, cb_nav_key, LV_EVENT_KEY, fragment);
+    lv_obj_add_event_cb(fragment->nav, app_quit_confirm, LV_EVENT_CANCEL, fragment);
+    lv_obj_add_event_cb(fragment->detail, cb_detail_focused, LV_EVENT_FOCUSED, fragment);
+    lv_obj_add_event_cb(fragment->detail, cb_detail_cancel, LV_EVENT_CANCEL, fragment);
+    lv_obj_add_event_cb(fragment->pclist, cb_pc_selected, LV_EVENT_SHORT_CLICKED, fragment);
+    lv_obj_add_event_cb(fragment->pclist, cb_pc_longpress, LV_EVENT_LONG_PRESSED, fragment);
+    lv_obj_add_event_cb(fragment->add_btn, open_manual_add, LV_EVENT_CLICKED, fragment);
+    lv_obj_add_event_cb(fragment->pref_btn, open_settings, LV_EVENT_CLICKED, fragment);
+    lv_obj_add_event_cb(fragment->help_btn, open_help, LV_EVENT_CLICKED, fragment);
+    lv_obj_add_event_cb(fragment->quit_btn, app_quit_confirm, LV_EVENT_CLICKED, fragment);
 
-    update_pclist(controller);
+    update_pclist(fragment);
 
-    populate_selected_host(controller);
+    populate_selected_host(fragment);
 
     for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (cur->selected) {
-            select_pc(controller, &cur->id, true);
-            if (controller->first_created) {
-                controller->detail_opened = true;
+            select_pc(fragment, &cur->id, true);
+            if (fragment->first_created) {
+                fragment->detail_opened = true;
             }
             continue;
         }
         pcmanager_request_update(pcmanager, &cur->id, NULL, NULL);
     }
-    controller->pane_initialized = true;
-    set_detail_opened(controller, controller->detail_opened);
+    fragment->pane_initialized = true;
+    set_detail_opened(fragment, fragment->detail_opened);
     pcmanager_auto_discovery_start(pcmanager);
 
-    lv_obj_set_style_transition(controller->detail, &controller->tr_nav, 0);
-    lv_obj_set_style_transition(controller->detail, &controller->tr_detail, LV_STATE_USER_1);
-    current_instance = controller;
+    lv_obj_set_style_transition(fragment->detail, &fragment->tr_nav, 0);
+    lv_obj_set_style_transition(fragment->detail, &fragment->tr_detail, LV_STATE_USER_1);
+    current_instance = fragment;
 
-    if (decoder_current == DECODER_EMPTY && controller->first_created) {
-        show_decoder_error(controller);
-    }
-    controller->first_created = false;
+    // TODO: show decoder error if not initialized
+//    if (decoder_current == DECODER_EMPTY && fragment->first_created) {
+//        show_decoder_error(fragment);
+//    }
+    fragment->first_created = false;
 }
 
 static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
@@ -203,7 +204,7 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
     app_input_set_group(NULL);
     pcmanager_auto_discovery_stop(pcmanager);
 
-    launcher_controller_t *controller = (launcher_controller_t *) self;
+    launcher_fragment_t *controller = (launcher_fragment_t *) self;
     controller->pane_initialized = false;
     memset(&controller->def_host, 0, sizeof(uuidstr_t));
     controller->def_app = 0;
@@ -223,7 +224,7 @@ static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
 }
 
 void on_pc_added(const uuidstr_t *uuid, void *userdata) {
-    launcher_controller_t *controller = userdata;
+    launcher_fragment_t *controller = userdata;
     const pclist_t *node = pcmanager_node(pcmanager, uuid);
     if (node == NULL) return;
     pclist_item_create(controller, node);
@@ -232,7 +233,7 @@ void on_pc_added(const uuidstr_t *uuid, void *userdata) {
 }
 
 void on_pc_updated(const uuidstr_t *uuid, void *userdata) {
-    launcher_controller_t *controller = userdata;
+    launcher_fragment_t *controller = userdata;
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
         const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
@@ -245,7 +246,7 @@ void on_pc_updated(const uuidstr_t *uuid, void *userdata) {
 }
 
 void on_pc_removed(const uuidstr_t *uuid, void *userdata) {
-    launcher_controller_t *controller = userdata;
+    launcher_fragment_t *controller = userdata;
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
         const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
@@ -258,7 +259,7 @@ void on_pc_removed(const uuidstr_t *uuid, void *userdata) {
 static void cb_pc_selected(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
     if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
-    launcher_controller_t *controller = lv_event_get_user_data(event);
+    launcher_fragment_t *controller = lv_event_get_user_data(event);
     if (lv_fragment_manager_get_top(app_uimanager) != (void *) controller) return;
     const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(target);
     launcher_select_server(controller, uuid);
@@ -273,9 +274,9 @@ static void cb_pc_longpress(lv_event_t *event) {
     lv_obj_add_event_cb(msgbox, ui_cb_destroy_fragment, LV_EVENT_DELETE, fragment);
 }
 
-static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, bool refocus) {
+static void select_pc(launcher_fragment_t *controller, const uuidstr_t *uuid, bool refocus) {
     if (uuid) {
-        apps_fragment_arg_t arg = {.host = *uuid};
+        apps_fragment_arg_t arg = {.global = controller->global, .host = *uuid};
         if (!controller->def_app_requested && uuidstr_t_equals_t(uuid, &controller->def_host)) {
             controller->def_app_requested = true;
             arg.def_app = controller->def_app;
@@ -300,7 +301,7 @@ static void select_pc(launcher_controller_t *controller, const uuidstr_t *uuid, 
     }
 }
 
-static void update_pclist(launcher_controller_t *controller) {
+static void update_pclist(launcher_fragment_t *controller) {
     lv_obj_clean(controller->pclist);
     for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         lv_obj_t *pcitem = pclist_item_create(controller, cur);
@@ -319,7 +320,7 @@ static void pcitem_set_selected(lv_obj_t *pcitem, bool selected) {
     }
 }
 
-static lv_obj_t *pclist_item_create(launcher_controller_t *controller, const pclist_t *node) {
+static lv_obj_t *pclist_item_create(launcher_fragment_t *controller, const pclist_t *node) {
     const SERVER_DATA *server = node->server;
     const char *icon = server_item_icon(node);
     lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
@@ -367,7 +368,7 @@ static const char *server_item_icon(const pclist_t *node) {
 }
 
 static void cb_detail_focused(lv_event_t *event) {
-    launcher_controller_t *fragment = lv_event_get_user_data(event);
+    launcher_fragment_t *fragment = lv_event_get_user_data(event);
     if (!fragment->pane_initialized || fragment->detail_changing) return;
     lv_fragment_t *detail_fragment = lv_fragment_manager_find_by_container(fragment->base.child_manager,
                                                                            fragment->detail);
@@ -376,12 +377,12 @@ static void cb_detail_focused(lv_event_t *event) {
 }
 
 static void cb_detail_cancel(lv_event_t *event) {
-    launcher_controller_t *controller = lv_event_get_user_data(event);
+    launcher_fragment_t *controller = lv_event_get_user_data(event);
     set_detail_opened(controller, false);
 }
 
 static void cb_nav_focused(lv_event_t *event) {
-    launcher_controller_t *controller = lv_event_get_user_data(event);
+    launcher_fragment_t *controller = lv_event_get_user_data(event);
     if (!controller->pane_initialized) return;
     lv_obj_t *target = event->target;
     while (target && target != controller->nav) {
@@ -392,7 +393,7 @@ static void cb_nav_focused(lv_event_t *event) {
 }
 
 static void cb_nav_key(lv_event_t *event) {
-    launcher_controller_t *fragment = lv_event_get_user_data(event);
+    launcher_fragment_t *fragment = lv_event_get_user_data(event);
     switch (lv_event_get_key(event)) {
         case LV_KEY_UP: {
             lv_group_t *group = fragment->nav_group;
@@ -415,7 +416,7 @@ static void cb_nav_key(lv_event_t *event) {
     }
 }
 
-static void set_detail_opened(launcher_controller_t *controller, bool opened) {
+static void set_detail_opened(launcher_fragment_t *controller, bool opened) {
     bool key = ui_input_mode & UI_INPUT_MODE_BUTTON_FLAG;
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
@@ -450,14 +451,14 @@ static void open_manual_add(lv_event_t *event) {
 }
 
 static void open_settings(lv_event_t *event) {
-    LV_UNUSED(event);
-    lv_fragment_t *fragment = lv_fragment_create(&settings_controller_cls, NULL);
+    launcher_fragment_t *self = lv_event_get_user_data(event);
+    lv_fragment_t *fragment = lv_fragment_create(&settings_controller_cls, self->global);
     lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(app_uimanager));
     lv_fragment_manager_push(app_uimanager, fragment, container);
 }
 
-static void show_decoder_error(launcher_controller_t *controller) {
-    LV_UNUSED(controller);
+static void show_decoder_error(launcher_fragment_t *controller) {
+    app_t *app = controller->global;
     static const char *btn_txts[] = {translatable("OK"), ""};
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
@@ -465,13 +466,10 @@ static void show_decoder_error(launcher_controller_t *controller) {
     const char *module_err = module_geterror();
     if (module_err[0]) {
         lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders.\n"
-                                              "Error detail: %s"),
-                              decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
-                                                                      : app_configuration->decoder, module_err);
+                                              "Error detail: %s"), app->ss4s.selection.video_driver, module_err);
     } else {
         lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
-                              decoder_pref_requested >= DECODER_FIRST ? decoder_definitions[decoder_pref_requested].name
-                                                                      : app_configuration->decoder);
+                              app->ss4s.selection.video_driver);
     }
     lv_obj_center(msgbox);
 }
@@ -486,7 +484,7 @@ static void open_help(lv_event_t *event) {
     help_dialog_create();
 }
 
-static void populate_selected_host(launcher_controller_t *controller) {
+static void populate_selected_host(launcher_fragment_t *controller) {
     // Easy and dirty way to select preferred host
     if (uuidstr_is_empty(&controller->def_host) || controller->def_host_selected) {
         return;

@@ -5,6 +5,8 @@
 #include "backend/apploader/apploader.h"
 #include "util/uuidstr.h"
 
+typedef struct app_t app_t;
+
 typedef struct {
     lv_style_t cover;
     lv_style_t btn;
@@ -17,6 +19,7 @@ typedef struct {
 
 typedef struct {
     lv_fragment_t base;
+    app_t *global;
     uuidstr_t uuid;
     const pclist_t *node;
 
@@ -51,6 +54,7 @@ typedef struct {
 } appitem_viewholder_t;
 
 typedef struct {
+    app_t *global;
     uuidstr_t host;
     int def_app;
 } apps_fragment_arg_t;

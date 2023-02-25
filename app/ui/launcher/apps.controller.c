@@ -141,6 +141,7 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     controller->apploader_cb.data = appload_loaded;
     controller->apploader_cb.error = appload_errored;
     apps_fragment_arg_t *arg = args;
+    controller->global = arg->global;
     controller->uuid = arg->host;
     controller->def_app = arg->def_app;
     controller->node = pcmanager_node(pcmanager, &controller->uuid);
@@ -332,7 +333,7 @@ static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, vo
 static void update_view_state(apps_fragment_t *controller) {
     if (controller != current_instance) return;
     if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) return;
-    launcher_controller_t *parent_controller = (launcher_controller_t *) lv_fragment_get_parent(&controller->base);
+    launcher_fragment_t *parent_controller = (launcher_fragment_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
     lv_obj_t *applist = controller->applist;
     lv_obj_t *appload = controller->appload;
@@ -540,6 +541,7 @@ static void item_longpress_cb(lv_event_t *event) {
 static void launcher_launch_game(apps_fragment_t *controller, const apploader_item_t *app) {
     LV_ASSERT(app->base.id != 0);
     streaming_scene_arg_t args = {
+            .global = controller->global,
             .uuid = controller->uuid,
             .app = app->base,
     };

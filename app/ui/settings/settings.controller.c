@@ -73,9 +73,10 @@ const lv_fragment_class_t settings_controller_cls = {
 };
 
 static void settings_controller_ctor(lv_fragment_t *self, void *args) {
-    settings_controller_t *controller = (settings_controller_t *) self;
-    controller->mini = controller->pending_mini = UI_IS_MINI(ui_display_width);
-    os_info_get(&controller->os_info);
+    settings_controller_t *fragment = (settings_controller_t *) self;
+    fragment->app = args;
+    fragment->mini = fragment->pending_mini = UI_IS_MINI(ui_display_width);
+    os_info_get(&fragment->os_info);
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {

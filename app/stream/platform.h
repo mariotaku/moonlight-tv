@@ -43,7 +43,6 @@ enum DECODER_T {
     DECODER_COUNT,
     DECODER_NONE = -10,
 };
-typedef enum DECODER_T DECODER;
 
 enum AUDIO_T {
     AUDIO_DECODER = -2,
@@ -58,11 +57,6 @@ enum AUDIO_T {
     AUDIO_NONE = -10,
 };
 typedef enum AUDIO_T AUDIO;
-
-typedef struct MODULE_OS_REQUIREMENT {
-    uint32_t min_inclusive;
-    uint32_t max_exclusive;
-} MODULE_OS_REQUIREMENT;
 
 typedef struct MODULE_DEFINITION {
     const char *name;
@@ -105,49 +99,16 @@ typedef struct audio_config_entry_t {
     const char *name;
 } audio_config_entry_t;
 
-extern DECODER decoder_pref_requested;
-extern DECODER decoder_current;
 extern DECODER_INFO decoder_info;
-extern MODULE_DEFINITION decoder_definitions[DECODER_COUNT];
 
 extern const audio_config_entry_t audio_configs[];
 extern const size_t audio_config_len;
-
-DECODER decoder_by_id(const char *id);
 
 bool decoder_max_dimension(int *width, int *height);
 
 int decoder_max_framerate();
 
-extern AUDIO audio_current;
-extern MODULE_DEFINITION audio_definitions[AUDIO_COUNT];
-
-AUDIO audio_by_id(const char *id);
-
 int module_audio_configuration();
-
-static const DECODER decoder_orders[] = {
-#if TARGET_WEBOS
-        DECODER_NDL, DECODER_LGNC, DECODER_SMP
-#elif TARGET_RASPI
-        DECODER_MMAL, DECODER_PI, DECODER_FFMPEG
-#else
-        DECODER_FFMPEG
-#endif
-};
-static const int decoder_orders_len = sizeof(decoder_orders) / sizeof(DECODER);
-
-static const AUDIO audio_orders[] = {
-#if TARGET_WEBOS
-        AUDIO_NDL,
-#endif
-#if OS_LINUX
-        AUDIO_ALSA, AUDIO_PULSE,
-#endif
-        AUDIO_SDL,
-};
-static const int audio_orders_len = sizeof(audio_orders) / sizeof(AUDIO);
-
 
 const char *module_geterror();
 

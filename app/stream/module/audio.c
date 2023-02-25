@@ -7,36 +7,10 @@
 #include "util/i18n.h"
 
 
-MODULE_DEFINITION audio_definitions[AUDIO_COUNT] = {
-        {"Null", "null"},
-        {"PulseAudio", "pulse"},
-        {"ALSA", "alsa"},
-        {"NDL Audio", "ndlaud",
-#if FEATURE_CHECK_MODULE_OS_VERSION
-         {OS_VERSION_MAKE(4, 0, 0)}
-#endif
-        },
-};
-
 const audio_config_entry_t audio_configs[] = {
         {AUDIO_CONFIGURATION_STEREO, "stereo", translatable("Stereo")},
         {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch", translatable("5.1 Surround")},
         {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch", translatable("7.1 Surround")},
 };
 const size_t audio_config_len = sizeof(audio_configs) / sizeof(audio_config_entry_t);
-
-AUDIO audio_current = AUDIO_NONE;
-
-AUDIO audio_by_id(const char *id) {
-    if (!id || id[0] == 0 || strcmp(id, "auto") == 0)
-        return AUDIO_AUTO;
-    for (int i = 0; i < AUDIO_COUNT; i++) {
-        MODULE_DEFINITION pdef = audio_definitions[i];
-        if (!pdef.id)
-            continue;
-        if (strcmp(pdef.id, id) == 0)
-            return i;
-    }
-    return AUDIO_SDL;
-}
 
