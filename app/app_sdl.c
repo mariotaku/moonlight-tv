@@ -45,10 +45,19 @@ int app_init(app_t *app, int argc, char *argv[]) {
     };
     SS4S_Init(argc, argv, &ss4s_config);
 
+
+
+#if FEATURE_LIBCEC
+    cec_sdl_init(&app->cec);
+#endif
+
     return 0;
 }
 
 void app_deinit(app_t *app) {
+#if FEATURE_LIBCEC
+    cec_sdl_deinit(&app->cec);
+#endif
     SS4S_Quit();
 
     modules_clear(&app->modules);

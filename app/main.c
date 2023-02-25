@@ -23,12 +23,6 @@
 
 #include <SDL_image.h>
 
-#if FEATURE_LIBCEC
-
-#include "cec_support.h"
-
-#endif
-
 #if TARGET_WEBOS
 
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
@@ -115,19 +109,11 @@ int main(int argc, char *argv[]) {
     lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, NULL);
     lv_fragment_manager_push(app_uimanager, fragment, &scr);
 
-
-#if FEATURE_LIBCEC
-    cec_support_ctx_t *cec = cec_support_create();
-#endif
-
     while (app_is_running()) {
         app_process_events();
         lv_task_handler();
         SDL_Delay(1);
     }
-#if FEATURE_LIBCEC
-    cec_support_destroy(cec);
-#endif
 
     lv_fragment_manager_del(app_uimanager);
 

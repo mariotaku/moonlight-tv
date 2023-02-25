@@ -2,12 +2,18 @@
 
 #include <SDL.h>
 
+#include "config.h"
+
 #include "lvgl.h"
 #include "stream/settings.h"
 #include "backend/pcmanager.h"
 #include "libgamestream/client.h"
 #include "os_info.h"
 #include "array_list.h"
+
+#if FEATURE_LIBCEC
+#include "cec_sdl.h"
+#endif
 
 extern PCONFIGURATION app_configuration;
 extern lv_fragment_manager_t *app_uimanager;
@@ -17,6 +23,9 @@ extern SDL_Window *app_window;
 typedef struct app_t {
     os_info_t os_info;
     array_list_t modules;
+#if FEATURE_LIBCEC
+    cec_sdl_ctx_t cec;
+#endif
 } app_t;
 
 int app_init(app_t *app, int argc, char *argv[]);
