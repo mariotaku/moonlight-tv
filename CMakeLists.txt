@@ -193,7 +193,6 @@ set(SOURCES
         app/stream/module/module.c
         app/stream/module/audio.c
         app/stream/module/decoder.c
-        app/stream/module/symbols.c
         app/stream/session/session.c
         app/stream/session/connection.c
         app/stream/session/watchdog.c

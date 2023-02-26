@@ -1,13 +1,8 @@
-#include "config.h"
 #include "stream/platform.h"
 #include "os_info.h"
 
-#include <string.h>
 
 #include <Limelight.h>
-
-#include "util/logging.h"
-#include "symbols.h"
 
 #if TARGET_WEBOS
 

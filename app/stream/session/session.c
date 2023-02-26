@@ -44,6 +44,7 @@ typedef struct {
     int appId;
     bool interrupted;
     bool quitapp;
+    SS4S_VideoCapabilities video_cap;
     SDL_cond *cond;
     SDL_mutex *mutex;
     SDL_Thread *thread;
@@ -131,6 +132,7 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
 
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
+    SS4S_GetVideoCapabilities(&session->video_cap);
     session->server = server_clone;
     session->config = config;
     session->appId = app->id;
@@ -343,7 +345,7 @@ void streaming_enter_fullscreen() {
         return;
     }
     app_set_mouse_grab(true);
-    if (!(SS4S_GetVideoCapabilities() & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING)) {
+    if ((session_active->video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING) == 0) {
         SS4S_PlayerVideoSetDisplayArea(session_active->player, NULL, NULL);
     }
 }
@@ -354,7 +356,7 @@ void streaming_enter_overlay(int x, int y, int w, int h) {
     }
     app_set_mouse_grab(false);
     SS4S_VideoRect dst = {x, y, w, h};
-    if (!(SS4S_GetVideoCapabilities() & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING)) {
+    if ((session_active->video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING) == 0) {
         SS4S_PlayerVideoSetDisplayArea(session_active->player, NULL, &dst);
     }
 }

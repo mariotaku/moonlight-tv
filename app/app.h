@@ -10,6 +10,8 @@
 #include "libgamestream/client.h"
 #include "os_info.h"
 #include "array_list.h"
+#include "ss4s_modules.h"
+#include "ss4s/video.h"
 
 #if FEATURE_LIBCEC
 #include "cec_sdl.h"
@@ -27,6 +29,7 @@ typedef struct app_t {
     struct {
         array_list_t modules;
         module_selection_t selection;
+        SS4S_VideoCapabilities video_cap;
     } ss4s;
 #if FEATURE_LIBCEC
     cec_sdl_ctx_t cec;

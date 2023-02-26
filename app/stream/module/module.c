@@ -1,6 +1,4 @@
-#include "app.h"
 #include "stream/platform.h"
-#include "util/logging.h"
 
 static char module_error[1024];
 

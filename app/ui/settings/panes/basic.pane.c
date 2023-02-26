@@ -83,6 +83,7 @@ static void pane_dtor(lv_fragment_t *self) {
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     basic_pane_t *pane = (basic_pane_t *) self;
+    app_t *app = pane->parent->app;
     lv_obj_t *view = pref_pane_container(container);
     lv_obj_set_layout(view, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_ROW_WRAP);
@@ -124,7 +125,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pane->bitrate_label = pref_title_label(view, locstr("Video bitrate"));
 
-    int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 100000;
+    int max = app->ss4s.video_cap.maxBitrate ? app->ss4s.video_cap.maxBitrate : 100000;
     lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
@@ -195,7 +196,9 @@ static void update_bitrate_label(basic_pane_t *pane) {
 }
 
 static void update_bitrate_hint(basic_pane_t *pane) {
-    if (decoder_info.suggestedBitrate && app_configuration->stream.bitrate > decoder_info.suggestedBitrate) {
+    app_t *app = pane->parent->app;
+    if (app->ss4s.video_cap.suggestedBitrate > 0 &&
+        app_configuration->stream.bitrate > app->ss4s.video_cap.suggestedBitrate) {
         lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text_static(pane->bitrate_warning, locstr("Higher bitrate may cause performance issue, "
                                                                "try with caution."));

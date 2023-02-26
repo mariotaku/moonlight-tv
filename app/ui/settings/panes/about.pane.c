@@ -78,12 +78,11 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     about_line(view, locstr("Audio backend"), app->ss4s.selection.audio_driver, rowcount++, 2);
 #if TARGET_WEBOS
     const os_info_t *os_info = &controller->parent->os_info;
-    if (strlen(os_info->release)) {
-        about_line(view, locstr("webOS version"), os_info->release, rowcount++, 1);
+    char *version_name = version_info_str(&os_info->version);
+    if (version_name != NULL) {
+        about_line(view, locstr("webOS version"), version_name, rowcount++, 1);
     }
-    if (strlen(os_info->manufacturing_version)) {
-        about_line(view, locstr("Firmware version"), os_info->manufacturing_version, rowcount++, 1);
-    }
+    free(version_name);
     if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
         char resolution_text[16];
         SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", controller->webos_panel_info.w,

@@ -29,43 +29,6 @@
 
 #include "os_info.h"
 
-enum DECODER_T {
-    DECODER_AUTO = -1,
-    DECODER_FIRST = 0,
-    DECODER_EMPTY = DECODER_FIRST,
-    DECODER_FFMPEG,
-    DECODER_NDL,
-    DECODER_LGNC,
-    DECODER_SMP,
-    DECODER_DILE,
-    DECODER_PI,
-    DECODER_MMAL,
-    DECODER_COUNT,
-    DECODER_NONE = -10,
-};
-
-enum AUDIO_T {
-    AUDIO_DECODER = -2,
-    AUDIO_AUTO = -1,
-    AUDIO_FIRST = 0,
-    AUDIO_EMPTY = AUDIO_FIRST,
-    AUDIO_SDL,
-    AUDIO_PULSE,
-    AUDIO_ALSA,
-    AUDIO_NDL,
-    AUDIO_COUNT,
-    AUDIO_NONE = -10,
-};
-typedef enum AUDIO_T AUDIO;
-
-typedef struct MODULE_DEFINITION {
-    const char *name;
-    const char *id;
-#if FEATURE_CHECK_MODULE_OS_VERSION
-    MODULE_OS_REQUIREMENT os_req;
-#endif
-} MODULE_DEFINITION;
-
 typedef struct DECODER_INFO {
     /* Decoder passes the check */
     bool valid;
@@ -86,12 +49,7 @@ typedef struct DECODER_INFO {
     bool hasRenderer;
     int suggestedBitrate;
     bool canResize;
-} *PDECODER_INFO, DECODER_INFO;
-
-typedef struct AUDIO_INFO {
-    bool valid;
-    int configuration;
-} *PAUDIO_INFO, AUDIO_INFO;
+} DECODER_INFO;
 
 typedef struct audio_config_entry_t {
     int configuration;
