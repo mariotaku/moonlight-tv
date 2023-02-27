@@ -20,6 +20,7 @@
 #include "util/bus.h"
 
 #include "ss4s.h"
+#include "input/app_input.h"
 
 #include <SDL_image.h>
 
@@ -29,8 +30,6 @@
 #else
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
 #endif
-
-SDL_Window *app_window = NULL;
 
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
@@ -70,7 +69,7 @@ int main(int argc, char *argv[]) {
     // TODO: force set fullscreen if decoder doesn't support windowed mode
     app_configuration->fullscreen = true;
 
-    app_window = app_create_window();
+    app_.window = app_create_window();
 
     SS4S_PostInit(argc, argv);
 
@@ -83,14 +82,14 @@ int main(int argc, char *argv[]) {
 
     lv_log_register_print_cb(applog_lvlog);
     lv_init();
-    lv_disp_t *disp = lv_app_display_init(app_window);
+    lv_disp_t *disp = lv_app_display_init(app_.window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
     lv_theme_t theme_app;
     lv_memset_00(&theme_app, sizeof(lv_theme_t));
     theme_app.color_primary = parent_theme->color_primary;
     theme_app.color_secondary = parent_theme->color_secondary;
     lv_theme_set_parent(&theme_app, parent_theme);
-    lv_theme_moonlight_init(&theme_app);
+    lv_theme_moonlight_init(&theme_app, &app_);
     app_fonts_t *fonts = app_font_init(&theme_app);
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
@@ -100,7 +99,7 @@ int main(int argc, char *argv[]) {
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
-    app_input_init();
+    app_input_init(&app_.input, &app_);
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
@@ -117,17 +116,17 @@ int main(int argc, char *argv[]) {
 
     lv_fragment_manager_del(app_uimanager);
 
-    app_input_deinit();
+    app_input_deinit(&app_.input);
     lv_app_display_deinit(disp);
     lv_img_decoder_delete(img_decoder);
     app_font_deinit(fonts);
 
     if (!app_configuration->fullscreen) {
-        SDL_GetWindowPosition(app_window, &app_configuration->window_state.x, &app_configuration->window_state.y);
-        SDL_GetWindowSize(app_window, &app_configuration->window_state.w, &app_configuration->window_state.h);
+        SDL_GetWindowPosition(app_.window, &app_configuration->window_state.x, &app_configuration->window_state.y);
+        SDL_GetWindowSize(app_.window, &app_configuration->window_state.w, &app_configuration->window_state.h);
     }
 
-    SDL_DestroyWindow(app_window);
+    SDL_DestroyWindow(app_.window);
     app_uninit_video();
 
     backend_destroy();
@@ -238,8 +237,8 @@ static void applog_lvlog(const char *msg) {
     }
 }
 
-void app_set_fullscreen(bool fullscreen) {
-    SDL_SetWindowFullscreen(app_window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
+void app_set_fullscreen(app_t *app, bool fullscreen) {
+    SDL_SetWindowFullscreen(app->window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
 
 

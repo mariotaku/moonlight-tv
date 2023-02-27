@@ -199,12 +199,12 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
 }
 
 static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
+    launcher_fragment_t *controller = (launcher_fragment_t *) self;
     LV_UNUSED(view);
     current_instance = NULL;
-    app_input_set_group(NULL);
+    app_input_set_group(&controller->global->input, NULL);
     pcmanager_auto_discovery_stop(pcmanager);
 
-    launcher_fragment_t *controller = (launcher_fragment_t *) self;
     controller->pane_initialized = false;
     memset(&controller->def_host, 0, sizeof(uuidstr_t));
     controller->def_app = 0;
@@ -420,7 +420,7 @@ static void set_detail_opened(launcher_fragment_t *controller, bool opened) {
     bool key = ui_input_mode & UI_INPUT_MODE_BUTTON_FLAG;
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
-        app_input_set_group(controller->detail_group);
+        app_input_set_group(&controller->global->input, controller->detail_group);
         lv_obj_t *detail_focused = lv_group_get_focused(controller->detail_group);
         if (key && detail_focused) {
             if (lv_obj_check_type(detail_focused, &lv_gridview_class)) {
@@ -432,7 +432,7 @@ static void set_detail_opened(launcher_fragment_t *controller, bool opened) {
         }
     } else {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
-        app_input_set_group(controller->nav_group);
+        app_input_set_group(&controller->global->input, controller->nav_group);
         if (key) {
             lv_obj_t *nav_focused = lv_group_get_focused(controller->nav_group);
             if (nav_focused) {

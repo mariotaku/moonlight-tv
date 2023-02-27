@@ -11,15 +11,17 @@ static void apply_cb(struct _lv_theme_t *, lv_obj_t *);
 
 static void lv_start_text_input(lv_event_t *event);
 
+static void lv_stop_text_input(lv_event_t *event);
+
 static void msgbox_key(lv_event_t *event);
 
 static void msgbox_cancel(lv_event_t *event);
 
 static void msgbox_destroy(lv_event_t *event);
 
-void lv_theme_moonlight_init(lv_theme_t *theme) {
+void lv_theme_moonlight_init(lv_theme_t *theme, app_t *app) {
     lv_theme_set_apply_cb(theme, apply_cb);
-
+    theme->user_data = app;
     lv_style_init(&knob_shadow);
     lv_style_set_shadow_color(&knob_shadow, lv_color_black());
     lv_style_set_shadow_width(&knob_shadow, LV_DPX(5));
@@ -27,6 +29,7 @@ void lv_theme_moonlight_init(lv_theme_t *theme) {
 }
 
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
+    app_t *app = theme->user_data;
     bool set_font = true;
     if (lv_obj_has_class(obj, &lv_btn_class)) {
         lv_obj_set_style_flex_cross_place(obj, LV_FLEX_ALIGN_CENTER, 0);
@@ -54,8 +57,8 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         }
     }
     if (lv_obj_check_type(obj, &lv_textarea_class)) {
-        lv_obj_add_event_cb(obj, lv_start_text_input, LV_EVENT_FOCUSED, NULL);
-        lv_obj_add_event_cb(obj, (lv_event_cb_t) app_stop_text_input, LV_EVENT_DEFOCUSED, NULL);
+        lv_obj_add_event_cb(obj, lv_start_text_input, LV_EVENT_FOCUSED, theme);
+        lv_obj_add_event_cb(obj, lv_stop_text_input, LV_EVENT_DEFOCUSED, NULL);
     } else if (lv_obj_check_type(obj, &lv_msgbox_class)) {
         if (lv_obj_get_width(lv_scr_act()) / 10 * 4 > LV_DPI_DEF * 2) {
             lv_obj_set_width(obj, LV_PCT(40));
@@ -66,7 +69,8 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_max_width(obj, LV_PCT(60), 0);
         lv_obj_set_style_flex_main_place(obj, LV_FLEX_ALIGN_END, 0);
         lv_group_t *group = lv_group_create();
-        app_input_push_modal_group(group);
+        group->user_data = theme;
+        app_input_push_modal_group(&app->input, group);
         lv_obj_add_event_cb(obj, cb_child_group_add, LV_EVENT_CHILD_CREATED, group);
         lv_obj_add_event_cb(obj, msgbox_key, LV_EVENT_KEY, NULL);
         lv_obj_add_event_cb(obj, msgbox_cancel, LV_EVENT_CANCEL, NULL);
@@ -94,9 +98,17 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
 }
 
 static void lv_start_text_input(lv_event_t *event) {
+    lv_theme_t *theme = lv_event_get_user_data(event);
+    app_t *app = theme->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     lv_area_t *coords = &target->coords;
-    app_start_text_input(coords->x1, coords->y1, lv_area_get_width(coords), lv_area_get_height(coords));
+    app_start_text_input(&app->input, coords->x1, coords->y1, lv_area_get_width(coords), lv_area_get_height(coords));
+}
+
+static void lv_stop_text_input(lv_event_t *event) {
+    lv_theme_t *theme = lv_event_get_user_data(event);
+    app_t *app = theme->user_data;
+    app_stop_text_input(&app->input);
 }
 
 static void msgbox_key(lv_event_t *event) {
@@ -132,7 +144,9 @@ static void msgbox_cancel(lv_event_t *event) {
 
 static void msgbox_destroy(lv_event_t *event) {
     lv_group_t *group = lv_event_get_user_data(event);
-    app_input_remove_modal_group(group);
+    lv_theme_t *theme = group->user_data;
+    app_t *app = theme->user_data;
+    app_input_remove_modal_group(&app->input, group);
     lv_group_remove_all_objs(group);
     lv_group_del(group);
 }

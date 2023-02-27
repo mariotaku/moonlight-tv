@@ -141,7 +141,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 #if !FEATURE_FORCE_FULLSCREEN
     if (decoder_info.canResize) {
         lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
-        lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
+        lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, pane);
     }
 #endif
 
@@ -188,7 +188,8 @@ static void on_res_fps_updated(lv_event_t *e) {
 }
 
 static void on_fullscreen_updated(lv_event_t *e) {
-    app_set_fullscreen(app_configuration->fullscreen);
+    basic_pane_t *pane = lv_event_get_user_data(e);
+    app_set_fullscreen(pane->parent->app, app_configuration->fullscreen);
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {

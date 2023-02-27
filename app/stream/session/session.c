@@ -24,7 +24,6 @@
 #include "platform/linux/evmouse.h"
 #endif
 
-#include <errno.h>
 
 extern CONNECTION_LISTENER_CALLBACKS connection_callbacks;
 

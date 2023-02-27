@@ -173,7 +173,6 @@ target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
 set(SOURCES
-        app/app/app_input.c
         app/backend/backend_root.c
         app/backend/pcmanager/pcmanager.c
         app/backend/pcmanager/pairing.c
@@ -224,10 +223,6 @@ set(SOURCES
         app/ui/help/help.dialog.c
         app/ui/common/progress_dialog.c
         app/lvgl/lv_disp_drv_app.c
-        app/lvgl/lv_sdl_drv_key_input.c
-        app/lvgl/lv_sdl_drv_pointer_input.c
-        app/lvgl/lv_sdl_drv_wheel_input.c
-        app/lvgl/lv_sdl_drv_button_input.c
         app/lvgl/lv_ext_utils.c
         app/lvgl/lv_sdl_img.c
         app/lvgl/ext/lv_gridview.c

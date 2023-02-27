@@ -50,6 +50,7 @@ const lv_fragment_class_t settings_pane_decoder_cls = {
 static void pane_ctor(lv_fragment_t *self, void *args) {
     decoder_pane_t *pane = (decoder_pane_t *) self;
     pane->parent = args;
+    SS4S_AudioCapabilities audio_cap = pane->parent->app->ss4s.audio_cap;
     array_list_t modules = pane->parent->app->ss4s.modules;
     pane->vdec_entries = calloc(modules.size + 1, sizeof(pref_dropdown_string_entry_t));
     pane->adec_entries = calloc(modules.size + 1, sizeof(pref_dropdown_string_entry_t));
@@ -61,8 +62,8 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
         set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], info->name, info->id, false);
         set_decoder_entry(&pane->vdec_entries[pane->vdec_entries_len++], info->name, info->id, false);
     }
-    int supported_ch = CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration());
-    if (!supported_ch) {
+    unsigned int supported_ch = audio_cap.maxChannels;
+    if (supported_ch == 0) {
         supported_ch = 2;
     }
     for (int i = 0; i < audio_config_len; i++) {

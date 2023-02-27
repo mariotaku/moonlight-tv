@@ -32,6 +32,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
     modules_load(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
     module_select(&app->ss4s.modules, &app->ss4s.selection);
+    SS4S_GetAudioCapabilities(&app->ss4s.audio_cap);
     SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");

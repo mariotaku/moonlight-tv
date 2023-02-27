@@ -2,35 +2,24 @@
 
 #include <SDL.h>
 
-#include <lvgl.h>
-
+#include "lvgl.h"
 #include "app.h"
 
 #include "stream/session.h"
 #include "stream/input/sdlinput.h"
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/root.h"
+
 #include "util/user_event.h"
+#include "lv_drv_sdl_key.h"
 
-#include "lv_sdl_drv_input.h"
+static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state);
 
-typedef struct {
-    uint32_t key, ev_key;
-    lv_indev_state_t state;
-    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
-    uint32_t text_len;
-    uint8_t text_remain;
-    uint32_t text_next;
-    bool changed;
-} indev_key_state_t;
-
-static bool read_event(const SDL_Event *event, indev_key_state_t *state);
-
-static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *state);
+static bool read_keyboard(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
 #if TARGET_WEBOS
 
-static bool read_webos_key(const SDL_KeyboardEvent *event, indev_key_state_t *state);
+static bool read_webos_key(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
 static void webos_key_input_mode(const SDL_KeyboardEvent *event);
 
@@ -38,55 +27,23 @@ static void webos_key_input_mode(const SDL_KeyboardEvent *event);
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 
-lv_indev_t *lv_sdl_init_key_input() {
-    lv_group_t *group = lv_group_get_default();
+int lv_sdl_init_key_input(lv_drv_sdl_key_t *indev_drv) {
+    lv_memset_00(indev_drv, sizeof(*indev_drv));
+    lv_indev_drv_init(&indev_drv->base);
+    indev_drv->base.type = LV_INDEV_TYPE_KEYPAD;
+    indev_drv->base.read_cb = sdl_input_read;
 
-    lv_indev_drv_t *indev_drv = malloc(sizeof(lv_indev_drv_t));
-    lv_indev_drv_init(indev_drv);
-    indev_key_state_t *state = malloc(sizeof(indev_key_state_t));
-    lv_memset_00(state, sizeof(indev_key_state_t));
-    indev_drv->user_data = state;
-    indev_drv->type = LV_INDEV_TYPE_KEYPAD;
-    indev_drv->read_cb = sdl_input_read;
-
-    state->state = LV_INDEV_STATE_RELEASED;
-    lv_indev_t *indev = lv_indev_drv_register(indev_drv);
-    if (group) {
-        lv_indev_set_group(indev, group);
-    }
-    return indev;
+    indev_drv->state = LV_INDEV_STATE_RELEASED;
+    return 0;
 }
 
 void lv_sdl_key_input_release_key(lv_indev_t *indev) {
-    indev_key_state_t *state = indev->driver->user_data;
+    lv_drv_sdl_key_t *state = (lv_drv_sdl_key_t *) indev->driver;
     state->state = LV_INDEV_STATE_RELEASED;
 }
 
-void lv_sdl_deinit_key_input(lv_indev_t *indev) {
-    free(indev->driver->user_data);
-    free(indev->driver);
-}
-
-void lv_sdl_key_input_inject_key(lv_indev_t *indev, lv_key_t key, bool pressed) {
-    indev_key_state_t *state = indev->driver->user_data;
-    if (pressed) {
-        if (state->key == 0) {
-            state->key = state->ev_key = key;
-            state->state = LV_INDEV_STATE_PRESSED;
-            state->changed = true;
-        }
-    } else {
-        if (state->key == key) {
-            state->ev_key = key;
-            state->key = 0;
-            state->state = LV_INDEV_STATE_RELEASED;
-            state->changed = true;
-        }
-    }
-}
-
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
-    indev_key_state_t *state = drv->user_data;
+    lv_drv_sdl_key_t *state = (lv_drv_sdl_key_t *) drv;
     SDL_Event e;
     if (state->text_remain > 0) {
         if (state->state == LV_INDEV_STATE_PRESSED) {
@@ -144,7 +101,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     data->state = state->state;
 }
 
-static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
+static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state) {
     bool pressed = state->state == LV_INDEV_STATE_RELEASED;
     NAVKEY navkey = navkey_from_sdl(event, &pressed);
     switch (navkey) {
@@ -194,7 +151,7 @@ static bool read_event(const SDL_Event *event, indev_key_state_t *state) {
     return true;
 }
 
-static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *state) {
+static bool read_keyboard(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
     bool pressed = event->type == SDL_KEYDOWN;
     switch (event->keysym.sym) {
         case SDLK_UP:
@@ -247,7 +204,7 @@ static bool read_keyboard(const SDL_KeyboardEvent *event, indev_key_state_t *sta
 
 #if TARGET_WEBOS
 
-static bool read_webos_key(const SDL_KeyboardEvent *event, indev_key_state_t *state) {
+static bool read_webos_key(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
     switch ((int) event->keysym.scancode) {
         case SDL_WEBOS_SCANCODE_BACK:
             state->key = LV_KEY_ESC;
