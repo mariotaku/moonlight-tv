@@ -117,7 +117,7 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
     controller->global = arg->global;
-    streaming_begin(&arg->uuid, &arg->app);
+    streaming_begin(arg->global, &arg->uuid, &arg->app);
 }
 
 static void controller_dtor(lv_fragment_t *self) {

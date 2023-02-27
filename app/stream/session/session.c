@@ -88,7 +88,7 @@ bool streaming_running() {
     return streaming_status == STREAMING_STREAMING;
 }
 
-int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
+int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
     if (session_active != NULL) {
         return -1;
     }
@@ -99,29 +99,41 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
     PSERVER_DATA server_clone = serverdata_clone(node->server);
     PCONFIGURATION config = settings_load();
 
+    SS4S_VideoCapabilities video_cap = global->ss4s.video_cap;
+    SS4S_AudioCapabilities audio_cap = global->ss4s.audio_cap;
+
     if (config->stream.bitrate < 0) {
-        config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height,
+        config->stream.bitrate = settings_optimal_bitrate(&video_cap, config->stream.width, config->stream.height,
                                                           config->stream.fps);
     }
     // Cap framerate to platform request
-    if (decoder_info.maxBitrate && config->stream.bitrate > decoder_info.maxBitrate)
-        config->stream.bitrate = decoder_info.maxBitrate;
+    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate)
+        config->stream.bitrate = video_cap.maxBitrate;
     config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
-    config->stream.supportsHevc &= decoder_info.hevc;
-    config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server_clone->supportsHdr &&
-                                (decoder_info.hdr == 1 || app->hdr != 0);
-    config->stream.colorSpace = decoder_info.colorSpace;
+    config->stream.supportsHevc &= (video_cap.codecs & SS4S_VIDEO_H265) != 0;
+    config->stream.enableHdr &= config->stream.supportsHevc && video_cap.hdr && server_clone->supportsHdr &&
+                                (app->hdr != 0/* TODO: handle always on case*/);
+    config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
     if (config->stream.enableHdr) {
-        config->stream.colorRange = decoder_info.colorRange;
+        config->stream.colorRange = COLOR_RANGE_FULL/* TODO: get from video capabilities */;
     }
     applog_i("Session", "enableHdr=%u", config->stream.enableHdr);
     applog_i("Session", "colorSpace=%d", config->stream.colorSpace);
     applog_i("Session", "colorRange=%d", config->stream.colorRange);
 #if FEATURE_SURROUND_SOUND
-    if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration()) <
-        CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
-        config->stream.audioConfiguration = module_audio_configuration();
+    if (audio_cap.maxChannels < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
+        switch (audio_cap.maxChannels) {
+            case 2:
+                config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
+                break;
+            case 6:
+                config->stream.audioConfiguration = AUDIO_CONFIGURATION_51_SURROUND;
+                break;
+            case 8:
+                config->stream.audioConfiguration = AUDIO_CONFIGURATION_71_SURROUND;
+                break;
+        }
     }
     if (!config->stream.audioConfiguration) {
         config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;

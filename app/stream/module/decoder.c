@@ -10,14 +10,6 @@
 
 #endif
 
-DECODER_INFO decoder_info = {NULL};
-
-
-int module_audio_configuration() {
-    // TODO: value from decoder
-    return AUDIO_CONFIGURATION_STEREO;
-}
-
 bool decoder_max_dimension(int *width, int *height) {
 #if TARGET_WEBOS
     return SDL_webOSGetPanelResolution(width, height) == SDL_TRUE;

@@ -139,9 +139,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
 
 #if !FEATURE_FORCE_FULLSCREEN
-    if (decoder_info.canResize) {
-        lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
+    lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
+    if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_AREA_DEST) {
         lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, pane);
+    } else {
+        lv_obj_add_state(checkbox, LV_STATE_DISABLED);
+        pref_desc_label(view, "Can't use windowed UI for this decoder", false);
     }
 #endif
 
@@ -171,8 +174,8 @@ static void on_bitrate_changed(lv_event_t *e) {
 
 static void on_res_fps_updated(lv_event_t *e) {
     basic_pane_t *pane = lv_event_get_user_data(e);
-    int bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height,
-                                           app_configuration->stream.fps);
+    int bitrate = settings_optimal_bitrate(&pane->parent->app->ss4s.video_cap, app_configuration->stream.width,
+                                           app_configuration->stream.height, app_configuration->stream.fps);
     lv_slider_set_value(pane->bitrate_slider, bitrate / BITRATE_STEP, LV_ANIM_OFF);
     app_configuration->stream.bitrate = lv_slider_get_value(pane->bitrate_slider) * BITRATE_STEP;
     if (app_configuration->stream.width > 1920 && app_configuration->stream.height > 1080 &&

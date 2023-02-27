@@ -219,7 +219,7 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
         return;
 #endif
     applog(priority_name[priority - SDL_LOG_PRIORITY_VERBOSE],
-           category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], message);
+           category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], "%s", message);
 }
 
 static void applog_lvlog(const char *msg) {
@@ -232,7 +232,7 @@ static void applog_lvlog(const char *msg) {
     };
     for (int i = 0; i < sizeof(level_value) / sizeof(applog_level_t); i++) {
         if (strncmp(level_name[i], msg + 1, (start - msg - 3)) == 0) {
-            applog(level_value[i], "LVGL", start);
+            applog(level_value[i], "LVGL", "%s", start);
         }
     }
 }
