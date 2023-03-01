@@ -59,8 +59,12 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
     set_decoder_entry(&pane->adec_entries[pane->vdec_entries_len++], locstr("Auto"), "auto", true);
     for (int module_idx = 0; module_idx < modules.size; module_idx++) {
         const module_group_t *info = array_list_get(&modules, module_idx);
-        set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], info->name, info->id, false);
-        set_decoder_entry(&pane->vdec_entries[pane->vdec_entries_len++], info->name, info->id, false);
+        if (info->has_audio) {
+            set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], info->name, info->id, false);
+        }
+        if (info->has_video) {
+            set_decoder_entry(&pane->vdec_entries[pane->vdec_entries_len++], info->name, info->id, false);
+        }
     }
     unsigned int supported_ch = audio_cap.maxChannels;
     if (supported_ch == 0) {

@@ -1,0 +1,1 @@
+target_sources(moonlight PRIVATE stats.c)

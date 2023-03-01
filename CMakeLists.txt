@@ -163,8 +163,6 @@ include(BuildINIH)
 option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 
 add_subdirectory(third_party/ss4s)
-add_subdirectory(third_party/commons EXCLUDE_FROM_ALL)
-
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
@@ -172,84 +170,15 @@ target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
-set(SOURCES
-        app/backend/backend_root.c
-        app/backend/pcmanager/pcmanager.c
-        app/backend/pcmanager/pairing.c
-        app/backend/pcmanager/pcmanager_common.c
-        app/backend/pcmanager/known_hosts.c
-        app/backend/pcmanager/discovery.c
-        app/backend/pcmanager/pclist.c
-        app/backend/pcmanager/listeners.c
-        app/backend/pcmanager/worker/request.c
-        app/backend/pcmanager/worker/pairing.c
-        app/backend/pcmanager/worker/quit_app.c
-        app/backend/pcmanager/worker/wol.c
-        app/backend/pcmanager/worker/manual_add.c
-        app/backend/pcmanager/worker/update.c
-        app/backend/gamecontrollerdb_updater.c
-        app/backend/apploader/apploader.c
-        app/stream/module/module.c
-        app/stream/module/audio.c
-        app/stream/module/decoder.c
-        app/stream/session/session.c
-        app/stream/session/connection.c
-        app/stream/session/watchdog.c
-        app/stream/settings.c
-        app/stream/audio/stats.c
-        app/stream/video/delegate.c
-        app/stream/video/dummy.c
-        app/stream/video/sps_parser.c
-        app/ui/root.c
-        app/ui/launcher/launcher.view.c
-        app/ui/launcher/launcher.controller.c
-        app/ui/launcher/apps.controller.c
-        app/ui/launcher/add.dialog.c
-        app/ui/launcher/pair.dialog.c
-        app/ui/launcher/appitem.view.c
-        app/ui/launcher/server.context_menu.c
-        app/ui/launcher/coverloader.c
-        app/ui/streaming/streaming.view.c
-        app/ui/streaming/streaming.controller.c
-        app/ui/streaming/hints.c
-        app/ui/settings/settings.controller.c
-        app/ui/settings/settings.view.c
-        app/ui/settings/panes/basic.pane.c
-        app/ui/settings/panes/host.pane.c
-        app/ui/settings/panes/input.pane.c
-        app/ui/settings/panes/decoder.pane.c
-        app/ui/settings/panes/about.pane.c
-        app/ui/settings/panes/pref_obj.c
-        app/ui/help/help.dialog.c
-        app/ui/common/progress_dialog.c
-        app/lvgl/lv_disp_drv_app.c
-        app/lvgl/lv_ext_utils.c
-        app/lvgl/lv_sdl_img.c
-        app/lvgl/ext/lv_gridview.c
-        app/lvgl/ext/lv_child_group.c
-        app/lvgl/util/lv_app_utils.c
-        app/lvgl/font/font_empty.c
-        app/lvgl/theme/lv_theme_moonlight.c
-        app/util/path.c
-        app/util/debugprint.c
-        app/util/logging.c
-        app/util/img_loader.c
-        app/util/nullable.c
-        app/util/font.c
-        app/util/ini_ext.c
-        app/util/executor.c
-        app/util/uuidstr.c
-        app/util/wol.c
-        app/stream/input/sdlinput.c
-        app/stream/input/sdl/keyboard.c
-        app/stream/input/sdl/gamepad.c
-        app/stream/input/sdl/mouse.c)
+add_subdirectory(third_party/commons EXCLUDE_FROM_ALL)
+
+target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 
 if (NOT HAVE_SDL)
     message(FATAL_ERROR "SDL2 required")
 endif ()
 
-add_executable(moonlight ${SOURCES})
+add_executable(moonlight)
 add_subdirectory(app)
 add_subdirectory(res)
 
@@ -295,6 +224,8 @@ target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
+
+target_link_libraries(moonlight PRIVATE lv_gridview)
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)

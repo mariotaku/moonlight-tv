@@ -12,8 +12,8 @@
 #include "ui/root.h"
 #include "ui/settings/settings.controller.h"
 #include "lvgl/font/material_icons_regular_symbols.h"
-#include "lvgl/ext/lv_gridview.h"
 #include "lvgl/util/lv_app_utils.h"
+#include "lv_gridview.h"
 
 #include "stream/platform.h"
 

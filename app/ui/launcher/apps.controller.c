@@ -13,8 +13,8 @@
 #include <errors.h>
 
 #include "lvgl/lv_ext_utils.h"
-#include "lvgl/ext/lv_gridview.h"
 #include "lvgl/util/lv_app_utils.h"
+#include "lv_gridview.h"
 
 #include "util/user_event.h"
 #include "util/i18n.h"
@@ -109,7 +109,6 @@ const static lv_gridview_adapter_t apps_adapter = {
         .item_count = adapter_item_count,
         .create_view = adapter_create_view,
         .bind_view = adapter_bind_view,
-        .item_id = adapter_item_id,
 };
 const static pcmanager_listener_t pc_listeners = {
         .updated = on_host_updated,
