@@ -182,6 +182,15 @@ void apploader_list_free(apploader_list_t *list) {
     SDL_free(list);
 }
 
+const apploader_item_t *apploader_list_item_by_id(const apploader_list_t *list, int id) {
+    for (int i = 0; i < list->count; ++i) {
+        if (list->items[i].base.id == id) {
+            return &list->items[i];
+        }
+    }
+    return NULL;
+}
+
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2) {
     int extra = p2->fav * 1000 - p1->fav * 1000;
     int namecmp = strcoll(p1->base.name, p2->base.name);

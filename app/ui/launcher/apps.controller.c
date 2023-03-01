@@ -11,6 +11,7 @@
 #include "coverloader.h"
 #include "backend/apploader/apploader.h"
 #include <errors.h>
+#include <assert.h>
 
 #include "lvgl/lv_ext_utils.h"
 #include "lvgl/util/lv_app_utils.h"
@@ -91,13 +92,13 @@ static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint1
 
 static void update_grid_config(apps_fragment_t *controller);
 
-static void open_context_menu(apps_fragment_t *fragment, apploader_item_t *app);
+static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t *app);
 
 static void context_menu_cancel_cb(lv_event_t *event);
 
 static void context_menu_click_cb(lv_event_t *event);
 
-static void app_detail_dialog(apps_fragment_t *fragment, apploader_item_t *app);
+static void app_detail_dialog(apps_fragment_t *fragment, const apploader_item_t *app);
 
 static void app_detail_click_cb(lv_event_t *event);
 
@@ -176,6 +177,8 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_style_border_side(applist, LV_BORDER_SIDE_NONE, 0);
     lv_obj_set_style_bg_opa(applist, 0, 0);
     lv_obj_set_size(applist, LV_PCT(100), LV_PCT(100));
+    lv_obj_update_layout(applist);
+
     lv_gridview_set_adapter(applist, &apps_adapter);
     lv_obj_t *appload = controller->appload = lv_spinner_create(view, 1000, 60);
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
@@ -498,13 +501,13 @@ static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_
     lv_label_set_text(holder->title, app->base.name);
 
     SDL_assert(controller->node);
-    int appid = pcmanager_node_current_app(controller->node);
-    if (appid == app->base.id) {
+    int current_id = pcmanager_node_current_app(controller->node);
+    if (current_id == app->base.id) {
         lv_obj_clear_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     }
-    holder->app = app;
+    holder->app_id = app->base.id;
 }
 
 static void item_click_cb(lv_event_t *event) {
@@ -515,14 +518,18 @@ static void item_click_cb(lv_event_t *event) {
         return;
     }
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
-    int appid = pcmanager_server_current_app(pcmanager, &controller->uuid);
-    if (appid != 0) {
-        if (holder->app->base.id == appid) {
-            open_context_menu(controller, holder->app);
+    int current_app = pcmanager_server_current_app(pcmanager, &controller->uuid);
+    if (current_app != 0) {
+        if (holder->app_id == current_app) {
+            const apploader_item_t *item = apploader_list_item_by_id(controller->apploader_apps, holder->app_id);
+            assert(item != NULL);
+            open_context_menu(controller, item);
         }
         return;
     }
-    launcher_launch_game(holder->controller, holder->app);
+    const apploader_item_t *item = apploader_list_item_by_id(controller->apploader_apps, holder->app_id);
+    assert(item != NULL);
+    launcher_launch_game(holder->controller, item);
 }
 
 static void item_longpress_cb(lv_event_t *event) {
@@ -534,7 +541,9 @@ static void item_longpress_cb(lv_event_t *event) {
     }
     lv_event_send(target, LV_EVENT_RELEASED, lv_event_get_indev(event));
     appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
-    open_context_menu(controller, holder->app);
+    const apploader_item_t *item = apploader_list_item_by_id(controller->apploader_apps, holder->app_id);
+    assert(item != NULL);
+    open_context_menu(controller, item);
 }
 
 static void launcher_launch_game(apps_fragment_t *controller, const apploader_item_t *app) {
@@ -650,9 +659,9 @@ static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint1
     pair_dialog_open(&controller->uuid);
 }
 
-static void open_context_menu(apps_fragment_t *fragment, apploader_item_t *app) {
+static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t *app) {
     lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, NULL, NULL, false);
-    lv_obj_set_user_data(msgbox, app);
+    lv_obj_set_user_data(msgbox, (void *) app);
     lv_obj_t *content = lv_msgbox_get_content(msgbox);
     lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
@@ -711,7 +720,7 @@ static void context_menu_click_cb(lv_event_t *e) {
     lv_msgbox_close_async(mbox);
 }
 
-static void app_detail_dialog(apps_fragment_t *fragment, apploader_item_t *app) {
+static void app_detail_dialog(apps_fragment_t *fragment, const apploader_item_t *app) {
     LV_UNUSED(fragment);
     static const char *btn_txts[] = {translatable("OK"), ""};
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, app->base.name, "text", btn_txts, false);

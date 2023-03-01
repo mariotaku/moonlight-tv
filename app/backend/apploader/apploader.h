@@ -47,3 +47,5 @@ void apploader_cancel(apploader_t *loader);
 apploader_state_t apploader_state(apploader_t *loader);
 
 void apploader_list_free(apploader_list_t *list);
+
+const apploader_item_t* apploader_list_item_by_id(const apploader_list_t *list, int id);

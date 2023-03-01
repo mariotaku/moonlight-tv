@@ -124,7 +124,8 @@ static void appitem_draw_decor(lv_event_t *e) {
     appitem_styles_t *styles = lv_event_get_user_data(e);
     lv_obj_t *target = lv_event_get_target(e);
     appitem_viewholder_t *holder = lv_obj_get_user_data(target);
-    if (!holder->app->fav) return;
+    const apploader_item_t *item = apploader_list_item_by_id(holder->controller->apploader_apps, holder->app_id);
+    if (item == NULL || !item->fav) return;
     lv_area_t coords;
     lv_obj_get_coords(target, &coords);
     lv_area_set_width(&coords, LV_DPX(48));

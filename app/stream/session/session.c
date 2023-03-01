@@ -143,7 +143,7 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
 
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
-    SS4S_GetVideoCapabilities(&session->video_cap);
+    session->video_cap = global->ss4s.video_cap;
     session->server = server_clone;
     session->config = config;
     session->appId = app->id;
