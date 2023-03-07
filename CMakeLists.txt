@@ -285,7 +285,6 @@ else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
 
-target_link_libraries(moonlight PRIVATE ss4s ss4s-module-dummy)
 if (FEATURE_LIBCEC AND TARGET commons-cec-sdl)
     target_link_libraries(moonlight PRIVATE commons-cec-sdl)
 else ()
@@ -295,7 +294,8 @@ endif ()
 if (TARGET_WEBOS)
     set(SS4S_MODULES_INI_PATH_RUNTIME "${CMAKE_INSTALL_LIBDIR}/ss4s_modules.ini")
 else ()
-    # TODO: remove for packaged builds
+    # TODO: following are for development (RPATH and module location), remove for packaged builds
+    target_link_libraries(moonlight PRIVATE ss4s ss4s-module-dummy)
     set(SS4S_MODULES_INI_PATH_RUNTIME ${SS4S_MODULES_INI_OUTPUT_FILE})
 endif ()
 target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
