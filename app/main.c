@@ -66,9 +66,6 @@ int main(int argc, char *argv[]) {
     app_init_video();
     applog_i("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
 
-    // TODO: force set fullscreen if decoder doesn't support windowed mode
-    app_configuration->fullscreen = true;
-
     app_.window = app_create_window();
 
     SS4S_PostInit(argc, argv);

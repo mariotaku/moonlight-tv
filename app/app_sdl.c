@@ -32,8 +32,6 @@ int app_init(app_t *app, int argc, char *argv[]) {
     modules_load(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
     module_select(&app->ss4s.modules, &app->ss4s.selection);
-    SS4S_GetAudioCapabilities(&app->ss4s.audio_cap);
-    SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
@@ -41,11 +39,14 @@ int app_init(app_t *app, int argc, char *argv[]) {
 #endif
 
     SS4S_Config ss4s_config = {
-            .audioDriver = "sdl",
-            .videoDriver = "mmal",
+            .audioDriver = app->ss4s.selection.audio_driver,
+            .videoDriver = app->ss4s.selection.video_driver,
             .loggingFunction = applog_ss4s,
     };
     SS4S_Init(argc, argv, &ss4s_config);
+
+    SS4S_GetAudioCapabilities(&app->ss4s.audio_cap);
+    SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
 
 
 #if FEATURE_LIBCEC
@@ -62,6 +63,7 @@ void app_deinit(app_t *app) {
     SS4S_Quit();
 
     modules_clear(&app->ss4s.modules);
+    os_info_clear(&app->os_info);
 }
 
 void app_init_video() {

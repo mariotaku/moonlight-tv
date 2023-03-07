@@ -91,8 +91,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
 
     int res_len = supported_resolutions_len;
-    int max_width, max_height;
-    if (decoder_max_dimension(&max_width, &max_height)) {
+    unsigned int max_width = app->ss4s.video_cap.maxWidth, max_height = app->ss4s.video_cap.maxHeight;
+    if (max_width > 0 && max_height) {
         for (res_len = supported_resolutions_len; res_len > 0; res_len--) {
             if (supported_resolutions[res_len - 1].value_a <= max_width &&
                 supported_resolutions[res_len - 1].value_b <= max_height) {
@@ -107,7 +107,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_width(resolution_dropdown, LV_PCT(60));
     lv_obj_add_event_cb(resolution_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
-    int max_fps = decoder_max_framerate();
+    unsigned int max_fps = app->ss4s.video_cap.maxFps;
     int fps_len;
     for (fps_len = supported_fps_len; fps_len > 0; fps_len--) {
         if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) break;
@@ -125,8 +125,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pane->bitrate_label = pref_title_label(view, locstr("Video bitrate"));
 
-    int max = app->ss4s.video_cap.maxBitrate ? app->ss4s.video_cap.maxBitrate : 100000;
-    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
+    unsigned int max = app->ss4s.video_cap.maxBitrate ? app->ss4s.video_cap.maxBitrate : 100000;
+    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, (int) max, BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
