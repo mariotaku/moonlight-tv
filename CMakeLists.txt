@@ -200,7 +200,7 @@ set_target_properties(moonlight PROPERTIES
 target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
 target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
-target_compile_definitions(moonlight PRIVATE APP_VERSION= "${PROJECT_VERSION}" APPLOG_HOST=1)
+target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST=1)
 target_compile_definitions(moonlight PRIVATE LV_LVGL_H_INCLUDE_SIMPLE=1)
 
 target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
@@ -237,7 +237,7 @@ if (TARGET_WEBOS)
     set(FEATURE_CHECK_MODULE_OS_VERSION ON)
     set(FEATURE_LIBCEC OFF)
 
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID= "${WEBOS_APPINFO_ID}")
+    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
@@ -299,7 +299,7 @@ else ()
     set(SS4S_MODULES_INI_PATH_RUNTIME ${SS4S_MODULES_INI_OUTPUT_FILE})
 endif ()
 target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
-target_compile_definitions(commons-ss4s-modules-list PRIVATE SS4S_MODULES_INI_PATH= "${SS4S_MODULES_INI_PATH_RUNTIME}")
+target_compile_definitions(commons-ss4s-modules-list PRIVATE SS4S_MODULES_INI_PATH="${SS4S_MODULES_INI_PATH_RUNTIME}")
 
 configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
