@@ -160,9 +160,10 @@ endif ()
 unset(BUILD_SHARED_LIBS)
 include(BuildINIH)
 
-option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 if (TARGET_WEBOS)
     set(SS4S_MODULE_DISABLE_MMAL ON)
+else()
+    option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 endif ()
 
 add_subdirectory(third_party/ss4s)
