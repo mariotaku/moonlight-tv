@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lvgl/lv_sdl_img.h"
+#include "lv_sdl_img.h"
 
 extern const lv_sdl_img_data_t lv_sdl_img_data_logo_96;
 extern const lv_sdl_img_data_t lv_sdl_img_data_fav_indicator;

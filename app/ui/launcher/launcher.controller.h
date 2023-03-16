@@ -1,11 +1,10 @@
 #pragma once
 
 #include <stdbool.h>
-#include <lvgl/lv_sdl_img.h>
-
 #include "ui/config.h"
 
 #include "lvgl.h"
+#include "lv_sdl_img.h"
 
 #include "backend/pcmanager.h"
 

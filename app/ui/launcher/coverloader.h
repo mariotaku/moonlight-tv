@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "libgamestream/client.h"
-#include "lvgl/lv_sdl_img.h"
+#include "lv_sdl_img.h"
 
 struct coverloader_t;
 

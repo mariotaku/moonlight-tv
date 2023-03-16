@@ -5,8 +5,8 @@
 #include "lvgl.h"
 #include "lvgl/lv_disp_drv_app.h"
 #include "lvgl/lv_sdl_drv_input.h"
-#include "lvgl/lv_sdl_img.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
+#include "lv_sdl_img.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"

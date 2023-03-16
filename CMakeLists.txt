@@ -35,6 +35,8 @@ option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
 
 option(BUILD_EXAMPLES "" OFF)
 
+option(COMMONS_LV_SDL_IMG_USE_IMAGE "Use SDL2_image API" ON)
+
 if (TARGET_WEBOS)
     option(BUILD_TESTS "" OFF)
 else ()
@@ -177,6 +179,7 @@ target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 add_subdirectory(third_party/commons EXCLUDE_FROM_ALL)
 
 target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
+target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 
 if (NOT HAVE_SDL)
     message(FATAL_ERROR "SDL2 required")
@@ -229,7 +232,7 @@ target_link_libraries(moonlight PRIVATE
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
 
-target_link_libraries(moonlight PRIVATE lv_gridview)
+target_link_libraries(moonlight PRIVATE lv_gridview lv_sdl_img)
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
