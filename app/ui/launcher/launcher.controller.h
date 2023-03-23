@@ -1,16 +1,20 @@
 #pragma once
 
 #include <stdbool.h>
-#include <lvgl/lv_sdl_img.h>
-
 #include "ui/config.h"
 
 #include "lvgl.h"
+#include "lv_sdl_img.h"
 
 #include "backend/pcmanager.h"
 
-typedef struct {
+typedef struct app_t app_t;
+
+typedef struct launcher_fragment_t {
     lv_fragment_t base;
+
+    app_t *global;
+
     lv_obj_t *nav;
     lv_obj_t *detail;
     lv_obj_t *pclist;
@@ -30,13 +34,13 @@ typedef struct {
     int def_app;
     bool def_host_selected;
     bool def_app_requested;
-} launcher_controller_t;
+} launcher_fragment_t;
 
 
 lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent);
 
-launcher_controller_t *launcher_instance();
+launcher_fragment_t *launcher_instance();
 
-void launcher_select_server(launcher_controller_t *controller, const uuidstr_t *uuid);
+void launcher_select_server(launcher_fragment_t *controller, const uuidstr_t *uuid);
 
 extern const lv_fragment_class_t launcher_controller_class;

@@ -35,6 +35,8 @@ option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
 
 option(BUILD_EXAMPLES "" OFF)
 
+option(COMMONS_LV_SDL_IMG_USE_IMAGE "Use SDL2_image API" ON)
+
 if (TARGET_WEBOS)
     option(BUILD_TESTS "" OFF)
 else ()
@@ -50,6 +52,7 @@ set(FEATURE_I18N_LANGUAGE_SETTINGS OFF)
 set(FEATURE_SURROUND_SOUND ON)
 set(FEATURE_CHECK_MODULE_OS_VERSION OFF)
 set(FEATURE_INPUT_EVMOUSE OFF)
+set(FEATURE_LIBCEC ON)
 
 include(LintOptions)
 
@@ -115,7 +118,7 @@ execute_process(COMMAND ${NPM_COMMAND} install --quiet)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
-pkg_check_modules(SDL2 REQUIRED sdl2 SDL2_image)
+pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
 
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
@@ -159,105 +162,31 @@ endif ()
 unset(BUILD_SHARED_LIBS)
 include(BuildINIH)
 
-if (TARGET_DESKTOP)
-    set(DECODER_FFMPEG_STATIC ON)
+if (TARGET_WEBOS)
+    set(SS4S_MODULE_DISABLE_MMAL ON)
+else()
+    option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 endif ()
-add_subdirectory(modules)
+
+add_subdirectory(third_party/ss4s)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
-target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
 
-set(SOURCES
-        app/main.c
-        app/res.c
-        app/app/app_input.c
-        app/backend/backend_root.c
-        app/backend/pcmanager/pcmanager.c
-        app/backend/pcmanager/pairing.c
-        app/backend/pcmanager/pcmanager_common.c
-        app/backend/pcmanager/known_hosts.c
-        app/backend/pcmanager/discovery.c
-        app/backend/pcmanager/pclist.c
-        app/backend/pcmanager/listeners.c
-        app/backend/pcmanager/worker/request.c
-        app/backend/pcmanager/worker/pairing.c
-        app/backend/pcmanager/worker/quit_app.c
-        app/backend/pcmanager/worker/wol.c
-        app/backend/pcmanager/worker/manual_add.c
-        app/backend/pcmanager/worker/update.c
-        app/backend/gamecontrollerdb_updater.c
-        app/backend/apploader/apploader.c
-        app/stream/module/module.c
-        app/stream/module/audio.c
-        app/stream/module/decoder.c
-        app/stream/module/symbols.c
-        app/stream/session/session.c
-        app/stream/session/connection.c
-        app/stream/session/watchdog.c
-        app/stream/settings.c
-        app/stream/audio/stats.c
-        app/stream/video/delegate.c
-        app/stream/video/dummy.c
-        app/stream/video/sps_parser.c
-        app/ui/root.c
-        app/ui/launcher/launcher.view.c
-        app/ui/launcher/launcher.controller.c
-        app/ui/launcher/apps.controller.c
-        app/ui/launcher/add.dialog.c
-        app/ui/launcher/pair.dialog.c
-        app/ui/launcher/appitem.view.c
-        app/ui/launcher/server.context_menu.c
-        app/ui/launcher/coverloader.c
-        app/ui/streaming/streaming.view.c
-        app/ui/streaming/streaming.controller.c
-        app/ui/streaming/hints.c
-        app/ui/settings/settings.controller.c
-        app/ui/settings/settings.view.c
-        app/ui/settings/panes/basic.pane.c
-        app/ui/settings/panes/host.pane.c
-        app/ui/settings/panes/input.pane.c
-        app/ui/settings/panes/decoder.pane.c
-        app/ui/settings/panes/about.pane.c
-        app/ui/settings/panes/pref_obj.c
-        app/ui/help/help.dialog.c
-        app/ui/common/progress_dialog.c
-        app/lvgl/lv_disp_drv_app.c
-        app/lvgl/lv_sdl_drv_key_input.c
-        app/lvgl/lv_sdl_drv_pointer_input.c
-        app/lvgl/lv_sdl_drv_wheel_input.c
-        app/lvgl/lv_sdl_drv_button_input.c
-        app/lvgl/lv_ext_utils.c
-        app/lvgl/lv_sdl_img.c
-        app/lvgl/ext/lv_gridview.c
-        app/lvgl/ext/lv_child_group.c
-        app/lvgl/util/lv_app_utils.c
-        app/lvgl/font/font_empty.c
-        app/lvgl/theme/lv_theme_moonlight.c
-        app/util/path.c
-        app/util/debugprint.c
-        app/util/logging.c
-        app/util/img_loader.c
-        app/util/nullable.c
-        app/util/font.c
-        app/util/ini_ext.c
-        app/util/executor.c
-        app/util/uuidstr.c
-        app/util/wol.c
-        app/app_sdl.c
-        app/stream/input/sdlinput.c
-        app/stream/input/sdl/keyboard.c
-        app/stream/input/sdl/gamepad.c
-        app/stream/input/sdl/mouse.c)
+add_subdirectory(third_party/commons EXCLUDE_FROM_ALL)
+
+target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
+target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 
 if (NOT HAVE_SDL)
     message(FATAL_ERROR "SDL2 required")
 endif ()
 
-add_executable(moonlight ${SOURCES})
-add_subdirectory(app/platform)
+add_executable(moonlight)
+add_subdirectory(app)
 add_subdirectory(res)
 
 if (WITH_SANITIZE)
@@ -297,49 +226,24 @@ else ()
     unset(BUILD_SHARED_LIBS)
 endif ()
 
-target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
-        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES}
+        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
         moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
-        Fontconfig::Fontconfig ${FREETYPE_LIBRARIES}
-        moonlight-module-api moonlight-sdlaud
-        )
+        Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
 
-
-macro(moonlight_add_module)
-    set(multiValueArgs TARGETS)
-    set(oneValueArgs UNUSED)
-    set(options LINK)
-    cmake_parse_arguments(MOONLIGHT_ADD_MODULE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    foreach (module ${MOONLIGHT_ADD_MODULE_TARGETS})
-        if (NOT TARGET ${module})
-            continue()
-        endif ()
-        target_compile_lint(${module})
-        if (${MOONLIGHT_ADD_MODULE_LINK})
-            target_link_libraries(moonlight PRIVATE ${module})
-        else ()
-            add_dependencies(moonlight ${module})
-        endif ()
-    endforeach ()
-endmacro()
+target_link_libraries(moonlight PRIVATE lv_gridview lv_sdl_img)
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
     set(FEATURE_I18N_GETTEXT OFF)
     set(FEATURE_I18N_LANGUAGE_SETTINGS ON)
     set(FEATURE_CHECK_MODULE_OS_VERSION ON)
+    set(FEATURE_LIBCEC OFF)
 
     target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
     target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
-
-    moonlight_add_module(TARGETS moonlight-smp moonlight-smp-webos4 moonlight-smp-webos3)
-    moonlight_add_module(TARGETS moonlight-dile-legacy)
-    moonlight_add_module(TARGETS moonlight-ndl-webos5 moonlight-ndl)
-    moonlight_add_module(TARGETS moonlight-cgl moonlight-lgnc)
-    moonlight_add_module(TARGETS moonlight-pulse)
-    moonlight_add_module(TARGETS moonlight-ndlaud moonlight-ndlaud-webos5)
 
     target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
@@ -348,6 +252,7 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
+    target_link_libraries(moonlight PRIVATE commons-luna-sync)
 elseif (TARGET_RASPI)
     target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
     target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
@@ -355,11 +260,6 @@ elseif (TARGET_RASPI)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
-
-    moonlight_add_module(TARGETS moonlight-mmal LINK)
-    moonlight_add_module(TARGETS moonlight-ffmpeg LINK)
-    moonlight_add_module(TARGETS moonlight-alsa LINK)
-    moonlight_add_module(TARGETS moonlight-pulse LINK)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
@@ -369,7 +269,7 @@ elseif (TARGET_DESKTOP)
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
 
     if (OS_DARWIN)
-        target_link_directories(moonlight PUBLIC ${SDL2_LIBRARY_DIRS})
+        target_link_directories(moonlight PUBLIC ${SDL2_AND_IMAGES_LIBRARY_DIRS})
         target_compile_definitions(moonlight PUBLIC OS_DARWIN)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif (OS_LINUX)
@@ -385,11 +285,25 @@ elseif (TARGET_DESKTOP)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-
-    target_link_libraries(moonlight PRIVATE moonlight-ffmpeg)
 else ()
     message(FATAL_ERROR "Unknown build platform")
 endif ()
+
+if (FEATURE_LIBCEC AND TARGET commons-cec-sdl)
+    target_link_libraries(moonlight PRIVATE commons-cec-sdl)
+else ()
+    set(FEATURE_LIBCEC OFF)
+endif ()
+
+if (TARGET_WEBOS)
+    set(SS4S_MODULES_INI_PATH_RUNTIME "${CMAKE_INSTALL_LIBDIR}/ss4s_modules.ini")
+else ()
+    # TODO: following are for development (RPATH and module location), remove for packaged builds
+    target_link_libraries(moonlight PRIVATE ss4s ss4s-module-dummy)
+    set(SS4S_MODULES_INI_PATH_RUNTIME ${SS4S_MODULES_INI_OUTPUT_FILE})
+endif ()
+target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
+target_compile_definitions(commons-ss4s-modules-list PRIVATE SS4S_MODULES_INI_PATH="${SS4S_MODULES_INI_PATH_RUNTIME}")
 
 configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -6,7 +6,7 @@
 #include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
-#include "util/os_info.h"
+#include "os_info.h"
 
 #if TARGET_WEBOS
 
@@ -65,6 +65,7 @@ static inline void about_line(lv_obj_t *parent, const char *title, const char *t
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     about_pane_t *controller = (about_pane_t *) self;
+    app_t *app = controller->parent->app;
 
     lv_obj_t *view = pref_pane_container(container);
     lv_obj_set_layout(view, LV_LAYOUT_GRID);
@@ -73,18 +74,15 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_grid_dsc_array(view, col_dsc, controller->row_dsc);
     int rowcount = 0;
     about_line(view, locstr("Version"), APP_VERSION, rowcount++, 1);
-    about_line(view, locstr("Video decoder"), decoder_definitions[decoder_current].name, rowcount++, 2);
-    const char *audio_name =
-            audio_current == AUDIO_DECODER ? "Decoder provided" : audio_definitions[audio_current].name;
-    about_line(view, locstr("Audio backend"), audio_name, rowcount++, 2);
+    about_line(view, locstr("Video decoder"), app->ss4s.selection.video_driver, rowcount++, 2);
+    about_line(view, locstr("Audio backend"), app->ss4s.selection.audio_driver, rowcount++, 2);
 #if TARGET_WEBOS
     const os_info_t *os_info = &controller->parent->os_info;
-    if (strlen(os_info->release)) {
-        about_line(view, locstr("webOS version"), os_info->release, rowcount++, 1);
+    char *version_name = version_info_str(&os_info->version);
+    if (version_name != NULL) {
+        about_line(view, locstr("webOS version"), version_name, rowcount++, 1);
     }
-    if (strlen(os_info->manufacturing_version)) {
-        about_line(view, locstr("Firmware version"), os_info->manufacturing_version, rowcount++, 1);
-    }
+    free(version_name);
     if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
         char resolution_text[16];
         SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", controller->webos_panel_info.w,

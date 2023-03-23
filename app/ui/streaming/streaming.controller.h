@@ -5,8 +5,11 @@
 #include "client.h"
 #include "stream/session.h"
 
+typedef struct app_t app_t;
+
 typedef struct {
     lv_fragment_t base;
+    app_t *global;
     lv_obj_t *overlay;
     lv_group_t *group;
     lv_obj_t *hint;
@@ -32,6 +35,7 @@ typedef struct {
 
 /* Usually references to SERVER_DATA and APP_LIST should not be kept, but in this struct, they will only be used once */
 typedef struct {
+    app_t *global;
     uuidstr_t uuid;
     APP_LIST app;
 } streaming_scene_arg_t;

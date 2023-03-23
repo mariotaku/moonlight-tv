@@ -53,13 +53,15 @@ extern int streaming_errno;
 extern char streaming_errmsg[];
 extern short streaming_display_width, streaming_display_height;
 
+typedef struct app_t app_t;
+
 void streaming_init();
 
 void streaming_destroy();
 
 bool streaming_running();
 
-int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app);
+int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app);
 
 void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason);
 

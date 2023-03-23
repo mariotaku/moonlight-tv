@@ -73,7 +73,8 @@ void lv_app_redraw_now(lv_disp_drv_t *disp_drv) {
     SDL_Texture *texture = disp_drv->draw_buf->buf1;
     SDL_SetRenderTarget(renderer, NULL);
     if (!ui_render_background()) {
-        if (decoder_info.hasRenderer) {
+        bool has_renderer = false;
+        if (has_renderer) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
             SDL_RenderFillRect(renderer, NULL);
         } else {

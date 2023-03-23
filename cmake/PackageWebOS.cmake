@@ -1,8 +1,8 @@
 # Copy manifest
-configure_file(deploy/webos/appinfo.in.json ./appinfo.json @ONLY)
+configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
 
 # Copy all files under deploy/webos/ to package root
-install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE)
+install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE PATTERN "appinfo.json" EXCLUDE)
 install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
 install(CODE "execute_process(COMMAND npm run webos-gen-i18n -- -o \"\${CMAKE_INSTALL_PREFIX}/resources\" ${I18N_LOCALES})")
 
@@ -21,9 +21,9 @@ set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${PROJECT_VERSION}_$ENV{ARCH}
 # Will use all cores on CMake 3.20+
 set(CPACK_THREADS 0)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     set(CPACK_STRIP_FILES TRUE)
-endif()
+endif ()
 
 add_custom_target(webos-package-moonlight COMMAND cpack DEPENDS moonlight)
 

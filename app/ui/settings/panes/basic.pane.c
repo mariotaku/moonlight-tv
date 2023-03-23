@@ -83,6 +83,7 @@ static void pane_dtor(lv_fragment_t *self) {
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     basic_pane_t *pane = (basic_pane_t *) self;
+    app_t *app = pane->parent->app;
     lv_obj_t *view = pref_pane_container(container);
     lv_obj_set_layout(view, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_ROW_WRAP);
@@ -90,8 +91,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
 
     int res_len = supported_resolutions_len;
-    int max_width, max_height;
-    if (decoder_max_dimension(&max_width, &max_height)) {
+    unsigned int max_width = app->ss4s.video_cap.maxWidth, max_height = app->ss4s.video_cap.maxHeight;
+    if (max_width > 0 && max_height) {
         for (res_len = supported_resolutions_len; res_len > 0; res_len--) {
             if (supported_resolutions[res_len - 1].value_a <= max_width &&
                 supported_resolutions[res_len - 1].value_b <= max_height) {
@@ -106,7 +107,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_width(resolution_dropdown, LV_PCT(60));
     lv_obj_add_event_cb(resolution_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
-    int max_fps = decoder_max_framerate();
+    unsigned int max_fps = app->ss4s.video_cap.maxFps;
     int fps_len;
     for (fps_len = supported_fps_len; fps_len > 0; fps_len--) {
         if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) break;
@@ -124,8 +125,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pane->bitrate_label = pref_title_label(view, locstr("Video bitrate"));
 
-    int max = decoder_info.maxBitrate ? decoder_info.maxBitrate : 100000;
-    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, max, BITRATE_STEP);
+    unsigned int max = app->ss4s.video_cap.maxBitrate ? app->ss4s.video_cap.maxBitrate : 100000;
+    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, (int) max, BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
@@ -138,9 +139,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
 
 #if !FEATURE_FORCE_FULLSCREEN
-    if (decoder_info.canResize) {
-        lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
-        lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
+    if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_AREA_DEST) {
+        lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, pane);
+    } else {
+        lv_obj_add_state(checkbox, LV_STATE_DISABLED);
+        pref_desc_label(view, "Can't use windowed UI for this decoder", false);
     }
 #endif
 
@@ -170,8 +174,8 @@ static void on_bitrate_changed(lv_event_t *e) {
 
 static void on_res_fps_updated(lv_event_t *e) {
     basic_pane_t *pane = lv_event_get_user_data(e);
-    int bitrate = settings_optimal_bitrate(app_configuration->stream.width, app_configuration->stream.height,
-                                           app_configuration->stream.fps);
+    int bitrate = settings_optimal_bitrate(&pane->parent->app->ss4s.video_cap, app_configuration->stream.width,
+                                           app_configuration->stream.height, app_configuration->stream.fps);
     lv_slider_set_value(pane->bitrate_slider, bitrate / BITRATE_STEP, LV_ANIM_OFF);
     app_configuration->stream.bitrate = lv_slider_get_value(pane->bitrate_slider) * BITRATE_STEP;
     if (app_configuration->stream.width > 1920 && app_configuration->stream.height > 1080 &&
@@ -187,7 +191,8 @@ static void on_res_fps_updated(lv_event_t *e) {
 }
 
 static void on_fullscreen_updated(lv_event_t *e) {
-    app_set_fullscreen(app_configuration->fullscreen);
+    basic_pane_t *pane = lv_event_get_user_data(e);
+    app_set_fullscreen(pane->parent->app, app_configuration->fullscreen);
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {
@@ -195,7 +200,9 @@ static void update_bitrate_label(basic_pane_t *pane) {
 }
 
 static void update_bitrate_hint(basic_pane_t *pane) {
-    if (decoder_info.suggestedBitrate && app_configuration->stream.bitrate > decoder_info.suggestedBitrate) {
+    app_t *app = pane->parent->app;
+    if (app->ss4s.video_cap.suggestedBitrate > 0 &&
+        app_configuration->stream.bitrate > app->ss4s.video_cap.suggestedBitrate) {
         lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
         lv_label_set_text_static(pane->bitrate_warning, locstr("Higher bitrate may cause performance issue, "
                                                                "try with caution."));

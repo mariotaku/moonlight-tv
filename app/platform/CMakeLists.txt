@@ -8,22 +8,16 @@ if (TARGET_WEBOS)
     set(PLATFORM_PATH_SOURCE webos/path_webos.c)
     set(PLATFORM_LOGGING_SOURCE webos/logging_pmlog.c)
     set(PLATFORM_I18N_SOURCE webos/i18n_webos.c)
-    set(PLATFORM_OSINFO_SOURCE webos/os_info.c)
 
     target_sources(moonlight PRIVATE
             webos/keyboard_webos.c
             webos/navkey_sdl_webos.c
-            webos/os_info.c
             webos/pbnjson_compat.c
-            webos/lunasynccall.c
             webos/SDL_webOS_compat.c
             )
 elseif (OS_LINUX)
-    set(PLATFORM_OSINFO_SOURCE linux/os_info_linux.c)
 elseif (OS_WINDOWS)
-    set(PLATFORM_OSINFO_SOURCE windows/os_info_windows.c)
 elseif (OS_DARWIN)
-    set(PLATFORM_OSINFO_SOURCE sdl/os_info_generic.c)
 else ()
     message(FATAL_ERROR "Unknown target OS")
 endif ()
@@ -42,5 +36,4 @@ target_sources(moonlight PRIVATE
         ${PLATFORM_APP_SOURCE}
         ${PLATFORM_PATH_SOURCE}
         ${PLATFORM_LOGGING_SOURCE}
-        ${PLATFORM_I18N_SOURCE}
-        ${PLATFORM_OSINFO_SOURCE})
+        ${PLATFORM_I18N_SOURCE})

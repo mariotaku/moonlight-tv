@@ -21,6 +21,7 @@
 #include <Limelight.h>
 
 #include <stdbool.h>
+#include "ss4s/video.h"
 
 typedef struct window_state_t {
     int x, y, w, h;
@@ -70,6 +71,6 @@ void settings_save(PCONFIGURATION config);
 
 void settings_free(PCONFIGURATION config);
 
-int settings_optimal_bitrate(int w, int h, int fps);
+int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities,int w, int h, int fps);
 
 bool audio_config_valid(int config);

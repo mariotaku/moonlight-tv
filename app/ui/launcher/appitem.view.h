@@ -4,7 +4,7 @@
 #include "lvgl.h"
 #include "client.h"
 
-#include "lvgl/lv_sdl_img.h"
+#include "lv_sdl_img.h"
 #include "apps.controller.h"
 
 lv_obj_t *appitem_view(apps_fragment_t *controller, lv_obj_t *parent);

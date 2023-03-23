@@ -67,7 +67,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.width = 1280;
     config->stream.height = 720;
     config->stream.fps = 60;
-    config->stream.bitrate = settings_optimal_bitrate(1280, 720, 60);
+    config->stream.bitrate = settings_optimal_bitrate(NULL, 1280, 720, 60);
     config->stream.packetSize = 1392;
     config->stream.streamingRemotely = STREAM_CFG_AUTO;
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
@@ -96,7 +96,7 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
-int settings_optimal_bitrate(int w, int h, int fps) {
+int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, int h, int fps) {
     if (fps <= 0) {
         fps = 60;
     }
@@ -115,15 +115,18 @@ int settings_optimal_bitrate(int w, int h, int fps) {
             kbps = 25000;
             break;
     }
-    int suggested_max = decoder_info.suggestedBitrate;
-    if (!suggested_max) {
-        suggested_max = decoder_info.maxFramerate;
+    unsigned int suggested_max = 0;
+    if (capabilities != NULL) {
+        suggested_max = capabilities->suggestedBitrate;
+        if (suggested_max == 0) {
+            suggested_max = capabilities->maxBitrate;
+        }
     }
     int calculated = kbps * fps / 30;
-    if (!suggested_max) {
+    if (suggested_max == 0) {
         return calculated;
     }
-    return calculated < suggested_max ? calculated : suggested_max;
+    return (int) (calculated < suggested_max ? calculated : suggested_max);
 }
 
 bool settings_read(const char *filename, PCONFIGURATION config) {

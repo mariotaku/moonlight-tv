@@ -17,12 +17,13 @@
 
 #include "util/logging.h"
 #include "stream/input/sdlinput.h"
+#include "callbacks.h"
+#include "ss4s.h"
 
 #if FEATURE_INPUT_EVMOUSE
 #include "platform/linux/evmouse.h"
 #endif
 
-#include <errno.h>
 
 extern CONNECTION_LISTENER_CALLBACKS connection_callbacks;
 
@@ -42,16 +43,17 @@ typedef struct {
     int appId;
     bool interrupted;
     bool quitapp;
+    SS4S_VideoCapabilities video_cap;
     SDL_cond *cond;
     SDL_mutex *mutex;
     SDL_Thread *thread;
+    SS4S_Player *player;
 #if FEATURE_INPUT_EVMOUSE
     struct {
         SDL_Thread *thread;
         evmouse_t *dev;
     } mouse;
 #endif
-    PVIDEO_PRESENTER_CALLBACKS pres;
 } session_t;
 
 static session_t *session_active;
@@ -86,7 +88,7 @@ bool streaming_running() {
     return streaming_status == STREAMING_STREAMING;
 }
 
-int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
+int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
     if (session_active != NULL) {
         return -1;
     }
@@ -97,29 +99,41 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
     PSERVER_DATA server_clone = serverdata_clone(node->server);
     PCONFIGURATION config = settings_load();
 
+    SS4S_VideoCapabilities video_cap = global->ss4s.video_cap;
+    SS4S_AudioCapabilities audio_cap = global->ss4s.audio_cap;
+
     if (config->stream.bitrate < 0) {
-        config->stream.bitrate = settings_optimal_bitrate(config->stream.width, config->stream.height,
+        config->stream.bitrate = settings_optimal_bitrate(&video_cap, config->stream.width, config->stream.height,
                                                           config->stream.fps);
     }
     // Cap framerate to platform request
-    if (decoder_info.maxBitrate && config->stream.bitrate > decoder_info.maxBitrate)
-        config->stream.bitrate = decoder_info.maxBitrate;
+    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate)
+        config->stream.bitrate = video_cap.maxBitrate;
     config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
-    config->stream.supportsHevc &= decoder_info.hevc;
-    config->stream.enableHdr &= decoder_info.hevc && decoder_info.hdr && server_clone->supportsHdr &&
-                                (decoder_info.hdr == DECODER_HDR_ALWAYS || app->hdr != 0);
-    config->stream.colorSpace = decoder_info.colorSpace;
+    config->stream.supportsHevc &= (video_cap.codecs & SS4S_VIDEO_H265) != 0;
+    config->stream.enableHdr &= config->stream.supportsHevc && video_cap.hdr && server_clone->supportsHdr &&
+                                (app->hdr != 0/* TODO: handle always on case*/);
+    config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
     if (config->stream.enableHdr) {
-        config->stream.colorRange = decoder_info.colorRange;
+        config->stream.colorRange = COLOR_RANGE_FULL/* TODO: get from video capabilities */;
     }
     applog_i("Session", "enableHdr=%u", config->stream.enableHdr);
     applog_i("Session", "colorSpace=%d", config->stream.colorSpace);
     applog_i("Session", "colorRange=%d", config->stream.colorRange);
 #if FEATURE_SURROUND_SOUND
-    if (CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(module_audio_configuration()) <
-        CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
-        config->stream.audioConfiguration = module_audio_configuration();
+    if (audio_cap.maxChannels < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
+        switch (audio_cap.maxChannels) {
+            case 2:
+                config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
+                break;
+            case 6:
+                config->stream.audioConfiguration = AUDIO_CONFIGURATION_51_SURROUND;
+                break;
+            case 8:
+                config->stream.audioConfiguration = AUDIO_CONFIGURATION_71_SURROUND;
+                break;
+        }
     }
     if (!config->stream.audioConfiguration) {
         config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
@@ -129,6 +143,7 @@ int streaming_begin(const uuidstr_t *uuid, const APP_LIST *app) {
 
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
+    session->video_cap = global->ss4s.video_cap;
     session->server = server_clone;
     session->config = config;
     session->appId = app->id;
@@ -203,6 +218,7 @@ int streaming_worker(session_t *session) {
     for (int i = 0, cnt = absinput_gamepads(); i < cnt && i < 4; i++) {
         gamepad_mask = (gamepad_mask << 1) + 1;
     }
+    session->player = NULL;
 
     applog_i("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
@@ -223,28 +239,26 @@ int streaming_worker(session_t *session) {
              config->stream.fps, config->stream.bitrate);
     applog_i("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
-    PDECODER_RENDERER_CALLBACKS vdec = decoder_get_video();
-    PAUDIO_RENDERER_CALLBACKS adec = module_get_audio(config->audio_device);
-    PVIDEO_PRESENTER_CALLBACKS pres = decoder_get_presenter();
-    DECODER_RENDERER_CALLBACKS vdec_delegate = decoder_render_callbacks_delegate(vdec);
+    session->player = SS4S_PlayerOpen();
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
-                                        &vdec_delegate, adec, vdec, 0, (void *) config->audio_device, 0);
+                                        &ss4s_dec_callbacks, &ss4s_aud_callbacks,
+                                        session->player, 0, session->player, 0);
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         switch (startResult) {
-            case ERROR_UNKNOWN_CODEC:
-                streaming_error(GS_WRONG_STATE, "Unsupported codec.");
-                break;
-            case ERROR_DECODER_OPEN_FAILED:
-                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
-                break;
-            case ERROR_AUDIO_OPEN_FAILED:
-                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
-                break;
-            case ERROR_AUDIO_OPUS_INIT_FAILED:
-                streaming_error(GS_WRONG_STATE, "Opus init failed.");
-                break;
+//            case ERROR_UNKNOWN_CODEC:
+//                streaming_error(GS_WRONG_STATE, "Unsupported codec.");
+//                break;
+//            case ERROR_DECODER_OPEN_FAILED:
+//                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
+//                break;
+//            case ERROR_AUDIO_OPEN_FAILED:
+//                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
+//                break;
+//            case ERROR_AUDIO_OPUS_INIT_FAILED:
+//                streaming_error(GS_WRONG_STATE, "Opus init failed.");
+//                break;
             default: {
                 if (!streaming_errno) {
                     streaming_error(GS_WRONG_STATE, "Failed to start connection: Limelight returned %d (%s)",
@@ -260,7 +274,6 @@ int streaming_worker(session_t *session) {
     if (config->stop_on_stall) {
         streaming_watchdog_start();
     }
-    session->pres = pres;
     bus_pushevent(USER_STREAM_OPEN, &config->stream, NULL);
     SDL_LockMutex(session->mutex);
     while (!session->interrupted) {
@@ -269,7 +282,6 @@ int streaming_worker(session_t *session) {
     }
     SDL_UnlockMutex(session->mutex);
     streaming_watchdog_stop();
-    session->pres = NULL;
     bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
 
     streaming_set_status(STREAMING_DISCONNECTING);
@@ -284,9 +296,11 @@ int streaming_worker(session_t *session) {
     // Don't always reset status as error state should be kept
     streaming_set_status(STREAMING_NONE);
     thread_cleanup:
+    if (session->player != NULL) {
+        SS4S_PlayerClose(session->player);
+    }
     gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
-    session->pres = NULL;
     serverdata_free(session->server);
     settings_free(config);
     SDL_DestroyCond(session->cond);
@@ -338,22 +352,44 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
 #endif
 
 void streaming_enter_fullscreen() {
+    if (session_active == NULL) {
+        return;
+    }
     app_set_mouse_grab(true);
-    if (session_active->pres && session_active->pres->enterFullScreen) {
-        session_active->pres->enterFullScreen();
+    if ((session_active->video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING) == 0) {
+        SS4S_PlayerVideoSetDisplayArea(session_active->player, NULL, NULL);
     }
 }
 
 void streaming_enter_overlay(int x, int y, int w, int h) {
+    if (session_active == NULL) {
+        return;
+    }
     app_set_mouse_grab(false);
-    if (session_active->pres && session_active->pres->enterOverlay) {
-        session_active->pres->enterOverlay(x, y, w, h);
+    SS4S_VideoRect dst = {x, y, w, h};
+    if ((session_active->video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING) == 0) {
+        SS4S_PlayerVideoSetDisplayArea(session_active->player, NULL, &dst);
     }
 }
 
 void streaming_set_hdr(bool hdr) {
-    if (session_active->pres && session_active->pres->setHdr) {
-        session_active->pres->setHdr(hdr);
+    if (session_active == NULL) {
+        return;
+    }
+    if (hdr) {
+        SS4S_VideoHDRInfo info = {
+                .displayPrimariesX = {13250, 7500, 34000},
+                .displayPrimariesY = {34500, 3000, 16000},
+                .whitePointX = 15635,
+                .whitePointY = 16450,
+                .maxDisplayMasteringLuminance = 1000,
+                .minDisplayMasteringLuminance = 50,
+                .maxContentLightLevel = 1000,
+                .maxPicAverageLightLevel = 400,
+        };
+        SS4S_PlayerVideoSetHDRInfo(session_active->player, &info);
+    } else {
+        SS4S_PlayerVideoSetHDRInfo(session_active->player, NULL);
     }
 }
 

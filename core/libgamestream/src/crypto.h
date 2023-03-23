@@ -54,7 +54,7 @@ static bool generateSignature(const unsigned char *msg, size_t mlen, unsigned ch
 #if MBEDTLS_VERSION_NUMBER >= 0x03020100
   if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, *slen, slen, mbedtls_ctr_drbg_random, rng)) != 0)
 #else
-  if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, *slen, mbedtls_ctr_drbg_random, rng)) != 0)
+  if ((result = mbedtls_pk_sign(pkey, MBEDTLS_MD_SHA256, hash, 32, sig, slen, mbedtls_ctr_drbg_random, rng)) != 0)
 #endif
   {
     goto cleanup;

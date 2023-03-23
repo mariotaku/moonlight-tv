@@ -15,6 +15,10 @@
 #include "util/user_event.h"
 #include "util/logging.h"
 #include "util/i18n.h"
+#include "util/logging_subsystems.h"
+
+#include "ss4s_modules.h"
+#include "ss4s.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -22,16 +26,44 @@ static bool window_focus_gained;
 
 static void quit_confirm_cb(lv_event_t *e);
 
-int app_init(int argc, char *argv[]) {
-    (void) argc;
-    (void) argv;
+int app_init(app_t *app, int argc, char *argv[]) {
+    memset(app, 0, sizeof(*app));
+    os_info_get(&app->os_info);
+    modules_load(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
+    module_select(&app->ss4s.modules, &app->ss4s.selection);
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
 #endif
+
+    SS4S_Config ss4s_config = {
+            .audioDriver = app->ss4s.selection.audio_driver,
+            .videoDriver = app->ss4s.selection.video_driver,
+            .loggingFunction = applog_ss4s,
+    };
+    SS4S_Init(argc, argv, &ss4s_config);
+
+    SS4S_GetAudioCapabilities(&app->ss4s.audio_cap);
+    SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
+
+
+#if FEATURE_LIBCEC
+    cec_sdl_init(&app->cec);
+#endif
+
     return 0;
+}
+
+void app_deinit(app_t *app) {
+#if FEATURE_LIBCEC
+    cec_sdl_deinit(&app->cec);
+#endif
+    SS4S_Quit();
+
+    modules_clear(&app->ss4s.modules);
+    os_info_clear(&app->os_info);
 }
 
 void app_init_video() {

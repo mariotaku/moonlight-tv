@@ -86,7 +86,7 @@ static lv_obj_t *pair_dialog(lv_fragment_t *self, lv_obj_t *parent) {
 static void pair_result_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     pair_dialog_controller_t *controller = (pair_dialog_controller_t *) userdata;
     if (result == GS_OK) {
-        launcher_controller_t *launcher_controller = launcher_instance();
+        launcher_fragment_t *launcher_controller = launcher_instance();
         if (launcher_controller) {
             launcher_select_server(launcher_controller, uuid);
         }

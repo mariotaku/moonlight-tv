@@ -9,12 +9,16 @@
 
 #include "ui/config.h"
 #include "util/navkey.h"
-#include "util/os_info.h"
+#include "os_info.h"
 
 #include "stream/settings.h"
 
+typedef struct app_t app_t;
+
 typedef struct {
     lv_fragment_t base;
+    app_t *app;
+
     bool mini, pending_mini;
 
     lv_obj_t *nav;

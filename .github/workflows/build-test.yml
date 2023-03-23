@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -77,7 +77,7 @@ jobs:
         working-directory: dist
         run: for file in *.ipk ; do mv $file ${file//_arm/-${GITHUB_SHA:0:8}_arm} ; done
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: webos-snapshot
           path: dist/*.ipk
@@ -118,7 +118,7 @@ jobs:
           cmake --build . --config $BUILD_TYPE
           cpack
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: raspi-snapshot
           path: build/*.deb

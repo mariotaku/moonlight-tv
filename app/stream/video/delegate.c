@@ -3,17 +3,22 @@
 #include <stddef.h>
 
 #include "stream/session.h"
-#include "module/api.h"
 
 #include "sps_parser.h"
 
 #include "ui/streaming/streaming.controller.h"
 #include "util/bus.h"
 #include "util/logging.h"
+#include "ss4s.h"
 
 #include <SDL.h>
+#include <assert.h>
 
-static PDECODER_RENDERER_CALLBACKS vdec;
+// 2MB decode size should be fairly enough for everything
+#define DECODER_BUFFER_SIZE (2048 * 1024)
+
+static SS4S_Player *player = NULL;
+static unsigned char *buffer = NULL;
 static int lastFrameNumber;
 static struct VIDEO_STATS vdec_temp_stats;
 static int vdec_stream_format = 0;
@@ -30,17 +35,12 @@ static void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now);
 
 static void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info);
 
-DECODER_RENDERER_CALLBACKS decoder_render_callbacks_delegate(PDECODER_RENDERER_CALLBACKS cb) {
-    DECODER_RENDERER_CALLBACKS vdec_delegate = {
-            .setup = vdec_delegate_setup,
-            .start = cb->start,
-            .stop = cb->stop,
-            .cleanup = vdec_delegate_cleanup,
-            .submitDecodeUnit = vdec_delegate_submit,
-            .capabilities = cb->capabilities,
-    };
-    return vdec_delegate;
-}
+DECODER_RENDERER_CALLBACKS ss4s_dec_callbacks = {
+        .setup = vdec_delegate_setup,
+        .cleanup = vdec_delegate_cleanup,
+        .submitDecodeUnit = vdec_delegate_submit,
+        .capabilities = CAPABILITY_DIRECT_SUBMIT,
+};
 
 static const char *video_format_name(int videoFormat) {
     switch (videoFormat) {
@@ -56,20 +56,43 @@ static const char *video_format_name(int videoFormat) {
 }
 
 int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags) {
-    vdec = context;
+    (void) redrawRate;
+    (void) drFlags;
+    player = context;
+    buffer = malloc(DECODER_BUFFER_SIZE);
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
     vdec_stream_format = videoFormat;
     vdec_stream_info.format = video_format_name(videoFormat);
     lastFrameNumber = 0;
-    return vdec->setup(videoFormat, width, height, redrawRate, context, drFlags);
+    SS4S_VideoInfo info = {
+            .width = width,
+            .height = height,
+    };
+    switch (videoFormat) {
+        case VIDEO_FORMAT_H264:
+            info.codec = SS4S_VIDEO_H264;
+            break;
+        case VIDEO_FORMAT_H265:
+        case VIDEO_FORMAT_H265_MAIN10:
+            info.codec = SS4S_VIDEO_H265;
+            break;
+        default: {
+            return -1;
+        }
+    }
+    return SS4S_PlayerVideoOpen(player, &info);
 }
 
 void vdec_delegate_cleanup() {
-    vdec->cleanup();
-    vdec = NULL;
+    assert(player != NULL);
+    free(buffer);
+    SS4S_PlayerVideoClose(player);
 }
 
 int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
+    if (decodeUnit->fullLength > DECODER_BUFFER_SIZE) {
+        return 0;
+    }
     unsigned long ticksms = SDL_GetTicks();
     if (lastFrameNumber <= 0) {
         vdec_temp_stats.measurementStartTimestamp = ticksms;
@@ -93,19 +116,27 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     vdec_temp_stats.totalFrames++;
 
     vdec_temp_stats.totalReassemblyTime += decodeUnit->enqueueTimeMs - decodeUnit->receiveTimeMs;
-    int err = vdec->submitDecodeUnit(decodeUnit);
-    if (err == DR_OK) {
+    size_t length = 0;
+    for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
+        memcpy(buffer + length, entry->data, entry->length);
+        length += entry->length;
+    }
+    SS4S_VideoFeedResult result = SS4S_PlayerVideoFeed(player, buffer, length, 0);
+    int err;
+    if (result == SS4S_VIDEO_FEED_OK) {
         if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
             stream_info_parse_size(decodeUnit, &vdec_stream_info);
         }
         vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
         vdec_temp_stats.decodedFrames++;
         streaming_watchdog_reset();
-    } else if (err == DR_INTERRUPT) {
+        return DR_OK;
+    } else if (result == SS4S_VIDEO_FEED_ERROR) {
         streaming_interrupt(false, STREAMING_INTERRUPT_DECODER);
-        err = DR_OK;
+        return DR_OK;
+    } else {
+        return DR_NEED_IDR;
     }
-    return err;
 }
 
 void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {

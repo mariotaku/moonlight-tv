@@ -70,6 +70,7 @@ bool streaming_refresh_stats() {
     if (!stats_showing(controller)) {
         return false;
     }
+    app_t *app = controller->global;
     const struct VIDEO_STATS *dst = &vdec_summary_stats;
     const struct VIDEO_INFO *info = &vdec_stream_info;
     if (info->width > 0 && info->height > 0) {
@@ -77,13 +78,9 @@ bool streaming_refresh_stats() {
     } else {
         lv_label_set_text(controller->stats_items.resolution, "N/A");
     }
-    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", decoder_definitions[decoder_current].name,
+    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", app->ss4s.selection.video_driver,
                           vdec_stream_info.format);
-    if (audio_current == AUDIO_DECODER) {
-        lv_label_set_text_static(controller->stats_items.audio, "Decoder provided");
-    } else {
-        lv_label_set_text_static(controller->stats_items.audio, audio_definitions[audio_current].name);
-    }
+    lv_label_set_text_static(controller->stats_items.audio, app->ss4s.selection.audio_driver);
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 
@@ -118,8 +115,9 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     streaming_styles_init(controller);
 
-    const streaming_scene_arg_t *req = (streaming_scene_arg_t *) args;
-    streaming_begin(&req->uuid, &req->app);
+    const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
+    controller->global = arg->global;
+    streaming_begin(arg->global, &arg->uuid, &arg->app);
 }
 
 static void controller_dtor(lv_fragment_t *self) {
@@ -194,7 +192,7 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    app_input_set_group(controller->group);
+    app_input_set_group(&controller->global->input, controller->group);
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
@@ -230,7 +228,7 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     if (controller->stats->parent != controller->overlay) {
         lv_obj_del(controller->stats);
     }
-    app_input_set_group(NULL);
+    app_input_set_group(&controller->global->input, NULL);
     lv_group_del(controller->group);
 }
 
@@ -245,8 +243,8 @@ static void suspend_streaming(lv_event_t *event) {
 }
 
 static void open_keyboard(lv_event_t *event) {
-    LV_UNUSED(event);
-    app_start_text_input(0, 0, ui_display_width, ui_display_height);
+    streaming_controller_t *controller = lv_event_get_user_data(event);
+    app_start_text_input(&controller->global->input, 0, 0, ui_display_width, ui_display_height);
 }
 
 static void toggle_vmouse(lv_event_t *event) {
@@ -270,7 +268,7 @@ bool show_overlay(streaming_controller_t *controller) {
 
 static void hide_overlay(lv_event_t *event) {
     streaming_controller_t *controller = (streaming_controller_t *) lv_event_get_user_data(event);
-    app_input_set_button_points(NULL);
+    app_input_set_button_points(&controller->global->input, NULL);
     lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
     if (!overlay_showing)
         return;
@@ -316,5 +314,5 @@ static void update_buttons_layout(streaming_controller_t *controller) {
     lv_area_center(&coords, &controller->button_points[3]);
     lv_obj_get_coords(controller->kbd_btn, &coords);
     lv_area_center(&coords, &controller->button_points[4]);
-    app_input_set_button_points(controller->button_points);
+    app_input_set_button_points(&controller->global->input, controller->button_points);
 }

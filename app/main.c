@@ -5,8 +5,8 @@
 #include "lvgl.h"
 #include "lvgl/lv_disp_drv_app.h"
 #include "lvgl/lv_sdl_drv_input.h"
-#include "lvgl/lv_sdl_img.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
+#include "lv_sdl_img.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"
@@ -19,8 +19,10 @@
 #include "util/logging.h"
 #include "util/bus.h"
 
-#include <SDL_image.h>
+#include "ss4s.h"
+#include "input/app_input.h"
 
+#include <SDL_image.h>
 
 #if TARGET_WEBOS
 
@@ -28,8 +30,6 @@
 #else
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
 #endif
-
-SDL_Window *app_window = NULL;
 
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
@@ -45,6 +45,8 @@ static void applog_lvlog(const char *msg);
 
 static void log_libs_version();
 
+static void applog_ss4s(SS4S_LogLevel level, const char *tag, const char *fmt, ...);
+
 int main(int argc, char *argv[]) {
     app_loginit();
     SDL_LogSetOutputFunction(applog_logoutput, NULL);
@@ -52,22 +54,21 @@ int main(int argc, char *argv[]) {
     log_libs_version();
     app_gs_client_mutex = SDL_CreateMutex();
 
-    int ret = app_init(argc, argv);
+    app_t app_;
+    int ret = app_init(&app_, argc, argv);
     if (ret != 0) {
         return ret;
     }
     app_init_locale();
-
-    module_init(argc, argv);
-
     backend_init();
 
     // DO not init video subsystem before NDL/LGNC initialization
     app_init_video();
     applog_i("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
-    app_window = app_create_window();
 
-    module_post_init(argc, argv);
+    app_.window = app_create_window();
+
+    SS4S_PostInit(argc, argv);
 
     app_handle_launch(argc, argv);
 
@@ -78,14 +79,14 @@ int main(int argc, char *argv[]) {
 
     lv_log_register_print_cb(applog_lvlog);
     lv_init();
-    lv_disp_t *disp = lv_app_display_init(app_window);
+    lv_disp_t *disp = lv_app_display_init(app_.window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
     lv_theme_t theme_app;
     lv_memset_00(&theme_app, sizeof(lv_theme_t));
     theme_app.color_primary = parent_theme->color_primary;
     theme_app.color_secondary = parent_theme->color_secondary;
     lv_theme_set_parent(&theme_app, parent_theme);
-    lv_theme_moonlight_init(&theme_app);
+    lv_theme_moonlight_init(&theme_app, &app_);
     app_fonts_t *fonts = app_font_init(&theme_app);
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
@@ -95,13 +96,13 @@ int main(int argc, char *argv[]) {
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
-    app_input_init();
+    app_input_init(&app_.input, &app_);
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_opa(scr, 0, 0);
     app_uimanager = lv_fragment_manager_create(NULL);
-    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, NULL);
+    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, &app_);
     lv_fragment_manager_push(app_uimanager, fragment, &scr);
 
     while (app_is_running()) {
@@ -110,25 +111,22 @@ int main(int argc, char *argv[]) {
         SDL_Delay(1);
     }
 
-
     lv_fragment_manager_del(app_uimanager);
 
-    app_input_deinit();
+    app_input_deinit(&app_.input);
     lv_app_display_deinit(disp);
     lv_img_decoder_delete(img_decoder);
     app_font_deinit(fonts);
 
     if (!app_configuration->fullscreen) {
-        SDL_GetWindowPosition(app_window, &app_configuration->window_state.x, &app_configuration->window_state.y);
-        SDL_GetWindowSize(app_window, &app_configuration->window_state.w, &app_configuration->window_state.h);
+        SDL_GetWindowPosition(app_.window, &app_configuration->window_state.x, &app_configuration->window_state.y);
+        SDL_GetWindowSize(app_.window, &app_configuration->window_state.w, &app_configuration->window_state.h);
     }
 
-    SDL_DestroyWindow(app_window);
+    SDL_DestroyWindow(app_.window);
     app_uninit_video();
 
     backend_destroy();
-    decoder_finalize();
-    audio_finalize();
 
     bus_finalize();
 
@@ -136,6 +134,9 @@ int main(int argc, char *argv[]) {
     settings_free(app_configuration);
 
     SDL_DestroyMutex(app_gs_client_mutex);
+
+    app_deinit(&app_);
+
     SDL_Quit();
 
     applog_i("APP", "Quitted gracefully :)");
@@ -215,7 +216,7 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
         return;
 #endif
     applog(priority_name[priority - SDL_LOG_PRIORITY_VERBOSE],
-           category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], message);
+           category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], "%s", message);
 }
 
 static void applog_lvlog(const char *msg) {
@@ -228,13 +229,13 @@ static void applog_lvlog(const char *msg) {
     };
     for (int i = 0; i < sizeof(level_value) / sizeof(applog_level_t); i++) {
         if (strncmp(level_name[i], msg + 1, (start - msg - 3)) == 0) {
-            applog(level_value[i], "LVGL", start);
+            applog(level_value[i], "LVGL", "%s", start);
         }
     }
 }
 
-void app_set_fullscreen(bool fullscreen) {
-    SDL_SetWindowFullscreen(app_window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
+void app_set_fullscreen(app_t *app, bool fullscreen) {
+    SDL_SetWindowFullscreen(app->window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
 
 
