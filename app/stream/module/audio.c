@@ -1,8 +1,5 @@
 #include "stream/platform.h"
 
-#include <string.h>
-
-
 #include "util/i18n.h"
 
 
