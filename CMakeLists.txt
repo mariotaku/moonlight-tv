@@ -118,7 +118,7 @@ find_package(Freetype REQUIRED)
 
 find_program(NPM_COMMAND npm)
 
-if (NPM_COMMAND_FOUND)
+if (NPM_COMMAND)
     execute_process(COMMAND ${NPM_COMMAND} install --quiet)
 endif ()
 
@@ -365,7 +365,7 @@ add_custom_target(i18n-merge-po
         COMMAND ${MSGMERGE_COMMAND} --update i18n/ja/messages.po i18n/messages.pot
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-if (NPM_COMMAND_FOUND)
+if (NPM_COMMAND)
     add_custom_target(iconfont-minify
             COMMAND ${NPM_COMMAND} run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
             -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
