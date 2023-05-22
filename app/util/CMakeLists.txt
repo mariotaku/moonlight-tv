@@ -1,7 +1,6 @@
 target_sources(moonlight PRIVATE
         path.c
         debugprint.c
-        logging.c
         img_loader.c
         nullable.c
         font.c

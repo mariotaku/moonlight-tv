@@ -20,7 +20,7 @@
 #include "util/font.h"
 #include "util/i18n.h"
 #include "util/user_event.h"
-#include "util/logging.h"
+#include "logging.h"
 
 static void launcher_controller(lv_fragment_t *self, void *args);
 
@@ -466,10 +466,11 @@ static void show_decoder_error(launcher_fragment_t *controller) {
     const char *module_err = module_geterror();
     if (module_err[0]) {
         lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders.\n"
-                                              "Error detail: %s"), app->ss4s.selection.video_driver, module_err);
+                                              "Error detail: %s"), module_info_get_id(app->ss4s.selection.video_module),
+                              module_err);
     } else {
         lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
-                              app->ss4s.selection.video_driver);
+                              module_info_get_id(app->ss4s.selection.video_module));
     }
     lv_obj_center(msgbox);
 }
@@ -491,7 +492,7 @@ static void populate_selected_host(launcher_fragment_t *controller) {
     }
     for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
         if (uuidstr_t_equals_t(&cur->id, &controller->def_host)) {
-            applog_i("UI", "Host %s was selected", cur->server->hostname);
+            commons_log_info("UI", "Host %s was selected", cur->server->hostname);
             pcmanager_select(pcmanager, &cur->id);
             controller->def_host_selected = true;
             break;

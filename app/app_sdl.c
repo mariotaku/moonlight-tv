@@ -7,15 +7,14 @@
 #include "app.h"
 #include "config.h"
 
+#include "logging.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/user_event.h"
-#include "util/logging.h"
 #include "util/i18n.h"
-#include "util/logging_subsystems.h"
 
 #include "ss4s_modules.h"
 #include "ss4s.h"
@@ -28,7 +27,9 @@ static void quit_confirm_cb(lv_event_t *e);
 
 int app_init(app_t *app, int argc, char *argv[]) {
     memset(app, 0, sizeof(*app));
-    os_info_get(&app->os_info);
+    if (os_info_get(&app->os_info) == 0) {
+        commons_log_info("APP", "System: %s %s", app->os_info.name, version_info_str(&app->os_info.version));
+    }
     modules_load(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
     module_preferences_t module_preferences = {
@@ -43,9 +44,9 @@ int app_init(app_t *app, int argc, char *argv[]) {
 #endif
 
     SS4S_Config ss4s_config = {
-            .audioDriver = app->ss4s.selection.audio_driver,
-            .videoDriver = app->ss4s.selection.video_driver,
-            .loggingFunction = applog_ss4s,
+            .audioDriver = module_info_get_id(app->ss4s.selection.audio_module),
+            .videoDriver = module_info_get_id(app->ss4s.selection.video_module),
+            .loggingFunction = app_ss4s_logf,
     };
     SS4S_Init(argc, argv, &ss4s_config);
 
@@ -98,7 +99,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     window_focus_gained = true;
                     break;
                 case SDL_WINDOWEVENT_FOCUS_LOST:
-                    applog_d("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
+                    commons_log_debug("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
 #if !FEATURE_FORCE_FULLSCREEN
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
@@ -113,7 +114,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     bus_pushevent(USER_SIZE_CHANGED, NULL, NULL);
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:
-                    applog_d("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
+                    commons_log_debug("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
                     if (app_configuration->fullscreen) {
                         // Interrupt streaming because app will go to background
                         streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
@@ -135,7 +136,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                 bool handled = backend_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
                 handled = handled || ui_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
                 if (!handled) {
-                    applog_w("Event", "Nobody handles event %d", event->user.code);
+                    commons_log_warn("Event", "Nobody handles event %d", event->user.code);
                 }
             }
             break;

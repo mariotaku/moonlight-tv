@@ -1,9 +1,8 @@
 #include "app_input.h"
+#include "logging.h"
 #include "app.h"
 
 #include "lvgl/lv_sdl_drv_input.h"
-
-#include "util/logging.h"
 
 static void app_input_populate_group(app_input_t *input);
 
@@ -25,7 +24,7 @@ void app_input_init(app_input_t *input, app_t *app) {
     blank_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
     blank_cursor = SDL_CreateColorCursor(blank_surface, 0, 0);
     if (!blank_cursor) {
-        applog_w("Input", "Failed to create blank cursor: %s", SDL_GetError());
+        commons_log_warn("Input", "Failed to create blank cursor: %s", SDL_GetError());
     }
 
     _lv_ll_init(&modal_groups, sizeof(lv_group_t *));
@@ -113,7 +112,7 @@ bool app_text_input_active(app_input_t *input) {
 void app_set_mouse_grab(bool grab) {
 #if HAVE_RELATIVE_MOUSE_HACK
     if (grab) {
-        applog_d("Input", "Set cursor to blank bitmap: %p", blank_cursor);
+        commons_log_debug("Input", "Set cursor to blank bitmap: %p", blank_cursor);
         SDL_SetCursor(blank_cursor);
     } else {
         SDL_SetCursor(SDL_GetDefaultCursor());

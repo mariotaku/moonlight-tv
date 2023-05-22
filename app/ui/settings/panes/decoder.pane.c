@@ -26,7 +26,7 @@ typedef struct decoder_pane_t {
     int surround_entries_len;
 } decoder_pane_t;
 
-static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *view);
+static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
 
@@ -38,7 +38,9 @@ static void hdr_state_update_cb(lv_event_t *e);
 
 static void hdr_more_click_cb(lv_event_t *e);
 
-static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *value, bool fallback);
+static bool contains_decoder_group(const pref_dropdown_string_entry_t *entry, size_t len, const char *group);
+
+static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *group, bool fallback);
 
 const lv_fragment_class_t settings_pane_decoder_cls = {
         .constructor_cb = pane_ctor,
@@ -58,12 +60,13 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
     set_decoder_entry(&pane->vdec_entries[pane->adec_entries_len++], locstr("Auto"), "auto", true);
     set_decoder_entry(&pane->adec_entries[pane->vdec_entries_len++], locstr("Auto"), "auto", true);
     for (int module_idx = 0; module_idx < modules.size; module_idx++) {
-        const module_group_t *info = array_list_get(&modules, module_idx);
-        if (info->has_audio) {
-            set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], info->name, info->id, false);
+        const module_info_t *info = array_list_get(&modules, module_idx);
+        const char *group = module_info_get_group(info);
+        if (info->has_audio && !contains_decoder_group(pane->adec_entries, pane->adec_entries_len, group)) {
+            set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], info->name, group, false);
         }
-        if (info->has_video) {
-            set_decoder_entry(&pane->vdec_entries[pane->vdec_entries_len++], info->name, info->id, false);
+        if (info->has_video && !contains_decoder_group(pane->vdec_entries, pane->vdec_entries_len, group)) {
+            set_decoder_entry(&pane->vdec_entries[pane->vdec_entries_len++], info->name, group, false);
         }
     }
     unsigned int supported_ch = audio_cap.maxChannels;
@@ -99,14 +102,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     lv_obj_t *decoder_label = pref_title_label(view, locstr("Video decoder"));
     lv_label_set_text_fmt(decoder_label, locstr("Video decoder - using %s"),
-                          app->ss4s.selection.video_module != NULL ? app->ss4s.selection.video_module->name : NULL);
+                          module_info_get_name(app->ss4s.selection.video_module));
     lv_obj_t *vdec_dropdown = pref_dropdown_string(view, controller->vdec_entries, controller->vdec_entries_len,
                                                    &app_configuration->decoder);
     lv_obj_set_width(vdec_dropdown, LV_PCT(100));
 
     lv_obj_t *audio_label = pref_title_label(view, locstr("Audio backend"));
     lv_label_set_text_fmt(audio_label, locstr("Audio backend - using %s"),
-                          app->ss4s.selection.audio_module != NULL ? app->ss4s.selection.audio_module->name : NULL);
+                          module_info_get_name(app->ss4s.selection.audio_module));
     lv_obj_t *adec_dropdown = pref_dropdown_string(view, controller->adec_entries, controller->adec_entries_len,
                                                    &app_configuration->audio_backend);
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
@@ -124,7 +127,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     } else {
         lv_obj_add_state(hevc_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hevc_hint, locstr("%s decoder doesn't support H265 codec."),
-                              app->ss4s.selection.video_module != NULL ? app->ss4s.selection.video_module->name : NULL);
+                              module_info_get_name(app->ss4s.selection.video_module));
     }
 
     lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
@@ -133,7 +136,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     if (app->ss4s.video_cap.hdr == 0) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
-                              app->ss4s.selection.video_module != NULL ? app->ss4s.selection.video_module->name : NULL);
+                              module_info_get_name(app->ss4s.selection.video_module));
     } else if (!app_configuration->stream.supportsHevc) {
         lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text(hdr_hint, locstr("H265 is required to use HDR."));
@@ -168,9 +171,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 static void pref_mark_restart_cb(lv_event_t *e) {
     decoder_pane_t *controller = (decoder_pane_t *) lv_event_get_user_data(e);
     settings_controller_t *parent = controller->parent;
-    //TODO: mark restart if decoder changed
-//    parent->needs_restart |= decoder_current != decoder_by_id(app_configuration->decoder);
-//    parent->needs_restart |= audio_current != audio_by_id(app_configuration->audio_backend);
+    parent->needs_restart = true;
 }
 
 static void hdr_state_update_cb(lv_event_t *e) {
@@ -188,11 +189,21 @@ static void hdr_state_update_cb(lv_event_t *e) {
 }
 
 static void hdr_more_click_cb(lv_event_t *e) {
+    (void) e;
     app_open_url("https://github.com/mariotaku/moonlight-tv/wiki/HDR-Support");
 }
 
-static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *value, bool fallback) {
+static bool contains_decoder_group(const pref_dropdown_string_entry_t *entry, size_t len, const char *group) {
+    for (int i = 0; i < len; i++) {
+        if (strcmp(entry[i].value, group) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *group, bool fallback) {
     entry->name = name;
-    entry->value = value;
+    entry->value = group;
     entry->fallback = fallback;
 }

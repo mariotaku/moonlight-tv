@@ -1,5 +1,7 @@
 #include "executor.h"
 
+#include "logging.h"
+
 #include <stdlib.h>
 #include <errno.h>
 #include <SDL2/SDL.h>
@@ -32,7 +34,6 @@ struct executor_t {
 
 #include "util/linked_list.h"
 #include "bus.h"
-#include "logging.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -197,7 +198,7 @@ static void task_destroy(executor_task_t *task) {
 
 static void thread_wait(SDL_Thread *thread) {
     const char *name = SDL_GetThreadName(thread);
-    applog_d("Executor", "Freeing thread %s", name ? name : "unnamed");
+    commons_log_debug("Executor", "Freeing thread %s", name ? name : "unnamed");
     SDL_WaitThread(thread, NULL);
 }
 

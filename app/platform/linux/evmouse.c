@@ -15,7 +15,7 @@
 
 #include <linux/input.h>
 
-#include "util/logging.h"
+#include "logging.h"
 
 typedef struct mouse_info_t {
     struct input_id id;
@@ -135,7 +135,7 @@ static int mouse_fds_find(int *fds, int max, mouse_filter_fn filter) {
         if (fd < 0) {
             // Silently ignore "No such device or address"
             if (errno != ENXIO) {
-                applog_w("EvMouse", "Failed to open %s: %d (%s)", dev_path, errno, strerror(errno));
+                commons_log_warn("EvMouse", "Failed to open %s: %d (%s)", dev_path, errno, strerror(errno));
             }
             continue;
         }

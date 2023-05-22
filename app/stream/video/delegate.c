@@ -8,7 +8,7 @@
 
 #include "ui/streaming/streaming.controller.h"
 #include "util/bus.h"
-#include "util/logging.h"
+#include "logging.h"
 #include "ss4s.h"
 
 #include <SDL.h>

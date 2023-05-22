@@ -12,9 +12,9 @@
 #include "streaming/streaming.controller.h"
 #include "launcher/launcher.controller.h"
 
+#include "logging.h"
 #include "util/bus.h"
 #include "util/user_event.h"
-#include "util/logging.h"
 
 short ui_display_width, ui_display_height;
 static unsigned int last_pts = 0;
@@ -89,7 +89,7 @@ bool ui_should_block_input() {
 void ui_display_size(short width, short height) {
     ui_display_width = width;
     ui_display_height = height;
-    applog_i("UI", "Display size changed to %d x %d", width, height);
+    commons_log_info("UI", "Display size changed to %d x %d", width, height);
 }
 
 bool ui_set_input_mode(enum UI_INPUT_MODE mode) {
@@ -115,7 +115,7 @@ const lv_img_dsc_t *ui_logo_src() {
 static void handle_queued_frame(render_frame_req_t *req) {
     bool redraw = false;
     if (last_pts > req->pts) {
-        applog_w("Stream", "Ignore late frame pts: %d", req->pts);
+        commons_log_warn("Stream", "Ignore late frame pts: %d", req->pts);
         return;
     }
 //    if (ui_stream_render && ui_stream_render->renderSubmit(req->data)) {
@@ -127,7 +127,7 @@ static void handle_queued_frame(render_frame_req_t *req) {
 }
 
 bool ui_render_queue_submit(void *data, unsigned int pts) {
-//    applog_d("Stream", "Submit frame. pts: %d", pts);
+//    commons_log_debug("Stream", "Submit frame. pts: %d", pts);
     render_frame_req_t req = {.data = data, .pts = pts};
     bus_pushaction_sync((bus_actionfunc) handle_queued_frame, &req);
     return true;

@@ -1,10 +1,10 @@
 #include "worker.h"
 #include "app.h"
+#include "logging.h"
 #include "../pclist.h"
 #include "../priv.h"
 
 #include "util/wol.h"
-#include "util/logging.h"
 
 #include <errno.h>
 #include <SDL.h>
@@ -24,7 +24,7 @@ int worker_wol(cm_request_t *context) {
         PSERVER_DATA tmpserver = serverdata_new();
         ret = gs_init(gs, tmpserver, strdup(server->serverInfo.address), false);
         serverdata_free(tmpserver);
-        applog_d("WoL", "gs_init returned %d, errno=%d", (int) ret, errno);
+        commons_log_debug("WoL", "gs_init returned %d, errno=%d", (int) ret, errno);
         if (ret == 0 || errno == ECONNREFUSED) {
             break;
         }

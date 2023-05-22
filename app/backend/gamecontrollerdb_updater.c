@@ -5,7 +5,7 @@
 #include <curl/curl.h>
 
 #include "util/path.h"
-#include "util/logging.h"
+#include "logging.h"
 #include "util/bus.h"
 
 #ifndef GAMECONTROLLERDB_PLATFORM_USE
@@ -133,7 +133,7 @@ static size_t header_cb(char *buffer, size_t size, size_t nitems, WRITE_CONTEXT 
         if (!ctx->fp && ctx->status == 200) {
             char *condb = gamecontrollerdb_path();
             ctx->fp = fopen(condb, "w");
-            applog_d("GameControllerDB", "Locking controller db file %s", condb);
+            commons_log_debug("GameControllerDB", "Locking controller db file %s", condb);
             free(condb);
 #ifndef __WIN32
             if (lockf(fileno(ctx->fp), F_LOCK, 0) != 0) {
@@ -192,12 +192,12 @@ static int update_thread_run() {
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, ctx);
     CURLcode res = curl_easy_perform(curl);
     if (ctx->status == 304) {
-        applog_d("GameControllerDB", "Controller db has no update");
+        commons_log_debug("GameControllerDB", "Controller db has no update");
     } else if (ctx->status >= 400) {
-        applog_w("GameControllerDB", "Failed to fetch %s", url);
+        commons_log_warn("GameControllerDB", "Failed to fetch %s", url);
     }
     if (ctx->fp) {
-        applog_d("GameControllerDB", "Unlocking controller db file");
+        commons_log_debug("GameControllerDB", "Unlocking controller db file");
 #ifndef __WIN32
         lockf(fileno(ctx->fp), F_ULOCK, 0);
 #endif

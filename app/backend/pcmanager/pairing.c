@@ -1,7 +1,7 @@
 #include "priv.h"
 #include "client.h"
 #include "util/bus.h"
-#include "util/logging.h"
+#include "logging.h"
 #include "backend/pcmanager/worker/worker.h"
 
 static int pin_random(int min, int max);
@@ -18,7 +18,7 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
     SERVER_DATA *server = node->server;
     if (server->paired) return false;
     if (server->currentGame) {
-        applog_i("PCManager", "The server %s is in game", server->hostname);
+        commons_log_info("PCManager", "The server %s is in game", server->hostname);
     }
     int pin_num = pin_random(0, 9999);
     SDL_snprintf(pin, 5, "%04d", pin_num);

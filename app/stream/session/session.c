@@ -15,7 +15,7 @@
 
 #include "libgamestream/errors.h"
 
-#include "util/logging.h"
+#include "logging.h"
 #include "stream/input/sdlinput.h"
 #include "callbacks.h"
 #include "ss4s.h"
@@ -118,9 +118,9 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
     if (config->stream.enableHdr) {
         config->stream.colorRange = COLOR_RANGE_FULL/* TODO: get from video capabilities */;
     }
-    applog_i("Session", "enableHdr=%u", config->stream.enableHdr);
-    applog_i("Session", "colorSpace=%d", config->stream.colorSpace);
-    applog_i("Session", "colorRange=%d", config->stream.colorRange);
+    commons_log_info("Session", "enableHdr=%u", config->stream.enableHdr);
+    commons_log_info("Session", "colorSpace=%d", config->stream.colorSpace);
+    commons_log_info("Session", "colorRange=%d", config->stream.colorRange);
 #if FEATURE_SURROUND_SOUND
     if (audio_cap.maxChannels < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
         switch (audio_cap.maxChannels) {
@@ -220,7 +220,7 @@ int streaming_worker(session_t *session) {
     }
     session->player = NULL;
 
-    applog_i("Session", "Launch app %d...", appId);
+    commons_log_info("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new();
     gs_set_timeout(client, 30);
     int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
@@ -231,13 +231,13 @@ int streaming_worker(session_t *session) {
         } else {
             streaming_error(ret, "Failed to launch session: gamestream returned %d", ret);
         }
-        applog_e("Session", "Failed to launch session: gamestream returned %d, gs_error=%s", ret, gs_error);
+        commons_log_error("Session", "Failed to launch session: gamestream returned %d, gs_error=%s", ret, gs_error);
         goto thread_cleanup;
     }
 
-    applog_i("Session", "Video %d x %d, %d net_fps, %d kbps", config->stream.width, config->stream.height,
+    commons_log_info("Session", "Video %d x %d, %d net_fps, %d kbps", config->stream.width, config->stream.height,
              config->stream.fps, config->stream.bitrate);
-    applog_i("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
+    commons_log_info("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
     session->player = SS4S_PlayerOpen();
 
@@ -267,7 +267,7 @@ int streaming_worker(session_t *session) {
                 break;
             }
         }
-        applog_e("Session", "Failed to start connection: Limelight returned %d", startResult);
+        commons_log_error("Session", "Failed to start connection: Limelight returned %d", startResult);
         goto thread_cleanup;
     }
     streaming_set_status(STREAMING_STREAMING);
@@ -288,7 +288,7 @@ int streaming_worker(session_t *session) {
     LiStopConnection();
 
     if (session->quitapp) {
-        applog_i("Session", "Sending app quit request ...");
+        commons_log_info("Session", "Sending app quit request ...");
         gs_quit_app(client, server);
     }
     pcmanager_update_by_ip(pcmanager, server->serverInfo.address, true);
@@ -321,13 +321,13 @@ int streaming_worker(session_t *session) {
 static int mouse_worker(session_t *session) {
     session->mouse.dev = evmouse_open_default();
     if (session->mouse.dev == NULL) {
-        applog_w("Session", "No mouse device available");
+        commons_log_warn("Session", "No mouse device available");
         return ENODEV;
     }
-    applog_i("Session", "EvMouse opened");
+    commons_log_info("Session", "EvMouse opened");
     evmouse_listen(session->mouse.dev, mouse_listener, session);
     evmouse_close(session->mouse.dev);
-    applog_i("Session", "EvMouse closed");
+    commons_log_info("Session", "EvMouse closed");
     return 0;
 }
 

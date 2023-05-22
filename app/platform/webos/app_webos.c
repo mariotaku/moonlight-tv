@@ -2,7 +2,7 @@
 
 #include <pbnjson.h>
 
-#include "util/logging.h"
+#include "logging.h"
 #include "util/path.h"
 #include "util/i18n.h"
 
@@ -26,15 +26,15 @@ void app_open_url(const char *url) {
 
 void app_init_locale() {
     if (app_configuration->language[0] && strcmp(app_configuration->language, "auto") != 0) {
-        applog_d("APP", "Override language to %s", app_configuration->language);
+        commons_log_debug("APP", "Override language to %s", app_configuration->language);
         i18n_setlocale(app_configuration->language);
         return;
     }
     char *payload = NULL;
-    applog_d("APP", "Get system locale settings");
+    commons_log_debug("APP", "Get system locale settings");
     if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}",
                               true, &payload) || !payload) {
-        applog_w("APP", "Failed to get system locale settings. Falling back to English.");
+        commons_log_warn("APP", "Failed to get system locale settings. Falling back to English.");
         return;
     }
     JSchemaInfo schemaInfo;
@@ -59,7 +59,7 @@ void app_handle_launch(int argc, char *argv[]) {
     if (argc < 2) {
         return;
     }
-    applog_i("APP", "Launched with parameters %s", argv[1]);
+    commons_log_info("APP", "Launched with parameters %s", argv[1]);
     JSchemaInfo schema_info;
     jschema_info_init(&schema_info, jschema_all(), NULL, NULL);
     jdomparser_ref parser = jdomparser_create(&schema_info, 0);

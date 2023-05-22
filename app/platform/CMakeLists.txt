@@ -1,12 +1,10 @@
 set(PLATFORM_APP_SOURCE common/app_common.c)
 set(PLATFORM_PATH_SOURCE sdl/path_sdl.c)
-set(PLATFORM_LOGGING_SOURCE common/logging_stdio.c)
 set(PLATFORM_I18N_SOURCE common/i18n_gettext.c)
 
 if (TARGET_WEBOS)
     set(PLATFORM_APP_SOURCE webos/app_webos.c)
     set(PLATFORM_PATH_SOURCE webos/path_webos.c)
-    set(PLATFORM_LOGGING_SOURCE webos/logging_pmlog.c)
     set(PLATFORM_I18N_SOURCE webos/i18n_webos.c)
 
     target_sources(moonlight PRIVATE
@@ -35,5 +33,4 @@ target_sources(moonlight PRIVATE
         common/i18n_common.c
         ${PLATFORM_APP_SOURCE}
         ${PLATFORM_PATH_SOURCE}
-        ${PLATFORM_LOGGING_SOURCE}
         ${PLATFORM_I18N_SOURCE})

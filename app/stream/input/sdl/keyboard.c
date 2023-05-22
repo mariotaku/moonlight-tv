@@ -1,4 +1,5 @@
 #include "app.h"
+#include "logging.h"
 #include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 #include "stream/session.h"
@@ -8,7 +9,6 @@
 
 #include "util/bus.h"
 #include "util/user_event.h"
-#include "util/logging.h"
 
 #include "vk.h"
 
@@ -404,8 +404,8 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
             default:
                 if (!keyCode) {
                     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
-                                "Unhandled button event: %d",
-                                event->keysym.scancode);
+                                "Unhandled button event: scancode: %d, keycode: %d",
+                                event->keysym.scancode, event->keysym.sym);
                     return;
                 }
         }
@@ -453,7 +453,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
 
 void sdlinput_handle_text_event(SDL_TextInputEvent *event) {
     if (keydown_count) {
-        applog_v("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
+        commons_log_verbose("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
         return;
     }
     size_t len = strlen(event->text);

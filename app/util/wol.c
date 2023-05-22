@@ -37,7 +37,7 @@ int wol_broadcast(const char *mac) {
 #endif
     SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof broadcast)) {
-        applog_e("WoL", "setsockopt() error: %d %s", errno, strerror(errno));
+        commons_log_error("WoL", "setsockopt() error: %d %s", errno, strerror(errno));
         ret = -1;
         goto cleanup;
     }
@@ -48,7 +48,7 @@ int wol_broadcast(const char *mac) {
     client.sin_port = 0;
     // Bind socket
     if (bind(sockfd, (struct sockaddr *) &client, sizeof(client))) {
-        applog_e("WoL", "bind() error: %d %s", errno, strerror(errno));
+        commons_log_error("WoL", "bind() error: %d %s", errno, strerror(errno));
         ret = -1;
         goto cleanup;
     }
@@ -60,7 +60,7 @@ int wol_broadcast(const char *mac) {
 
     sendto(sockfd, packet, sizeof(packet), 0, (struct sockaddr *) &server, sizeof(server));
     if (errno) {
-        applog_e("WoL", "sendto() error: %d %s", errno, strerror(errno));
+        commons_log_error("WoL", "sendto() error: %d %s", errno, strerror(errno));
         ret = -1;
         goto cleanup;
     }

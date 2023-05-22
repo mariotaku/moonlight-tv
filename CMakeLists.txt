@@ -37,6 +37,10 @@ option(BUILD_EXAMPLES "" OFF)
 
 option(COMMONS_LV_SDL_IMG_USE_IMAGE "Use SDL2_image API" ON)
 
+set(COMMONS_LOGGING_SDL ON)
+set(COMMONS_LOGGING_LVGL ON)
+set(COMMONS_LOGGING_SS4S ON)
+
 if (TARGET_WEBOS)
     option(BUILD_TESTS "" OFF)
 else ()
@@ -112,9 +116,11 @@ find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
 
-find_program(NPM_COMMAND npm REQUIRED)
+find_program(NPM_COMMAND npm)
 
-execute_process(COMMAND ${NPM_COMMAND} install --quiet)
+if (NPM_COMMAND_FOUND)
+    execute_process(COMMAND ${NPM_COMMAND} install --quiet)
+endif ()
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
@@ -164,7 +170,7 @@ include(BuildINIH)
 
 if (TARGET_WEBOS)
     set(SS4S_MODULE_DISABLE_MMAL ON)
-else()
+else ()
     option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 endif ()
 
@@ -305,6 +311,8 @@ endif ()
 target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
 target_compile_definitions(commons-ss4s-modules-list PRIVATE SS4S_MODULES_INI_PATH="${SS4S_MODULES_INI_PATH_RUNTIME}")
 
+target_link_libraries(moonlight PRIVATE commons-logging)
+
 configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -357,10 +365,12 @@ add_custom_target(i18n-merge-po
         COMMAND ${MSGMERGE_COMMAND} --update i18n/ja/messages.po i18n/messages.pot
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_custom_target(iconfont-minify
-        COMMAND ${NPM_COMMAND} run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
-        -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
-        )
+if (NPM_COMMAND_FOUND)
+    add_custom_target(iconfont-minify
+            COMMAND ${NPM_COMMAND} run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
+            -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
+            )
+endif ()
 
 if (TARGET_WEBOS)
     include(PackageWebOS)

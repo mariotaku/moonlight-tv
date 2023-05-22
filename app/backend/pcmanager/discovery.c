@@ -1,6 +1,6 @@
 #include "priv.h"
+#include "logging.h"
 #include <microdns/microdns.h>
-#include "util/logging.h"
 #include "util/bus.h"
 #include "backend/pcmanager/worker/worker.h"
 
@@ -42,16 +42,16 @@ static int discovery_worker(discovery_task_t *task) {
     struct mdns_ctx *ctx = NULL;
     if ((r = mdns_init(&ctx, NULL, MDNS_PORT)) < 0)
         goto err;
-    applog_i("Discovery", "Start mDNS discovery");
+    commons_log_info("Discovery", "Start mDNS discovery");
     if ((r = mdns_listen(ctx, service_name, 1, RR_PTR, 10, (mdns_stop_func) discovery_stop,
                          (mdns_listen_callback) discovery_callback, task)) < 0)
         goto err;
     err:
     if (r < 0) {
         mdns_strerror(r, err, sizeof(err));
-        applog_e("Discovery", "fatal: %s", err);
+        commons_log_error("Discovery", "fatal: %s", err);
     }
-    applog_i("Discovery", "Stop mDNS discovery");
+    commons_log_info("Discovery", "Stop mDNS discovery");
     if (ctx != NULL) {
         mdns_destroy(ctx);
     }
@@ -71,7 +71,7 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
 
     if (status < 0) {
         mdns_strerror(status, err, sizeof(err));
-        applog_e("Discovery", "error: %s", err);
+        commons_log_error("Discovery", "error: %s", err);
         return;
     }
     if (task->stop) return;

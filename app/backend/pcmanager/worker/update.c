@@ -5,8 +5,8 @@
 
 #include "errors.h"
 #include "util/bus.h"
-#include "util/logging.h"
 #include "app.h"
+#include "logging.h"
 
 static void notify_querying(pclist_update_context_t *args);
 
@@ -24,7 +24,7 @@ int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force) {
     if (existing) {
         SERVER_STATE_ENUM state = existing->state.code;
         if (state == SERVER_STATE_QUERYING) {
-            applog_v("PCManager", "Skip upsert for querying node. ip: %s", ip_dup);
+            commons_log_verbose("PCManager", "Skip upsert for querying node. ip: %s", ip_dup);
             goto done;
         }
         if (!force && state & SERVER_STATE_ONLINE) {
@@ -65,7 +65,7 @@ int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force) {
         pclist_upsert(manager, &uuid, &state, server);
     } else {
         if (existing && ret == GS_IO_ERROR) {
-            applog_w("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address, gs_error);
+            commons_log_warn("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address, gs_error);
             SERVER_STATE state = {.code = SERVER_STATE_OFFLINE};
             pclist_upsert(manager, &existing->id, &state, NULL);
         }

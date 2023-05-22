@@ -74,8 +74,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_grid_dsc_array(view, col_dsc, controller->row_dsc);
     int rowcount = 0;
     about_line(view, locstr("Version"), APP_VERSION, rowcount++, 1);
-    about_line(view, locstr("Video decoder"), app->ss4s.selection.video_driver, rowcount++, 2);
-    about_line(view, locstr("Audio backend"), app->ss4s.selection.audio_driver, rowcount++, 2);
+    about_line(view, locstr("Video decoder"), module_info_get_id(app->ss4s.selection.video_module), rowcount++, 2);
+    about_line(view, locstr("Audio backend"), module_info_get_id(app->ss4s.selection.audio_module), rowcount++, 2);
 #if TARGET_WEBOS
     const os_info_t *os_info = &controller->parent->os_info;
     char *version_name = version_info_str(&os_info->version);

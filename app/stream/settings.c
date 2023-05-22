@@ -11,7 +11,7 @@
 #include "util/ini_ext.h"
 #include "util/nullable.h"
 #include "util/path.h"
-#include "util/logging.h"
+#include "logging.h"
 
 static void settings_initialize(const char *confdir, PCONFIGURATION config);
 
@@ -38,7 +38,7 @@ PCONFIGURATION settings_load() {
     char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
     settings_initialize(confdir, config);
     if (!settings_read(conffile, config)) {
-        applog_w("Settings", "Failed to read settings %s", conffile);
+        commons_log_warn("Settings", "Failed to read settings %s", conffile);
     }
     free(conffile);
     free(confdir);

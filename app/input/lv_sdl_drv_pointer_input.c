@@ -5,7 +5,7 @@
 #include <SDL.h>
 #include "stream/input/sdlinput.h"
 #include "ui/root.h"
-#include "util/logging.h"
+#include "logging.h"
 
 #include "lvgl.h"
 

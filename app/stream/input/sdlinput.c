@@ -5,7 +5,7 @@
 
 #include "ui/root.h"
 
-#include "util/logging.h"
+#include "logging.h"
 
 #if TARGET_WEBOS
 
@@ -150,7 +150,7 @@ bool absinput_init_gamepad(int joystick_index) {
     if (SDL_IsGameController(joystick_index)) {
         SDL_GameController *controller = SDL_GameControllerOpen(joystick_index);
         if (!controller) {
-            applog_e("Input", "Could not open gamecontroller %i. GUID: %s, error: %s", joystick_index, guidstr,
+            commons_log_error("Input", "Could not open gamecontroller %i. GUID: %s, error: %s", joystick_index, guidstr,
                      SDL_GetError());
             return false;
         }
@@ -161,26 +161,26 @@ bool absinput_init_gamepad(int joystick_index) {
 
         SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
         unsigned int haptic_bits = SDL_HapticQuery(haptic);
-        applog_d("Input", "Controller #%d has supported haptic bits: %lx", state->id, haptic_bits);
+        commons_log_debug("Input", "Controller #%d has supported haptic bits: %lx", state->id, haptic_bits);
         if (haptic && (haptic_bits & SDL_HAPTIC_LEFTRIGHT) == 0) {
             SDL_HapticClose(haptic);
             haptic = NULL;
         }
 
         if (state->controller) {
-            applog_i("Input", "Controller #%d (%s) already connected, sdl_id: %d, GUID: %s", state->id,
+            commons_log_info("Input", "Controller #%d (%s) already connected, sdl_id: %d, GUID: %s", state->id,
                      SDL_JoystickName(joystick), sdl_id, guidstr);
             return false;
         }
         state->controller = controller;
         state->haptic = haptic;
         state->haptic_effect_id = -1;
-        applog_i("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id, SDL_JoystickName(joystick),
+        commons_log_info("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id, SDL_JoystickName(joystick),
                  sdl_id, guidstr);
         sdl_gamepads++;
         return true;
     } else {
-        applog_w("Input", "Unrecognized game controller %s. GUID: %s", name, guidstr);
+        commons_log_warn("Input", "Unrecognized game controller %s. GUID: %s", name, guidstr);
     }
     return false;
 }
@@ -191,7 +191,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id) {
         return;
     }
     if (!state->controller) {
-        applog_w("Input", "Could not find gamecontroller %i: %s", sdl_id, SDL_GetError());
+        commons_log_warn("Input", "Could not find gamecontroller %i: %s", sdl_id, SDL_GetError());
         return;
     }
     // Reduce number of connected gamepads
@@ -202,7 +202,7 @@ void absinput_close_gamepad(SDL_JoystickID sdl_id) {
         SDL_HapticClose(state->haptic);
     }
     SDL_GameControllerClose(state->controller);
-    applog_i("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
+    commons_log_info("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
     // Release the state so it can be reused later
     memset(state, 0, sizeof(GAMEPAD_STATE));
 }

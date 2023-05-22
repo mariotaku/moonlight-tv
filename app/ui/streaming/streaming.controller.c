@@ -78,9 +78,9 @@ bool streaming_refresh_stats() {
     } else {
         lv_label_set_text(controller->stats_items.resolution, "N/A");
     }
-    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", app->ss4s.selection.video_driver,
-                          vdec_stream_info.format);
-    lv_label_set_text_static(controller->stats_items.audio, app->ss4s.selection.audio_driver);
+    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)",
+                          module_info_get_id(app->ss4s.selection.video_module), vdec_stream_info.format);
+    lv_label_set_text_static(controller->stats_items.audio, module_info_get_id(app->ss4s.selection.audio_module));
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 

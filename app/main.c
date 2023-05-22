@@ -1,4 +1,5 @@
 #include "app.h"
+#include "logging.h"
 
 #include "res.h"
 
@@ -16,7 +17,6 @@
 
 #include "util/font.h"
 #include "util/i18n.h"
-#include "util/logging.h"
 #include "util/bus.h"
 
 #include "ss4s.h"
@@ -39,18 +39,18 @@ lv_fragment_manager_t *app_uimanager;
 
 SDL_Window *app_create_window();
 
-static void applog_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
+static void commons_log_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
 
-static void applog_lvlog(const char *msg);
+static void commons_log_lvlog(const char *msg);
 
 static void log_libs_version();
 
-static void applog_ss4s(SS4S_LogLevel level, const char *tag, const char *fmt, ...);
+static void commons_log_ss4s(SS4S_LogLevel level, const char *tag, const char *fmt, ...);
 
 int main(int argc, char *argv[]) {
-    app_loginit();
-    SDL_LogSetOutputFunction(applog_logoutput, NULL);
-    applog_i("APP", "Start Moonlight. Version %s", APP_VERSION);
+    commons_logging_init();
+    SDL_LogSetOutputFunction(commons_log_logoutput, NULL);
+    commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
     log_libs_version();
     app_gs_client_mutex = SDL_CreateMutex();
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     // DO not init video subsystem before NDL/LGNC initialization
     app_init_video();
-    applog_i("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
+    commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
 
     app_.window = app_create_window();
 
@@ -73,11 +73,11 @@ int main(int argc, char *argv[]) {
     app_handle_launch(argc, argv);
 
     if (strlen(app_configuration->default_host_uuid) > 0) {
-        applog_i("APP", "Will launch with host %s and app %d", app_configuration->default_host_uuid,
-                 app_configuration->default_app_id);
+        commons_log_info("APP", "Will launch with host %s and app %d", app_configuration->default_host_uuid,
+                     app_configuration->default_app_id);
     }
 
-    lv_log_register_print_cb(applog_lvlog);
+    lv_log_register_print_cb(commons_log_lvlog);
     lv_init();
     lv_disp_t *disp = lv_app_display_init(app_.window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
@@ -137,9 +137,11 @@ int main(int argc, char *argv[]) {
 
     app_deinit(&app_);
 
+    _lv_draw_mask_cleanup();
+
     SDL_Quit();
 
-    applog_i("APP", "Quitted gracefully :)");
+    commons_log_info("APP", "Quitted gracefully :)");
     return 0;
 }
 
@@ -189,7 +191,7 @@ GS_CLIENT app_gs_client_new() {
     SDL_assert(app_configuration);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
     if (client == NULL) {
-        applog_f("APP", "Failed to create GameStream client: %s", gs_error);
+        commons_log_fatal("APP", "Failed to create GameStream client: %s", gs_error);
     }
     SDL_assert(client);
     SDL_UnlockMutex(app_gs_client_mutex);
@@ -197,9 +199,15 @@ GS_CLIENT app_gs_client_new() {
 }
 
 
-void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-    static const applog_level_t priority_name[SDL_NUM_LOG_PRIORITIES] = {APPLOG_VERBOSE, APPLOG_DEBUG, APPLOG_INFO,
-                                                                         APPLOG_WARN, APPLOG_ERROR, APPLOG_FATAL};
+void commons_log_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+    static const commons_log_level priority_name[SDL_NUM_LOG_PRIORITIES] = {
+            COMMONS_LOG_LEVEL_VERBOSE,
+            COMMONS_LOG_LEVEL_DEBUG,
+            COMMONS_LOG_LEVEL_INFO,
+            COMMONS_LOG_LEVEL_WARN,
+            COMMONS_LOG_LEVEL_ERROR,
+            COMMONS_LOG_LEVEL_FATAL
+    };
     static const char *category_name[SDL_LOG_CATEGORY_TEST + 1] = {
             "SDL.APPLICATION",
             "SDL.ERROR",
@@ -215,21 +223,21 @@ void applog_logoutput(void *userdata, int category, SDL_LogPriority priority, co
     if (priority <= SDL_LOG_PRIORITY_INFO)
         return;
 #endif
-    applog(priority_name[priority - SDL_LOG_PRIORITY_VERBOSE],
-           category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], "%s", message);
+    commons_log_printf(priority_name[priority - SDL_LOG_PRIORITY_VERBOSE],
+                   category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], "%s", message);
 }
 
-static void applog_lvlog(const char *msg) {
+static void commons_log_lvlog(const char *msg) {
     const char *start = strchr(msg, '\t') + 1;
-    static const applog_level_t level_value[] = {
-            APPLOG_VERBOSE, APPLOG_INFO, APPLOG_WARN, APPLOG_ERROR, APPLOG_DEBUG,
+    static const commons_log_level level_value[] = {
+            COMMONS_LOG_LEVEL_VERBOSE, COMMONS_LOG_LEVEL_INFO, COMMONS_LOG_LEVEL_WARN, COMMONS_LOG_LEVEL_ERROR, COMMONS_LOG_LEVEL_DEBUG,
     };
     static const char *level_name[] = {
             "Trace", "Info", "Warn", "Error", "User",
     };
-    for (int i = 0; i < sizeof(level_value) / sizeof(applog_level_t); i++) {
+    for (int i = 0; i < sizeof(level_value) / sizeof(commons_log_level); i++) {
         if (strncmp(level_name[i], msg + 1, (start - msg - 3)) == 0) {
-            applog(level_value[i], "LVGL", "%s", start);
+            commons_log_printf(level_value[i], "LVGL", "%s", start);
         }
     }
 }
@@ -242,7 +250,7 @@ void app_set_fullscreen(app_t *app, bool fullscreen) {
 static void log_libs_version() {
     SDL_version sdl_version;
     SDL_GetVersion(&sdl_version);
-    applog_d("APP", "SDL version: %d.%d.%d", sdl_version.major, sdl_version.minor, sdl_version.patch);
+    commons_log_debug("APP", "SDL version: %d.%d.%d", sdl_version.major, sdl_version.minor, sdl_version.patch);
     const SDL_version *img_version = IMG_Linked_Version();
-    applog_d("APP", "SDL_image version: %d.%d.%d", img_version->major, img_version->minor, img_version->patch);
+    commons_log_debug("APP", "SDL_image version: %d.%d.%d", img_version->major, img_version->minor, img_version->patch);
 }
