@@ -36,7 +36,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
             .audio_module = app_configuration->audio_backend,
             .video_module = app_configuration->decoder,
     };
-    module_select(&app->ss4s.modules, &module_preferences, &app->ss4s.selection);
+    module_select(&app->ss4s.modules, &module_preferences, &app->ss4s.selection, true);
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");

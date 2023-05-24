@@ -13,6 +13,7 @@ typedef struct decoder_pane_t {
     lv_fragment_t base;
     settings_controller_t *parent;
 
+    lv_obj_t *conflict_hint;
     lv_obj_t *hdr_checkbox;
     lv_obj_t *hdr_hint;
 
@@ -28,11 +29,13 @@ typedef struct decoder_pane_t {
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container);
 
+static void obj_created(lv_fragment_t *self, lv_obj_t *obj);
+
 static void pane_ctor(lv_fragment_t *self, void *args);
 
 static void pane_dtor(lv_fragment_t *self);
 
-static void pref_mark_restart_cb(lv_event_t *e);
+static void module_changed_cb(lv_event_t *e);
 
 static void hdr_state_update_cb(lv_event_t *e);
 
@@ -42,10 +45,15 @@ static bool contains_decoder_group(const pref_dropdown_string_entry_t *entry, si
 
 static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *group, bool fallback);
 
+static void update_conflict_hint(decoder_pane_t *fragment);
+
+static bool module_is_auto(const char *value);
+
 const lv_fragment_class_t settings_pane_decoder_cls = {
         .constructor_cb = pane_ctor,
         .destructor_cb = pane_dtor,
         .create_obj_cb = create_obj,
+        .obj_created_cb = obj_created,
         .instance_size = sizeof(decoder_pane_t),
 };
 
@@ -114,6 +122,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
                                                    &app_configuration->audio_backend);
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
 
+    lv_obj_t *conflict_hint = pref_desc_label(view, NULL, false);
+
     pref_header(view, "Video Settings");
 
     lv_obj_t *hevc_checkbox = pref_checkbox(view, locstr("Prefer H265 codec"),
@@ -157,21 +167,28 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
                                               &app_configuration->stream.audioConfiguration);
     lv_obj_set_width(ch_dropdown, LV_PCT(100));
 
-    lv_obj_add_event_cb(vdec_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
-    lv_obj_add_event_cb(adec_dropdown, pref_mark_restart_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(vdec_dropdown, module_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(adec_dropdown, module_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(hevc_checkbox, hdr_state_update_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
 
+    controller->conflict_hint = conflict_hint;
     controller->hdr_checkbox = hdr_checkbox;
     controller->hdr_hint = hdr_hint;
 
     return view;
 }
 
-static void pref_mark_restart_cb(lv_event_t *e) {
-    decoder_pane_t *controller = (decoder_pane_t *) lv_event_get_user_data(e);
-    settings_controller_t *parent = controller->parent;
+static void obj_created(lv_fragment_t *self, lv_obj_t *obj) {
+    decoder_pane_t *fragment = (decoder_pane_t *) self;
+    update_conflict_hint(fragment);
+}
+
+static void module_changed_cb(lv_event_t *e) {
+    decoder_pane_t *fragment = (decoder_pane_t *) lv_event_get_user_data(e);
+    settings_controller_t *parent = fragment->parent;
     parent->needs_restart = true;
+    update_conflict_hint(fragment);
 }
 
 static void hdr_state_update_cb(lv_event_t *e) {
@@ -206,4 +223,33 @@ static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *n
     entry->name = name;
     entry->value = group;
     entry->fallback = fallback;
+}
+
+static void update_conflict_hint(decoder_pane_t *fragment) {
+    app_t *app = fragment->parent->app;
+    module_preferences_t preferences = {
+            .video_module = app_configuration->decoder,
+            .audio_module = app_configuration->audio_backend,
+    };
+    if (module_is_auto(preferences.video_module) || module_is_auto(preferences.audio_module)) {
+        lv_obj_add_flag(fragment->conflict_hint, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+    module_selection_t selection = {
+            .audio_module = NULL,
+            .video_module = NULL
+    };
+    module_select(&app->ss4s.modules, &preferences, &selection, false);
+    const module_info_t *vdec = selection.video_module;
+    const module_info_t *adec = selection.audio_module;
+    if (vdec != NULL && adec != NULL && module_conflicts(vdec, adec)) {
+        lv_label_set_text_fmt(fragment->conflict_hint, "%s is conflicting with %s", adec->name, vdec->name);
+        lv_obj_clear_flag(fragment->conflict_hint, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(fragment->conflict_hint, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+static bool module_is_auto(const char *value) {
+    return value == NULL || strcmp("auto", value) == 0;
 }
