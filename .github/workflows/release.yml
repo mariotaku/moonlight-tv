@@ -17,7 +17,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: olegtarasov/get-tag@v2.1
+      - uses: olegtarasov/get-tag@v2.1.2
         id: tagName
 
       - uses: actions/setup-node@v3
@@ -53,7 +53,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: olegtarasov/get-tag@v2.1
+      - uses: olegtarasov/get-tag@v2.1.2
         id: tagName
 
       - name: Prepare Sysroot
