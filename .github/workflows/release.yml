@@ -28,9 +28,6 @@ jobs:
       - name: Install webOS CLI
         run: sudo npm install -g @webosose/ares-cli
 
-      - name: Install Dev Dependency
-        run: npm install
-
       - name: webOS Build
         uses: ./.github/actions/build-webos
         with:
