@@ -21,7 +21,7 @@ jobs:
           submodules: recursive
 
       - name: Update packages
-        run: sudo apt-get -qq update || true
+        run: sudo apt-get -yq update
 
       - name: Install Dependencies
         run: sudo apt-get -y -qq install libsdl2-dev libsdl2-image-dev libopus-dev libcurl4-openssl-dev uuid-dev
@@ -90,6 +90,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Update Packages
+        shell: bash
+        run: sudo apt-get -yq update
+
       - name: Prepare Sysroot
         id: pi-sysroot
         uses: mariotaku/raspbian-sysroot-action@main
@@ -98,7 +102,6 @@ jobs:
 
       - name: Install Build Tools
         shell: bash
-        # apt-get update was implicitly called, so we don't have to call it here
         run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
 
       - name: Create Build Environment

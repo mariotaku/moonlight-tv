@@ -56,6 +56,10 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: tagName
 
+      - name: Update Packages
+        shell: bash
+        run: sudo apt-get -yq update
+
       - name: Prepare Sysroot
         id: pi-sysroot
         uses: mariotaku/raspbian-sysroot-action@main
@@ -64,7 +68,6 @@ jobs:
 
       - name: Install Build Tools
         shell: bash
-        # apt-get update was implicitly called, so we don't have to call it here
         run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
 
       - name: Create Build Environment
