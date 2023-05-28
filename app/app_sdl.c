@@ -30,13 +30,13 @@ int app_init(app_t *app, int argc, char *argv[]) {
     if (os_info_get(&app->os_info) == 0) {
         commons_log_info("APP", "System: %s %s", app->os_info.name, version_info_str(&app->os_info.version));
     }
-    modules_load(&app->ss4s.modules, &app->os_info);
+    SS4S_ModulesList(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
-    module_preferences_t module_preferences = {
+    SS4S_ModulePreferences module_preferences = {
             .audio_module = app_configuration->audio_backend,
             .video_module = app_configuration->decoder,
     };
-    module_select(&app->ss4s.modules, &module_preferences, &app->ss4s.selection, true);
+    SS4S_ModulesSelect(&app->ss4s.modules, &module_preferences, &app->ss4s.selection, true);
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
@@ -44,8 +44,8 @@ int app_init(app_t *app, int argc, char *argv[]) {
 #endif
 
     SS4S_Config ss4s_config = {
-            .audioDriver = module_info_get_id(app->ss4s.selection.audio_module),
-            .videoDriver = module_info_get_id(app->ss4s.selection.video_module),
+            .audioDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module),
+            .videoDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.video_module),
             .loggingFunction = app_ss4s_logf,
     };
     SS4S_Init(argc, argv, &ss4s_config);
@@ -67,7 +67,7 @@ void app_deinit(app_t *app) {
 #endif
     SS4S_Quit();
 
-    modules_clear(&app->ss4s.modules);
+    SS4S_ModulesListClear(&app->ss4s.modules);
     os_info_clear(&app->os_info);
 }
 

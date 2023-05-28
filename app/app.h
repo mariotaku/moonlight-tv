@@ -30,7 +30,7 @@ typedef struct app_t {
     app_input_t input;
     struct {
         array_list_t modules;
-        module_selection_t selection;
+        SS4S_ModuleSelection selection;
         SS4S_AudioCapabilities audio_cap;
         SS4S_VideoCapabilities video_cap;
     } ss4s;

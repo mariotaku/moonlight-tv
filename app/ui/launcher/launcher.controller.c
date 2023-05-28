@@ -466,11 +466,12 @@ static void show_decoder_error(launcher_fragment_t *controller) {
     const char *module_err = module_geterror();
     if (module_err[0]) {
         lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders.\n"
-                                              "Error detail: %s"), module_info_get_id(app->ss4s.selection.video_module),
+                                              "Error detail: %s"),
+                              SS4S_ModuleInfoGetId(app->ss4s.selection.video_module),
                               module_err);
     } else {
         lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
-                              module_info_get_id(app->ss4s.selection.video_module));
+                              SS4S_ModuleInfoGetId(app->ss4s.selection.video_module));
     }
     lv_obj_center(msgbox);
 }

@@ -68,8 +68,8 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
     set_decoder_entry(&pane->vdec_entries[pane->adec_entries_len++], locstr("Auto"), "auto", true);
     set_decoder_entry(&pane->adec_entries[pane->vdec_entries_len++], locstr("Auto"), "auto", true);
     for (int module_idx = 0; module_idx < modules.size; module_idx++) {
-        const module_info_t *info = array_list_get(&modules, module_idx);
-        const char *group = module_info_get_group(info);
+        const SS4S_ModuleInfo *info = array_list_get(&modules, module_idx);
+        const char *group = SS4S_ModuleInfoGetGroup(info);
         if (info->has_audio && !contains_decoder_group(pane->adec_entries, pane->adec_entries_len, group)) {
             set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], info->name, group, false);
         }
@@ -110,14 +110,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     lv_obj_t *decoder_label = pref_title_label(view, locstr("Video decoder"));
     lv_label_set_text_fmt(decoder_label, locstr("Video decoder - using %s"),
-                          module_info_get_name(app->ss4s.selection.video_module));
+                          SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
     lv_obj_t *vdec_dropdown = pref_dropdown_string(view, controller->vdec_entries, controller->vdec_entries_len,
                                                    &app_configuration->decoder);
     lv_obj_set_width(vdec_dropdown, LV_PCT(100));
 
     lv_obj_t *audio_label = pref_title_label(view, locstr("Audio backend"));
     lv_label_set_text_fmt(audio_label, locstr("Audio backend - using %s"),
-                          module_info_get_name(app->ss4s.selection.audio_module));
+                          SS4S_ModuleInfoGetName(app->ss4s.selection.audio_module));
     lv_obj_t *adec_dropdown = pref_dropdown_string(view, controller->adec_entries, controller->adec_entries_len,
                                                    &app_configuration->audio_backend);
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
@@ -137,7 +137,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     } else {
         lv_obj_add_state(hevc_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hevc_hint, locstr("%s decoder doesn't support H265 codec."),
-                              module_info_get_name(app->ss4s.selection.video_module));
+                              SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
     }
 
     lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
@@ -146,7 +146,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     if (app->ss4s.video_cap.hdr == 0) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
-                              module_info_get_name(app->ss4s.selection.video_module));
+                              SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
     } else if (!app_configuration->stream.supportsHevc) {
         lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text(hdr_hint, locstr("H265 is required to use HDR."));
@@ -227,7 +227,7 @@ static void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *n
 
 static void update_conflict_hint(decoder_pane_t *fragment) {
     app_t *app = fragment->parent->app;
-    module_preferences_t preferences = {
+    SS4S_ModulePreferences preferences = {
             .video_module = app_configuration->decoder,
             .audio_module = app_configuration->audio_backend,
     };
@@ -235,14 +235,14 @@ static void update_conflict_hint(decoder_pane_t *fragment) {
         lv_obj_add_flag(fragment->conflict_hint, LV_OBJ_FLAG_HIDDEN);
         return;
     }
-    module_selection_t selection = {
+    SS4S_ModuleSelection selection = {
             .audio_module = NULL,
             .video_module = NULL
     };
-    module_select(&app->ss4s.modules, &preferences, &selection, false);
-    const module_info_t *vdec = selection.video_module;
-    const module_info_t *adec = selection.audio_module;
-    if (vdec != NULL && adec != NULL && module_conflicts(vdec, adec)) {
+    SS4S_ModulesSelect(&app->ss4s.modules, &preferences, &selection, false);
+    const SS4S_ModuleInfo *vdec = selection.video_module;
+    const SS4S_ModuleInfo *adec = selection.audio_module;
+    if (vdec != NULL && adec != NULL && SS4S_ModuleInfoConflicts(vdec, adec)) {
         lv_label_set_text_fmt(fragment->conflict_hint, "%s is conflicting with %s", adec->name, vdec->name);
         lv_obj_clear_flag(fragment->conflict_hint, LV_OBJ_FLAG_HIDDEN);
     } else {
