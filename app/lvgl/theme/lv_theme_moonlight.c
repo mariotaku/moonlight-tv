@@ -58,7 +58,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
     }
     if (lv_obj_check_type(obj, &lv_textarea_class)) {
         lv_obj_add_event_cb(obj, lv_start_text_input, LV_EVENT_FOCUSED, theme);
-        lv_obj_add_event_cb(obj, lv_stop_text_input, LV_EVENT_DEFOCUSED, NULL);
+        lv_obj_add_event_cb(obj, lv_stop_text_input, LV_EVENT_DEFOCUSED, theme);
     } else if (lv_obj_check_type(obj, &lv_msgbox_class)) {
         if (lv_obj_get_width(lv_scr_act()) / 10 * 4 > LV_DPI_DEF * 2) {
             lv_obj_set_width(obj, LV_PCT(40));
