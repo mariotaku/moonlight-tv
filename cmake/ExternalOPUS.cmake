@@ -1,12 +1,12 @@
 include(ExternalProject)
 
 set(OPUS_USE_NEON ON)
-set(OPUS_DISABLE_INTRINSICS ON)
+set(OPUS_DISABLE_INTRINSICS OFF)
 
 if (TARGET_WEBOS AND CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 12)
     message(STATUS "Using GCC ${CMAKE_C_COMPILER_VERSION}. Turning off optimizations to prevent build errors")
     set(OPUS_USE_NEON OFF)
-    set(OPUS_DISABLE_INTRINSICS OFF)
+    set(OPUS_DISABLE_INTRINSICS ON)
 endif ()
 
 ExternalProject_Add(ext_opus
