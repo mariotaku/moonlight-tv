@@ -28,7 +28,9 @@ static void quit_confirm_cb(lv_event_t *e);
 int app_init(app_t *app, int argc, char *argv[]) {
     memset(app, 0, sizeof(*app));
     if (os_info_get(&app->os_info) == 0) {
-        commons_log_info("APP", "System: %s %s", app->os_info.name, version_info_str(&app->os_info.version));
+        char *version_str = version_info_str(&app->os_info.version);
+        commons_log_info("APP", "System: %s %s", app->os_info.name, version_str);
+        free(version_str);
     }
     SS4S_ModulesList(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
@@ -83,6 +85,7 @@ void app_uninit_video() {
 void inputmgr_sdl_handle_event(SDL_Event *ev);
 
 static int app_event_filter(void *userdata, SDL_Event *event) {
+    (void) userdata;
     switch (event->type) {
         case SDL_APP_WILLENTERBACKGROUND: {
             // Interrupt streaming because app will go to background
@@ -110,7 +113,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     lv_app_display_resize(lv_disp_get_default(), event->window.data1, event->window.data2);
-                    ui_display_size(event->window.data1, event->window.data2);
+                    ui_display_size((short) event->window.data1, (short) event->window.data2);
                     bus_pushevent(USER_SIZE_CHANGED, NULL, NULL);
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:

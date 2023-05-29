@@ -8,6 +8,7 @@
 #include "util/uuidstr.h"
 
 typedef struct pcmanager_t pcmanager_t;
+typedef struct worker_context_t worker_context_t;
 
 typedef void (*pcmanager_callback_t)(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
@@ -58,21 +59,6 @@ bool pcmanager_forget(pcmanager_t *manager, const uuidstr_t *uuid);
 void pcmanager_register_listener(pcmanager_t *manager, const pcmanager_listener_t *listener, void *userdata);
 
 void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listener_t *listener);
-
-/* ------------------------------------------------------------------------------ */
-/*                             IO-thread functions                                */
-/* ------------------------------------------------------------------------------ */
-
-/**
- *
- * @param manager pcmanager instance
- * @param ip
- * @param force If false, update will be omitted if the server is already online
- * @param callback
- * @param userdata
- * @return
- */
-int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force);
 
 /* ------------------------------------------------------------------------------ */
 /*                               Async functions                                  */
@@ -128,3 +114,18 @@ void pcmanager_request_update(pcmanager_t *manager, const uuidstr_t *uuid, pcman
  */
 bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                         void *userdata);
+
+/* ------------------------------------------------------------------------------ */
+/*                             IO-thread functions                                */
+/* ------------------------------------------------------------------------------ */
+
+/**
+ *
+ * @param manager pcmanager instance
+ * @param ip
+ * @param force If false, update will be omitted if the server is already online
+ * @param callback
+ * @param userdata
+ * @return
+ */
+int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force);

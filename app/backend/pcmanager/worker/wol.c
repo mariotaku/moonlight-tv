@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <SDL.h>
 
-int worker_wol(cm_request_t *context) {
+int worker_wol(worker_context_t *context) {
     const pclist_t *node = pcmanager_node(context->manager, &context->uuid);
     if (node == NULL) {
         pclist_unlock(context->manager);

@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-static void worker_callback(worker_context_t *args);
+static void worker_callback(worker_context_t *ctx);
 
 worker_context_t *worker_context_new(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                                      void *userdata) {
@@ -27,6 +27,9 @@ void worker_context_finalize(worker_context_t *context, int result) {
     if (context->arg1 != NULL) {
         free(context->arg1);
     }
+    if (context->error != NULL) {
+        free(context->error);
+    }
     free(context);
 }
 
@@ -35,8 +38,8 @@ void pcmanager_worker_queue(pcmanager_t *manager, worker_action action, worker_c
                      (executor_cleanup_cb) worker_context_finalize, context);
 }
 
-static void worker_callback(worker_context_t *args) {
-    if (args->callback) {
-        args->callback(args->result, args->error, &args->uuid, args->userdata);
+static void worker_callback(worker_context_t *ctx) {
+    if (ctx->callback) {
+        ctx->callback(ctx->result, ctx->error, &ctx->uuid, ctx->userdata);
     }
 }

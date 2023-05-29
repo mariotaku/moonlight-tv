@@ -12,12 +12,14 @@ static void notify_querying(pclist_update_context_t *args);
 
 int worker_host_update(worker_context_t *context) {
     const pclist_t *node = pcmanager_node(context->manager, &context->uuid);
-    return pcmanager_update_by_ip(context->manager, node->server->serverInfo.address, true);
+    return pcmanager_update_by_ip(context, node->server->serverInfo.address, true);
 }
 
-int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force) {
-    SDL_assert(manager != NULL);
+int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force) {
+    SDL_assert(context != NULL);
+    SDL_assert(context->manager != NULL);
     SDL_assert(ip != NULL);
+    pcmanager_t *manager = context->manager;
     char *ip_dup = strdup(ip);
     pclist_t *existing = pclist_find_by_ip(manager, ip_dup);
     int ret = 0;
@@ -64,8 +66,10 @@ int pcmanager_update_by_ip(pcmanager_t *manager, const char *ip, bool force) {
         SERVER_STATE state = {.code = server->paired ? SERVER_STATE_AVAILABLE : SERVER_STATE_NOT_PAIRED};
         pclist_upsert(manager, &uuid, &state, server);
     } else {
+        context->error = gs_error != NULL ? strdup(gs_error) : NULL;
         if (existing && ret == GS_IO_ERROR) {
-            commons_log_warn("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address, gs_error);
+            commons_log_warn("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address,
+                             gs_error);
             SERVER_STATE state = {.code = SERVER_STATE_OFFLINE};
             pclist_upsert(manager, &existing->id, &state, NULL);
         }

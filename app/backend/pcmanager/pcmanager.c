@@ -31,15 +31,15 @@ bool pcmanager_quitapp(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_ca
     if (pcmanager_server_current_app(pcmanager, uuid) == 0) {
         return false;
     }
-    cm_request_t *req = worker_context_new(manager, uuid, callback, userdata);
-    pcmanager_worker_queue(manager, worker_quit_app, req);
+    worker_context_t *ctx = worker_context_new(manager, uuid, callback, userdata);
+    pcmanager_worker_queue(manager, worker_quit_app, ctx);
     return true;
 }
 
 void pcmanager_request_update(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                               void *userdata) {
-    cm_request_t *req = worker_context_new(manager, uuid, callback, userdata);
-    pcmanager_worker_queue(manager, worker_host_update, req);
+    worker_context_t *ctx = worker_context_new(manager, uuid, callback, userdata);
+    pcmanager_worker_queue(manager, worker_host_update, ctx);
 }
 
 void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int appid, bool favorite) {
@@ -111,8 +111,8 @@ int pcmanager_node_current_app(const pclist_t *node) {
 
 bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                         void *userdata) {
-    cm_request_t *req = worker_context_new(manager, uuid, callback, userdata);
-    pcmanager_worker_queue(manager, worker_wol, req);
+    worker_context_t *ctx = worker_context_new(manager, uuid, callback, userdata);
+    pcmanager_worker_queue(manager, worker_wol, ctx);
     return true;
 }
 

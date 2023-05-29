@@ -19,6 +19,7 @@
 #include "stream/input/sdlinput.h"
 #include "callbacks.h"
 #include "ss4s.h"
+#include "backend/pcmanager/worker/worker.h"
 
 #if FEATURE_INPUT_EVMOUSE
 #include "platform/linux/evmouse.h"
@@ -108,7 +109,7 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
     }
     // Cap framerate to platform request
     if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate)
-        config->stream.bitrate = video_cap.maxBitrate;
+        config->stream.bitrate = (int) video_cap.maxBitrate;
     config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
     config->stream.supportsHevc &= (video_cap.codecs & SS4S_VIDEO_H265) != 0;
@@ -236,8 +237,9 @@ int streaming_worker(session_t *session) {
     }
 
     commons_log_info("Session", "Video %d x %d, %d net_fps, %d kbps", config->stream.width, config->stream.height,
-             config->stream.fps, config->stream.bitrate);
-    commons_log_info("Session", "Audio %d channels", CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
+                     config->stream.fps, config->stream.bitrate);
+    commons_log_info("Session", "Audio %d channels",
+                     CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
     session->player = SS4S_PlayerOpen();
 
@@ -291,7 +293,10 @@ int streaming_worker(session_t *session) {
         commons_log_info("Session", "Sending app quit request ...");
         gs_quit_app(client, server);
     }
-    pcmanager_update_by_ip(pcmanager, server->serverInfo.address, true);
+    worker_context_t update_ctx = {
+            .manager = pcmanager,
+    };
+    pcmanager_update_by_ip(&update_ctx, server->serverInfo.address, true);
 
     // Don't always reset status as error state should be kept
     streaming_set_status(STREAMING_NONE);

@@ -8,11 +8,11 @@ typedef struct worker_context_t {
     void *arg1;
 
     int result;
-    const char *error;
+    char *error;
 
     pcmanager_callback_t callback;
     void *userdata;
-} worker_context_t, cm_request_t;
+} worker_context_t;
 
 typedef int (*worker_action)(worker_context_t *context);
 

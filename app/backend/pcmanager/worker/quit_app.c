@@ -16,7 +16,7 @@ int worker_quit_app(worker_context_t *context) {
         SERVER_STATE state = {.code = SERVER_STATE_AVAILABLE};
         pclist_upsert(context->manager, &context->uuid, &state, node->server);
     } else {
-        context->error = gs_error;
+        context->error = gs_error != NULL ? strdup(gs_error) : NULL;
     }
     return ret;
 }

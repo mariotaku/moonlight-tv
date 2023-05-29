@@ -11,18 +11,6 @@
 
 #include "util/i18n.h"
 
-#ifdef __WIN32
-
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-#else
-
-#include <arpa/inet.h>
-
-#endif
-
 static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent);
 
 static void dialog_cb(lv_event_t *event);
@@ -152,6 +140,7 @@ static void input_cancel_cb(lv_event_t *event) {
 }
 
 static void add_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
+    (void) uuid;
     add_dialog_controller_t *controller = userdata;
     lv_obj_t *btns = lv_msgbox_get_btns(controller->base.obj);
     lv_obj_clear_state(btns, LV_STATE_DISABLED);
@@ -159,7 +148,11 @@ static void add_cb(int result, const char *error, const uuidstr_t *uuid, void *u
     lv_obj_add_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
     if (result == GS_OK) {
         lv_msgbox_close_async(controller->base.obj);
+    } else if (error != NULL) {
+        lv_label_set_text(controller->error, error);
+        lv_obj_clear_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
     } else {
+        lv_label_set_text_static(controller->error, locstr("Failed to add device"));
         lv_obj_clear_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
     }
 }

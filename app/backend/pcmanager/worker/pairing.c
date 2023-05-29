@@ -7,7 +7,7 @@
 
 #include <errno.h>
 
-int worker_pairing(cm_request_t *context) {
+int worker_pairing(worker_context_t *context) {
     pcmanager_t *manager = context->manager;
     const pclist_t *node = pcmanager_node(manager, &context->uuid);
     if (node == NULL) {
@@ -19,7 +19,7 @@ int worker_pairing(cm_request_t *context) {
     int ret = gs_pair(client, server, context->arg1);
     gs_destroy(client);
     if (ret != GS_OK) {
-        context->error = gs_error;
+        context->error = gs_error != NULL ? strdup(gs_error) : NULL;
         serverdata_free(server);
         return ret;
     }

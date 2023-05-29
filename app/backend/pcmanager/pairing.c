@@ -29,9 +29,9 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
 }
 
 bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata) {
-    cm_request_t *req = worker_context_new(manager, NULL, callback, userdata);
-    req->arg1 = strdup(address);
-    pcmanager_worker_queue(manager, worker_add_by_ip, req);
+    worker_context_t *ctx = worker_context_new(manager, NULL, callback, userdata);
+    ctx->arg1 = strdup(address);
+    pcmanager_worker_queue(manager, worker_add_by_ip, ctx);
     return true;
 }
 
