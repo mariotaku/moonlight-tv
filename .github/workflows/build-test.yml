@@ -9,7 +9,7 @@ on:
       - '**'
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug
 
 jobs:
   build-standard:
@@ -67,7 +67,7 @@ jobs:
       - name: webOS Build
         uses: ./.github/actions/build-webos
         with:
-          build-type: 'Debug'
+          build-type: ${{ env.BUILD_TYPE }}
 
       - name: Compatibility Check
         run: webosbrew-ipk-compat-checker --markdown --github-emoji --quiet dist/*.ipk >> $GITHUB_STEP_SUMMARY
