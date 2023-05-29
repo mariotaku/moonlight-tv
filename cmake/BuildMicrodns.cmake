@@ -5,7 +5,6 @@ include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(CheckTypeSize)
 
-message(BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS})
 add_library(microdns
         ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/mdns.c
         ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/rr.c

@@ -22,16 +22,26 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS_LIST
         "libexpat1 (>= 2.0.1)"
         "libmbedcrypto3 (>= 2.13)"
         "libmbedx509-0 (>= 2.0)"
-        "libraspberrypi0"
         )
+
+if (TARGET ss4s-module-mmal)
+    list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS_LIST "libraspberrypi0")
+endif ()
+
+if (TARGET ss4s-module-ffmpeg)
+    list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS_LIST
+            "libavcodec58 (>= 7:4.0)"
+            "libavutil56 (>= 7:4.0)"
+            )
+endif ()
+
 set(CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST
         "libasound2 (>= 1.0.16)"
         "libpulse0 (>= 0.99.1)"
         "fonts-dejavu-core"
         )
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS_LIST
-        "libavcodec58 (>= 7:4.0)"
-        "libavutil56 (>= 7:4.0)"
+        "libcec6 (>= 6.0)"
         )
 string(REPLACE ";" ", " CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS_LIST}")
 string(REPLACE ";" ", " CPACK_DEBIAN_PACKAGE_RECOMMENDS "${CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST}")

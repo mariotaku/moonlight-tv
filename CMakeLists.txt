@@ -20,9 +20,6 @@ option(TARGET_DESKTOP "Build for Desktop" OFF)
 option(TARGET_WEBOS "Build for LG webOS" OFF)
 option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 
-option(OPUS_INSTALL_CMAKE_CONFIG_MODULE "" OFF)
-option(OPUS_INSTALL_PKG_CONFIG_MODULE "" OFF)
-
 option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
 
@@ -126,9 +123,16 @@ set(BUILD_SHARED_CORE_LIBS OFF)
 
 pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
 
+pkg_check_modules(OPUS opus)
+if (NOT OPUS_FOUND)
+    list(APPEND CMAKE_MESSAGE_INDENT "  ")
+    message(STATUS "Including opus from source...")
+    include(ExternalOPUS)
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
+endif ()
+
 if (TARGET_WEBOS)
     set(BUILD_SHARED_LIBS ON)
-    add_subdirectory(third_party/opus)
     add_subdirectory(third_party/mbedtls)
     unset(BUILD_SHARED_LIBS)
 
@@ -138,25 +142,11 @@ if (TARGET_WEBOS)
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
-elseif (TARGET_RASPI)
-    add_subdirectory(third_party/h264bitstream)
-
+else ()
     find_package(CURL REQUIRED)
     find_package(MbedTLS REQUIRED)
-
-    pkg_check_modules(OPUS REQUIRED opus)
-    pkg_check_modules(BCM_HOST REQUIRED bcm_host)
-    pkg_check_modules(MMAL REQUIRED mmal)
-    pkg_check_modules(VCSM REQUIRED vcsm)
 
     set(BUILD_SHARED_CORE_LIBS ON)
-elseif (TARGET_DESKTOP)
-    find_package(CURL REQUIRED)
-    find_package(MbedTLS REQUIRED)
-
-    pkg_check_modules(OPUS REQUIRED opus)
-else ()
-    message(FATAL_ERROR "Unknown build platform")
 endif ()
 
 set(BUILD_SHARED_LIBS ${BUILD_SHARED_CORE_LIBS})
@@ -170,9 +160,8 @@ include(BuildINIH)
 
 if (TARGET_WEBOS)
     set(SS4S_MODULE_DISABLE_MMAL ON)
-else ()
-    option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" ON)
 endif ()
+option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" OFF)
 
 add_subdirectory(third_party/ss4s)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
@@ -240,6 +229,9 @@ target_link_libraries(moonlight PRIVATE
 
 target_link_libraries(moonlight PRIVATE lv_gridview lv_sdl_img)
 
+target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
+target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
     set(FEATURE_I18N_GETTEXT OFF)
@@ -251,7 +243,6 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
-    target_link_libraries(moonlight PRIVATE opus)
     target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
     target_link_libraries(moonlight PRIVATE rt)
 
@@ -259,19 +250,7 @@ if (TARGET_WEBOS)
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
     target_link_libraries(moonlight PRIVATE commons-luna-sync)
-elseif (TARGET_RASPI)
-    target_compile_definitions(moonlight PUBLIC TARGET_RASPI OS_LINUX _GNU_SOURCE)
-    target_compile_definitions(moonlight PUBLIC HAVE_PI HAVE_MMAL)
-    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-
-    set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
-elseif (TARGET_DESKTOP)
+else ()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
 
     if (OS_DARWIN)
@@ -284,15 +263,14 @@ elseif (TARGET_DESKTOP)
     elseif (OS_WINDOWS)
         target_compile_definitions(moonlight PUBLIC OS_WINDOWS)
         target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Windows")
+    else ()
+        message(FATAL_ERROR "Unknown build platform")
     endif ()
 
     target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
-else ()
-    message(FATAL_ERROR "Unknown build platform")
+    set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 endif ()
 
 if (FEATURE_LIBCEC AND TARGET commons-cec-sdl)

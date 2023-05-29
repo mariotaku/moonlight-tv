@@ -1,5 +1,6 @@
 uuid-dev
 libexpat1-dev
+libcec6
 libcurl4-openssl-dev
 libsdl2-dev
 libsdl2-image-dev
