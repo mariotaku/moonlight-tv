@@ -53,13 +53,20 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "webosbrew/ares-cli-rs"
+          latest: true
+          fileName: "ares-package_*.deb"
+          out-file-path: "temp"
+
+      - name: Install webOS CLI
+        run: sudo apt-get install ./temp/*.deb
+
       - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
-
-      - name: Install webOS CLI
-        run: sudo npm install -g @webosose/ares-cli
 
       - name: Install Compatibility checker
         run: sudo npm install -g @webosbrew/compat-checker
