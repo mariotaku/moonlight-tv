@@ -6,7 +6,7 @@
       <env name="LD_LIBRARY_PATH" value="/media/developer/apps/usr/palm/applications/com.limelight.webos/lib" />
       <env name="XDG_RUNTIME_DIR" value="/tmp/xdg" />
     </envs>
-    <custom-gdb-server version="1" gdb-connect="lx6900:1234" executable="/media/developer/bin/gdbserver" warmup-ms="0" download-type="NONE" sshConfigName="root@lx6900:22" uploadFile="/tmp/CLion/debug/moonlight" defaultGdbServerArgs=":1234 /tmp/CLion/debug/moonlight">
+    <custom-gdb-server version="1" gdb-connect="um7380:1234" executable="/media/developer/bin/gdbserver" warmup-ms="0" download-type="NONE" sshConfigName="root@um7380:22 agent" uploadFile="/tmp/CLion/debug/moonlight" defaultGdbServerArgs=":1234 /tmp/CLion/debug/moonlight">
       <debugger toolchainName="webOS" />
     </custom-gdb-server>
     <method v="2">

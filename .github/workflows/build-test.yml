@@ -69,9 +69,6 @@ jobs:
         with:
           build-type: ${{ env.BUILD_TYPE }}
 
-      - name: Compatibility Check
-        run: webosbrew-ipk-compat-checker --markdown --github-emoji --quiet dist/*.ipk >> $GITHUB_STEP_SUMMARY
-
       - name: Add Commit Hash Suffix
         shell: bash
         working-directory: dist
@@ -81,6 +78,9 @@ jobs:
         with:
           name: webos-snapshot
           path: dist/*.ipk
+
+      - name: Compatibility Check
+        run: webosbrew-ipk-compat-checker --markdown --github-emoji --quiet dist/*.ipk >> $GITHUB_STEP_SUMMARY
 
   build-raspi:
     runs-on: ubuntu-20.04
