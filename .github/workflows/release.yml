@@ -25,8 +25,15 @@ jobs:
           node-version: 16
           cache: 'npm'
 
+      - uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "webosbrew/ares-cli-rs"
+          latest: true
+          fileName: "ares-package_*.deb"
+          out-file-path: "temp"
+
       - name: Install webOS CLI
-        run: sudo npm install -g @webosose/ares-cli
+        run: sudo apt-get install ./temp/*.deb
 
       - name: webOS Build
         uses: ./.github/actions/build-webos

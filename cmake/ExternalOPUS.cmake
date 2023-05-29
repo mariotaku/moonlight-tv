@@ -27,7 +27,7 @@ ExternalProject_Get_Property(ext_opus INSTALL_DIR)
 
 add_library(ext_opus_target SHARED IMPORTED)
 set_target_properties(ext_opus_target PROPERTIES IMPORTED_LOCATION ${INSTALL_DIR}/lib/libopus.so)
-install(DIRECTORY ${INSTALL_DIR}/lib DESTINATION lib)
+install(DIRECTORY ${INSTALL_DIR}/lib/ DESTINATION lib)
 
 add_dependencies(ext_opus_target ext_opus)
 
