@@ -12,6 +12,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
 set(CMAKE_MODULE_PATH
         ${CMAKE_SOURCE_DIR}/system/webos/utils/cmake
         ${CMAKE_SOURCE_DIR}/cmake
+        ${CMAKE_SOURCE_DIR}/third_party/commons/cmake
         ${CMAKE_SOURCE_DIR}/core/moonlight-common-c/cmake
         )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -24,13 +25,6 @@ option(TARGET_RASPI "Build for Raspberry Pi" OFF)
 
 option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
-
-option(ENABLE_PROGRAMS "Skip mbedtls programs" OFF)
-option(ENABLE_TESTING "Skip mbedtls testing" OFF)
-option(INSTALL_MBEDTLS_HEADERS "Don't install mbedtls headers" OFF)
-option(MBEDTLS_FATAL_WARNINGS "Turn mbedtls warning as errors off" OFF)
-option(USE_STATIC_MBEDTLS_LIBRARY "Don't build mbed TLS static library." OFF)
-option(USE_SHARED_MBEDTLS_LIBRARY "Build mbed TLS shared library." ON)
 
 option(BUILD_EXAMPLES "" OFF)
 
@@ -114,6 +108,7 @@ find_package(PkgConfig REQUIRED)
 find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(MbedTLS)
 
 find_program(NPM_COMMAND npm)
 
@@ -126,6 +121,7 @@ set(BUILD_SHARED_CORE_LIBS OFF)
 pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
 
 pkg_check_modules(OPUS opus)
+
 if (NOT OPUS_FOUND)
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
     message(STATUS "Including opus from source...")
@@ -133,10 +129,14 @@ if (NOT OPUS_FOUND)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif ()
 
+if (NOT MBEDTLS_FOUND)
+    list(APPEND CMAKE_MESSAGE_INDENT "  ")
+    message(STATUS "Including mbedtls from source...")
+    include(ExternalMbedTLS)
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
+endif ()
+
 if (TARGET_WEBOS)
-    set(BUILD_SHARED_LIBS ON)
-    add_subdirectory(third_party/mbedtls)
-    unset(BUILD_SHARED_LIBS)
 
     add_subdirectory(system/webos/tv-native-apis)
     set(CURL_LIBRARIES curl-shim)
@@ -146,7 +146,6 @@ if (TARGET_WEBOS)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
 else ()
     find_package(CURL REQUIRED)
-    find_package(MbedTLS REQUIRED)
 
     set(BUILD_SHARED_CORE_LIBS ON)
 endif ()
@@ -234,6 +233,9 @@ target_link_libraries(moonlight PRIVATE lv_gridview lv_sdl_img)
 target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
 
+target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
+target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
+
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
     set(FEATURE_I18N_GETTEXT OFF)
@@ -245,7 +247,6 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
-    target_link_libraries(moonlight PRIVATE mbedcrypto mbedx509)
     target_link_libraries(moonlight PRIVATE rt)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
@@ -268,9 +269,6 @@ else ()
     else ()
         message(FATAL_ERROR "Unknown build platform")
     endif ()
-
-    target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY})
 
     set_target_properties(moonlight PROPERTIES OUTPUT_NAME moonlight-tv)
 endif ()
