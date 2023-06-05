@@ -28,9 +28,9 @@ static void quit_confirm_cb(lv_event_t *e);
 int app_init(app_t *app, int argc, char *argv[]) {
     memset(app, 0, sizeof(*app));
     if (os_info_get(&app->os_info) == 0) {
-        char *version_str = version_info_str(&app->os_info.version);
-        commons_log_info("APP", "System: %s %s", app->os_info.name, version_str);
-        free(version_str);
+        char *info_str = os_info_str(&app->os_info);
+        commons_log_info("APP", "System: %s", info_str);
+        free(info_str);
     }
     SS4S_ModulesList(&app->ss4s.modules, &app->os_info);
     app_configuration = settings_load();
