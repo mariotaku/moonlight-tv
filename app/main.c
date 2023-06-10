@@ -48,7 +48,7 @@ static void log_libs_version();
 static void commons_log_ss4s(SS4S_LogLevel level, const char *tag, const char *fmt, ...);
 
 int main(int argc, char *argv[]) {
-    commons_logging_init();
+    commons_logging_init("moonlight");
     SDL_LogSetOutputFunction(commons_log_logoutput, NULL);
     commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
     log_libs_version();

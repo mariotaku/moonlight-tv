@@ -57,7 +57,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
 
 
 #if FEATURE_LIBCEC
-    cec_sdl_init(&app->cec);
+    cec_sdl_init(&app->cec, "Moonlight");
 #endif
 
     return 0;
