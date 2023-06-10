@@ -32,13 +32,21 @@ int app_init(app_t *app, int argc, char *argv[]) {
         commons_log_info("APP", "System: %s", info_str);
         free(info_str);
     }
-    SS4S_ModulesList(&app->ss4s.modules, &app->os_info);
+    int errno;
+    if ((errno = SS4S_ModulesList(&app->ss4s.modules, &app->os_info)) != 0) {
+        commons_log_error("SS4S", "Can't load modules list %s: %s", SS4S_ModulesListPath(), strerror(errno));
+    }
     app_configuration = settings_load();
     SS4S_ModulePreferences module_preferences = {
             .audio_module = app_configuration->audio_backend,
             .video_module = app_configuration->decoder,
     };
     SS4S_ModulesSelect(&app->ss4s.modules, &module_preferences, &app->ss4s.selection, true);
+    commons_log_info("APP", "Video module: %s (requested %s)", SS4S_ModuleInfoGetName(app->ss4s.selection.video_module),
+                     module_preferences.video_module);
+    commons_log_info("APP", "Audio module: %s (requested %s)", SS4S_ModuleInfoGetName(app->ss4s.selection.audio_module),
+                     module_preferences.audio_module);
+
 #if TARGET_WEBOS
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");

@@ -249,15 +249,18 @@ int streaming_worker(session_t *session) {
     if (startResult != 0) {
         streaming_set_status(STREAMING_ERROR);
         switch (startResult) {
-//            case ERROR_UNKNOWN_CODEC:
-//                streaming_error(GS_WRONG_STATE, "Unsupported codec.");
-//                break;
-//            case ERROR_DECODER_OPEN_FAILED:
-//                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
-//                break;
-//            case ERROR_AUDIO_OPEN_FAILED:
-//                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
-//                break;
+            case CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED:
+                streaming_error(GS_WRONG_STATE, "Unsupported video codec.");
+                break;
+            case CALLBACKS_SESSION_ERROR_VDEC_ERROR:
+                streaming_error(GS_WRONG_STATE, "Failed to open video decoder.");
+                break;
+            case CALLBACKS_SESSION_ERROR_ADEC_UNSUPPORTED:
+                streaming_error(GS_WRONG_STATE, "Unsupported audio codec.");
+                break;
+            case CALLBACKS_SESSION_ERROR_ADEC_ERROR:
+                streaming_error(GS_WRONG_STATE, "Failed to open audio backend.");
+                break;
 //            case ERROR_AUDIO_OPUS_INIT_FAILED:
 //                streaming_error(GS_WRONG_STATE, "Opus init failed.");
 //                break;

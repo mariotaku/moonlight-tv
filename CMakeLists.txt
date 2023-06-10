@@ -280,7 +280,7 @@ else ()
 endif ()
 
 if (TARGET_WEBOS)
-    set(SS4S_MODULES_INI_PATH_RUNTIME "${CMAKE_INSTALL_LIBDIR}/ss4s_modules.ini")
+    set(SS4S_MODULES_INI_PATH_RUNTIME "lib/ss4s_modules.ini")
 else ()
     if (SS4S_MODULE_BUILD_DUMMY)
         target_link_libraries(moonlight PRIVATE ss4s ss4s-module-dummy)

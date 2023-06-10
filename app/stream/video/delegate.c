@@ -10,6 +10,7 @@
 #include "util/bus.h"
 #include "logging.h"
 #include "ss4s.h"
+#include "stream/session/callbacks.h"
 
 #include <SDL.h>
 #include <assert.h>
@@ -77,10 +78,17 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
             info.codec = SS4S_VIDEO_H265;
             break;
         default: {
-            return -1;
+            return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         }
     }
-    return SS4S_PlayerVideoOpen(player, &info);
+    switch (SS4S_PlayerVideoOpen(player, &info)) {
+        case SS4S_VIDEO_OPEN_ERROR:
+            return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
+        case SS4S_VIDEO_OPEN_UNSUPPORTED_CODEC:
+            return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
+        default:
+            return 0;
+    }
 }
 
 void vdec_delegate_cleanup() {
