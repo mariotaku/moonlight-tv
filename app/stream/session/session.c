@@ -242,6 +242,7 @@ int streaming_worker(session_t *session) {
                      CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration));
 
     session->player = SS4S_PlayerOpen();
+    SS4S_PlayerSetWaitAudioVideoReady(session->player, true);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &ss4s_dec_callbacks, &ss4s_aud_callbacks,
