@@ -72,11 +72,6 @@ jobs:
       - name: Install Tools
         run: sudo apt-get install ./temp/*.deb
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'npm'
-
       - name: webOS Build
         uses: ./.github/actions/build-webos
         with:
@@ -125,7 +120,6 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTARGET_RASPI=ON
           -DCMAKE_TOOLCHAIN_FILE=${{steps.pi-sysroot.outputs.cmake-toolchain}}
-
 
       - name: Build
         working-directory: ${{github.workspace}}/build

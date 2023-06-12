@@ -20,11 +20,6 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: tagName
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'npm'
-
       - name: Download ares-cli-rs
         uses: robinraju/release-downloader@v1.8
         with:

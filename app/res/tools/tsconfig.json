@@ -1,0 +1,15 @@
+{
+  // these options are overrides used only by ts-node
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "compilerOptions": {
+    "target": "ES6",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true
+  }
+}

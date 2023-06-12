@@ -114,12 +114,6 @@ find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(MbedTLS)
 
-find_program(NPM_COMMAND npm)
-
-if (NPM_COMMAND)
-    execute_process(COMMAND ${NPM_COMMAND} install --quiet)
-endif ()
-
 set(BUILD_SHARED_CORE_LIBS OFF)
 
 pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
@@ -187,7 +181,6 @@ endif ()
 
 add_executable(moonlight)
 add_subdirectory(app)
-add_subdirectory(res)
 
 if (WITH_SANITIZE)
     target_compile_options(moonlight PRIVATE -fsanitize=${WITH_SANITIZE} -g3 -O0)
@@ -319,13 +312,6 @@ install(TARGETS moonlight RUNTIME DESTINATION bin)
 
 if (FEATURE_I18N_GETTEXT)
     include(MoonlightI18n)
-endif ()
-
-if (NPM_COMMAND)
-    add_custom_target(iconfont-minify
-            COMMAND ${NPM_COMMAND} run iconfont-minify -- -f res/MaterialIcons-Regular.ttf -c res/MaterialIcons-Regular.codepoints
-            -l res/mat_icons_font.list -o app/lvgl/font -n material_icons_regular -p MAT_SYMBOL
-            )
 endif ()
 
 if (TARGET_WEBOS)

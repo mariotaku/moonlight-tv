@@ -1,10 +1,13 @@
+set(Python3_FIND_VIRTUALENV FIRST)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
 # Copy manifest
 configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
 
 # Copy all files under deploy/webos/ to package root
 install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE PATTERN "appinfo.json" EXCLUDE)
 install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
-install(CODE "execute_process(COMMAND npm run webos-gen-i18n -- -o \"\${CMAKE_INSTALL_PREFIX}/resources\" ${I18N_LOCALES})")
+install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} scripts/webos/gen_i18n.py -o \"\${CMAKE_INSTALL_PREFIX}/resources\" ${I18N_LOCALES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})")
 
 add_custom_target(webos-generate-gamecontrollerdb
         COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
