@@ -4,9 +4,13 @@ project(moonlight
         LANGUAGES C
         )
 # To suppress warnings for MbedTLS
-set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+if (POLICY CMP0048)
+    cmake_policy(SET CMP0048 NEW)
+endif ()
 # To suppress warnings for ExternalProject DOWNLOAD_EXTRACT_TIMESTAMP
-set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
+if (POLICY CMP0135)
+    cmake_policy(SET CMP0135 NEW)
+endif ()
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH

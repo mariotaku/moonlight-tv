@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "webos-gen-i18n": "node scripts/webos/gen_i18n.js",
-    "webos-gen-manifest": "webosbrew-gen-manifest",
     "gen-res-headers": "node scripts/tools/gen_res_headers.js",
     "iconfont-minify": "node scripts/tools/iconfont_minify.js"
   },
   "devDependencies": {
-    "@webosbrew/pub-utils": "^1.0.3",
     "argparse": "^2.0.1",
     "fontmin": "^0.9.9",
     "gettext-parser": "^4.2.0",

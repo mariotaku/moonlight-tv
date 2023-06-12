@@ -25,11 +25,20 @@ jobs:
           node-version: 16
           cache: 'npm'
 
-      - uses: robinraju/release-downloader@v1.8
+      - name: Download ares-cli-rs
+        uses: robinraju/release-downloader@v1.8
         with:
           repository: "webosbrew/ares-cli-rs"
           latest: true
           fileName: "ares-package_*.deb"
+          out-file-path: "temp"
+
+      - name: Download Manifest Generator
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "webosbrew/dev-toolbox-cli"
+          latest: true
+          fileName: "webosbrew-toolbox-gen-manifest_*.deb"
           out-file-path: "temp"
 
       - name: Install webOS CLI
