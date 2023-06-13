@@ -70,7 +70,7 @@ static const char *server_item_icon(const pclist_t *node);
 
 static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 
-static void show_decoder_error(launcher_fragment_t *controller);
+static void show_decoder_error();
 
 static void decoder_error_cb(lv_event_t *e);
 
@@ -191,10 +191,10 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_set_style_transition(fragment->detail, &fragment->tr_detail, LV_STATE_USER_1);
     current_instance = fragment;
 
-    // TODO: show decoder error if not initialized
-//    if (decoder_current == DECODER_EMPTY && fragment->first_created) {
-//        show_decoder_error(fragment);
-//    }
+    if (fragment->global->ss4s.selection.video_module == NULL ||
+        fragment->global->ss4s.selection.audio_module == NULL) {
+        show_decoder_error();
+    }
     fragment->first_created = false;
 }
 
@@ -457,22 +457,12 @@ static void open_settings(lv_event_t *event) {
     lv_fragment_manager_push(app_uimanager, fragment, container);
 }
 
-static void show_decoder_error(launcher_fragment_t *controller) {
-    app_t *app = controller->global;
+static void show_decoder_error() {
     static const char *btn_txts[] = {translatable("OK"), ""};
-    lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Decoder not working"), "placeholder", btn_txts, false);
+    lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("No working decoder"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
-    const char *module_err = module_geterror();
-    if (module_err[0]) {
-        lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders.\n"
-                                              "Error detail: %s"),
-                              SS4S_ModuleInfoGetId(app->ss4s.selection.video_module),
-                              module_err);
-    } else {
-        lv_label_set_text_fmt(msgview, locstr("Unable to initialize decoder %s. Please try other decoders."),
-                              SS4S_ModuleInfoGetId(app->ss4s.selection.video_module));
-    }
+    lv_label_set_text_fmt(msgview, locstr("Streaming can't work without a valid decoder."));
     lv_obj_center(msgbox);
 }
 
