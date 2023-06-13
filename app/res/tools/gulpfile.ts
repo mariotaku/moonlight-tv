@@ -4,7 +4,7 @@ import codepoints from "./codepoints";
 import rename from "gulp-rename";
 import subsetFont from "./gulp-subset-font";
 import minimist, {ParsedArgs} from "minimist";
-import symHeader from "./symheader";
+import symheader from "./symheader";
 
 declare interface Args extends ParsedArgs {
     input: string | string[];
@@ -31,7 +31,7 @@ async function iconfont() {
 async function symlist() {
     return src(options.input)
         .pipe(codepoints())
-        .pipe(symHeader({prefix: 'MAT'}))
+        .pipe(symheader({prefix: 'MAT'}))
         .pipe(rename(file => {
             file.basename = 'material_icons_regular_symbols';
         }))

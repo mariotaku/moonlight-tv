@@ -8,7 +8,7 @@ function codepointsMetadata(file: any): Record<string, number> {
     return file.codepoints;
 }
 
-export default function symHeader(option?: Partial<Option>) {
+export default function symheader(option?: Partial<Option>) {
     return asyncTransform(async file => {
         const codepoints: Record<string, number> = codepointsMetadata(file);
         let content = '#pragma once\n\n';
