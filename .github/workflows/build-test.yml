@@ -88,7 +88,7 @@ jobs:
           path: dist/*.ipk
 
       - name: Compatibility Check
-        run: webosbrew-ipk-verify -f markdown -o $GITHUB_STEP_SUMMARY dist/*.ipk
+        run: webosbrew-ipk-verify -f markdown -d -o $GITHUB_STEP_SUMMARY dist/*.ipk
 
   build-raspi:
     runs-on: ubuntu-20.04
