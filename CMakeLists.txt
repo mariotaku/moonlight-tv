@@ -112,6 +112,7 @@ find_package(PkgConfig REQUIRED)
 find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
+find_package(CURL REQUIRED)
 find_package(MbedTLS)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
@@ -137,13 +138,11 @@ endif ()
 if (TARGET_WEBOS)
 
     add_subdirectory(system/webos/tv-native-apis)
-    set(CURL_LIBRARIES curl-shim)
 
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
 else ()
-    find_package(CURL REQUIRED)
 
     set(BUILD_SHARED_CORE_LIBS ON)
 endif ()

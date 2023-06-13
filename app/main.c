@@ -199,7 +199,6 @@ void app_set_fullscreen(app_t *app, bool fullscreen) {
     SDL_SetWindowFullscreen(app->window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
 
-
 static void log_libs_version() {
     SDL_version sdl_version;
     SDL_GetVersion(&sdl_version);

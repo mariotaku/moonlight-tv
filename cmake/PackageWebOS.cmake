@@ -9,6 +9,9 @@ install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in
 install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
 install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} scripts/webos/gen_i18n.py -o \"\${CMAKE_INSTALL_PREFIX}/resources\" ${I18N_LOCALES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})")
 
+# Fake library for cURL ABI issue
+install(TARGETS commons-curl-abi-fix LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} NAMELINK_SKIP)
+
 add_custom_target(webos-generate-gamecontrollerdb
         COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
