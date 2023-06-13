@@ -12,12 +12,6 @@
 #include "backend/gamecontrollerdb_updater.h"
 #include "config.h"
 
-#if FEATURE_INPUT_EVMOUSE
-
-#include "platform/linux/evmouse.h"
-
-#endif
-
 void inputmgr_init() {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     int numofmappings = 0;

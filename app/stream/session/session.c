@@ -22,7 +22,8 @@
 #include "backend/pcmanager/worker/worker.h"
 
 #if FEATURE_INPUT_EVMOUSE
-#include "platform/linux/evmouse.h"
+#include "evmouse.h"
+#include <errno.h>
 #endif
 
 

@@ -8,6 +8,8 @@
 #include "config.h"
 
 #include "logging.h"
+#include "logging_ext_sdl.h"
+#include "logging_ext_ss4s.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
 #include "stream/platform.h"
@@ -56,7 +58,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
     SS4S_Config ss4s_config = {
             .audioDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module),
             .videoDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.video_module),
-            .loggingFunction = app_ss4s_logf,
+            .loggingFunction = commons_ss4s_logf,
     };
     SS4S_Init(argc, argv, &ss4s_config);
 
@@ -64,7 +66,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
     SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
 
 
-#if FEATURE_LIBCEC
+#if FEATURE_INPUT_LIBCEC
     cec_sdl_init(&app->cec, "Moonlight");
 #endif
 
@@ -72,7 +74,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
 }
 
 void app_deinit(app_t *app) {
-#if FEATURE_LIBCEC
+#if FEATURE_INPUT_LIBCEC
     cec_sdl_deinit(&app->cec);
 #endif
     SS4S_Quit();

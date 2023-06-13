@@ -1,5 +1,7 @@
 #include "app.h"
 #include "logging.h"
+#include "logging_ext_sdl.h"
+#include "logging_ext_lvgl.h"
 
 #include "res.h"
 
@@ -39,17 +41,11 @@ lv_fragment_manager_t *app_uimanager;
 
 SDL_Window *app_create_window();
 
-static void commons_log_logoutput(void *, int category, SDL_LogPriority priority, const char *message);
-
-static void commons_log_lvlog(const char *msg);
-
 static void log_libs_version();
-
-static void commons_log_ss4s(SS4S_LogLevel level, const char *tag, const char *fmt, ...);
 
 int main(int argc, char *argv[]) {
     commons_logging_init("moonlight");
-    SDL_LogSetOutputFunction(commons_log_logoutput, NULL);
+    SDL_LogSetOutputFunction(commons_sdl_log, NULL);
     commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
     log_libs_version();
     app_gs_client_mutex = SDL_CreateMutex();
@@ -77,7 +73,7 @@ int main(int argc, char *argv[]) {
                      app_configuration->default_app_id);
     }
 
-    lv_log_register_print_cb(commons_log_lvlog);
+    lv_log_register_print_cb(commons_lv_log);
     lv_init();
     lv_disp_t *disp = lv_app_display_init(app_.window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
@@ -198,49 +194,6 @@ GS_CLIENT app_gs_client_new() {
     return client;
 }
 
-
-void commons_log_logoutput(void *userdata, int category, SDL_LogPriority priority, const char *message) {
-    static const commons_log_level priority_name[SDL_NUM_LOG_PRIORITIES] = {
-            COMMONS_LOG_LEVEL_VERBOSE,
-            COMMONS_LOG_LEVEL_DEBUG,
-            COMMONS_LOG_LEVEL_INFO,
-            COMMONS_LOG_LEVEL_WARN,
-            COMMONS_LOG_LEVEL_ERROR,
-            COMMONS_LOG_LEVEL_FATAL
-    };
-    static const char *category_name[SDL_LOG_CATEGORY_TEST + 1] = {
-            "SDL.APPLICATION",
-            "SDL.ERROR",
-            "SDL.ASSERT",
-            "SDL.SYSTEM",
-            "SDL.AUDIO",
-            "SDL.VIDEO",
-            "SDL.RENDER",
-            "SDL.INPUT",
-            "SDL.TEST",
-    };
-#ifndef DEBUG
-    if (priority <= SDL_LOG_PRIORITY_INFO)
-        return;
-#endif
-    commons_log_printf(priority_name[priority - SDL_LOG_PRIORITY_VERBOSE],
-                   category > SDL_LOG_CATEGORY_TEST ? "SDL" : category_name[category], "%s", message);
-}
-
-static void commons_log_lvlog(const char *msg) {
-    const char *start = strchr(msg, '\t') + 1;
-    static const commons_log_level level_value[] = {
-            COMMONS_LOG_LEVEL_VERBOSE, COMMONS_LOG_LEVEL_INFO, COMMONS_LOG_LEVEL_WARN, COMMONS_LOG_LEVEL_ERROR, COMMONS_LOG_LEVEL_DEBUG,
-    };
-    static const char *level_name[] = {
-            "Trace", "Info", "Warn", "Error", "User",
-    };
-    for (int i = 0; i < sizeof(level_value) / sizeof(commons_log_level); i++) {
-        if (strncmp(level_name[i], msg + 1, (start - msg - 3)) == 0) {
-            commons_log_printf(level_value[i], "LVGL", "%s", start);
-        }
-    }
-}
 
 void app_set_fullscreen(app_t *app, bool fullscreen) {
     SDL_SetWindowFullscreen(app->window, fullscreen ? APP_FULLSCREEN_FLAG : 0);

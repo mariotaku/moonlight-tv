@@ -14,7 +14,7 @@
 #include "ss4s.h"
 #include "input/app_input.h"
 
-#if FEATURE_LIBCEC
+#if FEATURE_INPUT_LIBCEC
 #include "cec_sdl.h"
 #include "ss4s_modules.h"
 
@@ -34,7 +34,7 @@ typedef struct app_t {
         SS4S_AudioCapabilities audio_cap;
         SS4S_VideoCapabilities video_cap;
     } ss4s;
-#if FEATURE_LIBCEC
+#if FEATURE_INPUT_LIBCEC
     cec_sdl_ctx_t cec;
 #endif
 } app_t;

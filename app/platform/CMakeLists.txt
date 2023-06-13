@@ -20,12 +20,6 @@ else ()
     message(FATAL_ERROR "Unknown target OS")
 endif ()
 
-
-if (OS_LINUX)
-    target_sources(moonlight PRIVATE linux/evmouse.c)
-    set(FEATURE_INPUT_EVMOUSE ON PARENT_SCOPE)
-endif ()
-
 target_sources(moonlight PRIVATE
         sdl/bus.c
         sdl/input_manager.c

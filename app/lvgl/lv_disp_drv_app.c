@@ -9,8 +9,9 @@ static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 static void lv_sdl_drv_fb_clear(lv_disp_drv_t *disp_drv, uint8_t *buf, uint32_t size);
 
 lv_disp_t *lv_app_display_init(SDL_Window *window) {
-    int width, height;
+    int width = 0, height = 0;
     SDL_GetWindowSize(window, &width, &height);
+    LV_ASSERT(width > 0 && height > 0);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     lv_disp_draw_buf_t *draw_buf = lv_mem_alloc(sizeof(lv_disp_draw_buf_t));
@@ -23,6 +24,7 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     param->renderer = renderer;
     driver->user_data = param;
     driver->draw_buf = draw_buf;
+    driver->dpi = width / 6;
     driver->flush_cb = lv_sdl_drv_fb_flush;
     driver->clear_cb = lv_sdl_drv_fb_clear;
     driver->hor_res = (lv_coord_t) width;
