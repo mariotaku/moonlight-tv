@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
+#include <errno.h>
 #include <curl/curl.h>
 
 #include "util/path.h"
@@ -24,7 +26,7 @@ static int update_thread_run();
 
 static void update_thread_wait(SDL_Thread *thread);
 
-static SDL_Thread *update_thread;
+static SDL_Thread *update_thread = NULL;
 
 void gamecontrollerdb_update() {
     if (update_thread != NULL) {
@@ -92,8 +94,9 @@ static size_t body_cb(void *buffer, size_t size, size_t nitems, WRITE_CONTEXT *c
 }
 
 static void write_header_lines(WRITE_CONTEXT *ctx) {
-    if (!ctx->fp)
+    if (!ctx->fp) {
         return;
+    }
     char *curLine = ctx->buf;
     while (curLine) {
         char *nextLine = memchr(curLine, '\n', ctx->size - (curLine - ctx->buf));
@@ -116,23 +119,20 @@ static void write_header_lines(WRITE_CONTEXT *ctx) {
 }
 
 static size_t header_cb(char *buffer, size_t size, size_t nitems, WRITE_CONTEXT *ctx) {
-    if (ctx->status < 0)
-        return 0;
-    /* received header is nitems * size long in 'buffer' NOT ZERO TERMINATED */
-    /* 'userdata' is set with CURLOPT_HEADERDATA */
-    size_t realsize = size * nitems;
-    ctx->buf = realloc(ctx->buf, ctx->size + realsize + 1);
-    if (ctx->buf == NULL)
-        return 0;
+    if (ctx->status == 0) {
+        int status = 0;
+        curl_easy_getinfo(ctx->curl, CURLINFO_RESPONSE_CODE, &status);
+        if (status >= 300 && status <= 399) {
+            return size * nitems;
+        }
+        ctx->status = status;
+        if (status != 200) {
+            return 0;
+        }
 
-    memcpy(&(ctx->buf[ctx->size]), buffer, realsize);
-    ctx->size += realsize;
-    ctx->buf[ctx->size] = 0;
-    if (!ctx->status || ctx->status == 301 || ctx->status == 302) {
-        curl_easy_getinfo(ctx->curl, CURLINFO_RESPONSE_CODE, &ctx->status);
-        if (!ctx->fp && ctx->status == 200) {
-            char *condb = gamecontrollerdb_path();
-            ctx->fp = fopen(condb, "w");
+        char *condb = gamecontrollerdb_path();
+        ctx->fp = fopen(condb, "w");
+        if (ctx->fp != NULL) {
             commons_log_debug("GameControllerDB", "Locking controller db file %s", condb);
             free(condb);
 #ifndef __WIN32
@@ -140,8 +140,24 @@ static size_t header_cb(char *buffer, size_t size, size_t nitems, WRITE_CONTEXT 
                 ctx->status = -1;
             }
 #endif
+        } else {
+            commons_log_error("GameControllerDB", "Failed to open file %s: %s", condb, strerror(errno));
+            free(condb);
+            ctx->status = -1;
+            return 0;
         }
     }
+    assert(ctx->status == 200);
+    /* received header is nitems * size long in 'buffer' NOT ZERO TERMINATED */
+    /* 'userdata' is set with CURLOPT_HEADERDATA */
+    size_t realsize = size * nitems;
+    void *allocated = realloc(ctx->buf, ctx->size + realsize + 1);
+    assert(allocated != NULL);
+    ctx->buf = allocated;
+
+    memcpy(&(ctx->buf[ctx->size]), buffer, realsize);
+    ctx->size += realsize;
+    ctx->buf[ctx->size] = 0;
     write_header_lines(ctx);
     return realsize;
 }
@@ -181,30 +197,32 @@ static int update_thread_run() {
     if (headers) {
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     }
-    WRITE_CONTEXT *ctx = malloc(sizeof(WRITE_CONTEXT));
-    ctx->curl = curl;
-    ctx->buf = malloc(1);
-    ctx->size = 0;
-    ctx->fp = NULL;
-    ctx->status = 0;
+    WRITE_CONTEXT ctx = {
+            .curl = curl,
+            .buf = malloc(1)
+    };
 
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, ctx);
-    curl_easy_setopt(curl, CURLOPT_HEADERDATA, ctx);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ctx);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &ctx);
     CURLcode res = curl_easy_perform(curl);
-    if (ctx->status == 304) {
+    if (ctx.status == 200) {
+        commons_log_debug("GameControllerDB", "Updated controller db");
+    } else if (ctx.status == 304) {
         commons_log_debug("GameControllerDB", "Controller db has no update");
-    } else if (ctx->status >= 400) {
-        commons_log_warn("GameControllerDB", "Failed to fetch %s", url);
+    } else if (ctx.status >= 400) {
+        commons_log_warn("GameControllerDB", "Failed to fetch %s: (HTTP %d)", url, ctx.status);
+    } else if (res != CURLE_OK) {
+        commons_log_warn("GameControllerDB", "Failed to fetch %s: (%d, curl %d)", url, ctx.status, res);
     }
-    if (ctx->fp) {
+    if (ctx.fp) {
         commons_log_debug("GameControllerDB", "Unlocking controller db file");
 #ifndef __WIN32
-        lockf(fileno(ctx->fp), F_ULOCK, 0);
+        lockf(fileno(ctx.fp), F_ULOCK, 0);
 #endif
-        fclose(ctx->fp);
+        fclose(ctx.fp);
     }
-    free(ctx->buf);
-    free(ctx);
+    free(ctx.buf);
+
     if (headers) {
         curl_slist_free_all(headers);
     }

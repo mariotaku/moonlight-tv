@@ -17,16 +17,16 @@ void inputmgr_init() {
     int numofmappings = 0;
 
     char *condb = gamecontrollerdb_path();
-    commons_log_info("Input", "Load game controller mapping from %s", condb);
     if (access(condb, F_OK) == 0) {
-        numofmappings = SDL_GameControllerAddMappingsFromFile(condb);
+        commons_log_info("Input", "Load game controller mapping from %s", condb);
+        numofmappings += SDL_GameControllerAddMappingsFromFile(condb);
     }
     free(condb);
 
     char *userdb = gamecontrollerdb_user_path();
-    commons_log_info("Input", "Load user game controller mapping from %s", userdb);
     if (access(userdb, F_OK) == 0) {
-        numofmappings = SDL_GameControllerAddMappingsFromFile(userdb);
+        commons_log_info("Input", "Load user game controller mapping from %s", userdb);
+        numofmappings += SDL_GameControllerAddMappingsFromFile(userdb);
     }
     free(userdb);
 
