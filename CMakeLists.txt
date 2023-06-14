@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.13)
-project(moonlight
-        VERSION 1.5.7
-        LANGUAGES C
-        )
+
+execute_process(COMMAND git describe --tags --abbrev=0 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE MOONLIGHT_VERSION ERROR_QUIET)
+if (MOONLIGHT_VERSION)
+    string(STRIP "${MOONLIGHT_VERSION}" MOONLIGHT_VERSION)
+    string(SUBSTRING "${MOONLIGHT_VERSION}" 1 -1 MOONLIGHT_VERSION)
+else ()
+    set(MOONLIGHT_VERSION "0.0.0")
+endif ()
+
+project(moonlight VERSION ${MOONLIGHT_VERSION} LANGUAGES C)
+
 # To suppress warnings for MbedTLS
 if (POLICY CMP0048)
     cmake_policy(SET CMP0048 NEW)
