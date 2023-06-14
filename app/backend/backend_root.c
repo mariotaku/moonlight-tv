@@ -6,14 +6,14 @@
 
 pcmanager_t *pcmanager;
 
-void backend_init() {
+void backend_init(app_backend_t *backend) {
     pcmanager = pcmanager_new();
     streaming_init();
-    inputmgr_init();
+    inputmgr_init(&backend->input_manager);
 }
 
-void backend_destroy() {
-    inputmgr_destroy();
+void backend_destroy(app_backend_t *backend) {
+    inputmgr_deinit(&backend->input_manager);
     streaming_destroy();
     pcmanager_destroy(pcmanager);
 }

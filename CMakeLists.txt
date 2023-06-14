@@ -294,7 +294,7 @@ endif ()
 target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
 target_compile_definitions(commons-ss4s-modules-list PRIVATE SS4S_MODULES_INI_PATH="${SS4S_MODULES_INI_PATH_RUNTIME}")
 
-target_link_libraries(moonlight PRIVATE commons-logging)
+target_link_libraries(moonlight PRIVATE commons-logging commons-gamecontrollerdb-updater)
 
 configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

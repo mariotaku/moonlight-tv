@@ -1,5 +1,15 @@
 #pragma once
 
-void inputmgr_init();
+#include "gamecontrollerdb_updater.h"
 
-void inputmgr_destroy();
+typedef struct input_manager_t {
+    commons_gcdb_updater_t gcdb_updater;
+} input_manager_t;
+
+void inputmgr_init(input_manager_t *manager);
+
+void inputmgr_deinit(input_manager_t *manager);
+
+char *gamecontrollerdb_path();
+
+char *gamecontrollerdb_user_path();

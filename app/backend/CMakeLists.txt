@@ -13,5 +13,4 @@ target_sources(moonlight PRIVATE
         pcmanager/worker/wol.c
         pcmanager/worker/manual_add.c
         pcmanager/worker/update.c
-        gamecontrollerdb_updater.c
         apploader/apploader.c)

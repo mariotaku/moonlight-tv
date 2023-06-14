@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         return ret;
     }
     app_init_locale();
-    backend_init();
+    backend_init(&app_.backend);
 
     // DO not init video subsystem before NDL/LGNC initialization
     app_init_video();
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
 
     if (strlen(app_configuration->default_host_uuid) > 0) {
         commons_log_info("APP", "Will launch with host %s and app %d", app_configuration->default_host_uuid,
-                     app_configuration->default_app_id);
+                         app_configuration->default_app_id);
     }
 
     lv_log_register_print_cb(commons_lv_log);
@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
     SDL_DestroyWindow(app_.window);
     app_uninit_video();
 
-    backend_destroy();
+    backend_destroy(&app_.backend);
 
     bus_finalize();
 

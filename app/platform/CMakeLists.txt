@@ -6,13 +6,7 @@ if (TARGET_WEBOS)
     set(PLATFORM_APP_SOURCE webos/app_webos.c)
     set(PLATFORM_PATH_SOURCE webos/path_webos.c)
     set(PLATFORM_I18N_SOURCE webos/i18n_webos.c)
-
-    target_sources(moonlight PRIVATE
-            webos/keyboard_webos.c
-            webos/navkey_sdl_webos.c
-            webos/pbnjson_compat.c
-            webos/SDL_webOS_compat.c
-            )
+    add_subdirectory(webos)
 elseif (OS_LINUX)
 elseif (OS_WINDOWS)
 elseif (OS_DARWIN)
