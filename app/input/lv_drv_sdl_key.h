@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lvgl.h"
+#include <SDL_events.h>
 
 typedef struct lv_drv_sdl_key_t {
     lv_indev_drv_t base;
