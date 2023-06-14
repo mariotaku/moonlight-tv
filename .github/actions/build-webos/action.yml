@@ -23,8 +23,12 @@ runs:
       run: sudo apt-get -y -qq install cmake
 
     - name: Download webOS NDK
-      shell: bash
-      run: wget -q https://github.com/openlgtv/buildroot-nc4/releases/download/webos-6e2e155/arm-webos-linux-gnueabi_sdk-buildroot.tar.gz -P /tmp
+      uses: robinraju/release-downloader@v1.8
+      with:
+        repository: "openlgtv/buildroot-nc4"
+        latest: true
+        fileName: "arm-webos-linux-gnueabi_sdk-buildroot.tar.gz"
+        out-file-path: "/tmp"
 
     - name: Extract webOS NDK
       shell: bash
