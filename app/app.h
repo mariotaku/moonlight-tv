@@ -13,6 +13,7 @@
 #include "ss4s_modules.h"
 #include "ss4s.h"
 #include "input/app_input.h"
+#include "backend/backend_root.h"
 
 #if FEATURE_INPUT_LIBCEC
 #include "cec_sdl.h"
@@ -28,6 +29,7 @@ typedef struct app_t {
     SDL_Window *window;
     os_info_t os_info;
     app_input_t input;
+    app_backend_t backend;
     struct {
         array_list_t modules;
         SS4S_ModuleSelection selection;
