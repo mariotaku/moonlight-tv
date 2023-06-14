@@ -59,9 +59,11 @@ static inline void about_line(lv_obj_t *parent, const char *title, const char *t
     lv_obj_t *text_label = lv_label_create(parent);
     lv_label_set_text(title_label, title);
     lv_obj_set_grid_cell(title_label, LV_GRID_ALIGN_START, 0, 4 - text_span, LV_GRID_ALIGN_CENTER, row, 1);
-    lv_label_set_text(text_label, text);
+    lv_label_set_text(text_label, text != NULL ? text : "(null)");
     lv_obj_set_grid_cell(text_label, LV_GRID_ALIGN_END, 4 - text_span, text_span, LV_GRID_ALIGN_CENTER, row, 1);
 }
+
+static const char *module_name(const SS4S_ModuleInfo *info);
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     about_pane_t *controller = (about_pane_t *) self;
@@ -74,8 +76,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_grid_dsc_array(view, col_dsc, controller->row_dsc);
     int rowcount = 0;
     about_line(view, locstr("Version"), APP_VERSION, rowcount++, 1);
-    about_line(view, locstr("Video decoder"), SS4S_ModuleInfoGetId(app->ss4s.selection.video_module), rowcount++, 2);
-    about_line(view, locstr("Audio backend"), SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module), rowcount++, 2);
+    about_line(view, locstr("Video decoder"), module_name(app->ss4s.selection.video_module), rowcount++, 2);
+    about_line(view, locstr("Audio backend"), module_name(app->ss4s.selection.audio_module), rowcount++, 2);
     char *os_str = os_info_str(&app->os_info);
     if (os_str != NULL) {
         about_line(view, locstr("System"), os_str, rowcount++, 1);
@@ -101,6 +103,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     controller->row_dsc[rowcount] = LV_GRID_TEMPLATE_LAST;
 
     return view;
+}
+
+const char *module_name(const SS4S_ModuleInfo *info) {
+    const char *id = SS4S_ModuleInfoGetId(info);
+    if (id == NULL) {
+        return "Not available";
+    }
+    return id;
 }
 
 #if TARGET_WEBOS

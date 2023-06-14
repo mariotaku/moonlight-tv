@@ -191,8 +191,8 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_set_style_transition(fragment->detail, &fragment->tr_detail, LV_STATE_USER_1);
     current_instance = fragment;
 
-    if (fragment->global->ss4s.selection.video_module == NULL ||
-        fragment->global->ss4s.selection.audio_module == NULL) {
+    if (fragment->first_created && (fragment->global->ss4s.selection.video_module == NULL ||
+                                    fragment->global->ss4s.selection.audio_module == NULL)) {
         show_decoder_error();
     }
     fragment->first_created = false;

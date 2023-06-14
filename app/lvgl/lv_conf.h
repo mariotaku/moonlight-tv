@@ -185,9 +185,8 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #define LV_USE_ASSERT_OBJ           DEBUG /*Check the object's type and existence (e.g. not deleted). (Slow)*/
 
 /*Add a custom handler when assert happens e.g. to restart the MCU*/
-#define LV_ASSERT_HANDLER_INCLUDE   <SDL.h>
-static const int lv_abort = 0;
-#define LV_ASSERT_HANDLER   SDL_assert_always(lv_abort);   /*Halt by default*/
+#define LV_ASSERT_HANDLER_INCLUDE   <stdlib.h>
+#define LV_ASSERT_HANDLER           abort();
 
 /*-------------
  * Others
@@ -301,7 +300,7 @@ static const int lv_abort = 0;
 #define LV_FONT_SIMSUN_16_CJK            0  /*1000 most common CJK radicals*/
 
 /*Pixel perfect monospace fonts*/
-#define LV_FONT_UNSCII_8        0
+#define LV_FONT_UNSCII_8        1
 #define LV_FONT_UNSCII_16       0
 
 /*Optionally declare custom fonts here.
@@ -310,7 +309,7 @@ static const int lv_abort = 0;
 #define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(lv_font_empty)
 
 /*Always set a default font*/
-#define LV_FONT_DEFAULT &lv_font_empty
+#define LV_FONT_DEFAULT &lv_font_unscii_8
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.

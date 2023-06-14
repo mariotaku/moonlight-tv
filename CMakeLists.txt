@@ -44,6 +44,10 @@ else ()
     option(BUILD_TESTS "" ON)
 endif ()
 
+if (BUILD_TESTS)
+    enable_testing()
+endif ()
+
 set(I18N_LOCALES "cs" "de" "fr" "it" "nl" "pl" "pt-BR" "ro" "ru" "ja" "zh-CN")
 list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
 
@@ -168,8 +172,9 @@ target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
+target_link_libraries(lvgl PUBLIC ${SDL2_AND_IMAGES_LIBRARIES} ${FREETYPE_LIBRARIES})
 
-add_subdirectory(third_party/commons EXCLUDE_FROM_ALL)
+add_subdirectory(third_party/commons)
 
 target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
@@ -307,8 +312,6 @@ else ()
 endif ()
 
 if (BUILD_TESTS)
-    enable_testing()
-
     add_subdirectory(third_party/Unity EXCLUDE_FROM_ALL)
     add_subdirectory(tests)
 endif ()
