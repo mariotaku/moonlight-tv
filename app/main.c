@@ -189,7 +189,7 @@ GS_CLIENT app_gs_client_new() {
     if (client == NULL) {
         commons_log_fatal("APP", "Failed to create GameStream client: %s", gs_error);
     }
-    SDL_assert(client);
+    SDL_assert(client != NULL);
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;
 }

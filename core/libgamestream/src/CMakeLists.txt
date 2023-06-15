@@ -1,0 +1,1 @@
+target_sources(gamestream PRIVATE client.c http.c mkcert.c xml.c)
