@@ -31,23 +31,18 @@ static const int NUM_BITS = 2048;
 static const int SERIAL = 0;
 static const int NUM_YEARS = 10;
 
-static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert *crt, mbedtls_ctr_drbg_context *rng)
-{
+static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert *crt, mbedtls_ctr_drbg_context *rng) {
     int ret = 0;
-
-    char issuer_name[256];
 
     mbedtls_mpi serial;
 
     mbedtls_mpi_init(&serial);
 
-    if ((ret = mbedtls_pk_setup(key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))) != 0)
-    {
+    if ((ret = mbedtls_pk_setup(key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA))) != 0) {
         goto finally;
     }
 
-    if ((ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(*key), mbedtls_ctr_drbg_random, rng, NUM_BITS, 65537)) != 0)
-    {
+    if ((ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(*key), mbedtls_ctr_drbg_random, rng, NUM_BITS, 65537)) != 0) {
         goto finally;
     }
 
@@ -71,18 +66,16 @@ static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert 
     strftime(not_before, 16, "%Y%m%d%H%M%S", ptr_time);
     ptr_time->tm_year += NUM_YEARS;
     strftime(not_after, 16, "%Y%m%d%H%M%S", ptr_time);
-    if ((ret = mbedtls_x509write_crt_set_validity(crt, not_before, not_after)) != 0)
-    {
+    if ((ret = mbedtls_x509write_crt_set_validity(crt, not_before, not_after)) != 0) {
         goto finally;
     }
 
-finally:
+    finally:
     mbedtls_mpi_free(&serial);
     return ret;
 }
 
-int mkcert_generate(const char *certFile, const char *keyFile)
-{
+int mkcert_generate(const char *certFile, const char *keyFile) {
     int ret = 0;
     FILE *fd;
     char buf[4096];
@@ -98,20 +91,18 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     mbedtls_ctr_drbg_init(&ctr_drbg);
     mbedtls_entropy_init(&entropy);
 
-    if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (const unsigned char *)pers, strlen(pers))) != 0)
-    {
+    if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (const unsigned char *) pers,
+                                     strlen(pers))) != 0) {
         goto finally;
     }
 
-    if ((ret = mkcert_generate_impl(&key, &crt, &ctr_drbg)) != 0)
-    {
+    if ((ret = mkcert_generate_impl(&key, &crt, &ctr_drbg)) != 0) {
         goto finally;
     }
 
-    if ((ret = mbedtls_pk_write_key_pem(&key, buf, 4096)) != 0)
-    {
+    if ((ret = mbedtls_pk_write_key_pem(&key, buf, 4096)) != 0) {
         mbedtls_strerror(ret, buf, 4096);
-        printf(" failed\n  !  mbedtls_pk_write_key_pem returned -0x%04x - %s", (unsigned int)-ret, buf);
+        printf(" failed\n  !  mbedtls_pk_write_key_pem returned -0x%04x - %s", (unsigned int) -ret, buf);
         goto finally;
     }
 
@@ -120,10 +111,9 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     fflush(fd);
     fclose(fd);
 
-    if ((ret = mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg)) != 0)
-    {
+    if ((ret = mbedtls_x509write_crt_pem(&crt, buf, 4096, mbedtls_ctr_drbg_random, &ctr_drbg)) != 0) {
         mbedtls_strerror(ret, buf, 4096);
-        printf(" failed\n  !  mbedtls_x509write_crt_pem returned -0x%04x - %s", (unsigned int)-ret, buf);
+        printf(" failed\n  !  mbedtls_x509write_crt_pem returned -0x%04x - %s", (unsigned int) -ret, buf);
         goto finally;
     }
 
@@ -132,7 +122,7 @@ int mkcert_generate(const char *certFile, const char *keyFile)
     fflush(fd);
     fclose(fd);
 
-finally:
+    finally:
     mbedtls_pk_free(&key);
     mbedtls_x509write_crt_free(&crt);
     mbedtls_ctr_drbg_free(&ctr_drbg);

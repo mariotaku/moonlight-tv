@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
@@ -408,7 +409,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     }
     int ret = GS_OK;
     char *result = NULL;
-    char url[4096];
+    char url[5120];
     PHTTP_DATA data = NULL;
 
     mbedtls_entropy_context entropy;
@@ -756,10 +757,8 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
 
     PDISPLAY_MODE mode = server->modes;
     bool correct_mode = false;
-    bool supported_resolution = false;
     while (mode != NULL) {
         if (mode->width == config->width && mode->height == config->height) {
-            supported_resolution = true;
             if (mode->refresh == config->fps)
                 correct_mode = true;
         }
@@ -910,7 +909,7 @@ GS_CLIENT gs_new(const char *keydir, int log_level) {
         return NULL;
     }
 
-    hnd->http = http_init(keydir, log_level);
+    hnd->http = http_create(keydir, log_level);
     gs_set_timeout(hnd, 5);
     return hnd;
 }
@@ -918,7 +917,7 @@ GS_CLIENT gs_new(const char *keydir, int log_level) {
 void gs_destroy(GS_CLIENT hnd) {
     mbedtls_pk_free(&hnd->pk);
     mbedtls_x509_crt_free(&hnd->cert);
-    http_cleanup(hnd->http);
+    http_destroy(hnd->http);
     free((void *) hnd);
 }
 

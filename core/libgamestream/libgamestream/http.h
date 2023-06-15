@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include <stddef.h>
 
 #define CERTIFICATE_FILE_NAME "client.pem"
 #define KEY_FILE_NAME "key.pem"
@@ -31,13 +31,13 @@ typedef struct _HTTP_DATA {
     size_t size;
 } HTTP_DATA, *PHTTP_DATA;
 
-HTTP http_init(const char *keydir, int verbosity);
+HTTP http_create(const char *keydir, int verbosity);
 
-int http_request(HTTP, char *url, PHTTP_DATA data);
+int http_request(HTTP http, char *url, PHTTP_DATA data);
 
-void http_cleanup(HTTP);
+void http_destroy(HTTP http);
 
-void http_set_timeout(HTTP, int timeout);
+void http_set_timeout(HTTP http, int timeout);
 
 PHTTP_DATA http_create_data();
 

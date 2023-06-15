@@ -23,7 +23,7 @@
 #include <string.h>
 #include <curl/curl.h>
 #include <pthread.h>
-
+#include <stdlib.h>
 #include <assert.h>
 
 #ifdef __WIN32
@@ -38,21 +38,9 @@ struct HTTP_T {
     pthread_mutex_t mutex;
 };
 
-static size_t _write_curl(void *contents, size_t size, size_t nmemb, void *userp) {
-    size_t realsize = size * nmemb;
-    PHTTP_DATA mem = (PHTTP_DATA) userp;
+static size_t write_fn(void *contents, size_t size, size_t nmemb, void *userp);
 
-    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-    assert(mem->memory);
-
-    memcpy(&(mem->memory[mem->size]), contents, realsize);
-    mem->size += realsize;
-    mem->memory[mem->size] = 0;
-
-    return realsize;
-}
-
-HTTP http_init(const char *keydir, int verbosity) {
+HTTP http_create(const char *keydir, int verbosity) {
     CURL *curl = curl_easy_init();
     assert(curl != NULL);
 
@@ -69,10 +57,9 @@ HTTP http_init(const char *keydir, int verbosity) {
     curl_easy_setopt(curl, CURLOPT_SSLKEYTYPE, "PEM");
     curl_easy_setopt(curl, CURLOPT_SSLKEY, keyFilePath);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _write_curl);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_fn);
     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
     curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, verbosity >= 2 ? 1L : 0L);
 
     struct HTTP_T *http = malloc(sizeof(struct HTTP_T));
     assert(http != NULL);
@@ -126,9 +113,10 @@ int http_request(HTTP http, char *url, PHTTP_DATA data) {
     return ret;
 }
 
-void http_cleanup(HTTP http) {
+void http_destroy(HTTP http) {
     assert(http != NULL);
     curl_easy_cleanup(http->curl);
+    pthread_mutex_destroy(&http->mutex);
     free((void *) http);
 }
 
@@ -159,4 +147,21 @@ void http_free_data(PHTTP_DATA data) {
     }
 
     free(data);
+}
+
+size_t write_fn(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    PHTTP_DATA mem = (PHTTP_DATA) userp;
+
+    void *allocated = realloc(mem->memory, mem->size + realsize + 1);
+    if (allocated == NULL) {
+        return 0;
+    }
+    mem->memory = allocated;
+
+    memcpy(&(mem->memory[mem->size]), contents, realsize);
+    mem->size += realsize;
+    mem->memory[mem->size] = 0;
+
+    return realsize;
 }
