@@ -50,13 +50,13 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
 }
 
 void img_loader_destroy(img_loader_t *loader) {
-    SDL_assert(!loader->destroyed);
+    SDL_assert_release(!loader->destroyed);
     loader->destroyed = true;
     executor_destroy(loader->executor, 0);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
-    SDL_assert(!loader->destroyed);
+    SDL_assert_release(!loader->destroyed);
     cb->start_cb(request);
     void *cached = NULL;
     // Memory cache found, finish loading
@@ -74,7 +74,7 @@ img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const im
 }
 
 void img_loader_cancel(img_loader_t *loader, img_loader_task_t *task) {
-    SDL_assert(!loader->destroyed);
+    SDL_assert_release(!loader->destroyed);
     executor_cancel(loader->executor, task->task);
 }
 

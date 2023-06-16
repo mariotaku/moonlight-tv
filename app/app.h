@@ -27,6 +27,7 @@ extern pcmanager_t *pcmanager;
 
 typedef struct app_t {
     SDL_Window *window;
+    SDL_threadID main_thread_id;
     os_info_t os_info;
     app_input_t input;
     app_backend_t backend;
@@ -68,7 +69,6 @@ void app_set_mouse_grab(bool);
 bool app_get_mouse_relative();
 
 void app_set_keep_awake(bool);
-
 
 void app_set_fullscreen(app_t*app, bool);
 

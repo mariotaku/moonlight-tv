@@ -8,9 +8,9 @@ static int pin_random(int min, int max);
 
 bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcmanager_callback_t callback,
                     void *userdata) {
-    SDL_assert(manager != NULL);
-    SDL_assert(uuid != NULL);
-    SDL_assert(pin != NULL);
+    SDL_assert_release(manager != NULL);
+    SDL_assert_release(uuid != NULL);
+    SDL_assert_release(pin != NULL);
     const pclist_t *node = pcmanager_node(manager, uuid);
     if (node == NULL) {
         return false;

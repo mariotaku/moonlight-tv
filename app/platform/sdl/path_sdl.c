@@ -24,7 +24,7 @@ char *path_cache() {
 static char *path_cache_parent() {
 #ifdef __WIN32
     char *appdata = SDL_getenv("LOCALAPPDATA");
-    SDL_assert(appdata);
+    SDL_assert_release(appdata);
     char *appdir = path_join(appdata, "moonlight-tv");
     path_dir_ensure(appdir);
     char *cachedir = path_join(appdir, "cache");

@@ -14,12 +14,12 @@ static inline void refcounter_init(refcounter_t *counter) {
 }
 
 static inline void refcounter_destroy(refcounter_t *counter) {
-    SDL_assert(counter->counter == 0);
+    SDL_assert_release(counter->counter == 0);
     SDL_DestroyMutex(counter->lock);
 }
 
 static inline void refcounter_ref(refcounter_t *counter) {
-    SDL_assert(counter->counter > 0);
+    SDL_assert_release(counter->counter > 0);
     SDL_LockMutex(counter->lock);
     counter->counter++;
     SDL_UnlockMutex(counter->lock);

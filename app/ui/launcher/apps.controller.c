@@ -300,7 +300,7 @@ static void on_host_updated(const uuidstr_t *uuid, void *userdata) {
     if (controller != current_instance) return;
     if (!uuidstr_t_equals_t(&controller->uuid, uuid)) return;
     const SERVER_STATE *state = pcmanager_state(pcmanager, uuid);
-    SDL_assert(state != NULL);
+    SDL_assert_release(state != NULL);
     if (state->code == SERVER_STATE_AVAILABLE) {
         apploader_load(controller->apploader);
     }
@@ -327,7 +327,7 @@ static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, vo
     if (!controller->base.managed->obj_created) return;
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
-    SDL_assert(state != NULL);
+    SDL_assert_release(state != NULL);
     if (state->code & SERVER_STATE_ONLINE || result != GS_OK) return;
     pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
 }
@@ -341,7 +341,7 @@ static void update_view_state(apps_fragment_t *controller) {
     lv_obj_t *appload = controller->appload;
     lv_obj_t *apperror = controller->apperror;
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
-    SDL_assert(state != NULL);
+    SDL_assert_release(state != NULL);
     switch (state->code) {
         case SERVER_STATE_NONE:
         case SERVER_STATE_QUERYING: {
@@ -500,7 +500,7 @@ static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_
                         controller->col_width, controller->col_height);
     lv_label_set_text(holder->title, app->base.name);
 
-    SDL_assert(controller->node);
+    SDL_assert_release(controller->node);
     int current_id = pcmanager_node_current_app(controller->node);
     if (current_id == app->base.id) {
         lv_obj_clear_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
