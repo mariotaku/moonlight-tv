@@ -44,20 +44,22 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
     }
     PSERVER_DATA server = serverdata_new();
     GS_CLIENT client = app_gs_client_new();
-    ret = gs_init(client, server, ip_dup, app_configuration->unsupported);
-    ip_dup = NULL;
-    gs_destroy(client);
-    if (existing) {
-        pclist_lock(manager);
-        bool should_remove = ret == GS_OK && !uuidstr_t_equals_s(&existing->id, server->uuid);
-        pclist_unlock(manager);
-        if (should_remove) {
-            pclist_remove(manager, &existing->id);
-            existing = NULL;
-        } else {
+    if (client != NULL) {
+        ret = gs_init(client, server, ip_dup, app_configuration->unsupported);
+        ip_dup = NULL;
+        gs_destroy(client);
+        if (existing) {
             pclist_lock(manager);
-            existing->state.code = SERVER_STATE_NONE;
+            bool should_remove = ret == GS_OK && !uuidstr_t_equals_s(&existing->id, server->uuid);
             pclist_unlock(manager);
+            if (should_remove) {
+                pclist_remove(manager, &existing->id);
+                existing = NULL;
+            } else {
+                pclist_lock(manager);
+                existing->state.code = SERVER_STATE_NONE;
+                pclist_unlock(manager);
+            }
         }
     }
     if (ret == GS_OK) {
@@ -66,6 +68,8 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
         SERVER_STATE state = {.code = server->paired ? SERVER_STATE_AVAILABLE : SERVER_STATE_NOT_PAIRED};
         pclist_upsert(manager, &uuid, &state, server);
     } else {
+        const char *gs_error = NULL;
+        ret = gs_get_error(&gs_error);
         context->error = gs_error != NULL ? strdup(gs_error) : NULL;
         if (existing && ret == GS_IO_ERROR) {
             commons_log_warn("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address,

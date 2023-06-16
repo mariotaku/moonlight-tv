@@ -46,8 +46,6 @@ typedef struct _SERVER_DATA {
 
 typedef struct GS_CLIENT_T *GS_CLIENT;
 
-extern const char *gs_error;
-
 GS_CLIENT gs_new(const char *keydir, int log_level);
 
 void gs_destroy(GS_CLIENT);

@@ -23,6 +23,7 @@
 
 #include "ss4s.h"
 #include "input/app_input.h"
+#include "errors.h"
 
 #include <SDL_image.h>
 
@@ -186,10 +187,6 @@ GS_CLIENT app_gs_client_new() {
     SDL_LockMutex(app_gs_client_mutex);
     SDL_assert(app_configuration);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
-    if (client == NULL) {
-        commons_log_fatal("APP", "Failed to create GameStream client: %s", gs_error);
-    }
-    SDL_assert(client != NULL);
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;
 }

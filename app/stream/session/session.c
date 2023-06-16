@@ -228,6 +228,8 @@ int streaming_worker(session_t *session) {
     int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
     if (ret != GS_OK) {
         streaming_set_status(STREAMING_ERROR);
+        const char *gs_error = NULL;
+        gs_get_error(&gs_error);
         if (gs_error) {
             streaming_error(ret, "Failed to launch session: %s (code %d)", gs_error, ret);
         } else {
