@@ -10,6 +10,8 @@
 
 static void fatal_error_popup(void *data);
 
+static void fatal_error_quit(lv_event_t *ev);
+
 typedef struct fatal_error_data_t {
     char title[32];
     char message[1024];
@@ -33,6 +35,10 @@ static void fatal_error_popup(void *data) {
     fatal_error_data_t *error_data = data;
     static const char *btn_txts[] = {"Quit", ""};
     lv_obj_t *msgbox = lv_msgbox_create(NULL, error_data->title, error_data->message, btn_txts, false);
-    lv_obj_add_event_cb(msgbox, (lv_event_cb_t) abort, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(msgbox, fatal_error_quit, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(msgbox);
+}
+
+static void fatal_error_quit(lv_event_t *ev) {
+    exit(1);
 }
