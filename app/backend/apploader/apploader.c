@@ -7,6 +7,8 @@
 #include "app.h"
 #include "errors.h"
 #include "util/bus.h"
+#include "lazy.h"
+#include "refcounter.h"
 
 #include <errno.h>
 #include <SDL.h>
@@ -17,7 +19,7 @@
 #define LINKEDLIST_TYPE APP_LIST
 #define LINKEDLIST_PREFIX applist
 
-#include "util/linked_list.h"
+#include "linked_list.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -33,6 +35,7 @@ struct apploader_task_t {
 struct apploader_t {
     uuidstr_t uuid;
     apploader_cb_t callback;
+    lazy_t client;
     executor_t *executor;
     apploader_state_t state;
     void *userdata;
@@ -55,6 +58,7 @@ static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll);
 apploader_t *apploader_create(const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
+    lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, NULL);
     loader->executor = executor_create("apploader", apploader_free);
     loader->callback = *cb;
     loader->userdata = userdata;
@@ -88,6 +92,10 @@ apploader_state_t apploader_state(apploader_t *loader) {
 
 static void apploader_free(executor_t *executor) {
     apploader_t *loader = executor_get_userdata(executor);
+    GS_CLIENT client = lazy_deinit(&loader->client);
+    if (client != NULL) {
+        gs_destroy(client);
+    }
     SDL_free(loader);
 }
 
@@ -100,14 +108,13 @@ static apploader_task_t *task_create(apploader_t *loader) {
 static int task_run(apploader_task_t *task) {
     int ret = GS_OK;
     const char *error = NULL;
-    GS_CLIENT client = NULL;
     const pclist_t *node = pcmanager_node(pcmanager, &task->loader->uuid);
     if (node == NULL) {
         ret = GS_ERROR;
         goto finish;
     }
     PAPP_LIST ll = NULL;
-    client = app_gs_client_new();
+    GS_CLIENT client = lazy_obtain(&task->loader->client);
     if ((ret = gs_applist(client, node->server, &ll)) != GS_OK) {
         gs_get_error(&error);
         goto finish;
@@ -122,9 +129,6 @@ static int task_run(apploader_task_t *task) {
     finish:
     task->code = ret;
     task->error = error;
-    if (client != NULL) {
-        gs_destroy(client);
-    }
     return ret;
 }
 
@@ -175,7 +179,7 @@ static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll) 
 }
 
 void apploader_list_free(apploader_list_t *list) {
-    if (!list) return;
+    if (!list) { return; }
     for (int i = 0; i < list->count; i++) {
         SDL_free(list->items[i].base.name);
     }

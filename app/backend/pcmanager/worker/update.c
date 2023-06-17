@@ -44,7 +44,7 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
     }
     GS_CLIENT client = app_gs_client_new();
     PSERVER_DATA server = serverdata_new();
-    int ret = gs_init(client, server, ip_dup, app_configuration->unsupported);
+    int ret = gs_get_status(client, server, ip_dup, app_configuration->unsupported);
     ip_dup = NULL;
     gs_destroy(client);
     if (existing) {

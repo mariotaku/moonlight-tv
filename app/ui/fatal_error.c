@@ -1,8 +1,10 @@
 #include "fatal_error.h"
+#include "app.h"
 
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <SDL_thread.h>
 
 #include "lvgl.h"
 
@@ -28,7 +30,11 @@ void app_fatal_error(const char *title, const char *fmt, ...) {
 }
 
 _Noreturn void app_halt() {
-    while (1);
+    if (SDL_ThreadID() == global->main_thread_id) {
+        abort();
+    } else {
+        while (1);
+    }
 }
 
 static void fatal_error_popup(void *data) {

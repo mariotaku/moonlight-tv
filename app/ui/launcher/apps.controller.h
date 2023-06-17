@@ -3,7 +3,7 @@
 #include "lvgl.h"
 #include "coverloader.h"
 #include "backend/apploader/apploader.h"
-#include "util/uuidstr.h"
+#include "uuidstr.h"
 
 typedef struct app_t app_t;
 

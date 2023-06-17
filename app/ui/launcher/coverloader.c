@@ -14,7 +14,7 @@
 #include "draw/sdl/lv_draw_sdl.h"
 #include "misc/lv_lru.h"
 #include "util/img_loader.h"
-#include "util/refcounter.h"
+#include "refcounter.h"
 
 #include "res.h"
 
@@ -47,7 +47,8 @@ typedef struct coverloader_request {
 #define LINKEDLIST_PREFIX reqlist
 #define LINKEDLIST_DOUBLE 1
 
-#include "util/linked_list.h"
+#include "linked_list.h"
+#include "lazy.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -59,6 +60,8 @@ typedef struct coverloader_request {
 #endif
 
 static char *coverloader_cache_dir();
+
+static GS_CLIENT coverloader_gs_client(coverloader_t *loader);
 
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req);
 
@@ -124,7 +127,7 @@ static const img_loader_cb_t coverloader_cb = {
 struct coverloader_t {
     img_loader_t *base_loader;
     lv_lru_t *mem_cache;
-    GS_CLIENT client;
+    lazy_t client;
     coverloader_req_t *reqlist;
     refcounter_t refcounter;
 };
@@ -139,7 +142,7 @@ coverloader_t *coverloader_new() {
     refcounter_init(&loader->refcounter);
     loader->mem_cache = lv_lru_create(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
     loader->base_loader = img_loader_create(&coverloader_impl);
-    loader->client = app_gs_client_new();
+    lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, NULL);
     loader->reqlist = NULL;
     return loader;
 }
@@ -148,7 +151,10 @@ void coverloader_unref(coverloader_t *loader) {
     if (!refcounter_unref(&loader->refcounter)) {
         return;
     }
-    gs_destroy(loader->client);
+    GS_CLIENT client = lazy_deinit(&loader->client);
+    if (client != NULL) {
+        gs_destroy(client);
+    }
     img_loader_destroy(loader->base_loader);
     lv_lru_del(loader->mem_cache);
     refcounter_destroy(&loader->refcounter);
@@ -175,12 +181,16 @@ void coverloader_display(coverloader_t *loader, const uuidstr_t *uuid, int id, l
     refcounter_ref(&loader->refcounter);
     img_loader_task_t *task = img_loader_load(loader->base_loader, req, &coverloader_cb);
     /* If no task returned, then the request has been freed already */
-    if (!task) return;
+    if (!task) { return; }
     req->task = task;
 }
 
 static char *coverloader_cache_dir() {
     return path_cache();
+}
+
+static GS_CLIENT coverloader_gs_client(coverloader_t *loader) {
+    return lazy_obtain(&loader->client);
 }
 
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req) {
@@ -265,7 +275,7 @@ static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cach
     char path[4096];
     coverloader_cache_item_path(path, req);
     SDL_Surface *decoded = IMG_Load(path);
-    if (!decoded) return false;
+    if (!decoded) { return false; }
     if (cover_is_placeholder(decoded)) {
         SDL_FreeSurface(decoded);
         return false;
@@ -340,7 +350,8 @@ static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached) {
     }
     char path[4096];
     coverloader_cache_item_path(path, req);
-    if (gs_download_cover(req->loader->client, node->server, req->id, path) != GS_OK) {
+    GS_CLIENT client = coverloader_gs_client(req->loader);
+    if (gs_download_cover(client, node->server, req->id, path) != GS_OK) {
         return false;
     }
     return coverloader_filecache_get(req, cached);
@@ -428,7 +439,7 @@ static void memcache_item_free(memcache_item_t *item) {
     lv_obj_t **i;
     _LV_LL_READ(&item->objs, i) {
         lv_obj_t *obj = *i;
-        if (obj == NULL) continue;
+        if (obj == NULL) { continue; }
         appitem_viewholder_t *holder = lv_obj_get_user_data(obj);
         lv_img_set_src(obj, &holder->styles->defcover_src);
         lv_obj_remove_event_cb(obj, target_src_unlink_cb);
@@ -452,7 +463,7 @@ static void memcache_item_unref_obj(memcache_item_t *item, const lv_obj_t *obj) 
             break;
         }
     }
-    if (i == NULL) return;
+    if (i == NULL) { return; }
     _lv_ll_remove(&item->objs, i);
     lv_mem_free(i);
 }

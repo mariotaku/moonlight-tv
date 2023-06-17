@@ -17,7 +17,7 @@ typedef struct pcmanager_listener_list {
 #define LINKEDLIST_PREFIX listeners
 #define LINKEDLIST_DOUBLE 1
 
-#include "util/linked_list.h"
+#include "linked_list.h"
 
 #undef LINKEDLIST_DOUBLE
 #undef LINKEDLIST_TYPE
