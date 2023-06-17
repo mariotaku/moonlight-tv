@@ -1,5 +1,6 @@
 target_sources(moonlight PRIVATE
         root.c
+        fatal_error.c
         launcher/launcher.view.c
         launcher/launcher.controller.c
         launcher/apps.controller.c

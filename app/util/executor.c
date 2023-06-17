@@ -62,7 +62,7 @@ executor_t *executor_create(const char *name, executor_finalize_cb finalize_fn) 
 }
 
 void executor_destroy(executor_t *executor, int wait) {
-    SDL_assert(!executor->destroyed);
+    SDL_assert_release(!executor->destroyed);
     SDL_LockMutex(executor->lock);
     executor->wait = wait;
     executor->destroyed = SDL_TRUE;
@@ -148,7 +148,7 @@ static executor_task_t *tasks_poll(executor_t *executor) {
         SDL_CondWait(executor->cond, executor->lock);
     }
     executor_task_t *task = executor->queue;
-    SDL_assert(task);
+    SDL_assert_release(task);
     executor->queue = task->next;
     SDL_UnlockMutex(executor->lock);
     return task;

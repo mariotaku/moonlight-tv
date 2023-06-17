@@ -19,6 +19,8 @@ int worker_pairing(worker_context_t *context) {
     int ret = gs_pair(client, server, context->arg1);
     gs_destroy(client);
     if (ret != GS_OK) {
+        const char *gs_error = NULL;
+        gs_get_error(&gs_error);
         context->error = gs_error != NULL ? strdup(gs_error) : NULL;
         serverdata_free(server);
         return ret;

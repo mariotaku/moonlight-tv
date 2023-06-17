@@ -26,6 +26,7 @@ typedef struct pcmanager_listener_list {
 static int pcmanager_callbacks_comparator(pcmanager_listener_list *p1, const void *p2);
 
 void pcmanager_listeners_notify(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_notify_type_t type) {
+    assert(manager != NULL);
     assert(SDL_ThreadID() == manager->thread_id);
     for (pcmanager_listener_list *cur = manager->listeners; cur != NULL;) {
         pcmanager_listener_list *next = cur->next;
@@ -52,8 +53,8 @@ void pcmanager_listeners_notify(pcmanager_t *manager, const uuidstr_t *uuid, pcm
 }
 
 void pcmanager_register_listener(pcmanager_t *manager, const pcmanager_listener_t *listener, void *userdata) {
-    assert(manager);
-    assert(listener);
+    assert(manager != NULL);
+    assert(listener != NULL);
     assert(SDL_ThreadID() == manager->thread_id);
     pcmanager_listener_list *node = listeners_new();
     node->listener = listener;
@@ -62,8 +63,8 @@ void pcmanager_register_listener(pcmanager_t *manager, const pcmanager_listener_
 }
 
 void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listener_t *listener) {
-    assert(manager);
-    assert(listener);
+    assert(manager != NULL);
+    assert(listener != NULL);
     assert(SDL_ThreadID() == manager->thread_id);
     pcmanager_listener_list *node = listeners_find_by(manager->listeners, listener, pcmanager_callbacks_comparator);
     if (!node)

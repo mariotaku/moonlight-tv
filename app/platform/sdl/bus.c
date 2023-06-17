@@ -1,6 +1,7 @@
 #include "util/bus.h"
 
 #include <SDL.h>
+#include <assert.h>
 
 typedef struct bus_blocking_action_t {
     bus_actionfunc action;
@@ -23,7 +24,7 @@ bool bus_pushevent(int which, void *data1, void *data2) {
 }
 
 bool bus_pushaction(bus_actionfunc action, void *data) {
-    SDL_assert(action);
+    assert(action != NULL);
     return bus_pushevent(BUS_INT_EVENT_ACTION, action, data);
 }
 

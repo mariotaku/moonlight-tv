@@ -31,4 +31,4 @@
 #define GS_ERROR -9
 #define GS_NOT_SUPPORTED_SOPS_RESOLUTION -10
 
-extern const char* gs_error;
+int gs_get_error(const char **message);

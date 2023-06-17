@@ -109,7 +109,7 @@ static int task_run(apploader_task_t *task) {
     PAPP_LIST ll = NULL;
     client = app_gs_client_new();
     if ((ret = gs_applist(client, node->server, &ll)) != GS_OK) {
-        error = gs_error;
+        gs_get_error(&error);
         goto finish;
     }
     if (ll == NULL) {

@@ -23,6 +23,8 @@
 
 #include "ss4s.h"
 #include "input/app_input.h"
+#include "errors.h"
+#include "ui/fatal_error.h"
 
 #include <SDL_image.h>
 
@@ -43,14 +45,23 @@ SDL_Window *app_create_window();
 
 static void log_libs_version();
 
+static SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata);
+
+static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata);
+
+static app_t *app = NULL;
+
 int main(int argc, char *argv[]) {
     commons_logging_init("moonlight");
     SDL_LogSetOutputFunction(commons_sdl_log, NULL);
+    SDL_SetAssertionHandler(app_assertion_handler_abort, NULL);
     commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
     log_libs_version();
     app_gs_client_mutex = SDL_CreateMutex();
 
-    app_t app_;
+    app_t app_ = {
+            .main_thread_id = SDL_ThreadID()
+    };
     int ret = app_init(&app_, argc, argv);
     if (ret != 0) {
         return ret;
@@ -63,6 +74,8 @@ int main(int argc, char *argv[]) {
     commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
 
     app_.window = app_create_window();
+
+    app = &app_;
 
     SS4S_PostInit(argc, argv);
 
@@ -94,6 +107,8 @@ int main(int argc, char *argv[]) {
     lv_group_set_default(group);
     app_input_init(&app_.input, &app_);
 
+    SDL_SetAssertionHandler(app_assertion_handler_ui, &app_);
+
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_opa(scr, 0, 0);
@@ -101,11 +116,14 @@ int main(int argc, char *argv[]) {
     lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, &app_);
     lv_fragment_manager_push(app_uimanager, fragment, &scr);
 
+
     while (app_is_running()) {
         app_process_events();
         lv_task_handler();
         SDL_Delay(1);
     }
+
+    SDL_SetAssertionHandler(NULL, NULL);
 
     lv_fragment_manager_del(app_uimanager);
 
@@ -160,7 +178,7 @@ SDL_Window *app_create_window() {
         win_height = app_configuration->window_state.h;
     }
     SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
-    SDL_assert(win != NULL);
+    SDL_assert_release(win != NULL);
 
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(lv_sdl_img_data_logo_96.data.constptr,
                                                           (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);
@@ -169,7 +187,7 @@ SDL_Window *app_create_window() {
     SDL_SetWindowMinimumSize(win, 640, 480);
     int w = 0, h = 0;
     SDL_GetWindowSize(win, &w, &h);
-    SDL_assert(w > 0 && h > 0);
+    SDL_assert_release(w > 0 && h > 0);
     ui_display_size(w, h);
     return win;
 }
@@ -184,12 +202,18 @@ bool app_is_running() {
 
 GS_CLIENT app_gs_client_new() {
     SDL_LockMutex(app_gs_client_mutex);
-    SDL_assert(app_configuration);
+    SDL_assert_release(app_configuration);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
     if (client == NULL) {
-        commons_log_fatal("APP", "Failed to create GameStream client: %s", gs_error);
+        const char *message = NULL;
+        gs_get_error(&message);
+        app_fatal_error("Fatal error", "Failed to create GS_CLIENT: %s", message);
+        if (SDL_ThreadID() == app->main_thread_id) {
+            abort();
+        } else {
+            app_halt();
+        }
     }
-    SDL_assert(client);
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;
 }
@@ -205,4 +229,18 @@ static void log_libs_version() {
     commons_log_debug("APP", "SDL version: %d.%d.%d", sdl_version.major, sdl_version.minor, sdl_version.patch);
     const SDL_version *img_version = IMG_Linked_Version();
     commons_log_debug("APP", "SDL_image version: %d.%d.%d", img_version->major, img_version->minor, img_version->patch);
+}
+
+static SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata) {
+    (void) userdata;
+    commons_log_fatal("Assertion", "at %s (%s:%d): '%s'", data->function, data->filename, data->linenum,
+                      data->condition);
+    return SDL_ASSERTION_ABORT;
+}
+
+static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata) {
+    (void) userdata;
+    app_fatal_error("Assertion failure", "at %s\n(%s:%d): '%s'", data->function, data->filename, data->linenum,
+                    data->condition);
+    return SDL_ASSERTION_ALWAYS_IGNORE;
 }

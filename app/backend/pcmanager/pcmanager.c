@@ -105,7 +105,7 @@ int pcmanager_server_current_app(pcmanager_t *manager, const uuidstr_t *uuid) {
 }
 
 int pcmanager_node_current_app(const pclist_t *node) {
-    SDL_assert(node != NULL);
+    SDL_assert_release(node != NULL);
     return node->server->currentGame;
 }
 

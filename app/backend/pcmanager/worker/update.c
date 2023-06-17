@@ -7,6 +7,7 @@
 #include "util/bus.h"
 #include "app.h"
 #include "logging.h"
+#include "ui/fatal_error.h"
 
 static void notify_querying(pclist_update_context_t *args);
 
@@ -16,13 +17,12 @@ int worker_host_update(worker_context_t *context) {
 }
 
 int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force) {
-    SDL_assert(context != NULL);
-    SDL_assert(context->manager != NULL);
-    SDL_assert(ip != NULL);
+    SDL_assert_release(context != NULL);
+    SDL_assert_release(context->manager != NULL);
+    SDL_assert_release(ip != NULL);
     pcmanager_t *manager = context->manager;
     char *ip_dup = strdup(ip);
     pclist_t *existing = pclist_find_by_ip(manager, ip_dup);
-    int ret = 0;
     if (existing) {
         SERVER_STATE_ENUM state = existing->state.code;
         if (state == SERVER_STATE_QUERYING) {
@@ -42,9 +42,9 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
         pclist_unlock(manager);
         bus_pushaction_sync((bus_actionfunc) notify_querying, &args);
     }
-    PSERVER_DATA server = serverdata_new();
     GS_CLIENT client = app_gs_client_new();
-    ret = gs_init(client, server, ip_dup, app_configuration->unsupported);
+    PSERVER_DATA server = serverdata_new();
+    int ret = gs_init(client, server, ip_dup, app_configuration->unsupported);
     ip_dup = NULL;
     gs_destroy(client);
     if (existing) {
@@ -66,6 +66,8 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
         SERVER_STATE state = {.code = server->paired ? SERVER_STATE_AVAILABLE : SERVER_STATE_NOT_PAIRED};
         pclist_upsert(manager, &uuid, &state, server);
     } else {
+        const char *gs_error = NULL;
+        ret = gs_get_error(&gs_error);
         context->error = gs_error != NULL ? strdup(gs_error) : NULL;
         if (existing && ret == GS_IO_ERROR) {
             commons_log_warn("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address,

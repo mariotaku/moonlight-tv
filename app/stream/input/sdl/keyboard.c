@@ -81,7 +81,7 @@ static bool isSystemKeyCaptureActive() {
 
 void performPendingSpecialKeyCombo() {
     // The caller must ensure all keys are up
-    SDL_assert(keys_len(_pressed_keys) == 0);
+    SDL_assert_release(keys_len(_pressed_keys) == 0);
 
     switch (_pending_key_combo) {
         case KeyComboQuit:
@@ -177,7 +177,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
 
     if (event->repeat) {
         // Ignore repeat key down events
-        SDL_assert(event->state == SDL_PRESSED);
+        SDL_assert_release(event->state == SDL_PRESSED);
         return;
     }
 
