@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../pcmanager.h"
-#include "util/executor.h"
-#include "util/uuidstr.h"
+#include "executor.h"
+#include "uuidstr.h"
 #include <SDL.h>
 
 typedef struct pcmanager_listener_list pcmanager_listener_list;

@@ -57,7 +57,7 @@ static struct KeysDown *_pressed_keys;
 #define LINKEDLIST_PREFIX keys
 #define LINKEDLIST_DOUBLE 1
 
-#include "util/linked_list.h"
+#include "linked_list.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX

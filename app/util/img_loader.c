@@ -1,5 +1,6 @@
 #include "img_loader.h"
 #include "executor.h"
+#include "bus.h"
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -39,7 +40,9 @@ static void notify_cb(notify_cb_t *args);
 
 static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2);
 
-static void loader_free(executor_t *executor);
+static void loader_free(executor_t *executor, int wait);
+
+static void loader_thread_wait(SDL_Thread *thread);
 
 img_loader_t *img_loader_create(const img_loader_impl_t *impl) {
     img_loader_t *loader = SDL_calloc(1, sizeof(img_loader_t));
@@ -89,12 +92,12 @@ static void task_execute(img_loader_task_t *task) {
             run_on_main(loader, (img_loader_fn2) cb, request, NULL);
             return;
         }
-        if (loader->destroyed) return;
+        if (loader->destroyed) { return; }
         loader->impl.filecache_put(request, cached);
     }
-    if (loader->destroyed) return;
+    if (loader->destroyed) { return; }
     run_on_main(loader, loader->impl.memcache_put, request, cached);
-    if (loader->destroyed) return;
+    if (loader->destroyed) { return; }
     img_loader_fn2 cb = task_cancelled(task) ? (img_loader_fn2) task->cb.cancel_cb : task->cb.complete_cb;
     run_on_main(loader, cb, request, cached);
 }
@@ -108,7 +111,7 @@ static bool task_cancelled(img_loader_task_t *task) {
 }
 
 static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, void *arg2) {
-    if (loader->destroyed) return;
+    if (loader->destroyed) { return; }
     notify_cb_t args = {
             .arg1 = arg1, .arg2 = arg2, .fn = fn,
             .mutex = SDL_CreateMutex(), .cond = SDL_CreateCond(),
@@ -124,9 +127,12 @@ static void run_on_main(img_loader_t *loader, img_loader_fn2 fn, void *arg1, voi
     SDL_DestroyCond(args.cond);
 }
 
-static void loader_free(executor_t *executor) {
+static void loader_free(executor_t *executor, int wait) {
+    SDL_assert(!wait);
     img_loader_t *loader = executor_get_userdata(executor);
+    SDL_Thread *thread = executor_get_thread_handle(executor);
     SDL_free(loader);
+    bus_pushaction((bus_actionfunc) loader_thread_wait, thread);
 }
 
 static void notify_cb(notify_cb_t *args) {
@@ -137,4 +143,8 @@ static void notify_cb(notify_cb_t *args) {
     args->notified = true;
     SDL_CondSignal(args->cond);
     SDL_UnlockMutex(args->mutex);
+}
+
+static void loader_thread_wait(SDL_Thread *thread) {
+    SDL_WaitThread(thread, NULL);
 }

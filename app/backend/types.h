@@ -1,7 +1,7 @@
 #pragma once
 
 #include "libgamestream/client.h"
-#include "util/uuidstr.h"
+#include "uuidstr.h"
 
 typedef enum SERVER_STATE_ENUM {
     /** Initial state */

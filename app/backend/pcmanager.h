@@ -5,7 +5,7 @@
 #include "backend/types.h"
 
 #include "libgamestream/client.h"
-#include "util/uuidstr.h"
+#include "uuidstr.h"
 
 typedef struct pcmanager_t pcmanager_t;
 typedef struct worker_context_t worker_context_t;

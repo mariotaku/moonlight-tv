@@ -12,7 +12,7 @@
 #define LINKEDLIST_PREFIX pclist_ll
 #define LINKEDLIST_DOUBLE 1
 
-#include "util/linked_list.h"
+#include "linked_list.h"
 
 #undef LINKEDLIST_DOUBLE
 #undef LINKEDLIST_TYPE
@@ -24,8 +24,8 @@
 #define LINKEDLIST_PREFIX favlist_ll
 #define LINKEDLIST_DOUBLE 1
 
-#include "util/linked_list.h"
-#include "util/uuidstr.h"
+#include "linked_list.h"
+#include "uuidstr.h"
 
 #undef LINKEDLIST_DOUBLE
 #undef LINKEDLIST_TYPE

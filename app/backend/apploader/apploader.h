@@ -2,9 +2,8 @@
 
 #include "../types.h"
 #include "client.h"
-#include "util/refcounter.h"
-#include "util/executor.h"
-#include "util/uuidstr.h"
+#include "executor.h"
+#include "uuidstr.h"
 
 typedef struct apploader_task_t apploader_task_t;
 

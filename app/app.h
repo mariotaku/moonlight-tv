@@ -21,6 +21,8 @@
 
 #endif
 
+extern app_t *global;
+
 extern PCONFIGURATION app_configuration;
 extern lv_fragment_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;

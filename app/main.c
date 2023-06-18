@@ -49,7 +49,7 @@ static SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, v
 
 static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata);
 
-static app_t *app = NULL;
+app_t *global = NULL;
 
 int main(int argc, char *argv[]) {
     commons_logging_init("moonlight");
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 
     app_.window = app_create_window();
 
-    app = &app_;
+    global = &app_;
 
     SS4S_PostInit(argc, argv);
 
@@ -201,18 +201,28 @@ bool app_is_running() {
 }
 
 GS_CLIENT app_gs_client_new() {
+    if (SDL_ThreadID() == global->main_thread_id) {
+        commons_log_fatal("APP", "%s MUST BE called from worker thread!", __FUNCTION__);
+        abort();
+    }
     SDL_LockMutex(app_gs_client_mutex);
-    SDL_assert_release(app_configuration);
+    SDL_assert_release(app_configuration != NULL);
     GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+    if (client == NULL && gs_get_error(NULL) == GS_BAD_CONF) {
+        if (gs_conf_init(app_configuration->key_dir) != GS_OK) {
+            const char *message = NULL;
+            gs_get_error(&message);
+            app_fatal_error("Fatal error", "Failed to generate client info: %s", message);
+            app_halt();
+        } else {
+            client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+        }
+    }
     if (client == NULL) {
         const char *message = NULL;
         gs_get_error(&message);
         app_fatal_error("Fatal error", "Failed to create GS_CLIENT: %s", message);
-        if (SDL_ThreadID() == app->main_thread_id) {
-            abort();
-        } else {
-            app_halt();
-        }
+        app_halt();
     }
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;

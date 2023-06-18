@@ -22,7 +22,7 @@ typedef struct known_host_t {
 #define LINKEDLIST_TYPE known_host_t
 #define LINKEDLIST_PREFIX hostlist
 
-#include "util/linked_list.h"
+#include "linked_list.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -33,7 +33,7 @@ typedef struct known_host_t {
 #define LINKEDLIST_PREFIX favlist
 #define LINKEDLIST_DOUBLE 1
 
-#include "util/linked_list.h"
+#include "linked_list.h"
 #include "logging.h"
 
 #undef LINKEDLIST_DOUBLE

@@ -101,6 +101,9 @@ static void pair_result_cb(int result, const char *error, const uuidstr_t *uuid,
 static void dialog_cb(lv_event_t *event) {
     pair_dialog_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *dialog = lv_event_get_current_target(event);
-    if (dialog != controller->base.obj) return;
+    if (dialog != controller->base.obj) { return; }
+    if (lv_obj_has_flag(controller->btns, LV_OBJ_FLAG_HIDDEN)) {
+        return;
+    }
     lv_msgbox_close_async(dialog);
 }

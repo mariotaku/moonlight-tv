@@ -22,11 +22,11 @@
 #include "mkcert.h"
 #include "client.h"
 #include "errors.h"
+#include "priv.h"
 #include <errno.h>
 
 #include <Limelight.h>
 
-#include <sys/stat.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,165 +43,24 @@
 #include <mbedtls/rsa.h>
 #include <mbedtls/error.h>
 
+#include "uuidstr.h"
+
 #if __WIN32
-
-#include <windows.h>
-
-#define PATH_SEPARATOR '\\'
+#include <winsock.h>
 #else
 
-#include <uuid/uuid.h>
 #include <arpa/inet.h>
 
-#if __linux
-
-#include <linux/limits.h>
-
-#endif
-
-#define PATH_SEPARATOR '/'
 #endif
 
 #include <assert.h>
 
 #include "crypto.h"
 #include "set_error.h"
-
-#define UNIQUE_FILE_NAME "uniqueid.dat"
-
-#define UNIQUEID_BYTES 8
-#define UNIQUEID_CHARS (UNIQUEID_BYTES * 2)
-
-struct GS_CLIENT_T {
-    char unique_id[UNIQUEID_CHARS + 1];
-    mbedtls_pk_context pk;
-    mbedtls_x509_crt cert;
-    char cert_hex[8192];
-    HTTP *http;
-};
+#include "conf.h"
 
 static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action,
                           const char *fmt, ...);
-
-#if __WIN32
-#define MKDIR(path) mkdir(path)
-#else
-#define MKDIR(path) mkdir(path, 0775)
-#endif
-
-static int mkdirtree(const char *directory) {
-    char buffer[PATH_MAX];
-    char *p = buffer;
-
-    // The passed in string could be a string literal
-    // so we must copy it first
-    strncpy(p, directory, PATH_MAX - 1);
-    buffer[PATH_MAX - 1] = '\0';
-
-    while (*p != 0) {
-        // Find the end of the path element
-        do {
-            p++;
-        } while (*p != 0 && *p != '/');
-
-        char oldChar = *p;
-        *p = 0;
-
-        // Create the directory if it doesn't exist already
-        if (MKDIR(buffer) == -1 && errno != EEXIST) {
-            return -1;
-        }
-
-        *p = oldChar;
-    }
-
-    return 0;
-}
-
-static int load_unique_id(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
-    char uniqueFilePath[PATH_MAX];
-    snprintf(uniqueFilePath, PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, UNIQUE_FILE_NAME);
-
-    FILE *fd = fopen(uniqueFilePath, "r");
-    if (fd == NULL || fread(hnd->unique_id, UNIQUEID_CHARS, 1, fd) != UNIQUEID_CHARS) {
-        snprintf(hnd->unique_id, UNIQUEID_CHARS + 1, "0123456789ABCDEF");
-        if (fd != NULL) {
-            fclose(fd);
-        }
-        fd = fopen(uniqueFilePath, "w");
-        if (fd == NULL) {
-            return gs_set_error(GS_FAILED, "Failed to open unique ID file %s", uniqueFilePath);
-        }
-
-        fwrite(hnd->unique_id, UNIQUEID_CHARS, 1, fd);
-    }
-    fclose(fd);
-    hnd->unique_id[UNIQUEID_CHARS] = 0;
-
-    return GS_OK;
-}
-
-static int load_key(mbedtls_pk_context *ctx, const char *path, int (*f_rng)(void *, unsigned char *, size_t),
-                    void *p_rng) {
-#if MBEDTLS_VERSION_NUMBER >= 0x03020100
-    return mbedtls_pk_parse_keyfile(ctx, path, NULL, f_rng, p_rng);
-#else
-    return mbedtls_pk_parse_keyfile(ctx, path, NULL);
-#endif
-}
-
-static int load_cert(struct GS_CLIENT_T *hnd, const char *keyDirectory) {
-    char certificateFilePath[PATH_MAX];
-    snprintf(certificateFilePath, PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, CERTIFICATE_FILE_NAME);
-
-    char keyFilePath[PATH_MAX];
-    snprintf(&keyFilePath[0], PATH_MAX, "%s%c%s", keyDirectory, PATH_SEPARATOR, KEY_FILE_NAME);
-
-    int ret;
-    mbedtls_x509_crt_init(&hnd->cert);
-    if (mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath) != 0) {
-        if ((ret = mkcert_generate(certificateFilePath, keyFilePath)) != 0) {
-            mbedtls_x509_crt_free(&hnd->cert);
-            return ret;
-        }
-        if ((ret = mbedtls_x509_crt_parse_file(&hnd->cert, certificateFilePath)) != 0) {
-            char buf[512];
-            mbedtls_strerror(ret, buf, 512);
-            mbedtls_x509_crt_free(&hnd->cert);
-            return gs_set_error(GS_FAILED, "Failed to parse certificate: %s", buf);
-        }
-    }
-    FILE *f = fopen(certificateFilePath, "r");
-    if (f == NULL) {
-        mbedtls_x509_crt_free(&hnd->cert);
-        return gs_set_error(GS_IO_ERROR, "Failed to open certFile %s for writing", certificateFilePath);
-    }
-    int c;
-    int length = 0;
-    while ((c = fgetc(f)) != EOF) {
-        sprintf(&hnd->cert_hex[length], "%02x", c);
-        length += 2;
-    }
-    hnd->cert_hex[length] = 0;
-
-    fclose(f);
-
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_ctr_drbg_init(&ctr_drbg);
-
-    mbedtls_pk_init(&hnd->pk);
-    if ((ret = load_key(&hnd->pk, keyFilePath, mbedtls_ctr_drbg_random, &ctr_drbg)) != 0) {
-        char buf[512];
-        mbedtls_strerror(ret, buf, 512);
-        mbedtls_x509_crt_free(&hnd->cert);
-        mbedtls_pk_free(&hnd->pk);
-        mbedtls_ctr_drbg_free(&ctr_drbg);
-        return gs_set_error(GS_FAILED, "Error loading key into memory: %s", buf);
-    }
-    mbedtls_ctr_drbg_free(&ctr_drbg);
-
-    return GS_OK;
-}
 
 static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
     int ret;
@@ -252,31 +111,39 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
             goto cleanup;
         }
 
-        if (xml_search(data->memory, data->size, "PairStatus", &pairedText) != GS_OK)
+        if (xml_search(data->memory, data->size, "PairStatus", &pairedText) != GS_OK) {
             goto cleanup;
+        }
 
         if (xml_search(data->memory, data->size, "appversion", (char **) &server->serverInfo.serverInfoAppVersion) !=
-            GS_OK)
+            GS_OK) {
             goto cleanup;
+        }
 
-        if (xml_search(data->memory, data->size, "state", &stateText) != GS_OK)
+        if (xml_search(data->memory, data->size, "state", &stateText) != GS_OK) {
             goto cleanup;
+        }
 
-        if (xml_search(data->memory, data->size, "ServerCodecModeSupport", &serverCodecModeSupportText) != GS_OK)
+        if (xml_search(data->memory, data->size, "ServerCodecModeSupport", &serverCodecModeSupportText) != GS_OK) {
             goto cleanup;
+        }
 
-        if (xml_search(data->memory, data->size, "gputype", (char **) &server->gpuType) != GS_OK)
+        if (xml_search(data->memory, data->size, "gputype", (char **) &server->gpuType) != GS_OK) {
             goto cleanup;
+        }
 
-        if (xml_search(data->memory, data->size, "GsVersion", (char **) &server->gsVersion) != GS_OK)
+        if (xml_search(data->memory, data->size, "GsVersion", (char **) &server->gsVersion) != GS_OK) {
             goto cleanup;
+        }
 
         if (xml_search(data->memory, data->size, "GfeVersion", (char **) &server->serverInfo.serverInfoGfeVersion) !=
-            GS_OK)
+            GS_OK) {
             goto cleanup;
+        }
 
-        if (xml_modelist(data->memory, data->size, &server->modes) != GS_OK)
+        if (xml_modelist(data->memory, data->size, &server->modes) != GS_OK) {
             goto cleanup;
+        }
 
         // These fields are present on all version of GFE that this client supports
         if (!strlen(currentGameText) || !strlen(pairedText) || !strlen(server->serverInfo.serverInfoAppVersion) ||
@@ -352,11 +219,11 @@ static void hex_to_bytes(const char *in, unsigned char *out, size_t maxlen, size
             0, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, /* 0x60(`)-0x66(f) */
     };
     size_t inl = strlen(in);
-    if (inl % 2) return;
+    if (inl % 2) { return; }
     assert (maxlen >= inl / 2);
     for (int count = 0; count < inl; count += 2) {
         char ch1 = in[count], ch2 = in[count + 1];
-        if (ch1 < 0x30 || ch1 > 0x66 || ch2 < 0x30 || ch2 > 0x66) return;
+        if (ch1 < 0x30 || ch1 > 0x66 || ch2 < 0x30 || ch2 > 0x66) { return; }
         out[count / 2] = (map_table[ch1 - 0x30] << 4 | map_table[ch2 - 0x30]) & 0xFF;
     }
     if (len) {
@@ -368,13 +235,15 @@ int gs_unpair(GS_CLIENT hnd, PSERVER_DATA server) {
     int ret = GS_OK;
     char url[4096];
     HTTP_DATA *data = http_data_alloc();
-    if (data == NULL)
+    if (data == NULL) {
         return GS_OUT_OF_MEMORY;
+    }
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
     ret = http_request(hnd->http, url, data);
-    if (ret != GS_OK)
+    if (ret != GS_OK) {
         goto cleanup;
+    }
 
     if (xml_status(data->memory, data->size) == GS_ERROR) {
         ret = GS_ERROR;
@@ -532,15 +401,18 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     // Send the encrypted challenge to the server
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                   "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
-    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
+    }
 
     free(result);
     result = NULL;
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK)
+    }
+    if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK) {
         goto cleanup;
+    }
 
     if (strcmp(result, "1") != 0) {
         ret = gs_set_error(GS_FAILED, "Failed pairing at stage #2");
@@ -591,15 +463,18 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                   "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
-    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
+    }
 
     free(result);
     result = NULL;
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK)
+    }
+    if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK) {
         goto cleanup;
+    }
 
     if (strcmp(result, "1") != 0) {
         ret = gs_set_error(GS_FAILED, "Failed pairing at stage #3");
@@ -658,15 +533,18 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
                   "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
-    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
+    }
 
     free(result);
     result = NULL;
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK)
+    }
+    if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK) {
         goto cleanup;
+    }
 
     if (strcmp(result, "1") != 0) {
         ret = gs_set_error(GS_FAILED, "Failed pairing at stage #4");
@@ -676,15 +554,18 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     // Do the initial challenge (seems neccessary for us to show as paired)
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "pair",
                   "devicename=roth&updateState=1&phrase=pairchallenge");
-    if ((ret = http_request(hnd->http, url, data)) != GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
+    }
 
     free(result);
     result = NULL;
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK)
+    }
+    if ((ret = xml_search(data->memory, data->size, "paired", &result)) != GS_OK) {
         goto cleanup;
+    }
 
     if (strcmp(result, "1") != 0) {
         ret = gs_set_error(GS_FAILED, "Failed pairing at stage #5");
@@ -694,14 +575,17 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     server->paired = true;
 
     cleanup:
-    if (ret != GS_OK)
+    if (ret != GS_OK) {
         gs_unpair(hnd, server);
+    }
 
-    if (result != NULL)
+    if (result != NULL) {
         free(result);
+    }
 
-    if (data != NULL)
+    if (data != NULL) {
         http_data_free(data);
+    }
 
     mbedtls_aes_free(&aes_enc);
     mbedtls_aes_free(&aes_dec);
@@ -716,16 +600,18 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     int ret = GS_OK;
     char url[4096];
     HTTP_DATA *data = http_data_alloc();
-    if (data == NULL)
+    if (data == NULL) {
         return GS_OUT_OF_MEMORY;
+    }
 
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
-    if (http_request(hnd->http, url, data) != GS_OK)
+    if (http_request(hnd->http, url, data) != GS_OK) {
         ret = GS_IO_ERROR;
-    else if (xml_status(data->memory, data->size) == GS_ERROR)
+    } else if (xml_status(data->memory, data->size) == GS_ERROR) {
         ret = GS_ERROR;
-    else if (xml_applist(data->memory, data->size, list) != GS_OK)
+    } else if (xml_applist(data->memory, data->size, list) != GS_OK) {
         ret = GS_INVALID;
+    }
 
     http_data_free(data);
     return ret;
@@ -751,18 +637,21 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     bool correct_mode = false;
     while (mode != NULL) {
         if (mode->width == config->width && mode->height == config->height) {
-            if (mode->refresh == config->fps)
+            if (mode->refresh == config->fps) {
                 correct_mode = true;
+            }
         }
 
         mode = mode->next;
     }
 
-    if (!correct_mode && !server->unsupported)
+    if (!correct_mode && !server->unsupported) {
         return GS_NOT_SUPPORTED_MODE;
+    }
 
-    if (config->height >= 2160 && !server->supports4K)
+    if (config->height >= 2160 && !server->supports4K) {
         return GS_NOT_SUPPORTED_4K;
+    }
 
     mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *) config->remoteInputAesKey, 16);
     memset(config->remoteInputAesIv, 0, 16);
@@ -792,15 +681,18 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
         construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "resume",
                       "rikey=%s&rikeyid=%d&surroundAudioInfo=%d", rikey_hex, rikeyid, surround_info);
     }
-    if ((ret = http_request(hnd->http, url, data)) == GS_OK)
+    if ((ret = http_request(hnd->http, url, data)) == GS_OK) {
         server->currentGame = appId;
-    else
+    } else {
         goto cleanup;
+    }
 
-    if ((ret = xml_status(data->memory, data->size) != GS_OK))
+    if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    else if ((ret = xml_search(data->memory, data->size, "gamesession", &result)) != GS_OK)
+    }
+    if ((ret = xml_search(data->memory, data->size, "gamesession", &result)) != GS_OK) {
         goto cleanup;
+    }
 
     if (!strcmp(result, "0")) {
         ret = GS_FAILED;
@@ -813,11 +705,13 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     }
 
     cleanup:
-    if (result != NULL)
+    if (result != NULL) {
         free(result);
+    }
 
-    if (data != NULL)
+    if (data != NULL) {
         http_data_free(data);
+    }
 
     mbedtls_ctr_drbg_free(&ctr_drbg);
     return ret;
@@ -828,8 +722,9 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
     char url[4096];
     char *result = NULL;
     HTTP_DATA *data = http_data_alloc();
-    if (data == NULL)
+    if (data == NULL) {
         return GS_OUT_OF_MEMORY;
+    }
 
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
@@ -838,7 +733,8 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
 
     if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
-    } else if ((ret = xml_search(data->memory, data->size, "cancel", &result)) != GS_OK) {
+    }
+    if ((ret = xml_search(data->memory, data->size, "cancel", &result)) != GS_OK) {
         goto cleanup;
     }
 
@@ -851,8 +747,9 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
     }
 
     cleanup:
-    if (result != NULL)
+    if (result != NULL) {
         free(result);
+    }
 
     http_data_free(data);
     return ret;
@@ -862,8 +759,9 @@ int gs_download_cover(GS_CLIENT hnd, const SERVER_DATA *server, int appid, const
     int ret = GS_OK;
     char url[4096];
     HTTP_DATA *data = http_data_alloc();
-    if (data == NULL)
+    if (data == NULL) {
         return GS_OUT_OF_MEMORY;
+    }
 
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "appasset",
                   "appid=%d&AssetType=2&AssetIdx=0", appid);
@@ -890,13 +788,7 @@ int gs_download_cover(GS_CLIENT hnd, const SERVER_DATA *server, int appid, const
 GS_CLIENT gs_new(const char *keydir, int log_level) {
     struct GS_CLIENT_T *hnd = malloc(sizeof(struct GS_CLIENT_T));
     memset(hnd, 0, sizeof(struct GS_CLIENT_T));
-    mkdirtree(keydir);
-    if (load_unique_id(hnd, keydir) != GS_OK) {
-        free(hnd);
-        return NULL;
-    }
-
-    if (load_cert(hnd, keydir) != GS_OK) {
+    if (gs_conf_load(hnd, keydir) != GS_OK) {
         free(hnd);
         return NULL;
     }
@@ -922,7 +814,7 @@ void gs_set_timeout(GS_CLIENT hnd, int timeout) {
     http_set_timeout(hnd->http, timeout);
 }
 
-int gs_init(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported) {
+int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported) {
     LiInitializeServerInformation(&server->serverInfo);
     server->serverInfo.address = address;
     server->unsupported = unsupported;
@@ -931,22 +823,10 @@ int gs_init(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupp
 
 static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, const char *address, const char *action,
                           const char *fmt, ...) {
-    char uuid_str[37];
-#if __WIN32
-    UUID uuid;
-    UuidCreate(&uuid);
-    RPC_CSTR szUuid = NULL;
-    if (UuidToString(&uuid, &szUuid) != RPC_S_OK) {
+    uuidstr_t uuid;
+    if (!uuidstr_random(&uuid)) {
         return false;
     }
-    strncpy(uuid_str, (char *) szUuid, sizeof(uuid_str));
-    RpcStringFree(&szUuid);
-#else
-    uuid_t uuid;
-    uuid_generate_random(uuid);
-    uuid_unparse(uuid, uuid_str);
-#endif
-
     int port = secure ? 47984 : 47989;
     char *const proto = secure ? "https" : "http";
     if (fmt) {
@@ -956,10 +836,10 @@ static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, co
         vsnprintf(params, 4096, fmt, ap);
         va_end(ap);
         snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%.*s&%s", proto, address, port, action,
-                 hnd->unique_id, 36, uuid_str, params);
+                 hnd->unique_id, 36, uuid.data, params);
     } else {
         snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%.*s", proto, address, port,
-                 action, hnd->unique_id, 36, uuid_str);
+                 action, hnd->unique_id, 36, uuid.data);
     }
     return true;
 }
