@@ -5,6 +5,7 @@
 #include "priv.h"
 #include "mkcert.h"
 #include "http.h"
+#include "logging.h"
 
 #include <errno.h>
 #include <string.h>
@@ -13,8 +14,11 @@
 #include <mbedtls/version.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/error.h>
+
 #if MBEDTLS_VERSION_NUMBER >= 0x03020100
+
 #include <mbedtls/ctr_drbg.h>
+
 #endif
 
 #if __WIN32
@@ -56,6 +60,7 @@ int gs_conf_load(GS_CLIENT hnd, const char *keydir) {
 }
 
 int gs_conf_init(const char *keydir) {
+    commons_log_info("GameStream", "Initializing configuration");
     if (mkdirtree(keydir) != 0) {
         return gs_set_error(GS_IO_ERROR, "Failed to create config directory %s: %s", keydir, strerror(errno));
     }
@@ -66,6 +71,7 @@ int gs_conf_init(const char *keydir) {
     if ((ret = init_cert(keydir)) != GS_OK) {
         return ret;
     }
+    commons_log_info("GameStream", "Configuration initialized");
     return ret;
 }
 
@@ -99,6 +105,7 @@ int load_unique_id(struct GS_CLIENT_T *hnd, const char *keydir) {
 }
 
 int init_unique_id(const char *keydir) {
+    commons_log_info("GameStream", "Generating device unique ID");
     char id_path[PATH_MAX];
     snprintf(id_path, PATH_MAX, "%s%c%s", keydir, PATH_SEPARATOR, UNIQUE_FILE_NAME);
     FILE *fd = fopen(id_path, "w");
@@ -157,6 +164,7 @@ int load_cert(struct GS_CLIENT_T *hnd, const char *keydir) {
 }
 
 static int init_cert(const char *keydir) {
+    commons_log_info("GameStream", "Generating device cert/key pair");
     char cert_path[PATH_MAX];
     snprintf(cert_path, PATH_MAX, "%s%c%s", keydir, PATH_SEPARATOR, CERTIFICATE_FILE_NAME);
 

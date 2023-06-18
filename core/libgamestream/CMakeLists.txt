@@ -17,7 +17,7 @@ target_include_directories(gamestream PUBLIC
 target_link_libraries(gamestream PRIVATE moonlight-common-c)
 
 target_link_libraries(gamestream PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
-target_link_libraries(gamestream PUBLIC commons-uuidstr)
+target_link_libraries(gamestream PUBLIC commons-logging commons-uuidstr)
 target_include_directories(gamestream SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
 target_link_libraries(gamestream PRIVATE ${CURL_LIBRARIES} ${EXPAT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 if (BUILD_SHARED_LIBS)
