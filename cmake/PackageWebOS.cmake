@@ -1,5 +1,9 @@
-set(Python3_FIND_VIRTUALENV FIRST)
-find_package(Python3 COMPONENTS Interpreter HINTS "$ENV{Python_ROOT_DIR}" REQUIRED)
+if ($ENV{Python3_ROOT_DIR})
+    find_program(Python3_EXECUTABLE python3 HINTS "$ENV{Python3_ROOT_DIR}/bin" REQUIRED)
+else ()
+    set(Python3_FIND_VIRTUALENV FIRST)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+endif ()
 
 # Copy manifest
 configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
