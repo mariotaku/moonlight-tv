@@ -6,7 +6,7 @@
 #include "app.h"
 #include "backend/pcmanager/worker/worker.h"
 
-static void pcmanager_free(executor_t *executor);
+static void pcmanager_free(executor_t *executor, int wait);
 
 pcmanager_t *pcmanager_new() {
     pcmanager_t *manager = SDL_calloc(1, sizeof(pcmanager_t));
@@ -120,6 +120,7 @@ const pclist_t *pcmanager_servers(pcmanager_t *manager) {
     return manager->servers;
 }
 
-static void pcmanager_free(executor_t *executor) {
-
+static void pcmanager_free(executor_t *executor, int wait) {
+    SDL_assert(wait);
+    SDL_WaitThread(executor_get_thread_handle(executor), NULL);
 }

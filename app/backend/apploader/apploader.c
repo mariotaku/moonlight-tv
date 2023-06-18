@@ -41,7 +41,7 @@ struct apploader_t {
     void *userdata;
 };
 
-static void apploader_free(executor_t *executor);
+static void apploader_free(executor_t *executor, int wait);
 
 static apploader_task_t *task_create(apploader_t *loader);
 
@@ -54,6 +54,8 @@ static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2);
 static void task_callback(apploader_task_t *task);
 
 static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll);
+
+static void loader_thread_wait(SDL_Thread *thread);
 
 apploader_t *apploader_create(const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
@@ -90,13 +92,16 @@ apploader_state_t apploader_state(apploader_t *loader) {
     return loader->state;
 }
 
-static void apploader_free(executor_t *executor) {
+static void apploader_free(executor_t *executor, int wait) {
+    SDL_assert(!wait);
     apploader_t *loader = executor_get_userdata(executor);
+    void *thread = executor_get_thread_handle(executor);
     GS_CLIENT client = lazy_deinit(&loader->client);
     if (client != NULL) {
         gs_destroy(client);
     }
     SDL_free(loader);
+    bus_pushaction((bus_actionfunc) loader_thread_wait, thread);
 }
 
 static apploader_task_t *task_create(apploader_t *loader) {
@@ -204,4 +209,8 @@ static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2) {
         return -1 + extra;
     }
     return extra;
+}
+
+static void loader_thread_wait(SDL_Thread *thread) {
+    SDL_WaitThread(thread, NULL);
 }

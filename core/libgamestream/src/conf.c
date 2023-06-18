@@ -10,9 +10,12 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <mbedtls/version.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/error.h>
-
+#if MBEDTLS_VERSION_NUMBER >= 0x03020100
+#include <mbedtls/ctr_drbg.h>
+#endif
 
 #if __WIN32
 

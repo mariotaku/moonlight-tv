@@ -88,6 +88,7 @@ dkms.conf
 
 # IDEA
 .idea/
+.run/
 
 # General
 .DS_Store
