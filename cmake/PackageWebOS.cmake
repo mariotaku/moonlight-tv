@@ -1,5 +1,5 @@
 set(Python3_FIND_VIRTUALENV FIRST)
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
+find_package(Python3 COMPONENTS Interpreter HINTS "$ENV{Python_ROOT_DIR}" REQUIRED)
 
 # Copy manifest
 configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
