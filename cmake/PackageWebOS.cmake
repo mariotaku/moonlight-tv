@@ -1,4 +1,4 @@
-if ($ENV{Python3_ROOT_DIR})
+if (ENV{Python3_ROOT_DIR})
     find_program(Python3_EXECUTABLE python3 HINTS "$ENV{Python3_ROOT_DIR}/bin" REQUIRED)
 else ()
     set(Python3_FIND_VIRTUALENV FIRST)
