@@ -31,7 +31,7 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
     FcResult result;
 
     FcPattern *font = FcFontMatch(NULL, pattern, &result);
-    if (font && fontset_load_fc(&fontset, font)) {
+    if (font != NULL && fontset_load_fc(&fontset, font)) {
         theme->font_normal = fontset.normal;
         theme->font_large = fontset.large;
         theme->font_small = fontset.small;
@@ -45,7 +45,7 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
 #ifdef FONT_FAMILY_FALLBACK
     const i18n_entry_t *loc_entry = i18n_entry(i18n_locale());
     pattern = FcNameParse((const FcChar8 *) ((loc_entry && loc_entry->font) ? loc_entry->font : FONT_FAMILY_FALLBACK));
-    if (pattern) {
+    if (pattern != NULL) {
         FcLangSet *ls = FcLangSetCreate();
         if (loc_entry) {
             FcLangSetAdd(ls, (const FcChar8 *) loc_entry->locale);
@@ -56,8 +56,11 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
         FcDefaultSubstitute(pattern);
 
         font = FcFontMatch(NULL, pattern, &result);
-        if (font) {
+        if (font != NULL) {
             fontset.fallback = calloc(1, sizeof(app_fontset_t));
+            fontset.fallback->small_size = fontset.small_size;
+            fontset.fallback->normal_size = fontset.normal_size;
+            fontset.fallback->large_size = fontset.large_size;
             if (fontset_load_fc(fontset.fallback, font)) {
                 fontset.normal->fallback = fontset.fallback->normal;
                 fontset.large->fallback = fontset.fallback->large;
