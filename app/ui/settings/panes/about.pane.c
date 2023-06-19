@@ -8,11 +8,6 @@
 #include "util/i18n.h"
 #include "os_info.h"
 
-#if TARGET_WEBOS
-
-#include <SDL_webOS.h>
-
-#endif
 
 #define MAXIMUM_ROWS 32
 
@@ -21,23 +16,11 @@ typedef struct about_pane_t {
     settings_controller_t *parent;
 
     lv_coord_t row_dsc[MAXIMUM_ROWS + 1];
-#if TARGET_WEBOS
-    struct {
-        int w, h;
-        int rate;
-    } webos_panel_info;
-#endif
 } about_pane_t;
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
-
-#if TARGET_WEBOS
-
-static void load_webos_info(about_pane_t *controller);
-
-#endif
 
 const lv_fragment_class_t settings_pane_about_cls = {
         .constructor_cb = pane_ctor,
@@ -48,9 +31,6 @@ const lv_fragment_class_t settings_pane_about_cls = {
 static void pane_ctor(lv_fragment_t *self, void *args) {
     about_pane_t *controller = (about_pane_t *) self;
     controller->parent = args;
-#if TARGET_WEBOS
-    load_webos_info(controller);
-#endif
 }
 
 static inline void about_line(lv_obj_t *parent, const char *title, const char *text, int row, int text_span) {
@@ -67,7 +47,8 @@ static const char *module_name(const SS4S_ModuleInfo *info);
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     about_pane_t *controller = (about_pane_t *) self;
-    app_t *app = controller->parent->app;
+    settings_controller_t *parent = controller->parent;
+    app_t *app = parent->app;
 
     lv_obj_t *view = pref_pane_container(container);
     lv_obj_set_layout(view, LV_LAYOUT_GRID);
@@ -84,15 +65,15 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     }
     free(os_str);
 #if TARGET_WEBOS
-    if (controller->webos_panel_info.h && controller->webos_panel_info.w) {
+    const webos_panel_info_t *panel_info = &parent->webos_panel_info;
+    if (panel_info->height && panel_info->width) {
         char resolution_text[16];
-        SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", controller->webos_panel_info.w,
-                     controller->webos_panel_info.h);
+        SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", panel_info->width, panel_info->height);
         about_line(view, locstr("Screen resolution"), resolution_text, rowcount++, 1);
     }
-    if (controller->webos_panel_info.rate) {
+    if (panel_info->rate) {
         char fps_text[16];
-        SDL_snprintf(fps_text, sizeof(fps_text), "%4dFPS", controller->webos_panel_info.rate);
+        SDL_snprintf(fps_text, sizeof(fps_text), "%4dFPS", panel_info->rate);
         about_line(view, locstr("Refresh rate"), fps_text, rowcount++, 1);
     }
 #endif
@@ -112,12 +93,3 @@ const char *module_name(const SS4S_ModuleInfo *info) {
     }
     return id;
 }
-
-#if TARGET_WEBOS
-
-static void load_webos_info(about_pane_t *controller) {
-    SDL_webOSGetPanelResolution(&controller->webos_panel_info.w, &controller->webos_panel_info.h);
-    SDL_webOSGetRefreshRate(&controller->webos_panel_info.rate);
-}
-
-#endif

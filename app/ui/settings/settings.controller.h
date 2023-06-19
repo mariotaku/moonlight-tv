@@ -13,6 +13,12 @@
 
 #include "stream/settings.h"
 
+#if TARGET_WEBOS
+
+#include "panel_info.h"
+
+#endif
+
 typedef struct app_t app_t;
 
 typedef struct {
@@ -36,6 +42,9 @@ typedef struct {
 
     os_info_t os_info;
     bool needs_restart;
+#if TARGET_WEBOS
+    webos_panel_info_t webos_panel_info;
+#endif
 } settings_controller_t;
 
 lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent);

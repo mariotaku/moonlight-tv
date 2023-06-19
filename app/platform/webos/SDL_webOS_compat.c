@@ -20,26 +20,6 @@ SDL_BACKPORT SDL_bool SDL_webOSCursorVisibility(SDL_bool visible) {
     return fn(visible);
 }
 
-SDL_BACKPORT SDL_bool SDL_webOSGetPanelResolution(int *width, int *height) {
-    SDL_bool (*fn)(int *, int *) =(void *) noop;
-    if (fn == (void *) noop) {
-        fn = dlsym(RTLD_NEXT, "SDL_webOSGetPanelResolution");
-    }
-    if (!fn)
-        return SDL_FALSE;
-    return fn(width, height);
-}
-
-SDL_BACKPORT SDL_bool SDL_webOSGetRefreshRate(int *rate) {
-    SDL_bool (*fn)(int *) =(void *) noop;
-    if (fn == (void *) noop) {
-        fn = dlsym(RTLD_NEXT, "SDL_webOSGetRefreshRate");
-    }
-    if (!fn)
-        return SDL_FALSE;
-    return fn(rate);
-}
-
 SDL_BACKPORT int SDL_GameControllerAddMappingsFromRW(SDL_RWops *rw, int freerw) {
     const char *platform = SDL_GetPlatform();
     int controllers = 0;

@@ -1,7 +1,3 @@
-#include <stdint.h>
-
-#include <SDL.h>
-
 #include "lvgl.h"
 #include "app.h"
 

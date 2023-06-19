@@ -10,6 +10,12 @@
 #include "util/font.h"
 #include "util/i18n.h"
 
+#if TARGET_WEBOS
+
+#include "is_uhd.h"
+
+#endif
+
 typedef struct {
     const char *icon;
     const char *name;
@@ -77,6 +83,19 @@ static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     fragment->app = args;
     fragment->mini = fragment->pending_mini = UI_IS_MINI(ui_display_width);
     os_info_get(&fragment->os_info);
+#if TARGET_WEBOS
+    memset(&fragment->webos_panel_info, 0, sizeof(webos_panel_info_t));
+    bool is_uhd = false;
+    if (commons_webos_get_panel_info(&fragment->webos_panel_info) == 0) {
+        is_uhd = fragment->webos_panel_info.width >= 3840;
+    } else if (commons_webos_is_uhd(&is_uhd) == 0 && is_uhd) {
+        fragment->webos_panel_info.width = 3840;
+        fragment->webos_panel_info.height = 2160;
+        fragment->webos_panel_info.rate = 60;
+    } else {
+        fragment->webos_panel_info.rate = 60;
+    }
+#endif
 }
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
@@ -176,9 +195,9 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 
 static void on_entry_focus(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
-    if (controller->base.managed->destroying_obj) return;
+    if (controller->base.managed->destroying_obj) { return; }
     lv_obj_t *target = lv_event_get_target(event);
-    if (lv_obj_get_parent(target) != controller->nav) return;
+    if (lv_obj_get_parent(target) != controller->nav) { return; }
     lv_fragment_t *pane = lv_fragment_manager_get_top(controller->base.child_manager);
     lv_fragment_class_t *cls = target->user_data;
     if (pane && pane->cls == cls) {
@@ -206,10 +225,10 @@ static void show_pane(settings_controller_t *controller, const lv_fragment_class
 static void on_entry_click(lv_event_t *event) {
     settings_controller_t *controller = event->user_data;
     lv_obj_t *target = lv_event_get_target(event);
-    if (lv_obj_get_parent(target) != controller->nav) return;
+    if (lv_obj_get_parent(target) != controller->nav) { return; }
     lv_fragment_t *pane = lv_fragment_manager_find_by_container(controller->base.child_manager,
                                                                 controller->detail);
-    if (!pane) return;
+    if (!pane) { return; }
     lv_obj_t *first_focusable = NULL;
     for (int i = 0, j = (int) lv_obj_get_child_cnt(pane->obj); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(pane->obj, i);
@@ -218,10 +237,10 @@ static void on_entry_click(lv_event_t *event) {
             break;
         }
     }
-    if (!first_focusable) return;
+    if (!first_focusable) { return; }
     app_input_set_group(&controller->app->input, controller->detail_group);
     lv_indev_t *indev = lv_indev_get_act();
-    if (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_KEYPAD) return;
+    if (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_KEYPAD) { return; }
     lv_group_focus_obj(first_focusable);
 }
 
@@ -230,21 +249,21 @@ static void on_nav_key(lv_event_t *event) {
     switch (lv_event_get_key(event)) {
         case LV_KEY_DOWN: {
             lv_obj_t *target = lv_event_get_target(event);
-            if (lv_obj_get_parent(target) != controller->nav) return;
+            if (lv_obj_get_parent(target) != controller->nav) { return; }
             lv_group_t *group = controller->nav_group;
             lv_group_focus_next(group);
             break;
         }
         case LV_KEY_UP: {
             lv_obj_t *target = lv_event_get_target(event);
-            if (lv_obj_get_parent(target) != controller->nav) return;
+            if (lv_obj_get_parent(target) != controller->nav) { return; }
             lv_group_t *group = controller->nav_group;
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_RIGHT: {
             lv_obj_t *target = lv_event_get_target(event);
-            if (lv_obj_get_parent(target) != controller->nav) return;
+            if (lv_obj_get_parent(target) != controller->nav) { return; }
             on_entry_click(event);
             break;
         }
@@ -259,28 +278,28 @@ static void on_detail_key(lv_event_t *e) {
     }
     switch (lv_event_get_key(e)) {
         case LV_KEY_UP: {
-            if (controller->active_dropdown) return;
+            if (controller->active_dropdown) { return; }
             lv_group_t *group = controller->detail_group;
             lv_group_focus_prev(group);
             break;
         }
         case LV_KEY_DOWN: {
-            if (controller->active_dropdown) return;
+            if (controller->active_dropdown) { return; }
             lv_group_t *group = controller->detail_group;
             lv_group_focus_next(group);
             break;
         }
         case LV_KEY_LEFT: {
             lv_obj_t *target = lv_event_get_target(e);
-            if (detail_item_needs_lrkey(target)) return;
-            if (controller->active_dropdown) return;
+            if (detail_item_needs_lrkey(target)) { return; }
+            if (controller->active_dropdown) { return; }
             detail_defocus(controller, e);
             break;
         }
         case LV_KEY_RIGHT: {
             lv_obj_t *target = lv_event_get_target(e);
-            if (detail_item_needs_lrkey(target)) return;
-            if (controller->active_dropdown) return;
+            if (detail_item_needs_lrkey(target)) { return; }
+            if (controller->active_dropdown) { return; }
             if (lv_obj_has_class(target, &lv_dropdown_class)) {
                 lv_dropdown_close(target);
                 controller->active_dropdown = NULL;
@@ -291,7 +310,7 @@ static void on_detail_key(lv_event_t *e) {
 }
 
 static void on_back_request(lv_event_t *e) {
-    if (lv_event_get_param(e) == NULL) return;
+    if (lv_event_get_param(e) == NULL) { return; }
     settings_controller_t *controller = e->user_data;
     if (controller->active_dropdown) {
         controller->active_dropdown = NULL;
@@ -309,13 +328,13 @@ static void on_tab_key(lv_event_t *event) {
     switch (lv_event_get_key(event)) {
         case LV_KEY_LEFT: {
             uint16_t act = lv_tabview_get_tab_act(controller->tabview);
-            if (act <= 0) return;
+            if (act <= 0) { return; }
             lv_tabview_set_act(controller->tabview, act - 1, true);
             break;
         }
         case LV_KEY_RIGHT: {
             uint16_t act = lv_tabview_get_tab_act(controller->tabview);
-            if (act >= entries_len) return;
+            if (act >= entries_len) { return; }
             lv_tabview_set_act(controller->tabview, act + 1, true);
             break;
         }
@@ -341,18 +360,18 @@ static void on_tab_content_key(lv_event_t *e) {
     settings_controller_t *controller = e->user_data;
     switch (lv_event_get_key(e)) {
         case LV_KEY_DOWN: {
-            if (controller->active_dropdown) return;
+            if (controller->active_dropdown) { return; }
             lv_obj_t *target = lv_event_get_target(e);
-            if (lv_obj_get_parent(target) == controller->tabview) return;
+            if (lv_obj_get_parent(target) == controller->tabview) { return; }
             uint16_t act = lv_tabview_get_tab_act(controller->tabview);
             lv_group_t *group = controller->tab_groups[act];
             lv_group_focus_next(group);
             break;
         }
         case LV_KEY_UP: {
-            if (controller->active_dropdown) return;
+            if (controller->active_dropdown) { return; }
             lv_obj_t *target = lv_event_get_target(e);
-            if (lv_obj_get_parent(target) == controller->tabview) return;
+            if (lv_obj_get_parent(target) == controller->tabview) { return; }
             uint16_t act = lv_tabview_get_tab_act(controller->tabview);
             lv_group_t *group = controller->tab_groups[act];
             lv_group_focus_prev(group);
@@ -360,13 +379,13 @@ static void on_tab_content_key(lv_event_t *e) {
         }
         case LV_KEY_LEFT: {
             lv_obj_t *target = lv_event_get_target(e);
-            if (detail_item_needs_lrkey(target)) return;
+            if (detail_item_needs_lrkey(target)) { return; }
             break;
         }
         case LV_KEY_RIGHT: {
             lv_obj_t *target = lv_event_get_target(e);
-            if (detail_item_needs_lrkey(target)) return;
-            if (controller->active_dropdown) return;
+            if (detail_item_needs_lrkey(target)) { return; }
+            if (controller->active_dropdown) { return; }
             if (lv_obj_has_class(target, &lv_dropdown_class)) {
                 lv_dropdown_close(target);
                 controller->active_dropdown = NULL;
@@ -434,7 +453,7 @@ static void restart_confirm_cb(lv_event_t *e) {
 static void pane_child_added(lv_event_t *e) {
     settings_controller_t *controller = lv_event_get_user_data(e);
     lv_obj_t *child = lv_event_get_param(e);
-    if (!child || !lv_obj_is_group_def(child)) return;
+    if (!child || !lv_obj_is_group_def(child)) { return; }
     lv_obj_add_flag(child, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_event_cb(child, on_detail_key, LV_EVENT_KEY, controller);
     if (lv_obj_has_class(child, &lv_dropdown_class)) {

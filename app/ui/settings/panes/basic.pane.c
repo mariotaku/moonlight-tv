@@ -83,7 +83,8 @@ static void pane_dtor(lv_fragment_t *self) {
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     basic_pane_t *pane = (basic_pane_t *) self;
-    app_t *app = pane->parent->app;
+    settings_controller_t *parent = pane->parent;
+    app_t *app = parent->app;
     lv_obj_t *view = pref_pane_container(container);
     lv_obj_set_layout(view, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_ROW_WRAP);
@@ -92,6 +93,16 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     int res_len = supported_resolutions_len;
     unsigned int max_width = app->ss4s.video_cap.maxWidth, max_height = app->ss4s.video_cap.maxHeight;
+
+#if TARGET_WEBOS
+    const webos_panel_info_t *panel_info = &parent->webos_panel_info;
+    if (panel_info->width > 0 && panel_info->height > 0 &&
+        (max_width == 0 || max_height == 0 || panel_info->width < max_width || panel_info->height < max_height)) {
+        max_width = panel_info->width;
+        max_height = panel_info->height;
+    }
+#endif
+
     if (max_width > 0 && max_height) {
         for (res_len = supported_resolutions_len; res_len > 0; res_len--) {
             if (supported_resolutions[res_len - 1].value_a <= max_width &&
@@ -108,9 +119,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_add_event_cb(resolution_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
     unsigned int max_fps = app->ss4s.video_cap.maxFps;
+#if TARGET_WEBOS
+    if (panel_info->rate > 0 && (max_fps == 0 || panel_info->rate < max_fps)) {
+        max_fps = panel_info->rate;
+    }
+#endif
     int fps_len;
     for (fps_len = supported_fps_len; fps_len > 0; fps_len--) {
-        if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) break;
+        if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) { break; }
     }
     lv_obj_t *fps_dropdown = pref_dropdown_int(view, supported_fps, fps_len, &app_configuration->stream.fps);
     lv_obj_set_flex_grow(fps_dropdown, 1);
