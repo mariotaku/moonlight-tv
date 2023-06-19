@@ -7,6 +7,7 @@ configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
 install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE PATTERN "appinfo.json" EXCLUDE)
 install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
 
+# Generate translations
 foreach (I18N_LOCALE ${I18N_LOCALES})
     string(REPLACE "-" "/" I18N_JSON_DIR "resources/${I18N_LOCALE}")
     install(CODE "file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/${I18N_JSON_DIR}\")"
@@ -15,14 +16,15 @@ foreach (I18N_LOCALE ${I18N_LOCALES})
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND_ERROR_IS_FATAL ANY)")
 endforeach ()
 
+# Generation gamepad mapping
+install(CODE "file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/assets\")"
+        CODE "execute_process(COMMAND scripts/webos/gen_gamecontrollerdb.sh
+            OUTPUT_FILE \"\${CMAKE_INSTALL_PREFIX}/assets/gamecontrollerdb.txt\"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND_ERROR_IS_FATAL ANY)")
+
 # Fake library for cURL ABI issue
 add_dependencies(moonlight commons-curl-abi-fix)
 install(TARGETS commons-curl-abi-fix LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} NAMELINK_SKIP)
-
-add_custom_target(webos-generate-gamecontrollerdb
-        COMMAND ${CMAKE_SOURCE_DIR}/scripts/webos/gen_gamecontrollerdb.sh
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        )
 
 set(CPACK_PACKAGE_NAME "${WEBOS_APPINFO_ID}")
 set(CPACK_GENERATOR "External")
