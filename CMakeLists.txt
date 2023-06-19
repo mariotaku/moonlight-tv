@@ -262,7 +262,7 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
-    target_link_libraries(moonlight PRIVATE commons-luna-sync)
+    target_link_libraries(moonlight PRIVATE commons-luna-sync commons-webos-is-uhd commons-webos-panel-info)
 else ()
     target_compile_definitions(moonlight PUBLIC TARGET_DESKTOP)
 
