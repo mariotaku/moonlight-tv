@@ -1,9 +1,4 @@
-if (DEFINED ENV{Python3_ROOT_DIR})
-    find_program(Python3_EXECUTABLE python3 HINTS "$ENV{Python3_ROOT_DIR}/bin" REQUIRED)
-else ()
-    set(Python3_FIND_VIRTUALENV FIRST)
-    find_package(Python3 COMPONENTS Interpreter REQUIRED)
-endif ()
+find_program(AWK awk REQUIRED)
 
 # Copy manifest
 configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
@@ -11,7 +6,14 @@ configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
 # Copy all files under deploy/webos/ to package root
 install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE PATTERN "appinfo.json" EXCLUDE)
 install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
-install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} scripts/webos/gen_i18n.py -o \"\${CMAKE_INSTALL_PREFIX}/resources\" ${I18N_LOCALES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})")
+
+foreach (I18N_LOCALE ${I18N_LOCALES})
+    string(REPLACE "-" "/" I18N_JSON_DIR "resources/${I18N_LOCALE}")
+    install(CODE "file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/${I18N_JSON_DIR}\")"
+            CODE "execute_process(COMMAND ${AWK} -f scripts/webos/po2json.awk i18n/${I18N_LOCALE}/messages.po
+                OUTPUT_FILE \"\${CMAKE_INSTALL_PREFIX}/${I18N_JSON_DIR}/cstrings.json\"
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND_ERROR_IS_FATAL ANY)")
+endforeach ()
 
 # Fake library for cURL ABI issue
 add_dependencies(moonlight commons-curl-abi-fix)
