@@ -212,7 +212,8 @@ GS_CLIENT app_gs_client_new() {
         if (gs_conf_init(app_configuration->key_dir) != GS_OK) {
             const char *message = NULL;
             gs_get_error(&message);
-            app_fatal_error("Fatal error", "Failed to generate client info: %s", message);
+            app_fatal_error("Failed to generate client info",
+                            "Please try reinstall the app.\n\nDetails: %s", message);
             app_halt();
         } else {
             client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
