@@ -30,4 +30,6 @@ runs:
 
     - name: Run easy_build
       shell: bash
-      run: TOOLCHAIN_FILE=/tmp/arm-webos-linux-gnueabi_sdk-buildroot/usr/share/buildroot/toolchainfile.cmake ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }}
+      run: ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }}
+      env:
+        TOOLCHAIN_FILE: /tmp/arm-webos-linux-gnueabi_sdk-buildroot/usr/share/buildroot/toolchainfile.cmake
