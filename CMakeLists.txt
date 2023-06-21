@@ -29,7 +29,6 @@ endif ()
 
 # Add folder where are supportive functions
 set(CMAKE_MODULE_PATH
-        ${CMAKE_SOURCE_DIR}/system/webos/utils/cmake
         ${CMAKE_SOURCE_DIR}/cmake
         ${CMAKE_SOURCE_DIR}/third_party/commons/cmake
         ${CMAKE_SOURCE_DIR}/core/moonlight-common-c/cmake
@@ -151,9 +150,6 @@ if (NOT INIH_FOUND)
 endif ()
 
 if (TARGET_WEBOS)
-
-    add_subdirectory(system/webos/tv-native-apis)
-
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
@@ -256,8 +252,6 @@ if (TARGET_WEBOS)
     target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
-    target_link_libraries(moonlight PRIVATE rt)
-
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES})
@@ -323,10 +317,6 @@ include(GetCompilerTarget)
 
 if (TARGET_WEBOS)
     include(PackageWebOS)
-    if (NOT ENV{CI})
-        include(WebOSInstall)
-        target_webos_install(moonlight)
-    endif ()
 elseif (OS_LINUX)
     include(PackageDebian)
 elseif (OS_WINDOWS)
