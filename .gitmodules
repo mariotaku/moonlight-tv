@@ -1,12 +1,6 @@
-[submodule "utils"]
-	path = system/webos/utils
-	url = https://github.com/webosbrew/native-dev-utils.git
 [submodule "core/moonlight-common-c"]
 	path = core/moonlight-common-c
 	url = https://github.com/moonlight-stream/moonlight-common-c.git
-[submodule "system/webos/tv-native-apis"]
-	path = system/webos/tv-native-apis
-	url = https://github.com/webosbrew/tv-native-apis.git
 [submodule "third_party/lvgl"]
 	path = third_party/lvgl
 	url = https://github.com/mariotaku/lvgl.git
@@ -16,9 +10,6 @@
 [submodule "third_party/Unity"]
 	path = third_party/Unity
 	url = https://github.com/ThrowTheSwitch/Unity.git
-[submodule "third_party/inih"]
-	path = third_party/inih
-	url = https://github.com/benhoyt/inih.git
 [submodule "third_party/ss4s"]
 	path = third_party/ss4s
 	url = https://github.com/mariotaku/ss4s.git
