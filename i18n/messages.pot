@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-12 19:29+0900\n"
+"POT-Creation-Date: 2023-06-21 22:35+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,19 +17,41 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: app/main.c:67
+#: app/app_sdl.c:204 app/ui/launcher/add.dialog.c:42
+#: app/ui/launcher/apps.controller.c:694
+#: app/ui/launcher/server.context_menu.c:80
+msgid "Cancel"
+msgstr ""
+
+#: app/app_sdl.c:204 app/ui/launcher/add.dialog.c:42
+#: app/ui/launcher/apps.controller.c:624 app/ui/launcher/apps.controller.c:725
+#: app/ui/launcher/launcher.controller.c:461 app/ui/launcher/pair.dialog.c:54
+#: app/ui/launcher/server.context_menu.c:118
+#: app/ui/streaming/streaming.controller.c:280
+msgid "OK"
+msgstr ""
+
+#: app/app_sdl.c:205
+msgid "Quit Moonlight?"
+msgstr ""
+
+#: app/main.c:74
 msgid "[Localized Language]"
 msgstr ""
 
-#: app/stream/module/audio.c:53
+#: app/platform/common/i18n_common.c:6
+msgid "System Language"
+msgstr ""
+
+#: app/stream/module/audio.c:7
 msgid "Stereo"
 msgstr ""
 
-#: app/stream/module/audio.c:54
+#: app/stream/module/audio.c:8
 msgid "5.1 Surround"
 msgstr ""
 
-#: app/stream/module/audio.c:55
+#: app/stream/module/audio.c:9
 msgid "7.1 Surround"
 msgstr ""
 
@@ -37,46 +59,40 @@ msgstr ""
 msgid "Unstable connection."
 msgstr ""
 
-#. Use list button for normal container
-#: app/ui/launcher/launcher.view.c:103
-msgid "Add computer"
-msgstr ""
-
-#: app/ui/launcher/launcher.view.c:109 app/ui/help/help.dialog.c:15
+#: app/ui/help/help.dialog.c:15 app/ui/launcher/launcher.view.c:109
 msgid "Help"
 msgstr ""
 
-#: app/ui/launcher/launcher.view.c:115 app/ui/settings/settings.view.c:30
-msgid "Settings"
+#: app/ui/help/help.dialog.c:37
+msgid "Gamepad hotkeys"
 msgstr ""
 
-#: app/ui/launcher/launcher.view.c:121
-#: app/ui/settings/settings.controller.c:411
-msgid "Quit"
+#: app/ui/help/help.dialog.c:39
+msgid "Remote controller keys"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:442
-#: app/ui/launcher/apps.controller.c:597 app/ui/launcher/apps.controller.c:698
-#: app/ui/launcher/add.dialog.c:54 app/ui/launcher/pair.dialog.c:54
-#: app/ui/launcher/server.context_menu.c:118
-#: app/ui/streaming/streaming.controller.c:282 app/app_sdl.c:154
-msgid "OK"
+#: app/ui/help/help.dialog.c:42
+msgid "Open moonlight-tv Wiki"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:443
-msgid "Decoder not working"
+#: app/ui/help/help.dialog.c:44
+msgid "Open moonlight-stream Wiki"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:448
-#, c-format
-msgid ""
-"Unable to initialize decoder %s. Please try other decoders.\n"
-"Error detail: %s"
+#: app/ui/launcher/add.dialog.c:57
+msgid "IP address"
 msgstr ""
 
-#: app/ui/launcher/launcher.controller.c:453
-#, c-format
-msgid "Unable to initialize decoder %s. Please try other decoders."
+#: app/ui/launcher/add.dialog.c:61
+msgid "IPv4 address only"
+msgstr ""
+
+#: app/ui/launcher/add.dialog.c:80
+msgid "Failed to add computer."
+msgstr ""
+
+#: app/ui/launcher/add.dialog.c:155
+msgid "Failed to add computer"
 msgstr ""
 
 #: app/ui/launcher/apps.controller.c:130
@@ -91,34 +107,34 @@ msgstr ""
 msgid "Pair"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:368
+#: app/ui/launcher/apps.controller.c:374
 msgid "Failed to load apps"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:370 app/ui/launcher/apps.controller.c:417
+#: app/ui/launcher/apps.controller.c:376 app/ui/launcher/apps.controller.c:423
 msgid ""
 "Press \"Retry\" to load again.\n"
 "\n"
 "Restart your computer if error persists."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:399
+#: app/ui/launcher/apps.controller.c:405
 msgid "Not paired"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:401
+#: app/ui/launcher/apps.controller.c:407
 msgid "Press \"Pair\", and input PIN code on your computer to pair."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:415
+#: app/ui/launcher/apps.controller.c:421
 msgid "Host error"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:433
+#: app/ui/launcher/apps.controller.c:439
 msgid "Offline"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:435
+#: app/ui/launcher/apps.controller.c:441
 msgid ""
 "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it "
 "supports this feature, press \"Retry\" to connect again.\n"
@@ -126,58 +142,63 @@ msgid ""
 "Try restart your computer if these doesn't work."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:540
+#: app/ui/launcher/apps.controller.c:567
 msgid "Quitting game..."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:598
+#: app/ui/launcher/apps.controller.c:625
 msgid "Unable to quit game"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:599
+#: app/ui/launcher/apps.controller.c:626
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:648
+#: app/ui/launcher/apps.controller.c:675
 msgid "Resume streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:649
+#: app/ui/launcher/apps.controller.c:676
 msgid "Start streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:655
+#: app/ui/launcher/apps.controller.c:682
 msgid "Stop streaming"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:659
+#: app/ui/launcher/apps.controller.c:686
 msgid "Unstar"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:659
+#: app/ui/launcher/apps.controller.c:686
 msgid "Star"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:663
+#: app/ui/launcher/apps.controller.c:690
 #: app/ui/launcher/server.context_menu.c:70
 msgid "Info"
 msgstr ""
 
-#: app/ui/launcher/apps.controller.c:667 app/ui/launcher/add.dialog.c:54
-#: app/ui/launcher/server.context_menu.c:80 app/app_sdl.c:154
-msgid "Cancel"
+#: app/ui/launcher/launcher.controller.c:462
+msgid "No working decoder"
 msgstr ""
 
-#: app/ui/launcher/add.dialog.c:69
-msgid "IP address"
+#: app/ui/launcher/launcher.controller.c:465
+msgid "Streaming can't work without a valid decoder."
 msgstr ""
 
-#: app/ui/launcher/add.dialog.c:73
-msgid "IPv4 address only"
+#. Use list button for normal container
+#: app/ui/launcher/launcher.view.c:103
+msgid "Add computer"
 msgstr ""
 
-#: app/ui/launcher/add.dialog.c:92
-msgid "Failed to add computer."
+#: app/ui/launcher/launcher.view.c:115 app/ui/settings/settings.view.c:30
+msgid "Settings"
+msgstr ""
+
+#: app/ui/launcher/launcher.view.c:121
+#: app/ui/settings/settings.controller.c:431
+msgid "Quit"
 msgstr ""
 
 #: app/ui/launcher/pair.dialog.c:55
@@ -202,100 +223,118 @@ msgid ""
 "GeForce Experience: %s"
 msgstr ""
 
-#: app/ui/streaming/streaming.view.c:25
-#, c-format
-msgid "Hint: %s"
+#: app/ui/settings/panes/about.pane.c:59
+msgid "Version"
 msgstr ""
 
-#: app/ui/streaming/streaming.view.c:50
-msgid "Soft keyboard"
+#: app/ui/settings/panes/about.pane.c:60
+#: app/ui/settings/panes/decoder.pane.c:111
+msgid "Video decoder"
 msgstr ""
 
-#: app/ui/streaming/streaming.view.c:58
-msgid "Virtual Mouse"
+#: app/ui/settings/panes/about.pane.c:61
+#: app/ui/settings/panes/decoder.pane.c:118
+msgid "Audio backend"
 msgstr ""
 
-#: app/ui/streaming/streaming.view.c:66
-msgid "Disconnect"
+#: app/ui/settings/panes/about.pane.c:64
+msgid "System"
 msgstr ""
 
-#: app/ui/streaming/streaming.view.c:74
-msgid "Quit game"
+#: app/ui/settings/panes/about.pane.c:72
+msgid "Screen resolution"
 msgstr ""
 
-#: app/ui/streaming/streaming.view.c:89
-msgid "Performance"
+#: app/ui/settings/panes/about.pane.c:77
+msgid "Refresh rate"
 msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:139
-msgid "Connecting..."
-msgstr ""
-
-#: app/ui/streaming/streaming.controller.c:159
-msgid "Disconnecting..."
-msgstr ""
-
-#: app/ui/streaming/streaming.controller.c:283
-msgid "Failed to start streaming"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:20
-msgid "Basic Settings"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:21
-msgid "Host Settings"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:22
-msgid "Input Settings"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:23
-msgid "Decoder Settings"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:24
-msgid "About"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:411
-msgid "Later"
-msgstr ""
-
-#: app/ui/settings/settings.controller.c:412
-msgid "Some settings require a restart to take effect."
-msgstr ""
-
-#: app/ui/settings/panes/basic.pane.c:89
+#: app/ui/settings/panes/basic.pane.c:91
 msgid "Resolution and FPS"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:125
+#: app/ui/settings/panes/basic.pane.c:142
 msgid "Video bitrate"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:142
+#: app/ui/settings/panes/basic.pane.c:158
 msgid "Fullscreen UI"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:149
-#: app/ui/settings/panes/basic.pane.c:150
+#: app/ui/settings/panes/basic.pane.c:169
+#: app/ui/settings/panes/basic.pane.c:170
 msgid "Language"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:180
+#: app/ui/settings/panes/basic.pane.c:200
 msgid ""
 "Your computer may not perform well when using this resolution and framerate."
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:194
+#: app/ui/settings/panes/basic.pane.c:215
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr ""
 
-#: app/ui/settings/panes/basic.pane.c:200
+#: app/ui/settings/panes/basic.pane.c:223
 msgid "Higher bitrate may cause performance issue, try with caution."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:68
+#: app/ui/settings/panes/decoder.pane.c:69
+msgid "Auto"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:112
+#, c-format
+msgid "Video decoder - using %s"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:119
+#, c-format
+msgid "Audio backend - using %s"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:129
+msgid "Prefer H265 codec"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:135
+msgid "H265 usually has clearer graphics, and is required for using HDR."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:139
+#, c-format
+msgid "%s decoder doesn't support H265 codec."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:143
+msgid "HDR (experimental)"
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:148
+#, c-format
+msgid "%s decoder doesn't support HDR."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:152
+#: app/ui/settings/panes/decoder.pane.c:200
+msgid "H265 is required to use HDR."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:155
+#: app/ui/settings/panes/decoder.pane.c:203
+msgid ""
+"HDR is only supported on certain games and when connecting to supported "
+"monitor."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:158
+msgid "Learn more about HDR feature."
+msgstr ""
+
+#: app/ui/settings/panes/decoder.pane.c:164
+msgid "Sound Channels (Experimental)"
 msgstr ""
 
 #: app/ui/settings/panes/host.pane.c:26
@@ -371,113 +410,67 @@ msgstr ""
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:50
-#: app/ui/settings/panes/decoder.pane.c:69
-msgid "Automatic"
+#: app/ui/settings/settings.controller.c:26
+msgid "Basic Settings"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:108
-#: app/ui/settings/panes/about.pane.c:76
-msgid "Video decoder"
+#: app/ui/settings/settings.controller.c:27
+msgid "Host Settings"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:109
+#: app/ui/settings/settings.controller.c:28
+msgid "Input Settings"
+msgstr ""
+
+#: app/ui/settings/settings.controller.c:29
+msgid "Decoder Settings"
+msgstr ""
+
+#: app/ui/settings/settings.controller.c:30
+msgid "About"
+msgstr ""
+
+#: app/ui/settings/settings.controller.c:431
+msgid "Later"
+msgstr ""
+
+#: app/ui/settings/settings.controller.c:432
+msgid "Some settings require a restart to take effect."
+msgstr ""
+
+#: app/ui/streaming/streaming.controller.c:137
+msgid "Connecting..."
+msgstr ""
+
+#: app/ui/streaming/streaming.controller.c:157
+msgid "Disconnecting..."
+msgstr ""
+
+#: app/ui/streaming/streaming.controller.c:281
+msgid "Failed to start streaming"
+msgstr ""
+
+#: app/ui/streaming/streaming.view.c:25
 #, c-format
-msgid "Video decoder - using %s"
+msgid "Hint: %s"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:115
-#: app/ui/settings/panes/about.pane.c:79
-msgid "Audio backend"
+#: app/ui/streaming/streaming.view.c:50
+msgid "Soft keyboard"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:116
-msgid "Decoder provided"
+#: app/ui/streaming/streaming.view.c:58
+msgid "Virtual Mouse"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:118
-#, c-format
-msgid "Audio backend - using %s"
+#: app/ui/streaming/streaming.view.c:66
+msgid "Disconnect"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:125
-msgid "Prefer H265 codec"
+#: app/ui/streaming/streaming.view.c:74
+msgid "Quit game"
 msgstr ""
 
-#: app/ui/settings/panes/decoder.pane.c:131
-#, c-format
-msgid "%s decoder doesn't support H265 codec."
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:135
-msgid "H265 usually has clearer graphics, and is required for using HDR."
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:139
-msgid "HDR (experimental)"
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:144
-#, c-format
-msgid "%s decoder doesn't support HDR."
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:148
-#: app/ui/settings/panes/decoder.pane.c:189
-msgid "H265 is required to use HDR."
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:151
-#: app/ui/settings/panes/decoder.pane.c:192
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:154
-msgid "Learn more about HDR feature."
-msgstr ""
-
-#: app/ui/settings/panes/decoder.pane.c:160
-msgid "Sound Channels (Experimental)"
-msgstr ""
-
-#: app/ui/settings/panes/about.pane.c:75
-msgid "Version"
-msgstr ""
-
-#: app/ui/settings/panes/about.pane.c:83
-msgid "webOS version"
-msgstr ""
-
-#: app/ui/settings/panes/about.pane.c:86
-msgid "Firmware version"
-msgstr ""
-
-#: app/ui/settings/panes/about.pane.c:92
-msgid "Screen resolution"
-msgstr ""
-
-#: app/ui/settings/panes/about.pane.c:97
-msgid "Refresh rate"
-msgstr ""
-
-#: app/ui/help/help.dialog.c:37
-msgid "Gamepad hotkeys"
-msgstr ""
-
-#: app/ui/help/help.dialog.c:39
-msgid "Remote controller keys"
-msgstr ""
-
-#: app/ui/help/help.dialog.c:42
-msgid "Open moonlight-tv Wiki"
-msgstr ""
-
-#: app/ui/help/help.dialog.c:44
-msgid "Open moonlight-stream Wiki"
-msgstr ""
-
-#: app/app_sdl.c:155
-msgid "Quit Moonlight?"
+#: app/ui/streaming/streaming.view.c:89
+msgid "Performance"
 msgstr ""
