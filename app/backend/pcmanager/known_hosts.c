@@ -1,7 +1,7 @@
 #include "priv.h"
 #include "pclist.h"
 
-#include "ini.h"
+#include <ini.h>
 
 #include "util/ini_ext.h"
 #include "util/path.h"
