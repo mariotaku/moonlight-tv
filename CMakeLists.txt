@@ -121,14 +121,20 @@ find_package(EXPAT REQUIRED)
 find_package(Fontconfig REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(CURL REQUIRED)
-find_package(MbedTLS)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
 pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
 
-pkg_check_modules(OPUS opus)
+find_package(MbedTLS)
+if (NOT MBEDTLS_FOUND)
+    list(APPEND CMAKE_MESSAGE_INDENT "  ")
+    message(STATUS "Including mbedtls from source...")
+    include(ExternalMbedTLS)
+    list(POP_BACK CMAKE_MESSAGE_INDENT)
+endif ()
 
+pkg_check_modules(OPUS opus)
 if (NOT OPUS_FOUND)
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
     message(STATUS "Including opus from source...")
@@ -136,10 +142,11 @@ if (NOT OPUS_FOUND)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif ()
 
-if (NOT MBEDTLS_FOUND)
+pkg_check_modules(INIH inih)
+if (NOT INIH_FOUND)
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
-    message(STATUS "Including mbedtls from source...")
-    include(ExternalMbedTLS)
+    message(STATUS "Including inih from source...")
+    include(ExternalINIH)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif ()
 
@@ -162,7 +169,6 @@ if (BUILD_SHARED_LIBS)
     install(TARGETS moonlight-common-c LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif ()
 unset(BUILD_SHARED_LIBS)
-include(BuildINIH)
 
 if (TARGET_WEBOS)
     set(SS4S_MODULE_DISABLE_MMAL ON)
@@ -223,10 +229,11 @@ else ()
     unset(BUILD_SHARED_LIBS)
 endif ()
 
-target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
+        ${INIH_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
-        moonlight-common-c gamestream lvgl inih ${CURL_LIBRARIES}
+        moonlight-common-c gamestream lvgl ${INIH_LIBRARIES} ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
 
 target_link_libraries(moonlight PRIVATE lv_gridview lv_sdl_img)
@@ -253,7 +260,7 @@ if (TARGET_WEBOS)
 
     target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES} helpers)
+    target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES})
     target_link_libraries(moonlight PRIVATE commons-luna-sync commons-webos-is-uhd commons-webos-panel-info)
 else ()
     if (OS_DARWIN)
@@ -285,13 +292,7 @@ else ()
     set(FEATURE_INPUT_EVMOUSE OFF)
 endif ()
 
-if (TARGET_WEBOS)
-    set(SS4S_MODULES_INI_PATH_RUNTIME "lib/ss4s_modules.ini")
-else ()
-    set(SS4S_MODULES_INI_PATH_RUNTIME "${CMAKE_INSTALL_FULL_LIBDIR}/ss4s_modules.ini")
-endif ()
 target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
-target_compile_definitions(commons-ss4s-modules-list PRIVATE SS4S_MODULES_INI_PATH="${SS4S_MODULES_INI_PATH_RUNTIME}")
 
 target_link_libraries(moonlight PRIVATE commons-logging commons-gamecontrollerdb-updater commons-lazy
         commons-refcounter commons-executor commons-linked-list)

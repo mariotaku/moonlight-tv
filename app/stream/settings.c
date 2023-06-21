@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "ini.h"
+#include <ini.h>
 
 #include "stream/platform.h"
 

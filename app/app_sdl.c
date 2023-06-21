@@ -36,7 +36,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
     }
     int errno;
     if ((errno = SS4S_ModulesList(&app->ss4s.modules, &app->os_info)) != 0) {
-        commons_log_error("SS4S", "Can't load modules list %s: %s", SS4S_ModulesListPath(), strerror(errno));
+        commons_log_error("SS4S", "Can't load modules list: %s", strerror(errno));
     }
     app_configuration = settings_load();
     SS4S_ModulePreferences module_preferences = {

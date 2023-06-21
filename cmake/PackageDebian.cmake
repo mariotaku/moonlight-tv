@@ -31,6 +31,7 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS_LIST
         "libcurl4 (>= 7.16.2)"
         "libuuid1 (>= 2.16)"
         "libexpat1 (>= 2.0.1)"
+        "libinih1 (>= 50)"
         )
 
 if (MBEDTLS_VERSION_STRING VERSION_GREATER_EQUAL "2.28")

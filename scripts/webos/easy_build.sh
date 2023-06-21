@@ -7,13 +7,14 @@ fi
 
 CMAKE_BIN=$(which cmake)
 CPACK_BIN=$(which cpack)
-if [ -z "${CMAKE_BINARY_DIR}" ]; then
-  CMAKE_BINARY_DIR=build
-fi
 
 if [ ! -x "$CMAKE_BIN" ]; then
   echo "Please install CMake."
   exit 1
+fi
+
+if [ -z "${CMAKE_BINARY_DIR}" ]; then
+  CMAKE_BINARY_DIR=build/webos-easy_build
 fi
 
 if [ -z "$CI" ]; then
@@ -34,7 +35,7 @@ fi
 
 BUILD_OPTIONS="-DTARGET_WEBOS=ON -DBUILD_TESTS=OFF"
 
-# shellcheck disable=SC2068
+# shellcheck disable=SC2068,SC2086
 $CMAKE_BIN -B"${CMAKE_BINARY_DIR}" -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" $BUILD_OPTIONS $@ || exit 1
 
 $CMAKE_BIN --build "${CMAKE_BINARY_DIR}" -- -j "$(nproc)" || exit 1
