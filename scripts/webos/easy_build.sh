@@ -46,7 +46,7 @@ fi
 
 export CMAKE_BUILD_PARALLEL_LEVEL
 
-$CMAKE_BIN --build "${CMAKE_BINARY_DIR}" -- -j "$(nproc)" || exit 1
+$CMAKE_BIN --build "${CMAKE_BINARY_DIR}" || exit 1
 
 echo "Build package"
 cd "${CMAKE_BINARY_DIR}" || exit 1
