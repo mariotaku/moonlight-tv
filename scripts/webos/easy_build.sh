@@ -38,6 +38,14 @@ BUILD_OPTIONS="-DTARGET_WEBOS=ON -DBUILD_TESTS=OFF"
 # shellcheck disable=SC2068,SC2086
 $CMAKE_BIN -B"${CMAKE_BINARY_DIR}" -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" $BUILD_OPTIONS $@ || exit 1
 
+if command -v nproc &>/dev/null; then
+  CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+else
+  CMAKE_BUILD_PARALLEL_LEVEL=$(sysctl -n hw.logicalcpu)
+fi
+
+export CMAKE_BUILD_PARALLEL_LEVEL
+
 $CMAKE_BIN --build "${CMAKE_BINARY_DIR}" -- -j "$(nproc)" || exit 1
 
 echo "Build package"
