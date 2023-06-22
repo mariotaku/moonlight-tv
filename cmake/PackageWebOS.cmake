@@ -1,4 +1,4 @@
-find_program(AWK awk REQUIRED)
+find_program(AWK NAMES gawk awk REQUIRED)
 
 # Copy manifest
 configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
