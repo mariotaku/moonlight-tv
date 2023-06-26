@@ -46,18 +46,11 @@ if (NOT ENV{CI})
     if (ENV{ARES_DEVICE})
         set(ares_arguments "-d" $ENV{ARES_DEVICE})
     endif ()
-    add_custom_target(webos-install-moonlight COMMAND ares-install ${CPACK_PACKAGE_FILE_NAME} ${ares_arguments}
+    add_custom_target(webos-install-moonlight COMMAND ares-install "${CPACK_PACKAGE_FILE_NAME}.ipk" ${ares_arguments}
             WORKING_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}
             DEPENDS webos-package-moonlight)
     add_custom_target(webos-launch-moonlight COMMAND ares-launch "${WEBOS_APPINFO_ID}" ${ares_arguments}
             DEPENDS webos-install-moonlight)
 endif ()
-
-# Used by webos-install-moonlight
-set_target_properties(moonlight PROPERTIES
-        WEBOS_PACKAGE_TARGET webos-package-moonlight
-        WEBOS_PACKAGE_PATH "${CPACK_PACKAGE_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.ipk"
-        WEBOS_APPINFO_ID "${WEBOS_APPINFO_ID}"
-        )
 
 include(CPack)
