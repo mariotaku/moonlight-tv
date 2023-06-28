@@ -35,9 +35,13 @@ set(CMAKE_MODULE_PATH
         )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+include(GetCompilerTarget)
+
 get_filename_component(CC_BASENAME ${CMAKE_C_COMPILER} NAME)
 
-option(TARGET_WEBOS "Build for LG webOS" OFF)
+if (CMAKE_C_COMPILER_TARGET STREQUAL "arm-webos-linux-gnueabi")
+    set(TARGET_WEBOS ON)
+endif ()
 
 option(USE_MBEDTLS "" ON)
 option(USE_WERROR "" OFF)
@@ -74,16 +78,6 @@ set(FEATURE_INPUT_LIBCEC ON)
 include(LintOptions)
 
 if (TARGET_WEBOS)
-    if (NOT ENV{ARCH})
-        string(REPLACE "-" ";" CC_BASENAME_SEGS ${CC_BASENAME})
-        list(GET CC_BASENAME_SEGS 0 CC_ARCH)
-        if (CC_ARCH MATCHES [[i.86]])
-            set(ENV{ARCH} "x86")
-            set(ENV{PKG_CONFIG_PATH} "/usr/lib/i386-linux-gnu/pkgconfig")
-        else ()
-            set(ENV{ARCH} ${CC_ARCH})
-        endif ()
-    endif ()
     set(THREADS_PTHREAD_ARG "2" CACHE STRING "Result from TRY_RUN" FORCE)
     set(OS_LINUX TRUE)
 
@@ -312,8 +306,6 @@ install(TARGETS moonlight RUNTIME DESTINATION bin)
 if (FEATURE_I18N_GETTEXT)
     include(MoonlightI18n)
 endif ()
-
-include(GetCompilerTarget)
 
 if (TARGET_WEBOS)
     include(PackageWebOS)
