@@ -42,6 +42,7 @@ static void fatal_error_popup(void *data) {
     static const char *btn_txts[] = {"Quit", ""};
     lv_obj_t *msgbox = lv_msgbox_create(NULL, error_data->title, error_data->message, btn_txts, false);
     lv_obj_add_event_cb(msgbox, fatal_error_quit, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_flag(msgbox, LV_OBJ_FLAG_USER_4);
     lv_obj_center(msgbox);
 }
 
