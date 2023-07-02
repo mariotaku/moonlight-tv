@@ -4,7 +4,8 @@ find_program(AWK NAMES gawk awk REQUIRED)
 configure_file(deploy/webos/appinfo.json ./appinfo.json @ONLY)
 
 # Copy all files under deploy/webos/ to package root
-install(DIRECTORY deploy/webos/ DESTINATION . PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE PATTERN "appinfo.json" EXCLUDE)
+install(DIRECTORY deploy/webos/ DESTINATION . USE_SOURCE_PERMISSIONS PATTERN ".*" EXCLUDE PATTERN "*.in" EXCLUDE
+        PATTERN "appinfo.json" EXCLUDE)
 install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
 
 # Generate translations
