@@ -3,6 +3,7 @@
 #include "res.h"
 
 #include "lvgl/lv_disp_drv_app.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 #include "draw/sdl/lv_draw_sdl_utils.h"
 
 #include "stream/platform.h"
@@ -15,16 +16,20 @@
 #include "logging.h"
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "util/font.h"
 
 #include <SDL_image.h>
 
 #include "logging_ext_lvgl.h"
+#include "fatal_error.h"
 
 #if FEATURE_WINDOW_FULLSCREEN_DESKTOP
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
 #else
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
 #endif
+
+static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata);
 
 short ui_display_width, ui_display_height;
 static unsigned int last_pts = 0;
@@ -44,6 +49,9 @@ void app_ui_init(app_ui_t *ui, app_t *app) {
     lv_log_register_print_cb(commons_lv_log);
     lv_init();
     ui->img_decoder = lv_sdl_img_decoder_init(IMG_INIT_JPG | IMG_INIT_PNG);
+    lv_memset_00(&ui->theme, sizeof(lv_theme_t));
+    lv_theme_moonlight_init(&ui->theme, app);
+    ui->fonts = app_font_init(&ui->theme);
 }
 
 void app_ui_deinit(app_ui_t *ui) {
@@ -51,17 +59,40 @@ void app_ui_deinit(app_ui_t *ui) {
         SDL_GetWindowPosition(ui->window, &app_configuration->window_state.x, &app_configuration->window_state.y);
         SDL_GetWindowSize(ui->window, &app_configuration->window_state.w, &app_configuration->window_state.h);
     }
+    app_font_deinit(ui->fonts);
+
     SDL_DestroyWindow(ui->window);
     lv_img_decoder_delete(ui->img_decoder);
 }
 
 void app_ui_open(app_ui_t *ui) {
+    ui->disp = lv_app_display_init(ui->window);
 
+    lv_theme_t *parent_theme = lv_disp_get_theme(ui->disp);
+    ui->theme.color_primary = parent_theme->color_primary;
+    ui->theme.color_secondary = parent_theme->color_secondary;
+    lv_theme_set_parent(&ui->theme, parent_theme);
+    lv_disp_set_theme(ui->disp, &ui->theme);
+    streaming_display_size(ui->disp->driver->hor_res, ui->disp->driver->ver_res);
+
+    lv_group_t *group = lv_group_create();
+    lv_group_set_editing(group, 0);
+    lv_group_set_default(group);
+    app_ui_input_init(&ui->input, ui);
+
+    SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
 }
 
 void app_ui_close(app_ui_t *ui) {
+    SDL_SetAssertionHandler(app_assertion_handler_abort, NULL);
 
+    lv_fragment_manager_del(app_uimanager);
+
+    app_ui_input_deinit(&ui->input);
+    lv_app_display_deinit(ui->disp);
+    ui->disp = NULL;
 }
+
 bool ui_has_stream_renderer() {
 //    return ui_stream_render != NULL && ui_stream_render->renderDraw;
     return false;
@@ -207,4 +238,11 @@ SDL_Window *app_create_window() {
 
 void app_set_fullscreen(app_t *app, bool fullscreen) {
     SDL_SetWindowFullscreen(app->ui.window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
+}
+
+static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata) {
+    (void) userdata;
+    app_fatal_error("Assertion failure", "at %s\n(%s:%d): '%s'", data->function, data->filename, data->linenum,
+                    data->condition);
+    return SDL_ASSERTION_ALWAYS_IGNORE;
 }

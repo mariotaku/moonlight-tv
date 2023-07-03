@@ -70,7 +70,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_flex_main_place(obj, LV_FLEX_ALIGN_END, 0);
         lv_group_t *group = lv_group_create();
         group->user_data = theme;
-        app_input_push_modal_group(&app->input, group);
+        app_input_push_modal_group(&app->ui.input, group);
         lv_obj_add_event_cb(obj, cb_child_group_add, LV_EVENT_CHILD_CREATED, group);
         lv_obj_add_event_cb(obj, msgbox_key, LV_EVENT_KEY, NULL);
         lv_obj_add_event_cb(obj, msgbox_cancel, LV_EVENT_CANCEL, NULL);
@@ -150,7 +150,7 @@ static void msgbox_destroy(lv_event_t *event) {
     lv_group_t *group = lv_event_get_user_data(event);
     lv_theme_t *theme = group->user_data;
     app_t *app = theme->user_data;
-    app_input_remove_modal_group(&app->input, group);
+    app_input_remove_modal_group(&app->ui.input, group);
     lv_group_remove_all_objs(group);
     lv_group_del(group);
 }

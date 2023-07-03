@@ -104,7 +104,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     if (controller->mini) {
         controller->nav_group = lv_group_create();
         controller->tab_groups = lv_mem_alloc(sizeof(lv_group_t *) * entries_len);
-        app_input_set_group(&controller->app->input, controller->nav_group);
+        app_input_set_group(&controller->app->ui.input, controller->nav_group);
 
         lv_obj_t *btns = lv_tabview_get_tab_btns(controller->tabview);
         lv_obj_set_style_text_font(btns, app_iconfonts.large, 0);
@@ -144,7 +144,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
         lv_obj_add_event_cb(controller->nav, on_nav_key, LV_EVENT_KEY, controller);
         lv_obj_add_event_cb(controller->nav, on_back_request, LV_EVENT_CANCEL, controller);
 
-        app_input_set_group(&controller->app->input, controller->nav_group);
+        app_input_set_group(&controller->app->ui.input, controller->nav_group);
 
         for (int i = 0; i < entries_len; ++i) {
             settings_entry_t entry = entries[i];
@@ -163,7 +163,7 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     settings_controller_t *controller = (settings_controller_t *) self;
     settings_save(app_configuration);
 
-    app_input_set_group(&controller->app->input, NULL);
+    app_input_set_group(&controller->app->ui.input, NULL);
     if (controller->mini) {
         for (int i = 0; i < entries_len; i++) {
             lv_group_del(controller->tab_groups[i]);
@@ -238,7 +238,7 @@ static void on_entry_click(lv_event_t *event) {
         }
     }
     if (!first_focusable) { return; }
-    app_input_set_group(&controller->app->input, controller->detail_group);
+    app_input_set_group(&controller->app->ui.input, controller->detail_group);
     lv_indev_t *indev = lv_indev_get_act();
     if (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_KEYPAD) { return; }
     lv_group_focus_obj(first_focusable);
@@ -346,7 +346,7 @@ static void on_tab_key(lv_event_t *event) {
             if (lv_group_get_obj_count(content_group) == 0) {
                 break;
             }
-            app_input_set_group(&controller->app->input, content_group);
+            app_input_set_group(&controller->app->ui.input, content_group);
             lv_obj_t *focused = lv_group_get_focused(content_group);
             if (focused) {
                 lv_obj_add_state(focused, LV_STATE_FOCUS_KEY);
@@ -408,7 +408,7 @@ static void detail_defocus(settings_controller_t *controller, lv_event_t *e) {
     if (detail_focused) {
         lv_event_send(detail_focused, LV_EVENT_DEFOCUSED, lv_indev_get_act());
     }
-    app_input_set_group(&controller->app->input, controller->nav_group);
+    app_input_set_group(&controller->app->ui.input, controller->nav_group);
     lv_obj_t *nav_focused = lv_group_get_focused(controller->nav_group);
     if (nav_focused) {
         lv_obj_add_state(nav_focused, LV_STATE_FOCUS_KEY);

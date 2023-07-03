@@ -81,3 +81,5 @@ void app_open_url(const char *url);
 void app_init_locale();
 
 const char *app_get_locale_lang();
+
+SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata);

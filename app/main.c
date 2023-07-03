@@ -32,12 +32,8 @@ static SDL_mutex *app_gs_client_mutex = NULL;
 lv_fragment_manager_t *app_uimanager;
 
 
-
 static void log_libs_version();
 
-static SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata);
-
-static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata);
 
 app_t *global = NULL;
 
@@ -76,25 +72,7 @@ int main(int argc, char *argv[]) {
                          app_configuration->default_app_id);
     }
 
-    lv_disp_t *disp = lv_app_display_init(app_.ui.window);
-    lv_theme_t *parent_theme = lv_disp_get_theme(disp);
-    lv_theme_t theme_app;
-    lv_memset_00(&theme_app, sizeof(lv_theme_t));
-    theme_app.color_primary = parent_theme->color_primary;
-    theme_app.color_secondary = parent_theme->color_secondary;
-    lv_theme_set_parent(&theme_app, parent_theme);
-    lv_theme_moonlight_init(&theme_app, &app_);
-    app_fonts_t *fonts = app_font_init(&theme_app);
-    lv_disp_set_theme(disp, &theme_app);
-    streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
-
-
-    lv_group_t *group = lv_group_create();
-    lv_group_set_editing(group, 0);
-    lv_group_set_default(group);
-    app_input_init(&app_.input, &app_);
-
-    SDL_SetAssertionHandler(app_assertion_handler_ui, &app_);
+    app_ui_open(&app_.ui);
 
     lv_obj_t *scr = lv_scr_act();
     lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
@@ -110,14 +88,7 @@ int main(int argc, char *argv[]) {
         SDL_Delay(1);
     }
 
-    SDL_SetAssertionHandler(NULL, NULL);
-
-    lv_fragment_manager_del(app_uimanager);
-
-    app_input_deinit(&app_.input);
-    lv_app_display_deinit(disp);
-    app_font_deinit(fonts);
-
+    app_ui_close(&app_.ui);
     app_ui_deinit(&app_.ui);
     app_uninit_video();
 
@@ -185,16 +156,9 @@ static void log_libs_version() {
     commons_log_debug("APP", "SDL_image version: %d.%d.%d", img_version->major, img_version->minor, img_version->patch);
 }
 
-static SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata) {
+SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata) {
     (void) userdata;
     commons_log_fatal("Assertion", "at %s (%s:%d): '%s'", data->function, data->filename, data->linenum,
                       data->condition);
     return SDL_ASSERTION_ABORT;
-}
-
-static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata) {
-    (void) userdata;
-    app_fatal_error("Assertion failure", "at %s\n(%s:%d): '%s'", data->function, data->filename, data->linenum,
-                    data->condition);
-    return SDL_ASSERTION_ALWAYS_IGNORE;
 }

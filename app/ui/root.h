@@ -10,12 +10,36 @@
 
 #include "util/navkey.h"
 
+#include "input/lv_drv_sdl_key.h"
+
 typedef struct app_t app_t;
+typedef struct app_fonts_t app_fonts_t;
+
+typedef struct app_ui_input_lv_pair_t {
+    lv_indev_drv_t drv;
+    lv_indev_t *indev;
+} app_ui_input_lv_pair_t;
+
+typedef struct app_ui_input_t {
+    lv_group_t *app_group;
+    lv_ll_t modal_groups;
+    struct {
+        lv_drv_sdl_key_t drv;
+        lv_indev_t *indev;
+    } key;
+    app_ui_input_lv_pair_t pointer;
+    app_ui_input_lv_pair_t wheel;
+    app_ui_input_lv_pair_t button;
+} app_ui_input_t;
 
 typedef struct app_ui_t {
     app_t *app;
     SDL_Window *window;
     lv_img_decoder_t *img_decoder;
+    lv_theme_t theme;
+    app_fonts_t *fonts;
+    lv_disp_t *disp;
+    app_ui_input_t input;
 } app_ui_t;
 
 enum UI_INPUT_MODE {
@@ -47,6 +71,20 @@ void app_ui_deinit(app_ui_t *ui);
 void app_ui_open(app_ui_t *ui);
 
 void app_ui_close(app_ui_t *ui);
+
+void app_ui_input_init(app_ui_input_t *input, app_ui_t*ui);
+
+void app_ui_input_deinit(app_ui_input_t *input);
+
+void app_input_set_group(app_ui_input_t *input, lv_group_t *group);
+
+void app_input_push_modal_group(app_ui_input_t *input, lv_group_t *group);
+
+void app_input_remove_modal_group(app_ui_input_t *input, lv_group_t *group);
+
+lv_group_t *app_input_get_group(app_ui_input_t *input);
+
+void app_input_set_button_points(app_ui_input_t *input, const lv_point_t *points);
 
 bool ui_has_stream_renderer();
 
