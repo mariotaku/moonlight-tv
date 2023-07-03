@@ -126,9 +126,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pref_header(view, "Video Settings");
 
-    lv_obj_t *hevc_checkbox = pref_checkbox(view, locstr("Prefer H265 codec"),
-                                            &app_configuration->stream.supportsHevc,
-                                            false);
+    lv_obj_t *hevc_checkbox = pref_checkbox(view, locstr("Prefer H265 codec"), &app_configuration->hevc, false);
     lv_obj_t *hevc_hint = pref_desc_label(view, NULL, false);
     if (app->ss4s.video_cap.codecs & SS4S_VIDEO_H265) {
         lv_obj_clear_state(hevc_checkbox, LV_STATE_DISABLED);
@@ -140,14 +138,13 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
                               SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
     }
 
-    lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR (experimental)"), &app_configuration->stream.enableHdr,
-                                           false);
+    lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR (experimental)"), &app_configuration->hdr, false);
     lv_obj_t *hdr_hint = pref_desc_label(view, NULL, false);
     if (app->ss4s.video_cap.hdr == 0) {
         lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
                               SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
-    } else if (!app_configuration->stream.supportsHevc) {
+    } else if (!app_configuration->hevc) {
         lv_obj_clear_state(hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text(hdr_hint, locstr("H265 is required to use HDR."));
     } else {
@@ -194,8 +191,8 @@ static void module_changed_cb(lv_event_t *e) {
 static void hdr_state_update_cb(lv_event_t *e) {
     decoder_pane_t *controller = (decoder_pane_t *) lv_event_get_user_data(e);
     app_t *app = controller->parent->app;
-    if (app->ss4s.video_cap.hdr == 0) return;
-    if (!app_configuration->stream.supportsHevc) {
+    if (app->ss4s.video_cap.hdr == 0) { return; }
+    if (!app_configuration->hevc) {
         lv_obj_add_state(controller->hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text(controller->hdr_hint, locstr("H265 is required to use HDR."));
     } else {
