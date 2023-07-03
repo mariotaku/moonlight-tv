@@ -72,6 +72,8 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     SS4S_VideoInfo info = {
             .width = width,
             .height = height,
+            .frameRateNumerator = redrawRate,
+            .frameRateDenominator = 1,
     };
     switch (videoFormat) {
         case VIDEO_FORMAT_H264:

@@ -16,6 +16,7 @@
 #include "backend/backend_root.h"
 
 #if FEATURE_INPUT_LIBCEC
+
 #include "cec_sdl.h"
 #include "ss4s_modules.h"
 
@@ -54,7 +55,7 @@ void app_uninit_video();
 
 void app_handle_launch(int argc, char *argv[]);
 
-void app_process_events();
+void app_process_events(app_t *app);
 
 void app_request_exit();
 
@@ -72,7 +73,7 @@ bool app_get_mouse_relative();
 
 void app_set_keep_awake(bool);
 
-void app_set_fullscreen(app_t*app, bool);
+void app_set_fullscreen(app_t *app, bool);
 
 void app_open_url(const char *url);
 

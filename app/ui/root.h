@@ -10,6 +10,8 @@
 
 #include "util/navkey.h"
 
+typedef struct app_t app_t;
+
 enum UI_INPUT_MODE {
     UI_INPUT_MODE_POINTER_FLAG = 0x10,
     UI_INPUT_MODE_MOUSE = 0x11,
@@ -36,7 +38,7 @@ bool ui_has_stream_renderer();
 
 bool ui_render_background();
 
-bool ui_dispatch_userevent(int which, void *data1, void *data2);
+bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2);
 
 /**
  * @brief Check if GUI should consume input events, so it will not pass onto streaming

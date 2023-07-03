@@ -109,8 +109,9 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
                                                           config->stream.fps);
     }
     // Cap framerate to platform request
-    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate)
+    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate) {
         config->stream.bitrate = (int) video_cap.maxBitrate;
+    }
     config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
     if (video_cap.codecs & SS4S_VIDEO_H264) {
@@ -123,9 +124,7 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
         }
     }
     config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
-    if (video_cap.fullColorRange) {
-        config->stream.colorRange = COLOR_RANGE_FULL;
-    }
+    config->stream.colorRange = video_cap.fullColorRange ? COLOR_RANGE_FULL : COLOR_RANGE_LIMITED;
     // The flags seem to be the same to supportedVideoFormats, use it for now...
     server_clone->serverInfo.serverCodecModeSupport = config->stream.supportedVideoFormats;
 #if FEATURE_SURROUND_SOUND
@@ -428,8 +427,9 @@ void streaming_error(int code, const char *fmt, ...) {
 
 bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
     for (PDISPLAY_MODE cur = modes; cur != NULL; cur = cur->next) {
-        if (cur->width == w && cur->height == h && cur->refresh == fps)
+        if (cur->width == w && cur->height == h && cur->refresh == fps) {
             return true;
+        }
     }
     return false;
 }

@@ -95,7 +95,7 @@ void app_uninit_video() {
 void inputmgr_sdl_handle_event(SDL_Event *ev);
 
 static int app_event_filter(void *userdata, SDL_Event *event) {
-    (void) userdata;
+    app_t *app = userdata;
     switch (event->type) {
         case SDL_APP_WILLENTERBACKGROUND: {
             // Interrupt streaming because app will go to background
@@ -147,7 +147,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                 actionfn(event->user.data2);
             } else {
                 bool handled = backend_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
-                handled = handled || ui_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
+                handled = handled || ui_dispatch_userevent(app, event->user.code, event->user.data1, event->user.data2);
                 if (!handled) {
                     commons_log_warn("Event", "Nobody handles event %d", event->user.code);
                 }
@@ -186,9 +186,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
     return 0;
 }
 
-void app_process_events() {
+void app_process_events(app_t *app) {
     SDL_PumpEvents();
-    SDL_FilterEvents(app_event_filter, NULL);
+    SDL_FilterEvents(app_event_filter, app);
 }
 
 

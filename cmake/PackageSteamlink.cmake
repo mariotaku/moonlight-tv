@@ -13,4 +13,13 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
     set(CPACK_STRIP_FILES TRUE)
 endif ()
 
+add_custom_target(steamlink-package-moonlight COMMAND cpack DEPENDS moonlight)
+
+if (NOT ENV{CI})
+    add_custom_target(steamlink-install-moonlight
+            COMMAND ssh steamlink 'mkdir -p /home/apps/moonlight-tv\; cd /home/apps/moonlight-tv\; tar zxvf -' < "${CPACK_PACKAGE_FILE_NAME}.tar.gz"
+            WORKING_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}
+            DEPENDS steamlink-package-moonlight)
+endif ()
+
 include(CPack)

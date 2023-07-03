@@ -28,11 +28,10 @@
 
 #include <SDL_image.h>
 
-#if TARGET_WEBOS
-
-#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
-#else
+#if FEATURE_WINDOW_FULLSCREEN_DESKTOP
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
+#else
+#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
 #endif
 
 static bool running = true;
@@ -118,7 +117,7 @@ int main(int argc, char *argv[]) {
 
 
     while (app_is_running()) {
-        app_process_events();
+        app_process_events(&app_);
         lv_task_handler();
         SDL_Delay(1);
     }

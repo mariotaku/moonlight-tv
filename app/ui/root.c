@@ -44,7 +44,7 @@ bool ui_render_background() {
     return false;
 }
 
-bool ui_dispatch_userevent(int which, void *data1, void *data2) {
+bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
     bool handled = false;
     ui_userevent_t userdata = {data1, data2};
     handled |= lv_fragment_manager_send_event(app_uimanager, which, &userdata);
