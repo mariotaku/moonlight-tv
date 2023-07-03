@@ -71,7 +71,6 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->stream.packetSize = 1392;
     config->stream.streamingRemotely = STREAM_CFG_AUTO;
     config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
-    config->stream.supportsHevc = true;
 
     config->debug_level = 0;
     set_string(&config->language, "auto");
@@ -93,6 +92,8 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->absmouse = true;
     config->virtual_mouse = false;
     config->stop_on_stall = false;
+    config->hdr = false;
+    config->hevc = true;
     path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
 }
 
@@ -135,7 +136,7 @@ bool settings_read(const char *filename, PCONFIGURATION config) {
 
 void settings_write(const char *filename, PCONFIGURATION config) {
     FILE *fp = fopen(filename, "wb");
-    if (!fp) return;
+    if (!fp) { return; }
     ini_write_string(fp, "language", config->language);
     ini_write_bool(fp, "fullscreen", config->fullscreen);
     ini_write_int(fp, "debug_level", config->debug_level);
@@ -165,8 +166,8 @@ void settings_write(const char *filename, PCONFIGURATION config) {
 
     ini_write_section(fp, "video");
     ini_write_string(fp, "decoder", config->decoder);
-    ini_write_bool(fp, "hdr", config->stream.enableHdr);
-    ini_write_bool(fp, "hevc", config->stream.supportsHevc);
+    ini_write_bool(fp, "hdr", config->hdr);
+    ini_write_bool(fp, "hevc", config->hevc);
 
     ini_write_section(fp, "audio");
     ini_write_string(fp, "backend", config->audio_backend);
@@ -196,23 +197,26 @@ const char *serialize_audio_config(int config) {
 
 int parse_audio_config(const char *value) {
     int index = value ? find_ch_idx_by_value(value) : -1;
-    if (index < 0)
+    if (index < 0) {
         index = 0;
+    }
     return audio_configs[index].configuration;
 }
 
 int find_ch_idx_by_config(int config) {
     for (int i = 0; i < audio_config_len; i++) {
-        if (audio_configs[i].configuration == config)
+        if (audio_configs[i].configuration == config) {
             return i;
+        }
     }
     return -1;
 }
 
 int find_ch_idx_by_value(const char *value) {
     for (int i = 0; i < audio_config_len; i++) {
-        if (strcmp(audio_configs[i].value, value) == 0)
+        if (strcmp(audio_configs[i].value, value) == 0) {
             return i;
+        }
     }
     return -1;
 }
@@ -233,9 +237,9 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
     } else if (INI_FULL_MATCH("streaming", "stop_on_stall")) {
         config->stop_on_stall = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hevc")) {
-        config->stream.supportsHevc = INI_IS_TRUE(value);
+        config->hevc = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hdr")) {
-        config->stream.enableHdr = INI_IS_TRUE(value);
+        config->hdr = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("surround")) {
         config->stream.audioConfiguration = parse_audio_config(value);
     } else if (INI_NAME_MATCH("sops")) {

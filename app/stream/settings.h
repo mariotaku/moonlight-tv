@@ -49,6 +49,8 @@ typedef struct configuration_t {
     bool swap_abxy;
     bool syskey_capture;
     bool stop_on_stall;
+    bool hdr;
+    bool hevc;
 
     /*Volatile fields*/
     char default_host_uuid[40];

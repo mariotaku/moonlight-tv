@@ -219,6 +219,7 @@ else ()
     unset(BUILD_SHARED_LIBS)
 endif ()
 
+message(INIH_INCLUDE_DIRS=${INIH_INCLUDE_DIRS})
 target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
         ${INIH_INCLUDE_DIRS})
 target_link_libraries(moonlight PRIVATE

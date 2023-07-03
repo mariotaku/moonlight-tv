@@ -113,16 +113,19 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
         config->stream.bitrate = (int) video_cap.maxBitrate;
     config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
-    config->stream.supportsHevc &= (video_cap.codecs & SS4S_VIDEO_H265) != 0;
-    config->stream.enableHdr &= config->stream.supportsHevc && video_cap.hdr && server_clone->supportsHdr &&
-                                (app->hdr != 0/* TODO: handle always on case*/);
-    config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
-    if (config->stream.enableHdr) {
-        config->stream.colorRange = COLOR_RANGE_FULL/* TODO: get from video capabilities */;
+    if (video_cap.codecs & SS4S_VIDEO_H264) {
+        config->stream.supportedVideoFormats |= VIDEO_FORMAT_H264;
     }
-    commons_log_info("Session", "enableHdr=%u", config->stream.enableHdr);
-    commons_log_info("Session", "colorSpace=%d", config->stream.colorSpace);
-    commons_log_info("Session", "colorRange=%d", config->stream.colorRange);
+    if (config->hevc && video_cap.codecs & SS4S_VIDEO_H265) {
+        config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265;
+        if (config->hdr && video_cap.hdr) {
+            config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265_MAIN10;
+        }
+    }
+    config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
+    if (video_cap.fullColorRange) {
+        config->stream.colorRange = COLOR_RANGE_FULL;
+    }
 #if FEATURE_SURROUND_SOUND
     if (audio_cap.maxChannels < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
         switch (audio_cap.maxChannels) {
