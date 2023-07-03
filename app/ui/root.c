@@ -16,6 +16,16 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 
+#include <SDL_image.h>
+
+#include "logging_ext_lvgl.h"
+
+#if FEATURE_WINDOW_FULLSCREEN_DESKTOP
+#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
+#else
+#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
+#endif
+
 short ui_display_width, ui_display_height;
 static unsigned int last_pts = 0;
 
@@ -27,11 +37,31 @@ typedef struct render_frame_req_t {
     unsigned int pts;
 } render_frame_req_t;
 
-//static PVIDEO_RENDER_CALLBACKS ui_stream_render;
-//static HOST_RENDER_CONTEXT ui_stream_render_host_context = {
-//        .queueSubmit = ui_render_queue_submit
-//};
+SDL_Window *app_create_window();
 
+void app_ui_init(app_ui_t *ui, app_t *app) {
+    ui->window = app_create_window();
+    lv_log_register_print_cb(commons_lv_log);
+    lv_init();
+    ui->img_decoder = lv_sdl_img_decoder_init(IMG_INIT_JPG | IMG_INIT_PNG);
+}
+
+void app_ui_deinit(app_ui_t *ui) {
+    if (!app_configuration->fullscreen) {
+        SDL_GetWindowPosition(ui->window, &app_configuration->window_state.x, &app_configuration->window_state.y);
+        SDL_GetWindowSize(ui->window, &app_configuration->window_state.w, &app_configuration->window_state.h);
+    }
+    SDL_DestroyWindow(ui->window);
+    lv_img_decoder_delete(ui->img_decoder);
+}
+
+void app_ui_open(app_ui_t *ui) {
+
+}
+
+void app_ui_close(app_ui_t *ui) {
+
+}
 bool ui_has_stream_renderer() {
 //    return ui_stream_render != NULL && ui_stream_render->renderDraw;
     return false;
@@ -140,4 +170,41 @@ void ui_cb_destroy_fragment(lv_event_t *e) {
     }
     fragment->obj = NULL;
     lv_fragment_del(fragment);
+}
+
+SDL_Window *app_create_window() {
+    Uint32 win_flags = SDL_WINDOW_RESIZABLE;
+    int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED,
+            win_width = 1920, win_height = 1080;
+    if (app_configuration->fullscreen) {
+        win_flags |= APP_FULLSCREEN_FLAG;
+        SDL_DisplayMode mode;
+        SDL_GetDisplayMode(0, 0, &mode);
+        if (mode.w > 0 && mode.h > 0) {
+            win_width = mode.w;
+            win_height = mode.h;
+        }
+    } else {
+        win_x = app_configuration->window_state.x;
+        win_y = app_configuration->window_state.y;
+        win_width = app_configuration->window_state.w;
+        win_height = app_configuration->window_state.h;
+    }
+    SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
+    SDL_assert_release(win != NULL);
+
+    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(lv_sdl_img_data_logo_96.data.constptr,
+                                                          (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);
+    SDL_SetWindowIcon(win, winicon);
+    SDL_FreeSurface(winicon);
+    SDL_SetWindowMinimumSize(win, 640, 480);
+    int w = 0, h = 0;
+    SDL_GetWindowSize(win, &w, &h);
+    SDL_assert_release(w > 0 && h > 0);
+    ui_display_size(w, h);
+    return win;
+}
+
+void app_set_fullscreen(app_t *app, bool fullscreen) {
+    SDL_SetWindowFullscreen(app->ui.window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }

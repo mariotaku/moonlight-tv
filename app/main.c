@@ -1,7 +1,7 @@
+#include <SDL_image.h>
 #include "app.h"
 #include "logging.h"
 #include "logging_ext_sdl.h"
-#include "logging_ext_lvgl.h"
 
 #include "res.h"
 
@@ -26,21 +26,12 @@
 #include "errors.h"
 #include "ui/fatal_error.h"
 
-#include <SDL_image.h>
-
-#if FEATURE_WINDOW_FULLSCREEN_DESKTOP
-#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
-#else
-#define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN
-#endif
-
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
 
 lv_fragment_manager_t *app_uimanager;
 
 
-SDL_Window *app_create_window();
 
 static void log_libs_version();
 
@@ -72,7 +63,7 @@ int main(int argc, char *argv[]) {
     app_init_video();
     commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
 
-    app_.window = app_create_window();
+    app_ui_init(&app_.ui, &app_);
 
     global = &app_;
 
@@ -85,9 +76,7 @@ int main(int argc, char *argv[]) {
                          app_configuration->default_app_id);
     }
 
-    lv_log_register_print_cb(commons_lv_log);
-    lv_init();
-    lv_disp_t *disp = lv_app_display_init(app_.window);
+    lv_disp_t *disp = lv_app_display_init(app_.ui.window);
     lv_theme_t *parent_theme = lv_disp_get_theme(disp);
     lv_theme_t theme_app;
     lv_memset_00(&theme_app, sizeof(lv_theme_t));
@@ -99,7 +88,6 @@ int main(int argc, char *argv[]) {
     lv_disp_set_theme(disp, &theme_app);
     streaming_display_size(disp->driver->hor_res, disp->driver->ver_res);
 
-    lv_img_decoder_t *img_decoder = lv_sdl_img_decoder_init(IMG_INIT_JPG | IMG_INIT_PNG);
 
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
@@ -128,15 +116,9 @@ int main(int argc, char *argv[]) {
 
     app_input_deinit(&app_.input);
     lv_app_display_deinit(disp);
-    lv_img_decoder_delete(img_decoder);
     app_font_deinit(fonts);
 
-    if (!app_configuration->fullscreen) {
-        SDL_GetWindowPosition(app_.window, &app_configuration->window_state.x, &app_configuration->window_state.y);
-        SDL_GetWindowSize(app_.window, &app_configuration->window_state.w, &app_configuration->window_state.h);
-    }
-
-    SDL_DestroyWindow(app_.window);
+    app_ui_deinit(&app_.ui);
     app_uninit_video();
 
     backend_destroy(&app_.backend);
@@ -156,39 +138,6 @@ int main(int argc, char *argv[]) {
 
     commons_log_info("APP", "Quitted gracefully :)");
     return 0;
-}
-
-SDL_Window *app_create_window() {
-    Uint32 win_flags = SDL_WINDOW_RESIZABLE;
-    int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED,
-            win_width = 1920, win_height = 1080;
-    if (app_configuration->fullscreen) {
-        win_flags |= APP_FULLSCREEN_FLAG;
-        SDL_DisplayMode mode;
-        SDL_GetDisplayMode(0, 0, &mode);
-        if (mode.w > 0 && mode.h > 0) {
-            win_width = mode.w;
-            win_height = mode.h;
-        }
-    } else {
-        win_x = app_configuration->window_state.x;
-        win_y = app_configuration->window_state.y;
-        win_width = app_configuration->window_state.w;
-        win_height = app_configuration->window_state.h;
-    }
-    SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
-    SDL_assert_release(win != NULL);
-
-    SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(lv_sdl_img_data_logo_96.data.constptr,
-                                                          (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);
-    SDL_SetWindowIcon(win, winicon);
-    SDL_FreeSurface(winicon);
-    SDL_SetWindowMinimumSize(win, 640, 480);
-    int w = 0, h = 0;
-    SDL_GetWindowSize(win, &w, &h);
-    SDL_assert_release(w > 0 && h > 0);
-    ui_display_size(w, h);
-    return win;
 }
 
 void app_request_exit() {
@@ -226,11 +175,6 @@ GS_CLIENT app_gs_client_new() {
     }
     SDL_UnlockMutex(app_gs_client_mutex);
     return client;
-}
-
-
-void app_set_fullscreen(app_t *app, bool fullscreen) {
-    SDL_SetWindowFullscreen(app->window, fullscreen ? APP_FULLSCREEN_FLAG : 0);
 }
 
 static void log_libs_version() {

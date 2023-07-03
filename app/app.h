@@ -19,6 +19,7 @@
 
 #include "cec_sdl.h"
 #include "ss4s_modules.h"
+#include "ui/root.h"
 
 #endif
 
@@ -29,11 +30,11 @@ extern lv_fragment_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
 
 typedef struct app_t {
-    SDL_Window *window;
     SDL_threadID main_thread_id;
     os_info_t os_info;
-    app_input_t input;
     app_backend_t backend;
+    app_input_t input;
+    app_ui_t ui;
     struct {
         array_list_t modules;
         SS4S_ModuleSelection selection;

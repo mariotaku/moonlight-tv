@@ -12,6 +12,12 @@
 
 typedef struct app_t app_t;
 
+typedef struct app_ui_t {
+    app_t *app;
+    SDL_Window *window;
+    lv_img_decoder_t *img_decoder;
+} app_ui_t;
+
 enum UI_INPUT_MODE {
     UI_INPUT_MODE_POINTER_FLAG = 0x10,
     UI_INPUT_MODE_MOUSE = 0x11,
@@ -33,6 +39,14 @@ extern short ui_display_width, ui_display_height;
 extern enum UI_INPUT_MODE ui_input_mode;
 
 const lv_img_dsc_t *ui_logo_src();
+
+void app_ui_init(app_ui_t *ui, app_t *app);
+
+void app_ui_deinit(app_ui_t *ui);
+
+void app_ui_open(app_ui_t *ui);
+
+void app_ui_close(app_ui_t *ui);
 
 bool ui_has_stream_renderer();
 
