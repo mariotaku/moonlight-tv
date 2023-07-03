@@ -126,6 +126,8 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
     if (video_cap.fullColorRange) {
         config->stream.colorRange = COLOR_RANGE_FULL;
     }
+    // The flags seem to be the same to supportedVideoFormats, use it for now...
+    server_clone->serverInfo.serverCodecModeSupport = config->stream.supportedVideoFormats;
 #if FEATURE_SURROUND_SOUND
     if (audio_cap.maxChannels < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
         switch (audio_cap.maxChannels) {
