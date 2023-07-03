@@ -237,9 +237,9 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
     } else if (INI_FULL_MATCH("streaming", "stop_on_stall")) {
         config->stop_on_stall = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hevc")) {
-        config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265;
+        config->hevc = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hdr")) {
-        config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265_MAIN10;
+        config->hdr = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("surround")) {
         config->stream.audioConfiguration = parse_audio_config(value);
     } else if (INI_NAME_MATCH("sops")) {

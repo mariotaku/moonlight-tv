@@ -19,22 +19,28 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef struct APP_LIST {
-  char* name;
-  int id;
-  int hdr;
-  struct APP_LIST *next;
+    char *name;
+    int id;
+    int hdr;
+    struct APP_LIST *next;
 } APP_LIST, *PAPP_LIST;
 
 typedef struct DISPLAY_MODE {
-  unsigned int height;
-  unsigned int width;
-  unsigned int refresh;
-  struct DISPLAY_MODE *next;
+    unsigned int height;
+    unsigned int width;
+    unsigned int refresh;
+    struct DISPLAY_MODE *next;
 } DISPLAY_MODE, *PDISPLAY_MODE;
 
-int xml_search(char* data, size_t len, char* node, char** result);
-int xml_applist(char* data, size_t len, PAPP_LIST *app_list);
-int xml_modelist(char* data, size_t len, PDISPLAY_MODE *mode_list);
-int xml_status(char* data, size_t len);
+int xml_search(char *data, size_t len, const char *node, char **result);
+
+int xml_search_ex(char *data, size_t len, const char *node, bool required, char **result);
+
+int xml_applist(char *data, size_t len, PAPP_LIST *app_list);
+
+int xml_modelist(char *data, size_t len, PDISPLAY_MODE *mode_list);
+
+int xml_status(char *data, size_t len);
