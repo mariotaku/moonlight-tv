@@ -1,15 +1,8 @@
-#include <SDL_image.h>
 #include "app.h"
 #include "logging.h"
 #include "logging_ext_sdl.h"
 
-#include "res.h"
-
 #include "lvgl.h"
-#include "lvgl/lv_disp_drv_app.h"
-#include "lvgl/lv_sdl_drv_input.h"
-#include "lvgl/theme/lv_theme_moonlight.h"
-#include "lv_sdl_img.h"
 
 #include "backend/backend_root.h"
 #include "stream/session.h"
@@ -22,9 +15,10 @@
 #include "util/bus.h"
 
 #include "ss4s.h"
-#include "input/app_input.h"
 #include "errors.h"
 #include "ui/fatal_error.h"
+
+#include <SDL_image.h>
 
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
@@ -73,13 +67,6 @@ int main(int argc, char *argv[]) {
     }
 
     app_ui_open(&app_.ui);
-
-    lv_obj_t *scr = lv_scr_act();
-    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_bg_opa(scr, 0, 0);
-    app_uimanager = lv_fragment_manager_create(NULL);
-    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, &app_);
-    lv_fragment_manager_push(app_uimanager, fragment, &scr);
 
 
     while (app_is_running()) {

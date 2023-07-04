@@ -80,6 +80,13 @@ void app_ui_open(app_ui_t *ui) {
     lv_group_set_default(group);
     app_ui_input_init(&ui->input, ui);
 
+    lv_obj_t *scr = lv_scr_act();
+    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_opa(scr, 0, 0);
+    app_uimanager = lv_fragment_manager_create(NULL);
+    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, ui->app);
+    lv_fragment_manager_push(app_uimanager, fragment, &scr);
+
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
 }
 
