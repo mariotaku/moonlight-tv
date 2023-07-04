@@ -5,6 +5,7 @@
 #include "util/i18n.h"
 #include "util/font.h"
 #include "hints.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title);
 
@@ -183,7 +184,7 @@ static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title) {
     lv_obj_set_ext_click_area(stats_pin, LV_DPX(5));
 
     lv_obj_t *stat_pin_content = lv_img_create(stats_pin);
-    lv_obj_set_style_text_font(stat_pin_content, app_iconfonts.small, 0);
+    lv_obj_set_style_text_font(stat_pin_content, lv_theme_moonlight_get_iconfont_small(stat_pin_content), 0);
     lv_img_set_src(stat_pin_content, MAT_SYMBOL_PUSH_PIN);
 
     lv_obj_align(stats_pin, LV_ALIGN_RIGHT_MID, 0, 0);

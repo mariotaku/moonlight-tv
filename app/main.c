@@ -23,8 +23,6 @@
 static bool running = true;
 static SDL_mutex *app_gs_client_mutex = NULL;
 
-lv_fragment_manager_t *app_uimanager;
-
 
 static void log_libs_version();
 
@@ -53,6 +51,8 @@ int main(int argc, char *argv[]) {
     app_init_video();
     commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
 
+    app_input_init(&app_.input, &app_);
+
     app_ui_init(&app_.ui, &app_);
 
     global = &app_;
@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
 
     app_ui_open(&app_.ui);
 
+    streaming_display_size((short) app_.ui.width, (short) app_.ui.height);
 
     while (app_is_running()) {
         app_process_events(&app_);
@@ -77,6 +78,7 @@ int main(int argc, char *argv[]) {
 
     app_ui_close(&app_.ui);
     app_ui_deinit(&app_.ui);
+    app_input_deinit(&app_.input);
     app_uninit_video();
 
     backend_destroy(&app_.backend);

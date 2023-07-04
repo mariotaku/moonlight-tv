@@ -7,6 +7,8 @@
 #include <lvgl.h>
 
 #include "ui/config.h"
+#include "ui_input.h"
+#include "util/font.h"
 
 #include "util/navkey.h"
 
@@ -14,41 +16,22 @@
 
 typedef struct app_t app_t;
 typedef struct app_fonts_t app_fonts_t;
+typedef struct app_ui_t app_ui_t;
 
-typedef struct app_ui_input_lv_pair_t {
-    lv_indev_drv_t drv;
-    lv_indev_t *indev;
-} app_ui_input_lv_pair_t;
 
-typedef struct app_ui_input_t {
-    lv_group_t *app_group;
-    lv_ll_t modal_groups;
-    struct {
-        lv_drv_sdl_key_t drv;
-        lv_indev_t *indev;
-    } key;
-    app_ui_input_lv_pair_t pointer;
-    app_ui_input_lv_pair_t wheel;
-    app_ui_input_lv_pair_t button;
-} app_ui_input_t;
-
-typedef struct app_ui_t {
+struct app_ui_t {
     app_t *app;
     SDL_Window *window;
+    int width, height, dpi;
     lv_img_decoder_t *img_decoder;
+    app_fonts_t fonts;
     lv_theme_t theme;
-    app_fonts_t *fonts;
-    lv_disp_t *disp;
-    app_ui_input_t input;
-} app_ui_t;
 
-enum UI_INPUT_MODE {
-    UI_INPUT_MODE_POINTER_FLAG = 0x10,
-    UI_INPUT_MODE_MOUSE = 0x11,
-    UI_INPUT_MODE_REMOTE = 0x11,
-    UI_INPUT_MODE_BUTTON_FLAG = 0x20,
-    UI_INPUT_MODE_KEY = 0x21,
-    UI_INPUT_MODE_GAMEPAD = 0x22,
+    // Can be created/destroyed multiple times
+    app_ui_input_t input;
+    lv_disp_t *disp;
+    lv_obj_t *container;
+    lv_fragment_manager_t *fm;
 };
 
 typedef struct {
@@ -58,9 +41,6 @@ typedef struct {
 
 #define NAV_WIDTH_COLLAPSED 44
 #define NAV_LOGO_SIZE 24
-
-extern short ui_display_width, ui_display_height;
-extern enum UI_INPUT_MODE ui_input_mode;
 
 const lv_img_dsc_t *ui_logo_src();
 
@@ -72,19 +52,7 @@ void app_ui_open(app_ui_t *ui);
 
 void app_ui_close(app_ui_t *ui);
 
-void app_ui_input_init(app_ui_input_t *input, app_ui_t*ui);
-
-void app_ui_input_deinit(app_ui_input_t *input);
-
-void app_input_set_group(app_ui_input_t *input, lv_group_t *group);
-
-void app_input_push_modal_group(app_ui_input_t *input, lv_group_t *group);
-
-void app_input_remove_modal_group(app_ui_input_t *input, lv_group_t *group);
-
-lv_group_t *app_input_get_group(app_ui_input_t *input);
-
-void app_input_set_button_points(app_ui_input_t *input, const lv_point_t *points);
+bool app_ui_is_opened(const app_ui_t *ui);
 
 bool ui_has_stream_renderer();
 
@@ -97,8 +65,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2);
  */
 bool ui_should_block_input();
 
-void ui_display_size(short width, short height);
+void ui_display_size(app_ui_t *ui, int width, int height);
 
-bool ui_set_input_mode(enum UI_INPUT_MODE mode);
 
 void ui_cb_destroy_fragment(lv_event_t *e);

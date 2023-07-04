@@ -31,10 +31,8 @@
 
 static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void *userdata);
 
-short ui_display_width, ui_display_height;
 static unsigned int last_pts = 0;
 
-enum UI_INPUT_MODE ui_input_mode;
 lv_img_dsc_t ui_logo_src_ = {.data_size = 0};
 
 typedef struct render_frame_req_t {
@@ -42,16 +40,17 @@ typedef struct render_frame_req_t {
     unsigned int pts;
 } render_frame_req_t;
 
-SDL_Window *app_create_window();
+SDL_Window *app_ui_create_window(app_ui_t *ui);
 
 void app_ui_init(app_ui_t *ui, app_t *app) {
-    ui->window = app_create_window();
+    ui->app = app;
+    ui->window = app_ui_create_window(ui);
     lv_log_register_print_cb(commons_lv_log);
     lv_init();
     ui->img_decoder = lv_sdl_img_decoder_init(IMG_INIT_JPG | IMG_INIT_PNG);
+    app_font_init(&ui->fonts, ui->dpi);
     lv_memset_00(&ui->theme, sizeof(lv_theme_t));
-    lv_theme_moonlight_init(&ui->theme, app);
-    ui->fonts = app_font_init(&ui->theme);
+    lv_theme_moonlight_init(&ui->theme, &ui->fonts, app);
 }
 
 void app_ui_deinit(app_ui_t *ui) {
@@ -59,45 +58,68 @@ void app_ui_deinit(app_ui_t *ui) {
         SDL_GetWindowPosition(ui->window, &app_configuration->window_state.x, &app_configuration->window_state.y);
         SDL_GetWindowSize(ui->window, &app_configuration->window_state.w, &app_configuration->window_state.h);
     }
-    app_font_deinit(ui->fonts);
-
-    SDL_DestroyWindow(ui->window);
+    app_font_deinit(&ui->fonts);
     lv_img_decoder_delete(ui->img_decoder);
 }
 
 void app_ui_open(app_ui_t *ui) {
-    ui->disp = lv_app_display_init(ui->window);
+    if (ui->disp != NULL) {
+        return;
+    }
+    if (ui->window == NULL) {
+        ui->window = app_ui_create_window(ui);
+    }
+    lv_disp_drv_t *driver = lv_app_disp_drv_create(ui->window, ui->dpi);
+    lv_disp_t *disp = lv_disp_drv_register(driver);
+    disp->bg_color = lv_color_make(0, 0, 0);
+    disp->bg_opa = 0;
+    ui->disp = disp;
 
     lv_theme_t *parent_theme = lv_disp_get_theme(ui->disp);
     ui->theme.color_primary = parent_theme->color_primary;
     ui->theme.color_secondary = parent_theme->color_secondary;
     lv_theme_set_parent(&ui->theme, parent_theme);
     lv_disp_set_theme(ui->disp, &ui->theme);
-    streaming_display_size(ui->disp->driver->hor_res, ui->disp->driver->ver_res);
 
     lv_group_t *group = lv_group_create();
     lv_group_set_editing(group, 0);
     lv_group_set_default(group);
     app_ui_input_init(&ui->input, ui);
 
-    lv_obj_t *scr = lv_scr_act();
-    lv_obj_clear_flag(scr, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_bg_opa(scr, 0, 0);
-    app_uimanager = lv_fragment_manager_create(NULL);
+    ui->container = lv_scr_act();
+    lv_obj_clear_flag(ui->container, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_opa(ui->container, 0, 0);
+    ui->fm = lv_fragment_manager_create(NULL);
     lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, ui->app);
-    lv_fragment_manager_push(app_uimanager, fragment, &scr);
+    lv_fragment_manager_push(ui->fm, fragment, &ui->container);
 
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
 }
 
 void app_ui_close(app_ui_t *ui) {
     SDL_SetAssertionHandler(app_assertion_handler_abort, NULL);
+    if (ui->disp == NULL) {
+        return;
+    }
 
-    lv_fragment_manager_del(app_uimanager);
+    lv_fragment_manager_del(ui->fm);
+
+    ui->fm = NULL;
+    ui->container = NULL;
 
     app_ui_input_deinit(&ui->input);
-    lv_app_display_deinit(ui->disp);
+    lv_theme_set_parent(&ui->theme, NULL);
+    lv_disp_drv_t *driver = ui->disp->driver;
+    lv_disp_set_default(NULL);
+    lv_disp_remove(ui->disp);
+    lv_app_disp_drv_deinit(driver);
     ui->disp = NULL;
+    SDL_DestroyWindow(ui->window);
+    ui->window = NULL;
+}
+
+bool app_ui_is_opened(const app_ui_t *ui) {
+    return ui->disp != NULL;
 }
 
 bool ui_has_stream_renderer() {
@@ -115,24 +137,28 @@ bool ui_render_background() {
 bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
     bool handled = false;
     ui_userevent_t userdata = {data1, data2};
-    handled |= lv_fragment_manager_send_event(app_uimanager, which, &userdata);
+    handled |= app->ui.fm != NULL && lv_fragment_manager_send_event(app->ui.fm, which, &userdata);
     if (!handled) {
         switch (which) {
             case USER_STREAM_OPEN: {
-                lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
-                // TODO: setup renderer
+                if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
+
+                } else {
+                    lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
+                    // TODO: setup renderer
 //                ui_stream_render_host_context.renderer = param->renderer;
 //                ui_stream_render = decoder_get_render();
 //                if (ui_stream_render) {
 //                    ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);
 //                }
+                }
                 absinput_start();
                 app_set_keep_awake(true);
                 streaming_enter_fullscreen();
                 last_pts = 0;
                 return true;
             }
-            case USER_STREAM_CLOSE:
+            case USER_STREAM_CLOSE: {
                 // TODO: close renderer
 //                if (ui_stream_render) {
 //                    ui_stream_render->renderCleanup();
@@ -142,7 +168,9 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 absinput_stop();
 //                ui_stream_render = NULL;
 //                ui_stream_render_host_context.renderer = NULL;
+                app_ui_open(&app->ui);
                 return true;
+            }
             default:
                 break;
         }
@@ -154,18 +182,25 @@ bool ui_should_block_input() {
     return streaming_overlay_shown();
 }
 
-void ui_display_size(short width, short height) {
-    ui_display_width = width;
-    ui_display_height = height;
+void ui_display_size(app_ui_t *ui, int width, int height) {
+    ui->width = width;
+    ui->height = height;
+    if (ui->dpi <= 0) {
+        ui->dpi = width / 6;
+    }
     commons_log_info("UI", "Display size changed to %d x %d", width, height);
 }
 
-bool ui_set_input_mode(enum UI_INPUT_MODE mode) {
-    if (ui_input_mode == mode) {
+bool ui_set_input_mode(app_ui_input_t *input, app_ui_input_mode_t mode) {
+    if (input->mode == mode) {
         return false;
     }
-    ui_input_mode = mode;
+    input->mode = mode;
     return true;
+}
+
+app_ui_input_mode_t app_ui_get_input_mode(const app_ui_input_t *input) {
+    return input->mode;
 }
 
 const lv_img_dsc_t *ui_logo_src() {
@@ -210,7 +245,7 @@ void ui_cb_destroy_fragment(lv_event_t *e) {
     lv_fragment_del(fragment);
 }
 
-SDL_Window *app_create_window() {
+SDL_Window *app_ui_create_window(app_ui_t *ui) {
     Uint32 win_flags = SDL_WINDOW_RESIZABLE;
     int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED,
             win_width = 1920, win_height = 1080;
@@ -239,7 +274,7 @@ SDL_Window *app_create_window() {
     int w = 0, h = 0;
     SDL_GetWindowSize(win, &w, &h);
     SDL_assert_release(w > 0 && h > 0);
-    ui_display_size(w, h);
+    ui_display_size(ui, w, h);
     return win;
 }
 

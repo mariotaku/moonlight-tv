@@ -10,6 +10,7 @@
 #include "util/user_event.h"
 #include "util/i18n.h"
 #include "ui/common/progress_dialog.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 static void exit_streaming(lv_event_t *event);
 
@@ -66,7 +67,7 @@ bool stats_showing(streaming_controller_t *controller) {
 
 bool streaming_refresh_stats() {
     streaming_controller_t *controller = current_controller;
-    if (!controller) return false;
+    if (!controller) { return false; }
     if (!stats_showing(controller)) {
         return false;
     }
@@ -98,7 +99,7 @@ bool streaming_refresh_stats() {
 
 void streaming_notice_show(const char *message) {
     streaming_controller_t *controller = current_controller;
-    if (!controller) return;
+    if (!controller) { return; }
     lv_label_set_text(controller->notice_label, message);
     if (message && message[0]) {
         lv_obj_clear_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
@@ -244,7 +245,8 @@ static void suspend_streaming(lv_event_t *event) {
 
 static void open_keyboard(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
-    app_start_text_input(&controller->global->input, 0, 0, ui_display_width, ui_display_height);
+    app_t *app = controller->global;
+    app_start_text_input(&app->input, 0, 0, app->ui.width, app->ui.height);
 }
 
 static void toggle_vmouse(lv_event_t *event) {
@@ -253,8 +255,9 @@ static void toggle_vmouse(lv_event_t *event) {
 }
 
 bool show_overlay(streaming_controller_t *controller) {
-    if (overlay_showing)
+    if (overlay_showing) {
         return false;
+    }
     overlay_showing = true;
     lv_obj_clear_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
 
@@ -270,8 +273,9 @@ static void hide_overlay(lv_event_t *event) {
     streaming_controller_t *controller = (streaming_controller_t *) lv_event_get_user_data(event);
     app_input_set_button_points(&controller->global->ui.input, NULL);
     lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
-    if (!overlay_showing)
+    if (!overlay_showing) {
         return;
+    }
     overlay_showing = false;
     streaming_enter_fullscreen();
 }

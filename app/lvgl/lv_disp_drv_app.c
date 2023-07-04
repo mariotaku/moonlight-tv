@@ -8,7 +8,7 @@ static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 
 static void lv_sdl_drv_fb_clear(lv_disp_drv_t *disp_drv, uint8_t *buf, uint32_t size);
 
-lv_disp_t *lv_app_display_init(SDL_Window *window) {
+lv_disp_drv_t *lv_app_disp_drv_create(SDL_Window *window, int dpi) {
     int width = 0, height = 0;
     SDL_GetWindowSize(window, &width, &height);
     LV_ASSERT(width > 0 && height > 0);
@@ -24,35 +24,33 @@ lv_disp_t *lv_app_display_init(SDL_Window *window) {
     param->renderer = renderer;
     driver->user_data = param;
     driver->draw_buf = draw_buf;
-    driver->dpi = width / 6;
+    driver->dpi = dpi;
     driver->flush_cb = lv_sdl_drv_fb_flush;
     driver->clear_cb = lv_sdl_drv_fb_clear;
     driver->hor_res = (lv_coord_t) width;
     driver->ver_res = (lv_coord_t) height;
     SDL_SetRenderTarget(renderer, texture);
-    lv_disp_t *disp = lv_disp_drv_register(driver);
-    disp->bg_color = lv_color_make(0, 0, 0);
-    disp->bg_opa = 0;
-    return disp;
+    return driver;
 }
 
-void lv_app_display_deinit(lv_disp_t *disp) {
-    SDL_DestroyTexture(disp->driver->draw_buf->buf1);
-    lv_mem_free(disp->driver->draw_buf);
+void lv_app_disp_drv_deinit(lv_disp_drv_t *driver) {
+    SDL_DestroyTexture(driver->draw_buf->buf1);
+    lv_mem_free(driver->draw_buf);
 
-    lv_draw_sdl_drv_param_t *param = disp->driver->user_data;
+    lv_draw_sdl_drv_param_t *param = driver->user_data;
     SDL_Renderer *renderer = param->renderer;
     lv_mem_free(param);
 
-    disp->driver->draw_ctx_deinit(disp->driver, disp->driver->draw_ctx);
+    driver->draw_ctx_deinit(driver, driver->draw_ctx);
 
     /* Textures will be also freed by this call, so free it after draw_ctx */
     SDL_DestroyRenderer(renderer);
 
-    if (disp->driver->draw_ctx != NULL) {
-        lv_mem_free(disp->driver->draw_ctx);
+    if (driver->draw_ctx != NULL) {
+        lv_mem_free(driver->draw_ctx);
+        driver->draw_ctx = NULL;
     }
-    lv_mem_free(disp->driver);
+    lv_mem_free(driver);
 }
 
 void lv_app_display_resize(lv_disp_t *disp, int width, int height) {

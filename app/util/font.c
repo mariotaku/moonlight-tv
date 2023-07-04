@@ -5,7 +5,6 @@
 
 #include <fontconfig/fontconfig.h>
 
-app_fontset_t app_iconfonts;
 
 static bool fontset_load_fc(app_fontset_t *set, FcPattern *font);
 
@@ -13,16 +12,21 @@ static bool fontset_load_mem(app_fontset_t *set, const char *name, const void *m
 
 static void fontset_destroy_fonts(app_fontset_t *fontset);
 
-app_fonts_t *app_font_init(lv_theme_t *theme) {
-    app_fontset_t fontset = {.small_size = LV_DPX(14), .normal_size = LV_DPX(16), .large_size = LV_DPX(19)};
-    app_iconfonts = fontset;
-    if (!fontset_load_mem(&app_iconfonts, "MaterialIcons", res_mat_iconfont_data, res_mat_iconfont_size)) {
-        return NULL;
+int app_font_init(app_fonts_t *fonts, int dpi) {
+    app_fontset_t fontset = {
+            .small_size = _LV_DPX_CALC(dpi, 14),
+            .normal_size = _LV_DPX_CALC(dpi, 16),
+            .large_size = _LV_DPX_CALC(dpi, 19)
+    };
+    app_fontset_t iconfonts = fontset;
+    if (!fontset_load_mem(&iconfonts, "MaterialIcons", res_mat_iconfont_data, res_mat_iconfont_size)) {
+        return -1;
     }
     //does not necessarily have to be a specific name.  You could put anything here and Fontconfig WILL find a font for you
     FcPattern *pattern = FcNameParse((const FcChar8 *) FONT_FAMILY);
     if (!pattern) {
-        return NULL;
+        fontset_destroy_fonts(&iconfonts);
+        return -1;
     }
 
     FcConfigSubstitute(NULL, pattern, FcMatchPattern);
@@ -31,10 +35,11 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
     FcResult result;
 
     FcPattern *font = FcFontMatch(NULL, pattern, &result);
-    if (font != NULL && fontset_load_fc(&fontset, font)) {
-        theme->font_normal = fontset.normal;
-        theme->font_large = fontset.large;
-        theme->font_small = fontset.small;
+    if (font == NULL) {
+        return -1;
+    }
+    if (!fontset_load_fc(&fontset, font)) {
+        return -1;
     }
     if (font) {
         FcPatternDestroy(font);
@@ -77,16 +82,14 @@ app_fonts_t *app_font_init(lv_theme_t *theme) {
         pattern = NULL;
     }
 #endif
-    app_fonts_t *fonts = calloc(1, sizeof(app_fonts_t));
     fonts->fonts = fontset;
-    fonts->icons = app_iconfonts;
-    return fonts;
+    fonts->icons = iconfonts;
+    return 0;
 }
 
 void app_font_deinit(app_fonts_t *fonts) {
     fontset_destroy_fonts(&fonts->fonts);
     fontset_destroy_fonts(&fonts->icons);
-    free(fonts);
 }
 
 static bool fontset_load_fc(app_fontset_t *set, FcPattern *font) {

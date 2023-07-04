@@ -1,8 +1,8 @@
 #include "appitem.view.h"
 #include "res.h"
 
-#include "util/font.h"
 #include "draw/sdl/lv_draw_sdl_utils.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 static void appitem_holder_free_cb(lv_event_t *event);
 
@@ -81,7 +81,7 @@ void appitem_style_init(appitem_styles_t *style) {
     lv_style_set_bg_opa(&style->btn, LV_OPA_COVER);
     lv_style_set_text_color(&style->btn, lv_color_black());
     lv_style_set_border_opa(&style->btn, LV_OPA_TRANSP);
-    lv_style_set_text_font(&style->btn, app_iconfonts.large);
+    lv_style_set_text_font(&style->btn, lv_theme_moonlight_get_iconfont_large(lv_scr_act()));
     lv_style_set_shadow_width(&style->btn, LV_DPX(4));
     lv_style_set_shadow_color(&style->btn, lv_color_black());
     lv_style_set_shadow_opa(&style->btn, LV_OPA_30);
@@ -125,7 +125,9 @@ static void appitem_draw_decor(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     appitem_viewholder_t *holder = lv_obj_get_user_data(target);
     const apploader_item_t *item = apploader_list_item_by_id(holder->controller->apploader_apps, holder->app_id);
-    if (item == NULL || !item->fav) return;
+    if (item == NULL || !item->fav) {
+        return;
+    }
     lv_area_t coords;
     lv_obj_get_coords(target, &coords);
     lv_area_set_width(&coords, LV_DPX(48));

@@ -14,19 +14,18 @@
 #include "ss4s.h"
 #include "input/app_input.h"
 #include "backend/backend_root.h"
+#include "ui/root.h"
 
 #if FEATURE_INPUT_LIBCEC
 
 #include "cec_sdl.h"
 #include "ss4s_modules.h"
-#include "ui/root.h"
 
 #endif
 
 extern app_t *global;
 
 extern PCONFIGURATION app_configuration;
-extern lv_fragment_manager_t *app_uimanager;
 extern pcmanager_t *pcmanager;
 
 typedef struct app_t {

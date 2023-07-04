@@ -9,6 +9,7 @@
 #include "util/user_event.h"
 #include "util/font.h"
 #include "util/i18n.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 #if TARGET_WEBOS
 
@@ -67,7 +68,7 @@ static void restart_confirm_cb(lv_event_t *e);
 
 static void pane_child_added(lv_event_t *e);
 
-#define UI_IS_MINI(width) ((width) < 1440)
+#define UI_IS_MINI(width) ((width) < LV_DPX(240))
 
 const lv_fragment_class_t settings_controller_cls = {
         .constructor_cb = settings_controller_ctor,
@@ -81,7 +82,7 @@ const lv_fragment_class_t settings_controller_cls = {
 static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     settings_controller_t *fragment = (settings_controller_t *) self;
     fragment->app = args;
-    fragment->mini = fragment->pending_mini = UI_IS_MINI(ui_display_width);
+    fragment->mini = fragment->pending_mini = UI_IS_MINI(fragment->app->ui.width);
     os_info_get(&fragment->os_info);
 #if TARGET_WEBOS
     memset(&fragment->webos_panel_info, 0, sizeof(webos_panel_info_t));
@@ -107,7 +108,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
         app_input_set_group(&controller->app->ui.input, controller->nav_group);
 
         lv_obj_t *btns = lv_tabview_get_tab_btns(controller->tabview);
-        lv_obj_set_style_text_font(btns, app_iconfonts.large, 0);
+        lv_obj_set_style_text_font(btns, lv_theme_moonlight_get_iconfont_large(btns), 0);
         lv_group_remove_obj(btns);
 
         lv_group_add_obj(controller->nav_group, controller->nav);
@@ -149,7 +150,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
         for (int i = 0; i < entries_len; ++i) {
             settings_entry_t entry = entries[i];
             lv_obj_t *item_view = lv_list_add_btn(controller->nav, entry.icon, locstr(entry.name));
-            lv_btn_set_icon_font(item_view, app_iconfonts.normal);
+            lv_btn_set_icon_font(item_view, lv_theme_moonlight_get_iconfont_normal(item_view));
 
             lv_obj_set_style_bg_opa(item_view, LV_OPA_COVER, LV_STATE_FOCUS_KEY);
             lv_obj_add_flag(item_view, LV_OBJ_FLAG_EVENT_BUBBLE);
@@ -179,10 +180,11 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
 static bool on_event(lv_fragment_t *self, int code, void *userdata) {
     LV_UNUSED(userdata);
     settings_controller_t *controller = (settings_controller_t *) self;
+    app_ui_t *ui = &controller->app->ui;
     switch (code) {
         case USER_SIZE_CHANGED: {
-            lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
-            bool mini = UI_IS_MINI(ui_display_width);
+            lv_obj_set_size(self->obj, ui->width, ui->height);
+            bool mini = UI_IS_MINI(ui->width);
             if (mini != controller->mini) {
                 controller->pending_mini = mini;
                 lv_fragment_recreate_obj(self);

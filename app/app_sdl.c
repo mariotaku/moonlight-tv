@@ -20,6 +20,7 @@
 
 #include "ss4s_modules.h"
 #include "ss4s.h"
+#include "stream/input/sdlinput.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -99,7 +100,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
     switch (event->type) {
         case SDL_APP_WILLENTERBACKGROUND: {
             // Interrupt streaming because app will go to background
-            streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
+            if (app_ui_is_opened(&app->ui)) {
+                streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
+            }
             break;
         }
         case SDL_APP_DIDENTERFOREGROUND: {
@@ -114,7 +117,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                     commons_log_debug("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
 #if !FEATURE_FORCE_FULLSCREEN
-                    if (app_configuration->fullscreen) {
+                    if (app_configuration->fullscreen && app_ui_is_opened(&app->ui)) {
                         // Interrupt streaming because app will go to background
                         streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
                     }
@@ -123,12 +126,12 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_SIZE_CHANGED:
                     lv_app_display_resize(lv_disp_get_default(), event->window.data1, event->window.data2);
-                    ui_display_size((short) event->window.data1, (short) event->window.data2);
+                    ui_display_size(&app->ui, (int) event->window.data1, (int) event->window.data2);
                     bus_pushevent(USER_SIZE_CHANGED, NULL, NULL);
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:
                     commons_log_debug("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
-                    if (app_configuration->fullscreen) {
+                    if (app_configuration->fullscreen && app_ui_is_opened(&app->ui)) {
                         // Interrupt streaming because app will go to background
                         streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
                     }
@@ -175,8 +178,13 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERAXISMOTION:
-        case SDL_TEXTINPUT:
+        case SDL_TEXTINPUT: {
+            if (!app_ui_is_opened(&app->ui)) {
+                absinput_dispatch_event(event);
+                return 0;
+            }
             return 1;
+        }
         default:
             if (event->type == USER_REMOTEBUTTONEVENT) {
                 return 1;

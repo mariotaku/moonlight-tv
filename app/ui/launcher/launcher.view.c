@@ -12,6 +12,9 @@
 #include "util/font.h"
 #include "util/i18n.h"
 
+#include "app.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
+
 static void detail_group_add(lv_event_t *event);
 
 #define NAV_WIDTH_EXPANDED 240
@@ -19,6 +22,7 @@ static void detail_group_add(lv_event_t *event);
 
 lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     launcher_fragment_t *controller = (launcher_fragment_t *) self;
+    app_ui_t *ui = &controller->global->ui;
     /*Create a window*/
     lv_obj_t *win = lv_win_create(parent, LV_DPX(NAV_WIDTH_COLLAPSED));
 
@@ -102,25 +106,25 @@ lv_obj_t *launcher_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     // Use list button for normal container
     lv_obj_t *add_btn = lv_list_add_btn(nav, MAT_SYMBOL_ADD_TO_QUEUE, locstr("Add computer"));
     lv_obj_add_style(add_btn, &controller->nav_menu_style, 0);
-    lv_btn_set_icon_font(add_btn, app_iconfonts.small);
+    lv_btn_set_icon_font(add_btn, lv_theme_moonlight_get_iconfont_small(nav));
     lv_btn_set_text_font(add_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(add_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
 
     lv_obj_t *help_btn = lv_list_add_btn(nav, MAT_SYMBOL_HELP, locstr("Help"));
     lv_obj_add_style(help_btn, &controller->nav_menu_style, 0);
-    lv_btn_set_icon_font(help_btn, app_iconfonts.small);
+    lv_btn_set_icon_font(help_btn, lv_theme_moonlight_get_iconfont_small(nav));
     lv_btn_set_text_font(help_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(help_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
 
     lv_obj_t *pref_btn = lv_list_add_btn(nav, MAT_SYMBOL_SETTINGS, locstr("Settings"));
     lv_obj_add_style(pref_btn, &controller->nav_menu_style, 0);
-    lv_btn_set_icon_font(pref_btn, app_iconfonts.small);
+    lv_btn_set_icon_font(pref_btn, lv_theme_moonlight_get_iconfont_small(nav));
     lv_btn_set_text_font(pref_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(pref_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
 
     lv_obj_t *quit_btn = lv_list_add_btn(nav, MAT_SYMBOL_CLOSE, locstr("Quit"));
     lv_obj_add_style(quit_btn, &controller->nav_menu_style, 0);
-    lv_btn_set_icon_font(quit_btn, app_iconfonts.small);
+    lv_btn_set_icon_font(quit_btn, lv_theme_moonlight_get_iconfont_small(nav));
     lv_btn_set_text_font(quit_btn, lv_theme_get_font_small(nav));
     lv_obj_add_flag(quit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
 

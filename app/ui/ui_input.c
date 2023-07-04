@@ -1,4 +1,5 @@
 #include "root.h"
+#include "ui_input.h"
 #include "input/lv_drv_sdl_key.h"
 #include "lvgl/lv_sdl_drv_input.h"
 
@@ -14,16 +15,15 @@ static const lv_point_t button_points_empty[5] = {
 };
 
 
-void app_ui_input_init(app_ui_input_t *input, app_ui_t*ui) {
+void app_ui_input_init(app_ui_input_t *input, app_ui_t *ui) {
 
     _lv_ll_init(&input->modal_groups, sizeof(lv_group_t *));
     lv_group_t *group = lv_group_get_default();
 
-    lv_sdl_init_key_input(&input->key.drv);
-    lv_sdl_init_pointer(&input->pointer.drv);
-    lv_sdl_init_wheel(&input->wheel.drv);
-    lv_sdl_init_button(&input->button.drv);
-    input->pointer.drv.user_data = ui->app;
+    lv_sdl_init_key_input(&input->key.drv, input);
+    lv_sdl_init_pointer(&input->pointer.drv, input);
+    lv_sdl_init_wheel(&input->wheel.drv, input);
+    lv_sdl_init_button(&input->button.drv, input);
 
     input->key.indev = lv_indev_drv_register(&input->key.drv.base);
     input->pointer.indev = lv_indev_drv_register(&input->pointer.drv);
@@ -40,7 +40,7 @@ void app_ui_input_init(app_ui_input_t *input, app_ui_t*ui) {
 }
 
 void app_ui_input_deinit(app_ui_input_t *input) {
-
+    _lv_ll_clear(&input->modal_groups);
 }
 
 void app_input_set_group(app_ui_input_t *input, lv_group_t *group) {

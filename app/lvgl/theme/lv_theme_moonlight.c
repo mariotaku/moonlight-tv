@@ -19,13 +19,31 @@ static void msgbox_cancel(lv_event_t *event);
 
 static void msgbox_destroy(lv_event_t *event);
 
-void lv_theme_moonlight_init(lv_theme_t *theme, app_t *app) {
+void lv_theme_moonlight_init(lv_theme_t *theme, const app_fonts_t *fonts, app_t *app) {
     lv_theme_set_apply_cb(theme, apply_cb);
     theme->user_data = app;
+    theme->font_small = fonts->fonts.small;
+    theme->font_normal = fonts->fonts.normal;
+    theme->font_large = fonts->fonts.large;
     lv_style_init(&knob_shadow);
     lv_style_set_shadow_color(&knob_shadow, lv_color_black());
     lv_style_set_shadow_width(&knob_shadow, LV_DPX(5));
     lv_style_set_shadow_opa(&knob_shadow, LV_OPA_50);
+}
+
+const lv_font_t *lv_theme_moonlight_get_iconfont_large(lv_obj_t *obj) {
+    lv_theme_t *th = lv_theme_get_from_obj(obj);
+    return ((app_t *) th->user_data)->ui.fonts.icons.large;
+}
+
+const lv_font_t *lv_theme_moonlight_get_iconfont_normal(lv_obj_t *obj) {
+    lv_theme_t *th = lv_theme_get_from_obj(obj);
+    return ((app_t *) th->user_data)->ui.fonts.icons.normal;
+}
+
+const lv_font_t *lv_theme_moonlight_get_iconfont_small(lv_obj_t *obj) {
+    lv_theme_t *th = lv_theme_get_from_obj(obj);
+    return ((app_t *) th->user_data)->ui.fonts.icons.small;
 }
 
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
@@ -49,7 +67,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
                         set_font = false;
                     } else if (lv_obj_check_type(parent2, &lv_msgbox_class) &&
                                lv_msgbox_get_close_btn(parent2) == parent) {
-                        lv_obj_set_style_text_font(obj, app_iconfonts.large, 0);
+                        lv_obj_set_style_text_font(obj, lv_theme_moonlight_get_iconfont_large(obj), 0);
                         set_font = false;
                     }
                 }
@@ -85,10 +103,10 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
             set_font = false;
         }
     } else if (lv_obj_check_type(obj, &lv_dropdown_class)) {
-        lv_obj_set_style_text_font(obj, app_iconfonts.large, LV_PART_INDICATOR);
+        lv_obj_set_style_text_font(obj, lv_theme_moonlight_get_iconfont_large(obj), LV_PART_INDICATOR);
         lv_dropdown_set_symbol(obj, MAT_SYMBOL_ARROW_DROP_DOWN);
     } else if (lv_obj_check_type(obj, &lv_checkbox_class)) {
-        lv_obj_set_style_text_font(obj, app_iconfonts.large, LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_text_font(obj, lv_theme_moonlight_get_iconfont_large(obj), LV_PART_INDICATOR | LV_STATE_CHECKED);
     } else if (lv_obj_check_type(obj, &lv_slider_class)) {
         lv_obj_add_style(obj, &knob_shadow, LV_PART_KNOB);
     }

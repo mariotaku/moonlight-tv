@@ -8,10 +8,11 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 
 unsigned int app_userevent_remotebutton = 0;
 
-int lv_sdl_init_button(lv_indev_drv_t *indev_drv) {
+int lv_sdl_init_button(lv_indev_drv_t *indev_drv, app_ui_input_t *input) {
     app_userevent_remotebutton = SDL_RegisterEvents(1);
 
     lv_indev_drv_init(indev_drv);
+    indev_drv->user_data = input;
     indev_drv->type = LV_INDEV_TYPE_BUTTON;
     indev_drv->read_cb = sdl_input_read;
     return 0;
