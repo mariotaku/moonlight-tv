@@ -62,7 +62,7 @@ static void select_pc(launcher_fragment_t *controller, const uuidstr_t *uuid, bo
 
 static void set_detail_opened(launcher_fragment_t *controller, bool opened);
 
-static lv_obj_t *pclist_item_create(launcher_fragment_t *controller, const pclist_t *node);
+static lv_obj_t *pclist_item_create(launcher_fragment_t *fragment, const pclist_t *node);
 
 static void pclist_item_deleted(lv_event_t *e);
 
@@ -110,13 +110,14 @@ void launcher_select_server(launcher_fragment_t *controller, const uuidstr_t *uu
         return;
     }
     set_detail_opened(controller, true);
-    if (node->selected) return;
+    if (node->selected) { return; }
     select_pc(controller, uuid, false);
 }
 
 static void launcher_controller(lv_fragment_t *self, void *args) {
     launcher_fragment_t *fragment = (launcher_fragment_t *) self;
     fragment->global = args;
+    app_ui_t *ui = &fragment->global->ui;
     static const lv_style_prop_t props[] = {
             LV_STYLE_OPA, LV_STYLE_BG_OPA, LV_STYLE_TRANSLATE_X, LV_STYLE_TRANSLATE_Y, 0
     };
@@ -124,7 +125,8 @@ static void launcher_controller(lv_fragment_t *self, void *args) {
     lv_style_transition_dsc_init(&fragment->tr_nav, props, lv_anim_path_ease_out, 350, 0, NULL);
 
     lv_style_init(&fragment->nav_host_style);
-    int ico_width_def = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), app_iconfonts.normal, 0, 0);
+    int ico_width_def = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), ui->fonts.icons.normal, 0,
+                                         0);
     int host_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_def) / 2;
     lv_style_set_pad_left(&fragment->nav_host_style, host_icon_pad);
     lv_style_set_pad_gap(&fragment->nav_host_style, host_icon_pad);
@@ -132,7 +134,7 @@ static void launcher_controller(lv_fragment_t *self, void *args) {
     lv_style_init(&fragment->nav_menu_style);
     lv_style_set_border_side(&fragment->nav_menu_style, LV_BORDER_SIDE_NONE);
     lv_style_set_pad_ver(&fragment->nav_menu_style, LV_DPX(10));
-    int ico_width_sm = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), app_iconfonts.small, 0, 0);
+    int ico_width_sm = lv_txt_get_width(MAT_SYMBOL_SETTINGS, sizeof(MAT_SYMBOL_SETTINGS), ui->fonts.icons.small, 0, 0);
     int nav_icon_pad = (LV_DPX(NAV_WIDTH_COLLAPSED) - ico_width_sm) / 2;
     lv_style_set_pad_left(&fragment->nav_menu_style, nav_icon_pad);
     lv_style_set_pad_gap(&fragment->nav_menu_style, nav_icon_pad);
@@ -202,7 +204,7 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
     launcher_fragment_t *controller = (launcher_fragment_t *) self;
     LV_UNUSED(view);
     current_instance = NULL;
-    app_input_set_group(&controller->global->input, NULL);
+    app_input_set_group(&controller->global->ui.input, NULL);
     pcmanager_auto_discovery_stop(pcmanager);
 
     controller->pane_initialized = false;
@@ -217,8 +219,9 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
 
 static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
     LV_UNUSED(userdata);
+    launcher_fragment_t *fragment = (launcher_fragment_t *) self;
     if (code == USER_SIZE_CHANGED) {
-        lv_obj_set_size(self->obj, ui_display_width, ui_display_height);
+        lv_obj_set_size(self->obj, fragment->global->ui.width, fragment->global->ui.height);
     }
     return false;
 }
@@ -226,7 +229,7 @@ static bool launcher_event_cb(lv_fragment_t *self, int code, void *userdata) {
 void on_pc_added(const uuidstr_t *uuid, void *userdata) {
     launcher_fragment_t *controller = userdata;
     const pclist_t *node = pcmanager_node(pcmanager, uuid);
-    if (node == NULL) return;
+    if (node == NULL) { return; }
     pclist_item_create(controller, node);
 
     populate_selected_host(controller);
@@ -237,7 +240,7 @@ void on_pc_updated(const uuidstr_t *uuid, void *userdata) {
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
         const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
-        if (!uuidstr_t_equals_t(uuid, item_id)) continue;
+        if (!uuidstr_t_equals_t(uuid, item_id)) { continue; }
         const pclist_t *node = pcmanager_node(pcmanager, item_id);
         const char *icon = server_item_icon(node);
         lv_btn_set_icon(child, icon);
@@ -250,7 +253,7 @@ void on_pc_removed(const uuidstr_t *uuid, void *userdata) {
     for (uint16_t i = 0, j = lv_obj_get_child_cnt(controller->pclist); i < j; i++) {
         lv_obj_t *child = lv_obj_get_child(controller->pclist, i);
         const uuidstr_t *item_id = (const uuidstr_t *) lv_obj_get_user_data(child);
-        if (!uuidstr_t_equals_t(uuid, item_id)) continue;
+        if (!uuidstr_t_equals_t(uuid, item_id)) { continue; }
         lv_obj_del(child);
         break;
     }
@@ -258,16 +261,16 @@ void on_pc_removed(const uuidstr_t *uuid, void *userdata) {
 
 static void cb_pc_selected(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
-    if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
+    if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) { return; }
     launcher_fragment_t *controller = lv_event_get_user_data(event);
-    if (lv_fragment_manager_get_top(app_uimanager) != (void *) controller) return;
+    if (lv_fragment_manager_get_top(controller->global->ui.fm) != (void *) controller) { return; }
     const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(target);
     launcher_select_server(controller, uuid);
 }
 
 static void cb_pc_longpress(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
-    if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) return;
+    if (lv_obj_get_parent(target) != lv_event_get_current_target(event)) { return; }
     const uuidstr_t *uuid = (const uuidstr_t *) lv_obj_get_user_data(target);
     lv_fragment_t *fragment = lv_fragment_create(&server_menu_class, (void *) uuid);
     lv_obj_t *msgbox = lv_fragment_create_obj(fragment, NULL);
@@ -320,14 +323,16 @@ static void pcitem_set_selected(lv_obj_t *pcitem, bool selected) {
     }
 }
 
-static lv_obj_t *pclist_item_create(launcher_fragment_t *controller, const pclist_t *node) {
+static lv_obj_t *pclist_item_create(launcher_fragment_t *fragment, const pclist_t *node) {
+    app_ui_t *ui = &fragment->global->ui;
+
     const SERVER_DATA *server = node->server;
     const char *icon = server_item_icon(node);
-    lv_obj_t *pcitem = lv_list_add_btn(controller->pclist, icon, server->hostname);
+    lv_obj_t *pcitem = lv_list_add_btn(fragment->pclist, icon, server->hostname);
     lv_obj_add_flag(pcitem, LV_OBJ_FLAG_EVENT_BUBBLE);
-    lv_obj_add_style(pcitem, &controller->nav_host_style, 0);
+    lv_obj_add_style(pcitem, &fragment->nav_host_style, 0);
     lv_obj_t *btn_img = lv_btn_find_img(pcitem);
-    lv_obj_set_style_text_font(btn_img, app_iconfonts.normal, 0);
+    lv_obj_set_style_text_font(btn_img, ui->fonts.icons.normal, 0);
     lv_obj_set_style_bg_opa(btn_img, LV_OPA_COVER, LV_STATE_CHECKED);
     lv_obj_set_style_text_color(btn_img, lv_color_black(), LV_STATE_CHECKED);
     lv_obj_set_style_radius(btn_img, LV_DPX(1), LV_STATE_CHECKED);
@@ -369,10 +374,10 @@ static const char *server_item_icon(const pclist_t *node) {
 
 static void cb_detail_focused(lv_event_t *event) {
     launcher_fragment_t *fragment = lv_event_get_user_data(event);
-    if (!fragment->pane_initialized || fragment->detail_changing) return;
+    if (!fragment->pane_initialized || fragment->detail_changing) { return; }
     lv_fragment_t *detail_fragment = lv_fragment_manager_find_by_container(fragment->base.child_manager,
                                                                            fragment->detail);
-    if (!detail_fragment || lv_obj_get_parent(event->target) != detail_fragment->obj) return;
+    if (!detail_fragment || lv_obj_get_parent(event->target) != detail_fragment->obj) { return; }
     set_detail_opened(fragment, true);
 }
 
@@ -383,12 +388,12 @@ static void cb_detail_cancel(lv_event_t *event) {
 
 static void cb_nav_focused(lv_event_t *event) {
     launcher_fragment_t *controller = lv_event_get_user_data(event);
-    if (!controller->pane_initialized) return;
+    if (!controller->pane_initialized) { return; }
     lv_obj_t *target = event->target;
     while (target && target != controller->nav) {
         target = lv_obj_get_parent(target);
     }
-    if (!target) return;
+    if (!target) { return; }
     set_detail_opened(controller, false);
 }
 
@@ -417,10 +422,10 @@ static void cb_nav_key(lv_event_t *event) {
 }
 
 static void set_detail_opened(launcher_fragment_t *controller, bool opened) {
-    bool key = ui_input_mode & UI_INPUT_MODE_BUTTON_FLAG;
+    bool key = app_ui_get_input_mode(&controller->global->ui.input) & UI_INPUT_MODE_BUTTON_FLAG;
     if (opened) {
         lv_obj_add_state(controller->detail, LV_STATE_USER_1);
-        app_input_set_group(&controller->global->input, controller->detail_group);
+        app_input_set_group(&controller->global->ui.input, controller->detail_group);
         lv_obj_t *detail_focused = lv_group_get_focused(controller->detail_group);
         if (key && detail_focused) {
             if (lv_obj_check_type(detail_focused, &lv_gridview_class)) {
@@ -432,7 +437,7 @@ static void set_detail_opened(launcher_fragment_t *controller, bool opened) {
         }
     } else {
         lv_obj_clear_state(controller->detail, LV_STATE_USER_1);
-        app_input_set_group(&controller->global->input, controller->nav_group);
+        app_input_set_group(&controller->global->ui.input, controller->nav_group);
         if (key) {
             lv_obj_t *nav_focused = lv_group_get_focused(controller->nav_group);
             if (nav_focused) {
@@ -453,8 +458,8 @@ static void open_manual_add(lv_event_t *event) {
 static void open_settings(lv_event_t *event) {
     launcher_fragment_t *self = lv_event_get_user_data(event);
     lv_fragment_t *fragment = lv_fragment_create(&settings_controller_cls, self->global);
-    lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(app_uimanager));
-    lv_fragment_manager_push(app_uimanager, fragment, container);
+    lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(self->global->ui.fm));
+    lv_fragment_manager_push(self->global->ui.fm, fragment, container);
 }
 
 static void show_decoder_error() {

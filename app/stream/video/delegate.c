@@ -11,6 +11,7 @@
 #include "logging.h"
 #include "ss4s.h"
 #include "stream/session/callbacks.h"
+#include "app.h"
 
 #include <SDL.h>
 #include <assert.h>
@@ -72,6 +73,8 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     SS4S_VideoInfo info = {
             .width = width,
             .height = height,
+            .frameRateNumerator = redrawRate,
+            .frameRateDenominator = 1,
     };
     switch (videoFormat) {
         case VIDEO_FORMAT_H264:
@@ -86,6 +89,12 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         }
     }
+
+    app_t *app = SS4S_PlayerGetUserdata(player);
+    if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
+        bus_pushaction_sync((bus_actionfunc) app_ui_close, &app->ui);
+    }
+
     switch (SS4S_PlayerVideoOpen(player, &info)) {
         case SS4S_VIDEO_OPEN_ERROR:
             return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
@@ -156,7 +165,7 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     struct VIDEO_STATS *dst = &vdec_summary_stats;
     memcpy(dst, src, sizeof(struct VIDEO_STATS));
     unsigned long delta = now - dst->measurementStartTimestamp;
-    if (delta <= 0) return;
+    if (delta <= 0) { return; }
     dst->totalFps = (float) dst->totalFrames / ((float) delta / 1000);
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
     dst->decodedFps = (float) dst->decodedFrames / ((float) delta / 1000);
@@ -166,7 +175,7 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
 
 void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
-        if (entry->bufferType != BUFFER_TYPE_SPS) continue;
+        if (entry->bufferType != BUFFER_TYPE_SPS) { continue; }
         sps_dimension_t dimension;
         if (vdec_stream_format & VIDEO_FORMAT_MASK_H264) {
             sps_parse_dimension_h264((const unsigned char *) &entry->data[4], &dimension);

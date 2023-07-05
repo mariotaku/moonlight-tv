@@ -553,9 +553,10 @@ static void launcher_launch_game(apps_fragment_t *controller, const apploader_it
             .uuid = controller->uuid,
             .app = app->base,
     };
+    app_ui_t * ui = &controller->global->ui;
     lv_fragment_t *fragment = lv_fragment_create(&streaming_controller_class, &args);
-    lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(app_uimanager));
-    lv_fragment_manager_push(app_uimanager, fragment, container);
+    lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(ui->fm));
+    lv_fragment_manager_push(ui->fm, fragment, container);
 }
 
 static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_item_t *app) {

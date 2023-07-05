@@ -5,8 +5,9 @@
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 
-int lv_sdl_init_wheel(lv_indev_drv_t *drv) {
+int lv_sdl_init_wheel(lv_indev_drv_t *drv, app_ui_input_t *input) {
     lv_indev_drv_init(drv);
+    drv->user_data = input;
     drv->type = LV_INDEV_TYPE_ENCODER;
     drv->read_cb = sdl_input_read;
 

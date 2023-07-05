@@ -33,7 +33,7 @@ bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode) {
             return false;
         case SDL_WEBOS_SCANCODE_YELLOW:
             if (absinput_no_control) return true;
-            if (ui_input_mode & UI_INPUT_MODE_POINTER_FLAG) {
+            if (app_ui_get_input_mode(&global->ui.input) & UI_INPUT_MODE_POINTER_FLAG) {
                 LiSendMouseButtonEvent(event->type == SDL_KEYDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
                                        BUTTON_RIGHT);
                 return true;

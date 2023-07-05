@@ -7,6 +7,7 @@
 
 #include "util/font.h"
 #include "util/i18n.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     settings_controller_t *controller = (settings_controller_t *) self;
@@ -31,7 +32,7 @@ lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_set_style_text_font(title, lv_theme_get_font_large(win), 0);
 
     lv_obj_t *close_btn = lv_win_add_btn(win, MAT_SYMBOL_CLOSE, lv_dpx(28));
-    lv_btn_set_icon_font(close_btn, app_iconfonts.normal);
+    lv_btn_set_icon_font(close_btn, lv_theme_moonlight_get_iconfont_normal(close_btn));
     lv_obj_add_flag(close_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_style_width(close_btn, lv_dpx(28), 0);
     lv_obj_set_style_height(close_btn, lv_dpx(28), 0);

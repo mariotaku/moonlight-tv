@@ -23,13 +23,14 @@ static void webos_key_input_mode(const SDL_KeyboardEvent *event);
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 
-int lv_sdl_init_key_input(lv_drv_sdl_key_t *indev_drv) {
-    lv_memset_00(indev_drv, sizeof(*indev_drv));
-    lv_indev_drv_init(&indev_drv->base);
-    indev_drv->base.type = LV_INDEV_TYPE_KEYPAD;
-    indev_drv->base.read_cb = sdl_input_read;
+int lv_sdl_init_key_input(lv_drv_sdl_key_t *drv, app_ui_input_t *input) {
+    lv_memset_00(drv, sizeof(*drv));
+    lv_indev_drv_init(&drv->base);
+    drv->base.user_data = input;
+    drv->base.type = LV_INDEV_TYPE_KEYPAD;
+    drv->base.read_cb = sdl_input_read;
 
-    indev_drv->state = LV_INDEV_STATE_RELEASED;
+    drv->state = LV_INDEV_STATE_RELEASED;
     return 0;
 }
 
@@ -39,6 +40,7 @@ void lv_sdl_key_input_release_key(lv_indev_t *indev) {
 }
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
+    app_ui_input_t *input = drv->user_data;
     lv_drv_sdl_key_t *state = (lv_drv_sdl_key_t *) drv;
     SDL_Event e;
     if (state->text_remain > 0) {
@@ -62,7 +64,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
             if (read_keyboard(&e.key, state)) {
-                ui_set_input_mode(UI_INPUT_MODE_KEY);
+                ui_set_input_mode(input, UI_INPUT_MODE_KEY);
             }
         }
         data->continue_reading = true;
@@ -71,7 +73,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
             if (read_event(&e, state)) {
-                ui_set_input_mode(UI_INPUT_MODE_GAMEPAD);
+                ui_set_input_mode(input, UI_INPUT_MODE_GAMEPAD);
             }
         }
         data->continue_reading = true;

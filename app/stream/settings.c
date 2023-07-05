@@ -269,7 +269,7 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
     } else if (INI_NAME_MATCH("language")) {
         set_string(&config->language, value);
     } else if (INI_NAME_MATCH("fullscreen")) {
-#if TARGET_WEBOS
+#if FEATURE_FORCE_FULLSCREEN
         config->fullscreen = true;
 #else
         config->fullscreen = INI_IS_TRUE(value);

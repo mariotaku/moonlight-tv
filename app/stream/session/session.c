@@ -109,8 +109,9 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
                                                           config->stream.fps);
     }
     // Cap framerate to platform request
-    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate)
+    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate) {
         config->stream.bitrate = (int) video_cap.maxBitrate;
+    }
     config->sops &= streaming_sops_supported(server_clone->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
     if (video_cap.codecs & SS4S_VIDEO_H264) {
@@ -123,9 +124,7 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
         }
     }
     config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
-    if (video_cap.fullColorRange) {
-        config->stream.colorRange = COLOR_RANGE_FULL;
-    }
+    config->stream.colorRange = video_cap.fullColorRange ? COLOR_RANGE_FULL : COLOR_RANGE_LIMITED;
     // The flags seem to be the same to supportedVideoFormats, use it for now...
     server_clone->serverInfo.serverCodecModeSupport = config->stream.supportedVideoFormats;
 #if FEATURE_SURROUND_SOUND
@@ -251,6 +250,8 @@ int streaming_worker(session_t *session) {
 
     session->player = SS4S_PlayerOpen();
     SS4S_PlayerSetWaitAudioVideoReady(session->player, true);
+    SS4S_PlayerSetViewportSize(session->player, global->ui.width, global->ui.height);
+    SS4S_PlayerSetUserdata(session->player, global);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &ss4s_dec_callbacks, &ss4s_aud_callbacks,
@@ -428,8 +429,9 @@ void streaming_error(int code, const char *fmt, ...) {
 
 bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
     for (PDISPLAY_MODE cur = modes; cur != NULL; cur = cur->next) {
-        if (cur->width == w && cur->height == h && cur->refresh == fps)
+        if (cur->width == w && cur->height == h && cur->refresh == fps) {
             return true;
+        }
     }
     return false;
 }

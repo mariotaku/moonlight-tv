@@ -10,6 +10,7 @@
 #include "util/user_event.h"
 #include "util/i18n.h"
 #include "ui/common/progress_dialog.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 
 static void exit_streaming(lv_event_t *event);
 
@@ -66,7 +67,7 @@ bool stats_showing(streaming_controller_t *controller) {
 
 bool streaming_refresh_stats() {
     streaming_controller_t *controller = current_controller;
-    if (!controller) return false;
+    if (!controller) { return false; }
     if (!stats_showing(controller)) {
         return false;
     }
@@ -98,7 +99,7 @@ bool streaming_refresh_stats() {
 
 void streaming_notice_show(const char *message) {
     streaming_controller_t *controller = current_controller;
-    if (!controller) return;
+    if (!controller) { return; }
     lv_label_set_text(controller->notice_label, message);
     if (message && message[0]) {
         lv_obj_clear_flag(controller->notice, LV_OBJ_FLAG_HIDDEN);
@@ -192,7 +193,7 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    app_input_set_group(&controller->global->input, controller->group);
+    app_input_set_group(&controller->global->ui.input, controller->group);
     lv_obj_add_event_cb(controller->quit_btn, exit_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->suspend_btn, suspend_streaming, LV_EVENT_CLICKED, self);
     lv_obj_add_event_cb(controller->kbd_btn, open_keyboard, LV_EVENT_CLICKED, self);
@@ -228,7 +229,7 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     if (controller->stats->parent != controller->overlay) {
         lv_obj_del(controller->stats);
     }
-    app_input_set_group(&controller->global->input, NULL);
+    app_input_set_group(&controller->global->ui.input, NULL);
     lv_group_del(controller->group);
 }
 
@@ -244,7 +245,8 @@ static void suspend_streaming(lv_event_t *event) {
 
 static void open_keyboard(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
-    app_start_text_input(&controller->global->input, 0, 0, ui_display_width, ui_display_height);
+    app_t *app = controller->global;
+    app_start_text_input(&app->input, 0, 0, app->ui.width, app->ui.height);
 }
 
 static void toggle_vmouse(lv_event_t *event) {
@@ -253,8 +255,9 @@ static void toggle_vmouse(lv_event_t *event) {
 }
 
 bool show_overlay(streaming_controller_t *controller) {
-    if (overlay_showing)
+    if (overlay_showing) {
         return false;
+    }
     overlay_showing = true;
     lv_obj_clear_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
 
@@ -268,10 +271,11 @@ bool show_overlay(streaming_controller_t *controller) {
 
 static void hide_overlay(lv_event_t *event) {
     streaming_controller_t *controller = (streaming_controller_t *) lv_event_get_user_data(event);
-    app_input_set_button_points(&controller->global->input, NULL);
+    app_input_set_button_points(&controller->global->ui.input, NULL);
     lv_obj_add_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
-    if (!overlay_showing)
+    if (!overlay_showing) {
         return;
+    }
     overlay_showing = false;
     streaming_enter_fullscreen();
 }
@@ -314,5 +318,5 @@ static void update_buttons_layout(streaming_controller_t *controller) {
     lv_area_center(&coords, &controller->button_points[3]);
     lv_obj_get_coords(controller->kbd_btn, &coords);
     lv_area_center(&coords, &controller->button_points[4]);
-    app_input_set_button_points(&controller->global->input, controller->button_points);
+    app_input_set_button_points(&controller->global->ui.input, controller->button_points);
 }

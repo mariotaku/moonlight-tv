@@ -17,8 +17,6 @@ typedef struct app_fonts_t {
     app_fontset_t icons;
 } app_fonts_t;
 
-extern app_fontset_t app_iconfonts;
-
-app_fonts_t *app_font_init(lv_theme_t *theme);
+int app_font_init(app_fonts_t *fonts, int dpi);
 
 void app_font_deinit(app_fonts_t *fonts);
