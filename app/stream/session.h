@@ -54,6 +54,7 @@ extern char streaming_errmsg[];
 extern short streaming_display_width, streaming_display_height;
 
 typedef struct app_t app_t;
+typedef struct session_t session_t;
 
 void streaming_init();
 
@@ -85,3 +86,5 @@ void streaming_watchdog_start();
 void streaming_watchdog_stop();
 
 void streaming_watchdog_reset();
+
+session_t* session_create();

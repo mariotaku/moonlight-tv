@@ -14,7 +14,7 @@
 
 #define TV_REMOTE_TOGGLE_SOFT_INPUT 0
 
-bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode) {
+bool webos_intercept_remote_keys(const SDL_KeyboardEvent *event, short *keyCode) {
     switch ((unsigned int) event->keysym.scancode) {
         case SDL_WEBOS_SCANCODE_EXIT: {
             if (event->state == SDL_PRESSED) {

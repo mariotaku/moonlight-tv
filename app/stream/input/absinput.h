@@ -2,28 +2,31 @@
 
 #include <stdbool.h>
 #include <Limelight.h>
+#include <SDL_events.h>
 
-typedef struct sessinput_t sessinput_t;
+typedef struct app_input_t app_input_t;
+
+typedef struct stream_input_t {
+    app_input_t *input;
+} stream_input_t;
 
 extern bool absinput_no_control;
 extern bool absinput_no_sdl_mouse;
 
-void absinput_init();
-
-void absinput_destroy();
-
-int absinput_gamepads();
-
-int absinput_max_gamepads();
-
-bool absinput_gamepad_present(int which);
-
-void absinput_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor, unsigned short highFreqMotor);
-
 void absinput_start();
 
-void absinput_stop();
+void stream_input_stop();
 
 void absinput_set_virtual_mouse(bool enabled);
 
 bool absinput_get_virtual_mouse();
+
+void sdlinput_handle_key_event(const SDL_KeyboardEvent *event);
+
+void sdlinput_handle_text_event(const SDL_TextInputEvent *event);
+
+void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event);
+
+void sdlinput_handle_caxis_event(stream_input_t *input, const SDL_ControllerAxisEvent *event);
+
+void sdlinput_handle_mmotion_event(const SDL_MouseMotionEvent *event);

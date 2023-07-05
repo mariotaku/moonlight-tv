@@ -18,7 +18,7 @@ int worker_wol(worker_context_t *context) {
     SERVER_DATA *server = node->server;
     wol_broadcast(server->mac);
     Uint32 timeout = SDL_GetTicks() + 15000;
-    GS_CLIENT gs = app_gs_client_new();
+    GS_CLIENT gs = app_gs_client_new(context->app);
     int ret;
     while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
         PSERVER_DATA tmpserver = serverdata_new();

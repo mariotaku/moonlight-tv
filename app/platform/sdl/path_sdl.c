@@ -4,6 +4,10 @@
 
 static char *path_cache_parent();
 
+char *path_assets() {
+    return SDL_GetBasePath();
+}
+
 char *path_pref() {
     char *path = SDL_GetPrefPath("com.limelight", "moonlight-tv");
     unsigned int len = SDL_strlen(path);

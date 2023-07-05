@@ -67,7 +67,7 @@ static int keydown_count = 0;
 
 #if TARGET_WEBOS
 
-bool webos_intercept_remote_keys(SDL_KeyboardEvent *event, short *keyCode);
+bool webos_intercept_remote_keys(const SDL_KeyboardEvent *event, short *keyCode);
 
 #endif
 
@@ -126,7 +126,7 @@ void performPendingSpecialKeyCombo() {
     _pending_key_combo = KeyComboMax;
 }
 
-void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
+void sdlinput_handle_key_event(const SDL_KeyboardEvent *event) {
     short keyCode = 0;
 #if TARGET_WEBOS
     if (webos_intercept_remote_keys(event, &keyCode)) {
@@ -451,7 +451,7 @@ void sdlinput_handle_key_event(SDL_KeyboardEvent *event) {
     }
 }
 
-void sdlinput_handle_text_event(SDL_TextInputEvent *event) {
+void sdlinput_handle_text_event(const SDL_TextInputEvent *event) {
     if (keydown_count) {
         commons_log_verbose("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
         return;

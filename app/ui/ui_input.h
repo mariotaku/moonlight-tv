@@ -2,7 +2,7 @@
 
 #include "lvgl.h"
 
-#include "input/lv_drv_sdl_key.h"
+#include "lvgl/input/lv_drv_sdl_key.h"
 
 typedef struct app_ui_t app_ui_t;
 typedef struct app_ui_input_t app_ui_input_t;

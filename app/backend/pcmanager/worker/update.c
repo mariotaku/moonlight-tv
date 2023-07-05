@@ -42,7 +42,7 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
         pclist_unlock(manager);
         bus_pushaction_sync((bus_actionfunc) notify_querying, &args);
     }
-    GS_CLIENT client = app_gs_client_new();
+    GS_CLIENT client = app_gs_client_new(context->app);
     PSERVER_DATA server = serverdata_new();
     int ret = gs_get_status(client, server, ip_dup, app_configuration->unsupported);
     ip_dup = NULL;

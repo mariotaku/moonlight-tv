@@ -2,6 +2,11 @@
 
 #include <SDL.h>
 
+char *path_assets() {
+    const char *basedir = SDL_getenv("HOME");
+    return path_join(basedir, "assets");
+}
+
 char *path_pref() {
     const char *basedir = SDL_getenv("HOME");
     char *confdir = path_join(basedir, "conf");

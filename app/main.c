@@ -108,8 +108,8 @@ bool app_is_running() {
     return running;
 }
 
-GS_CLIENT app_gs_client_new() {
-    if (SDL_ThreadID() == global->main_thread_id) {
+GS_CLIENT app_gs_client_new(app_t *app) {
+    if (SDL_ThreadID() == app->main_thread_id) {
         commons_log_fatal("APP", "%s MUST BE called from worker thread!", __FUNCTION__);
         abort();
     }

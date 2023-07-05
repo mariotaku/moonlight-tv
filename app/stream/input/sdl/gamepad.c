@@ -9,6 +9,7 @@
 
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "input/input_gamepad.h"
 
 #define QUIT_BUTTONS (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG)
 #define GAMEPAD_COMBO_VMOUSE (LB_FLAG | RS_CLK_FLAG)
@@ -20,7 +21,7 @@ static void vmouse_set_vector(short x, short y);
 
 static void vmouse_set_trigger(char l, char r);
 
-static void release_buttons(PGAMEPAD_STATE gamepad);
+static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad);
 
 static short calc_mouse_movement(short axis);
 
@@ -36,9 +37,9 @@ static Uint32 vmouse_timer_callback(Uint32 interval, void *param);
 
 static bool gamepad_combo_check(short buttons, short combo);
 
-void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
+void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event) {
     short button = 0;
-    PGAMEPAD_STATE gamepad = get_gamepad(event->which);
+    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     switch (event->button) {
         case SDL_CONTROLLER_BUTTON_A:
             button = app_configuration->swap_abxy ? B_FLAG : A_FLAG;
@@ -105,12 +106,12 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
     if (gamepad->buttons == 0) {
         if (quit_combo_pressed) {
             quit_combo_pressed = false;
-            release_buttons(gamepad);
+            release_buttons(input, gamepad);
             bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
             return;
         } else if (vmouse_combo_pressed) {
             vmouse_combo_pressed = false;
-            release_buttons(gamepad);
+            release_buttons(input, gamepad);
             if (absinput_get_virtual_mouse()) {
                 vmouse_set_vector(0, 0);
                 vmouse_set_trigger(0, 0);
@@ -122,15 +123,16 @@ void sdlinput_handle_cbutton_event(SDL_ControllerButtonEvent *event) {
         }
     }
 
-    if (absinput_no_control)
+    if (absinput_no_control) {
         return;
-    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+    }
+    LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
                                gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX,
                                gamepad->rightStickY);
 }
 
-void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event) {
-    PGAMEPAD_STATE gamepad = get_gamepad(event->which);
+void sdlinput_handle_caxis_event(stream_input_t *input, const SDL_ControllerAxisEvent *event) {
+    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     bool vmouse_intercepted = false;
     bool vmouse = absinput_get_virtual_mouse();
     switch (event->axis) {
@@ -174,33 +176,24 @@ void sdlinput_handle_caxis_event(SDL_ControllerAxisEvent *event) {
         default:
             return;
     }
-    if (absinput_no_control)
+    if (absinput_no_control) {
         return;
+    }
     if (vmouse_intercepted) {
         vmouse_set_vector(gamepad->rightStickX, gamepad->rightStickY);
         vmouse_set_trigger(gamepad->leftTrigger, gamepad->rightTrigger);
     }
-    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons,
-                               vmouse ? 0 : gamepad->leftTrigger,
-                               vmouse ? 0 : gamepad->rightTrigger,
-                               gamepad->leftStickX, gamepad->leftStickY,
-                               (short) (vmouse ? 0 : gamepad->rightStickX),
-                               (short) (vmouse ? 0 : gamepad->rightStickY));
+    if (vmouse) {
+        LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
+                                   gamepad->leftStickX,
+                                   gamepad->leftStickY, 0, 0);
+    } else {
+        LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+                                   gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY,
+                                   gamepad->rightStickX, gamepad->rightStickY);
+    }
 }
 
-PGAMEPAD_STATE get_gamepad(SDL_JoystickID sdl_id) {
-    for (short i = 0; i < 4; i++) {
-        if (!gamepads[i].initialized) {
-            gamepads[i].sdl_id = sdl_id;
-            gamepads[i].id = i;
-            gamepads[i].initialized = true;
-            activeGamepadMask |= (1 << i);
-            return &gamepads[i];
-        } else if (gamepads[i].sdl_id == sdl_id)
-            return &gamepads[i];
-    }
-    return &gamepads[0];
-}
 
 static void vmouse_set_vector(short x, short y) {
     vmouse_state.x = calc_mouse_movement(x);
@@ -228,7 +221,7 @@ static void vmouse_set_trigger(char l, char r) {
     vmouse_state.r = rdown;
 }
 
-static void release_buttons(PGAMEPAD_STATE gamepad) {
+static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad) {
     gamepad->buttons = 0;
     gamepad->leftTrigger = 0;
     gamepad->rightTrigger = 0;
@@ -236,7 +229,7 @@ static void release_buttons(PGAMEPAD_STATE gamepad) {
     gamepad->leftStickY = 0;
     gamepad->rightStickX = 0;
     gamepad->rightStickY = 0;
-    LiSendMultiControllerEvent(gamepad->id, activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+    LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
                                gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX,
                                gamepad->rightStickY);
 }
@@ -245,12 +238,12 @@ static void release_buttons(PGAMEPAD_STATE gamepad) {
 static short calc_mouse_movement(short axis) {
     short abs_axis = (short) (axis > 0 ? axis : -axis);
     short threshold = 4096;
-    if (abs_axis < threshold) return 0;
+    if (abs_axis < threshold) { return 0; }
     return (short) (SDL_sqrt(abs_axis - threshold) * (axis > 0 ? 1 : -1));
 }
 
 static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
-    if (!absinput_get_virtual_mouse()) return 0;
+    if (!absinput_get_virtual_mouse()) { return 0; }
     if (!vmouse_state.x && !vmouse_state.y) {
         return 0;
     }

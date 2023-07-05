@@ -170,7 +170,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                }
                 app_set_keep_awake(false);
                 app_set_mouse_grab(false);
-                absinput_stop();
+                stream_input_stop();
 //                ui_stream_render = NULL;
 //                ui_stream_render_host_context.renderer = NULL;
                 app_ui_open(&app->ui);

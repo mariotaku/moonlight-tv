@@ -9,9 +9,10 @@
 
 struct coverloader_t;
 
+typedef struct app_t app_t;
 typedef struct coverloader_t coverloader_t;
 
-coverloader_t *coverloader_new();
+coverloader_t *coverloader_new(app_t *app);
 
 void coverloader_unref(coverloader_t *loader);
 

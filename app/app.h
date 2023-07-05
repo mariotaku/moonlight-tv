@@ -28,6 +28,8 @@ extern app_t *global;
 extern PCONFIGURATION app_configuration;
 extern pcmanager_t *pcmanager;
 
+typedef struct session_t session_t;
+
 typedef struct app_t {
     SDL_threadID main_thread_id;
     os_info_t os_info;
@@ -43,6 +45,7 @@ typedef struct app_t {
 #if FEATURE_INPUT_LIBCEC
     cec_sdl_ctx_t cec;
 #endif
+    session_t *session;
 } app_t;
 
 int app_init(app_t *app, int argc, char *argv[]);
@@ -65,7 +68,7 @@ void app_quit_confirm();
 
 bool ui_render_queue_submit(void *data, unsigned int pts);
 
-GS_CLIENT app_gs_client_new();
+GS_CLIENT app_gs_client_new(app_t *app);
 
 void app_set_mouse_grab(bool);
 

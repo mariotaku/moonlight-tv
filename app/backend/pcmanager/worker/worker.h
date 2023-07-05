@@ -2,7 +2,9 @@
 
 #include "backend/pcmanager.h"
 
+typedef struct app_t app_t;
 typedef struct worker_context_t {
+    app_t *app;
     pcmanager_t *manager;
     uuidstr_t uuid;
     void *arg1;

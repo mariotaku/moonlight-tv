@@ -1,5 +1,6 @@
 #include "app.h"
 #include "config.h"
+#include "priv.h"
 
 #include "stream/session.h"
 #include "stream/settings.h"
@@ -20,12 +21,11 @@
 #include "callbacks.h"
 #include "ss4s.h"
 #include "backend/pcmanager/worker/worker.h"
+#include "input/input_gamepad.h"
 
 #if FEATURE_INPUT_EVMOUSE
-#include "evmouse.h"
 #include <errno.h>
 #endif
-
 
 extern CONNECTION_LISTENER_CALLBACKS connection_callbacks;
 
@@ -38,34 +38,16 @@ short streaming_display_width, streaming_display_height;
 static SDL_mutex *streaming_state_lock;
 static SDL_Thread *streaming_thread;
 
-typedef struct {
-    /* SERVER_DATA and CONFIGURATION is cloned rather than referenced */
-    SERVER_DATA *server;
-    CONFIGURATION *config;
-    int appId;
-    bool interrupted;
-    bool quitapp;
-    SS4S_VideoCapabilities video_cap;
-    SDL_cond *cond;
-    SDL_mutex *mutex;
-    SDL_Thread *thread;
-    SS4S_Player *player;
-#if FEATURE_INPUT_EVMOUSE
-    struct {
-        SDL_Thread *thread;
-        evmouse_t *dev;
-    } mouse;
-#endif
-} session_t;
-
 static session_t *session_active;
 
 static int streaming_worker(session_t *session);
 
 #if FEATURE_INPUT_EVMOUSE
+
 static void mouse_listener(const evmouse_event_t *event, void *userdata);
 
 static int mouse_worker(session_t *session);
+
 #endif
 
 static void streaming_set_status(STREAMING_STATUS status);
@@ -149,6 +131,7 @@ int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app) {
 
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
+    session->global = global;
     session->video_cap = global->ss4s.video_cap;
     session->server = server_clone;
     session->config = config;
@@ -219,17 +202,13 @@ int streaming_worker(session_t *session) {
     absinput_no_sdl_mouse = config->hardware_mouse;
     absinput_set_virtual_mouse(false);
     int appId = session->appId;
-
-    int gamepad_mask = 0;
-    for (int i = 0, cnt = absinput_gamepads(); i < cnt && i < 4; i++) {
-        gamepad_mask = (gamepad_mask << 1) + 1;
-    }
     session->player = NULL;
 
     commons_log_info("Session", "Launch app %d...", appId);
-    GS_CLIENT client = app_gs_client_new();
+    GS_CLIENT client = app_gs_client_new(session->global);
     gs_set_timeout(client, 30);
-    int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio, gamepad_mask);
+    int ret = gs_start_app(client, server, &config->stream, appId, config->sops, config->localaudio,
+                           app_input_gamepads_mask(&global->input));
     if (ret != GS_OK) {
         streaming_set_status(STREAMING_ERROR);
         const char *gs_error = NULL;
@@ -250,8 +229,8 @@ int streaming_worker(session_t *session) {
 
     session->player = SS4S_PlayerOpen();
     SS4S_PlayerSetWaitAudioVideoReady(session->player, true);
-    SS4S_PlayerSetViewportSize(session->player, global->ui.width, global->ui.height);
-    SS4S_PlayerSetUserdata(session->player, global);
+    SS4S_PlayerSetViewportSize(session->player, session->global->ui.width, global->ui.height);
+    SS4S_PlayerSetUserdata(session->player, session->global);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,
                                         &ss4s_dec_callbacks, &ss4s_aud_callbacks,
@@ -336,6 +315,7 @@ int streaming_worker(session_t *session) {
 }
 
 #if FEATURE_INPUT_EVMOUSE
+
 static int mouse_worker(session_t *session) {
     session->mouse.dev = evmouse_open_default();
     if (session->mouse.dev == NULL) {
@@ -367,6 +347,7 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
             break;
     }
 }
+
 #endif
 
 void streaming_enter_fullscreen() {

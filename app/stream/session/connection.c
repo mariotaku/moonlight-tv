@@ -3,6 +3,8 @@
 
 #include "util/i18n.h"
 #include "logging.h"
+#include "input/input_gamepad.h"
+#include "app.h"
 
 static void connection_terminated(int errorCode) {
     if (errorCode == ML_ERROR_GRACEFUL_TERMINATION) {
@@ -39,9 +41,14 @@ static void connection_status_update(int status) {
 static void connection_stage_failed(int stage, int errorCode) {
     const char *stageName = LiGetStageName(stage);
     commons_log_error("Session", "Connection failed at stage %d (%s), errorCode = %d (%s)", stage, stageName, errorCode,
-             strerror(errorCode));
+                      strerror(errorCode));
     streaming_error(errorCode, "Connection failed at stage %d (%s), errorCode = %d (%s)", stage, stageName,
                     errorCode, strerror(errorCode));
+}
+
+static void connection_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor,
+                              unsigned short highFreqMotor) {
+    app_input_gamepad_rumble(&global->input, controllerNumber, lowFreqMotor, highFreqMotor);
 }
 
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
@@ -51,7 +58,7 @@ CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
         .connectionStarted = NULL,
         .connectionTerminated = connection_terminated,
         .logMessage = connection_log_message,
-        .rumble = absinput_rumble,
+        .rumble = connection_rumble,
         .connectionStatusUpdate = connection_status_update,
         .setHdrMode = streaming_set_hdr
 };

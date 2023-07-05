@@ -21,6 +21,7 @@
 #include "ss4s_modules.h"
 #include "ss4s.h"
 #include "stream/input/sdlinput.h"
+#include "stream/session/session_events.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -166,7 +167,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERDEVICEADDED:
         case SDL_CONTROLLERDEVICEREMOVED:
         case SDL_CONTROLLERDEVICEREMAPPED: {
-            inputmgr_sdl_handle_event(event);
+            app_input_handle_event(&app->input, event);
             break;
         }
         case SDL_KEYDOWN:
@@ -179,8 +180,8 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERAXISMOTION:
         case SDL_TEXTINPUT: {
-            if (!app_ui_is_opened(&app->ui)) {
-                absinput_dispatch_event(event);
+            if (!app_ui_is_opened(&app->ui) && app->session != NULL) {
+                session_input_handle_event(app->session, event);
                 return 0;
             }
             return 1;

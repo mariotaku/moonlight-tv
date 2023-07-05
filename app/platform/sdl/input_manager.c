@@ -16,11 +16,26 @@
 void inputmgr_init(input_manager_t *manager) {
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     int numofmappings = 0;
-    char *condb = gamecontrollerdb_path();
+
+    char *condb = gamecontrollerdb_fetched_path();
     if (access(condb, F_OK) == 0) {
         commons_log_info("Input", "Load game controller mapping from %s", condb);
         numofmappings += SDL_GameControllerAddMappingsFromFile(condb);
+    } else {
+        char *builtin = gamecontrollerdb_builtin_path();
+        if (access(builtin, F_OK) == 0) {
+            commons_log_info("Input", "Load builtin game controller mapping from %s", builtin);
+            numofmappings += SDL_GameControllerAddMappingsFromFile(builtin);
+        }
+        free(builtin);
     }
+
+    char *extradb = gamecontrollerdb_extra_path();
+    if (access(extradb, F_OK) == 0) {
+        commons_log_info("Input", "Load extra controller mapping from %s", extradb);
+        numofmappings += SDL_GameControllerAddMappingsFromFile(extradb);
+    }
+    free(extradb);
 
     char *userdb = gamecontrollerdb_user_path();
     if (access(userdb, F_OK) == 0) {
@@ -30,7 +45,6 @@ void inputmgr_init(input_manager_t *manager) {
     free(userdb);
 
     commons_log_info("Input", "Input manager init, %d game controller mappings loaded", numofmappings);
-    absinput_init();
 
     manager->gcdb_updater.path = condb;
     manager->gcdb_updater.platform = GAMECONTROLLERDB_PLATFORM;
@@ -45,30 +59,22 @@ void inputmgr_init(input_manager_t *manager) {
 void inputmgr_deinit(input_manager_t *manager) {
     free(manager->gcdb_updater.path);
     commons_gcdb_updater_deinit(&manager->gcdb_updater);
-    absinput_destroy();
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 }
 
-void inputmgr_sdl_handle_event(SDL_Event *ev) {
-    if (ev->type == SDL_JOYDEVICEADDED) {
-        if (absinput_gamepads() >= absinput_max_gamepads()) {
-            // Ignore controllers more than supported
-            commons_log_warn("Input", "Too many controllers, ignoring.");
-            return;
-        }
-        absinput_init_gamepad(ev->jdevice.which);
-    } else if (ev->type == SDL_JOYDEVICEREMOVED) {
-        absinput_close_gamepad(ev->jdevice.which);
-    } else if (ev->type == SDL_CONTROLLERDEVICEADDED) {
-        commons_log_debug("Input", "SDL_CONTROLLERDEVICEADDED");
-    } else if (ev->type == SDL_CONTROLLERDEVICEREMOVED) {
-        commons_log_debug("Input", "SDL_CONTROLLERDEVICEREMOVED");
-    } else if (ev->type == SDL_CONTROLLERDEVICEREMAPPED) {
-        commons_log_debug("Input", "SDL_CONTROLLERDEVICEREMAPPED");
-    }
+char *gamecontrollerdb_builtin_path() {
+    char *assetsdir = path_assets(), *condb = path_join(assetsdir, "sdl_gamecontrollerdb.txt");
+    free(assetsdir);
+    return condb;
 }
 
-char *gamecontrollerdb_path() {
+char *gamecontrollerdb_extra_path() {
+    char *assetsdir = path_assets(), *condb = path_join(assetsdir, "sdl_gamecontrollerdb_extra.txt");
+    free(assetsdir);
+    return condb;
+}
+
+char *gamecontrollerdb_fetched_path() {
     char *confdir = path_pref(), *condb = path_join(confdir, "sdl_gamecontrollerdb.txt");
     free(confdir);
     return condb;

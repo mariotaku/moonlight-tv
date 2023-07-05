@@ -12,7 +12,7 @@
 
 #include "util/navkey.h"
 
-#include "input/lv_drv_sdl_key.h"
+#include "lvgl/input/lv_drv_sdl_key.h"
 
 typedef struct app_t app_t;
 typedef struct app_fonts_t app_fonts_t;

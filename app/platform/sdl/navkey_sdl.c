@@ -36,7 +36,7 @@ NAVKEY navkey_from_sdl(const SDL_Event *ev, bool *pressed) {
                 default: {
 #if TARGET_WEBOS
                     NAVKEY navkey;
-                    if (navkey = navkey_from_sdl_webos(ev)) {
+                    if ((navkey = navkey_from_sdl_webos(ev)) != NAVKEY_UNKNOWN) {
                         return navkey;
                     }
 #endif
@@ -55,7 +55,6 @@ NAVKEY navkey_from_sdl(const SDL_Event *ev, bool *pressed) {
 }
 
 NAVKEY navkey_gamepad_map(SDL_JoystickID which, Uint8 button) {
-    PGAMEPAD_STATE state = get_gamepad(which);
     switch (button) {
         case SDL_CONTROLLER_BUTTON_DPAD_UP:
             return NAVKEY_UP;

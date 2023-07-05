@@ -39,7 +39,7 @@ void sdlinput_handle_mwheel_event(const SDL_MouseWheelEvent *event) {
     LiSendScrollEvent((signed char) event->y);
 }
 
-void sdlinput_handle_mmotion_event(SDL_MouseMotionEvent *event) {
+void sdlinput_handle_mmotion_event(const SDL_MouseMotionEvent *event) {
     if (absinput_no_control || absinput_no_sdl_mouse) return;
     if (app_get_mouse_relative()) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);

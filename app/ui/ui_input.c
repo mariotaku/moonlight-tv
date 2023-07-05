@@ -1,6 +1,6 @@
 #include "root.h"
 #include "ui_input.h"
-#include "input/lv_drv_sdl_key.h"
+#include "lvgl/input/lv_drv_sdl_key.h"
 #include "lvgl/lv_sdl_drv_input.h"
 
 static void app_input_populate_group(app_ui_input_t *input);

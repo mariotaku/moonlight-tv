@@ -8,6 +8,7 @@
 
 #include "util/user_event.h"
 #include "lv_drv_sdl_key.h"
+#include "stream/session/session_events.h"
 
 static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state);
 
@@ -41,6 +42,7 @@ void lv_sdl_key_input_release_key(lv_indev_t *indev) {
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     app_ui_input_t *input = drv->user_data;
+    app_t *app = input->ui->app;
     lv_drv_sdl_key_t *state = (lv_drv_sdl_key_t *) drv;
     SDL_Event e;
     if (state->text_remain > 0) {
@@ -60,7 +62,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 #if TARGET_WEBOS
         webos_key_input_mode(&e.key);
 #endif
-        if (absinput_dispatch_event(&e)) {
+        if (app->session != NULL && session_input_handle_event(app->session, &e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
             if (read_keyboard(&e.key, state)) {
@@ -69,7 +71,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         }
         data->continue_reading = true;
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_CONTROLLERAXISMOTION, SDL_CONTROLLERBUTTONUP) > 0) {
-        if (absinput_dispatch_event(&e)) {
+        if (app->session != NULL && session_input_handle_event(app->session, &e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
             if (read_event(&e, state)) {
@@ -78,7 +80,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         }
         data->continue_reading = true;
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_TEXTINPUT, SDL_TEXTINPUT) > 0) {
-        if (absinput_dispatch_event(&e)) {
+        if (app->session != NULL && session_input_handle_event(app->session, &e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
             uint8_t size = _lv_txt_get_encoded_length(e.text.text);

@@ -5,6 +5,7 @@
 #include "uuidstr.h"
 #include <SDL.h>
 
+typedef struct app_t app_t;
 typedef struct pcmanager_listener_list pcmanager_listener_list;
 
 typedef enum pcmanager_notify_type_t {
@@ -21,6 +22,7 @@ typedef struct {
 } pclist_update_context_t;
 
 struct pcmanager_t {
+    app_t *app;
     SDL_threadID thread_id;
     executor_t *executor;
     pclist_t *servers;

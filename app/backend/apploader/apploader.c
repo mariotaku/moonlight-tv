@@ -57,10 +57,10 @@ static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll);
 
 static void loader_thread_wait(SDL_Thread *thread);
 
-apploader_t *apploader_create(const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
+apploader_t *apploader_create(app_t *app, const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
     apploader_t *loader = SDL_malloc(sizeof(apploader_t));
     SDL_memset(loader, 0, sizeof(apploader_t));
-    lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, NULL);
+    lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, app);
     loader->executor = executor_create("apploader", apploader_free);
     loader->callback = *cb;
     loader->userdata = userdata;

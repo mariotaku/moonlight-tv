@@ -145,7 +145,7 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     controller->uuid = arg->host;
     controller->def_app = arg->def_app;
     controller->node = pcmanager_node(pcmanager, &controller->uuid);
-    controller->apploader = apploader_create(&controller->uuid, &controller->apploader_cb, controller);
+    controller->apploader = apploader_create(arg->global, &controller->uuid, &controller->apploader_cb, controller);
 
     appitem_style_init(&controller->appitem_style);
 }
@@ -222,7 +222,7 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
 static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     LV_UNUSED(view);
     apps_fragment_t *controller = (apps_fragment_t *) self;
-    controller->coverloader = coverloader_new();
+    controller->coverloader = coverloader_new(controller->global);
     pcmanager_register_listener(pcmanager, &pc_listeners, controller);
     lv_obj_t *applist = controller->applist;
     lv_obj_add_event_cb(applist, item_click_cb, LV_EVENT_SHORT_CLICKED, controller);
@@ -297,8 +297,8 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
 
 static void on_host_updated(const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (controller != current_instance) return;
-    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) return;
+    if (controller != current_instance) { return; }
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) { return; }
     const SERVER_STATE *state = pcmanager_state(pcmanager, uuid);
     SDL_assert_release(state != NULL);
     if (state->code == SERVER_STATE_AVAILABLE) {
@@ -309,32 +309,32 @@ static void on_host_updated(const uuidstr_t *uuid, void *userdata) {
 
 static void on_host_removed(const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) return;
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) { return; }
     controller->node = NULL;
     lv_fragment_del((lv_fragment_t *) controller);
 }
 
 static void host_info_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (controller != current_instance) return;
-    if (!controller->base.managed->obj_created) return;
+    if (controller != current_instance) { return; }
+    if (!controller->base.managed->obj_created) { return; }
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
 }
 
 static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
     apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (controller != current_instance) return;
-    if (!controller->base.managed->obj_created) return;
+    if (controller != current_instance) { return; }
+    if (!controller->base.managed->obj_created) { return; }
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
     SDL_assert_release(state != NULL);
-    if (state->code & SERVER_STATE_ONLINE || result != GS_OK) return;
+    if (state->code & SERVER_STATE_ONLINE || result != GS_OK) { return; }
     pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
 }
 
 static void update_view_state(apps_fragment_t *controller) {
-    if (controller != current_instance) return;
-    if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) return;
+    if (controller != current_instance) { return; }
+    if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) { return; }
     launcher_fragment_t *parent_controller = (launcher_fragment_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
     lv_obj_t *applist = controller->applist;
@@ -553,7 +553,7 @@ static void launcher_launch_game(apps_fragment_t *controller, const apploader_it
             .uuid = controller->uuid,
             .app = app->base,
     };
-    app_ui_t * ui = &controller->global->ui;
+    app_ui_t *ui = &controller->global->ui;
     lv_fragment_t *fragment = lv_fragment_create(&streaming_controller_class, &args);
     lv_obj_t *const *container = lv_fragment_get_container(lv_fragment_manager_get_top(ui->fm));
     lv_fragment_manager_push(ui->fm, fragment, container);
@@ -570,7 +570,7 @@ static void launcher_quit_game(apps_fragment_t *controller) {
 }
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
-    if (data == NULL) return 0;
+    if (data == NULL) { return 0; }
     apps_fragment_t *controller = lv_obj_get_user_data(grid);
     apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
@@ -600,13 +600,13 @@ static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
 
 
 static void applist_focus_enter(lv_event_t *event) {
-    if (event->target != event->current_target) return;
+    if (event->target != event->current_target) { return; }
     apps_fragment_t *controller = lv_event_get_user_data(event);
     lv_gridview_focus(controller->applist, controller->focus_backup);
 }
 
 static void applist_focus_leave(lv_event_t *event) {
-    if (event->target != event->current_target) return;
+    if (event->target != event->current_target) { return; }
     apps_fragment_t *controller = lv_event_get_user_data(event);
     controller->focus_backup = lv_gridview_get_focused_index(controller->applist);
     lv_gridview_focus(controller->applist, -1);
@@ -699,14 +699,14 @@ static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t 
 
 static void context_menu_cancel_cb(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
-    if (target->parent != lv_event_get_current_target(e)) return;
+    if (target->parent != lv_event_get_current_target(e)) { return; }
     lv_msgbox_close(lv_event_get_current_target(e)->parent);
 }
 
 static void context_menu_click_cb(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     lv_obj_t *current_target = lv_event_get_current_target(e);
-    if (target->parent != current_target) return;
+    if (target->parent != current_target) { return; }
     lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
     apps_fragment_t *controller = lv_event_get_user_data(e);
     if (lv_obj_get_user_data(target) == launcher_quit_game) {

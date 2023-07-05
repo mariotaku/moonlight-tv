@@ -13,7 +13,7 @@ int worker_pairing(worker_context_t *context) {
     if (node == NULL) {
         return ENOENT;
     }
-    GS_CLIENT client = app_gs_client_new();
+    GS_CLIENT client = app_gs_client_new(context->app);
     PSERVER_DATA server = serverdata_clone(node->server);
     gs_set_timeout(client, 60);
     int ret = gs_pair(client, server, context->arg1);

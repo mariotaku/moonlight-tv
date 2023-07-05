@@ -5,7 +5,7 @@
 #include "errors.h"
 
 int worker_quit_app(worker_context_t *context) {
-    GS_CLIENT client = app_gs_client_new();
+    GS_CLIENT client = app_gs_client_new(context->app);
     pclist_t *node = pclist_find_by_uuid(context->manager, &context->uuid);
     if (node == NULL) {
         return GS_ERROR;

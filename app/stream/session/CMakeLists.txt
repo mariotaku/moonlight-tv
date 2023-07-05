@@ -1,1 +1,1 @@
-target_sources(moonlight PRIVATE session.c connection.c watchdog.c callbacks.c)
+target_sources(moonlight PRIVATE session.c connection.c watchdog.c callbacks.c session_events.c)

@@ -5,3 +5,4 @@ target_sources(moonlight PRIVATE
         util/lv_app_utils.c
         font/font_empty.c
         theme/lv_theme_moonlight.c)
+add_subdirectory(input)
