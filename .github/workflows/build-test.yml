@@ -180,6 +180,7 @@ jobs:
         working-directory: ${{github.workspace}}/build
         shell: bash
         run: |
+          source ${{github.workspace}}/.steamlink-sdk/setenv.sh
           cmake --build . --config $BUILD_TYPE
           cpack
 
