@@ -250,6 +250,7 @@ int streaming_worker(session_t *session) {
 
     session->player = SS4S_PlayerOpen();
     SS4S_PlayerSetWaitAudioVideoReady(session->player, true);
+    SS4S_PlayerSetViewportSize(session->player, global->ui.width, global->ui.height);
     SS4S_PlayerSetUserdata(session->player, global);
 
     int startResult = LiStartConnection(&server->serverInfo, &config->stream, &connection_callbacks,

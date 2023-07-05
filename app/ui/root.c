@@ -142,7 +142,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
         switch (which) {
             case USER_STREAM_OPEN: {
                 if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
-
+                    SDL_ShowCursor(SDL_FALSE);
                 } else {
                     lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
                     // TODO: setup renderer
@@ -159,6 +159,11 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 return true;
             }
             case USER_STREAM_CLOSE: {
+                if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
+                    SDL_ShowCursor(SDL_TRUE);
+                } else {
+
+                }
                 // TODO: close renderer
 //                if (ui_stream_render) {
 //                    ui_stream_render->renderCleanup();
@@ -170,6 +175,13 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                ui_stream_render_host_context.renderer = NULL;
                 app_ui_open(&app->ui);
                 return true;
+            }
+            case USER_OPEN_OVERLAY: {
+                if (!app_ui_is_opened(&app->ui)) {
+                    streaming_interrupt(false, STREAMING_INTERRUPT_USER);
+                    return true;
+                }
+                return false;
             }
             default:
                 break;
