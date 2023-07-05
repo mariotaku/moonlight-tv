@@ -41,8 +41,8 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             warped = false;
         } else if (absinput_should_accept() && app_get_mouse_relative()) {
             int w, h;
-            SDL_GetWindowSize(app->window, &w, &h);
-            SDL_WarpMouseInWindow(app->window, w / 2, h / 2);
+            SDL_GetWindowSize(input->ui->window, &w, &h);
+            SDL_WarpMouseInWindow(input->ui->window, w / 2, h / 2);
             warped = true;
         }
 #endif
