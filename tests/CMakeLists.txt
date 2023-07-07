@@ -1,7 +1,6 @@
 function(add_unit_test NAME SOURCES)
     add_executable(${NAME} ${SOURCES})
-    target_include_directories(${NAME} PRIVATE ${CMAKE_SOURCE_DIR}/app)
-    target_link_libraries(${NAME} PRIVATE unity)
+    target_link_libraries(${NAME} PRIVATE unity moonlight-lib)
     add_test(${NAME} ${NAME})
 endfunction()
 

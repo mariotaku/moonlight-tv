@@ -173,10 +173,10 @@ option(SS4S_MODULE_BUILD_DUMMY "Enable SS4S dummy module" OFF)
 add_subdirectory(third_party/ss4s)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
-target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/app/util)
+target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/src/app/util)
 target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
-target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../app/lvgl/lv_conf.h)
+target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../src/app/lvgl/lv_conf.h)
 target_link_libraries(lvgl PUBLIC ${SDL2_AND_IMAGES_LIBRARIES} ${FREETYPE_LIBRARIES})
 
 add_subdirectory(third_party/commons)
@@ -185,59 +185,59 @@ target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_
 target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 
 add_executable(moonlight src/main.c)
-add_subdirectory(app)
+add_library(moonlight-lib STATIC)
+add_subdirectory(src)
+target_link_libraries(moonlight PRIVATE moonlight-lib)
 
 if (WITH_SANITIZE)
-    target_compile_options(moonlight PRIVATE -fsanitize=${WITH_SANITIZE} -g3 -O0)
-    target_link_options(moonlight PRIVATE -fsanitize=${WITH_SANITIZE} -static-libasan -lrt)
+    target_compile_options(moonlight-lib PUBLIC -fsanitize=${WITH_SANITIZE} -g3 -O0)
+    target_link_options(moonlight-lib PUBLIC -fsanitize=${WITH_SANITIZE} -static-libasan -lrt)
 endif ()
 
-target_compile_lint(moonlight)
+target_compile_lint(moonlight-lib)
 
-set_target_properties(moonlight PROPERTIES
+set_target_properties(moonlight-lib PROPERTIES
         C_STANDARD 11
         C_STANDARD_REQUIRED TRUE
         )
 
-target_compile_definitions(moonlight PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+target_compile_definitions(moonlight-lib PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
 string(LENGTH ${CMAKE_SOURCE_DIR} SOURCE_DIR_LENGTH)
-target_compile_definitions(moonlight PRIVATE SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
-target_compile_definitions(moonlight PRIVATE APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST=1)
-target_compile_definitions(moonlight PRIVATE LV_LVGL_H_INCLUDE_SIMPLE=1)
+target_compile_definitions(moonlight-lib PUBLIC SOURCE_DIR_LENGTH=${SOURCE_DIR_LENGTH})
+target_compile_definitions(moonlight-lib PUBLIC APP_VERSION="${PROJECT_VERSION}" APPLOG_HOST=1)
+target_compile_definitions(moonlight-lib PUBLIC LV_LVGL_H_INCLUDE_SIMPLE=1)
 
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/app)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/modules)
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/core/libgamestream)
+target_include_directories(moonlight-lib PUBLIC ${CMAKE_SOURCE_DIR}/core/libgamestream)
 
-target_include_directories(moonlight PRIVATE ${CMAKE_SOURCE_DIR}/utils/include)
+target_include_directories(moonlight-lib PUBLIC ${CMAKE_SOURCE_DIR}/utils/include)
 
 if (OS_WINDOWS)
     pkg_check_modules(MICRODNS REQUIRED microdns)
-    target_link_libraries(moonlight PRIVATE ${MICRODNS_LIBRARIES})
+    target_link_libraries(moonlight-lib PUBLIC ${MICRODNS_LIBRARIES})
     if (MINGW)
-        target_link_libraries(moonlight PRIVATE libintl.a libiconv.a)
+        target_link_libraries(moonlight-lib PUBLIC libintl.a libiconv.a)
     endif ()
 else ()
     set(BUILD_SHARED_LIBS ON)
     include(BuildMicrodns)
-    target_link_libraries(moonlight PRIVATE microdns)
+    target_link_libraries(moonlight-lib PUBLIC microdns)
     unset(BUILD_SHARED_LIBS)
 endif ()
 
-target_include_directories(moonlight SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
+target_include_directories(moonlight-lib SYSTEM PUBLIC ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
         ${INIH_INCLUDE_DIRS})
-target_link_libraries(moonlight PRIVATE
+target_link_libraries(moonlight-lib PUBLIC
         m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
         moonlight-common-c gamestream lvgl ${INIH_LIBRARIES} ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
 
-target_link_libraries(moonlight PRIVATE lv_gridview lv_sdl_img)
+target_link_libraries(moonlight-lib PUBLIC lv_gridview lv_sdl_img)
 
-target_include_directories(moonlight SYSTEM PRIVATE ${OPUS_INCLUDE_DIRS})
-target_link_libraries(moonlight PRIVATE ${OPUS_LIBRARIES})
+target_include_directories(moonlight-lib SYSTEM PUBLIC ${OPUS_INCLUDE_DIRS})
+target_link_libraries(moonlight-lib PUBLIC ${OPUS_LIBRARIES})
 
-target_include_directories(moonlight SYSTEM PRIVATE ${MBEDTLS_INCLUDE_DIRS})
-target_link_libraries(moonlight PRIVATE ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
+target_include_directories(moonlight-lib SYSTEM PUBLIC ${MBEDTLS_INCLUDE_DIRS})
+target_link_libraries(moonlight-lib PUBLIC ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
 
 if (TARGET_WEBOS)
     set(FEATURE_FORCE_FULLSCREEN ON)
@@ -248,30 +248,30 @@ if (TARGET_WEBOS)
     set(FEATURE_WINDOW_FULLSCREEN_DESKTOP OFF)
     set(FEATURE_INPUT_EVMOUSE ON)
 
-    target_compile_definitions(moonlight PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
-    target_compile_definitions(moonlight PUBLIC HAVE_RELATIVE_MOUSE_HACK)
-    target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
+    target_compile_definitions(moonlight-lib PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
+    target_compile_definitions(moonlight-lib PUBLIC HAVE_RELATIVE_MOUSE_HACK)
+    target_compile_definitions(moonlight-lib PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
-    target_include_directories(moonlight SYSTEM PRIVATE ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
+    target_include_directories(moonlight-lib SYSTEM PUBLIC ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
-    target_link_libraries(moonlight PRIVATE ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES})
-    target_link_libraries(moonlight PRIVATE commons-luna-sync commons-webos-is-uhd commons-webos-panel-info)
+    target_link_libraries(moonlight-lib PUBLIC ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES})
+    target_link_libraries(moonlight-lib PUBLIC commons-luna-sync commons-webos-is-uhd commons-webos-panel-info)
 else ()
     if (TARGET_STEAMLINK)
         set(FEATURE_FORCE_FULLSCREEN ON)
         set(FEATURE_WINDOW_FULLSCREEN_DESKTOP OFF)
-        target_compile_definitions(moonlight PUBLIC TARGET_STEAMLINK)
+        target_compile_definitions(moonlight-lib PUBLIC TARGET_STEAMLINK)
     endif ()
     if (OS_DARWIN)
-        target_link_directories(moonlight PUBLIC ${SDL2_AND_IMAGES_LIBRARY_DIRS})
-        target_compile_definitions(moonlight PUBLIC OS_DARWIN)
-        target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
+        target_link_directories(moonlight-lib PUBLIC ${SDL2_AND_IMAGES_LIBRARY_DIRS})
+        target_compile_definitions(moonlight-lib PUBLIC OS_DARWIN)
+        target_compile_definitions(moonlight-lib PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif (OS_LINUX)
-        target_compile_definitions(moonlight PUBLIC OS_LINUX _GNU_SOURCE)
-        target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
+        target_compile_definitions(moonlight-lib PUBLIC OS_LINUX _GNU_SOURCE)
+        target_compile_definitions(moonlight-lib PUBLIC GAMECONTROLLERDB_PLATFORM="Linux")
     elseif (OS_WINDOWS)
-        target_compile_definitions(moonlight PUBLIC OS_WINDOWS)
-        target_compile_definitions(moonlight PUBLIC GAMECONTROLLERDB_PLATFORM="Windows")
+        target_compile_definitions(moonlight-lib PUBLIC OS_WINDOWS)
+        target_compile_definitions(moonlight-lib PUBLIC GAMECONTROLLERDB_PLATFORM="Windows")
     else ()
         message(FATAL_ERROR "Unknown build platform")
     endif ()
@@ -280,39 +280,39 @@ else ()
 endif ()
 
 if (FEATURE_INPUT_LIBCEC AND TARGET commons-cec-sdl)
-    target_link_libraries(moonlight PRIVATE commons-cec-sdl)
+    target_link_libraries(moonlight-lib PUBLIC commons-cec-sdl)
 else ()
     set(FEATURE_INPUT_LIBCEC OFF)
 endif ()
 
 if (FEATURE_INPUT_EVMOUSE AND TARGET commons-evmouse)
-    target_link_libraries(moonlight PRIVATE commons-evmouse)
+    target_link_libraries(moonlight-lib PUBLIC commons-evmouse)
 else ()
     set(FEATURE_INPUT_EVMOUSE OFF)
 endif ()
 
-target_link_libraries(moonlight PRIVATE commons-ss4s-modules-list)
+target_link_libraries(moonlight-lib PUBLIC commons-ss4s-modules-list)
 
-target_link_libraries(moonlight PRIVATE commons-logging commons-gamecontrollerdb-updater commons-lazy
+target_link_libraries(moonlight-lib PUBLIC commons-logging commons-gamecontrollerdb-updater commons-lazy
         commons-refcounter commons-executor commons-linked-list)
 
-configure_file(app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
-target_include_directories(moonlight PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+configure_file(src/app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
+target_include_directories(moonlight-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 if (OS_WINDOWS)
-    target_link_libraries(moonlight PRIVATE rpcrt4)
+    target_link_libraries(moonlight-lib PUBLIC rpcrt4)
 else ()
     pkg_check_modules(UUID REQUIRED uuid)
-    target_link_libraries(moonlight PRIVATE ${UUID_LIBRARIES})
+    target_link_libraries(moonlight-lib PUBLIC ${UUID_LIBRARIES})
 endif ()
+
+
+install(TARGETS moonlight RUNTIME DESTINATION bin)
 
 if (BUILD_TESTS)
     add_subdirectory(third_party/Unity EXCLUDE_FROM_ALL)
     add_subdirectory(tests)
 endif ()
-
-install(TARGETS moonlight RUNTIME DESTINATION bin)
-
 
 if (FEATURE_I18N_GETTEXT)
     include(MoonlightI18n)

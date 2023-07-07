@@ -17,7 +17,9 @@ int main(int argc, char *argv[]) {
 
     app_ui_open(&app_.ui);
 
-    ret = app_loop(&app_);
+    while (app_.running) {
+        app_run_loop(&app_);
+    }
 
     app_deinit(&app_);
     return ret;
