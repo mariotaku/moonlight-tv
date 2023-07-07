@@ -16,7 +16,7 @@ static const lv_point_t button_points_empty[5] = {
 
 
 void app_ui_input_init(app_ui_input_t *input, app_ui_t *ui) {
-
+    input->ui = ui;
     _lv_ll_init(&input->modal_groups, sizeof(lv_group_t *));
     lv_group_t *group = lv_group_get_default();
 

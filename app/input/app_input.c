@@ -4,22 +4,17 @@
 
 #include "lvgl/lv_sdl_drv_input.h"
 
-static SDL_Surface *blank_surface = NULL;
-static SDL_Cursor *blank_cursor = NULL;
-
 void app_input_init(app_input_t *input, app_t *app) {
-    blank_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-    blank_cursor = SDL_CreateColorCursor(blank_surface, 0, 0);
-    if (!blank_cursor) {
+    input->blank_cursor_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    input->blank_cursor_surface->userdata = SDL_CreateColorCursor(input->blank_cursor_surface, 0, 0);
+    if (input->blank_cursor_surface->userdata == NULL) {
         commons_log_warn("Input", "Failed to create blank cursor: %s", SDL_GetError());
     }
-
 }
 
 void app_input_deinit(app_input_t *input) {
-
-    SDL_FreeCursor(blank_cursor);
-    SDL_FreeSurface(blank_surface);
+    SDL_FreeCursor(input->blank_cursor_surface->userdata);
+    SDL_FreeSurface(input->blank_cursor_surface);
 }
 
 void app_stop_text_input(app_input_t *input) {

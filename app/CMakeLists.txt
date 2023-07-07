@@ -1,4 +1,4 @@
-target_sources(moonlight PRIVATE main.c app_sdl.c)
+target_sources(moonlight PRIVATE app_sdl.c)
 
 add_subdirectory(input)
 add_subdirectory(stream)

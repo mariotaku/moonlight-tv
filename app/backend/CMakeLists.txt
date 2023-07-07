@@ -1,5 +1,6 @@
 target_sources(moonlight PRIVATE
         backend_root.c
+        backend_gs.c
         pcmanager/pcmanager.c
         pcmanager/pairing.c
         pcmanager/pcmanager_common.c

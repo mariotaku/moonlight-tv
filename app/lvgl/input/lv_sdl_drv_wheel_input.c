@@ -23,7 +23,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     SDL_Event e;
     data->state = LV_INDEV_STATE_RELEASED;
     if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEWHEEL, SDL_MOUSEWHEEL) && input->ui->app->session != NULL) {
-        session_input_handle_event(input->ui->app->session, &e);
+        session_handle_input_event(input->ui->app->session, &e);
     }
     data->enc_diff = 0;
     data->continue_reading = false;

@@ -34,7 +34,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     static bool warped = false;
     if (e.type == SDL_MOUSEMOTION) {
         if (!warped) {
-            session_input_handle_event(input->ui->app->session, &e);
+            session_handle_input_event(input->ui->app->session, &e);
         }
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
@@ -49,7 +49,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         }
 #endif
     } else {
-        session_input_handle_event(input->ui->app->session, &e);
+        session_handle_input_event(input->ui->app->session, &e);
         data->state = e.button.state;
         data->point = (lv_point_t) {.x = e.button.x, .y = e.button.y};
         ui_set_input_mode(input, UI_INPUT_MODE_MOUSE);

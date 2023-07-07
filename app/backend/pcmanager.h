@@ -7,6 +7,7 @@
 #include "libgamestream/client.h"
 #include "uuidstr.h"
 
+typedef struct app_t app_t;
 typedef struct pcmanager_t pcmanager_t;
 typedef struct worker_context_t worker_context_t;
 
@@ -24,7 +25,7 @@ typedef struct pcmanager_listener_t {
  * @brief Initialize computer manager context
  * 
  */
-pcmanager_t *pcmanager_new();
+pcmanager_t *pcmanager_new(app_t *app);
 
 /**
  * @brief Free all allocated memories, such as computer_list.

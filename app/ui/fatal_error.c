@@ -9,6 +9,7 @@
 #include "lvgl.h"
 
 #include "util/bus.h"
+#include "logging.h"
 
 static void fatal_error_popup(void *data);
 
@@ -35,6 +36,13 @@ _Noreturn void app_halt() {
     } else {
         while (1);
     }
+}
+
+SDL_AssertState app_assertion_handler_abort(const SDL_AssertData *data, void *userdata) {
+    (void) userdata;
+    commons_log_fatal("Assertion", "at %s (%s:%d): '%s'", data->function, data->filename, data->linenum,
+                      data->condition);
+    return SDL_ASSERTION_ABORT;
 }
 
 static void fatal_error_popup(void *data) {

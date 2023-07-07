@@ -8,8 +8,9 @@
 
 static void pcmanager_free(executor_t *executor, int wait);
 
-pcmanager_t *pcmanager_new() {
+pcmanager_t *pcmanager_new(app_t *app) {
     pcmanager_t *manager = SDL_calloc(1, sizeof(pcmanager_t));
+    manager->app = app;
     manager->executor = executor_create("pcmanager", pcmanager_free);
     manager->thread_id = SDL_ThreadID();
     manager->servers_lock = SDL_CreateMutex();

@@ -5,4 +5,4 @@
 
 typedef struct session_t session_t;
 
-bool session_input_handle_event(session_t *session, const SDL_Event *event);
+bool session_handle_input_event(session_t *session, const SDL_Event *event);

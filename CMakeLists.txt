@@ -184,7 +184,7 @@ add_subdirectory(third_party/commons)
 target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
 
-add_executable(moonlight)
+add_executable(moonlight src/main.c)
 add_subdirectory(app)
 
 if (WITH_SANITIZE)

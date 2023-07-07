@@ -24,7 +24,7 @@ bool absinput_started;
 bool absinput_no_control;
 bool absinput_no_sdl_mouse;
 
-bool absinput_should_accept() {
+bool session_input_should_accept(stream_input_t *input) {
     return absinput_started && !ui_should_block_input();
 }
 

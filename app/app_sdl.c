@@ -22,15 +22,25 @@
 #include "ss4s.h"
 #include "stream/input/sdlinput.h"
 #include "stream/session/session_events.h"
+#include "ui/fatal_error.h"
 
 PCONFIGURATION app_configuration = NULL;
 
 static bool window_focus_gained;
+static bool running = true;
 
 static void quit_confirm_cb(lv_event_t *e);
 
+app_t *global = NULL;
+
 int app_init(app_t *app, int argc, char *argv[]) {
+    commons_logging_init("moonlight");
+    SDL_LogSetOutputFunction(commons_sdl_log, NULL);
+    SDL_SetAssertionHandler(app_assertion_handler_abort, NULL);
+    commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
+
     memset(app, 0, sizeof(*app));
+    app->main_thread_id = SDL_ThreadID();
     if (os_info_get(&app->os_info) == 0) {
         char *info_str = os_info_str(&app->os_info);
         commons_log_info("APP", "System: %s", info_str);
@@ -72,10 +82,37 @@ int app_init(app_t *app, int argc, char *argv[]) {
     cec_sdl_init(&app->cec, "Moonlight");
 #endif
 
+    app_init_locale();
+    backend_init(&app->backend, app);
+
+    // DO not init video subsystem before NDL/LGNC initialization
+    app_init_video();
+    commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
+
+    app_input_init(&app->input, app);
+
+    app_ui_init(&app->ui, app);
+
+    global = app;
+
+    SS4S_PostInit(argc, argv);
     return 0;
 }
 
 void app_deinit(app_t *app) {
+    app_ui_close(&app->ui);
+    app_ui_deinit(&app->ui);
+    app_input_deinit(&app->input);
+    app_uninit_video();
+
+    backend_destroy(&app->backend);
+
+    bus_finalize();
+
+    settings_save(app_configuration);
+    settings_free(app_configuration);
+
+
 #if FEATURE_INPUT_LIBCEC
     cec_sdl_deinit(&app->cec);
 #endif
@@ -83,8 +120,20 @@ void app_deinit(app_t *app) {
 
     SS4S_ModulesListClear(&app->ss4s.modules);
     os_info_clear(&app->os_info);
+
+    _lv_draw_mask_cleanup();
+
+    SDL_Quit();
 }
 
+int app_loop(app_t *app){
+    while (app_is_running()) {
+        app_process_events(app);
+        lv_task_handler();
+        SDL_Delay(1);
+    }
+    return 0;
+}
 void app_init_video() {
     SDL_Init(SDL_INIT_VIDEO);
     // This will occupy SDL_USEREVENT
@@ -137,9 +186,16 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                         streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
                     }
                     break;
-                case SDL_WINDOWEVENT_EXPOSED:
+                case SDL_WINDOWEVENT_EXPOSED: {
                     lv_obj_invalidate(lv_scr_act());
                     break;
+                }
+                case SDL_WINDOWEVENT_CLOSE: {
+                    if (app_ui_is_opened(&app->ui)) {
+                        app_request_exit();
+                    }
+                    break;
+                }
                 default:
                     break;
             }
@@ -181,7 +237,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERAXISMOTION:
         case SDL_TEXTINPUT: {
             if (!app_ui_is_opened(&app->ui) && app->session != NULL) {
-                session_input_handle_event(app->session, event);
+                session_handle_input_event(app->session, event);
                 return 0;
             }
             return 1;
@@ -214,6 +270,14 @@ void app_quit_confirm() {
     lv_obj_t *mbox = lv_msgbox_create_i18n(NULL, NULL, locstr("Quit Moonlight?"), btn_txts, false);
     lv_obj_add_event_cb(mbox, quit_confirm_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
+}
+
+void app_request_exit() {
+    running = false;
+}
+
+bool app_is_running() {
+    return running;
 }
 
 static void quit_confirm_cb(lv_event_t *e) {

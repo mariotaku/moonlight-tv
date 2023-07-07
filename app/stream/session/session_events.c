@@ -3,8 +3,8 @@
 #include "stream/input/sdlinput.h"
 
 
-bool session_input_handle_event(session_t *session, const SDL_Event *event) {
-    if (!absinput_should_accept()) {
+bool session_handle_input_event(session_t *session, const SDL_Event *event) {
+    if (!session_input_should_accept(&session->input)) {
         return false;
     }
     switch (event->type) {

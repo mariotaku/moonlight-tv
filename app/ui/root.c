@@ -94,6 +94,7 @@ void app_ui_open(app_ui_t *ui) {
     lv_fragment_manager_push(ui->fm, fragment, &ui->container);
 
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
+    streaming_display_size((short) ui->width, (short) ui->height);
 }
 
 void app_ui_close(app_ui_t *ui) {
