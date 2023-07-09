@@ -5,6 +5,7 @@
 #include "logging.h"
 #include "input/input_gamepad.h"
 #include "app.h"
+#include "priv.h"
 
 static session_t *current_session = NULL;
 
@@ -50,7 +51,7 @@ static void connection_stage_failed(int stage, int errorCode) {
 
 static void connection_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor,
                               unsigned short highFreqMotor) {
-    app_input_gamepad_rumble(&global->input, controllerNumber, lowFreqMotor, highFreqMotor);
+    app_input_gamepad_rumble(&current_session->app->input, controllerNumber, lowFreqMotor, highFreqMotor);
 }
 
 static void connection_set_hdr(bool hdrEnabled) {

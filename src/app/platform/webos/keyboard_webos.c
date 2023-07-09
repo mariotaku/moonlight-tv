@@ -5,6 +5,7 @@
 #include "stream/input/absinput.h"
 #include "stream/input/sdl/vk.h"
 #include "stream/session.h"
+#include "stream/session/priv.h"
 
 #include <Limelight.h>
 #include <SDL.h>
@@ -15,6 +16,8 @@
 #define TV_REMOTE_TOGGLE_SOFT_INPUT 0
 
 bool webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent *event, short *keyCode) {
+    session_t *session = input->session;
+    app_t *app = session->app;
     switch ((unsigned int) event->keysym.scancode) {
         case SDL_WEBOS_SCANCODE_EXIT: {
             if (event->state == SDL_PRESSED) {
@@ -35,7 +38,7 @@ bool webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent 
             if (input->view_only) {
                 return true;
             }
-            if (app_ui_get_input_mode(&global->ui.input) & UI_INPUT_MODE_POINTER_FLAG) {
+            if (app_ui_get_input_mode(&app->ui.input) & UI_INPUT_MODE_POINTER_FLAG) {
                 LiSendMouseButtonEvent(event->type == SDL_KEYDOWN ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
                                        BUTTON_RIGHT);
                 return true;
@@ -54,7 +57,7 @@ bool webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent 
                 return true;
             case SDL_WEBOS_SCANCODE_GREEN:
                 if (absinput_no_control) return true;
-                absinput_set_virtual_mouse(!absinput_get_virtual_mouse());
+                session_toggle_vmouse(session);
                 return true;
 #endif
         default:

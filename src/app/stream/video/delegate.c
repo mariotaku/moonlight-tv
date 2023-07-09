@@ -172,7 +172,7 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
     dst->decodedFps = (float) dst->decodedFrames / ((float) delta / 1000);
     LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
-    app_bus_post(global, (bus_actionfunc) streaming_refresh_stats, NULL);
+    app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);
 }
 
 void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {

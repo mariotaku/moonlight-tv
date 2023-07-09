@@ -6,10 +6,6 @@
 #include "stream/settings.h"
 
 #include "stream/platform.h"
-#include "util/bus.h"
-#include "util/user_event.h"
-#include "stream/input/absinput.h"
-#include "stream/video/delegate.h"
 #include "backend/pcmanager/priv.h"
 
 #include <Limelight.h>
@@ -17,9 +13,7 @@
 #include "libgamestream/errors.h"
 
 #include "logging.h"
-#include "callbacks.h"
 #include "ss4s.h"
-#include "backend/pcmanager/worker/worker.h"
 #include "input/input_gamepad.h"
 #include "app_session.h"
 #include "session_worker.h"
@@ -28,16 +22,15 @@
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
 
-static int streaming_worker(session_t *session);
-
 static bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps);
 
-static void session_config_init(session_config_t *config, const SERVER_DATA *server, const CONFIGURATION *app_config);
+static void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA *server,
+                                const CONFIGURATION *app_config);
 
 session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_DATA *server, int app_id) {
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
-    session_config_init(&session->config, server, config);
+    session_config_init(app, &session->config, server, config);
     session->app = app;
     session->display_width = app->ui.width;
     session->display_height = app->ui.height;
@@ -63,16 +56,23 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
 }
 
 void session_destroy(session_t *session) {
+    session_interrupt(session, false, STREAMING_INTERRUPT_QUIT);
+    SDL_WaitThread(session->thread, NULL);
     serverdata_free(session->server);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
+    free(session);
 }
 
 void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_reason_t reason) {
-    if (!session || session->interrupted) {
+    if (!session) {
         return;
     }
     SDL_LockMutex(session->mutex);
+    if (session->interrupted) {
+        SDL_UnlockMutex(session->mutex);
+        return;
+    }
 #if FEATURE_INPUT_EVMOUSE
     session_evmouse_interrupt(session);
 #endif
@@ -173,7 +173,8 @@ bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
     return false;
 }
 
-void session_config_init(session_config_t *config, const SERVER_DATA *server, const CONFIGURATION *app_config) {
+void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA *server,
+                         const CONFIGURATION *app_config) {
     config->stream = app_config->stream;
     config->vmouse = app_config->virtual_mouse;
     config->hardware_mouse = app_config->hardware_mouse;
@@ -181,8 +182,8 @@ void session_config_init(session_config_t *config, const SERVER_DATA *server, co
     config->view_only = app_config->viewonly;
     config->sops = app_config->sops;
 
-    SS4S_VideoCapabilities video_cap = global->ss4s.video_cap;
-    SS4S_AudioCapabilities audio_cap = global->ss4s.audio_cap;
+    SS4S_VideoCapabilities video_cap = app->ss4s.video_cap;
+    SS4S_AudioCapabilities audio_cap = app->ss4s.audio_cap;
 
     if (config->stream.bitrate < 0) {
         config->stream.bitrate = settings_optimal_bitrate(&video_cap, config->stream.width, config->stream.height,

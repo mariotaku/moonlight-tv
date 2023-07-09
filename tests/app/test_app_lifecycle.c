@@ -1,11 +1,22 @@
 #include "unity.h"
 #include "app.h"
 
+static int argc = 1;
+static char *argv[] = {"moonlight"};
 app_t app;
 
+Uint32 quitTimer(Uint32 interval, void *context) {
+    (void) interval;
+    (void) context;
+    SDL_Event event = {
+            .type = SDL_QUIT,
+    };
+    SDL_PushEvent(&event);
+    return 0;
+}
+
 void setUp(void) {
-    char *argv[] = {"moonlight"};
-    app_init(&app, 1, argv);
+    app_init(&app, argc, argv);
 }
 
 void tearDown(void) {
@@ -14,8 +25,15 @@ void tearDown(void) {
 }
 
 void test_basic() {
+    app_handle_launch(argc, argv);
+
     app_ui_open(&app.ui);
-    app_run_loop(&app);
+
+    SDL_AddTimer(10000, quitTimer, NULL);
+
+    while (app.running) {
+        app_run_loop(&app);
+    }
 }
 
 int main() {
