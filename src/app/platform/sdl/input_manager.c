@@ -1,6 +1,5 @@
 #include "backend/input_manager.h"
 #include "stream/input/absinput.h"
-#include "stream/input/sdlinput.h"
 
 #include <stdlib.h>
 #include <unistd.h>

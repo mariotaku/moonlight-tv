@@ -252,7 +252,9 @@ static void open_keyboard(lv_event_t *event) {
 
 static void toggle_vmouse(lv_event_t *event) {
     LV_UNUSED(event);
-    absinput_set_virtual_mouse(!absinput_get_virtual_mouse());
+    streaming_controller_t *controller = lv_event_get_user_data(event);
+    app_t *app = controller->global;
+    session_toggle_vmouse(app->session);
 }
 
 bool show_overlay(streaming_controller_t *controller) {

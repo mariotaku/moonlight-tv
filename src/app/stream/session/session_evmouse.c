@@ -4,7 +4,6 @@
 #include <errno.h>
 
 #include "logging.h"
-#include "stream/input/sdlinput.h"
 
 static void mouse_listener(const evmouse_event_t *event, void *userdata);
 
@@ -42,7 +41,7 @@ static int mouse_worker(session_t *session) {
 
 static void mouse_listener(const evmouse_event_t *event, void *userdata) {
     session_t *session = userdata;
-    if (!session_input_should_accept(&session->input)) {
+    if (!session_accepting_input(session)) {
         return;
     }
     switch (event->type) {

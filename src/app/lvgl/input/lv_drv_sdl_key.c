@@ -2,7 +2,6 @@
 #include "app.h"
 
 #include "stream/session.h"
-#include "stream/input/sdlinput.h"
 #include "platform/sdl/navkey_sdl.h"
 #include "ui/root.h"
 

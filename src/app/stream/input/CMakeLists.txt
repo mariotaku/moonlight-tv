@@ -1,3 +1,2 @@
-target_sources(moonlight-lib PRIVATE
-        sdlinput.c)
+target_sources(moonlight-lib PRIVATE input_vmouse.c)
 add_subdirectory(sdl)

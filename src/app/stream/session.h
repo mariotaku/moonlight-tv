@@ -54,6 +54,7 @@ typedef struct session_config_t {
     bool view_only;
     bool local_audio;
     bool hardware_mouse;
+    bool vmouse;
 } session_config_t;
 
 extern int streaming_errno;
@@ -68,6 +69,12 @@ session_t *session_create(app_t *app, const app_configuration_t *config, const S
 void session_destroy(session_t *session);
 
 void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_reason_t reason);
+
+void session_start_input(session_t *session);
+
+void session_stop_input(session_t *session);
+
+void session_toggle_vmouse(session_t *session);
 
 bool session_accepting_input(session_t *session);
 

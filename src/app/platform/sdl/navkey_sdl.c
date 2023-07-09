@@ -1,5 +1,4 @@
 #include "navkey_sdl.h"
-#include "stream/input/sdlinput.h"
 #include "app.h"
 
 #if TARGET_WEBOS

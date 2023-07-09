@@ -1,7 +1,6 @@
 #include "lvgl/lv_sdl_drv_input.h"
 
 #include <SDL.h>
-#include "stream/input/sdlinput.h"
 #include "util/user_event.h"
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);

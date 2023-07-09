@@ -17,13 +17,13 @@
 #include "libgamestream/errors.h"
 
 #include "logging.h"
-#include "stream/input/sdlinput.h"
 #include "callbacks.h"
 #include "ss4s.h"
 #include "backend/pcmanager/worker/worker.h"
 #include "input/input_gamepad.h"
 #include "app_session.h"
 #include "session_worker.h"
+#include "stream/input/input_vmouse.h"
 
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
@@ -49,6 +49,10 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     session->mutex = SDL_CreateMutex();
     session->state_lock = SDL_CreateMutex();
     session->cond = SDL_CreateCond();
+    session->input.session = session;
+    session->input.input = &app->input;
+    session->input.view_only = session->config.view_only;
+    session->input.no_sdl_mouse = session->config.hardware_mouse;
     session->thread = SDL_CreateThread((SDL_ThreadFunction) session_worker, "session", session);
 #if FEATURE_INPUT_EVMOUSE
     if (!config->viewonly && config->hardware_mouse) {
@@ -96,14 +100,26 @@ void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_rea
 }
 
 bool session_accepting_input(session_t *session) {
-    return true;
+    return session->input.started;
+}
+
+void session_start_input(session_t *session) {
+    session->input.started = true;
+}
+
+void session_stop_input(session_t *session) {
+    session->input.started = false;
+}
+
+void session_toggle_vmouse(session_t *session) {
+    bool value = session->config.vmouse && !session_input_is_vmouse_active(&session->input.vmouse);
+    session_input_set_vmouse_active(&session->input.vmouse, value);
 }
 
 void streaming_display_size(session_t *session, short width, short height) {
     session->display_width = width;
     session->display_height = height;
 }
-
 
 void streaming_enter_fullscreen(session_t *session) {
     app_set_mouse_grab(&session->app->input, true);
@@ -159,6 +175,11 @@ bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
 
 void session_config_init(session_config_t *config, const SERVER_DATA *server, const CONFIGURATION *app_config) {
     config->stream = app_config->stream;
+    config->vmouse = app_config->virtual_mouse;
+    config->hardware_mouse = app_config->hardware_mouse;
+    config->local_audio = app_config->localaudio;
+    config->view_only = app_config->viewonly;
+    config->sops = app_config->sops;
 
     SS4S_VideoCapabilities video_cap = global->ss4s.video_cap;
     SS4S_AudioCapabilities audio_cap = global->ss4s.audio_cap;

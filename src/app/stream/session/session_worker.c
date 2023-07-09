@@ -17,7 +17,6 @@ int session_worker(session_t *session) {
     bus_pushevent(USER_STREAM_CONNECTING, NULL, NULL);
     streaming_error(session, GS_OK, "");
     PSERVER_DATA server = session->server;
-    absinput_set_virtual_mouse(false);
     int appId = session->app_id;
     session->player = NULL;
 

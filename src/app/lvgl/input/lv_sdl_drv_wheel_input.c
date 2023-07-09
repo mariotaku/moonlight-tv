@@ -1,7 +1,6 @@
 #include "lvgl/lv_sdl_drv_input.h"
 
 #include <SDL.h>
-#include "stream/input/sdlinput.h"
 
 #include "app.h"
 #include "stream/session.h"

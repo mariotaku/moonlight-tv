@@ -1,6 +1,5 @@
 #include "app.h"
 #include "logging.h"
-#include "stream/input/sdlinput.h"
 #include "stream/input/absinput.h"
 #include "stream/session.h"
 
@@ -67,7 +66,7 @@ static int keydown_count = 0;
 
 #if TARGET_WEBOS
 
-bool webos_intercept_remote_keys(const SDL_KeyboardEvent *event, short *keyCode);
+bool webos_intercept_remote_keys(stream_input_t *input,const SDL_KeyboardEvent *event, short *keyCode);
 
 #endif
 
@@ -129,7 +128,7 @@ void performPendingSpecialKeyCombo(stream_input_t *input) {
 void sdlinput_handle_key_event(stream_input_t *input, const SDL_KeyboardEvent *event) {
     short keyCode = 0;
 #if TARGET_WEBOS
-    if (webos_intercept_remote_keys(event, &keyCode)) {
+    if (webos_intercept_remote_keys(input, event, &keyCode)) {
         return;
     }
 #endif
@@ -424,7 +423,7 @@ void sdlinput_handle_key_event(stream_input_t *input, const SDL_KeyboardEvent *e
         }
     }
 
-    if (!absinput_no_control) {
+    if (!input->view_only) {
         if (event->state == SDL_PRESSED) {
             keydown_count++;
         } else if (event->state == SDL_RELEASED) {

@@ -1,4 +1,3 @@
-#include "stream/input/sdlinput.h"
 
 #include "app.h"
 
@@ -10,6 +9,8 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "input/input_gamepad.h"
+#include "stream/session.h"
+#include "stream/input/input_vmouse.h"
 
 #define QUIT_BUTTONS (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG)
 #define GAMEPAD_COMBO_VMOUSE (LB_FLAG | RS_CLK_FLAG)
@@ -17,23 +18,8 @@
 static bool quit_combo_pressed = false;
 static bool vmouse_combo_pressed = false;
 
-static void vmouse_set_vector(short x, short y);
-
-static void vmouse_set_trigger(char l, char r);
-
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad);
 
-static short calc_mouse_movement(short axis);
-
-static struct {
-    short x, y;
-    bool l, r;
-    bool modifier;
-} vmouse_state = {0, 0, 0, 0};
-
-static SDL_TimerID vmouse_timer_id = 0;
-
-static Uint32 vmouse_timer_callback(Uint32 interval, void *param);
 
 static bool gamepad_combo_check(short buttons, short combo);
 
@@ -76,7 +62,7 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
             break;
         case SDL_CONTROLLER_BUTTON_LEFTSTICK:
             button = LS_CLK_FLAG;
-            vmouse_state.modifier = event->state == SDL_PRESSED;
+            vmouse_set_modifier(&input->vmouse, event->state == SDL_PRESSED);
             break;
         case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
             button = RS_CLK_FLAG;
@@ -112,18 +98,12 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
         } else if (vmouse_combo_pressed) {
             vmouse_combo_pressed = false;
             release_buttons(input, gamepad);
-            if (absinput_get_virtual_mouse()) {
-                vmouse_set_vector(0, 0);
-                vmouse_set_trigger(0, 0);
-                absinput_set_virtual_mouse(false);
-            } else {
-                absinput_set_virtual_mouse(true);
-            }
+            session_toggle_vmouse(input->session);
             return;
         }
     }
 
-    if (absinput_no_control) {
+    if (input->view_only) {
         return;
     }
     LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
@@ -134,7 +114,7 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
 void sdlinput_handle_caxis_event(stream_input_t *input, const SDL_ControllerAxisEvent *event) {
     app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     bool vmouse_intercepted = false;
-    bool vmouse = absinput_get_virtual_mouse();
+    bool vmouse = session_input_is_vmouse_active(&input->vmouse);
     switch (event->axis) {
         case SDL_CONTROLLER_AXIS_LEFTX:
             gamepad->leftStickX = SDL_max(event->value, -32767);
@@ -176,12 +156,12 @@ void sdlinput_handle_caxis_event(stream_input_t *input, const SDL_ControllerAxis
         default:
             return;
     }
-    if (absinput_no_control) {
+    if (input->view_only) {
         return;
     }
     if (vmouse_intercepted) {
-        vmouse_set_vector(gamepad->rightStickX, gamepad->rightStickY);
-        vmouse_set_trigger(gamepad->leftTrigger, gamepad->rightTrigger);
+        vmouse_set_vector(&input->vmouse, gamepad->rightStickX, gamepad->rightStickY);
+        vmouse_set_trigger(&input->vmouse, gamepad->leftTrigger, gamepad->rightTrigger);
     }
     if (vmouse) {
         LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
@@ -194,32 +174,6 @@ void sdlinput_handle_caxis_event(stream_input_t *input, const SDL_ControllerAxis
     }
 }
 
-
-static void vmouse_set_vector(short x, short y) {
-    vmouse_state.x = calc_mouse_movement(x);
-    vmouse_state.y = calc_mouse_movement((short) -SDL_max(y, -32767));
-    if (vmouse_state.x || vmouse_state.y) {
-        if (!vmouse_timer_id) {
-            vmouse_timer_id = SDL_AddTimer(0, vmouse_timer_callback, NULL);
-        }
-    } else if (vmouse_timer_id) {
-        SDL_RemoveTimer(vmouse_timer_id);
-        vmouse_timer_id = 0;
-    }
-}
-
-static void vmouse_set_trigger(char l, char r) {
-    const char trigger_threshold = 64;
-    bool ldown = l > trigger_threshold, rdown = r > trigger_threshold;
-    if (vmouse_state.l != ldown) {
-        LiSendMouseButtonEvent(ldown ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, BUTTON_LEFT);
-    }
-    if (vmouse_state.r != rdown) {
-        LiSendMouseButtonEvent(rdown ? BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, BUTTON_RIGHT);
-    }
-    vmouse_state.l = ldown;
-    vmouse_state.r = rdown;
-}
 
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad) {
     gamepad->buttons = 0;
@@ -234,32 +188,6 @@ static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad)
                                gamepad->rightStickY);
 }
 
-
-static short calc_mouse_movement(short axis) {
-    short abs_axis = (short) (axis > 0 ? axis : -axis);
-    short threshold = 4096;
-    if (abs_axis < threshold) { return 0; }
-    return (short) (SDL_sqrt(abs_axis - threshold) * (axis > 0 ? 1 : -1));
-}
-
-static Uint32 vmouse_timer_callback(Uint32 interval, void *param) {
-    if (!absinput_get_virtual_mouse()) { return 0; }
-    if (!vmouse_state.x && !vmouse_state.y) {
-        return 0;
-    }
-    short speed = 4;
-    double speed_divider = 32 - SDL_max(0, SDL_min(speed, 16));
-    double x = vmouse_state.x / speed_divider;
-    double y = vmouse_state.y / speed_divider;
-    double abs_x = SDL_fabs(x), abs_y = SDL_fabs(y);
-    if (vmouse_state.modifier) {
-        abs_y /= 20.0;
-        LiSendHighResScrollEvent((short) (abs_y > 1 ? -y : -y / abs_y));
-    } else {
-        LiSendMouseMoveEvent((short) (abs_x > 1 ? x : x / abs_x), (short) (abs_y > 1 ? y : y / abs_y));
-    }
-    return SDL_max(5, SDL_min(5 / SDL_max(abs_x, abs_y), 20));
-}
 
 static bool gamepad_combo_check(short buttons, short combo) {
     return (buttons & combo) == combo;

@@ -3,7 +3,6 @@
 #include "app.h"
 
 #include <SDL.h>
-#include "stream/input/sdlinput.h"
 #include "ui/root.h"
 #include "logging.h"
 
@@ -34,7 +33,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     }
     static bool warped = false;
     if (e.type == SDL_MOUSEMOTION) {
-        if (!warped) {
+        if (!warped && app->session != NULL) {
             session_handle_input_event(app->session, &e);
         }
         data->state = e.motion.state;
@@ -42,7 +41,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
 #if HAVE_RELATIVE_MOUSE_HACK
         if (warped) {
             warped = false;
-        } else if (session_accepting_input(app->session) && app_get_mouse_relative()) {
+        } else if (app->session != NULL && session_accepting_input(app->session) && app_get_mouse_relative()) {
             int w, h;
             SDL_GetWindowSize(input->ui->window, &w, &h);
             SDL_WarpMouseInWindow(input->ui->window, w / 2, h / 2);
@@ -50,7 +49,9 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         }
 #endif
     } else {
-        session_handle_input_event(app->session, &e);
+        if (app->session != NULL) {
+            session_handle_input_event(app->session, &e);
+        }
         data->state = e.button.state;
         data->point = (lv_point_t) {.x = e.button.x, .y = e.button.y};
         ui_set_input_mode(input, UI_INPUT_MODE_MOUSE);
