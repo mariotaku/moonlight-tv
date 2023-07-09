@@ -4,14 +4,14 @@
 
 #include "backend/pcmanager.h"
 
-enum STREAMING_STATUS {
+enum STREAMING_STATE {
     STREAMING_NONE,
     STREAMING_CONNECTING,
     STREAMING_STREAMING,
     STREAMING_DISCONNECTING,
     STREAMING_ERROR
 };
-typedef enum STREAMING_STATUS STREAMING_STATUS;
+typedef enum STREAMING_STATE STREAMING_STATE;
 
 typedef enum streaming_interrupt_reason_t {
     STREAMING_INTERRUPT_USER,
@@ -48,43 +48,35 @@ typedef struct AUDIO_STATS {
     uint32_t avgBufferTime;
 } AUDIO_STATS;
 
-extern STREAMING_STATUS streaming_status;
+typedef struct session_config_t {
+    STREAM_CONFIGURATION stream;
+    bool sops;
+    bool view_only;
+    bool local_audio;
+    bool hardware_mouse;
+} session_config_t;
+
 extern int streaming_errno;
 extern char streaming_errmsg[];
-extern short streaming_display_width, streaming_display_height;
 
 typedef struct app_t app_t;
+typedef struct app_configuration_t app_configuration_t;
 typedef struct session_t session_t;
 
-void streaming_init();
+session_t *session_create(app_t *app, const app_configuration_t *config, const SERVER_DATA *server, int app_id);
 
-void streaming_destroy();
+void session_destroy(session_t *session);
 
-bool streaming_running();
+void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_reason_t reason);
 
-int streaming_begin(app_t *global, const uuidstr_t *uuid, const APP_LIST *app);
+bool session_accepting_input(session_t *session);
 
-void streaming_interrupt(bool quitapp, streaming_interrupt_reason_t reason);
+void streaming_display_size(session_t *session, short width, short height);
 
-void streaming_wait_for_stop();
+void streaming_enter_fullscreen(session_t *session);
 
-void streaming_display_size(short width, short height);
+void streaming_enter_overlay(session_t *session, int x, int y, int w, int h);
 
-void streaming_enter_fullscreen();
+void streaming_set_hdr(session_t *session, bool hdr);
 
-void streaming_enter_overlay(int x, int y, int w, int h);
-
-void streaming_set_hdr(bool hdr);
-
-void streaming_error(int code, const char *fmt, ...);
-
-/**
- * Start a timer to interrupt stream if no video frame received after a period of time
- */
-void streaming_watchdog_start();
-
-void streaming_watchdog_stop();
-
-void streaming_watchdog_reset();
-
-session_t* session_create();
+void streaming_error(session_t *session, int code, const char *fmt, ...);

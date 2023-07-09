@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include "callbacks.h"
 #include "ss4s.h"
+#include "stream/session/priv.h"
 
+static session_t *session = NULL;
 static SS4S_Player *player = NULL;
 static OpusMSDecoder *decoder = NULL;
 static unsigned char *pcmbuf = NULL;
@@ -10,7 +12,8 @@ static int frame_size = 0, unit_size = 0;
 
 static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context,
                     int arFlags) {
-    player = context;
+    session = context;
+    player = session->player;
     int rc;
     decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams,
                                               opusConfig->coupledStreams, opusConfig->mapping, &rc);
@@ -44,6 +47,7 @@ static void aud_cleanup() {
         free(pcmbuf);
         pcmbuf = NULL;
     }
+    session = NULL;
 }
 
 static void aud_feed(char *sampleData, int sampleLength) {

@@ -10,7 +10,7 @@ bool session_handle_input_event(session_t *session, const SDL_Event *event) {
     switch (event->type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-            sdlinput_handle_key_event(&event->key);
+            sdlinput_handle_key_event(&session->input,&event->key);
             break;
         case SDL_CONTROLLERAXISMOTION:
             sdlinput_handle_caxis_event(&session->input, &event->caxis);
@@ -20,7 +20,7 @@ bool session_handle_input_event(session_t *session, const SDL_Event *event) {
             stream_input_handle_cbutton(&session->input, &event->cbutton);
             break;
         case SDL_MOUSEMOTION:
-            sdlinput_handle_mmotion_event(&event->motion);
+            session_handle_mmotion_event(&session->input, &event->motion);
             break;
         case SDL_MOUSEWHEEL:
             if (!absinput_no_control && !absinput_no_sdl_mouse) {

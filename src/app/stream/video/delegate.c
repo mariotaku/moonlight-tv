@@ -11,6 +11,7 @@
 #include "logging.h"
 #include "ss4s.h"
 #include "stream/session/callbacks.h"
+#include "stream/session/priv.h"
 #include "app.h"
 
 #include <SDL.h>
@@ -19,6 +20,7 @@
 // 2MB decode size should be fairly enough for everything
 #define DECODER_BUFFER_SIZE (2048 * 1024)
 
+static session_t *session = NULL;
 static SS4S_Player *player = NULL;
 static unsigned char *buffer = NULL;
 static int lastFrameNumber;
@@ -64,7 +66,8 @@ static const char *video_format_name(int videoFormat) {
 int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, void *context, int drFlags) {
     (void) redrawRate;
     (void) drFlags;
-    player = context;
+    session = context;
+    player = session->player;
     buffer = malloc(DECODER_BUFFER_SIZE);
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
     vdec_stream_format = videoFormat;
@@ -90,7 +93,7 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
         }
     }
 
-    app_t *app = SS4S_PlayerGetUserdata(player);
+    app_t *app = session->app;
     if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
         app_bus_post_sync(app, (bus_actionfunc) app_ui_close, &app->ui);
     }
@@ -109,6 +112,7 @@ void vdec_delegate_cleanup() {
     assert(player != NULL);
     free(buffer);
     SS4S_PlayerVideoClose(player);
+    session = NULL;
 }
 
 int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
@@ -144,17 +148,15 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         length += entry->length;
     }
     SS4S_VideoFeedResult result = SS4S_PlayerVideoFeed(player, buffer, length, 0);
-    int err;
     if (result == SS4S_VIDEO_FEED_OK) {
         if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
             stream_info_parse_size(decodeUnit, &vdec_stream_info);
         }
         vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
         vdec_temp_stats.decodedFrames++;
-        streaming_watchdog_reset();
         return DR_OK;
     } else if (result == SS4S_VIDEO_FEED_ERROR) {
-        streaming_interrupt(false, STREAMING_INTERRUPT_DECODER);
+        session_interrupt(session, false, STREAMING_INTERRUPT_DECODER);
         return DR_OK;
     } else {
         return DR_NEED_IDR;

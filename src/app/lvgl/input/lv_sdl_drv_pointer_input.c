@@ -25,6 +25,7 @@ int lv_sdl_init_pointer(lv_indev_drv_t *drv, app_ui_input_t *input) {
 
 static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     app_ui_input_t *input = drv->user_data;
+    app_t *app = input->ui->app;
     SDL_Event e;
     data->continue_reading = SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEBUTTONUP) > 0;
     if (!data->continue_reading) {
@@ -34,14 +35,14 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     static bool warped = false;
     if (e.type == SDL_MOUSEMOTION) {
         if (!warped) {
-            session_handle_input_event(input->ui->app->session, &e);
+            session_handle_input_event(app->session, &e);
         }
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
 #if HAVE_RELATIVE_MOUSE_HACK
         if (warped) {
             warped = false;
-        } else if (absinput_should_accept() && app_get_mouse_relative()) {
+        } else if (session_accepting_input(app->session) && app_get_mouse_relative()) {
             int w, h;
             SDL_GetWindowSize(input->ui->window, &w, &h);
             SDL_WarpMouseInWindow(input->ui->window, w / 2, h / 2);
@@ -49,7 +50,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         }
 #endif
     } else {
-        session_handle_input_event(input->ui->app->session, &e);
+        session_handle_input_event(app->session, &e);
         data->state = e.button.state;
         data->point = (lv_point_t) {.x = e.button.x, .y = e.button.y};
         ui_set_input_mode(input, UI_INPUT_MODE_MOUSE);

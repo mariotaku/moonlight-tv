@@ -6,13 +6,15 @@
 #include "input/input_gamepad.h"
 #include "app.h"
 
+static session_t *current_session = NULL;
+
 static void connection_terminated(int errorCode) {
     if (errorCode == ML_ERROR_GRACEFUL_TERMINATION) {
-        streaming_interrupt(false, STREAMING_INTERRUPT_HOST);
+        session_interrupt(current_session, false, STREAMING_INTERRUPT_HOST);
     } else {
         commons_log_error("Session", "Connection terminated, errorCode = 0x%x", errorCode);
-        streaming_error(0, "Connection terminated, errorCode = 0x%x", errorCode);
-        streaming_interrupt(false, STREAMING_INTERRUPT_NETWORK);
+        streaming_error(current_session, 0, "Connection terminated, errorCode = 0x%x", errorCode);
+        session_interrupt(current_session, false, STREAMING_INTERRUPT_NETWORK);
     }
 }
 
@@ -42,13 +44,17 @@ static void connection_stage_failed(int stage, int errorCode) {
     const char *stageName = LiGetStageName(stage);
     commons_log_error("Session", "Connection failed at stage %d (%s), errorCode = %d (%s)", stage, stageName, errorCode,
                       strerror(errorCode));
-    streaming_error(errorCode, "Connection failed at stage %d (%s), errorCode = %d (%s)", stage, stageName,
-                    errorCode, strerror(errorCode));
+    streaming_error(current_session, errorCode, "Connection failed at stage %d (%s), errorCode = %d (%s)", stage,
+                    stageName, errorCode, strerror(errorCode));
 }
 
 static void connection_rumble(unsigned short controllerNumber, unsigned short lowFreqMotor,
                               unsigned short highFreqMotor) {
     app_input_gamepad_rumble(&global->input, controllerNumber, lowFreqMotor, highFreqMotor);
+}
+
+static void connection_set_hdr(bool hdrEnabled) {
+    streaming_set_hdr(current_session, hdrEnabled);
 }
 
 CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
@@ -60,5 +66,15 @@ CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
         .logMessage = connection_log_message,
         .rumble = connection_rumble,
         .connectionStatusUpdate = connection_status_update,
-        .setHdrMode = streaming_set_hdr
+        .setHdrMode = connection_set_hdr
 };
+
+
+CONNECTION_LISTENER_CALLBACKS *session_connection_callbacks_prepare(session_t *session) {
+    current_session = session;
+    return &connection_callbacks;
+}
+
+void session_connection_callbacks_reset(session_t *session) {
+    current_session = NULL;
+}

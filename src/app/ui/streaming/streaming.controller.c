@@ -11,6 +11,7 @@
 #include "util/i18n.h"
 #include "ui/common/progress_dialog.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
+#include "app_session.h"
 
 static void exit_streaming(lv_event_t *event);
 
@@ -118,7 +119,7 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
     controller->global = arg->global;
-    streaming_begin(arg->global, &arg->uuid, &arg->app);
+    app_session_begin(arg->global, &arg->uuid, arg->app.id);
 }
 
 static void controller_dtor(lv_fragment_t *self) {
@@ -234,13 +235,13 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
 }
 
 static void exit_streaming(lv_event_t *event) {
-    LV_UNUSED(event);
-    streaming_interrupt(true, STREAMING_INTERRUPT_USER);
+    streaming_controller_t *self = lv_event_get_user_data(event);
+    session_interrupt(self->global->session, true, STREAMING_INTERRUPT_USER);
 }
 
 static void suspend_streaming(lv_event_t *event) {
-    LV_UNUSED(event);
-    streaming_interrupt(false, STREAMING_INTERRUPT_USER);
+    streaming_controller_t *self = lv_event_get_user_data(event);
+    session_interrupt(self->global->session, false, STREAMING_INTERRUPT_USER);
 }
 
 static void open_keyboard(lv_event_t *event) {
@@ -262,7 +263,8 @@ bool show_overlay(streaming_controller_t *controller) {
     lv_obj_clear_flag(controller->base.obj, LV_OBJ_FLAG_HIDDEN);
 
     lv_area_t coords = controller->video->coords;
-    streaming_enter_overlay(coords.x1, coords.y1, lv_area_get_width(&coords), lv_area_get_height(&coords));
+    streaming_enter_overlay(controller->global->session, coords.x1, coords.y1, lv_area_get_width(&coords),
+                            lv_area_get_height(&coords));
     streaming_refresh_stats();
 
     update_buttons_layout(controller);
@@ -277,7 +279,7 @@ static void hide_overlay(lv_event_t *event) {
         return;
     }
     overlay_showing = false;
-    streaming_enter_fullscreen();
+    streaming_enter_fullscreen(controller->global->session);
 }
 
 static void session_error(streaming_controller_t *controller) {

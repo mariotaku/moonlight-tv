@@ -27,7 +27,7 @@ typedef struct window_state_t {
     int x, y, w, h;
 } window_state_t;
 
-typedef struct configuration_t {
+typedef struct app_configuration_t {
     STREAM_CONFIGURATION stream;
     int debug_level;
     char *decoder;
@@ -55,7 +55,16 @@ typedef struct configuration_t {
     /*Volatile fields*/
     char default_host_uuid[40];
     int default_app_id;
-} CONFIGURATION, *PCONFIGURATION;
+} CONFIGURATION, *PCONFIGURATION, app_configuration_t;
+
+typedef struct audio_config_entry_t {
+    int configuration;
+    const char *value;
+    const char *name;
+} audio_config_entry_t;
+
+extern const audio_config_entry_t audio_configs[];
+extern const size_t audio_config_len;
 
 #define CONF_NAME_MOONLIGHT "moonlight.ini"
 #define CONF_NAME_HOSTS "hosts.ini"

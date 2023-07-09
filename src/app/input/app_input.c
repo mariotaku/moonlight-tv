@@ -25,11 +25,11 @@ bool app_text_input_active(app_input_t *input) {
     return SDL_IsTextInputActive();
 }
 
-void app_set_mouse_grab(bool grab) {
+void app_set_mouse_grab(app_input_t *input, bool grab) {
 #if HAVE_RELATIVE_MOUSE_HACK
-    if (grab) {
-        commons_log_debug("Input", "Set cursor to blank bitmap: %p", blank_cursor);
-        SDL_SetCursor(blank_cursor);
+    if (grab && input->blank_cursor_surface->userdata != NULL) {
+        commons_log_debug("Input", "Set cursor to blank bitmap: %p", input->blank_cursor_surface->userdata);
+        SDL_SetCursor(input->blank_cursor_surface->userdata);
     } else {
         SDL_SetCursor(SDL_GetDefaultCursor());
     }

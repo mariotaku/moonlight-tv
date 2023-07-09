@@ -95,7 +95,6 @@ void app_ui_open(app_ui_t *ui) {
     lv_fragment_manager_push(ui->fm, fragment, &ui->container);
 
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
-    streaming_display_size((short) ui->width, (short) ui->height);
 }
 
 void app_ui_close(app_ui_t *ui) {
@@ -156,7 +155,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 }
                 absinput_start();
                 app_set_keep_awake(true);
-                streaming_enter_fullscreen();
+                streaming_enter_fullscreen(app->session);
                 last_pts = 0;
                 return true;
             }
@@ -171,7 +170,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                    ui_stream_render->renderCleanup();
 //                }
                 app_set_keep_awake(false);
-                app_set_mouse_grab(false);
+                app_set_mouse_grab(&app->input, false);
                 stream_input_stop();
 //                ui_stream_render = NULL;
 //                ui_stream_render_host_context.renderer = NULL;
@@ -179,8 +178,8 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 return true;
             }
             case USER_OPEN_OVERLAY: {
-                if (!app_ui_is_opened(&app->ui)) {
-                    streaming_interrupt(false, STREAMING_INTERRUPT_USER);
+                if (app->session != NULL && !app_ui_is_opened(&app->ui)) {
+                    session_interrupt(app->session, false, STREAMING_INTERRUPT_USER);
                     return true;
                 }
                 return false;

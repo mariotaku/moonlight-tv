@@ -29,15 +29,6 @@
 
 #include "os_info.h"
 
-typedef struct audio_config_entry_t {
-    int configuration;
-    const char *value;
-    const char *name;
-} audio_config_entry_t;
-
-extern const audio_config_entry_t audio_configs[];
-extern const size_t audio_config_len;
-
 bool decoder_max_dimension(int *width, int *height);
 
 int decoder_max_framerate();

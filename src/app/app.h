@@ -69,7 +69,7 @@ bool ui_render_queue_submit(void *data, unsigned int pts);
 
 GS_CLIENT app_gs_client_new(app_t *app);
 
-void app_set_mouse_grab(bool);
+void app_set_mouse_grab(app_input_t *input, bool grab);
 
 bool app_get_mouse_relative();
 

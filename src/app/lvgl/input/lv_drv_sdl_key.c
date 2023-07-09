@@ -12,11 +12,11 @@
 
 static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state);
 
-static bool read_keyboard(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
+static bool read_keyboard(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
 #if TARGET_WEBOS
 
-static bool read_webos_key(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
+static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
 static void webos_key_input_mode(const SDL_KeyboardEvent *event);
 
@@ -65,7 +65,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         if (app->session != NULL && session_handle_input_event(app->session, &e)) {
             state->state = LV_INDEV_STATE_RELEASED;
         } else {
-            if (read_keyboard(&e.key, state)) {
+            if (read_keyboard(input, &e.key, state)) {
                 ui_set_input_mode(input, UI_INPUT_MODE_KEY);
             }
         }
@@ -151,7 +151,7 @@ static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state) {
     return true;
 }
 
-static bool read_keyboard(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
+static bool read_keyboard(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
     bool pressed = event->type == SDL_KEYDOWN;
     switch (event->keysym.sym) {
         case SDLK_UP:
@@ -191,7 +191,7 @@ static bool read_keyboard(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *stat
             break;
         default:
 #if TARGET_WEBOS
-            if (!read_webos_key(event, state)) {
+            if (!read_webos_key(input, event, state)) {
                 return false;
             }
 #else
@@ -204,15 +204,17 @@ static bool read_keyboard(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *stat
 
 #if TARGET_WEBOS
 
-static bool read_webos_key(const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
+static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
+    app_t *app = input->ui->app;
     switch ((int) event->keysym.scancode) {
         case SDL_WEBOS_SCANCODE_BACK:
             state->key = LV_KEY_ESC;
             return true;
-        case SDL_WEBOS_SCANCODE_EXIT:
-            if (!streaming_running()) {
+        case SDL_WEBOS_SCANCODE_EXIT: {
+            if (app->session == NULL) {
                 app_request_exit();
             }
+        }
             return false;
         case SDL_WEBOS_SCANCODE_RED:
         case SDL_WEBOS_SCANCODE_GREEN:

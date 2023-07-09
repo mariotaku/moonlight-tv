@@ -79,7 +79,7 @@ static bool isSystemKeyCaptureActive() {
     return app_configuration->syskey_capture;
 }
 
-void performPendingSpecialKeyCombo() {
+void performPendingSpecialKeyCombo(stream_input_t *input) {
     // The caller must ensure all keys are up
     SDL_assert_release(keys_len(_pressed_keys) == 0);
 
@@ -87,7 +87,7 @@ void performPendingSpecialKeyCombo() {
         case KeyComboQuit:
             SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION,
                         "Detected quit key combo");
-            streaming_interrupt(false, STREAMING_INTERRUPT_USER);
+            session_interrupt(input->session, false, STREAMING_INTERRUPT_USER);
             break;
 
         case KeyComboUngrabInput:
@@ -126,7 +126,7 @@ void performPendingSpecialKeyCombo() {
     _pending_key_combo = KeyComboMax;
 }
 
-void sdlinput_handle_key_event(const SDL_KeyboardEvent *event) {
+void sdlinput_handle_key_event(stream_input_t *input, const SDL_KeyboardEvent *event) {
     short keyCode = 0;
 #if TARGET_WEBOS
     if (webos_intercept_remote_keys(event, &keyCode)) {
@@ -447,17 +447,18 @@ void sdlinput_handle_key_event(const SDL_KeyboardEvent *event) {
         }
 
         // If we made it this far, no keys are pressed
-        performPendingSpecialKeyCombo();
+        performPendingSpecialKeyCombo(input);
     }
 }
 
-void sdlinput_handle_text_event(const SDL_TextInputEvent *event) {
+void sdlinput_handle_text_event(stream_input_t *input, const SDL_TextInputEvent *event) {
     if (keydown_count) {
         commons_log_verbose("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
         return;
     }
     size_t len = strlen(event->text);
-    if (!len)
+    if (!len) {
         return;
+    }
     LiSendUtf8TextEvent(event->text, len);
 }

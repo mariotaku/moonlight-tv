@@ -24,6 +24,7 @@
 #include "stream/session/session_events.h"
 #include "ui/fatal_error.h"
 #include "app_error.h"
+#include "app_session.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -77,7 +78,7 @@ int app_init(app_t *app, int argc, char *argv[]) {
 
 void app_deinit(app_t *app) {
     app_bus_drain();
-
+    app_session_destroy(app);
     app_ui_close(&app->ui);
     app_ui_deinit(&app->ui);
     app_input_deinit(&app->input);
@@ -113,8 +114,8 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
     switch (event->type) {
         case SDL_APP_WILLENTERBACKGROUND: {
             // Interrupt streaming because app will go to background
-            if (app_ui_is_opened(&app->ui)) {
-                streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
+            if (app_ui_is_opened(&app->ui) && app->session != NULL) {
+                session_interrupt(app->session, false, STREAMING_INTERRUPT_BACKGROUND);
             }
             break;
         }
@@ -130,9 +131,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                 case SDL_WINDOWEVENT_FOCUS_LOST:
                     commons_log_debug("SDL", "Window event SDL_WINDOWEVENT_FOCUS_LOST");
 #if !FEATURE_FORCE_FULLSCREEN
-                    if (app_configuration->fullscreen && app_ui_is_opened(&app->ui)) {
+                    if (app_configuration->fullscreen && app_ui_is_opened(&app->ui) && app->session != NULL) {
                         // Interrupt streaming because app will go to background
-                        streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
+                        session_interrupt(app->session, false, STREAMING_INTERRUPT_BACKGROUND);
                     }
 #endif
                     app->focused = false;
@@ -144,9 +145,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                     break;
                 case SDL_WINDOWEVENT_HIDDEN:
                     commons_log_debug("SDL", "Window event SDL_WINDOWEVENT_HIDDEN");
-                    if (app_configuration->fullscreen && app_ui_is_opened(&app->ui)) {
+                    if (app_configuration->fullscreen && app_ui_is_opened(&app->ui) && app->session != NULL) {
                         // Interrupt streaming because app will go to background
-                        streaming_interrupt(false, STREAMING_INTERRUPT_BACKGROUND);
+                        session_interrupt(app->session, false, STREAMING_INTERRUPT_BACKGROUND);
                     }
                     break;
                 case SDL_WINDOWEVENT_EXPOSED: {

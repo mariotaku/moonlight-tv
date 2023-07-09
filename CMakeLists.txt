@@ -186,13 +186,7 @@ target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_D
 
 add_executable(moonlight src/main.c)
 add_library(moonlight-lib STATIC)
-add_subdirectory(src)
 target_link_libraries(moonlight PRIVATE moonlight-lib)
-
-if (WITH_SANITIZE)
-    target_compile_options(moonlight-lib PUBLIC -fsanitize=${WITH_SANITIZE} -g3 -O0)
-    target_link_options(moonlight-lib PUBLIC -fsanitize=${WITH_SANITIZE} -static-libasan -lrt)
-endif ()
 
 target_compile_lint(moonlight-lib)
 
@@ -306,6 +300,12 @@ else ()
     target_link_libraries(moonlight-lib PUBLIC ${UUID_LIBRARIES})
 endif ()
 
+if (WITH_SANITIZE)
+    target_compile_options(moonlight-lib PUBLIC -fsanitize=${WITH_SANITIZE} -g3 -O0)
+    target_link_options(moonlight-lib PUBLIC -fsanitize=${WITH_SANITIZE} -static-libasan -lrt)
+endif ()
+
+add_subdirectory(src)
 
 install(TARGETS moonlight RUNTIME DESTINATION bin)
 

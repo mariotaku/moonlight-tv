@@ -8,21 +8,28 @@
 
 #if FEATURE_INPUT_EVMOUSE
 
-#include "evmouse.h"
+#include "session_evmouse.h"
 
 #endif
 
 #include "stream/input/absinput.h"
+#include "stream/session.h"
 
 typedef struct app_t app_t;
 
 struct session_t {
-    app_t *global;
+    session_config_t config;
+
+    app_t *app;
+
+    SDL_mutex *state_lock;
+    STREAMING_STATE state;
+    int display_width, display_height;
+
     stream_input_t input;
     /* SERVER_DATA and CONFIGURATION is cloned rather than referenced */
     SERVER_DATA *server;
-    CONFIGURATION *config;
-    int appId;
+    int app_id;
     bool interrupted;
     bool quitapp;
     SS4S_VideoCapabilities video_cap;
@@ -31,9 +38,8 @@ struct session_t {
     SDL_Thread *thread;
     SS4S_Player *player;
 #if FEATURE_INPUT_EVMOUSE
-    struct {
-        SDL_Thread *thread;
-        evmouse_t *dev;
-    } mouse;
+    session_evmouse_t mouse;
 #endif
 };
+
+ void session_set_state(session_t *session, STREAMING_STATE state);
