@@ -63,7 +63,7 @@ void app_ui_deinit(app_ui_t *ui) {
     lv_img_decoder_delete(ui->img_decoder);
 }
 
-void app_ui_open(app_ui_t *ui) {
+void app_ui_open(app_ui_t *ui, const app_launch_params_t *params) {
     if (ui->disp != NULL) {
         return;
     }
@@ -91,7 +91,8 @@ void app_ui_open(app_ui_t *ui) {
     lv_obj_clear_flag(ui->container, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_bg_opa(ui->container, 0, 0);
     ui->fm = lv_fragment_manager_create(NULL);
-    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, ui->app);
+    launcher_fragment_args_t args = {.app = ui->app, .params = params};
+    lv_fragment_t *fragment = lv_fragment_create(&launcher_controller_class, &args);
     lv_fragment_manager_push(ui->fm, fragment, &ui->container);
 
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
@@ -174,7 +175,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 session_stop_input(app->session);
 //                ui_stream_render = NULL;
 //                ui_stream_render_host_context.renderer = NULL;
-                app_ui_open(&app->ui);
+                app_ui_open(&app->ui, NULL);
                 return true;
             }
             case USER_OPEN_OVERLAY: {

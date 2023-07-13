@@ -120,13 +120,13 @@ static void lv_start_text_input(lv_event_t *event) {
     app_t *app = theme->user_data;
     lv_obj_t *target = lv_event_get_target(event);
     lv_area_t *coords = &target->coords;
-    app_start_text_input(&app->input, coords->x1, coords->y1, lv_area_get_width(coords), lv_area_get_height(coords));
+    app_start_text_input(&app->ui.input, coords->x1, coords->y1, lv_area_get_width(coords), lv_area_get_height(coords));
 }
 
 static void lv_stop_text_input(lv_event_t *event) {
     lv_theme_t *theme = lv_event_get_user_data(event);
     app_t *app = theme->user_data;
-    app_stop_text_input(&app->input);
+    app_stop_text_input(&app->ui.input);
 }
 
 static void msgbox_key(lv_event_t *event) {

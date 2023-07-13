@@ -27,14 +27,13 @@ typedef struct window_state_t {
     int x, y, w, h;
 } window_state_t;
 
-typedef struct app_configuration_t {
+typedef struct app_settings_t {
     STREAM_CONFIGURATION stream;
     int debug_level;
     char *decoder;
     char *audio_backend;
     char *audio_device;
     char *language;
-    char key_dir[4096];
     bool sops;
     bool localaudio;
     bool fullscreen;
@@ -48,14 +47,13 @@ typedef struct app_configuration_t {
     bool virtual_mouse;
     bool swap_abxy;
     bool syskey_capture;
-    bool stop_on_stall;
     bool hdr;
     bool hevc;
 
-    /*Volatile fields*/
-    char default_host_uuid[40];
-    int default_app_id;
-} CONFIGURATION, *PCONFIGURATION, app_configuration_t;
+    char *conf_dir;
+    char *ini_path;
+    char *key_dir;
+} CONFIGURATION, *PCONFIGURATION, app_settings_t;
 
 typedef struct audio_config_entry_t {
     int configuration;
@@ -76,12 +74,14 @@ extern const size_t audio_config_len;
 #define RES_1440P RES_MERGE(2560, 1440)
 #define RES_4K RES_MERGE(3840, 2160)
 
-PCONFIGURATION settings_load();
+void settings_initialize(app_settings_t *config, char *conf_dir);
 
-void settings_save(PCONFIGURATION config);
+bool settings_read(app_settings_t *config);
 
-void settings_free(PCONFIGURATION config);
+bool settings_save(app_settings_t *config);
 
-int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities,int w, int h, int fps);
+void settings_clear(app_settings_t *config);
+
+int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, int h, int fps);
 
 bool audio_config_valid(int config);

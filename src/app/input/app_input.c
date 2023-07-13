@@ -17,7 +17,7 @@ void app_input_deinit(app_input_t *input) {
     SDL_FreeSurface(input->blank_cursor_surface);
 }
 
-void app_stop_text_input(app_input_t *input) {
+void app_stop_text_input(app_ui_input_t *input) {
     SDL_StopTextInput();
 }
 

@@ -4,12 +4,15 @@
 #include <libintl.h>
 
 #include "util/i18n.h"
+#include "app_launch.h"
 
 #define USE_OPENURL ((OS_DARWIN || OS_WINDOWS) && SDL_VERSION_ATLEAST(2, 0, 14))
 
 #if !USE_OPENURL
+
 #include <stdio.h>
 #include <stdlib.h>
+
 #endif
 
 void app_open_url(const char *url) {
@@ -36,6 +39,7 @@ void app_init_locale() {
     i18n_setlocale("");
 }
 
-void app_handle_launch(int argc, char* argv[]) {
+app_launch_params_t *app_handle_launch(app_t *app, int argc, char *argv[]) {
     // Do nothing
+    return NULL;
 }

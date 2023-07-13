@@ -1,4 +1,5 @@
 #include "app.h"
+#include "app_launch.h"
 
 #include <pbnjson.h>
 
@@ -55,35 +56,48 @@ void app_init_locale() {
     jdomparser_release(&parser);
 }
 
-void app_handle_launch(int argc, char *argv[]) {
+app_launch_params_t *app_handle_launch(app_t *app, int argc, char *argv[]) {
+    (void) app;
     if (argc < 2) {
-        return;
+        return NULL;
     }
     commons_log_info("APP", "Launched with parameters %s", argv[1]);
     JSchemaInfo schema_info;
     jschema_info_init(&schema_info, jschema_all(), NULL, NULL);
     jdomparser_ref parser = jdomparser_create(&schema_info, 0);
-    jdomparser_feed(parser, argv[1], (int) strlen(argv[1]));
-    jdomparser_end(parser);
+    if (!jdomparser_feed(parser, argv[1], (int) strlen(argv[1]))) {
+        jdomparser_release(&parser);
+        return NULL;
+    }
+    if (!jdomparser_end(parser)) {
+        jdomparser_release(&parser);
+        return NULL;
+    }
     jvalue_ref params_obj = jdomparser_get_result(parser);
+    if (!jis_valid(params_obj)) {
+        jdomparser_release(&parser);
+        return NULL;
+    }
+    app_launch_params_t *params = calloc(1, sizeof(app_launch_params_t));
     jvalue_ref host_uuid = jobject_get(params_obj, J_CSTR_TO_BUF("host_uuid"));
     if (jis_string(host_uuid)) {
         raw_buffer buf = jstring_get(host_uuid);
-        strncpy(app_configuration->default_host_uuid, buf.m_str, sizeof(app_configuration->default_host_uuid));
+        uuidstr_fromchars(&params->default_host_uuid, buf.m_len, buf.m_str);
     }
     jvalue_ref host_app_id = jobject_get(params_obj, J_CSTR_TO_BUF("host_app_id"));
     if (jis_number(host_app_id)) {
-        if (jnumber_get_i32(host_app_id, &app_configuration->default_app_id) != CONV_OK) {
-            app_configuration->default_app_id = 0;
+        if (jnumber_get_i32(host_app_id, &params->default_app_id) != CONV_OK) {
+            params->default_app_id = 0;
         }
     } else if (jis_string(host_app_id)) {
         raw_buffer buf = jstring_get(host_app_id);
         char *id_str = strndup(buf.m_str, buf.m_len);
-        app_configuration->default_app_id = strtol(id_str, NULL, 10);
-        if (app_configuration->default_app_id < 0) {
-            app_configuration->default_app_id = 0;
+        params->default_app_id = strtol(id_str, NULL, 10);
+        if (params->default_app_id < 0) {
+            params->default_app_id = 0;
         }
         free(id_str);
     }
     jdomparser_release(&parser);
+    return params;
 }

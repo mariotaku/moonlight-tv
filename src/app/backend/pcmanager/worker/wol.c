@@ -4,7 +4,7 @@
 #include "../pclist.h"
 #include "../priv.h"
 
-#include "util/wol.h"
+#include "wol.h"
 
 #include <errno.h>
 #include <SDL.h>

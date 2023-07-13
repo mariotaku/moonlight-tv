@@ -9,6 +9,12 @@
 #include "backend/pcmanager.h"
 
 typedef struct app_t app_t;
+typedef struct app_launch_params_t app_launch_params_t;
+
+typedef struct launcher_fragment_args_t {
+    app_t *app;
+    const app_launch_params_t *params;
+} launcher_fragment_args_t;
 
 typedef struct launcher_fragment_t {
     lv_fragment_t base;
@@ -30,8 +36,7 @@ typedef struct launcher_fragment_t {
     bool first_created;
     bool detail_changing;
 
-    uuidstr_t def_host;
-    int def_app;
+    const app_launch_params_t *launch_params;
     bool def_host_selected;
     bool def_app_requested;
 } launcher_fragment_t;

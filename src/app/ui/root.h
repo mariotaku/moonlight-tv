@@ -17,6 +17,7 @@
 typedef struct app_t app_t;
 typedef struct app_fonts_t app_fonts_t;
 typedef struct app_ui_t app_ui_t;
+typedef struct app_launch_params_t app_launch_params_t;
 
 
 struct app_ui_t {
@@ -48,7 +49,7 @@ void app_ui_init(app_ui_t *ui, app_t *app);
 
 void app_ui_deinit(app_ui_t *ui);
 
-void app_ui_open(app_ui_t *ui);
+void app_ui_open(app_ui_t *ui, const app_launch_params_t *params);
 
 void app_ui_close(app_ui_t *ui);
 

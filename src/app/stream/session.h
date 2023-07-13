@@ -61,10 +61,10 @@ extern int streaming_errno;
 extern char streaming_errmsg[];
 
 typedef struct app_t app_t;
-typedef struct app_configuration_t app_configuration_t;
+typedef struct app_settings_t app_settings_t;
 typedef struct session_t session_t;
 
-session_t *session_create(app_t *app, const app_configuration_t *config, const SERVER_DATA *server, int app_id);
+session_t *session_create(app_t *app, const app_settings_t *config, const SERVER_DATA *server, int app_id);
 
 void session_destroy(session_t *session);
 

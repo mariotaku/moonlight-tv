@@ -34,8 +34,8 @@ void app_input_deinit(app_input_t *input);
 
 void app_input_handle_event(app_input_t *input, const SDL_Event *event);
 
-void app_start_text_input(app_input_t *input, int x, int y, int w, int h);
+void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h);
 
-void app_stop_text_input(app_input_t *input);
+void app_stop_text_input(app_ui_input_t *input);
 
 bool app_text_input_active(app_input_t *input);

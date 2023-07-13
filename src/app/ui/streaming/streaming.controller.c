@@ -247,7 +247,7 @@ static void suspend_streaming(lv_event_t *event) {
 static void open_keyboard(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
     app_t *app = controller->global;
-    app_start_text_input(&app->input, 0, 0, app->ui.width, app->ui.height);
+    app_start_text_input(&app->ui.input, 0, 0, app->ui.width, app->ui.height);
 }
 
 static void toggle_vmouse(lv_event_t *event) {

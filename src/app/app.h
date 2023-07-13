@@ -30,10 +30,13 @@ extern pcmanager_t *pcmanager;
 
 typedef struct session_t session_t;
 
+typedef int (app_settings_loader)(app_settings_t *settings);
+
 typedef struct app_t {
     bool running, focused;
     SDL_threadID main_thread_id;
     os_info_t os_info;
+    app_settings_t settings;
     app_backend_t backend;
     app_input_t input;
     app_ui_t ui;
@@ -49,13 +52,11 @@ typedef struct app_t {
     session_t *session;
 } app_t;
 
-int app_init(app_t *app, int argc, char *argv[]);
+int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *argv[]);
 
 void app_deinit(app_t *app);
 
 void app_run_loop(app_t *app);
-
-void app_handle_launch(int argc, char *argv[]);
 
 void app_process_events(app_t *app);
 

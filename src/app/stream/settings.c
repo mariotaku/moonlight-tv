@@ -13,13 +13,7 @@
 #include "util/path.h"
 #include "util/i18n.h"
 
-#include "logging.h"
-
-static void settings_initialize(const char *confdir, PCONFIGURATION config);
-
-static bool settings_read(const char *filename, PCONFIGURATION config);
-
-static void settings_write(const char *filename, PCONFIGURATION config);
+#include "ini_writer.h"
 
 static int find_ch_idx_by_config(int config);
 
@@ -29,7 +23,7 @@ static const char *serialize_audio_config(int config);
 
 static int parse_audio_config(const char *value);
 
-static int settings_parse(PCONFIGURATION config, const char *section, const char *name, const char *value);
+static int settings_parse(app_settings_t *config, const char *section, const char *name, const char *value);
 
 static void set_string(char **field, const char *value);
 
@@ -37,42 +31,13 @@ static void set_int(int *field, const char *value);
 
 
 const audio_config_entry_t audio_configs[] = {
-        {AUDIO_CONFIGURATION_STEREO, "stereo", translatable("Stereo")},
-        {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch", translatable("5.1 Surround")},
-        {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch", translatable("7.1 Surround")},
+        {AUDIO_CONFIGURATION_STEREO,      "stereo", translatable("Stereo")},
+        {AUDIO_CONFIGURATION_51_SURROUND, "5.1ch",  translatable("5.1 Surround")},
+        {AUDIO_CONFIGURATION_71_SURROUND, "7.1ch",  translatable("7.1 Surround")},
 };
 const size_t audio_config_len = sizeof(audio_configs) / sizeof(audio_config_entry_t);
 
-
-
-PCONFIGURATION settings_load() {
-    PCONFIGURATION config = malloc(sizeof(CONFIGURATION));
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
-    settings_initialize(confdir, config);
-    if (!settings_read(conffile, config)) {
-        commons_log_warn("Settings", "Failed to read settings %s", conffile);
-    }
-    free(conffile);
-    free(confdir);
-    return config;
-}
-
-void settings_save(PCONFIGURATION config) {
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_MOONLIGHT);
-    settings_write(conffile, config);
-    free(conffile);
-    free(confdir);
-}
-
-void settings_free(PCONFIGURATION config) {
-    free_nullable(config->decoder);
-    free_nullable(config->audio_backend);
-    free_nullable(config->audio_device);
-    free_nullable(config->language);
-    free(config);
-}
-
-void settings_initialize(const char *confdir, PCONFIGURATION config) {
+void settings_initialize(app_settings_t *config, char *conf_dir) {
     memset(config, 0, sizeof(CONFIGURATION));
     LiInitializeStreamConfiguration(&config->stream);
 
@@ -103,52 +68,26 @@ void settings_initialize(const char *confdir, PCONFIGURATION config) {
     config->rotate = 0;
     config->absmouse = true;
     config->virtual_mouse = false;
-    config->stop_on_stall = false;
     config->hdr = false;
     config->hevc = true;
-    path_join_to(config->key_dir, sizeof(config->key_dir), confdir, "key");
+
+    config->conf_dir = conf_dir;
+    config->ini_path = path_join(conf_dir, CONF_NAME_MOONLIGHT);
+    config->key_dir = path_join(conf_dir, "key");
 }
 
-int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, int h, int fps) {
-    if (fps <= 0) {
-        fps = 60;
-    }
-    int kbps = w * h / 150;
-    switch (RES_MERGE(w, h)) {
-        case RES_720P:
-            kbps = 5000;
-            break;
-        case RES_1080P:
-            kbps = 10000;
-            break;
-        case RES_1440P:
-            kbps = 20000;
-            break;
-        case RES_4K:
-            kbps = 25000;
-            break;
-    }
-    unsigned int suggested_max = 0;
-    if (capabilities != NULL) {
-        suggested_max = capabilities->suggestedBitrate;
-        if (suggested_max == 0) {
-            suggested_max = capabilities->maxBitrate;
-        }
-    }
-    int calculated = kbps * fps / 30;
-    if (suggested_max == 0) {
-        return calculated;
-    }
-    return (int) (calculated < suggested_max ? calculated : suggested_max);
+bool settings_read(app_settings_t *config) {
+    return ini_parse(config->ini_path, (ini_handler) settings_parse, config) == 0;
 }
 
-bool settings_read(const char *filename, PCONFIGURATION config) {
-    return ini_parse(filename, (ini_handler) settings_parse, config) == 0;
-}
-
-void settings_write(const char *filename, PCONFIGURATION config) {
-    FILE *fp = fopen(filename, "wb");
-    if (!fp) { return; }
+bool settings_save(app_settings_t *config) {
+    if (config->ini_path == NULL) {
+        return false;
+    }
+    FILE *fp = fopen(config->ini_path, "w");
+    if (!fp) {
+        return false;
+    }
     ini_write_string(fp, "language", config->language);
     ini_write_bool(fp, "fullscreen", config->fullscreen);
     ini_write_int(fp, "debug_level", config->debug_level);
@@ -160,7 +99,6 @@ void settings_write(const char *filename, PCONFIGURATION config) {
     ini_write_int(fp, "bitrate", config->stream.bitrate);
     ini_write_int(fp, "packetsize", config->stream.packetSize);
     ini_write_int(fp, "rotate", config->rotate);
-    ini_write_int(fp, "stop_on_stall", config->stop_on_stall);
 
     ini_write_section(fp, "host");
     ini_write_bool(fp, "sops", config->sops);
@@ -196,8 +134,51 @@ void settings_write(const char *filename, PCONFIGURATION config) {
         ini_write_int(fp, "height", config->window_state.h);
     }
 
-    fclose(fp);
+    return fclose(fp) == 0;
 }
+
+void settings_clear(app_settings_t *config) {
+    free_nullable(config->decoder);
+    free_nullable(config->audio_backend);
+    free_nullable(config->audio_device);
+    free_nullable(config->language);
+    free_nullable(config->ini_path);
+    free_nullable(config->key_dir);
+}
+
+int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, int h, int fps) {
+    if (fps <= 0) {
+        fps = 60;
+    }
+    int kbps = w * h / 150;
+    switch (RES_MERGE(w, h)) {
+        case RES_720P:
+            kbps = 5000;
+            break;
+        case RES_1080P:
+            kbps = 10000;
+            break;
+        case RES_1440P:
+            kbps = 20000;
+            break;
+        case RES_4K:
+            kbps = 25000;
+            break;
+    }
+    unsigned int suggested_max = 0;
+    if (capabilities != NULL) {
+        suggested_max = capabilities->suggestedBitrate;
+        if (suggested_max == 0) {
+            suggested_max = capabilities->maxBitrate;
+        }
+    }
+    int calculated = kbps * fps / 30;
+    if (suggested_max == 0) {
+        return calculated;
+    }
+    return (int) (calculated < suggested_max ? calculated : suggested_max);
+}
+
 
 bool audio_config_valid(int config) {
     return find_ch_idx_by_config(config) >= 0;
@@ -233,7 +214,7 @@ int find_ch_idx_by_value(const char *value) {
     return -1;
 }
 
-static int settings_parse(PCONFIGURATION config, const char *section, const char *name, const char *value) {
+static int settings_parse(app_settings_t *config, const char *section, const char *name, const char *value) {
     if (INI_FULL_MATCH("streaming", "width")) {
         set_int(&config->stream.width, value);
     } else if (INI_FULL_MATCH("streaming", "height")) {
@@ -246,8 +227,6 @@ static int settings_parse(PCONFIGURATION config, const char *section, const char
         set_int(&config->stream.packetSize, value);
     } else if (INI_FULL_MATCH("streaming", "rotate")) {
         set_int(&config->rotate, value);
-    } else if (INI_FULL_MATCH("streaming", "stop_on_stall")) {
-        config->stop_on_stall = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hevc")) {
         config->hevc = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hdr")) {

@@ -1,7 +1,5 @@
-#include <ui/help/help.dialog.h>
-#include <Limelight.h>
-#include <PlatformCrypto.h>
 #include "app.h"
+#include "app_launch.h"
 
 #include "add.dialog.h"
 #include "apps.controller.h"
@@ -9,8 +7,10 @@
 #include "pair.dialog.h"
 #include "server.context_menu.h"
 
+#include "ui/help/help.dialog.h"
 #include "ui/root.h"
 #include "ui/settings/settings.controller.h"
+
 #include "lvgl/font/material_icons_regular_symbols.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lv_gridview.h"
@@ -116,7 +116,8 @@ void launcher_select_server(launcher_fragment_t *controller, const uuidstr_t *uu
 
 static void launcher_controller(lv_fragment_t *self, void *args) {
     launcher_fragment_t *fragment = (launcher_fragment_t *) self;
-    fragment->global = args;
+    launcher_fragment_args_t *fargs = args;
+    fragment->global = fargs->app;
     app_ui_t *ui = &fragment->global->ui;
     static const lv_style_prop_t props[] = {
             LV_STYLE_OPA, LV_STYLE_BG_OPA, LV_STYLE_TRANSLATE_X, LV_STYLE_TRANSLATE_Y, 0
@@ -142,11 +143,7 @@ static void launcher_controller(lv_fragment_t *self, void *args) {
     fragment->detail_opened = false;
     fragment->pane_initialized = false;
     fragment->first_created = true;
-
-    if (app_configuration->default_host_uuid[0] != '\0') {
-        uuidstr_fromstr(&fragment->def_host, app_configuration->default_host_uuid);
-        fragment->def_app = app_configuration->default_app_id;
-    }
+    fragment->launch_params = fargs->params;
 }
 
 static void controller_dtor(lv_fragment_t *self) {
@@ -208,8 +205,7 @@ static void launcher_view_destroy(lv_fragment_t *self, lv_obj_t *view) {
     pcmanager_auto_discovery_stop(pcmanager);
 
     controller->pane_initialized = false;
-    memset(&controller->def_host, 0, sizeof(uuidstr_t));
-    controller->def_app = 0;
+    controller->launch_params = NULL;
 
     lv_group_del(controller->nav_group);
     lv_group_del(controller->detail_group);
@@ -280,9 +276,10 @@ static void cb_pc_longpress(lv_event_t *event) {
 static void select_pc(launcher_fragment_t *controller, const uuidstr_t *uuid, bool refocus) {
     if (uuid) {
         apps_fragment_arg_t arg = {.global = controller->global, .host = *uuid};
-        if (!controller->def_app_requested && uuidstr_t_equals_t(uuid, &controller->def_host)) {
+        const app_launch_params_t *params = controller->launch_params;
+        if (!controller->def_app_requested && params != NULL && uuidstr_t_equals_t(uuid, &params->default_host_uuid)) {
             controller->def_app_requested = true;
-            arg.def_app = controller->def_app;
+            arg.def_app = params->default_app_id;
         }
         lv_fragment_t *fragment = lv_fragment_create(&apps_controller_class, &arg);
         lv_fragment_manager_replace(controller->base.child_manager, fragment, &controller->detail);
@@ -483,11 +480,12 @@ static void open_help(lv_event_t *event) {
 
 static void populate_selected_host(launcher_fragment_t *controller) {
     // Easy and dirty way to select preferred host
-    if (uuidstr_is_empty(&controller->def_host) || controller->def_host_selected) {
+    if (controller->def_host_selected || controller->launch_params == NULL ||
+        uuidstr_is_empty(&controller->launch_params->default_host_uuid)) {
         return;
     }
     for (const pclist_t *cur = pcmanager_servers(pcmanager); cur != NULL; cur = cur->next) {
-        if (uuidstr_t_equals_t(&cur->id, &controller->def_host)) {
+        if (uuidstr_t_equals_t(&cur->id, &controller->launch_params->default_host_uuid)) {
             commons_log_info("UI", "Host %s was selected", cur->server->hostname);
             pcmanager_select(pcmanager, &cur->id);
             controller->def_host_selected = true;

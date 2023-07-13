@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <SDL.h>
+#include <assert.h>
 #include "lvgl/lv_sdl_drv_input.h"
 #include "lvgl/lv_disp_drv_app.h"
 #include "lvgl/util/lv_app_utils.h"
@@ -34,16 +35,18 @@ static void libs_init(app_t *app, int argc, char *argv[]);
 app_t *global = NULL;
 
 
-int app_init(app_t *app, int argc, char *argv[]) {
+int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *argv[]) {
+    assert(settings_loader != NULL);
     memset(app, 0, sizeof(*app));
     commons_logging_init("moonlight");
     SDL_LogSetOutputFunction(commons_sdl_log, NULL);
     SDL_SetAssertionHandler(app_assertion_handler_abort, NULL);
     commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
+    settings_loader(&app->settings);
     app->main_thread_id = SDL_ThreadID();
     app->running = true;
     app->focused = false;
-    app_configuration = settings_load();
+    app_configuration = &app->settings;
     if (os_info_get(&app->os_info) == 0) {
         char *info_str = os_info_str(&app->os_info);
         commons_log_info("APP", "System: %s", info_str);
@@ -85,8 +88,9 @@ void app_deinit(app_t *app) {
     backend_destroy(&app->backend);
 
 
-    settings_save(app_configuration);
-    settings_free(app_configuration);
+    settings_save(&app->settings);
+    settings_clear(&app->settings);
+    free(app->settings.conf_dir);
 
 
 #if FEATURE_INPUT_LIBCEC
