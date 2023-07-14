@@ -29,6 +29,7 @@ extern PCONFIGURATION app_configuration;
 extern pcmanager_t *pcmanager;
 
 typedef struct session_t session_t;
+typedef struct app_wakelock_t app_wakelock_t;
 
 typedef int (app_settings_loader)(app_settings_t *settings);
 
@@ -49,6 +50,7 @@ typedef struct app_t {
 #if FEATURE_INPUT_LIBCEC
     cec_sdl_ctx_t cec;
 #endif
+    app_wakelock_t *wakelock;
     session_t *session;
 } app_t;
 
@@ -74,7 +76,7 @@ void app_set_mouse_grab(app_input_t *input, bool grab);
 
 bool app_get_mouse_relative();
 
-void app_set_keep_awake(bool);
+void app_set_keep_awake(app_t *app, bool awake);
 
 void app_set_fullscreen(app_t *app, bool);
 

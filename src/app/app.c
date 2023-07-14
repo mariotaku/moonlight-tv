@@ -83,6 +83,7 @@ void app_deinit(app_t *app) {
     app_session_destroy(app);
     app_ui_close(&app->ui);
     app_ui_deinit(&app->ui);
+    app_set_keep_awake(app, false);
     app_input_deinit(&app->input);
 
     backend_destroy(&app->backend);
@@ -221,15 +222,6 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
 void app_process_events(app_t *app) {
     SDL_PumpEvents();
     SDL_FilterEvents(app_event_filter, app);
-}
-
-
-void app_set_keep_awake(bool awake) {
-    if (awake) {
-        SDL_DisableScreenSaver();
-    } else {
-        SDL_EnableScreenSaver();
-    }
 }
 
 void app_quit_confirm() {

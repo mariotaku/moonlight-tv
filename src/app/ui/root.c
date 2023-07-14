@@ -96,6 +96,8 @@ void app_ui_open(app_ui_t *ui, const app_launch_params_t *params) {
     lv_fragment_manager_push(ui->fm, fragment, &ui->container);
 
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
+
+    app_set_keep_awake(ui->app, true);
 }
 
 void app_ui_close(app_ui_t *ui) {
@@ -155,7 +157,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                }
                 }
                 session_start_input(app->session);
-                app_set_keep_awake(true);
+                app_set_keep_awake(app, true);
                 streaming_enter_fullscreen(app->session);
                 last_pts = 0;
                 return true;
@@ -170,7 +172,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                if (ui_stream_render) {
 //                    ui_stream_render->renderCleanup();
 //                }
-                app_set_keep_awake(false);
+                app_set_keep_awake(app, false);
                 app_set_mouse_grab(&app->input, false);
                 session_stop_input(app->session);
 //                ui_stream_render = NULL;
