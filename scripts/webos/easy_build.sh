@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -d app ] || [ ! -f CMakeLists.txt ]; then
+if [ ! -f scripts/webos/easy_build.sh ]; then
   echo "Please invoke this script in project root directory"
   exit 1
 fi

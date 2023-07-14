@@ -1,1 +1,0 @@
-target_sources(moonlight PRIVATE module.c audio.c)
