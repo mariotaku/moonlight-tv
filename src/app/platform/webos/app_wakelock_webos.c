@@ -34,7 +34,7 @@ static app_wakelock_t *app_wakelock_create() {
     char client_name[64];
     snprintf(client_name, 64, "%s.wakelock", getenv("APPID"));
     jvalue_ref payload = jobject_create_var(
-            jkeyval(J_CSTR_TO_JVAL("subscribe"), jboolean_true()),
+            jkeyval(J_CSTR_TO_JVAL("subscribe"), jboolean_create(true)),
             jkeyval(J_CSTR_TO_JVAL("clientName"), j_cstr_to_jval(client_name)),
             NULL
     );
@@ -91,7 +91,7 @@ static bool wakelock_respond(LSHandle *sh, LSMessage *reply, void *ctx) {
     snprintf(client_name, 64, "%s.wakelock", getenv("APPID"));
     jvalue_ref response = jobject_create_var(
             jkeyval(J_CSTR_TO_JVAL("clientName"), j_cstr_to_jval(client_name)),
-            jkeyval(J_CSTR_TO_JVAL("ack"), jboolean_false()),
+            jkeyval(J_CSTR_TO_JVAL("ack"), jboolean_create(false)),
             jkeyval(J_CSTR_TO_JVAL("timestamp"), timestamp),
             NULL
     );
