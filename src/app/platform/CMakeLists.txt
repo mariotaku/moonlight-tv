@@ -22,3 +22,5 @@ target_sources(moonlight-lib PRIVATE
         ${PLATFORM_APP_SOURCE}
         ${PLATFORM_PATH_SOURCE}
         ${PLATFORM_I18N_SOURCE})
+
+add_subdirectory(common)
