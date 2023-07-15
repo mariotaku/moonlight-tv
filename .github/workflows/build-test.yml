@@ -13,10 +13,12 @@ env:
 
 jobs:
   build-standard:
+    name: Build (Linux Desktop)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Source
+        uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -26,7 +28,7 @@ jobs:
 
       - name: Install Dependencies
         run: sudo apt-get -y -qq install libsdl2-dev libsdl2-image-dev libopus-dev libcurl4-openssl-dev uuid-dev
-          libavcodec-dev libavutil-dev libexpat1-dev libmbedtls-dev libfontconfig1-dev gettext
+          libavcodec-dev libavutil-dev libexpat1-dev libmbedtls-dev libfontconfig1-dev gettext xvfb
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{github.workspace}}/build
@@ -44,13 +46,15 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         shell: bash
-        run: ctest -C $BUILD_TYPE
+        run: xvfb-run ctest -C $BUILD_TYPE
 
   build-webos:
+    name: Build (webOS)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Source
+        uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -93,10 +97,12 @@ jobs:
         run: webosbrew-ipk-verify -f markdown -d -o $GITHUB_STEP_SUMMARY dist/*.ipk
 
   build-raspi:
+    name: Build (Raspberry Pi)
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Source
+        uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
@@ -121,8 +127,9 @@ jobs:
       - name: Configure CMake
         shell: bash
         working-directory: ${{github.workspace}}/build
-        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTARGET_RASPI=ON
-          -DCMAKE_TOOLCHAIN_FILE=${{steps.pi-sysroot.outputs.cmake-toolchain}}
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        env:
+          CMAKE_TOOLCHAIN_FILE: ${{steps.pi-sysroot.outputs.cmake-toolchain}}
 
       - name: Build
         working-directory: ${{github.workspace}}/build
@@ -135,3 +142,54 @@ jobs:
         with:
           name: raspi-snapshot
           path: build/*.deb
+
+  build-steamlink:
+    name: Build (Steam Link)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Get Steam Link SDK
+        uses: actions/checkout@v3
+        with:
+          repository: ValveSoftware/steamlink-sdk
+          path: .steamlink-sdk
+
+      - name: Install Build Tools
+        shell: bash
+        run: sudo apt-get -y -qq install cmake gettext
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        run: |
+          source ${{github.workspace}}/.steamlink-sdk/setenv.sh
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        env:
+          CMAKE_TOOLCHAIN_FILE: ${{github.workspace}}/.steamlink-sdk/toolchain/steamlink-toolchain.cmake
+
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: |
+          source ${{github.workspace}}/.steamlink-sdk/setenv.sh
+          cmake --build . --config $BUILD_TYPE
+          cpack
+
+      - name: Add Commit Hash Suffix
+        shell: bash
+        working-directory: dist
+        run: for file in moonlight-tv_*_steamlink.* ; do mv $file ${file//_steamlink/-${GITHUB_SHA:0:8}_steamlink} ; done
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: steamlink-snapshot
+          path: dist/moonlight-tv_*_steamlink.*

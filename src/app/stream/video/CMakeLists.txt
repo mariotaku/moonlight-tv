@@ -1,0 +1,1 @@
+target_sources(moonlight-lib PRIVATE delegate.c sps_parser.c)

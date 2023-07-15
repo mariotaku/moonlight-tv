@@ -10,10 +10,12 @@ env:
 
 jobs:
   release-webos:
+    name: Release (webOS)
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Source
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -57,10 +59,12 @@ jobs:
           artifacts: dist/*.ipk,dist/*.manifest.json
 
   release-raspi:
+    name: Release (Raspberry Pi)
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Source
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 

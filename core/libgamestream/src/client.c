@@ -666,21 +666,20 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
 
     data = http_data_alloc();
 
+    // Using an FPS value over 60 causes SOPS to default to 720p60,
+    // so force it to 0 to ensure the correct resolution is set. We
+    // used to use 60 here but that locked the frame rate to 60 FPS
+    // on GFE 3.20.3.
+    int fps = config->fps > 60 ? 0 : config->fps;
+
     int surround_info = SURROUNDAUDIOINFO_FROM_AUDIO_CONFIGURATION(config->audioConfiguration);
-    if (server->currentGame == 0) {
-        // Using an FPS value over 60 causes SOPS to default to 720p60,
-        // so force it to 0 to ensure the correct resolution is set. We
-        // used to use 60 here but that locked the frame rate to 60 FPS
-        // on GFE 3.20.3.
-        int fps = config->fps > 60 ? 0 : config->fps;
-        construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "launch",
-                      "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d",
-                      appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info,
-                      gamepad_mask, gamepad_mask);
-    } else {
-        construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "resume",
-                      "rikey=%s&rikeyid=%d&surroundAudioInfo=%d", rikey_hex, rikeyid, surround_info);
-    }
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address,
+                  server->currentGame == 0 ? "launch" : "resume",
+                  "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d%s",
+                  appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info,
+                  gamepad_mask, gamepad_mask, config->supportedVideoFormats & VIDEO_FORMAT_MASK_10BIT
+                                              ? "&hdrMode=1&clientHdrCapVersion=0&clientHdrCapSupportedFlagsInUint32=0&clientHdrCapMetaDataId=NV_STATIC_METADATA_TYPE_1&clientHdrCapDisplayData=0x0x0x0x0x0x0x0x0x0x0"
+                                              : "");
     if ((ret = http_request(hnd->http, url, data)) == GS_OK) {
         server->currentGame = appId;
     } else {
@@ -690,16 +689,17 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     if ((ret = xml_status(data->memory, data->size) != GS_OK)) {
         goto cleanup;
     }
-    if ((ret = xml_search(data->memory, data->size, "gamesession", &result)) != GS_OK) {
+    if ((ret = xml_search_ex(data->memory, data->size, "gamesession", true, &result)) != GS_OK &&
+        (ret = xml_search_ex(data->memory, data->size, "resume", true, &result)) != GS_OK) {
         goto cleanup;
     }
 
-    if (!strcmp(result, "0")) {
+    if (strcmp(result, "1") != 0) {
         ret = GS_FAILED;
         goto cleanup;
     }
 
-    if (xml_search(data->memory, data->size, "sessionUrl0", &result) == GS_OK) {
+    if (xml_search_ex(data->memory, data->size, "sessionUrl0", true, &result) == GS_OK) {
         server->serverInfo.rtspSessionUrl = result;
         result = NULL;
     }
@@ -738,6 +738,7 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
         goto cleanup;
     }
 
+    assert(result != NULL);
     if (strcmp(result, "0") == 0) {
         ret = GS_FAILED;
         goto cleanup;
