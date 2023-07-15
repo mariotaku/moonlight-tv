@@ -152,7 +152,7 @@ static void add_cb(int result, const char *error, const uuidstr_t *uuid, void *u
         lv_label_set_text(controller->error, error);
         lv_obj_clear_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_label_set_text_static(controller->error, locstr("Failed to add device"));
+        lv_label_set_text_static(controller->error, locstr("Failed to add computer"));
         lv_obj_clear_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
     }
 }
