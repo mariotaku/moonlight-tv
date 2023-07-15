@@ -19,7 +19,8 @@ GS_CLIENT app_gs_client_new(app_t *app) {
             const char *message = NULL;
             gs_get_error(&message);
             app_fatal_error("Failed to generate client info",
-                            "Please try reinstall the app.\n\nDetails: %s", message);
+                            "Please turn off and unplug to completely restart the TV.\n\n"
+                            "Details: %s", message);
             app_halt(app);
         } else {
             client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
