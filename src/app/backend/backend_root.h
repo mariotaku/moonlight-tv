@@ -3,11 +3,13 @@
 #include <stdbool.h>
 
 #include "input_manager.h"
+#include "executor.h"
 
 typedef struct app_t app_t;
 
 typedef struct app_backend_t {
     app_t *app;
+    executor_t *executor;
     SDL_mutex *gs_client_mutex;
     input_manager_t input_manager;
 } app_backend_t;

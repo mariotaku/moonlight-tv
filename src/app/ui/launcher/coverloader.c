@@ -141,7 +141,7 @@ coverloader_t *coverloader_new(app_t *app) {
     coverloader_t *loader = malloc(sizeof(coverloader_t));
     refcounter_init(&loader->refcounter);
     loader->mem_cache = lv_lru_create(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
-    loader->base_loader = img_loader_create(&coverloader_impl);
+    loader->base_loader = img_loader_create(&coverloader_impl, app->backend.executor);
     lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, app);
     loader->reqlist = NULL;
     return loader;
