@@ -38,7 +38,7 @@ typedef struct img_loader_datasource_t {
     void (*run_on_main)(img_loader_t *loader, img_loader_fn fn, void *args);
 } img_loader_impl_t;
 
-img_loader_t *img_loader_create(const img_loader_impl_t *impl);
+img_loader_t *img_loader_create(const img_loader_impl_t *impl, executor_t*executor);
 
 void img_loader_destroy(img_loader_t *loader);
 

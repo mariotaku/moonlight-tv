@@ -6,6 +6,7 @@
 
 struct discovery_task_t {
     pcmanager_t *manager;
+    SDL_mutex *lock;
     SDL_Thread *thread;
     bool stop;
 };
@@ -16,8 +17,6 @@ static bool discovery_stop(discovery_task_t *task);
 
 static void discovery_callback(discovery_task_t *task, int status, const struct rr_entry *entries);
 
-static int discovery_noop(void *arg);
-
 static void discovery_finalize(void *arg, int result);
 
 void pcmanager_auto_discovery_start(pcmanager_t *manager) {
@@ -26,10 +25,13 @@ void pcmanager_auto_discovery_start(pcmanager_t *manager) {
         pcmanager_unlock(manager);
         return;
     }
-    discovery_task_t *task = SDL_malloc(sizeof(discovery_task_t));
+    discovery_task_t *task = SDL_calloc(1, sizeof(discovery_task_t));
+    commons_log_info("Discovery", "Start task %p", task);
     task->manager = manager;
+    task->lock = SDL_CreateMutex();
     task->stop = false;
     task->thread = SDL_CreateThread((SDL_ThreadFunction) discovery_worker, "discovery", task);
+    manager->discovery_task = task;
     pcmanager_unlock(manager);
 }
 
@@ -41,7 +43,7 @@ void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
         return;
     }
     manager->discovery_task = NULL;
-    executor_execute(manager->executor, discovery_noop, discovery_finalize, task);
+    executor_execute(manager->executor, executor_noop, discovery_finalize, task);
     pcmanager_unlock(manager);
 }
 
@@ -72,7 +74,10 @@ static int discovery_worker(discovery_task_t *task) {
 }
 
 static bool discovery_stop(discovery_task_t *task) {
-    return task->manager->discovery_task != task;
+    SDL_LockMutex(task->lock);
+    bool stop = task->stop;
+    SDL_UnlockMutex(task->lock);
+    return stop;
 }
 
 static void discovery_callback(discovery_task_t *task, int status, const struct rr_entry *entries) {
@@ -92,14 +97,14 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
     }
 }
 
-static int discovery_noop(void *arg) {
-    (void) arg;
-    return 0;
-}
-
 static void discovery_finalize(void *arg, int result) {
-    discovery_task_t *task = arg;
-    SDL_WaitThread(task->thread, NULL);
-    free(task);
     (void) result;
+    commons_log_info("Discovery", "Finalize task %p", arg);
+    discovery_task_t *task = arg;
+    SDL_LockMutex(task->lock);
+    task->stop = true;
+    SDL_UnlockMutex(task->lock);
+    SDL_WaitThread(task->thread, NULL);
+    SDL_DestroyMutex(task->lock);
+    free(task);
 }

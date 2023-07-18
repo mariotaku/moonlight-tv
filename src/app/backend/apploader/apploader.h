@@ -6,7 +6,7 @@
 #include "uuidstr.h"
 
 typedef struct app_t app_t;
-typedef struct apploader_task_t apploader_task_t;
+typedef struct apploader_task_ctx_t apploader_task_ctx_t;
 
 typedef enum apploader_state_t {
     APPLOADER_STATE_IDLE,

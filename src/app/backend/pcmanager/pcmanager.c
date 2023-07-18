@@ -6,22 +6,18 @@
 #include "app.h"
 #include "backend/pcmanager/worker/worker.h"
 
-static void pcmanager_free(executor_t *executor, int wait);
-
-pcmanager_t *pcmanager_new(app_t *app) {
+pcmanager_t *pcmanager_new(app_t *app, executor_t *executor) {
     pcmanager_t *manager = SDL_calloc(1, sizeof(pcmanager_t));
     manager->app = app;
-    manager->executor = executor_create("pcmanager", pcmanager_free);
+    manager->executor = executor;
     manager->thread_id = SDL_ThreadID();
     manager->lock = SDL_CreateMutex();
-    executor_set_userdata(manager->executor, manager);
     pcmanager_load_known_hosts(manager);
     return manager;
 }
 
 void pcmanager_destroy(pcmanager_t *manager) {
     pcmanager_auto_discovery_stop(manager);
-    executor_destroy(manager->executor, 1);
     pcmanager_save_known_hosts(manager);
     pclist_free(manager);
     SDL_DestroyMutex(manager->lock);
@@ -129,7 +125,3 @@ const pclist_t *pcmanager_servers(pcmanager_t *manager) {
     return manager->servers;
 }
 
-static void pcmanager_free(executor_t *executor, int wait) {
-    SDL_assert(wait);
-    SDL_WaitThread(executor_get_thread_handle(executor), NULL);
-}

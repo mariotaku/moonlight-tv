@@ -10,6 +10,7 @@
 typedef struct app_t app_t;
 typedef struct pcmanager_t pcmanager_t;
 typedef struct worker_context_t worker_context_t;
+typedef struct executor_t executor_t;
 
 typedef void (*pcmanager_callback_t)(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
@@ -25,7 +26,7 @@ typedef struct pcmanager_listener_t {
  * @brief Initialize computer manager context
  * 
  */
-pcmanager_t *pcmanager_new(app_t *app);
+pcmanager_t *pcmanager_new(app_t *app, executor_t *executor);
 
 /**
  * @brief Free all allocated memories, such as computer_list.
