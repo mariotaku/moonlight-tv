@@ -100,7 +100,7 @@ void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_rea
 }
 
 bool session_accepting_input(session_t *session) {
-    return session->input.started;
+    return session->input.started && !ui_should_block_input();
 }
 
 void session_start_input(session_t *session) {
