@@ -52,6 +52,7 @@ typedef struct app_settings_t {
 
     char *conf_dir;
     char *ini_path;
+    char *condb_path;
     char *key_dir;
 } CONFIGURATION, *PCONFIGURATION, app_settings_t;
 

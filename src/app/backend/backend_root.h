@@ -18,4 +18,4 @@ void backend_init(app_backend_t *backend, app_t *app);
 
 void backend_destroy(app_backend_t *backend);
 
-bool backend_dispatch_userevent(int which, void *data1, void *data2);
+bool backend_dispatch_userevent(app_backend_t *backend, int which, void *data1, void *data2);

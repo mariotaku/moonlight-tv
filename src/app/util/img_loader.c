@@ -55,7 +55,7 @@ img_loader_t *img_loader_create(const img_loader_impl_t *impl, executor_t *execu
 void img_loader_destroy(img_loader_t *loader) {
     SDL_assert_release(!loader->destroyed);
     loader->destroyed = true;
-    executor_execute(loader->executor, executor_noop, img_loader_free, loader);
+    executor_submit(loader->executor, executor_noop, img_loader_free, loader);
 }
 
 img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const img_loader_cb_t *cb) {
@@ -71,8 +71,8 @@ img_loader_task_t *img_loader_load(img_loader_t *loader, void *request, const im
     task->loader = loader;
     task->request = request;
     task->cb = *cb;
-    task->task = executor_execute(loader->executor, (executor_action_cb) task_execute,
-                                  (executor_cleanup_cb) task_destroy, task);
+    task->task = executor_submit(loader->executor, (executor_action_cb) task_execute,
+                                 (executor_cleanup_cb) task_destroy, task);
     return task;
 }
 

@@ -2,6 +2,8 @@
 
 #include <SDL_haptic.h>
 #include <SDL_joystick.h>
+#include "gamecontrollerdb_updater.h"
+
 #include "lvgl.h"
 #include "lvgl/input/lv_drv_sdl_key.h"
 
@@ -21,6 +23,7 @@ typedef struct app_gamepad_state_t {
 } app_gamepad_state_t;
 
 typedef struct app_input_t {
+    commons_gcdb_updater_t gcdb_updater;
     SDL_Surface *blank_cursor_surface;
     app_gamepad_state_t gamepads[4];
     size_t gamepads_count;

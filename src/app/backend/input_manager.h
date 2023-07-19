@@ -2,18 +2,11 @@
 
 #include "gamecontrollerdb_updater.h"
 
+typedef struct app_settings_t app_settings_t;
+
 typedef struct input_manager_t {
     commons_gcdb_updater_t gcdb_updater;
 } input_manager_t;
 
-void inputmgr_init(input_manager_t *manager);
+void input_manager_init(input_manager_t *manager, const app_settings_t *settings);
 
-void inputmgr_deinit(input_manager_t *manager);
-
-char *gamecontrollerdb_builtin_path();
-
-char *gamecontrollerdb_extra_path();
-
-char *gamecontrollerdb_fetched_path();
-
-char *gamecontrollerdb_user_path();

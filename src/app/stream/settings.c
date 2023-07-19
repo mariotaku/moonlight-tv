@@ -73,6 +73,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
 
     config->conf_dir = conf_dir;
     config->ini_path = path_join(conf_dir, CONF_NAME_MOONLIGHT);
+    config->condb_path = path_join(conf_dir, "gamecontrollerdb.txt");
     config->key_dir = path_join(conf_dir, "key");
 }
 
@@ -143,6 +144,7 @@ void settings_clear(app_settings_t *config) {
     free_nullable(config->audio_device);
     free_nullable(config->language);
     free_nullable(config->ini_path);
+    free_nullable(config->condb_path);
     free_nullable(config->key_dir);
 }
 

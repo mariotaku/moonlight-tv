@@ -1,20 +1,29 @@
 #include "app_input.h"
 #include "logging.h"
 #include "app.h"
+#include "input_gamepad_mapping.h"
 
 #include "lvgl/lv_sdl_drv_input.h"
 
 void app_input_init(app_input_t *input, app_t *app) {
+    if (app->settings.condb_path != NULL) {
+        app_input_copy_initial_gamepad_mapping(&app->settings);
+        SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG, app->settings.condb_path);
+    }
+    SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     input->blank_cursor_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
     input->blank_cursor_surface->userdata = SDL_CreateColorCursor(input->blank_cursor_surface, 0, 0);
     if (input->blank_cursor_surface->userdata == NULL) {
         commons_log_warn("Input", "Failed to create blank cursor: %s", SDL_GetError());
     }
+    app_input_init_gamepad_mapping(input, app->backend.executor, &app->settings);
 }
 
 void app_input_deinit(app_input_t *input) {
+    app_input_deinit_gamepad_mapping(input);
     SDL_FreeCursor(input->blank_cursor_surface->userdata);
     SDL_FreeSurface(input->blank_cursor_surface);
+    SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 }
 
 void app_stop_text_input(app_ui_input_t *input) {
