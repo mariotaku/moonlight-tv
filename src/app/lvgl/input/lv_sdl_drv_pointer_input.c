@@ -8,7 +8,7 @@
 
 #include "lvgl.h"
 #include "stream/session.h"
-#include "stream/session/session_events.h"
+#include "stream/session_events.h"
 
 static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 

@@ -1,5 +1,5 @@
 #include "session_events.h"
-#include "priv.h"
+#include "session_priv.h"
 
 
 bool session_handle_input_event(session_t *session, const SDL_Event *event) {

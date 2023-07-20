@@ -1,4 +1,4 @@
-#include "priv.h"
+#include "session_priv.h"
 
 void session_set_state(session_t *session, STREAMING_STATE state) {
     SDL_LockMutex(session->state_lock);

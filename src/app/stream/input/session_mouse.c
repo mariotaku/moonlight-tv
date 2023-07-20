@@ -3,7 +3,7 @@
 #include "app.h"
 
 #include "stream/session.h"
-#include "stream/session/priv.h"
+#include "stream/session_priv.h"
 
 #include <Limelight.h>
 #include <SDL.h>

@@ -5,7 +5,7 @@
 #include "logging.h"
 #include "input/input_gamepad.h"
 #include "app.h"
-#include "priv.h"
+#include "stream/session_priv.h"
 
 static session_t *current_session = NULL;
 

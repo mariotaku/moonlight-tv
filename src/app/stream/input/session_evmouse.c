@@ -1,6 +1,6 @@
 #include "session_evmouse.h"
 #include "evmouse.h"
-#include "stream/session/priv.h"
+#include "stream/session_priv.h"
 #include <errno.h>
 
 #include "logging.h"

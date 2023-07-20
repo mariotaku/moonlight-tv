@@ -20,7 +20,7 @@
 
 #include "ss4s_modules.h"
 #include "ss4s.h"
-#include "stream/session/session_events.h"
+#include "stream/session_events.h"
 #include "ui/fatal_error.h"
 #include "app_error.h"
 #include "app_session.h"

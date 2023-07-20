@@ -1,6 +1,6 @@
 #include "app.h"
 #include "config.h"
-#include "stream/session/priv.h"
+#include "session_priv.h"
 
 #include "stream/session.h"
 #include "app_settings.h"
@@ -15,7 +15,7 @@
 #include "ss4s.h"
 #include "input/input_gamepad.h"
 #include "app_session.h"
-#include "stream/session/session_worker.h"
+#include "session_worker.h"
 #include "stream/input/session_virt_mouse.h"
 
 int streaming_errno = GS_OK;
