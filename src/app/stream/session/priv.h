@@ -4,15 +4,8 @@
 #include <SDL_thread.h>
 #include "ss4s.h"
 #include "client.h"
-#include "stream/settings.h"
-
-#if FEATURE_INPUT_EVMOUSE
-
-#include "session_evmouse.h"
-
-#endif
-
-#include "stream/input/absinput.h"
+#include "app_settings.h"
+#include "stream/input/session_input.h"
 #include "stream/session.h"
 
 typedef struct app_t app_t;
@@ -37,9 +30,6 @@ struct session_t {
     SDL_mutex *mutex;
     SDL_Thread *thread;
     SS4S_Player *player;
-#if FEATURE_INPUT_EVMOUSE
-    session_evmouse_t mouse;
-#endif
 };
 
  void session_set_state(session_t *session, STREAMING_STATE state);

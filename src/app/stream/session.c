@@ -1,11 +1,10 @@
 #include "app.h"
 #include "config.h"
-#include "priv.h"
+#include "stream/session/priv.h"
 
 #include "stream/session.h"
-#include "stream/settings.h"
+#include "app_settings.h"
 
-#include "stream/platform.h"
 #include "backend/pcmanager/priv.h"
 
 #include <Limelight.h>
@@ -16,8 +15,8 @@
 #include "ss4s.h"
 #include "input/input_gamepad.h"
 #include "app_session.h"
-#include "session_worker.h"
-#include "stream/input/input_vmouse.h"
+#include "stream/session/session_worker.h"
+#include "stream/input/session_virt_mouse.h"
 
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
@@ -42,21 +41,14 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     session->mutex = SDL_CreateMutex();
     session->state_lock = SDL_CreateMutex();
     session->cond = SDL_CreateCond();
-    session->input.session = session;
-    session->input.input = &app->input;
-    session->input.view_only = session->config.view_only;
-    session->input.no_sdl_mouse = session->config.hardware_mouse;
+    session_input_init(&session->input, session, &app->input, &session->config);
     session->thread = SDL_CreateThread((SDL_ThreadFunction) session_worker, "session", session);
-#if FEATURE_INPUT_EVMOUSE
-    if (!config->viewonly && config->hardware_mouse) {
-        session_evmouse_init(session);
-    }
-#endif
     return session;
 }
 
 void session_destroy(session_t *session) {
     session_interrupt(session, false, STREAMING_INTERRUPT_QUIT);
+    session_input_deinit(&session->input);
     SDL_WaitThread(session->thread, NULL);
     serverdata_free(session->server);
     SDL_DestroyCond(session->cond);
@@ -73,9 +65,7 @@ void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_rea
         SDL_UnlockMutex(session->mutex);
         return;
     }
-#if FEATURE_INPUT_EVMOUSE
-    session_evmouse_interrupt(session);
-#endif
+    session_input_interrupt(&session->input);
     session->quitapp = quitapp;
     session->interrupted = true;
     if (reason >= STREAMING_INTERRUPT_ERROR) {

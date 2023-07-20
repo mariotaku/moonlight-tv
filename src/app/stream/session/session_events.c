@@ -10,11 +10,11 @@ bool session_handle_input_event(session_t *session, const SDL_Event *event) {
     switch (event->type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP: {
-            sdlinput_handle_key_event(input, &event->key);
+            stream_input_handle_key(input, &event->key);
             break;
         }
         case SDL_CONTROLLERAXISMOTION: {
-            sdlinput_handle_caxis_event(input, &event->caxis);
+            stream_input_handle_caxis(input, &event->caxis);
             break;
         }
         case SDL_CONTROLLERBUTTONDOWN:
@@ -23,24 +23,24 @@ bool session_handle_input_event(session_t *session, const SDL_Event *event) {
             break;
         }
         case SDL_MOUSEMOTION: {
-            session_handle_mmotion_event(input, &event->motion);
+            stream_input_handle_mmotion(input, &event->motion);
             break;
         }
         case SDL_MOUSEWHEEL: {
             if (!input->view_only && !input->no_sdl_mouse) {
-                sdlinput_handle_mwheel_event(&event->wheel);
+                stream_input_handle_mwheel(input, &event->wheel);
             }
             break;
         }
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP: {
             if (!input->view_only && !input->no_sdl_mouse) {
-                sdlinput_handle_mbutton_event(&event->button);
+                stream_input_handle_mbutton(input, &event->button);
             }
             break;
         }
         case SDL_TEXTINPUT: {
-            sdlinput_handle_text_event(input, &event->text);
+            stream_input_handle_text(input, &event->text);
             break;
         }
         default:

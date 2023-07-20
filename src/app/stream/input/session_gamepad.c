@@ -4,13 +4,13 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-#include "stream/input/absinput.h"
+#include "stream/input/session_input.h"
 
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "input/input_gamepad.h"
 #include "stream/session.h"
-#include "stream/input/input_vmouse.h"
+#include "stream/input/session_virt_mouse.h"
 
 #define QUIT_BUTTONS (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG)
 #define GAMEPAD_COMBO_VMOUSE (LB_FLAG | RS_CLK_FLAG)
@@ -111,7 +111,7 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
                                gamepad->rightStickY);
 }
 
-void sdlinput_handle_caxis_event(stream_input_t *input, const SDL_ControllerAxisEvent *event) {
+void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEvent *event) {
     app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     bool vmouse_intercepted = false;
     bool vmouse = session_input_is_vmouse_active(&input->vmouse);

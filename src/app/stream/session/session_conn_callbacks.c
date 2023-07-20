@@ -1,5 +1,5 @@
 #include "ui/streaming/streaming.controller.h"
-#include "stream/input/absinput.h"
+#include "stream/input/session_input.h"
 
 #include "util/i18n.h"
 #include "logging.h"

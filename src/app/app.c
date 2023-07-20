@@ -13,7 +13,6 @@
 #include "logging_ext_ss4s.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
-#include "stream/platform.h"
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/user_event.h"

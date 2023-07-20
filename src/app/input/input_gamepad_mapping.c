@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "input_gamepad_mapping.h"
-#include "stream/settings.h"
+#include "app_settings.h"
 #include "executor.h"
 #include "gamecontrollerdb_updater.h"
 #include "util/user_event.h"

@@ -1,6 +1,6 @@
 #include "app.h"
 #include "logging.h"
-#include "stream/input/absinput.h"
+#include "stream/input/session_input.h"
 #include "stream/session.h"
 
 #include <Limelight.h>
@@ -66,7 +66,7 @@ static int keydown_count = 0;
 
 #if TARGET_WEBOS
 
-bool webos_intercept_remote_keys(stream_input_t *input,const SDL_KeyboardEvent *event, short *keyCode);
+bool webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent *event, short *keyCode);
 
 #endif
 
@@ -125,7 +125,7 @@ void performPendingSpecialKeyCombo(stream_input_t *input) {
     _pending_key_combo = KeyComboMax;
 }
 
-void sdlinput_handle_key_event(stream_input_t *input, const SDL_KeyboardEvent *event) {
+void stream_input_handle_key(stream_input_t *input, const SDL_KeyboardEvent *event) {
     short keyCode = 0;
 #if TARGET_WEBOS
     if (webos_intercept_remote_keys(input, event, &keyCode)) {
@@ -450,7 +450,7 @@ void sdlinput_handle_key_event(stream_input_t *input, const SDL_KeyboardEvent *e
     }
 }
 
-void sdlinput_handle_text_event(stream_input_t *input, const SDL_TextInputEvent *event) {
+void stream_input_handle_text(stream_input_t *input, const SDL_TextInputEvent *event) {
     if (keydown_count) {
         commons_log_verbose("Input", "Ignoring duplicated text input %s. Pressed keys: %d", event->text, keydown_count);
         return;

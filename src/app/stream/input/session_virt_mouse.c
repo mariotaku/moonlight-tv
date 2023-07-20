@@ -1,7 +1,7 @@
-#include "input_vmouse.h"
-#include "absinput.h"
+#include "session_virt_mouse.h"
+#include "session_input.h"
 
-#include <SDL.h>
+#include <SDL_stdinc.h>
 
 static short calc_mouse_movement(short axis);
 

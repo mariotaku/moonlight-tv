@@ -4,8 +4,6 @@
 #include "pref_obj.h"
 #include "ui/settings/settings.controller.h"
 
-#include <stream/platform.h>
-
 #include "util/i18n.h"
 
 typedef struct {

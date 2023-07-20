@@ -1,12 +1,10 @@
-#include "settings.h"
+#include "app_settings.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
 #include <ini.h>
-
-#include "stream/platform.h"
 
 #include "util/ini_ext.h"
 #include "util/nullable.h"

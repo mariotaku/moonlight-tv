@@ -1,6 +1,6 @@
-#include <malloc.h>
+#include <stdlib.h>
 #include "unity.h"
-#include "stream/settings.h"
+#include "app_settings.h"
 #include "uuidstr.h"
 
 #ifndef FIXTURES_PATH_PREFIX

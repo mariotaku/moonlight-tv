@@ -1,9 +1,9 @@
 #include "app.h"
-#include <stdlib.h>
-#include <lvgl.h>
-#include "stream/platform.h"
+#include "lvgl.h"
 #include "pref_obj.h"
 #include "ui/settings/settings.controller.h"
+
+#include <stdlib.h>
 
 #include "util/i18n.h"
 #include "os_info.h"

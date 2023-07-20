@@ -6,7 +6,7 @@
 #include "ini_writer.h"
 #include "util/ini_ext.h"
 #include "util/path.h"
-#include "stream/settings.h"
+#include "app_settings.h"
 
 typedef struct known_host_t {
     uuidstr_t uuid;

@@ -1,4 +1,4 @@
-#include "stream/input/absinput.h"
+#include "stream/input/session_input.h"
 
 #include "app.h"
 
@@ -8,7 +8,7 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-void sdlinput_handle_mbutton_event(const SDL_MouseButtonEvent *event) {
+void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event) {
     int button = 0;
     switch (event->button) {
         case SDL_BUTTON_LEFT:
@@ -36,11 +36,17 @@ void sdlinput_handle_mbutton_event(const SDL_MouseButtonEvent *event) {
                            button);
 }
 
-void sdlinput_handle_mwheel_event(const SDL_MouseWheelEvent *event) {
-    LiSendScrollEvent((signed char) event->y);
+void stream_input_handle_mwheel(stream_input_t *input, const SDL_MouseWheelEvent *event) {
+    (void) input;
+    if (event->y != 0) {
+        LiSendScrollEvent((signed char) event->y);
+    }
+    if (event->x != 0) {
+        LiSendHScrollEvent((signed char) event->x);
+    }
 }
 
-void session_handle_mmotion_event(stream_input_t *input, const SDL_MouseMotionEvent *event) {
+void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event) {
     if (input->view_only || input->no_sdl_mouse) {
         return;
     }
