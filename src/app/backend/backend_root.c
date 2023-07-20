@@ -1,13 +1,12 @@
 #include "backend_root.h"
 
 #include "pcmanager.h"
-#include "input_manager.h"
 #include "stream/session.h"
 #include <SDL2/SDL_cpuinfo.h>
 #include <SDL2/SDL_stdinc.h>
 
 #include "app.h"
-#include "util/user_event.h"
+#include "executor.h"
 
 pcmanager_t *pcmanager;
 
@@ -26,6 +25,9 @@ void backend_destroy(app_backend_t *backend) {
 }
 
 bool backend_dispatch_userevent(app_backend_t *backend, int which, void *data1, void *data2) {
-    bool handled = false;
-    return handled;
+    (void) backend;
+    (void) which;
+    (void) data1;
+    (void) data2;
+    return false;
 }

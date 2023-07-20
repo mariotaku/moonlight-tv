@@ -16,7 +16,6 @@ endif ()
 
 target_sources(moonlight-lib PRIVATE
         sdl/bus.c
-        sdl/input_manager.c
         sdl/navkey_sdl.c
         common/i18n_common.c
         ${PLATFORM_APP_SOURCE}

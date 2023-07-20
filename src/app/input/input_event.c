@@ -5,6 +5,7 @@
 
 #include "logging.h"
 #include "util/user_event.h"
+#include "input_gamepad_mapping.h"
 
 void app_input_handle_event(app_input_t *input, const SDL_Event *event) {
     if (event->type == SDL_JOYDEVICEADDED) {
@@ -24,9 +25,7 @@ void app_input_handle_event(app_input_t *input, const SDL_Event *event) {
         commons_log_debug("Input", "SDL_CONTROLLERDEVICEREMAPPED");
     } else if (event->type == SDL_USEREVENT) {
         if (event->user.code == USER_INPUT_CONTROLLERDB_UPDATED) {
-            int num_mapping = SDL_GameControllerAddMappingsFromRW(SDL_RWFromFile(input->gcdb_updater.path, "r"),
-                                                                  SDL_TRUE);
-            commons_log_info("Input", "Added %d gamepad mapping", num_mapping);
+            app_input_reload_gamepad_mapping(input);
         }
     }
 }
