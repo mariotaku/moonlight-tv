@@ -1,6 +1,6 @@
 #include "app.h"
 #include "streaming.controller.h"
-#include "stream/video/delegate.h"
+#include "stream/video/session_video.h"
 #include "ui/root.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_ext_utils.h"

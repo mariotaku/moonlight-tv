@@ -1,6 +1,6 @@
 #include <opus_multistream.h>
 #include <stdlib.h>
-#include "stream/connection/callbacks.h"
+#include "stream/connection/session_connection.h"
 #include "ss4s.h"
 #include "stream/session_priv.h"
 
