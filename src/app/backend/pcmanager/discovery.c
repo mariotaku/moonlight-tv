@@ -43,7 +43,7 @@ void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
         return;
     }
     manager->discovery_task = NULL;
-    executor_execute(manager->executor, executor_noop, discovery_finalize, task);
+    executor_submit(manager->executor, executor_noop, discovery_finalize, task);
     pcmanager_unlock(manager);
 }
 

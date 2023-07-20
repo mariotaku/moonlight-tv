@@ -1,5 +1,9 @@
-add_subdirectory(input)
-add_subdirectory(session)
-add_subdirectory(video)
+target_sources(moonlight-lib PRIVATE session.c
+        session_events.c
+        session_worker.c
+        session_priv.c)
 
-target_sources(moonlight-lib PRIVATE settings.c)
+add_subdirectory(input)
+add_subdirectory(connection)
+add_subdirectory(audio)
+add_subdirectory(video)

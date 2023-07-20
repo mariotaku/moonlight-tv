@@ -285,10 +285,10 @@ else ()
     set(FEATURE_INPUT_EVMOUSE OFF)
 endif ()
 
-target_link_libraries(moonlight-lib PUBLIC commons-ss4s-modules-list)
+target_link_libraries(moonlight-lib PUBLIC commons-ss4s-modules-list commons-sps-parser)
 
 target_link_libraries(moonlight-lib PUBLIC commons-logging commons-gamecontrollerdb-updater commons-lazy
-        commons-refcounter commons-executor commons-linked-list commons-wol commons-ini-writer)
+        commons-refcounter commons-executor commons-linked-list commons-wol commons-ini-writer commons-copyfile)
 
 configure_file(src/app/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h @ONLY)
 target_include_directories(moonlight-lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

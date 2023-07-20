@@ -6,9 +6,8 @@
 #include "lvgl/theme/lv_theme_moonlight.h"
 #include "draw/sdl/lv_draw_sdl_utils.h"
 
-#include "stream/platform.h"
 #include "stream/session.h"
-#include "stream/input/absinput.h"
+#include "stream/input/session_input.h"
 
 #include "streaming/streaming.controller.h"
 #include "launcher/launcher.controller.h"

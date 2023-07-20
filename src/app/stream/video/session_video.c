@@ -1,4 +1,4 @@
-#include "delegate.h"
+#include "session_video.h"
 
 #include <stddef.h>
 
@@ -10,8 +10,8 @@
 #include "util/bus.h"
 #include "logging.h"
 #include "ss4s.h"
-#include "stream/session/callbacks.h"
-#include "stream/session/priv.h"
+#include "stream/connection/session_connection.h"
+#include "stream/session_priv.h"
 #include "app.h"
 
 #include <SDL.h>

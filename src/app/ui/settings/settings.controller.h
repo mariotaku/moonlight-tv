@@ -11,7 +11,7 @@
 #include "util/navkey.h"
 #include "os_info.h"
 
-#include "stream/settings.h"
+#include "app_settings.h"
 
 #if TARGET_WEBOS
 

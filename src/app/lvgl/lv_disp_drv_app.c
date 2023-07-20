@@ -1,5 +1,4 @@
 #include "ui/root.h"
-#include "stream/platform.h"
 #include "lv_disp_drv_app.h"
 
 #include "draw/sdl/lv_draw_sdl.h"

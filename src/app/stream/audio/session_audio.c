@@ -1,8 +1,8 @@
 #include <opus_multistream.h>
 #include <stdlib.h>
-#include "callbacks.h"
+#include "stream/connection/session_connection.h"
 #include "ss4s.h"
-#include "stream/session/priv.h"
+#include "stream/session_priv.h"
 
 static session_t *session = NULL;
 static SS4S_Player *player = NULL;

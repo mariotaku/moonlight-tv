@@ -7,7 +7,7 @@
 
 #include "util/user_event.h"
 #include "lv_drv_sdl_key.h"
-#include "stream/session/session_events.h"
+#include "stream/session_events.h"
 
 static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state);
 

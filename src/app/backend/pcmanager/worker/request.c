@@ -34,8 +34,8 @@ void worker_context_finalize(worker_context_t *context, int result) {
 }
 
 void pcmanager_worker_queue(pcmanager_t *manager, worker_action action, worker_context_t *context) {
-    executor_execute(manager->executor, (executor_action_cb) action,
-                     (executor_cleanup_cb) worker_context_finalize, context);
+    executor_submit(manager->executor, (executor_action_cb) action,
+                    (executor_cleanup_cb) worker_context_finalize, context);
 }
 
 static void worker_callback(worker_context_t *ctx) {

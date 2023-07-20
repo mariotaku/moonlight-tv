@@ -2,10 +2,10 @@
 
 #include "ui/root.h"
 
-#include "stream/input/absinput.h"
-#include "stream/input/sdl/vk.h"
+#include "stream/input/session_input.h"
+#include "stream/input/vk.h"
 #include "stream/session.h"
-#include "stream/session/priv.h"
+#include "stream/session_priv.h"
 
 #include <Limelight.h>
 #include <SDL.h>

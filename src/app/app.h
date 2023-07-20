@@ -5,7 +5,7 @@
 #include "config.h"
 
 #include "lvgl.h"
-#include "stream/settings.h"
+#include "app_settings.h"
 #include "backend/pcmanager.h"
 #include "libgamestream/client.h"
 #include "os_info.h"

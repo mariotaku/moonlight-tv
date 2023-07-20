@@ -20,7 +20,7 @@ endforeach ()
 # Generation gamepad mapping
 install(CODE "file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/assets\")"
         CODE "execute_process(COMMAND scripts/webos/gen_gamecontrollerdb.sh
-            OUTPUT_FILE \"\${CMAKE_INSTALL_PREFIX}/assets/sdl_gamecontrollerdb.txt\"
+            OUTPUT_FILE \"\${CMAKE_INSTALL_PREFIX}/assets/gamecontrollerdb.txt\"
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND_ERROR_IS_FATAL ANY)")
 
 # Fake library for cURL ABI issue

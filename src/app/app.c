@@ -13,7 +13,6 @@
 #include "logging_ext_ss4s.h"
 #include "backend/backend_root.h"
 #include "stream/session.h"
-#include "stream/platform.h"
 #include "ui/root.h"
 #include "util/bus.h"
 #include "util/user_event.h"
@@ -21,7 +20,7 @@
 
 #include "ss4s_modules.h"
 #include "ss4s.h"
-#include "stream/session/session_events.h"
+#include "stream/session_events.h"
 #include "ui/fatal_error.h"
 #include "app_error.h"
 #include "app_session.h"
@@ -173,8 +172,11 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             if (event->user.code == BUS_INT_EVENT_ACTION) {
                 bus_actionfunc actionfn = event->user.data1;
                 actionfn(event->user.data2);
+            } else if (event->user.code == USER_INPUT_CONTROLLERDB_UPDATED) {
+                app_input_handle_event(&app->input, event);
             } else {
-                bool handled = backend_dispatch_userevent(event->user.code, event->user.data1, event->user.data2);
+                bool handled = backend_dispatch_userevent(&app->backend, event->user.code, event->user.data1,
+                                                          event->user.data2);
                 handled = handled || ui_dispatch_userevent(app, event->user.code, event->user.data1, event->user.data2);
                 if (!handled) {
                     commons_log_warn("Event", "Nobody handles event %d", event->user.code);
@@ -200,9 +202,13 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
         case SDL_MOUSEWHEEL:
+        case SDL_CONTROLLERAXISMOTION:
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
-        case SDL_CONTROLLERAXISMOTION:
+        case SDL_CONTROLLERTOUCHPADDOWN:
+        case SDL_CONTROLLERTOUCHPADMOTION:
+        case SDL_CONTROLLERTOUCHPADUP:
+        case SDL_CONTROLLERSENSORUPDATE:
         case SDL_TEXTINPUT: {
             if (!app_ui_is_opened(&app->ui) && app->session != NULL) {
                 session_handle_input_event(app->session, event);

@@ -15,8 +15,6 @@
 #include "lvgl/util/lv_app_utils.h"
 #include "lv_gridview.h"
 
-#include "stream/platform.h"
-
 #include "util/font.h"
 #include "util/i18n.h"
 #include "util/user_event.h"

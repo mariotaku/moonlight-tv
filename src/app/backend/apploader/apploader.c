@@ -73,8 +73,8 @@ void apploader_load(apploader_t *loader) {
     loader->state = APPLOADER_STATE_LOADING;
     loader->callback.start(loader->userdata);
     apploader_task_ctx_t *ctx = task_create(loader);
-    const executor_task_t *task = executor_execute(loader->executor, (executor_action_cb) task_run,
-                                                   (executor_cleanup_cb) task_finalize, ctx);
+    const executor_task_t *task = executor_submit(loader->executor, (executor_action_cb) task_run,
+                                                  (executor_cleanup_cb) task_finalize, ctx);
     ctx->task = task;
     loader->task = task;
 }
@@ -84,7 +84,7 @@ void apploader_cancel(apploader_t *loader) {
 }
 
 void apploader_destroy(apploader_t *loader) {
-    executor_execute(loader->executor, executor_noop, apploader_free, loader);
+    executor_submit(loader->executor, executor_noop, apploader_free, loader);
 }
 
 apploader_state_t apploader_state(apploader_t *loader) {

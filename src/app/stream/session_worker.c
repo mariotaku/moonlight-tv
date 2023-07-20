@@ -1,13 +1,14 @@
 #include "session_worker.h"
-#include "priv.h"
+#include "session_priv.h"
 #include "app.h"
 #include "util/bus.h"
 #include "logging.h"
 #include "errors.h"
 #include "util/user_event.h"
 #include "input/input_gamepad.h"
-#include "callbacks.h"
-#include "stream/video/delegate.h"
+#include "stream/connection/session_connection.h"
+#include "stream/audio/session_audio.h"
+#include "stream/video/session_video.h"
 #include "app_session.h"
 #include "backend/pcmanager/worker/worker.h"
 
@@ -113,7 +114,7 @@ int session_worker(session_t *session) {
     gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
 #if FEATURE_INPUT_EVMOUSE
-    session_evmouse_deinit(session);
+    session_evmouse_deinit(&session->input.evmouse);
 #endif
     app_bus_post(app, (bus_actionfunc) app_session_destroy, app);
     return 0;

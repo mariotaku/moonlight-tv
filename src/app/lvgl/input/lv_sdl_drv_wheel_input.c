@@ -4,7 +4,7 @@
 
 #include "app.h"
 #include "stream/session.h"
-#include "stream/session/session_events.h"
+#include "stream/session_events.h"
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 

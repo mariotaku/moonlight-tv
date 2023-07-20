@@ -1,1 +1,1 @@
-target_sources(moonlight-lib PRIVATE delegate.c sps_parser.c)
+target_sources(moonlight-lib PRIVATE session_video.c)
