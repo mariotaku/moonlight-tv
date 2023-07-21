@@ -116,3 +116,57 @@ jobs:
           omitBodyDuringUpdate: true
           omitPrereleaseDuringUpdate: true
           artifacts: build/*.deb,build/Release
+
+  release-steamlink:
+    name: Release (Steam Link)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: tagName
+
+      - name: Install Steam Link SDK
+        uses: ./.github/actions/steamlink-sdk
+        with:
+          path: .steamlink-sdk
+
+      - name: Install Build Tools
+        shell: bash
+        run: sudo apt-get -y -qq install cmake gettext
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        run: |
+          source ${{github.workspace}}/.steamlink-sdk/setenv.sh
+          cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        env:
+          CMAKE_TOOLCHAIN_FILE: ${{github.workspace}}/.steamlink-sdk/toolchain/steamlink-toolchain.cmake
+
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: |
+          source ${{github.workspace}}/.steamlink-sdk/setenv.sh
+          cmake --build . --config $BUILD_TYPE
+          cpack
+
+      - name: Create Release (Steam Link)
+        id: create_release_steamlink
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Release ${{ steps.tagName.outputs.tag }}
+          allowUpdates: true
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          artifacts: dist/moonlight-tv_*_steamlink.*

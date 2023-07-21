@@ -87,6 +87,9 @@ if (TARGET_WEBOS)
     set(WEBOS_APPINFO_ID "com.limelight.webos")
 elseif (TARGET_STEAMLINK)
     set(OS_LINUX TRUE)
+    set(CMAKE_INSTALL_PREFIX moonlight-tv)
+    set(CMAKE_INSTALL_BINDIR moonlight-tv/bin)
+    set(CMAKE_INSTALL_LIBDIR moonlight-tv/lib)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(OS_LINUX TRUE)
 
@@ -307,7 +310,10 @@ endif ()
 
 add_subdirectory(src)
 
-install(TARGETS moonlight RUNTIME DESTINATION bin)
+if (NOT DEFINED CMAKE_INSTALL_BINDIR)
+    set(CMAKE_INSTALL_BINDIR bin)
+endif ()
+install(TARGETS moonlight RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 if (BUILD_TESTS)
     add_subdirectory(third_party/Unity EXCLUDE_FROM_ALL)

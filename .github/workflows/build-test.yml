@@ -53,6 +53,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set Short Commit ID
+        shell: bash
+        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
       - name: Checkout Source
         uses: actions/checkout@v3
         with:
@@ -86,11 +90,11 @@ jobs:
       - name: Add Commit Hash Suffix
         shell: bash
         working-directory: dist
-        run: for file in *.ipk ; do mv $file ${file//_arm/-${GITHUB_SHA:0:8}_arm} ; done
+        run: for file in *.ipk ; do mv $file ${file//_arm/-${SHORT_SHA}_arm} ; done
 
       - uses: actions/upload-artifact@v3
         with:
-          name: webos-snapshot
+          name: webos-snapshot-${{ env.SHORT_SHA }}
           path: dist/*.ipk
 
       - name: Compatibility Check
@@ -101,6 +105,10 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Set Short Commit ID
+        shell: bash
+        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
       - name: Checkout Source
         uses: actions/checkout@v3
         with:
@@ -140,7 +148,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: raspi-snapshot
+          name: raspi-snapshot-${{ env.SHORT_SHA }}
           path: build/*.deb
 
   build-steamlink:
@@ -148,16 +156,19 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Set Short Commit ID
+        shell: bash
+        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
       - name: Checkout Source
         uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Get Steam Link SDK
-        uses: actions/checkout@v3
+      - name: Install Steam Link SDK
+        uses: ./.github/actions/steamlink-sdk
         with:
-          repository: ValveSoftware/steamlink-sdk
           path: .steamlink-sdk
 
       - name: Install Build Tools
@@ -187,9 +198,14 @@ jobs:
       - name: Add Commit Hash Suffix
         shell: bash
         working-directory: dist
-        run: for file in moonlight-tv_*_steamlink.* ; do mv $file ${file//_steamlink/-${GITHUB_SHA:0:8}_steamlink} ; done
+        run: for file in moonlight-tv_*_steamlink.* ; do mv $file ${file//_steamlink/-${SHORT_SHA}_steamlink} ; done
+
+      - name: Copy Install Manual
+        run: cp docs/INSTALL.steamlink.md dist/
 
       - uses: actions/upload-artifact@v3
         with:
-          name: steamlink-snapshot
-          path: dist/moonlight-tv_*_steamlink.*
+          name: steamlink-snapshot-${{ env.SHORT_SHA }}
+          path: |
+            dist/moonlight-tv_*_steamlink.*
+            dist/INSTALL.steamlink.md
