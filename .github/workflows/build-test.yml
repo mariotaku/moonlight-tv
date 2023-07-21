@@ -200,4 +200,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: steamlink-snapshot-${{ env.SHORT_SHA }}
-          path: dist/moonlight-tv_*_steamlink.*
+          path: dist/moonlight-tv_*_steamlink.*,docs/INSTALL.steamlink.md
