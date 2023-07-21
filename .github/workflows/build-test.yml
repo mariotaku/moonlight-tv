@@ -105,6 +105,10 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Set Short Commit ID
+        shell: bash
+        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
       - name: Checkout Source
         uses: actions/checkout@v3
         with:
@@ -144,7 +148,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: raspi-snapshot
+          name: raspi-snapshot-${{ env.SHORT_SHA }}
           path: build/*.deb
 
   build-steamlink:
