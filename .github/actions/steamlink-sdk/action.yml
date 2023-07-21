@@ -1,6 +1,10 @@
 name: "Install Steam Link SDK"
 description: "Install toolchain for cross-compiling for Steam Link set top box"
 inputs:
+  ref:
+    description: "The branch, tag or SHA to checkout"
+    default: "master"
+    required: false
   path:
     description: "Path to install Steam Link SDK"
     required: true
@@ -12,7 +16,7 @@ runs:
       id: cache-sdk
       uses: actions/cache@v3
       with:
-        key: ${{ runner.os }}-steamlink-sdk
+        key: ${{ runner.os }}-steamlink-sdk-${{ inputs.ref }}
         path: |
           ${{ inputs.path }}/bin
           ${{ inputs.path }}/rootfs
@@ -24,4 +28,5 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: ValveSoftware/steamlink-sdk
+        ref: ${{ inputs.ref }}
         path: ${{ inputs.path }}
