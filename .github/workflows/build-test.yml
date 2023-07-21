@@ -162,20 +162,9 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Cache Steam Link SDK
-        id: cache-sdk
-        uses: actions/cache@v3
+      - name: Install Steam Link SDK
+        uses: ./.github/actions/steamlink-sdk
         with:
-          key: ${{ runner.os }}-steamlink-sdk
-          path: |
-            .steamlink-sdk
-            !.git
-
-      - name: Get Steam Link SDK
-        if: ${{ steps.cache-sdk.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v3
-        with:
-          repository: ValveSoftware/steamlink-sdk
           path: .steamlink-sdk
 
       - name: Install Build Tools
