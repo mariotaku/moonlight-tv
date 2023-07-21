@@ -166,6 +166,7 @@ jobs:
         id: cache-sdk
         uses: actions/cache@v3
         with:
+          key: ${{ runner.os }}-steamlink-sdk
           path: |
             .steamlink-sdk
             !.git
@@ -206,9 +207,12 @@ jobs:
         working-directory: dist
         run: for file in moonlight-tv_*_steamlink.* ; do mv $file ${file//_steamlink/-${SHORT_SHA}_steamlink} ; done
 
+      - name: Copy Install Manual
+        run: cp docs/INSTALL.steamlink.md dist/
+
       - uses: actions/upload-artifact@v3
         with:
           name: steamlink-snapshot-${{ env.SHORT_SHA }}
           path: |
             dist/moonlight-tv_*_steamlink.*
-            docs/INSTALL.steamlink.md
+            dist/INSTALL.steamlink.md
