@@ -1,19 +1,21 @@
 set(MICRODNS_DEP '')
+set(MICRODNS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/third_party/libmicrodns")
 
 include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(CheckTypeSize)
 
+
 add_library(microdns
-        ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/mdns.c
-        ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/src/rr.c
-        ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/compat/compat.c
-        ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/compat/inet.c
-        ${CMAKE_SOURCE_DIR}/third_party/libmicrodns/compat/poll.c
+        ${MICRODNS_SOURCE_DIR}/src/mdns.c
+        ${MICRODNS_SOURCE_DIR}/src/rr.c
+        ${MICRODNS_SOURCE_DIR}/compat/compat.c
+        ${MICRODNS_SOURCE_DIR}/compat/inet.c
+        ${MICRODNS_SOURCE_DIR}/compat/poll.c
         )
-target_include_directories(microdns SYSTEM PUBLIC third_party/libmicrodns/include)
-target_include_directories(microdns PRIVATE third_party/libmicrodns/compat)
+target_include_directories(microdns SYSTEM PUBLIC ${MICRODNS_SOURCE_DIR}/include)
+target_include_directories(microdns PRIVATE ${MICRODNS_SOURCE_DIR}/compat)
 
 if (MINGW)
     target_link_libraries(microdns PRIVATE ws2_32 iphlpapi)
@@ -85,5 +87,7 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 if (HAVE_UNISTD_H)
     target_compile_definitions(microdns PRIVATE HAVE_UNISTD_H=1)
 endif ()
+
+set_target_properties(microdns PROPERTIES SOVERSION 1)
 
 install(TARGETS microdns LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

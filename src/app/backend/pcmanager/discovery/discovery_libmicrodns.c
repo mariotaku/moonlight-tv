@@ -35,7 +35,7 @@ void pcmanager_auto_discovery_start(pcmanager_t *manager) {
     pcmanager_unlock(manager);
 }
 
-void pcmanager_auto_discovery_stopped(pcmanager_t *manager) {
+void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
     pcmanager_lock(manager);
     discovery_task_t *task = manager->discovery_task;
     if (task == NULL) {
