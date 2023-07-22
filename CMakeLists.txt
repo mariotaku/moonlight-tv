@@ -208,17 +208,10 @@ target_include_directories(moonlight-lib PUBLIC ${CMAKE_SOURCE_DIR}/core/libgame
 
 target_include_directories(moonlight-lib PUBLIC ${CMAKE_SOURCE_DIR}/utils/include)
 
-if (OS_WINDOWS)
-    pkg_check_modules(MICRODNS REQUIRED microdns)
-    target_link_libraries(moonlight-lib PUBLIC ${MICRODNS_LIBRARIES})
-    if (MINGW)
-        target_link_libraries(moonlight-lib PUBLIC libintl.a libiconv.a)
-    endif ()
-else ()
-    set(BUILD_SHARED_LIBS ON)
-    include(BuildMicrodns)
-    target_link_libraries(moonlight-lib PUBLIC microdns)
-    unset(BUILD_SHARED_LIBS)
+if (MINGW)
+    target_link_libraries(moonlight-lib PUBLIC libintl.a libiconv.a)
+elseif (OS_DARWIN)
+    target_link_libraries(moonlight-lib PUBLIC libintl.a)
 endif ()
 
 target_include_directories(moonlight-lib SYSTEM PUBLIC ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}

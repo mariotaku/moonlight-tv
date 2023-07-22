@@ -107,7 +107,7 @@ int http_request(HTTP *http, char *url, HTTP_DATA *data) {
     CURLcode res = curl_easy_perform(curl);
 
     if (res != CURLE_OK) {
-        ret = gs_set_error(GS_FAILED, "cURL error: %s", curl_easy_strerror(res));
+        ret = gs_set_error(GS_IO_ERROR, "cURL error: %s", curl_easy_strerror(res));
         goto finish;
     }
     assert (data->memory != NULL);
