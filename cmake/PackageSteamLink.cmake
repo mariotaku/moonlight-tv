@@ -23,7 +23,9 @@ add_custom_target(steamlink-package-moonlight COMMAND cpack DEPENDS moonlight)
 
 if (NOT ENV{CI})
     add_custom_target(steamlink-install-moonlight
-            COMMAND ssh steamlink 'mkdir -p /home/apps/\; cd /home/apps/\; unzip -' < "${CPACK_PACKAGE_FILE_NAME}.zip"
+            COMMAND scp "${CPACK_PACKAGE_FILE_NAME}.zip" steamlink:/tmp/
+            COMMAND ssh steamlink 'unzip -o /tmp/${CPACK_PACKAGE_FILE_NAME}.zip -d /home/apps/'
+            COMMAND ssh steamlink 'rm -f /tmp/${CPACK_PACKAGE_FILE_NAME}.zip'
             WORKING_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}
             DEPENDS steamlink-package-moonlight)
 endif ()
