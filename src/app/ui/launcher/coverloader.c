@@ -228,7 +228,7 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
             .target_height = req->target_height
     };
     lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
-    if (!result) {
+    if (result == NULL) {
         lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
         SDL_Renderer *renderer = param->renderer;
 

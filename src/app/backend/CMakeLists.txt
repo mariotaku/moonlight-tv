@@ -5,7 +5,6 @@ target_sources(moonlight-lib PRIVATE
         pcmanager/pairing.c
         pcmanager/pcmanager_common.c
         pcmanager/known_hosts.c
-        pcmanager/discovery.c
         pcmanager/pclist.c
         pcmanager/listeners.c
         pcmanager/worker/request.c
@@ -15,3 +14,5 @@ target_sources(moonlight-lib PRIVATE
         pcmanager/worker/manual_add.c
         pcmanager/worker/update.c
         apploader/apploader.c)
+
+add_subdirectory(pcmanager)

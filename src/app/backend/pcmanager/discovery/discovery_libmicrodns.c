@@ -1,4 +1,4 @@
-#include "priv.h"
+#include "backend/pcmanager/priv.h"
 #include "logging.h"
 #include <microdns/microdns.h>
 #include "util/bus.h"
@@ -13,7 +13,7 @@ struct discovery_task_t {
 
 static int discovery_worker(discovery_task_t *task);
 
-static bool discovery_stop(discovery_task_t *task);
+static bool discovery_stopped(discovery_task_t *task);
 
 static void discovery_callback(discovery_task_t *task, int status, const struct rr_entry *entries);
 
@@ -57,7 +57,7 @@ static int discovery_worker(discovery_task_t *task) {
         goto err;
     }
     commons_log_info("Discovery", "Start mDNS discovery");
-    if ((r = mdns_listen(ctx, service_name, 1, RR_PTR, 10, (mdns_stop_func) discovery_stop,
+    if ((r = mdns_listen(ctx, service_name, 1, RR_PTR, 10, (mdns_stop_func) discovery_stopped,
                          (mdns_listen_callback) discovery_callback, task)) < 0) {
         goto err;
     }
@@ -73,7 +73,7 @@ static int discovery_worker(discovery_task_t *task) {
     return r;
 }
 
-static bool discovery_stop(discovery_task_t *task) {
+static bool discovery_stopped(discovery_task_t *task) {
     SDL_LockMutex(task->lock);
     bool stop = task->stop;
     SDL_UnlockMutex(task->lock);

@@ -16,6 +16,7 @@
 #define LINKEDLIST_PREFIX applist
 
 #include "linked_list.h"
+#include "logging.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -29,6 +30,7 @@ struct apploader_task_ctx_t {
 };
 
 struct apploader_t {
+    refcounter_t refcounter;
     app_t *app;
     uuidstr_t uuid;
     apploader_cb_t callback;
@@ -39,7 +41,9 @@ struct apploader_t {
     void *userdata;
 };
 
-static void apploader_free(void *userdata, int result);
+static void apploader_unref(apploader_t *loader);
+
+static void apploader_free(apploader_t *loader);
 
 static apploader_task_ctx_t *task_create(apploader_t *loader);
 
@@ -54,8 +58,8 @@ static void task_callback(apploader_task_ctx_t *task);
 static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll);
 
 apploader_t *apploader_create(app_t *app, const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
-    apploader_t *loader = SDL_malloc(sizeof(apploader_t));
-    SDL_memset(loader, 0, sizeof(apploader_t));
+    apploader_t *loader = SDL_calloc(1, sizeof(apploader_t));
+    refcounter_init(&loader->refcounter);
     lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, app);
     loader->app = app;
     loader->executor = app->backend.executor;
@@ -71,29 +75,42 @@ void apploader_load(apploader_t *loader) {
         return;
     }
     loader->state = APPLOADER_STATE_LOADING;
-    loader->callback.start(loader->userdata);
+    if (loader->callback.start != NULL) {
+        loader->callback.start(loader->userdata);
+    }
     apploader_task_ctx_t *ctx = task_create(loader);
     const executor_task_t *task = executor_submit(loader->executor, (executor_action_cb) task_run,
                                                   (executor_cleanup_cb) task_finalize, ctx);
+    commons_log_debug("AppLoader", "[loader %p] task start, task=%p", loader, task);
     ctx->task = task;
     loader->task = task;
 }
 
 void apploader_cancel(apploader_t *loader) {
-
+    commons_log_debug("AppLoader", "[loader %p] task cancel, task=%p", loader, loader->task);
+    executor_cancel(loader->executor, loader->task);
+    loader->task = NULL;
 }
 
 void apploader_destroy(apploader_t *loader) {
-    executor_submit(loader->executor, executor_noop, apploader_free, loader);
+    memset(&loader->callback, 0, sizeof(apploader_cb_t));
+    apploader_unref(loader);
 }
 
 apploader_state_t apploader_state(apploader_t *loader) {
     return loader->state;
 }
 
-static void apploader_free(void *userdata, int result) {
-    (void) result;
-    apploader_t *loader = userdata;
+static void apploader_unref(apploader_t *loader) {
+
+    if (!refcounter_unref(&loader->refcounter)) {
+        return;
+    }
+    apploader_free(loader);
+}
+
+static void apploader_free(apploader_t *loader) {
+    commons_log_debug("AppLoader", "[loader %p] free()", loader);
     GS_CLIENT client = lazy_deinit(&loader->client);
     if (client != NULL) {
         gs_destroy(client);
@@ -103,6 +120,7 @@ static void apploader_free(void *userdata, int result) {
 
 static apploader_task_ctx_t *task_create(apploader_t *loader) {
     apploader_task_ctx_t *task = SDL_calloc(1, sizeof(apploader_task_ctx_t));
+    refcounter_ref(&loader->refcounter);
     task->loader = loader;
     return task;
 }
@@ -135,6 +153,7 @@ static int task_run(apploader_task_ctx_t *task) {
 }
 
 static void task_finalize(apploader_task_ctx_t *task, int result) {
+    commons_log_debug("AppLoader", "[loader %p] task finalize. result=%d", task->loader, result);
     if (result == ECANCELED) {
         if (task->result != NULL) {
             apploader_list_free(task->result);
@@ -142,24 +161,25 @@ static void task_finalize(apploader_task_ctx_t *task, int result) {
     } else if (app_bus_post(task->loader->app, (bus_actionfunc) task_callback, task)) {
         return;
     }
+    apploader_destroy(task->loader);
     SDL_free(task);
 }
 
 static void task_callback(apploader_task_ctx_t *task) {
     apploader_t *loader = task->loader;
-    if (executor_is_destroyed(loader->executor)) {
-        if (task->result != NULL) {
-            apploader_list_free(task->result);
-        }
-        return;
-    }
+    commons_log_debug("AppLoader", "[loader %p] task callback", loader);
     if (task->code == GS_OK) {
         loader->state = APPLOADER_STATE_IDLE;
-        loader->callback.data(task->result, loader->userdata);
+        if (loader->callback.data != NULL) {
+            loader->callback.data(task->result, loader->userdata);
+        }
     } else {
         loader->state = APPLOADER_STATE_ERROR;
-        loader->callback.error(task->code, task->error, loader->userdata);
+        if (loader->callback.error != NULL) {
+            loader->callback.error(task->code, task->error, loader->userdata);
+        }
     }
+    apploader_destroy(loader);
     free(task);
 }
 

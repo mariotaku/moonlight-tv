@@ -41,7 +41,7 @@ lv_obj_t *lv_btn_find_label(lv_obj_t *obj) {
 
 lv_obj_t *lv_child_find_type(lv_obj_t *obj, const lv_obj_class_t *cls) {
     for (int i = 0, j = (int) lv_obj_get_child_cnt(obj); i < j; ++i) {
-        struct _lv_obj_t *child = lv_obj_get_child(obj, i);
+        lv_obj_t *child = lv_obj_get_child(obj, i);
         if (lv_obj_has_class(child, cls)) {
             return child;
         }

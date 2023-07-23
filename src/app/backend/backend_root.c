@@ -13,7 +13,7 @@ pcmanager_t *pcmanager;
 
 void backend_init(app_backend_t *backend, app_t *app) {
     backend->app = app;
-    backend->executor = executor_create("moonlight-io", SDL_min(4, SDL_GetCPUCount()));
+    backend->executor = executor_create("moonlight-io", 2 * SDL_min(3, SDL_GetCPUCount()));
     backend->gs_client_mutex = SDL_CreateMutex();
     pcmanager = pcmanager_new(app, backend->executor);
 }

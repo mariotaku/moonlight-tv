@@ -1,0 +1,17 @@
+include(CheckSymbolExists)
+
+check_symbol_exists(DNSServiceCreateConnection "dns_sd.h" HAVE_DNSSD)
+
+if (HAVE_DNSSD)
+    target_sources(moonlight-lib PRIVATE discovery_dnssd.c)
+elseif (OS_WINDOWS)
+    pkg_check_modules(MICRODNS REQUIRED microdns)
+    target_link_libraries(moonlight-lib PUBLIC ${MICRODNS_LIBRARIES})
+    target_sources(moonlight-lib PRIVATE discovery_libmicrodns.c)
+else ()
+    set(BUILD_SHARED_LIBS ON)
+    include(BuildMicrodns)
+    target_link_libraries(moonlight-lib PUBLIC microdns)
+    unset(BUILD_SHARED_LIBS)
+    target_sources(moonlight-lib PRIVATE discovery_libmicrodns.c)
+endif ()
