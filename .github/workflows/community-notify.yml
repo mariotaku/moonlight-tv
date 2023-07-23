@@ -2,11 +2,15 @@ name: Notify Community Discord
 
 on:
   release:
-    types: [ released, edited ]
-  pull_request:
+    types: [ released ]
 
 jobs:
   send-notify:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ toJSON(github.event) }}
+      - uses: fjogeleit/http-request-action@v1
+        with:
+          url: '${{ secrets.DISCORD_NOTIFY_WEBHOOK }}'
+          method: 'POST'
+          customHeaders: '{"Content-Type": "application/json"}'
+          data: '${{ toJSON(github.event) }}'
