@@ -27,6 +27,7 @@ typedef struct memcache_item_t {
     lv_img_dsc_t src;
     lv_sdl_img_data_t data;
     lv_ll_t objs;
+    lv_coord_t target_width, target_height, target_radius;
 } memcache_item_t;
 
 typedef struct coverloader_request {
@@ -49,6 +50,8 @@ typedef struct coverloader_request {
 
 #include "linked_list.h"
 #include "lazy.h"
+#include "draw/sdl/lv_draw_sdl_img.h"
+#include "logging.h"
 
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
@@ -107,6 +110,10 @@ static void target_src_unlink_cb(lv_event_t *e);
 static void memcache_item_ref_obj(memcache_item_t *item, lv_obj_t *obj);
 
 static void memcache_item_unref_obj(memcache_item_t *item, const lv_obj_t *obj);
+
+static void purge_img_cache(lv_draw_sdl_ctx_t *ctx, const memcache_item_t *item);
+
+static void purge_corners_cache(lv_draw_sdl_ctx_t *ctx, const memcache_item_t *item);
 
 static const img_loader_impl_t coverloader_impl = {
         .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
@@ -233,6 +240,9 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
         SDL_Renderer *renderer = param->renderer;
 
         result = memcache_item_new();
+        result->target_width = req->target_width;
+        result->target_height = req->target_height;
+        result->target_radius = lv_obj_get_style_radius(req->target, 0);
         lv_img_dsc_t *src = &result->src;
         lv_sdl_img_data_t *data = &result->data;
         data->type = LV_SDL_IMG_TYPE_TEXTURE;
@@ -435,6 +445,9 @@ struct memcache_item_t *memcache_item_new() {
 }
 
 static void memcache_item_free(memcache_item_t *item) {
+    lv_disp_drv_t *driver = lv_disp_get_default()->driver;
+    lv_draw_sdl_ctx_t *ctx = (lv_draw_sdl_ctx_t *) driver->draw_ctx;
+
     /* Make sure the obj isn't referencing the src anymore */
     lv_obj_t **i;
     _LV_LL_READ(&item->objs, i) {
@@ -446,9 +459,45 @@ static void memcache_item_free(memcache_item_t *item) {
         lv_obj_clear_flag(holder->title, LV_OBJ_FLAG_HIDDEN);
     }
     SDL_DestroyTexture(item->data.data.texture);
+
+    // Purge internal texture cache too
+    purge_img_cache(ctx, item);
+    purge_corners_cache(ctx, item);
+
     /* unref all objs to this item */
     _lv_ll_clear(&item->objs);
     free(item);
+}
+
+static void purge_img_cache(lv_draw_sdl_ctx_t *ctx, const memcache_item_t *item) {
+    struct __attribute__ ((__packed__)) {
+        lv_draw_sdl_cache_key_head_img_t header;
+        const void *src;
+    } key_to_remove;
+    memset(&key_to_remove, 0, sizeof(key_to_remove));
+    key_to_remove.header.magic = LV_GPU_CACHE_KEY_MAGIC_IMG;
+    key_to_remove.header.type = LV_IMG_SRC_VARIABLE;
+    key_to_remove.header.frame_id = 0;
+    key_to_remove.src = &item->src;
+
+    lv_lru_remove(ctx->internals->texture_cache, &key_to_remove, sizeof(key_to_remove));
+}
+
+static void purge_corners_cache(lv_draw_sdl_ctx_t *ctx, const memcache_item_t *item) {
+    struct {
+        lv_sdl_cache_key_magic_t magic;
+        const SDL_Texture *texture;
+        lv_coord_t w, h, radius;
+    } key_to_remove;
+
+    memset(&key_to_remove, 0, sizeof(key_to_remove));
+    key_to_remove.magic = LV_GPU_CACHE_KEY_MAGIC_IMG_ROUNDED_CORNERS;
+    key_to_remove.texture = item->data.data.texture;
+    key_to_remove.w = item->target_width;
+    key_to_remove.h = item->target_height;
+    key_to_remove.radius = LV_MIN3(item->target_radius, item->target_width, item->target_height);
+
+    lv_lru_remove(ctx->internals->texture_cache, &key_to_remove, sizeof(key_to_remove));
 }
 
 static void memcache_item_ref_obj(memcache_item_t *item, lv_obj_t *obj) {
