@@ -125,7 +125,8 @@ find_package(CURL REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
-pkg_check_modules(SDL2_AND_IMAGES REQUIRED sdl2 SDL2_image)
+pkg_check_modules(SDL2 REQUIRED sdl2)
+pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 
 find_package(MbedTLS)
 if (NOT MBEDTLS_FOUND)
@@ -177,15 +178,15 @@ add_subdirectory(third_party/ss4s)
 add_subdirectory(third_party/lvgl EXCLUDE_FROM_ALL)
 target_include_directories(lvgl PUBLIC ${CMAKE_SOURCE_DIR}/third_party/lvgl/src)
 target_include_directories(lvgl PRIVATE ${CMAKE_SOURCE_DIR}/src/app/util)
-target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
+target_include_directories(lvgl SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
 target_include_directories(lvgl SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
 target_compile_definitions(lvgl PUBLIC LV_CONF_PATH=../../../src/app/lvgl/lv_conf.h)
-target_link_libraries(lvgl PUBLIC ${SDL2_AND_IMAGES_LIBRARIES} ${FREETYPE_LIBRARIES})
+target_link_libraries(lvgl PUBLIC ${SDL2_LIBRARIES} ${FREETYPE_LIBRARIES})
 
 add_subdirectory(third_party/commons)
 
-target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
-target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_AND_IMAGES_INCLUDE_DIRS})
+target_include_directories(lv_gridview SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS})
+target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
 
 add_executable(moonlight src/main.c)
 add_library(moonlight-lib STATIC)
@@ -214,10 +215,10 @@ elseif (OS_DARWIN)
     target_link_libraries(moonlight-lib PUBLIC libintl.a)
 endif ()
 
-target_include_directories(moonlight-lib SYSTEM PUBLIC ${SDL2_AND_IMAGES_INCLUDE_DIRS} ${FREETYPE_INCLUDE_DIRS}
-        ${INIH_INCLUDE_DIRS})
+target_include_directories(moonlight-lib SYSTEM PUBLIC ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS}
+        ${FREETYPE_INCLUDE_DIRS} ${INIH_INCLUDE_DIRS})
 target_link_libraries(moonlight-lib PUBLIC
-        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_AND_IMAGES_LIBRARIES}
+        m ${CMAKE_DL_LIBS} Threads::Threads ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES}
         moonlight-common-c gamestream lvgl ${INIH_LIBRARIES} ${CURL_LIBRARIES}
         Fontconfig::Fontconfig ${FREETYPE_LIBRARIES})
 
@@ -253,7 +254,7 @@ else ()
         target_compile_definitions(moonlight-lib PUBLIC TARGET_STEAMLINK)
     endif ()
     if (OS_DARWIN)
-        target_link_directories(moonlight-lib PUBLIC ${SDL2_AND_IMAGES_LIBRARY_DIRS})
+        target_link_directories(moonlight-lib PUBLIC ${SDL2_LIBRARIES})
         target_compile_definitions(moonlight-lib PUBLIC OS_DARWIN)
         target_compile_definitions(moonlight-lib PUBLIC GAMECONTROLLERDB_PLATFORM="Mac OS X")
     elseif (OS_LINUX)

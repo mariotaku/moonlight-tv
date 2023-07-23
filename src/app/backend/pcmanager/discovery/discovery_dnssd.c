@@ -7,6 +7,7 @@
 #include <sys/poll.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 #include "logging.h"
 

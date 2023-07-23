@@ -7,7 +7,7 @@
 
 static lv_style_t knob_shadow;
 
-static void apply_cb(struct _lv_theme_t *, lv_obj_t *);
+static void apply_cb(lv_theme_t *, lv_obj_t *);
 
 static void lv_start_text_input(lv_event_t *event);
 
