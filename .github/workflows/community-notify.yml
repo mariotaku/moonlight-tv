@@ -9,4 +9,4 @@ jobs:
   send-notify:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ github.event }}
+      - run: echo ${{ toJSON(github.event) }}
