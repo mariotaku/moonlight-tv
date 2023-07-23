@@ -1,0 +1,12 @@
+name: Notify Community Discord
+
+on:
+  release:
+    types: [ released, edited ]
+  pull_request:
+
+jobs:
+  send-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.event }}
