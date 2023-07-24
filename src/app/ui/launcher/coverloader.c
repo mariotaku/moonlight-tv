@@ -30,7 +30,7 @@ typedef struct memcache_item_t {
     lv_coord_t target_width, target_height, target_radius;
 } memcache_item_t;
 
-typedef struct coverloader_request {
+typedef struct img_loader_req_t {
     coverloader_t *loader;
     uuidstr_t server_id;
     int id;
@@ -38,9 +38,10 @@ typedef struct coverloader_request {
     lv_coord_t target_width, target_height;
     memcache_item_t *src;
     bool finished;
+    SDL_Surface *cached;
     img_loader_task_t *task;
-    struct coverloader_request *prev;
-    struct coverloader_request *next;
+    struct img_loader_req_t *prev;
+    struct img_loader_req_t *next;
 } coverloader_req_t;
 
 #define LINKEDLIST_IMPL
@@ -68,17 +69,17 @@ static GS_CLIENT coverloader_gs_client(coverloader_t *loader);
 
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req);
 
-static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cached);
+static bool coverloader_memcache_get(coverloader_req_t *req);
 
-static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached);
+static void coverloader_memcache_put(coverloader_req_t *req);
 
-static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cached);
+static bool coverloader_filecache_get(coverloader_req_t *req);
 
-static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cached);
+static void coverloader_filecache_put(coverloader_req_t *req);
 
-static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached);
+static bool coverloader_fetch(coverloader_req_t *req);
 
-static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void *args);
+static void coverloader_run_on_main(img_loader_t *loader, img_loader_run_on_main_fn fn, void *args);
 
 static void img_loader_start_cb(coverloader_req_t *req);
 
@@ -116,19 +117,19 @@ static void purge_img_cache(lv_draw_sdl_ctx_t *ctx, const memcache_item_t *item)
 static void purge_corners_cache(lv_draw_sdl_ctx_t *ctx, const memcache_item_t *item);
 
 static const img_loader_impl_t coverloader_impl = {
-        .memcache_get = (img_loader_get_fn) coverloader_memcache_get,
-        .memcache_put = (img_loader_fn2) coverloader_memcache_put,
-        .filecache_get = (img_loader_get_fn) coverloader_filecache_get,
-        .filecache_put = (img_loader_fn2) coverloader_filecache_put,
-        .fetch = (img_loader_get_fn) coverloader_fetch,
+        .memcache_get = coverloader_memcache_get,
+        .memcache_put = coverloader_memcache_put,
+        .filecache_get = coverloader_filecache_get,
+        .filecache_put = coverloader_filecache_put,
+        .fetch = coverloader_fetch,
         .run_on_main = coverloader_run_on_main,
 };
 
 static const img_loader_cb_t coverloader_cb = {
-        .start_cb = (img_loader_fn) img_loader_start_cb,
-        .complete_cb = (img_loader_fn2) img_loader_result_cb,
-        .fail_cb = (img_loader_fn) img_loader_result_cb,
-        .cancel_cb = (img_loader_fn) img_loader_cancel_cb,
+        .start_cb = img_loader_start_cb,
+        .complete_cb = img_loader_result_cb,
+        .fail_cb = img_loader_result_cb,
+        .cancel_cb = img_loader_cancel_cb,
 };
 
 struct coverloader_t {
@@ -208,7 +209,7 @@ static void coverloader_cache_item_path(char path[4096], const coverloader_req_t
     free(cachedir);
 }
 
-static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cached) {
+static bool coverloader_memcache_get(coverloader_req_t *req) {
     // Uses result cache instead
     memcache_item_t *result = NULL;
     memcache_key_t key;
@@ -223,11 +224,14 @@ static bool coverloader_memcache_get(coverloader_req_t *req, SDL_Surface **cache
     lv_lru_get(req->loader->mem_cache, &key, sizeof(key), (void **) &result);
     req->src = result;
 
-    (void) cached;
     return result != NULL;
 }
 
-static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached) {
+static void coverloader_memcache_put(coverloader_req_t *req) {
+    SDL_Surface *cached = req->cached;
+    if (cached == NULL) {
+        return;
+    }
     memcache_item_t *result = NULL;
     memcache_key_t key = {
             .id = req->id,
@@ -274,7 +278,7 @@ static void coverloader_memcache_put(coverloader_req_t *req, SDL_Surface *cached
     SDL_FreeSurface(cached);
 }
 
-static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cached) {
+static bool coverloader_filecache_get(coverloader_req_t *req) {
 #if !DEBUG
     SDL_version ver;
     SDL_GetVersion(&ver);
@@ -322,7 +326,7 @@ static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cach
 
     if (sw == decoded->w && sh == decoded->h) {
         decoded->userdata = info;
-        *cached = decoded;
+        req->cached = decoded;
         return true;
     }
 
@@ -332,7 +336,7 @@ static bool coverloader_filecache_get(coverloader_req_t *req, SDL_Surface **cach
     SDL_BlitScaled(decoded, NULL, scaled, NULL);
     SDL_FreeSurface(decoded);
     scaled->userdata = info;
-    *cached = scaled;
+    req->cached = scaled;
     return true;
 }
 
@@ -340,13 +344,12 @@ static bool cover_is_placeholder(const SDL_Surface *surface) {
     return (surface->w == 130 && surface->h == 180) || (surface->w == 628 && surface->h == 888);
 }
 
-static void coverloader_filecache_put(coverloader_req_t *req, SDL_Surface *cached) {
+static void coverloader_filecache_put(coverloader_req_t *req) {
     // This was done in fetch step
     (void) req;
-    (void) cached;
 }
 
-static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached) {
+static bool coverloader_fetch(coverloader_req_t *req) {
 #if !DEBUG
     SDL_version ver;
     SDL_GetVersion(&ver);
@@ -364,12 +367,12 @@ static bool coverloader_fetch(coverloader_req_t *req, SDL_Surface **cached) {
     if (gs_download_cover(client, node->server, req->id, path) != GS_OK) {
         return false;
     }
-    return coverloader_filecache_get(req, cached);
+    return coverloader_filecache_get(req);
 }
 
-static void coverloader_run_on_main(img_loader_t *loader, img_loader_fn fn, void *args) {
+static void coverloader_run_on_main(img_loader_t *loader, img_loader_run_on_main_fn fn, void *args) {
     (void) loader;
-    app_bus_post(global, fn, args);
+    app_bus_post(global, (bus_actionfunc) fn, args);
 }
 
 static void img_loader_start_cb(coverloader_req_t *req) {

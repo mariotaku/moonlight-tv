@@ -7,7 +7,6 @@
 #include "refcounter.h"
 
 #include <errno.h>
-#include <SDL.h>
 
 #define LINKEDLIST_IMPL
 
@@ -58,7 +57,7 @@ static void task_callback(apploader_task_ctx_t *task);
 static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll);
 
 apploader_t *apploader_create(app_t *app, const uuidstr_t *uuid, const apploader_cb_t *cb, void *userdata) {
-    apploader_t *loader = SDL_calloc(1, sizeof(apploader_t));
+    apploader_t *loader = calloc(1, sizeof(apploader_t));
     refcounter_init(&loader->refcounter);
     lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, app);
     loader->app = app;
@@ -115,11 +114,12 @@ static void apploader_free(apploader_t *loader) {
     if (client != NULL) {
         gs_destroy(client);
     }
-    SDL_free(loader);
+    refcounter_destroy(&loader->refcounter);
+    free(loader);
 }
 
 static apploader_task_ctx_t *task_create(apploader_t *loader) {
-    apploader_task_ctx_t *task = SDL_calloc(1, sizeof(apploader_task_ctx_t));
+    apploader_task_ctx_t *task = calloc(1, sizeof(apploader_task_ctx_t));
     refcounter_ref(&loader->refcounter);
     task->loader = loader;
     return task;
@@ -144,7 +144,7 @@ static int task_run(apploader_task_ctx_t *task) {
         goto finish;
     }
     apploader_list_t *result = apps_create(node, ll);
-    applist_free(ll, (applist_nodefree_fn) SDL_free);
+    applist_free(ll, (applist_nodefree_fn) free);
     task->result = result;
     finish:
     task->code = ret;
@@ -162,7 +162,7 @@ static void task_finalize(apploader_task_ctx_t *task, int result) {
         return;
     }
     apploader_destroy(task->loader);
-    SDL_free(task);
+    free(task);
 }
 
 static void task_callback(apploader_task_ctx_t *task) {
@@ -185,18 +185,18 @@ static void task_callback(apploader_task_ctx_t *task) {
 
 static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll) {
     int count = applist_len(ll);
-    apploader_list_t *result = SDL_malloc(sizeof(apploader_list_t) + count * sizeof(apploader_item_t));
+    apploader_list_t *result = malloc(sizeof(apploader_list_t) + count * sizeof(apploader_item_t));
     result->count = count;
     result->items = (apploader_item_t *) ((void *) result + sizeof(apploader_list_t));
     int index = 0;
     for (PAPP_LIST cur = ll; cur; cur = cur->next) {
         apploader_item_t *item = &result->items[index];
-        SDL_memcpy(&item->base, cur, sizeof(APP_LIST));
+        memcpy(&item->base, cur, sizeof(APP_LIST));
         item->base.next = NULL;
         item->fav = pcmanager_node_is_app_favorite(node, cur->id);
         index++;
     }
-    SDL_qsort(result->items, result->count, sizeof(apploader_item_t),
+    qsort(result->items, result->count, sizeof(apploader_item_t),
               (int (*)(const void *, const void *)) applist_name_comparator);
     return result;
 }
@@ -204,9 +204,9 @@ static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll) 
 void apploader_list_free(apploader_list_t *list) {
     if (!list) { return; }
     for (int i = 0; i < list->count; i++) {
-        SDL_free(list->items[i].base.name);
+        free(list->items[i].base.name);
     }
-    SDL_free(list);
+    free(list);
 }
 
 const apploader_item_t *apploader_list_item_by_id(const apploader_list_t *list, int id) {
