@@ -199,6 +199,10 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERDEVICEREMOVED:
         case SDL_CONTROLLERDEVICEREMAPPED: {
             app_input_handle_event(&app->input, event);
+            if (app->session != NULL) {
+                session_handle_input_event(app->session, event);
+                return 0;
+            }
             break;
         }
         case SDL_KEYDOWN:

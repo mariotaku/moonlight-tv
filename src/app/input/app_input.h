@@ -13,7 +13,7 @@ typedef struct app_gamepad_state_t {
     char leftTrigger, rightTrigger;
     short leftStickX, leftStickY;
     short rightStickX, rightStickY;
-    short buttons;
+    int buttons;
     SDL_JoystickID sdl_id;
     SDL_GameController *controller;
     SDL_Haptic *haptic;

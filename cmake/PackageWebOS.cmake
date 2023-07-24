@@ -51,6 +51,9 @@ set(CPACK_STRIP_FILES FALSE)
 add_custom_target(webos-package-moonlight COMMAND cpack DEPENDS moonlight)
 
 if (NOT ENV{CI})
+    add_custom_target(webos-verify-moonlight COMMAND webosbrew-ipk-verify -S -d "${CPACK_PACKAGE_FILE_NAME}.ipk"
+            WORKING_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}
+            DEPENDS webos-package-moonlight)
     if (ENV{ARES_DEVICE})
         set(ares_arguments "-d" $ENV{ARES_DEVICE})
     endif ()

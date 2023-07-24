@@ -54,6 +54,12 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
 
 void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEvent *event);
 
+void stream_input_handle_csensor(stream_input_t *input, const SDL_ControllerSensorEvent *event);
+
+void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTouchpadEvent *event);
+
+void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDeviceEvent *event);
+
 void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event);
 
 void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event);
