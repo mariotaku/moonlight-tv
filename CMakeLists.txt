@@ -55,6 +55,7 @@ option(COMMONS_LV_SDL_IMG_USE_IMAGE "Use SDL2_image API" ON)
 set(COMMONS_LOGGING_SDL ON)
 set(COMMONS_LOGGING_LVGL ON)
 set(COMMONS_LOGGING_SS4S ON)
+set(COMMONS_SDL2_POLYFILL_TARGET "2.0.0")
 
 if (TARGET_WEBOS OR TARGET_STEAMLINK)
     option(BUILD_TESTS "" OFF)
@@ -246,7 +247,8 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight-lib SYSTEM PUBLIC ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight-lib PUBLIC ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES})
-    target_link_libraries(moonlight-lib PUBLIC commons-luna-sync commons-webos-is-uhd commons-webos-panel-info)
+    target_link_libraries(moonlight-lib PUBLIC commons-luna-sync commons-webos-is-uhd commons-webos-panel-info
+            commons-sdl2-polyfill)
 else ()
     if (TARGET_STEAMLINK)
         set(FEATURE_FORCE_FULLSCREEN ON)

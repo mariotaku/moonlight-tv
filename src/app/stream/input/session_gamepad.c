@@ -1,8 +1,6 @@
-
 #include "app.h"
 
 #include <Limelight.h>
-#include <SDL.h>
 
 #include "stream/input/session_input.h"
 
@@ -20,11 +18,10 @@ static bool vmouse_combo_pressed = false;
 
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad);
 
-
-static bool gamepad_combo_check(short buttons, short combo);
+static bool gamepad_combo_check(int buttons, short combo);
 
 void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event) {
-    short button = 0;
+    int button = 0;
     app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     switch (event->button) {
         case SDL_CONTROLLER_BUTTON_A:
@@ -72,6 +69,24 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
             break;
         case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
             button = RB_FLAG;
+            break;
+        case SDL_CONTROLLER_BUTTON_TOUCHPAD:
+            button = TOUCHPAD_FLAG;
+            break;
+        case SDL_CONTROLLER_BUTTON_MISC1:
+            button = MISC_FLAG;
+            break;
+        case SDL_CONTROLLER_BUTTON_PADDLE1:
+            button = PADDLE1_FLAG;
+            break;
+        case SDL_CONTROLLER_BUTTON_PADDLE2:
+            button = PADDLE2_FLAG;
+            break;
+        case SDL_CONTROLLER_BUTTON_PADDLE3:
+            button = PADDLE3_FLAG;
+            break;
+        case SDL_CONTROLLER_BUTTON_PADDLE4:
+            button = PADDLE4_FLAG;
             break;
         default:
             return;
@@ -165,8 +180,7 @@ void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEv
     }
     if (vmouse) {
         LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
-                                   gamepad->leftStickX,
-                                   gamepad->leftStickY, 0, 0);
+                                   gamepad->leftStickX, gamepad->leftStickY, 0, 0);
     } else {
         LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
                                    gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY,
@@ -174,6 +188,85 @@ void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEv
     }
 }
 
+void stream_input_handle_csensor(stream_input_t *input, const SDL_ControllerSensorEvent *event) {
+    if (input->view_only) {
+        return;
+    }
+    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
+    uint8_t event_type;
+    switch (event->sensor) {
+        case SDL_SENSOR_ACCEL: {
+            event_type = LI_MOTION_TYPE_ACCEL;
+            break;
+        }
+        case SDL_SENSOR_GYRO: {
+            event_type = LI_MOTION_TYPE_GYRO;
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+    LiSendControllerMotionEvent(gamepad->id, event_type, event->data[0], event->data[1], event->data[2]);
+}
+
+void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTouchpadEvent *event) {
+    if (input->view_only) {
+        return;
+    }
+    if (event->touchpad != 0) {
+        return;
+    }
+    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
+    uint8_t event_type;
+    switch (event->type) {
+        case SDL_CONTROLLERTOUCHPADUP: {
+            event_type = LI_TOUCH_EVENT_UP;
+            break;
+        }
+        case SDL_CONTROLLERTOUCHPADDOWN: {
+            event_type = LI_TOUCH_EVENT_DOWN;
+            break;
+        }
+        case SDL_CONTROLLERTOUCHPADMOTION: {
+            event_type = LI_TOUCH_EVENT_MOVE;
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+    LiSendControllerTouchEvent(gamepad->id, event_type, event->finger, event->x, event->y, event->pressure);
+}
+
+void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDeviceEvent *event) {
+    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
+    if (input->view_only) {
+        return;
+    }
+    uint8_t type = LI_CTYPE_XBOX;
+    uint16_t capabilities = LI_CCAP_ANALOG_TRIGGERS | LI_CCAP_RUMBLE;
+    switch (SDL_GameControllerGetType(gamepad->controller)) {
+        case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+        case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+        case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+        case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO: {
+            type = LI_CTYPE_NINTENDO;
+            capabilities &= ~LI_CCAP_ANALOG_TRIGGERS;
+            break;
+        }
+        case SDL_CONTROLLER_TYPE_PS3:
+        case SDL_CONTROLLER_TYPE_PS4:
+        case SDL_CONTROLLER_TYPE_PS5: {
+            type = LI_CTYPE_PS;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    LiSendControllerArrivalEvent(gamepad->id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);
+}
 
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad) {
     gamepad->buttons = 0;
@@ -189,6 +282,6 @@ static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad)
 }
 
 
-static bool gamepad_combo_check(short buttons, short combo) {
+static bool gamepad_combo_check(int buttons, short combo) {
     return (buttons & combo) == combo;
 }
