@@ -265,6 +265,12 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
             break;
         }
     }
+    if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_ACCEL)) {
+        capabilities |= LI_CCAP_ACCEL;
+    }
+    if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_GYRO)) {
+        capabilities |= LI_CCAP_GYRO;
+    }
     LiSendControllerArrivalEvent(gamepad->id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);
 }
 
