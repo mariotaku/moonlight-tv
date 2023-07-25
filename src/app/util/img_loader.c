@@ -83,9 +83,6 @@ static int task_execute(img_loader_task_t *task) {
     void *request = task->request;
     if (!loader->impl.filecache_get(request)) {
         if (!loader->impl.fetch(request)) {
-            // call fail_cb
-            img_loader_fn cb = task_cancelled(task) ? task->cb.cancel_cb : task->cb.fail_cb;
-            run_on_main(loader, cb, request);
             return EIO;
         }
         if (loader->destroyed) {
