@@ -8,9 +8,14 @@ jobs:
   send-notify:
     runs-on: ubuntu-latest
     steps:
-      - uses: fjogeleit/http-request-action@v1
-        with:
-          url: '${{ secrets.DISCORD_NOTIFY_WEBHOOK }}'
-          method: 'POST'
-          customHeaders: '{"Content-Type": "application/json"}'
-          data: '${{ toJSON(github.event) }}'
+      - name: Install Dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install jq curl
+        env:
+          DEBIAN_FRONTEND: 'noninteractive'
+      - name: Post Event
+        run: |
+          curl -X POST -H 'Content-Type: application/json' \ 
+            -d $(echo '${{ toJSON(github.event) }}' | jq '.action = "created"') \
+            ${{ secrets.DISCORD_NOTIFY_WEBHOOK }}
