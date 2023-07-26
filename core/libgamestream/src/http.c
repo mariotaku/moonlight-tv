@@ -114,7 +114,7 @@ int http_request(HTTP *http, char *url, HTTP_DATA *data) {
     int http_code = 0;
     curl_easy_getinfo(curl, CURLINFO_HTTP_CODE, &http_code);
     commons_log_debug("GameStream", "Request %p response %d", data, http_code);
-    commons_log_verbose("GameStream", "Request %p body %s", data, data->memory);
+    commons_log_hexdump(COMMONS_LOG_LEVEL_VERBOSE, "GameStream", data->memory, data->size);
 
     ret = GS_OK;
     finish:
