@@ -35,6 +35,23 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     session->display_height = app->ui.height;
     session->video_cap = app->ss4s.video_cap;
     session->server = serverdata_clone(server);
+    // The flags seem to be the same to supportedVideoFormats, use it for now...
+    session->server->serverInfo.serverCodecModeSupport = 0;
+    if (session->config.stream.supportedVideoFormats & VIDEO_FORMAT_H264) {
+        session->server->serverInfo.serverCodecModeSupport |= SCM_H264;
+    }
+    if (session->config.stream.supportedVideoFormats & VIDEO_FORMAT_H265) {
+        session->server->serverInfo.serverCodecModeSupport |= SCM_HEVC;
+        if (session->config.stream.supportedVideoFormats & VIDEO_FORMAT_H265_MAIN10) {
+            session->server->serverInfo.serverCodecModeSupport |= SCM_HEVC_MAIN10;
+        }
+    }
+    if (session->config.stream.supportedVideoFormats & VIDEO_FORMAT_AV1_MAIN8) {
+        session->server->serverInfo.serverCodecModeSupport |= SCM_AV1_MAIN8;
+    }
+    if (session->config.stream.supportedVideoFormats & VIDEO_FORMAT_AV1_MAIN10) {
+        session->server->serverInfo.serverCodecModeSupport |= SCM_AV1_MAIN10;
+    }
     session->app_id = app_id;
     session->mutex = SDL_CreateMutex();
     session->state_lock = SDL_CreateMutex();
