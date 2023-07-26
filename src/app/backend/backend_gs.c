@@ -13,7 +13,7 @@ GS_CLIENT app_gs_client_new(app_t *app) {
     SDL_assert_release(app->backend.gs_client_mutex != NULL);
     SDL_LockMutex(app->backend.gs_client_mutex);
     SDL_assert_release(app_configuration != NULL);
-    GS_CLIENT client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+    GS_CLIENT client = gs_new(app_configuration->key_dir);
     if (client == NULL && gs_get_error(NULL) == GS_BAD_CONF) {
         if (gs_conf_init(app_configuration->key_dir) != GS_OK) {
             const char *message = NULL;
@@ -23,7 +23,7 @@ GS_CLIENT app_gs_client_new(app_t *app) {
                             "Details: %s", message);
             app_halt(app);
         } else {
-            client = gs_new(app_configuration->key_dir, app_configuration->debug_level);
+            client = gs_new(app_configuration->key_dir);
         }
     }
     if (client == NULL) {

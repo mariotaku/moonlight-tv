@@ -37,6 +37,7 @@ typedef struct _SERVER_DATA {
     bool supports4K;
     bool supportsHdr;
     bool unsupported;
+    bool isGfe;
     int currentGame;
     int serverMajorVersion;
     const char *gsVersion;
@@ -46,17 +47,17 @@ typedef struct _SERVER_DATA {
 
 typedef struct GS_CLIENT_T *GS_CLIENT;
 
-GS_CLIENT gs_new(const char *keydir, int log_level);
+GS_CLIENT gs_new(const char *keydir);
 
 int gs_conf_init(const char *keydir);
 
 void gs_destroy(GS_CLIENT hnd);
 
-void gs_set_timeout(GS_CLIENT hnd, int timeout);
+void gs_set_timeout(GS_CLIENT hnd, int timeout_secs);
 
 int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported);
 
-int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool sops,
+int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool is_gfe, bool sops,
                  bool localaudio, int gamepad_mask);
 
 int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *app_list);

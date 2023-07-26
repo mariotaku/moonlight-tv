@@ -62,6 +62,8 @@
 static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action,
                           const char *fmt, ...);
 
+static bool append_param(char *url, size_t ulen, const char *param, const char *value_fmt, ...);
+
 static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
     int ret;
     char url[4096];
@@ -158,6 +160,10 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
         server->supports4K = serverCodecModeSupport != 0;
         server->supportsHdr = serverCodecModeSupport & 0x200;
         server->serverMajorVersion = atoi(server->serverInfo.serverInfoAppVersion);
+        // Real Nvidia host software (GeForce Experience and RTX Experience) both use the 'Mjolnir'
+        // codename in the state field and no version of Sunshine does. We can use this to bypass
+        // some assumptions about Nvidia hardware that don't apply to Sunshine hosts.
+        server->isGfe = strstr(stateText, "MJOLNIR") != NULL;
 
         if (strstr(stateText, "_SERVER_BUSY") == NULL) {
             // After GFE 2.8, current game remains set even after streaming
@@ -617,7 +623,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     return ret;
 }
 
-int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool sops,
+int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool is_gfe, bool sops,
                  bool localaudio, int gamepad_mask) {
     int ret = GS_OK;
     char *result = NULL;
@@ -665,21 +671,43 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     bytes_to_hex((unsigned char *) config->remoteInputAesKey, rikey_hex, 16);
 
     data = http_data_alloc();
+    bool resume = server->currentGame == 0;
+
+    if (resume) {
+        gs_set_timeout(hnd, 30);
+    } else {
+        gs_set_timeout(hnd, 120);
+    }
 
     // Using an FPS value over 60 causes SOPS to default to 720p60,
     // so force it to 0 to ensure the correct resolution is set. We
     // used to use 60 here but that locked the frame rate to 60 FPS
     // on GFE 3.20.3.
-    int fps = config->fps > 60 ? 0 : config->fps;
+    int fps = is_gfe && config->fps > 60 ? 0 : config->fps;
 
     int surround_info = SURROUNDAUDIOINFO_FROM_AUDIO_CONFIGURATION(config->audioConfiguration);
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address,
-                  server->currentGame == 0 ? "launch" : "resume",
-                  "appid=%d&mode=%dx%dx%d&additionalStates=1&sops=%d&rikey=%s&rikeyid=%d&localAudioPlayMode=%d&surroundAudioInfo=%d&remoteControllersBitmap=%d&gcmap=%d%s",
-                  appId, config->width, config->height, fps, sops, rikey_hex, rikeyid, localaudio, surround_info,
-                  gamepad_mask, gamepad_mask, config->supportedVideoFormats & VIDEO_FORMAT_MASK_10BIT
-                                              ? "&hdrMode=1&clientHdrCapVersion=0&clientHdrCapSupportedFlagsInUint32=0&clientHdrCapMetaDataId=NV_STATIC_METADATA_TYPE_1&clientHdrCapDisplayData=0x0x0x0x0x0x0x0x0x0x0"
-                                              : "");
+    const char *action = resume ? "launch" : "resume";
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, action, "appid=%d", appId);
+
+    append_param(url, sizeof(url), "mode", "%dx%dx%d", config->width, config->height, fps);
+    append_param(url, sizeof(url), "additionalStates", "1");
+    append_param(url, sizeof(url), "sops", "%d", sops);
+    append_param(url, sizeof(url), "rikey", "%s", rikey_hex);
+    append_param(url, sizeof(url), "rikeyid", "%d", rikeyid);
+    append_param(url, sizeof(url), "surroundAudioInfo", "%d", surround_info);
+    if (!resume || !is_gfe) {
+        if (config->supportedVideoFormats & VIDEO_FORMAT_MASK_10BIT) {
+            append_param(url, sizeof(url), "hdrMode", "1");
+            append_param(url, sizeof(url), "clientHdrCapVersion", "0");
+            append_param(url, sizeof(url), "clientHdrCapSupportedFlagsInUint32", "0");
+            append_param(url, sizeof(url), "clientHdrCapMetaDataId", "NV_STATIC_METADATA_TYPE_1");
+            append_param(url, sizeof(url), "clientHdrCapDisplayData", "0x0x0x0x0x0x0x0x0x0x0");
+        }
+        append_param(url, sizeof(url), "localAudioPlayMode", "%d", localaudio);
+        append_param(url, sizeof(url), "remoteControllersBitmap", "%d", gamepad_mask);
+        append_param(url, sizeof(url), "gcmap", "%d", gamepad_mask);
+    }
+
     if ((ret = http_request(hnd->http, url, data)) == GS_OK) {
         server->currentGame = appId;
     } else {
@@ -786,7 +814,7 @@ int gs_download_cover(GS_CLIENT hnd, const SERVER_DATA *server, int appid, const
     return ret;
 }
 
-GS_CLIENT gs_new(const char *keydir, int log_level) {
+GS_CLIENT gs_new(const char *keydir) {
     struct GS_CLIENT_T *hnd = malloc(sizeof(struct GS_CLIENT_T));
     memset(hnd, 0, sizeof(struct GS_CLIENT_T));
     if (gs_conf_load(hnd, keydir) != GS_OK) {
@@ -794,7 +822,7 @@ GS_CLIENT gs_new(const char *keydir, int log_level) {
         return NULL;
     }
 
-    HTTP *http = http_create(keydir, log_level);
+    HTTP *http = http_create(keydir);
     if (http == NULL) {
         free(hnd);
         return NULL;
@@ -811,8 +839,8 @@ void gs_destroy(GS_CLIENT hnd) {
     free((void *) hnd);
 }
 
-void gs_set_timeout(GS_CLIENT hnd, int timeout) {
-    http_set_timeout(hnd->http, timeout);
+void gs_set_timeout(GS_CLIENT hnd, int timeout_secs) {
+    http_set_timeout(hnd->http, timeout_secs);
 }
 
 int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported) {
@@ -842,5 +870,27 @@ static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, co
         snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%.*s", proto, address, port,
                  action, hnd->unique_id, 36, uuid.data);
     }
+    return true;
+}
+
+static bool append_param(char *url, size_t ulen, const char *param, const char *value_fmt, ...) {
+    char value[256];
+    va_list ap;
+    va_start(ap, value_fmt);
+    vsnprintf(value, 256, value_fmt, ap);
+    va_end(ap);
+
+    size_t plen = strlen(param);
+    size_t vlen = strlen(value);
+    char *p = url + strlen(url);
+    size_t append_len = plen + vlen + 3 /* "&param=value\0" */;
+    if ((p - url) + append_len > ulen) {
+        return false;
+    }
+    *p++ = '&';
+    p = stpncpy(p, param, plen);
+    *p++ = '=';
+    p = stpncpy(p, value, vlen);
+    *p = '\0';
     return true;
 }

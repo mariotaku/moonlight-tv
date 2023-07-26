@@ -7,6 +7,7 @@
 
 #include "util/i18n.h"
 #include "lvgl/util/lv_app_utils.h"
+#include "util/nullable.h"
 
 typedef struct context_menu_t {
     lv_fragment_t base;
@@ -85,7 +86,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
 
 static void context_menu_cancel_cb(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
-    if (target->parent != lv_event_get_current_target(e)) return;
+    if (target->parent != lv_event_get_current_target(e)) { return; }
     lv_msgbox_close(lv_event_get_current_target(e)->parent);
 }
 
@@ -97,9 +98,9 @@ static void context_menu_short_click_cb(lv_event_t *e) {
 static void context_menu_click_cb(lv_event_t *e) {
     lv_obj_t *target = lv_event_get_target(e);
     context_menu_t *controller = lv_event_get_user_data(e);
-    if (!controller->single_clicked) return;
+    if (!controller->single_clicked) { return; }
     lv_obj_t *current_target = lv_event_get_current_target(e);
-    if (target->parent != current_target) return;
+    if (target->parent != current_target) { return; }
     void *target_userdata = lv_obj_get_user_data(target);
     lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
     const pclist_t *node = pcmanager_node(pcmanager, &controller->uuid);
@@ -116,14 +117,17 @@ static void context_menu_click_cb(lv_event_t *e) {
 
 static void open_info(const pclist_t *node) {
     static const char *btn_txts[] = {translatable("OK"), ""};
-    lv_obj_t *mbox = lv_msgbox_create_i18n(NULL, node->server->hostname, "placeholder", btn_txts, false);
+    const SERVER_DATA *server = node->server;
+    lv_obj_t *mbox = lv_msgbox_create_i18n(NULL, server->hostname, "placeholder", btn_txts, false);
     lv_obj_t *message = lv_msgbox_get_text(mbox);
     lv_label_set_text_fmt(message, locstr("IP address: %s\nGPU: %s\nSupports 4K: %s\n"
-                                          "Supports HDR: %s\nGeForce Experience: %s"),
-                          node->server->serverInfo.address, node->server->gpuType,
-                          node->server->supports4K ? "YES" : "NO",
-                          node->server->supportsHdr ? "YES" : "NO",
-                          node->server->serverInfo.serverInfoGfeVersion);
+                                          "Supports HDR: %s\nHost Software Version: %s\n"
+                                          "GeForce Experience: %s"),
+                          server->serverInfo.address, str_null_or_empty(server->gpuType) ? "Unknown" : server->gpuType,
+                          server->supports4K ? "YES" : "NO",
+                          server->supportsHdr ? "YES" : "NO",
+                          server->serverInfo.serverInfoAppVersion,
+                          server->isGfe ? server->serverInfo.serverInfoGfeVersion : "NO");
     lv_obj_add_event_cb(mbox, info_action_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
 }

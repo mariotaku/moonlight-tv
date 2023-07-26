@@ -61,6 +61,7 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
         }
     }
     if (ret == GS_OK) {
+        commons_log_info("PCManager", "Finished updating status from %s", server->serverInfo.address);
         uuidstr_t uuid;
         uuidstr_fromstr(&uuid, server->uuid);
         SERVER_STATE state = {.code = server->paired ? SERVER_STATE_AVAILABLE : SERVER_STATE_NOT_PAIRED};
@@ -68,10 +69,10 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
     } else {
         const char *gs_error = NULL;
         ret = gs_get_error(&gs_error);
+        commons_log_warn("PCManager", "Error %d while updating status from %s: %s", ret, server->serverInfo.address,
+                         gs_error);
         context->error = gs_error != NULL ? strdup(gs_error) : NULL;
         if (existing && ret == GS_IO_ERROR) {
-            commons_log_warn("PCManager", "IO error while updating status from %s: %s", server->serverInfo.address,
-                             gs_error);
             SERVER_STATE state = {.code = SERVER_STATE_OFFLINE};
             pclist_upsert(manager, &existing->id, &state, NULL);
         }
