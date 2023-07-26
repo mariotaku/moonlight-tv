@@ -722,7 +722,7 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
         goto cleanup;
     }
 
-    if (strcmp(result, "1") != 0) {
+    if (strcmp(result, "0") == 0) {
         ret = gs_set_error(GS_FAILED, "App start request failed");
         goto cleanup;
     }
