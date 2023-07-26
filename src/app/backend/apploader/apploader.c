@@ -161,7 +161,7 @@ static void task_finalize(apploader_task_ctx_t *task, int result) {
     } else if (app_bus_post(task->loader->app, (bus_actionfunc) task_callback, task)) {
         return;
     }
-    apploader_destroy(task->loader);
+    apploader_unref(task->loader);
     free(task);
 }
 
@@ -179,7 +179,7 @@ static void task_callback(apploader_task_ctx_t *task) {
             loader->callback.error(task->code, task->error, loader->userdata);
         }
     }
-    apploader_destroy(loader);
+    apploader_unref(loader);
     free(task);
 }
 
