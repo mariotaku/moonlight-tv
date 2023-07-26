@@ -24,7 +24,7 @@ int session_worker(session_t *session) {
     commons_log_info("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new(app);
     gs_set_timeout(client, 30);
-    int ret = gs_start_app(client, server, &session->config.stream, appId, session->config.sops,
+    int ret = gs_start_app(client, server, &session->config.stream, appId, server->isGfe, session->config.sops,
                            session->config.local_audio, app_input_gamepads_mask(&app->input));
     if (ret != GS_OK) {
         session_set_state(session, STREAMING_ERROR);

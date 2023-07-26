@@ -5,6 +5,7 @@
 #include "pclist.h"
 #include "app.h"
 #include "backend/pcmanager/worker/worker.h"
+#include "logging.h"
 
 pcmanager_t *pcmanager_new(app_t *app, executor_t *executor) {
     pcmanager_t *manager = SDL_calloc(1, sizeof(pcmanager_t));
@@ -43,6 +44,7 @@ bool pcmanager_quitapp(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_ca
 
 void pcmanager_request_update(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                               void *userdata) {
+    commons_log_info("PcManager", "Requesting update for %s", (const char*) uuid);
     worker_context_t *ctx = worker_context_new(manager, uuid, callback, userdata);
     pcmanager_worker_queue(manager, worker_host_update, ctx);
 }

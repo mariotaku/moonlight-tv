@@ -31,7 +31,7 @@ typedef struct _HTTP_DATA {
     size_t size;
 } HTTP_DATA;
 
-HTTP *http_create(const char *keydir, int verbosity);
+HTTP *http_create(const char *keydir);
 
 int http_request(HTTP *http, char *url, HTTP_DATA * data);
 

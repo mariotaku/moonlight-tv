@@ -20,6 +20,7 @@
 #include "http.h"
 #include "errors.h"
 #include "set_error.h"
+#include "logging.h"
 
 #include <string.h>
 #include <curl/curl.h>
@@ -35,7 +36,6 @@
 
 struct HTTP_T {
     CURL *curl;
-    int verbosity;
     pthread_mutex_t mutex;
 };
 
@@ -53,7 +53,7 @@ static size_t write_fn(void *contents, size_t size, size_t nmemb, void *userp) {
     return realsize;
 }
 
-HTTP *http_create(const char *keydir, int verbosity) {
+HTTP *http_create(const char *keydir) {
     CURL *curl = curl_easy_init();
     if (curl == NULL) {
         gs_set_error(GS_ERROR, "Failed to create cURL instance");
@@ -80,7 +80,6 @@ HTTP *http_create(const char *keydir, int verbosity) {
     struct HTTP_T *http = malloc(sizeof(struct HTTP_T));
     assert(http != NULL);
     http->curl = curl;
-    http->verbosity = verbosity;
     pthread_mutex_init(&http->mutex, NULL);
     return http;
 }
@@ -100,17 +99,22 @@ int http_request(HTTP *http, char *url, HTTP_DATA *data) {
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
-    if (http->verbosity) {
-        printf("Request %s\n", url);
-    }
+    commons_log_debug("GameStream", "Request %p %s", data, url);
+
     int ret = GS_FAILED;
     CURLcode res = curl_easy_perform(curl);
 
     if (res != CURLE_OK) {
-        ret = gs_set_error(GS_IO_ERROR, "cURL error: %s", curl_easy_strerror(res));
+        const char *errmsg = curl_easy_strerror(res);
+        ret = gs_set_error(GS_IO_ERROR, "cURL error: %s", errmsg);
+        commons_log_debug("GameStream", "Request %p error %d: %s", data, ret, errmsg);
         goto finish;
     }
     assert (data->memory != NULL);
+    int http_code = 0;
+    curl_easy_getinfo(curl, CURLINFO_HTTP_CODE, &http_code);
+    commons_log_debug("GameStream", "Request %p response %d", data, http_code);
+    commons_log_verbose("GameStream", "Request %p body %s", data, data->memory);
 
     ret = GS_OK;
     finish:
