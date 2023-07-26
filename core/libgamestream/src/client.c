@@ -601,12 +601,12 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
     char url[4096];
     HTTP_DATA *data = http_data_alloc();
     if (data == NULL) {
-        return GS_OUT_OF_MEMORY;
+        return gs_set_error(GS_OUT_OF_MEMORY, "Out of memory");
     }
 
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
     if (http_request(hnd->http, url, data) != GS_OK) {
-        ret = GS_IO_ERROR;
+        ret = gs_set_error(GS_IO_ERROR, "Failed to get apps list");
     } else if (xml_status(data->memory, data->size) == GS_ERROR) {
         ret = GS_ERROR;
     } else if (xml_applist(data->memory, data->size, list) != GS_OK) {
@@ -646,11 +646,11 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     }
 
     if (!correct_mode && !server->unsupported) {
-        return GS_NOT_SUPPORTED_MODE;
+        return gs_set_error(GS_NOT_SUPPORTED_MODE, "Selected mode is not supported by the host");
     }
 
     if (config->height >= 2160 && !server->supports4K) {
-        return GS_NOT_SUPPORTED_4K;
+        return gs_set_error(GS_NOT_SUPPORTED_4K, "Host doesn't support 4K");
     }
 
     mbedtls_ctr_drbg_random(&ctr_drbg, (unsigned char *) config->remoteInputAesKey, 16);
@@ -695,7 +695,7 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     }
 
     if (strcmp(result, "1") != 0) {
-        ret = GS_FAILED;
+        ret = gs_set_error(GS_FAILED, "App start request failed");
         goto cleanup;
     }
 
@@ -723,7 +723,7 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
     char *result = NULL;
     HTTP_DATA *data = http_data_alloc();
     if (data == NULL) {
-        return GS_OUT_OF_MEMORY;
+        return gs_set_error(GS_OUT_OF_MEMORY, "Out of memory");
     }
 
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
@@ -740,7 +740,7 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
 
     assert(result != NULL);
     if (strcmp(result, "0") == 0) {
-        ret = GS_FAILED;
+        ret = gs_set_error(GS_FAILED, "App quit request failed");
         goto cleanup;
     }
     if (ret == GS_OK) {
