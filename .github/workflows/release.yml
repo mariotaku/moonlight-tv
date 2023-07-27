@@ -56,7 +56,7 @@ jobs:
           omitNameDuringUpdate: true
           omitBodyDuringUpdate: true
           omitPrereleaseDuringUpdate: true
-          artifacts: dist/*.ipk,dist/*.manifest.json
+          artifacts: dist/*.ipk,dist/*_dbgsym.tar.gz,dist/*.manifest.json
 
   release-raspi:
     name: Release (Raspberry Pi)

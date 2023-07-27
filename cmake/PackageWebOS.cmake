@@ -38,9 +38,7 @@ set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_SOURCE_DIR}/cmake/CleanupNameLink.cmake")
 # Will use all cores on CMake 3.20+
 set(CPACK_THREADS 0)
 
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-    set(CPACK_STRIP_FILES TRUE)
-endif ()
+set(CPACK_STRIP_FILES FALSE)
 
 add_custom_target(webos-package-moonlight COMMAND cpack DEPENDS moonlight)
 
