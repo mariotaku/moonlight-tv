@@ -8,14 +8,14 @@ jobs:
   send-notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Dependencies
-        run: |
-          sudo apt-get -y update
-          sudo apt-get -y install jq curl
-        env:
-          DEBIAN_FRONTEND: 'noninteractive'
+      - name: Manipulate Event
+        uses: actions/github-script@v6
+        id: set-result
+        with:
+          script: |
+            const fs = require('fs');
+            const payload = { ...context.payload, action: 'created' };
+            fs.writeFileSync(process.env.GITHUB_EVENT_PATH, JSON.stringify(payload));
       - name: Post Event
         run: |
-          curl -X POST -H 'Content-Type: application/json' \ 
-            -d $(echo '${{ toJSON(github.event) }}' | jq '.action = "created"') \
-            ${{ secrets.DISCORD_NOTIFY_WEBHOOK }}
+          curl -X POST -H 'Content-Type: application/json' -d @$GITHUB_EVENT_PATH ${{ secrets.DISCORD_NOTIFY_WEBHOOK }}
