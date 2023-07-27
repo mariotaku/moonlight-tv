@@ -5,8 +5,7 @@ on:
     types: [created]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: RelWithDebInfo
+  BUILD_TYPE: Release
 
 jobs:
   release-webos:
@@ -44,7 +43,7 @@ jobs:
       - name: webOS Build
         uses: ./.github/actions/build-webos
         with:
-          build-type: ${{ env.BUILD_TYPE }}
+          build-type: RelWithDebInfo
 
       - name: Create Release (webOS)
         id: create_release_webos
