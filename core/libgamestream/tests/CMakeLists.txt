@@ -2,7 +2,12 @@ if (NOT BUILD_TESTS)
     return()
 endif ()
 
-find_package(OpenSSL 1.0 REQUIRED)
+find_package(OpenSSL 1.0)
+
+if (NOT OPENSSL_FOUND)
+    message(WARNING "OpenSSL not found, skipping tests")
+    return()
+endif ()
 
 foreach (suite_name aes challenge hash sign)
     add_executable(test-gamestream-crypt-${suite_name} ${suite_name}.c ${CMAKE_CURRENT_SOURCE_DIR}/../src/set_error.c)
