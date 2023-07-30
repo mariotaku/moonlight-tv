@@ -35,6 +35,14 @@ set(CPACK_MONOLITHIC_INSTALL TRUE)
 set(CPACK_PACKAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/dist)
 set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${PROJECT_VERSION}_arm")
 set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_SOURCE_DIR}/cmake/CleanupNameLink.cmake")
+
+configure_file("${CMAKE_SOURCE_DIR}/cmake/CPackConfig.webOS.cmake.in" CPackConfig.webOS.cmake @ONLY)
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_BINARY_DIR}/CPackConfig.webOS.cmake")
+
+if (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    list(APPEND CPACK_PRE_BUILD_SCRIPTS "${CMAKE_SOURCE_DIR}/cmake/ArchiveDebugSymbols.cmake")
+endif ()
+
 # Will use all cores on CMake 3.20+
 set(CPACK_THREADS 0)
 
