@@ -194,6 +194,7 @@ static apploader_list_t *apps_create(const struct pclist_t *node, PAPP_LIST ll) 
         memcpy(&item->base, cur, sizeof(APP_LIST));
         item->base.next = NULL;
         item->fav = pcmanager_node_is_app_favorite(node, cur->id);
+        item->hidden = pcmanager_node_is_app_hidden(node, cur->id);
         index++;
     }
     qsort(result->items, result->count, sizeof(apploader_item_t),
@@ -219,6 +220,9 @@ const apploader_item_t *apploader_list_item_by_id(const apploader_list_t *list, 
 }
 
 static int applist_name_comparator(apploader_item_t *p1, apploader_item_t *p2) {
+    if (p1->hidden != p2->hidden) {
+        return p1->hidden ? 1 : -1;
+    }
     int extra = p2->fav * 1000 - p1->fav * 1000;
     int namecmp = strcoll(p1->base.name, p2->base.name);
     if (namecmp > 0) {

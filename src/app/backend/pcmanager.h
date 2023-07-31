@@ -46,13 +46,15 @@ const SERVER_STATE *pcmanager_state(pcmanager_t *manager, const uuidstr_t *uuid)
 
 bool pcmanager_node_is_app_favorite(const pclist_t *node, int appid);
 
+bool pcmanager_node_is_app_hidden(const pclist_t *node, int appid);
+
 int pcmanager_node_current_app(const pclist_t *node);
 
 int pcmanager_server_current_app(pcmanager_t *manager, const uuidstr_t *uuid);
 
 void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int appid, bool favorite);
 
-bool pcmanager_is_favorite(pcmanager_t *manager, const uuidstr_t *uuid, int appid);
+void pcmanager_set_app_hidden(pcmanager_t *manager, const uuidstr_t *uuid, int appid, bool hidden);
 
 bool pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid);
 

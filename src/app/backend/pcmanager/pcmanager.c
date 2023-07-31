@@ -44,7 +44,7 @@ bool pcmanager_quitapp(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_ca
 
 void pcmanager_request_update(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_callback_t callback,
                               void *userdata) {
-    commons_log_info("PcManager", "Requesting update for %s", (const char*) uuid);
+    commons_log_info("PcManager", "Requesting update for %s", (const char *) uuid);
     worker_context_t *ctx = worker_context_new(manager, uuid, callback, userdata);
     pcmanager_worker_queue(manager, worker_host_update, ctx);
 }
@@ -60,12 +60,15 @@ void pcmanager_favorite_app(pcmanager_t *manager, const uuidstr_t *uuid, int app
     pcmanager_unlock(manager);
 }
 
-bool pcmanager_is_favorite(pcmanager_t *manager, const uuidstr_t *uuid, int appid) {
-    const pclist_t *node = pcmanager_node(manager, uuid);
+void pcmanager_set_app_hidden(pcmanager_t *manager, const uuidstr_t *uuid, int appid, bool hidden) {
+    pcmanager_lock(manager);
+    pclist_t *node = pclist_find_by_uuid(manager, uuid);
     if (!node) {
-        return false;
+        goto unlock;
     }
-    return pcmanager_node_is_app_favorite(node, appid);
+    pclist_node_set_app_hidden(node, appid, hidden);
+    unlock:
+    pcmanager_unlock(manager);
 }
 
 bool pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid) {

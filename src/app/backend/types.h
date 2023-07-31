@@ -42,6 +42,7 @@ typedef struct pclist_t {
     /* DO NOT HOLD reference to this field*/
     SERVER_DATA *server;
     appid_list_t *favs;
+    appid_list_t *hidden;
     struct pclist_t *prev;
     struct pclist_t *next;
 } pclist_t;
