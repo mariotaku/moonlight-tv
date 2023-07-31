@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-const char *challange =
+const char *challenge =
     "B022C03530EC6D942CACA1199A5705A10C5D0B70ACD97EA834A078345CA0FB346C9426138576E74E"
     "C49D644C01616E2C14812199982A42C63756483B7094355CF59D2BDF4CCF75F0DA24EC373A81430C"
     "D6F0972EAA67C312431FF0E677D7D267CFC5EBDEF9AA64CEAC01A44535A25ED285BE57494D7C5031"
@@ -51,9 +51,9 @@ int main(int argc, char *argv[])
     struct pairing_secret_t s;
     size_t len;
     unsigned char buf[16 + 256];
-    hex_to_bytes(challange, (unsigned char *)&s, &len);
+    hex_to_bytes(challenge, (unsigned char *)&s, &len);
     assert(len == sizeof(s));
-    hex_to_bytes(challange, buf, &len);
+    hex_to_bytes(challenge, buf, &len);
     assert(memcmp(s.secret, buf, 16) == 0);
     assert(memcmp(s.signature, &buf[16], 256) == 0);
 }
