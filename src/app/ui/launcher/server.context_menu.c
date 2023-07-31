@@ -8,6 +8,8 @@
 #include "util/i18n.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "util/nullable.h"
+#include "util/bus.h"
+#include "util/user_event.h"
 
 typedef struct context_menu_t {
     lv_fragment_t base;
@@ -28,6 +30,8 @@ static void context_menu_short_click_cb(lv_event_t *e);
 static void context_menu_click_cb(lv_event_t *e);
 
 static void open_info(const pclist_t *node);
+
+static void show_hidden_apps(const pclist_t *node);
 
 static void forget_host(const pclist_t *node);
 
@@ -72,6 +76,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_flag(info_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(info_btn, open_info);
 
+    lv_obj_t *show_hidden_btn = lv_list_add_btn(content, NULL, locstr("Show hidden apps"));
+    lv_obj_add_flag(show_hidden_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_user_data(show_hidden_btn, show_hidden_apps);
+
     if (node->state.code == SERVER_STATE_OFFLINE || node->state.code == SERVER_STATE_ERROR) {
         lv_obj_t *forget_btn = lv_list_add_btn(content, NULL, locstr("Forget"));
         lv_obj_add_flag(forget_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
@@ -112,6 +120,8 @@ static void context_menu_click_cb(lv_event_t *e) {
         open_info(node);
     } else if (target_userdata == forget_host) {
         forget_host(node);
+    }else if (target_userdata == show_hidden_apps) {
+        show_hidden_apps(node);
     }
 }
 
@@ -130,6 +140,12 @@ static void open_info(const pclist_t *node) {
                           server->isGfe ? server->serverInfo.serverInfoGfeVersion : "NO");
     lv_obj_add_event_cb(mbox, info_action_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
+}
+
+static void show_hidden_apps(const pclist_t *node) {
+    uuidstr_t *id = calloc(1, sizeof(uuidstr_t));
+    *id = node->id;
+    bus_pushevent(USER_SHOW_HIDDEN_APPS, id, NULL);
 }
 
 static void forget_host(const pclist_t *node) {
