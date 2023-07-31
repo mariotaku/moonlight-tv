@@ -16,7 +16,7 @@ typedef enum apploader_state_t {
 
 typedef struct apploader_item_t {
     APP_LIST base;
-    bool fav;
+    bool fav, hidden;
 } apploader_item_t;
 
 typedef struct apploader_list_t {

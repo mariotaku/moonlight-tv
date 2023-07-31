@@ -20,6 +20,8 @@ void pclist_node_apply(pclist_t *node, const SERVER_STATE *state, SERVER_DATA *s
 
 bool pclist_node_set_app_favorite(pclist_t *node, int appid, bool favorite);
 
+bool pclist_node_set_app_hidden(pclist_t *node, int appid, bool hidden);
+
 void pclist_remove(pcmanager_t *manager, const uuidstr_t *uuid);
 
 void pclist_free(pcmanager_t *manager);

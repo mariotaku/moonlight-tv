@@ -21,7 +21,7 @@
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_MODIFIER static
 #define LINKEDLIST_TYPE appid_list_t
-#define LINKEDLIST_PREFIX favlist_ll
+#define LINKEDLIST_PREFIX appid_list_ll
 #define LINKEDLIST_DOUBLE 1
 
 #include "linked_list.h"
@@ -41,7 +41,7 @@ static int pclist_ll_compare_address(pclist_t *other, const void *v);
 
 static int pclist_ll_compare_uuid(pclist_t *other, const void *v);
 
-static int favlist_find_id(appid_list_t *other, const void *v);
+static int appid_list_find_id(appid_list_t *other, const void *v);
 
 pclist_t *pclist_insert_known(pcmanager_t *manager, const uuidstr_t *id, SERVER_DATA *server) {
     pclist_t *node = pclist_ll_new();
@@ -94,18 +94,35 @@ void pclist_free(pcmanager_t *manager) {
 
 
 bool pcmanager_node_is_app_favorite(const pclist_t *node, int appid) {
-    return favlist_ll_find_by(node->favs, &appid, favlist_find_id) != NULL;
+    return appid_list_ll_find_by(node->favs, &appid, appid_list_find_id) != NULL;
+}
+
+bool pcmanager_node_is_app_hidden(const pclist_t *node, int appid) {
+    return appid_list_ll_find_by(node->hidden, &appid, appid_list_find_id) != NULL;
 }
 
 bool pclist_node_set_app_favorite(pclist_t *node, int appid, bool favorite) {
-    appid_list_t *existing = favlist_ll_find_by(node->favs, &appid, favlist_find_id);
+    appid_list_t *existing = appid_list_ll_find_by(node->favs, &appid, appid_list_find_id);
     if (favorite) {
         if (existing) { return false; }
-        appid_list_t *item = favlist_ll_new();
+        appid_list_t *item = appid_list_ll_new();
         item->id = appid;
-        node->favs = favlist_ll_append(node->favs, item);
+        node->favs = appid_list_ll_append(node->favs, item);
     } else if (existing) {
-        node->favs = favlist_ll_remove(node->favs, existing);
+        node->favs = appid_list_ll_remove(node->favs, existing);
+    }
+    return true;
+}
+
+bool pclist_node_set_app_hidden(pclist_t *node, int appid, bool hidden) {
+    appid_list_t *existing = appid_list_ll_find_by(node->hidden, &appid, appid_list_find_id);
+    if (hidden) {
+        if (existing) { return false; }
+        appid_list_t *item = appid_list_ll_new();
+        item->id = appid;
+        node->hidden = appid_list_ll_append(node->hidden, item);
+    } else if (existing) {
+        node->hidden = appid_list_ll_remove(node->hidden, existing);
     }
     return true;
 }
@@ -131,7 +148,10 @@ void pclist_ll_nodefree(pclist_t *node) {
         serverdata_free((PSERVER_DATA) node->server);
     }
     if (node->favs) {
-        favlist_ll_free(node->favs, (favlist_ll_nodefree_fn) free);
+        appid_list_ll_free(node->favs, (appid_list_ll_nodefree_fn) free);
+    }
+    if (node->hidden) {
+        appid_list_ll_free(node->hidden, (appid_list_ll_nodefree_fn) free);
     }
     free(node);
 }
@@ -168,7 +188,7 @@ static int pclist_ll_compare_uuid(pclist_t *other, const void *v) {
     return !uuidstr_t_equals_t(&other->id, (const uuidstr_t *) v);
 }
 
-static int favlist_find_id(appid_list_t *other, const void *v) {
+static int appid_list_find_id(appid_list_t *other, const void *v) {
     return other->id - *((const int *) v);
 }
 

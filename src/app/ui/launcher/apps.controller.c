@@ -50,6 +50,8 @@ static void launcher_launch_game(apps_fragment_t *controller, const apploader_it
 
 static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_item_t *app);
 
+static void launcher_toggle_hidden(apps_fragment_t *controller, const apploader_item_t *app);
+
 static void launcher_quit_game(apps_fragment_t *controller);
 
 static void applist_focus_enter(lv_event_t *event);
@@ -564,6 +566,11 @@ static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_ite
     apploader_load(controller->apploader);
 }
 
+static void launcher_toggle_hidden(apps_fragment_t *controller, const apploader_item_t *app) {
+    pcmanager_set_app_hidden(pcmanager, &controller->uuid, app->base.id, !app->hidden);
+    apploader_load(controller->apploader);
+}
+
 static void launcher_quit_game(apps_fragment_t *controller) {
     controller->quit_progress = progress_dialog_create(locstr("Quitting game..."));
     pcmanager_quitapp(pcmanager, &controller->uuid, quitgame_cb, controller);
@@ -574,7 +581,14 @@ static int adapter_item_count(lv_obj_t *grid, void *data) {
     apps_fragment_t *controller = lv_obj_get_user_data(grid);
     apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
-    return LV_MIN(list->count, 255 * controller->col_count);
+    int count = LV_MIN(list->count, 255 * controller->col_count);
+    for (int i = 0; i < count; i++) {
+        if (list->items[i].hidden) {
+            count = i;
+            break;
+        }
+    }
+    return count;
 }
 
 static lv_obj_t *adapter_create_view(lv_obj_t *parent) {
@@ -688,6 +702,10 @@ static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t 
     lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 
+    lv_obj_t *hide_btn = lv_list_add_btn(content, NULL, app->hidden ? locstr("Show") : locstr("Hide"));
+    lv_obj_add_flag(hide_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_set_user_data(hide_btn, launcher_toggle_hidden);
+
     lv_obj_t *info_btn = lv_list_add_btn(content, NULL, locstr("Info"));
     lv_obj_add_flag(info_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(info_btn, app_detail_dialog);
@@ -715,6 +733,8 @@ static void context_menu_click_cb(lv_event_t *e) {
         launcher_launch_game(controller, lv_obj_get_user_data(mbox));
     } else if (lv_obj_get_user_data(target) == launcher_toggle_fav) {
         launcher_toggle_fav(controller, lv_obj_get_user_data(mbox));
+    } else if (lv_obj_get_user_data(target) == launcher_toggle_hidden) {
+        launcher_toggle_hidden(controller, lv_obj_get_user_data(mbox));
     } else if (lv_obj_get_user_data(target) == app_detail_dialog) {
         app_detail_dialog(controller, lv_obj_get_user_data(mbox));
     }
