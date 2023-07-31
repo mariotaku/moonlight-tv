@@ -68,8 +68,6 @@ static lv_obj_t *adapter_create_view(lv_obj_t *parent);
 
 static void adapter_bind_view(lv_obj_t *, lv_obj_t *, void *data, int position);
 
-static int adapter_item_id(lv_obj_t *, void *data, int position);
-
 static void quitgame_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata);
 
 static void apps_controller_ctor(lv_fragment_t *self, void *args);
@@ -277,7 +275,7 @@ static void on_destroy_view(lv_fragment_t *self, lv_obj_t *view) {
     LV_UNUSED(view);
     current_instance = NULL;
     apps_fragment_t *controller = (apps_fragment_t *) self;
-
+    controller->show_hidden_apps = false;
     pcmanager_unregister_listener(pcmanager, &pc_listeners);
     coverloader_unref(controller->coverloader);
 }
@@ -290,6 +288,15 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
             update_grid_config(controller);
             lv_gridview_rebind(controller->applist);
             break;
+        }
+        case USER_SHOW_HIDDEN_APPS: {
+            ui_userevent_t *event = userdata;
+            if (uuidstr_t_equals_t(&controller->uuid, event->data1)) {
+                controller->show_hidden_apps = true;
+                apploader_load(controller->apploader);
+            }
+            free(event->data1);
+            return true;
         }
         default:
             break;
@@ -509,6 +516,7 @@ static void appitem_bind(apps_fragment_t *controller, lv_obj_t *item, apploader_
     } else {
         lv_obj_add_flag(holder->play_indicator, LV_OBJ_FLAG_HIDDEN);
     }
+    lv_obj_set_style_opa(item, app->hidden ? LV_OPA_50 : LV_OPA_COVER, 0);
     holder->app_id = app->base.id;
 }
 
@@ -582,10 +590,12 @@ static int adapter_item_count(lv_obj_t *grid, void *data) {
     apploader_list_t *list = data;
     // LVGL can only display up to 255 rows/columns, but I don't think anyone has library that big (1275 items)
     int count = LV_MIN(list->count, 255 * controller->col_count);
-    for (int i = 0; i < count; i++) {
-        if (list->items[i].hidden) {
-            count = i;
-            break;
+    if (!controller->show_hidden_apps) {
+        for (int i = 0; i < count; i++) {
+            if (list->items[i].hidden) {
+                count = i;
+                break;
+            }
         }
     }
     return count;
@@ -604,12 +614,6 @@ static void adapter_bind_view(lv_obj_t *grid, lv_obj_t *item_view, void *data, i
     // IDE seems to be pretty confused...
     LV_UNUSED(list);
     LV_UNUSED(position);
-}
-
-static int adapter_item_id(lv_obj_t *grid, void *data, int position) {
-    LV_UNUSED(grid);
-    apploader_list_t *list = data;
-    return list->items[position].base.id;
 }
 
 
@@ -702,7 +706,7 @@ static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t 
     lv_obj_add_flag(fav_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(fav_btn, launcher_toggle_fav);
 
-    lv_obj_t *hide_btn = lv_list_add_btn(content, NULL, app->hidden ? locstr("Show") : locstr("Hide"));
+    lv_obj_t *hide_btn = lv_list_add_btn(content, NULL, app->hidden ? locstr("Unhide") : locstr("Hide"));
     lv_obj_add_flag(hide_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(hide_btn, launcher_toggle_hidden);
 

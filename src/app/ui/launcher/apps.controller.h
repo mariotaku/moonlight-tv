@@ -26,6 +26,8 @@ typedef struct {
     int def_app;
     bool def_app_launched;
 
+    bool show_hidden_apps;
+
     apploader_t *apploader;
     coverloader_t *coverloader;
     apploader_cb_t apploader_cb;

@@ -179,7 +179,11 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
                                                           event->user.data2);
                 handled = handled || ui_dispatch_userevent(app, event->user.code, event->user.data1, event->user.data2);
                 if (!handled) {
-                    commons_log_warn("Event", "Nobody handles event %d", event->user.code);
+                    if (event->user.code == USER_SHOW_HIDDEN_APPS) {
+                        free(event->user.data1);
+                    } else {
+                        commons_log_warn("Event", "Nobody handles event %d", event->user.code);
+                    }
                 }
             }
             break;
