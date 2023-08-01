@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-22 23:38+0900\n"
-"PO-Revision-Date: 2021-11-22 14:40\n"
+"POT-Creation-Date: 2023-08-01 15:59+0900\n"
+"PO-Revision-Date: 2023-08-01 07:04\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Language: ro_RO\n"
@@ -17,338 +17,462 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: app/main.c:75
+#: src/app/app.c:68
 msgid "[Localized Language]"
 msgstr "Română"
 
-#: app/stream/session/connection.c:28
-msgid "Unstable connection."
-msgstr ""
-
-#. Use list button for normal container
-#: app/ui/launcher/launcher.view.c:103
-msgid "Add computer"
-msgstr "Adăugare gazdă"
-
-#: app/ui/launcher/launcher.view.c:109
-msgid "Help"
-msgstr "Ajutor"
-
-#: app/ui/launcher/launcher.view.c:115 app/ui/settings/settings.view.c:30
-msgid "Settings"
-msgstr "Setări"
-
-#: app/ui/launcher/launcher.view.c:121
-#: app/ui/settings/settings.controller.c:416
-msgid "Quit"
-msgstr "Ieşire"
-
-#: app/ui/launcher/launcher.controller.c:443
-#: app/ui/launcher/apps.controller.c:452 app/ui/launcher/apps.controller.c:551
-#: app/ui/launcher/add.dialog.c:52 app/ui/launcher/pair.dialog.c:39
-#: app/ui/streaming/streaming.controller.c:224 app/app_sdl.c:177
-msgid "OK"
-msgstr "OK"
-
-#: app/ui/launcher/launcher.controller.c:444
-msgid "Decoder not working"
-msgstr "Decodorul nu funcționează"
-
-#: app/ui/launcher/launcher.controller.c:447
-#, c-format
-msgid "Unable to initialize decoder %s. Please try other decoders."
-msgstr "Imposibil de inițializat decodorul %s. Vă rugăm să încercați alte decodoare."
-
-#: app/ui/launcher/apps.controller.c:161
-msgid "Send Wake-On-LAN"
-msgstr "Trimite Wake-On-LAN"
-
-#: app/ui/launcher/apps.controller.c:161
-msgid "Retry"
-msgstr "Reîncercare"
-
-#: app/ui/launcher/apps.controller.c:284
-msgid "Not paired"
-msgstr "Nu este asociat"
-
-#: app/ui/launcher/apps.controller.c:285
-msgid "Select computer again to pair."
-msgstr "Selectează din nou computerul pentru a-l asocia."
-
-#: app/ui/launcher/apps.controller.c:298
-msgid "Failed to load apps"
-msgstr "Eroare la încărcarea aplicațiilor"
-
-#: app/ui/launcher/apps.controller.c:299
-msgid "Press \"Retry\" button to reload.Try restart the computer if error persists."
-msgstr "Apăsați butonul \"Reîncercare\" pentru a reîncărca. Încercați să reporniți calculatorul dacă eroarea persistă."
-
-#: app/ui/launcher/apps.controller.c:319
-msgid "Host error"
-msgstr "Eroare calculator gazdă"
-
-#: app/ui/launcher/apps.controller.c:320
-msgid "Please restart your computer."
-msgstr "Vă rugăm să reporniți calculatorul."
-
-#: app/ui/launcher/apps.controller.c:332
-msgid "Offline"
-msgstr "Deconectat"
-
-#: app/ui/launcher/apps.controller.c:333
-msgid "Turn on the host computer and try again."
-msgstr "Porniți calculatorul gazdă și încercați din nou."
-
-#: app/ui/launcher/apps.controller.c:453
-msgid "Unable to quit game"
-msgstr "Imposibil de oprit jocul"
-
-#: app/ui/launcher/apps.controller.c:454
-msgid "Please make sure you are quitting with the same client."
-msgstr "Te rugăm să te asiguri că ieși prin același client."
-
-#: app/ui/launcher/apps.controller.c:500
-msgid "Resume streaming"
-msgstr "Reluați transmisiunea"
-
-#: app/ui/launcher/apps.controller.c:501
-msgid "Start streaming"
-msgstr "Porneşte transmisiunea"
-
-#: app/ui/launcher/apps.controller.c:507
-msgid "Stop streaming"
-msgstr "Oprește transmisiunea"
-
-#: app/ui/launcher/apps.controller.c:511
-msgid "Unstar"
-msgstr "Eliminați steaua"
-
-#: app/ui/launcher/apps.controller.c:511
-msgid "Star"
-msgstr "Marcare cu stea"
-
-#: app/ui/launcher/apps.controller.c:515
-msgid "Info"
-msgstr "Informații"
-
-#: app/ui/launcher/apps.controller.c:519 app/ui/launcher/add.dialog.c:52
-#: app/ui/launcher/server.context_menu.c:64 app/app_sdl.c:177
+#: src/app/app.c:239 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:736
+#: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr "Anulare"
 
-#: app/ui/launcher/add.dialog.c:67
+#: src/app/app.c:239 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:662
+#: src/app/ui/launcher/apps.controller.c:769
+#: src/app/ui/launcher/launcher.controller.c:461
+#: src/app/ui/launcher/pair.dialog.c:54
+#: src/app/ui/launcher/server.context_menu.c:129
+#: src/app/ui/streaming/streaming.controller.c:287
+msgid "OK"
+msgstr "OK"
+
+#: src/app/app.c:240
+msgid "Quit Moonlight?"
+msgstr "Ieși din Moonlight?"
+
+#: src/app/app_settings.c:32
+msgid "Stereo"
+msgstr ""
+
+#: src/app/app_settings.c:33
+msgid "5.1 Surround"
+msgstr ""
+
+#: src/app/app_settings.c:34
+msgid "7.1 Surround"
+msgstr ""
+
+#: src/app/platform/common/i18n_common.c:6
+msgid "System Language"
+msgstr ""
+
+#: src/app/stream/connection/session_connnection.c:37
+msgid "Unstable connection."
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:15 src/app/ui/launcher/launcher.view.c:113
+msgid "Help"
+msgstr "Ajutor"
+
+#: src/app/ui/help/help.dialog.c:37
+msgid "Gamepad hotkeys"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:39
+msgid "Remote controller keys"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:42
+msgid "Open moonlight-tv Wiki"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:44
+msgid "Open moonlight-stream Wiki"
+msgstr ""
+
+#: src/app/ui/launcher/add.dialog.c:57
 msgid "IP address"
 msgstr "Adresă IP"
 
-#: app/ui/launcher/add.dialog.c:71
+#: src/app/ui/launcher/add.dialog.c:61
 msgid "IPv4 address only"
 msgstr "Doar adresa IPv4"
 
-#: app/ui/launcher/add.dialog.c:89
+#: src/app/ui/launcher/add.dialog.c:80
 msgid "Failed to add computer."
 msgstr "Adăugarea calculatorului a eșuat."
 
-#: app/ui/launcher/pair.dialog.c:40
+#: src/app/ui/launcher/add.dialog.c:155
+msgid "Failed to add computer"
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:140
+msgid "Wake"
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:140
+#: src/app/ui/launcher/apps.controller.c:142
+msgid "Retry"
+msgstr "Reîncercare"
+
+#: src/app/ui/launcher/apps.controller.c:144
+msgid "Pair"
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:393
+msgid "Failed to load apps"
+msgstr "Eroare la încărcarea aplicațiilor"
+
+#: src/app/ui/launcher/apps.controller.c:395
+#: src/app/ui/launcher/apps.controller.c:442
+msgid "Press \"Retry\" to load again.\n\n"
+"Restart your computer if error persists."
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:424
+msgid "Not paired"
+msgstr "Nu este asociat"
+
+#: src/app/ui/launcher/apps.controller.c:426
+msgid "Press \"Pair\", and input PIN code on your computer to pair."
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:440
+msgid "Host error"
+msgstr "Eroare calculator gazdă"
+
+#: src/app/ui/launcher/apps.controller.c:458
+msgid "Offline"
+msgstr "Deconectat"
+
+#: src/app/ui/launcher/apps.controller.c:460
+msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
+"Try restart your computer if these doesn't work."
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:602
+msgid "Quitting game..."
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:663
+msgid "Unable to quit game"
+msgstr "Imposibil de oprit jocul"
+
+#: src/app/ui/launcher/apps.controller.c:664
+msgid "Please make sure you are quitting with the same client."
+msgstr "Te rugăm să te asiguri că ieși prin același client."
+
+#: src/app/ui/launcher/apps.controller.c:713
+msgid "Resume streaming"
+msgstr "Reluați transmisiunea"
+
+#: src/app/ui/launcher/apps.controller.c:714
+msgid "Start streaming"
+msgstr "Porneşte transmisiunea"
+
+#: src/app/ui/launcher/apps.controller.c:720
+msgid "Stop streaming"
+msgstr "Oprește transmisiunea"
+
+#: src/app/ui/launcher/apps.controller.c:724
+msgid "Unstar"
+msgstr "Eliminați steaua"
+
+#: src/app/ui/launcher/apps.controller.c:724
+msgid "Star"
+msgstr "Marcare cu stea"
+
+#: src/app/ui/launcher/apps.controller.c:728
+msgid "Unhide"
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:728
+msgid "Hide"
+msgstr ""
+
+#: src/app/ui/launcher/apps.controller.c:732
+#: src/app/ui/launcher/server.context_menu.c:75
+msgid "Info"
+msgstr "Informații"
+
+#: src/app/ui/launcher/launcher.controller.c:462
+msgid "No working decoder"
+msgstr ""
+
+#: src/app/ui/launcher/launcher.controller.c:465
+msgid "Streaming can't work without a valid decoder."
+msgstr ""
+
+#. Use list button for normal container
+#: src/app/ui/launcher/launcher.view.c:107
+msgid "Add computer"
+msgstr "Adăugare gazdă"
+
+#: src/app/ui/launcher/launcher.view.c:119
+#: src/app/ui/settings/settings.view.c:31
+msgid "Settings"
+msgstr "Setări"
+
+#: src/app/ui/launcher/launcher.view.c:125
+#: src/app/ui/settings/settings.controller.c:433
+msgid "Quit"
+msgstr "Ieşire"
+
+#: src/app/ui/launcher/pair.dialog.c:55
 msgid "Pairing"
 msgstr "Asociere"
 
-#: app/ui/launcher/pair.dialog.c:57
+#: src/app/ui/launcher/pair.dialog.c:72
 msgid "Enter PIN code on your computer."
 msgstr "Introduceți codul PIN pe calculator."
 
-#: app/ui/launcher/server.context_menu.c:54
-msgid "Test Connection"
-msgstr "Testaţi conexiunea"
+#: src/app/ui/launcher/server.context_menu.c:79
+msgid "Show hidden apps"
+msgstr ""
 
-#: app/ui/launcher/server.context_menu.c:59
-msgid "Unpair"
-msgstr "Disociere"
+#: src/app/ui/launcher/server.context_menu.c:84
+msgid "Forget"
+msgstr ""
 
-#: app/ui/streaming/streaming.view.c:28
-msgid "Soft keyboard"
-msgstr "Tastatură virtuală"
+#: src/app/ui/launcher/server.context_menu.c:133
+#, c-format
+msgid "IP address: %s\n"
+"GPU: %s\n"
+"Supports 4K: %s\n"
+"Supports HDR: %s\n"
+"Host Software Version: %s\n"
+"GeForce Experience: %s"
+msgstr ""
 
-#: app/ui/streaming/streaming.view.c:34
-msgid "Quit game"
-msgstr "Ieșire joc"
+#: src/app/ui/settings/panes/about.pane.c:59
+msgid "Version"
+msgstr "Versiune"
 
-#: app/ui/streaming/streaming.view.c:40
-msgid "Disconnect"
-msgstr "Deconectează"
+#: src/app/ui/settings/panes/about.pane.c:60
+#: src/app/ui/settings/panes/decoder.pane.c:110
+msgid "Video decoder"
+msgstr "Decodor video"
 
-#: app/ui/streaming/streaming.controller.c:120
-msgid "Connecting..."
-msgstr "Conectare în curs..."
+#: src/app/ui/settings/panes/about.pane.c:61
+#: src/app/ui/settings/panes/decoder.pane.c:117
+msgid "Audio backend"
+msgstr "Backend audio"
 
-#: app/ui/streaming/streaming.controller.c:133
-msgid "Disconnecting..."
-msgstr "Deconectare în curs..."
+#: src/app/ui/settings/panes/about.pane.c:64
+msgid "System"
+msgstr ""
 
-#: app/ui/streaming/streaming.controller.c:225
-msgid "Failed to start streaming"
-msgstr "Pornirea transmisiunii a eșuat"
+#: src/app/ui/settings/panes/about.pane.c:72
+msgid "Screen resolution"
+msgstr "Rezoluția ecranului"
 
-#: app/ui/settings/settings.controller.c:20
-msgid "Basic Settings"
-msgstr "Setări de bază"
+#: src/app/ui/settings/panes/about.pane.c:77
+msgid "Refresh rate"
+msgstr "Rată de reîmprospătare"
 
-#: app/ui/settings/settings.controller.c:21
-msgid "Host Settings"
-msgstr "Setări Gazdă"
-
-#: app/ui/settings/settings.controller.c:22
-msgid "Input Settings"
-msgstr "Setări de intrare"
-
-#: app/ui/settings/settings.controller.c:23
-msgid "Decoder Settings"
-msgstr "Setări Decodor"
-
-#: app/ui/settings/settings.controller.c:24
-msgid "About"
-msgstr "Despre"
-
-#: app/ui/settings/settings.controller.c:416
-msgid "Later"
-msgstr "Mai târziu"
-
-#: app/ui/settings/settings.controller.c:417
-msgid "Some settings require a restart to take effect."
-msgstr "Unele setări necesită o repornire pentru a avea efect."
-
-#: app/ui/settings/panes/basic.pane.c:85
+#: src/app/ui/settings/panes/basic.pane.c:89
 msgid "Resolution and FPS"
 msgstr "Rezoluţie şi FPS"
 
-#: app/ui/settings/panes/basic.pane.c:109
+#: src/app/ui/settings/panes/basic.pane.c:140
 msgid "Video bitrate"
 msgstr "Rată de biți video"
 
-#: app/ui/settings/panes/basic.pane.c:119
+#: src/app/ui/settings/panes/basic.pane.c:156
 msgid "Fullscreen UI"
 msgstr "Ecran complet"
 
-#: app/ui/settings/panes/basic.pane.c:125
-#: app/ui/settings/panes/basic.pane.c:126
+#: src/app/ui/settings/panes/basic.pane.c:167
+#: src/app/ui/settings/panes/basic.pane.c:168
 msgid "Language"
 msgstr "Limbă"
 
-#: app/ui/settings/panes/basic.pane.c:152
+#: src/app/ui/settings/panes/basic.pane.c:198
 msgid "Your computer may not perform well when using this resolution and framerate."
 msgstr "Calculatorul dvs. poate să nu funcționeze optim când utilizați această rezoluție și FPS."
 
-#: app/ui/settings/panes/basic.pane.c:164
+#: src/app/ui/settings/panes/basic.pane.c:213
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "Rată de biți - %d kbps"
 
-#: app/ui/settings/panes/host.pane.c:25
-msgid "Optimize game settings for streaming"
-msgstr "Optimizează setările jocului pentru streaming"
+#: src/app/ui/settings/panes/basic.pane.c:221
+msgid "Higher bitrate may cause performance issue, try with caution."
+msgstr ""
 
-#: app/ui/settings/panes/host.pane.c:26
-msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
-msgstr "Schimbă setările din joc pentru a optimiza pentru streaming. Rezoluția va fi limitată la 720p, 1080p sau 4K. FPS va fi, de asemenea, limitat la 30/60 FPS."
+#: src/app/ui/settings/panes/decoder.pane.c:67
+#: src/app/ui/settings/panes/decoder.pane.c:68
+msgid "Auto"
+msgstr ""
 
-#: app/ui/settings/panes/host.pane.c:28
-msgid "Mute computer while streaming"
-msgstr "Amuțește calculatorul gazdă în timpul conexiunii"
-
-#: app/ui/settings/panes/input.pane.c:25
-msgid "View-only mode"
-msgstr "Mod doar vizualizare"
-
-#: app/ui/settings/panes/input.pane.c:26
-msgid "Don't send mouse, keyboard or gamepad input to host computer."
-msgstr "Nu trimite date despre mouse, tastatură sau controller calculatorului gazdă."
-
-#: app/ui/settings/panes/input.pane.c:28
-msgid "Absolute mouse mode"
-msgstr "Modul poziționare absolută a mouse-ului"
-
-#: app/ui/settings/panes/input.pane.c:29
-msgid "Better for remote desktop. For some games, mouse will not work properly."
-msgstr "Potrivit pentru modul desktop. Pentru unele jocuri, mouse-ul nu va funcționa corect."
-
-#: app/ui/settings/panes/input.pane.c:31
-msgid "Swap ABXY buttons"
-msgstr "Schimbă butoanele AB/XY"
-
-#: app/ui/settings/panes/input.pane.c:32
-msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
-msgstr "Schimbă butoanele de gamepad A/B și X/Y. Util atunci când se preferă layout-uri asemănătoare Nintendo."
-
-#: app/ui/settings/panes/decoder.pane.c:39
-#: app/ui/settings/panes/decoder.pane.c:54
-msgid "Automatic"
-msgstr "Automat"
-
-#: app/ui/settings/panes/decoder.pane.c:71
-#: app/ui/settings/panes/about.pane.c:76
-msgid "Video decoder"
-msgstr "Decodor video"
-
-#: app/ui/settings/panes/decoder.pane.c:72
+#: src/app/ui/settings/panes/decoder.pane.c:111
 #, c-format
 msgid "Video decoder - using %s"
 msgstr "Decodor video - folosind %s"
 
-#: app/ui/settings/panes/decoder.pane.c:77
-#: app/ui/settings/panes/about.pane.c:78
-msgid "Audio backend"
-msgstr "Backend audio"
-
-#: app/ui/settings/panes/decoder.pane.c:78
-msgid "Decoder provided"
-msgstr "Decodor furnizat"
-
-#: app/ui/settings/panes/decoder.pane.c:80
+#: src/app/ui/settings/panes/decoder.pane.c:118
 #, c-format
 msgid "Audio backend - using %s"
 msgstr "Backend audio - folosind %s"
 
-#: app/ui/settings/panes/decoder.pane.c:87
+#: src/app/ui/settings/panes/decoder.pane.c:128
+msgid "Prefer H265 codec"
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:132
+msgid "H265 usually has clearer graphics, and is required for using HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:136
+#, c-format
+msgid "%s decoder doesn't support H265 codec."
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:140
 msgid "HDR (experimental)"
 msgstr "HDR (experimental)"
 
-#: app/ui/settings/panes/decoder.pane.c:92
+#: src/app/ui/settings/panes/decoder.pane.c:144
 #, c-format
 msgid "%s decoder doesn't support HDR."
 msgstr "%s decodorul nu acceptă HDR."
 
-#: app/ui/settings/panes/decoder.pane.c:96
+#: src/app/ui/settings/panes/decoder.pane.c:148
+#: src/app/ui/settings/panes/decoder.pane.c:196
+msgid "H265 is required to use HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:151
+#: src/app/ui/settings/panes/decoder.pane.c:199
 msgid "HDR is only supported on certain games and when connecting to supported monitor."
 msgstr "HDR este acceptat doar pentru anumite jocuri şi doar în anumite circumstanțe."
 
-#: app/ui/settings/panes/decoder.pane.c:99
+#: src/app/ui/settings/panes/decoder.pane.c:154
 msgid "Learn more about HDR feature."
 msgstr "Aflaţi mai multe despre caracteristica HDR."
 
-#: app/ui/settings/panes/about.pane.c:75
-msgid "Version"
-msgstr "Versiune"
+#: src/app/ui/settings/panes/decoder.pane.c:160
+msgid "Sound Channels (Experimental)"
+msgstr ""
 
-#: app/ui/settings/panes/about.pane.c:81
-msgid "webOS version"
-msgstr "Versiune webOS"
+#: src/app/ui/settings/panes/host.pane.c:26
+msgid "Optimize game settings for streaming"
+msgstr "Optimizează setările jocului pentru streaming"
 
-#: app/ui/settings/panes/about.pane.c:84
-msgid "Firmware version"
-msgstr "Versiune firmware"
+#: src/app/ui/settings/panes/host.pane.c:27
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgstr "Schimbă setările din joc pentru a optimiza pentru streaming. Rezoluția va fi limitată la 720p, 1080p sau 4K. FPS va fi, de asemenea, limitat la 30/60 FPS."
 
-#: app/ui/settings/panes/about.pane.c:90
-msgid "Screen resolution"
-msgstr "Rezoluția ecranului"
+#: src/app/ui/settings/panes/host.pane.c:30
+msgid "Mute computer while streaming"
+msgstr "Amuțește calculatorul gazdă în timpul conexiunii"
 
-#: app/ui/settings/panes/about.pane.c:95
-msgid "Refresh rate"
-msgstr "Rată de reîmprospătare"
+#: src/app/ui/settings/panes/input.pane.c:39
+msgid "View-only mode"
+msgstr "Mod doar vizualizare"
 
-#: app/app_sdl.c:178
-msgid "Quit Moonlight?"
-msgstr "Ieși din Moonlight?"
+#: src/app/ui/settings/panes/input.pane.c:40
+msgid "Don't send mouse, keyboard or gamepad input to host computer."
+msgstr "Nu trimite date despre mouse, tastatură sau controller calculatorului gazdă."
 
-#: app/platform/common/i18n_common.c:6
-msgid "System Language"
-msgstr "Limbă sistem"
+#: src/app/ui/settings/panes/input.pane.c:42
+msgid "Mouse"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:45
+msgid "Use mouse hardware"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:48
+msgid "Use plugged mouse device only when streaming. This will have better performance, but absolute mouse mode will not be enabled."
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:53
+msgid "Absolute mouse mode"
+msgstr "Modul poziționare absolută a mouse-ului"
+
+#: src/app/ui/settings/panes/input.pane.c:55
+#: src/app/ui/settings/panes/input.pane.c:85
+msgid "Better for remote desktop. For some games, mouse will not work properly."
+msgstr "Potrivit pentru modul desktop. Pentru unele jocuri, mouse-ul nu va funcționa corect."
+
+#: src/app/ui/settings/panes/input.pane.c:58
+msgid "Gamepad"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:60
+msgid "Virtual mouse"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:61
+msgid "Press LB + RT to move mouse cursor with sticks. LT/RT for left/right mouse buttons."
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:64
+msgid "Swap ABXY buttons"
+msgstr "Schimbă butoanele AB/XY"
+
+#: src/app/ui/settings/panes/input.pane.c:65
+msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
+msgstr "Schimbă butoanele de gamepad A/B și X/Y. Util atunci când se preferă layout-uri asemănătoare Nintendo."
+
+#: src/app/ui/settings/panes/input.pane.c:81
+msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
+msgstr ""
+
+#: src/app/ui/settings/settings.controller.c:27
+msgid "Basic Settings"
+msgstr "Setări de bază"
+
+#: src/app/ui/settings/settings.controller.c:28
+msgid "Host Settings"
+msgstr "Setări Gazdă"
+
+#: src/app/ui/settings/settings.controller.c:29
+msgid "Input Settings"
+msgstr "Setări de intrare"
+
+#: src/app/ui/settings/settings.controller.c:30
+msgid "Decoder Settings"
+msgstr "Setări Decodor"
+
+#: src/app/ui/settings/settings.controller.c:31
+msgid "About"
+msgstr "Despre"
+
+#: src/app/ui/settings/settings.controller.c:433
+msgid "Later"
+msgstr "Mai târziu"
+
+#: src/app/ui/settings/settings.controller.c:434
+msgid "Some settings require a restart to take effect."
+msgstr "Unele setări necesită o repornire pentru a avea efect."
+
+#: src/app/ui/streaming/streaming.controller.c:138
+msgid "Connecting..."
+msgstr "Conectare în curs..."
+
+#: src/app/ui/streaming/streaming.controller.c:158
+msgid "Disconnecting..."
+msgstr "Deconectare în curs..."
+
+#: src/app/ui/streaming/streaming.controller.c:288
+msgid "Failed to start streaming"
+msgstr "Pornirea transmisiunii a eșuat"
+
+#: src/app/ui/streaming/streaming.view.c:26
+#, c-format
+msgid "Hint: %s"
+msgstr ""
+
+#: src/app/ui/streaming/streaming.view.c:51
+msgid "Soft keyboard"
+msgstr "Tastatură virtuală"
+
+#: src/app/ui/streaming/streaming.view.c:59
+msgid "Virtual Mouse"
+msgstr ""
+
+#: src/app/ui/streaming/streaming.view.c:67
+msgid "Disconnect"
+msgstr "Deconectează"
+
+#: src/app/ui/streaming/streaming.view.c:75
+msgid "Quit game"
+msgstr "Ieșire joc"
+
+#: src/app/ui/streaming/streaming.view.c:90
+msgid "Performance"
+msgstr ""
 
