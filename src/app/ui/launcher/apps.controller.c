@@ -104,6 +104,16 @@ static void app_detail_click_cb(lv_event_t *event);
 
 static void set_actions(apps_fragment_t *controller, const char **labels, const action_cb_t *callbacks);
 
+/**
+ *
+ * @param old_list
+ * @param new_list
+ * @param num_changes number of changes. It will be assigned to -1 if the whole dataset has been changed.
+ * @return Allocated array of changes. It should be freed by caller.
+ */
+static lv_gridview_data_change_t *apps_list_detect_change(const apploader_list_t *old_list,
+                                                          const apploader_list_t *new_list, int *num_changes);
+
 static apps_fragment_t *current_instance = NULL;
 
 const static lv_gridview_adapter_t apps_adapter = {
@@ -475,7 +485,15 @@ static void appload_loaded(apploader_list_t *apps, void *userdata) {
     if (!fragment->base.managed->obj_created || fragment->base.managed->destroying_obj) {
         return;
     }
-    lv_gridview_set_data(fragment->applist, apps);
+    int num_changes = -1;
+    lv_gridview_data_change_t *changes = apps_list_detect_change(fragment->apploader_apps, apps, &num_changes);
+    if (num_changes != 0) {
+        lv_gridview_focus(fragment->applist, -1);
+    }
+    lv_gridview_set_data_advanced(fragment->applist, apps, changes, num_changes);
+    if (changes != NULL) {
+        free(changes);
+    }
     apploader_list_free(fragment->apploader_apps);
     fragment->apploader_apps = apps;
     update_view_state(fragment);
@@ -576,6 +594,7 @@ static void launcher_toggle_fav(apps_fragment_t *controller, const apploader_ite
 
 static void launcher_toggle_hidden(apps_fragment_t *controller, const apploader_item_t *app) {
     pcmanager_set_app_hidden(pcmanager, &controller->uuid, app->base.id, !app->hidden);
+    controller->show_hidden_apps = true;
     apploader_load(controller->apploader);
 }
 
@@ -770,4 +789,27 @@ static void set_actions(apps_fragment_t *controller, const char **labels, const 
     }
     lv_obj_set_style_min_width(controller->actions, LV_PCT(20 * num_actions), 0);
     lv_obj_set_user_data(controller->actions, (void *) callbacks);
+}
+
+
+static lv_gridview_data_change_t *apps_list_detect_change(const apploader_list_t *old_list,
+                                                          const apploader_list_t *new_list, int *num_changes) {
+    if (old_list == NULL && new_list == NULL) {
+        *num_changes = 0;
+        return NULL;
+    } else if ((old_list != NULL) != (new_list != NULL)) {
+        *num_changes = -1;
+        return NULL;
+    } else if (old_list->count != new_list->count) {
+        *num_changes = -1;
+        return NULL;
+    }
+    for (int i = 0; i < old_list->count; i++) {
+        if (old_list->items[i].base.id != new_list->items[i].base.id) {
+            *num_changes = -1;
+            return NULL;
+        }
+    }
+    *num_changes = 0;
+    return NULL;
 }
