@@ -19,7 +19,7 @@ endforeach ()
 add_custom_target(moonlight-i18n ALL DEPENDS ${MOFILES})
 add_dependencies(moonlight moonlight-i18n)
 
-file(GLOB_RECURSE I18N_SOURCES LIST_DIRECTORIES FALSE RELATIVE ${CMAKE_SOURCE_DIR} "app/*.c" "app/*.h")
+file(GLOB_RECURSE I18N_SOURCES LIST_DIRECTORIES FALSE RELATIVE ${CMAKE_SOURCE_DIR} "src/*.c" "src/*.h")
 add_custom_target(i18n-update-pot
         COMMAND ${XGETTEXT_COMMAND} --keyword=locstr --keyword=translatable --add-comments -o i18n/messages.pot
         ${I18N_SOURCES} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

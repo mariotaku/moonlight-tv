@@ -94,6 +94,7 @@ dkms.conf
 .DS_Store
 .AppleDouble
 .LSOverride
+*:Zone.Identifier
 
 # Icon must end with two \r
 Icon
