@@ -279,7 +279,10 @@ SDL_Window *app_ui_create_window(app_ui_t *ui) {
         win_height = app_configuration->window_state.h;
     }
     SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
-    SDL_assert_release(win != NULL);
+    if (win == NULL) {
+        commons_log_fatal("APP", "Failed to create window: %s", SDL_GetError());
+        app_halt(ui->app);
+    }
 
     SDL_Surface *winicon = IMG_Load_RW(SDL_RWFromConstMem(lv_sdl_img_data_logo_96.data.constptr,
                                                           (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);

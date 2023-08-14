@@ -206,19 +206,19 @@ static bool read_keyboard(app_ui_input_t *input, const SDL_KeyboardEvent *event,
 static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state) {
     app_t *app = input->ui->app;
     switch ((int) event->keysym.scancode) {
-        case SDL_WEBOS_SCANCODE_BACK:
+        case SDL_SCANCODE_WEBOS_BACK:
             state->key = LV_KEY_ESC;
             return true;
-        case SDL_WEBOS_SCANCODE_EXIT: {
+        case SDL_SCANCODE_WEBOS_EXIT: {
             if (app->session == NULL) {
                 app_request_exit();
             }
         }
             return false;
-        case SDL_WEBOS_SCANCODE_RED:
-        case SDL_WEBOS_SCANCODE_GREEN:
-        case SDL_WEBOS_SCANCODE_YELLOW:
-        case SDL_WEBOS_SCANCODE_BLUE: {
+        case SDL_SCANCODE_WEBOS_RED:
+        case SDL_SCANCODE_WEBOS_GREEN:
+        case SDL_SCANCODE_WEBOS_YELLOW:
+        case SDL_SCANCODE_WEBOS_BLUE: {
             SDL_Event btn_event;
             SDL_memcpy(&btn_event.key, event, sizeof(SDL_KeyboardEvent));
             btn_event.type = USER_REMOTEBUTTONEVENT;

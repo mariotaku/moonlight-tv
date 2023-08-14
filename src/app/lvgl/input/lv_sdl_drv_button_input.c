@@ -23,19 +23,19 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, USER_REMOTEBUTTONEVENT, USER_REMOTEBUTTONEVENT)) {
         switch (e.key.keysym.scancode) {
 #if TARGET_WEBOS
-            case SDL_WEBOS_SCANCODE_RED:
+            case SDL_SCANCODE_WEBOS_RED:
                 data->btn_id = 1;
                 data->continue_reading = true;
                 break;
-            case SDL_WEBOS_SCANCODE_GREEN:
+            case SDL_SCANCODE_WEBOS_GREEN:
                 data->btn_id = 2;
                 data->continue_reading = true;
                 break;
-            case SDL_WEBOS_SCANCODE_YELLOW:
+            case SDL_SCANCODE_WEBOS_YELLOW:
                 data->btn_id = 3;
                 data->continue_reading = true;
                 break;
-            case SDL_WEBOS_SCANCODE_BLUE:
+            case SDL_SCANCODE_WEBOS_BLUE:
                 data->btn_id = 4;
                 data->continue_reading = true;
                 break;
