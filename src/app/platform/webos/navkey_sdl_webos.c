@@ -1,5 +1,4 @@
 #include "platform/sdl/navkey_sdl.h"
-#include <SDL_webOS.h>
 
 NAVKEY navkey_from_sdl_webos(const SDL_Event *ev)
 {
@@ -10,13 +9,13 @@ NAVKEY navkey_from_sdl_webos(const SDL_Event *ev)
     {
         switch ((int) ev->key.keysym.scancode)
         {
-        case SDL_WEBOS_SCANCODE_RED:
+        case SDL_SCANCODE_WEBOS_RED:
             return NAVKEY_NEGATIVE;
-        case SDL_WEBOS_SCANCODE_YELLOW:
+        case SDL_SCANCODE_WEBOS_YELLOW:
             return NAVKEY_MENU;
-        case SDL_WEBOS_SCANCODE_BLUE:
+        case SDL_SCANCODE_WEBOS_BLUE:
             return NAVKEY_ALTERNATIVE;
-        case SDL_WEBOS_SCANCODE_BACK:
+        case SDL_SCANCODE_WEBOS_BACK:
             return NAVKEY_CANCEL;
         default:
             break;

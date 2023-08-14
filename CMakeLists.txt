@@ -55,7 +55,6 @@ option(COMMONS_LV_SDL_IMG_USE_IMAGE "Use SDL2_image API" ON)
 set(COMMONS_LOGGING_SDL ON)
 set(COMMONS_LOGGING_LVGL ON)
 set(COMMONS_LOGGING_SS4S ON)
-set(COMMONS_SDL2_POLYFILL_TARGET "2.0.0")
 
 if (TARGET_WEBOS OR TARGET_STEAMLINK)
     option(BUILD_TESTS "" OFF)
@@ -86,6 +85,7 @@ if (TARGET_WEBOS)
     set(OS_LINUX TRUE)
 
     set(WEBOS_APPINFO_ID "com.limelight.webos")
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/lib:$ORIGIN/../lib:$ORIGIN")
 elseif (TARGET_STEAMLINK)
     set(OS_LINUX TRUE)
     set(CMAKE_INSTALL_PREFIX moonlight-tv)
@@ -126,7 +126,11 @@ find_package(CURL REQUIRED)
 
 set(BUILD_SHARED_CORE_LIBS OFF)
 
-pkg_check_modules(SDL2 REQUIRED sdl2)
+if (TARGET_WEBOS)
+    include(ExternalSDL2BackportForWebOS)
+else ()
+    pkg_check_modules(SDL2 REQUIRED sdl2)
+endif()
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 
 find_package(MbedTLS)
@@ -247,8 +251,7 @@ if (TARGET_WEBOS)
     target_include_directories(moonlight-lib SYSTEM PUBLIC ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}
             ${WEBOSI18N_INCLUDE_DIRS})
     target_link_libraries(moonlight-lib PUBLIC ${PBNJSON_C_LIBRARIES} ${PMLOG_LIBRARIES} ${WEBOSI18N_LIBRARIES})
-    target_link_libraries(moonlight-lib PUBLIC commons-luna-sync commons-webos-is-uhd commons-webos-panel-info
-            commons-sdl2-polyfill)
+    target_link_libraries(moonlight-lib PUBLIC commons-luna-sync commons-webos-is-uhd commons-webos-panel-info)
 else ()
     if (TARGET_STEAMLINK)
         set(FEATURE_FORCE_FULLSCREEN ON)

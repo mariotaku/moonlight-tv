@@ -3,6 +3,7 @@ execute_process(COMMAND ares-package "${CPACK_TEMPORARY_DIRECTORY}" -o "${CPACK_
         -e cmake
         -e "libmbedtls[.].*"
         -e "lib/static"
+        -e "lib/pkgconfig"
         COMMAND_ERROR_IS_FATAL ANY
         )
 
