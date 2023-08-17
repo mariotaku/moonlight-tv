@@ -245,7 +245,7 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
         return;
     }
     uint8_t type = LI_CTYPE_XBOX;
-    uint16_t capabilities = LI_CCAP_ANALOG_TRIGGERS | LI_CCAP_RUMBLE;
+    uint16_t capabilities = LI_CCAP_ANALOG_TRIGGERS;
     switch (SDL_GameControllerGetType(gamepad->controller)) {
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
@@ -255,22 +255,41 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
             capabilities &= ~LI_CCAP_ANALOG_TRIGGERS;
             break;
         }
-        case SDL_CONTROLLER_TYPE_PS3:
+        case SDL_CONTROLLER_TYPE_PS3: {
+            type = LI_CTYPE_PS;
+            break;
+        }
         case SDL_CONTROLLER_TYPE_PS4:
         case SDL_CONTROLLER_TYPE_PS5: {
             type = LI_CTYPE_PS;
+            capabilities |= LI_CCAP_TOUCHPAD;
             break;
         }
         default: {
             break;
         }
     }
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+    if (SDL_GameControllerHasRumble(gamepad->controller)) {
+        capabilities |= LI_CCAP_RUMBLE;
+    }
+    if (SDL_GameControllerHasRumbleTriggers(gamepad->controller)) {
+        capabilities |= LI_CCAP_TRIGGER_RUMBLE;
+    }
+#else
+    capabilities |= LI_CCAP_RUMBLE;
+#if SSDL_VERSION_ATLEAST(2,0,14)
+    capabilities |= LI_CCAP_TRIGGER_RUMBLE;
+#endif
+#endif
+#if SDL_VERSION_ATLEAST(2, 0, 14)
     if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_ACCEL)) {
         capabilities |= LI_CCAP_ACCEL;
     }
     if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_GYRO)) {
         capabilities |= LI_CCAP_GYRO;
     }
+#endif
     LiSendControllerArrivalEvent(gamepad->id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);
 }
 

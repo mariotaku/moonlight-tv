@@ -23,4 +23,13 @@ bool app_input_gamepad_present(app_input_t *input, int which);
 void app_input_gamepad_rumble(app_input_t *input, unsigned short controllerNumber, unsigned short lowFreqMotor,
                               unsigned short highFreqMotor);
 
+void app_input_gamepad_rumble_triggers(app_input_t *input, unsigned short controllerNumber, unsigned short leftTrigger,
+                                       unsigned short rightTrigger);
+
+void app_input_gamepad_set_motion_event_state(app_input_t *input, unsigned short controllerNumber, uint8_t motionType,
+                                              uint16_t reportRateHz);
+
+void app_input_gamepad_set_controller_led(app_input_t *input, unsigned short controllerNumber, uint8_t r, uint8_t g,
+                                          uint8_t b);
+
 app_gamepad_state_t *app_input_gamepad_get(app_input_t *input, SDL_JoystickID sdl_id);

@@ -2,6 +2,7 @@
 
 #include <SDL_haptic.h>
 #include <SDL_joystick.h>
+#include <SDL_version.h>
 #include "gamecontrollerdb_updater.h"
 
 #include "lvgl.h"
@@ -16,8 +17,10 @@ typedef struct app_gamepad_state_t {
     int buttons;
     SDL_JoystickID sdl_id;
     SDL_GameController *controller;
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Haptic *haptic;
     int haptic_effect_id;
+#endif
     short id;
     bool initialized;
 } app_gamepad_state_t;

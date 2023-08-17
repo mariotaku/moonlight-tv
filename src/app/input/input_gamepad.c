@@ -3,6 +3,8 @@
 #include <stdbool.h>
 
 #include <SDL_gamecontroller.h>
+#include <SDL_version.h>
+#include <Limelight.h>
 
 #include "logging.h"
 #include "app_input.h"
@@ -38,8 +40,10 @@ bool app_input_init_gamepad(app_input_t *input, int which) {
             return false;
         }
         state->controller = controller;
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
         state->haptic = haptic;
         state->haptic_effect_id = -1;
+#endif
         commons_log_info("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id,
                          SDL_JoystickName(joystick),
                          sdl_id, guidstr);
@@ -64,9 +68,11 @@ void app_input_close_gamepad(app_input_t *input, SDL_JoystickID sdl_id) {
     input->gamepads_count--;
     // Remove gamepad mask
     input->activeGamepadMask &= ~(1 << state->id);
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
     if (state->haptic) {
         SDL_HapticClose(state->haptic);
     }
+#endif
     SDL_GameControllerClose(state->controller);
     commons_log_info("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
     // Release the state so it can be reused later
@@ -120,6 +126,9 @@ void app_input_gamepad_rumble(app_input_t *input, unsigned short controller_id,
 
     app_gamepad_state_t *state = &input->gamepads[controller_id];
 
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+    SDL_GameControllerRumble(state->controller, low_freq_motor, high_freq_motor, SDL_HAPTIC_INFINITY);
+#else
     SDL_Haptic *haptic = state->haptic;
     if (!haptic) {
         return;
@@ -146,4 +155,44 @@ void app_input_gamepad_rumble(app_input_t *input, unsigned short controller_id,
     if (state->haptic_effect_id >= 0) {
         SDL_HapticRunEffect(haptic, state->haptic_effect_id, 1);
     }
+#endif
+}
+
+
+void app_input_gamepad_rumble_triggers(app_input_t *input, unsigned short controllerNumber, unsigned short leftTrigger,
+                                       unsigned short rightTrigger) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    SDL_GameControllerRumbleTriggers(input->gamepads[controllerNumber].controller, leftTrigger, rightTrigger,
+                                     SDL_HAPTIC_INFINITY);
+#endif
+}
+
+void app_input_gamepad_set_motion_event_state(app_input_t *input, unsigned short controllerNumber, uint8_t motionType,
+                                              uint16_t reportRateHz) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    SDL_SensorType sensor_type = SDL_SENSOR_INVALID;
+    switch (motionType) {
+        case LI_MOTION_TYPE_ACCEL:
+            sensor_type = SDL_SENSOR_ACCEL;
+            break;
+        case LI_MOTION_TYPE_GYRO:
+            sensor_type = SDL_SENSOR_GYRO;
+            break;
+        default:
+            break;
+    }
+    if (sensor_type == SDL_SENSOR_INVALID) {
+        return;
+    }
+    SDL_GameControllerSetSensorEnabled(input->gamepads[controllerNumber].controller, sensor_type,
+                                       reportRateHz != 0 ? SDL_TRUE : SDL_FALSE);
+#endif
+}
+
+
+void app_input_gamepad_set_controller_led(app_input_t *input, unsigned short controllerNumber, uint8_t r, uint8_t g,
+                                          uint8_t b) {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    SDL_GameControllerSetLED(input->gamepads[controllerNumber].controller, r, g, b);
+#endif
 }
