@@ -54,6 +54,19 @@ static void connection_rumble(unsigned short controllerNumber, unsigned short lo
     app_input_gamepad_rumble(&current_session->app->input, controllerNumber, lowFreqMotor, highFreqMotor);
 }
 
+static void connection_rumble_triggers(unsigned short controllerNumber, unsigned short leftTrigger,
+                                       unsigned short rightTrigger) {
+    app_input_gamepad_rumble_triggers(&current_session->app->input, controllerNumber, leftTrigger, rightTrigger);
+}
+
+static void connection_set_motion_event_state(uint16_t controllerNumber, uint8_t motionType, uint16_t reportRateHz) {
+    app_input_gamepad_set_motion_event_state(&current_session->app->input, controllerNumber, motionType, reportRateHz);
+}
+
+static void connection_set_controller_led(uint16_t controllerNumber, uint8_t r, uint8_t g, uint8_t b) {
+    app_input_gamepad_set_controller_led(&current_session->app->input, controllerNumber, r, g, b);
+}
+
 static void connection_set_hdr(bool hdrEnabled) {
     streaming_set_hdr(current_session, hdrEnabled);
 }
@@ -66,6 +79,9 @@ CONNECTION_LISTENER_CALLBACKS connection_callbacks = {
         .connectionTerminated = connection_terminated,
         .logMessage = connection_log_message,
         .rumble = connection_rumble,
+        .rumbleTriggers = connection_rumble_triggers,
+        .setMotionEventState = connection_set_motion_event_state,
+        .setControllerLED = connection_set_controller_led,
         .connectionStatusUpdate = connection_status_update,
         .setHdrMode = connection_set_hdr
 };
