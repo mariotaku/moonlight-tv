@@ -289,6 +289,9 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
     if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_GYRO)) {
         capabilities |= LI_CCAP_GYRO;
     }
+    if (SDL_GameControllerHasLED(gamepad->controller)) {
+        capabilities |= LI_CCAP_RGB_LED;
+    }
 #endif
     LiSendControllerArrivalEvent(gamepad->id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);
 }
