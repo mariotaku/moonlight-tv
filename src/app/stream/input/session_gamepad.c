@@ -247,9 +247,11 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
     uint8_t type = LI_CTYPE_XBOX;
     uint16_t capabilities = LI_CCAP_ANALOG_TRIGGERS;
     switch (SDL_GameControllerGetType(gamepad->controller)) {
+#if SDL_VERSION_ATLEAST(2, 24, 0)
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+#endif
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO: {
             type = LI_CTYPE_NINTENDO;
             capabilities &= ~LI_CCAP_ANALOG_TRIGGERS;
