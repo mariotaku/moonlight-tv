@@ -142,7 +142,31 @@ void streaming_enter_overlay(session_t *session, int x, int y, int w, int h) {
 }
 
 void streaming_set_hdr(session_t *session, bool hdr) {
-    if (hdr) {
+    commons_log_info("Session", "HDR is %s", hdr ? "enabled" : "disabled");
+    SS_HDR_METADATA hdr_metadata;
+    if (!hdr) {
+        SS4S_PlayerVideoSetHDRInfo(session->player, NULL);
+    } else if (LiGetHdrMetadata(&hdr_metadata)) {
+        SS4S_VideoHDRInfo info = {
+                .displayPrimariesX = {
+                        hdr_metadata.displayPrimaries[0].x,
+                        hdr_metadata.displayPrimaries[1].x,
+                        hdr_metadata.displayPrimaries[2].x
+                },
+                .displayPrimariesY = {
+                        hdr_metadata.displayPrimaries[0].y,
+                        hdr_metadata.displayPrimaries[1].y,
+                        hdr_metadata.displayPrimaries[2].y
+                },
+                .whitePointX = hdr_metadata.whitePoint.x,
+                .whitePointY = hdr_metadata.whitePoint.y,
+                .maxDisplayMasteringLuminance = hdr_metadata.maxDisplayLuminance,
+                .minDisplayMasteringLuminance = hdr_metadata.minDisplayLuminance,
+                .maxContentLightLevel = hdr_metadata.maxContentLightLevel,
+                .maxPicAverageLightLevel = hdr_metadata.maxFrameAverageLightLevel,
+        };
+        SS4S_PlayerVideoSetHDRInfo(session->player, &info);
+    } else {
         SS4S_VideoHDRInfo info = {
                 .displayPrimariesX = {13250, 7500, 34000},
                 .displayPrimariesY = {34500, 3000, 16000},
@@ -154,8 +178,6 @@ void streaming_set_hdr(session_t *session, bool hdr) {
                 .maxPicAverageLightLevel = 400,
         };
         SS4S_PlayerVideoSetHDRInfo(session->player, &info);
-    } else {
-        SS4S_PlayerVideoSetHDRInfo(session->player, NULL);
     }
 }
 
