@@ -280,7 +280,7 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
     }
 #else
     capabilities |= LI_CCAP_RUMBLE;
-#if SSDL_VERSION_ATLEAST(2,0,14)
+#if SDL_VERSION_ATLEAST(2, 0, 14)
     capabilities |= LI_CCAP_TRIGGER_RUMBLE;
 #endif
 #endif
