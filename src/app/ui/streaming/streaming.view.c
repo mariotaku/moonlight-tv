@@ -61,7 +61,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     };
     lv_obj_set_style_bg_grad(actions, &actions_grad, 0);
     // We need a non-opaque opacity to properly render the elements
-    lv_obj_set_style_bg_opa(actions, LV_OPA_90, 0);
+    lv_obj_set_style_bg_opa(actions, LV_OPA_COVER, 0);
     lv_obj_add_flag(actions, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_event_cb(actions, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->group);
 
