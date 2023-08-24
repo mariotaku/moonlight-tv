@@ -53,3 +53,11 @@ void app_input_set_button_points(app_ui_input_t *input, const lv_point_t *points
 bool ui_set_input_mode(app_ui_input_t *input, app_ui_input_mode_t mode);
 
 app_ui_input_mode_t app_ui_get_input_mode(const app_ui_input_t *input);
+
+void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h);
+
+void app_stop_text_input(app_ui_input_t *input);
+
+bool app_text_input_active(app_ui_input_t *input);
+
+bool app_screen_keyboard_active(app_ui_input_t *input);

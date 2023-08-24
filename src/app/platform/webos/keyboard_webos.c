@@ -12,6 +12,7 @@
 
 #include "util/bus.h"
 #include "util/user_event.h"
+#include "logging.h"
 
 #define TV_REMOTE_TOGGLE_SOFT_INPUT 0
 

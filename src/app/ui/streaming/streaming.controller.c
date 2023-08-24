@@ -1,16 +1,15 @@
 #include "app.h"
+#include "app_session.h"
 #include "streaming.controller.h"
 #include "stream/video/session_video.h"
 #include "ui/root.h"
+#include "ui/common/progress_dialog.h"
 #include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_ext_utils.h"
-#include "stream/input/session_input.h"
 
 #include "util/user_event.h"
 #include "util/i18n.h"
-#include "ui/common/progress_dialog.h"
-#include "lvgl/theme/lv_theme_moonlight.h"
-#include "app_session.h"
+#include "logging.h"
 
 static void exit_streaming(lv_event_t *event);
 
@@ -43,6 +42,8 @@ static void overlay_key_cb(lv_event_t *e);
 static void update_buttons_layout(streaming_controller_t *controller);
 
 bool stats_showing(streaming_controller_t *controller);
+
+static void screen_keyboard_query(lv_timer_t *timer);
 
 const lv_fragment_class_t streaming_controller_class = {
         .constructor_cb = constructor,
@@ -223,6 +224,12 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     LV_UNUSED(view);
     streaming_controller_t *controller = (streaming_controller_t *) self;
+    lv_timer_t *timer = controller->screen_keyboard_query_timer;
+    if (timer != NULL) {
+        app_stop_text_input(&controller->global->ui.input);
+        controller->screen_keyboard_query_timer = NULL;
+        lv_timer_del(timer);
+    }
     if (controller->notice) {
         lv_obj_del(controller->notice);
     }
@@ -245,13 +252,17 @@ static void suspend_streaming(lv_event_t *event) {
 
 static void open_keyboard(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
+    hide_overlay(event);
     app_t *app = controller->global;
-    app_start_text_input(&app->ui.input, 0, 0, app->ui.width, app->ui.height);
+    app_start_text_input(&app->ui.input, 0, (app->ui.width - 10) / 2, app->ui.width, 10);
+    if (controller->screen_keyboard_query_timer == NULL) {
+        controller->screen_keyboard_query_timer = lv_timer_create(screen_keyboard_query, 100, controller);
+    }
 }
 
 static void toggle_vmouse(lv_event_t *event) {
-    LV_UNUSED(event);
     streaming_controller_t *controller = lv_event_get_user_data(event);
+    hide_overlay(event);
     app_t *app = controller->global;
     session_toggle_vmouse(app->session);
 }
@@ -322,4 +333,14 @@ static void update_buttons_layout(streaming_controller_t *controller) {
     lv_obj_get_coords(controller->kbd_btn, &coords);
     lv_area_center(&coords, &controller->button_points[4]);
     app_input_set_button_points(&controller->global->ui.input, controller->button_points);
+}
+
+static void screen_keyboard_query(lv_timer_t *timer) {
+    streaming_controller_t *controller = timer->user_data;
+    if (app_screen_keyboard_active(&controller->global->ui.input)) {
+        return;
+    }
+    app_stop_text_input(&controller->global->ui.input);
+    controller->screen_keyboard_query_timer = NULL;
+    lv_timer_del(timer);
 }

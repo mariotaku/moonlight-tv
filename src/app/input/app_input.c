@@ -26,14 +26,6 @@ void app_input_deinit(app_input_t *input) {
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 }
 
-void app_stop_text_input(app_ui_input_t *input) {
-    SDL_StopTextInput();
-}
-
-bool app_text_input_active(app_input_t *input) {
-    return SDL_IsTextInputActive();
-}
-
 void app_set_mouse_grab(app_input_t *input, bool grab) {
 #if HAVE_RELATIVE_MOUSE_HACK
     if (grab && input->blank_cursor_surface->userdata != NULL) {
