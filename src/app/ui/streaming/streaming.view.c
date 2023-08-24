@@ -42,33 +42,64 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_align(video, LV_ALIGN_TOP_LEFT, LV_DPX(20), LV_DPX(20));
     lv_obj_clear_flag(video, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *kbd_btn = lv_btn_create(overlay);
+    lv_obj_t *actions = lv_obj_create(overlay);
+    lv_obj_remove_style_all(actions);
+    lv_obj_set_size(actions, LV_PCT(100), LV_DPX(200));
+    lv_obj_align(actions, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_clear_flag(actions, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_layout(actions, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_align(actions, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
+    lv_obj_set_style_pad_gap(actions, LV_DPX(15), 0);
+    lv_obj_set_style_pad_all(actions, LV_DPX(20), 0);
+    static const lv_grad_dsc_t actions_grad = {
+            .dir = LV_GRAD_DIR_VER,
+            .stops = {
+                    {.color = {.ch ={0, 0, 0, 0}}, .frac = 0},
+                    {.color = {.ch ={0, 0, 0, 255}}, .frac = 255},
+            },
+            .stops_count = 2
+    };
+    lv_obj_set_style_bg_grad(actions, &actions_grad, 0);
+    // We need a non-opaque opacity to properly render the elements
+    lv_obj_set_style_bg_opa(actions, LV_OPA_90, 0);
+    lv_obj_add_flag(actions, LV_OBJ_FLAG_EVENT_BUBBLE);
+    lv_obj_add_event_cb(actions, cb_child_group_add, LV_EVENT_CHILD_CREATED, controller->group);
+
+    lv_obj_t *kbd_btn = lv_btn_create(actions);
     lv_obj_add_flag(kbd_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(kbd_btn, &controller->overlay_button_style, 0);
+    lv_obj_add_style(kbd_btn, &controller->overlay_button_style_focused, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_bg_color(kbd_btn, lv_palette_main(LV_PALETTE_BLUE), 0);
     lv_obj_t *kbd_label = lv_label_create(kbd_btn);
     lv_obj_add_style(kbd_label, &controller->overlay_button_label_style, 0);
     lv_label_set_text(kbd_label, locstr("Soft keyboard"));
 
-    lv_obj_t *vmouse_btn = lv_btn_create(overlay);
+    lv_obj_t *vmouse_btn = lv_btn_create(actions);
     lv_obj_add_flag(vmouse_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(vmouse_btn, &controller->overlay_button_style, 0);
+    lv_obj_add_style(vmouse_btn, &controller->overlay_button_style_focused, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_bg_color(vmouse_btn, lv_palette_main(LV_PALETTE_GREEN), 0);
     lv_obj_t *vmouse_label = lv_label_create(vmouse_btn);
     lv_obj_add_style(vmouse_label, &controller->overlay_button_label_style, 0);
     lv_label_set_text(vmouse_label, locstr("Virtual Mouse"));
 
-    lv_obj_t *suspend_btn = lv_btn_create(overlay);
+    lv_obj_t *actions_spacing = lv_obj_create(actions);
+    lv_obj_remove_style_all(actions_spacing);
+    lv_obj_set_flex_grow(actions_spacing, 1);
+
+    lv_obj_t *suspend_btn = lv_btn_create(actions);
     lv_obj_add_flag(suspend_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(suspend_btn, &controller->overlay_button_style, 0);
+    lv_obj_add_style(suspend_btn, &controller->overlay_button_style_focused, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_bg_color(suspend_btn, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_obj_t *suspend_lbl = lv_label_create(suspend_btn);
     lv_obj_add_style(suspend_lbl, &controller->overlay_button_label_style, 0);
     lv_label_set_text(suspend_lbl, locstr("Disconnect"));
 
-    lv_obj_t *exit_btn = lv_btn_create(overlay);
+    lv_obj_t *exit_btn = lv_btn_create(actions);
     lv_obj_add_flag(exit_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_add_style(exit_btn, &controller->overlay_button_style, 0);
+    lv_obj_add_style(exit_btn, &controller->overlay_button_style_focused, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_bg_color(exit_btn, lv_palette_main(LV_PALETTE_RED), 0);
     lv_obj_t *exit_lbl = lv_label_create(exit_btn);
     lv_obj_add_style(exit_lbl, &controller->overlay_button_label_style, 0);
@@ -102,6 +133,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_flag(overlay, LV_OBJ_FLAG_HIDDEN);
 
     controller->video = video;
+    controller->actions = actions;
     controller->kbd_btn = kbd_btn;
     controller->vmouse_btn = vmouse_btn;
     controller->quit_btn = exit_btn;
@@ -124,18 +156,21 @@ void streaming_styles_init(streaming_controller_t *controller) {
     lv_style_set_radius(&controller->overlay_button_style, LV_DPX(8));
     lv_style_set_pad_hor(&controller->overlay_button_style, LV_DPX(15));
     lv_style_set_pad_ver(&controller->overlay_button_style, LV_DPX(10));
+    lv_style_init(&controller->overlay_button_style_focused);
+    lv_style_set_outline_color(&controller->overlay_button_style_focused, lv_palette_lighten(LV_PALETTE_BLUE, 3));
 
     lv_style_init(&controller->overlay_button_label_style);
     lv_style_set_text_font(&controller->overlay_button_label_style, theme->font_small);
 }
 
+void streaming_styles_reset(streaming_controller_t *controller) {
+    lv_style_reset(&controller->overlay_button_style);
+    lv_style_reset(&controller->overlay_button_style_focused);
+    lv_style_reset(&controller->overlay_button_label_style);
+}
+
 void streaming_overlay_resized(streaming_controller_t *controller) {
-    lv_obj_align(controller->kbd_btn, LV_ALIGN_BOTTOM_LEFT, LV_DPX(20), -LV_DPX(20));
-    lv_obj_align(controller->quit_btn, LV_ALIGN_BOTTOM_RIGHT, -LV_DPX(20), -LV_DPX(20));
-
-    lv_obj_align_to(controller->vmouse_btn, controller->kbd_btn, LV_ALIGN_OUT_RIGHT_MID, LV_DPX(10), 0);
-    lv_obj_align_to(controller->suspend_btn, controller->quit_btn, LV_ALIGN_OUT_LEFT_MID, -LV_DPX(10), 0);
-
+    lv_obj_update_layout(controller->actions);
     lv_obj_update_layout(controller->overlay);
 }
 
@@ -197,7 +232,9 @@ static void pin_toggle(lv_event_t *e) {
     lv_fragment_t *fragment = lv_obj_get_user_data(toggle_view);
     bool checked = lv_obj_has_state(lv_event_get_current_target(e), LV_STATE_CHECKED);
     bool pinned = toggle_view->parent != fragment->obj;
-    if (checked == pinned) return;
+    if (checked == pinned) {
+        return;
+    }
     if (checked) {
         lv_obj_set_parent(toggle_view, lv_layer_top());
         lv_obj_add_state(toggle_view, LV_STATE_USER_1);
