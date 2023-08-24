@@ -8,7 +8,9 @@
 void app_input_init(app_input_t *input, app_t *app) {
     if (app->settings.condb_path != NULL) {
         app_input_copy_initial_gamepad_mapping(&app->settings);
-        SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG, app->settings.condb_path);
+#if SDL_VERSION_ATLEAST(2, 0, 10)
+        SDL_SetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE, app->settings.condb_path);
+#endif
     }
     SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
     input->blank_cursor_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
@@ -16,6 +18,9 @@ void app_input_init(app_input_t *input, app_t *app) {
     if (input->blank_cursor_surface->userdata == NULL) {
         commons_log_warn("Input", "Failed to create blank cursor: %s", SDL_GetError());
     }
+#if !SDL_VERSION_ATLEAST(2, 0, 10)
+    SDL_GameControllerAddMappingsFromFile(app->settings.condb_path);
+#endif
     app_input_init_gamepad_mapping(input, app->backend.executor, &app->settings);
 }
 
