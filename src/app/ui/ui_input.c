@@ -2,6 +2,8 @@
 #include "ui_input.h"
 #include "lvgl/input/lv_drv_sdl_key.h"
 #include "lvgl/lv_sdl_drv_input.h"
+#include "input/app_input.h"
+#include "logging.h"
 
 static void app_input_populate_group(app_ui_input_t *input);
 
@@ -79,14 +81,30 @@ void app_input_set_button_points(app_ui_input_t *input, const lv_point_t *points
 
 void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h) {
     if (w > 0 && h > 0) {
-        struct SDL_Rect rect = {x, y, w, h};
+        SDL_Rect rect = {x, y, w, h};
         SDL_SetTextInputRect(&rect);
     } else {
         SDL_SetTextInputRect(NULL);
     }
     lv_sdl_key_input_release_key(input->key.indev);
-    if (SDL_IsTextInputActive()) { return; }
+    if (app_text_input_active(input)) {
+        return;
+    }
     SDL_StartTextInput();
+}
+
+void app_stop_text_input(app_ui_input_t *input) {
+    (void) input;
+    SDL_StopTextInput();
+}
+
+bool app_text_input_active(app_ui_input_t *input) {
+    (void) input;
+    return SDL_IsTextInputActive();
+}
+
+bool app_screen_keyboard_active(app_ui_input_t *input) {
+    return SDL_IsScreenKeyboardShown(input->ui->window);
 }
 
 static void app_input_populate_group(app_ui_input_t *input) {
