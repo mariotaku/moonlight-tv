@@ -15,6 +15,7 @@ typedef struct {
     lv_obj_t *hint;
     lv_obj_t *progress;
     lv_obj_t *video;
+    lv_obj_t *actions;
     lv_obj_t *kbd_btn, *vmouse_btn;
     lv_obj_t *suspend_btn, *quit_btn;
     lv_obj_t *stats;
@@ -29,6 +30,7 @@ typedef struct {
     } stats_items;
     lv_obj_t *notice, *notice_label;
     lv_style_t overlay_button_style;
+    lv_style_t overlay_button_style_focused;
     lv_style_t overlay_button_label_style;
     lv_point_t button_points[5];
     lv_timer_t *screen_keyboard_query_timer;
@@ -46,6 +48,8 @@ extern const lv_fragment_class_t streaming_controller_class;
 lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent);
 
 void streaming_styles_init(streaming_controller_t *controller);
+
+void streaming_styles_reset(streaming_controller_t *controller);
 
 void streaming_overlay_resized(streaming_controller_t *controller);
 
