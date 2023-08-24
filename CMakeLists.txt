@@ -131,7 +131,7 @@ if (TARGET_WEBOS)
     include(ExternalSDL2BackportForWebOS)
     unset(CMAKE_INSTALL_LIBDIR)
 else ()
-    pkg_check_modules(SDL2 REQUIRED sdl2)
+    pkg_check_modules(SDL2 REQUIRED sdl2>=2.0.4)
 endif()
 pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 
