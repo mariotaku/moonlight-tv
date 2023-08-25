@@ -3,7 +3,7 @@ run-name: "Release ${{ github.ref_name }}"
 
 on:
   release:
-    types: [ released ]
+    types: [ published ]
 
 env:
   BUILD_TYPE: Release
