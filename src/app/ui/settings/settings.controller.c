@@ -11,12 +11,6 @@
 #include "util/i18n.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
 
-#if TARGET_WEBOS
-
-#include "is_uhd.h"
-
-#endif
-
 typedef struct {
     const char *icon;
     const char *name;
@@ -85,16 +79,12 @@ static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     fragment->mini = fragment->pending_mini = UI_IS_MINI(fragment->app->ui.width);
     os_info_get(&fragment->os_info);
 #if TARGET_WEBOS
-    memset(&fragment->webos_panel_info, 0, sizeof(webos_panel_info_t));
-    bool is_uhd = false;
-    if (commons_webos_get_panel_info(&fragment->webos_panel_info) == 0) {
-        is_uhd = fragment->webos_panel_info.width >= 3840;
-    } else if (commons_webos_is_uhd(&is_uhd) == 0 && is_uhd) {
-        fragment->webos_panel_info.width = 3840;
-        fragment->webos_panel_info.height = 2160;
-        fragment->webos_panel_info.rate = 60;
-    } else {
-        fragment->webos_panel_info.rate = 60;
+    if (!SDL_webOSGetPanelResolution(&fragment->panel_width, &fragment->panel_height)) {
+        fragment->panel_width = 1920;
+        fragment->panel_height = 1080;
+    }
+    if (!SDL_webOSGetRefreshRate(&fragment->panel_fps)) {
+        fragment->panel_fps = 60;
     }
 #endif
 }

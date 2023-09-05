@@ -65,15 +65,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     }
     free(os_str);
 #if TARGET_WEBOS
-    const webos_panel_info_t *panel_info = &parent->webos_panel_info;
-    if (panel_info->height && panel_info->width) {
+    if (parent->panel_width > 0 && parent->panel_height > 0) {
         char resolution_text[16];
-        SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", panel_info->width, panel_info->height);
+        SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", parent->panel_width, parent->panel_height);
         about_line(view, locstr("Screen resolution"), resolution_text, rowcount++, 1);
     }
-    if (panel_info->rate) {
+    if (parent->panel_fps > 0) {
         char fps_text[16];
-        SDL_snprintf(fps_text, sizeof(fps_text), "%4dFPS", panel_info->rate);
+        SDL_snprintf(fps_text, sizeof(fps_text), "%4dFPS", parent->panel_fps);
         about_line(view, locstr("Refresh rate"), fps_text, rowcount++, 1);
     }
 #endif

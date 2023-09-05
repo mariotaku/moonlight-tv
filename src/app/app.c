@@ -40,6 +40,7 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     commons_logging_init("moonlight");
     SDL_LogSetOutputFunction(commons_sdl_log, NULL);
     SDL_SetAssertionHandler(app_assertion_handler_abort, NULL);
+    SDL_Init(0);
     commons_log_info("APP", "Start Moonlight. Version %s", APP_VERSION);
     settings_loader(&app->settings);
     app->main_thread_id = SDL_ThreadID();
@@ -60,9 +61,11 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
+    SDL_SetHint(SDL_HINT_WEBOS_CURSOR_FREQUENCY, "60");
+    SDL_SetHint(SDL_HINT_WEBOS_CURSOR_CALIBRATION_DISABLE, "true");
 #endif
     // DO not init video subsystem before NDL/LGNC initialization
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_InitSubSystem(SDL_INIT_VIDEO);
     // This will occupy SDL_USEREVENT
     SDL_RegisterEvents(1);
     commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
@@ -85,13 +88,13 @@ void app_deinit(app_t *app) {
     app_set_keep_awake(app, false);
     app_input_deinit(&app->input);
 
-    backend_destroy(&app->backend);
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
+    backend_destroy(&app->backend);
 
     settings_save(&app->settings);
     settings_clear(&app->settings);
     free(app->settings.conf_dir);
-
 
 #if FEATURE_INPUT_LIBCEC
     cec_sdl_deinit(&app->cec);

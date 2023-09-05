@@ -13,12 +13,6 @@
 
 #include "app_settings.h"
 
-#if TARGET_WEBOS
-
-#include "panel_info.h"
-
-#endif
-
 typedef struct app_t app_t;
 
 typedef struct {
@@ -43,7 +37,9 @@ typedef struct {
     os_info_t os_info;
     bool needs_restart;
 #if TARGET_WEBOS
-    webos_panel_info_t webos_panel_info;
+    int panel_width;
+    int panel_height;
+    int panel_fps;
 #endif
 } settings_controller_t;
 
