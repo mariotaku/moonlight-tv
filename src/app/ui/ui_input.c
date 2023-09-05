@@ -87,7 +87,7 @@ void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h) {
         SDL_SetTextInputRect(NULL);
     }
     lv_sdl_key_input_release_key(input->key.indev);
-    if (app_text_input_active(input)) {
+    if (SDL_IsTextInputActive()) {
         return;
     }
     SDL_StartTextInput();
@@ -96,11 +96,6 @@ void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h) {
 void app_stop_text_input(app_ui_input_t *input) {
     (void) input;
     SDL_StopTextInput();
-}
-
-bool app_text_input_active(app_ui_input_t *input) {
-    (void) input;
-    return SDL_IsTextInputActive();
 }
 
 bool app_screen_keyboard_active(app_ui_input_t *input) {

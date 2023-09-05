@@ -6,7 +6,7 @@
 #include "util/i18n.h"
 #include "app_launch.h"
 
-#define USE_OPENURL ((OS_DARWIN || OS_WINDOWS) && SDL_VERSION_ATLEAST(2, 0, 14))
+#define USE_OPENURL SDL_VERSION_ATLEAST(2, 0, 14)
 
 #if !USE_OPENURL
 

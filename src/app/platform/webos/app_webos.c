@@ -12,17 +12,7 @@
 static char locale_system[16];
 
 void app_open_url(const char *url) {
-    jvalue_ref payload_obj = jobject_create_var(
-            jkeyval(J_CSTR_TO_JVAL("id"), J_CSTR_TO_JVAL("com.webos.app.browser")),
-            jkeyval(J_CSTR_TO_JVAL("params"), jobject_create_var(
-                    jkeyval(J_CSTR_TO_JVAL("target"), j_cstr_to_jval(url)),
-                    J_END_OBJ_DECL
-            )),
-            J_END_OBJ_DECL
-    );
-    const char *payload = jvalue_stringify(payload_obj);
-    HLunaServiceCallSync("luna://com.webos.applicationManager/launch", payload, true, NULL);
-    j_release(&payload_obj);
+    SDL_OpenURL(url);
 }
 
 void app_init_locale() {
@@ -31,29 +21,18 @@ void app_init_locale() {
         i18n_setlocale(app_configuration->language);
         return;
     }
-    char *payload = NULL;
-    commons_log_debug("APP", "Get system locale settings");
-    if (!HLunaServiceCallSync("luna://com.webos.settingsservice/getSystemSettings", "{\"key\": \"localeInfo\"}",
-                              true, &payload) || !payload) {
-        commons_log_warn("APP", "Failed to get system locale settings. Falling back to English.");
-        return;
+    SDL_Locale *locales = SDL_GetPreferredLocales();
+    if (locales) {
+        for (int i = 0; locales[i].language; i++) {
+            if (locales[i].country) {
+                snprintf(locale_system, sizeof(locale_system), "%s-%s", locales[i].language, locales[i].country);
+            } else {
+                strncpy(locale_system, locales[i].language, sizeof(locale_system));
+            }
+            i18n_setlocale(locale_system);
+        }
+        SDL_free(locales);
     }
-    JSchemaInfo schemaInfo;
-    jschema_info_init(&schemaInfo, jschema_all(), NULL, NULL);
-    jdomparser_ref parser = jdomparser_create(&schemaInfo, 0);
-    jdomparser_feed(parser, payload, (int) strlen(payload));
-    jdomparser_end(parser);
-    jvalue_ref payload_obj = jdomparser_get_result(parser);
-    jvalue_ref locale = jobject_get_nested(payload_obj, "settings", "localeInfo", "locales", "UI", NULL);
-    if (jis_string(locale)) {
-        raw_buffer buf = jstring_get(locale);
-        size_t len = buf.m_len <= 15 ? buf.m_len : 15;
-        strncpy(locale_system, buf.m_str, len);
-        locale_system[len] = '\0';
-        jstring_free_buffer(buf);
-        i18n_setlocale(locale_system);
-    }
-    jdomparser_release(&parser);
 }
 
 app_launch_params_t *app_handle_launch(app_t *app, int argc, char *argv[]) {

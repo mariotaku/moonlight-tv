@@ -93,11 +93,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     unsigned int max_width = app->ss4s.video_cap.maxWidth, max_height = app->ss4s.video_cap.maxHeight;
 
 #if TARGET_WEBOS
-    const webos_panel_info_t *panel_info = &parent->webos_panel_info;
-    if (panel_info->width > 0 && panel_info->height > 0 &&
-        (max_width == 0 || max_height == 0 || panel_info->width < max_width || panel_info->height < max_height)) {
-        max_width = panel_info->width;
-        max_height = panel_info->height;
+    if (parent->panel_width > 0 && parent->panel_height > 0 &&
+        (max_width == 0 || max_height == 0 || parent->panel_width < max_width || parent->panel_height < max_height)) {
+        max_width = parent->panel_width;
+        max_height = parent->panel_height;
     }
 #endif
 
@@ -118,8 +117,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     unsigned int max_fps = app->ss4s.video_cap.maxFps;
 #if TARGET_WEBOS
-    if (panel_info->rate > 0 && (max_fps == 0 || panel_info->rate < max_fps)) {
-        max_fps = panel_info->rate;
+    if (parent->panel_fps > 0 && (max_fps == 0 || parent->panel_fps < max_fps)) {
+        max_fps = parent->panel_fps;
     }
 #endif
     int fps_len;
