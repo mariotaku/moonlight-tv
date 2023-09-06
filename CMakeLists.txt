@@ -86,7 +86,6 @@ if (TARGET_WEBOS)
 
     set(WEBOS_APPINFO_ID "com.limelight.webos")
     set(CMAKE_INSTALL_RPATH "$ORIGIN/lib/backports:$ORIGIN/../lib/backports:$ORIGIN")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g3 -O0")
 elseif (TARGET_STEAMLINK)
     set(OS_LINUX TRUE)
     set(CMAKE_INSTALL_PREFIX moonlight-tv)
