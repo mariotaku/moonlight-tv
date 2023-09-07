@@ -75,11 +75,11 @@ msgstr "Teclas do controle remoto"
 
 #: src/app/ui/help/help.dialog.c:42
 msgid "Open moonlight-tv Wiki"
-msgstr "Abrir moonlight-tv Wiki"
+msgstr "Abrir Wiki moonlight-tv"
 
 #: src/app/ui/help/help.dialog.c:44
 msgid "Open moonlight-stream Wiki"
-msgstr "Abrir moonlight-stream Wiki"
+msgstr "Abrir Wiki moonlight-stream"
 
 #: src/app/ui/launcher/add.dialog.c:57
 msgid "IP address"
@@ -194,7 +194,7 @@ msgstr "Nenhum decodificador funcionando"
 
 #: src/app/ui/launcher/launcher.controller.c:465
 msgid "Streaming can't work without a valid decoder."
-msgstr "A transmissão não funciona sem o decodificador válido."
+msgstr "A transmissão não funciona sem um decodificador válido."
 
 #. Use list button for normal container
 #: src/app/ui/launcher/launcher.view.c:107
@@ -237,8 +237,8 @@ msgid "IP address: %s\n"
 "GeForce Experience: %s"
 msgstr "Endereço IP: %s\n"
 "GPU: %s\n"
-"Suporta 4K: %s\n"
-"Suporta HDR: %s\n"
+"Suporte a 4K: %s\n"
+"Suporte a HDR: %s\n"
 "Versão do programa no host: %s\n"
 "GeForce Experience: %s"
 
@@ -319,7 +319,7 @@ msgstr "Prefira o codec H265"
 
 #: src/app/ui/settings/panes/decoder.pane.c:132
 msgid "H265 usually has clearer graphics, and is required for using HDR."
-msgstr "H265 normalmente tem gráficos melhores e é obrigatorio para usar HDR"
+msgstr "H265 normalmente tem imagens melhores e é obrigatorio para usar HDR"
 
 #: src/app/ui/settings/panes/decoder.pane.c:136
 #, c-format
