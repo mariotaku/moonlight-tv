@@ -17,7 +17,7 @@ static bool read_keyboard(app_ui_input_t *input, const SDL_KeyboardEvent *event,
 
 static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
-static void webos_key_input_mode(const SDL_KeyboardEvent *event);
+static void webos_key_input_mode(app_ui_input_t *input, const SDL_KeyboardEvent *event);
 
 #endif
 
@@ -59,7 +59,7 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         }
     } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP) > 0) {
 #if TARGET_WEBOS
-        webos_key_input_mode(&e.key);
+        webos_key_input_mode(input, &e.key);
 #endif
         if (app->session != NULL && session_handle_input_event(app->session, &e)) {
             state->state = LV_INDEV_STATE_RELEASED;
@@ -230,13 +230,15 @@ static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event
     }
 }
 
-static void webos_key_input_mode(const SDL_KeyboardEvent *event) {
+static void webos_key_input_mode(app_ui_input_t *input, const SDL_KeyboardEvent *event) {
     switch (event->keysym.sym) {
         case SDLK_UP:
         case SDLK_DOWN:
         case SDLK_LEFT:
         case SDLK_RIGHT: {
-            SDL_webOSCursorVisibility(SDL_FALSE);
+            if (!SDL_IsScreenKeyboardShown(input->ui->window)) {
+                SDL_webOSCursorVisibility(SDL_FALSE);
+            }
             break;
         }
         default:
