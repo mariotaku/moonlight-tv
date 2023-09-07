@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-08-01 15:59+0900\n"
-"PO-Revision-Date: 2023-08-01 07:04\n"
+"PO-Revision-Date: 2023-09-07 15:55-0300\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese, Brazilian\n"
 "Language: pt_BR\n"
@@ -43,23 +43,23 @@ msgstr "Sair do Moonlight?"
 
 #: src/app/app_settings.c:32
 msgid "Stereo"
-msgstr ""
+msgstr "Estéreo"
 
 #: src/app/app_settings.c:33
 msgid "5.1 Surround"
-msgstr ""
+msgstr "5.1 Surround"
 
 #: src/app/app_settings.c:34
 msgid "7.1 Surround"
-msgstr ""
+msgstr "7.1 Surround"
 
 #: src/app/platform/common/i18n_common.c:6
 msgid "System Language"
-msgstr ""
+msgstr "Língua do sistema"
 
 #: src/app/stream/connection/session_connnection.c:37
 msgid "Unstable connection."
-msgstr ""
+msgstr "Conexão instável"
 
 #: src/app/ui/help/help.dialog.c:15 src/app/ui/launcher/launcher.view.c:113
 msgid "Help"
@@ -67,19 +67,19 @@ msgstr "Ajuda"
 
 #: src/app/ui/help/help.dialog.c:37
 msgid "Gamepad hotkeys"
-msgstr ""
+msgstr "Atalhos de controle"
 
 #: src/app/ui/help/help.dialog.c:39
 msgid "Remote controller keys"
-msgstr ""
+msgstr "Teclas do controle remoto"
 
 #: src/app/ui/help/help.dialog.c:42
 msgid "Open moonlight-tv Wiki"
-msgstr ""
+msgstr "Abrir moonlight-tv Wiki"
 
 #: src/app/ui/help/help.dialog.c:44
 msgid "Open moonlight-stream Wiki"
-msgstr ""
+msgstr "Abrir moonlight-stream Wiki"
 
 #: src/app/ui/launcher/add.dialog.c:57
 msgid "IP address"
@@ -95,11 +95,11 @@ msgstr "Falha ao adicionar computador."
 
 #: src/app/ui/launcher/add.dialog.c:155
 msgid "Failed to add computer"
-msgstr ""
+msgstr "Falha ao adicionar computador."
 
 #: src/app/ui/launcher/apps.controller.c:140
 msgid "Wake"
-msgstr ""
+msgstr "Acordar"
 
 #: src/app/ui/launcher/apps.controller.c:140
 #: src/app/ui/launcher/apps.controller.c:142
@@ -108,7 +108,7 @@ msgstr "Tentar novamente"
 
 #: src/app/ui/launcher/apps.controller.c:144
 msgid "Pair"
-msgstr ""
+msgstr "Parear"
 
 #: src/app/ui/launcher/apps.controller.c:393
 msgid "Failed to load apps"
@@ -118,7 +118,8 @@ msgstr "Falha ao carregar a lista de apps"
 #: src/app/ui/launcher/apps.controller.c:442
 msgid "Press \"Retry\" to load again.\n\n"
 "Restart your computer if error persists."
-msgstr ""
+msgstr "Pressione \"Tentar novamente\" para carregar novamente.\n\n"
+"Reinicie seu computador se o problema persistir."
 
 #: src/app/ui/launcher/apps.controller.c:424
 msgid "Not paired"
@@ -126,7 +127,7 @@ msgstr "Não pareado"
 
 #: src/app/ui/launcher/apps.controller.c:426
 msgid "Press \"Pair\", and input PIN code on your computer to pair."
-msgstr ""
+msgstr "Pressione \"Parear\", e insira o código pin no seu computador."
 
 #: src/app/ui/launcher/apps.controller.c:440
 msgid "Host error"
@@ -134,16 +135,17 @@ msgstr "Erro no host"
 
 #: src/app/ui/launcher/apps.controller.c:458
 msgid "Offline"
-msgstr "Offline"
+msgstr "Desconectado"
 
 #: src/app/ui/launcher/apps.controller.c:460
 msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
 "Try restart your computer if these doesn't work."
-msgstr ""
+msgstr "Pressione \"acordar\" para enviar um pacote Wake-on-LAN para ligar o seu computador se ele suportar o recurso, pressione \"Tentar Novamente\" para conectar novamente.\n\n"
+"Tentei reiniciar o comportador se isso não funcionar."
 
 #: src/app/ui/launcher/apps.controller.c:602
 msgid "Quitting game..."
-msgstr ""
+msgstr "Fechando o jogo..."
 
 #: src/app/ui/launcher/apps.controller.c:663
 msgid "Unable to quit game"
@@ -175,11 +177,11 @@ msgstr "Favoritar"
 
 #: src/app/ui/launcher/apps.controller.c:728
 msgid "Unhide"
-msgstr ""
+msgstr "Desocultar"
 
 #: src/app/ui/launcher/apps.controller.c:728
 msgid "Hide"
-msgstr ""
+msgstr "Ocultar"
 
 #: src/app/ui/launcher/apps.controller.c:732
 #: src/app/ui/launcher/server.context_menu.c:75
@@ -188,16 +190,16 @@ msgstr "Informação"
 
 #: src/app/ui/launcher/launcher.controller.c:462
 msgid "No working decoder"
-msgstr ""
+msgstr "Nenhum decodificador funcionando"
 
 #: src/app/ui/launcher/launcher.controller.c:465
 msgid "Streaming can't work without a valid decoder."
-msgstr ""
+msgstr "A transmissão não funciona sem o decodificador válido."
 
 #. Use list button for normal container
 #: src/app/ui/launcher/launcher.view.c:107
 msgid "Add computer"
-msgstr "Adicionar um computador"
+msgstr "Adicionar computador"
 
 #: src/app/ui/launcher/launcher.view.c:119
 #: src/app/ui/settings/settings.view.c:31
@@ -219,11 +221,11 @@ msgstr "Insira o código PIN no seu computador."
 
 #: src/app/ui/launcher/server.context_menu.c:79
 msgid "Show hidden apps"
-msgstr ""
+msgstr "Mostar apps ocultos"
 
 #: src/app/ui/launcher/server.context_menu.c:84
 msgid "Forget"
-msgstr ""
+msgstr "Esquecer"
 
 #: src/app/ui/launcher/server.context_menu.c:133
 #, c-format
@@ -233,7 +235,12 @@ msgid "IP address: %s\n"
 "Supports HDR: %s\n"
 "Host Software Version: %s\n"
 "GeForce Experience: %s"
-msgstr ""
+msgstr "Endereço IP: %s\n"
+"GPU: %s\n"
+"Suporta 4K: %s\n"
+"Suporta HDR: %s\n"
+"Versão do programa no host: %s\n"
+"GeForce Experience: %s"
 
 #: src/app/ui/settings/panes/about.pane.c:59
 msgid "Version"
@@ -242,7 +249,7 @@ msgstr "Versão"
 #: src/app/ui/settings/panes/about.pane.c:60
 #: src/app/ui/settings/panes/decoder.pane.c:110
 msgid "Video decoder"
-msgstr "Decoder de vídeo"
+msgstr "Decodificador de vídeo"
 
 #: src/app/ui/settings/panes/about.pane.c:61
 #: src/app/ui/settings/panes/decoder.pane.c:117
@@ -251,7 +258,7 @@ msgstr "Backend de áudio"
 
 #: src/app/ui/settings/panes/about.pane.c:64
 msgid "System"
-msgstr ""
+msgstr "Sistema"
 
 #: src/app/ui/settings/panes/about.pane.c:72
 msgid "Screen resolution"
@@ -289,17 +296,17 @@ msgstr "Bitrate de vídeo - %d kbps"
 
 #: src/app/ui/settings/panes/basic.pane.c:221
 msgid "Higher bitrate may cause performance issue, try with caution."
-msgstr ""
+msgstr "Bitrate maior pode causar problema de performance, experimente com cuidado."
 
 #: src/app/ui/settings/panes/decoder.pane.c:67
 #: src/app/ui/settings/panes/decoder.pane.c:68
 msgid "Auto"
-msgstr ""
+msgstr "Automático"
 
 #: src/app/ui/settings/panes/decoder.pane.c:111
 #, c-format
 msgid "Video decoder - using %s"
-msgstr "Decoder de vídeo - usando %s"
+msgstr "Decodificador de vídeo - usando %s"
 
 #: src/app/ui/settings/panes/decoder.pane.c:118
 #, c-format
@@ -308,16 +315,16 @@ msgstr "Backend de áudio - usando %s"
 
 #: src/app/ui/settings/panes/decoder.pane.c:128
 msgid "Prefer H265 codec"
-msgstr ""
+msgstr "Prefira o codec H265"
 
 #: src/app/ui/settings/panes/decoder.pane.c:132
 msgid "H265 usually has clearer graphics, and is required for using HDR."
-msgstr ""
+msgstr "H265 normalmente tem gráficos melhores e é obrigatorio para usar HDR"
 
 #: src/app/ui/settings/panes/decoder.pane.c:136
 #, c-format
 msgid "%s decoder doesn't support H265 codec."
-msgstr ""
+msgstr "Decodificador %s não suporta o codec H265"
 
 #: src/app/ui/settings/panes/decoder.pane.c:140
 msgid "HDR (experimental)"
@@ -326,12 +333,12 @@ msgstr "HDR (experimental)"
 #: src/app/ui/settings/panes/decoder.pane.c:144
 #, c-format
 msgid "%s decoder doesn't support HDR."
-msgstr "Decoder %s não suporta HDR."
+msgstr "Decodificador %s não suporta HDR."
 
 #: src/app/ui/settings/panes/decoder.pane.c:148
 #: src/app/ui/settings/panes/decoder.pane.c:196
 msgid "H265 is required to use HDR."
-msgstr ""
+msgstr "H256 é obrigatorio para usar HDR."
 
 #: src/app/ui/settings/panes/decoder.pane.c:151
 #: src/app/ui/settings/panes/decoder.pane.c:199
@@ -344,7 +351,7 @@ msgstr "Saiba mais sobre o recurso HDR."
 
 #: src/app/ui/settings/panes/decoder.pane.c:160
 msgid "Sound Channels (Experimental)"
-msgstr ""
+msgstr "Canais de Som (Experimental)"
 
 #: src/app/ui/settings/panes/host.pane.c:26
 msgid "Optimize game settings for streaming"
@@ -368,15 +375,15 @@ msgstr "Não envia mouse, teclado ou controle para o computador host."
 
 #: src/app/ui/settings/panes/input.pane.c:42
 msgid "Mouse"
-msgstr ""
+msgstr "Mouse"
 
 #: src/app/ui/settings/panes/input.pane.c:45
 msgid "Use mouse hardware"
-msgstr ""
+msgstr "Usar mouse físico"
 
 #: src/app/ui/settings/panes/input.pane.c:48
 msgid "Use plugged mouse device only when streaming. This will have better performance, but absolute mouse mode will not be enabled."
-msgstr ""
+msgstr "Usar dispositivo do mouse plugado somente quando transmitindo. Vai ter uma melhor performance, mas o movimento absoluto do mouse não será habilitado."
 
 #: src/app/ui/settings/panes/input.pane.c:53
 msgid "Absolute mouse mode"
@@ -389,15 +396,15 @@ msgstr "Melhor para desktop remoto. Para alguns jogos, o mouse não funcionará 
 
 #: src/app/ui/settings/panes/input.pane.c:58
 msgid "Gamepad"
-msgstr ""
+msgstr "Controle"
 
 #: src/app/ui/settings/panes/input.pane.c:60
 msgid "Virtual mouse"
-msgstr ""
+msgstr "Mouse virtual"
 
 #: src/app/ui/settings/panes/input.pane.c:61
 msgid "Press LB + RT to move mouse cursor with sticks. LT/RT for left/right mouse buttons."
-msgstr ""
+msgstr "Pressione LB + RT para mover o mouse com as alavancas. LT/RT para os botões direito e esquedo do mouse"
 
 #: src/app/ui/settings/panes/input.pane.c:64
 msgid "Swap ABXY buttons"
@@ -409,7 +416,7 @@ msgstr "Trocar botões A/B e X/Y do controle. Útil quando você prefere layouts
 
 #: src/app/ui/settings/panes/input.pane.c:81
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
-msgstr ""
+msgstr "Movimento absoluto do mouse não pode ser usado quando \"Usar mouse físico\" estiver habilitado.
 
 #: src/app/ui/settings/settings.controller.c:27
 msgid "Basic Settings"
@@ -454,7 +461,7 @@ msgstr "Falha ao iniciar o streaming"
 #: src/app/ui/streaming/streaming.view.c:26
 #, c-format
 msgid "Hint: %s"
-msgstr ""
+msgstr "Dica: %s"
 
 #: src/app/ui/streaming/streaming.view.c:51
 msgid "Soft keyboard"
@@ -462,7 +469,7 @@ msgstr "Teclado virtual"
 
 #: src/app/ui/streaming/streaming.view.c:59
 msgid "Virtual Mouse"
-msgstr ""
+msgstr "Mouse virtual"
 
 #: src/app/ui/streaming/streaming.view.c:67
 msgid "Disconnect"
@@ -474,5 +481,5 @@ msgstr "Fechar o jogo"
 
 #: src/app/ui/streaming/streaming.view.c:90
 msgid "Performance"
-msgstr ""
+msgstr "Performance"
 
