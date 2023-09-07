@@ -43,8 +43,6 @@ static void update_buttons_layout(streaming_controller_t *controller);
 
 bool stats_showing(streaming_controller_t *controller);
 
-static void screen_keyboard_query(lv_timer_t *timer);
-
 const lv_fragment_class_t streaming_controller_class = {
         .constructor_cb = constructor,
         .destructor_cb = controller_dtor,
@@ -223,12 +221,6 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     LV_UNUSED(view);
     streaming_controller_t *controller = (streaming_controller_t *) self;
-    lv_timer_t *timer = controller->screen_keyboard_query_timer;
-    if (timer != NULL) {
-        app_stop_text_input(&controller->global->ui.input);
-        controller->screen_keyboard_query_timer = NULL;
-        lv_timer_del(timer);
-    }
     if (controller->notice) {
         lv_obj_del(controller->notice);
     }
@@ -254,9 +246,6 @@ static void open_keyboard(lv_event_t *event) {
     hide_overlay(event);
     app_t *app = controller->global;
     app_start_text_input(&app->ui.input, 0, (app->ui.width - 10) / 2, app->ui.width, 10);
-    if (controller->screen_keyboard_query_timer == NULL) {
-        controller->screen_keyboard_query_timer = lv_timer_create(screen_keyboard_query, 100, controller);
-    }
 }
 
 static void toggle_vmouse(lv_event_t *event) {
@@ -332,14 +321,4 @@ static void update_buttons_layout(streaming_controller_t *controller) {
     lv_obj_get_coords(controller->kbd_btn, &coords);
     lv_area_center(&coords, &controller->button_points[4]);
     app_input_set_button_points(&controller->global->ui.input, controller->button_points);
-}
-
-static void screen_keyboard_query(lv_timer_t *timer) {
-    streaming_controller_t *controller = timer->user_data;
-    if (app_screen_keyboard_active(&controller->global->ui.input)) {
-        return;
-    }
-    app_stop_text_input(&controller->global->ui.input);
-    controller->screen_keyboard_query_timer = NULL;
-    lv_timer_del(timer);
 }

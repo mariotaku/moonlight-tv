@@ -33,7 +33,6 @@ typedef struct {
     lv_style_t overlay_button_style_focused;
     lv_style_t overlay_button_label_style;
     lv_point_t button_points[5];
-    lv_timer_t *screen_keyboard_query_timer;
 } streaming_controller_t;
 
 /* Usually references to SERVER_DATA and APP_LIST should not be kept, but in this struct, they will only be used once */
