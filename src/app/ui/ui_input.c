@@ -98,10 +98,6 @@ void app_stop_text_input(app_ui_input_t *input) {
     SDL_StopTextInput();
 }
 
-bool app_screen_keyboard_active(app_ui_input_t *input) {
-    return SDL_IsScreenKeyboardShown(input->ui->window);
-}
-
 static void app_input_populate_group(app_ui_input_t *input) {
     lv_group_t *group = NULL;
     lv_group_t *const *tail = _lv_ll_get_tail(&input->modal_groups);

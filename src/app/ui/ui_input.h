@@ -58,4 +58,3 @@ void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h);
 
 void app_stop_text_input(app_ui_input_t *input);
 
-bool app_screen_keyboard_active(app_ui_input_t *input);
