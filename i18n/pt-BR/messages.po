@@ -416,7 +416,7 @@ msgstr "Trocar botões A/B e X/Y do controle. Útil quando você prefere layouts
 
 #: src/app/ui/settings/panes/input.pane.c:81
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
-msgstr "Movimento absoluto do mouse não pode ser usado quando \"Usar mouse físico\" estiver habilitado.
+msgstr "Movimento absoluto do mouse não pode ser usado quando \"Usar mouse físico\" estiver habilitado."
 
 #: src/app/ui/settings/settings.controller.c:27
 msgid "Basic Settings"
