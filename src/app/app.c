@@ -65,7 +65,10 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_CALIBRATION_DISABLE, "true");
 #endif
     // DO not init video subsystem before NDL/LGNC initialization
-    SDL_InitSubSystem(SDL_INIT_VIDEO);
+    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+        commons_log_fatal("APP", "Failed to initialize SDL video subsystem: %s", SDL_GetError());
+        return -1;
+    }
     // This will occupy SDL_USEREVENT
     SDL_RegisterEvents(1);
     commons_log_info("APP", "UI locale: %s (%s)", i18n_locale(), locstr("[Localized Language]"));
