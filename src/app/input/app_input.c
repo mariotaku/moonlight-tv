@@ -26,7 +26,9 @@ void app_input_init(app_input_t *input, app_t *app) {
 
 void app_input_deinit(app_input_t *input) {
     app_input_deinit_gamepad_mapping(input);
-    SDL_FreeCursor(input->blank_cursor_surface->userdata);
+    if (input->blank_cursor_surface->userdata != NULL) {
+        SDL_FreeCursor(input->blank_cursor_surface->userdata);
+    }
     SDL_FreeSurface(input->blank_cursor_surface);
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
 }
