@@ -23,9 +23,8 @@ if [ -z "$CI" ]; then
 fi
 
 if [ -z "${TOOLCHAIN_FILE}" ]; then
-  echo "Setup environment"
-  . /opt/webos-sdk-x86_64/1.0.g/environment-setup-armv7a-neon-webos-linux-gnueabi
-  TOOLCHAIN_FILE=/opt/webos-sdk-x86_64/1.0.g/sysroots/x86_64-webossdk-linux/usr/share/cmake/OEToolchainConfig.cmake
+  echo "Use buildroot-nc4 toolchain installed in /opt"
+  TOOLCHAIN_FILE=/opt/arm-webos-linux-gnueabi_sdk-buildroot/share/buildroot/toolchainfile.cmake
 fi
 
 echo "Configure project"
