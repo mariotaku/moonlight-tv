@@ -6,6 +6,14 @@
 static int settings_load(app_settings_t *settings);
 
 int main(int argc, char *argv[]) {
+#if TARGET_WEBOS
+    if (getenv("EGL_PLATFORM") == NULL) {
+        setenv("EGL_PLATFORM", "wayland", 0);
+    }
+    if (getenv("XDG_RUNTIME_DIR") == NULL) {
+        setenv("XDG_RUNTIME_DIR", "/tmp/xdg", 0);
+    }
+#endif
     app_t app;
     int ret = app_init(&app, settings_load, argc, argv);
     if (ret != 0) {
