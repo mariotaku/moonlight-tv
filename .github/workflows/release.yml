@@ -1,5 +1,5 @@
 name: Release
-run-name: "Release ${{ github.ref_name }}"
+run-name: "Release ${{ github.event.release.tag_name }}"
 
 on:
   release:
@@ -48,7 +48,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ github.event.release.tag_name }}
+          tag: ${{ github.event.release.tag_name }}
           allowUpdates: true
           omitNameDuringUpdate: true
           omitBodyDuringUpdate: true
@@ -104,7 +105,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ github.event.release.tag_name }}
+          tag: ${{ github.event.release.tag_name }}
           allowUpdates: true
           omitNameDuringUpdate: true
           omitBodyDuringUpdate: true
@@ -155,7 +157,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ github.event.release.tag_name }}
+          tag: ${{ github.event.release.tag_name }}
           allowUpdates: true
           omitNameDuringUpdate: true
           omitBodyDuringUpdate: true
