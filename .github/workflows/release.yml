@@ -1,5 +1,5 @@
 name: Release
-run-name: "Release ${{ github.ref_name }}"
+run-name: "Release ${{ github.event.release.tag_name }}"
 
 on:
   release:
@@ -48,10 +48,10 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ github.ref_name }}
+          tag: ${{ github.event.release.tag_name }}
           allowUpdates: true
           omitNameDuringUpdate: true
-          omitBodyDuringUpdate: true
+          omitBody: true
           omitPrereleaseDuringUpdate: true
           artifacts: dist/*.ipk,dist/*_dbgsym.tar.gz,dist/*.manifest.json
 
@@ -104,10 +104,10 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ github.ref_name }}
+          tag: ${{ github.event.release.tag_name }}
           allowUpdates: true
           omitNameDuringUpdate: true
-          omitBodyDuringUpdate: true
+          omitBody: true
           omitPrereleaseDuringUpdate: true
           artifacts: build/*.deb,build/Release
 
@@ -155,9 +155,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ github.ref_name }}
+          tag: ${{ github.event.release.tag_name }}
           allowUpdates: true
           omitNameDuringUpdate: true
-          omitBodyDuringUpdate: true
+          omitBody: true
           omitPrereleaseDuringUpdate: true
           artifacts: dist/moonlight-tv_*_steamlink.*
