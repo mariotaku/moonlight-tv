@@ -18,4 +18,4 @@ char *path_pref();
 
 char *path_cache();
 
-void path_dir_ensure(const char *dir);
+int path_dir_ensure(const char *dir);

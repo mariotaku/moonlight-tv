@@ -17,6 +17,10 @@ char *path_pref() {
 char *path_cache() {
     const char *basedir = SDL_getenv("HOME");
     char *cachedir = path_join(basedir, "cache");
-    path_dir_ensure(cachedir);
+    if (path_dir_ensure(cachedir) == -1) {
+        free(cachedir);
+        cachedir = strdup("/tmp/moonlight-tv-cache");
+        path_dir_ensure(cachedir);
+    }
     return cachedir;
 }
