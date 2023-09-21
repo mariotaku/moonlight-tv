@@ -27,10 +27,12 @@ void path_join_to(char *dest, size_t maxlen, const char *parent, const char *bas
     snprintf(dest, maxlen, "%.*s%c%s", parentlen, parent, PATH_SEPARATOR, basename);
 }
 
-void path_dir_ensure(const char *dir) {
-    if (access(dir, F_OK) == -1) {
+int path_dir_ensure(const char *dir) {
+    if (access(dir, F_OK | W_OK) == -1) {
         if (errno == ENOENT) {
-            MKDIR(dir, 0755);
+            return MKDIR(dir, 0755);
         }
+        return -1;
     }
+    return 0;
 }

@@ -63,7 +63,7 @@ typedef struct img_loader_req_t {
 #define DEBUG 0
 #endif
 
-static char *coverloader_cache_dir();
+static const char *coverloader_cache_dir(coverloader_t *loader);
 
 static GS_CLIENT coverloader_gs_client(coverloader_t *loader);
 
@@ -136,6 +136,7 @@ struct coverloader_t {
     img_loader_t *base_loader;
     lv_lru_t *mem_cache;
     lazy_t client;
+    lazy_t cache_dir;
     coverloader_req_t *reqlist;
     refcounter_t refcounter;
 };
@@ -151,6 +152,7 @@ coverloader_t *coverloader_new(app_t *app) {
     loader->mem_cache = lv_lru_create(1024 * 1024 * 32, 720 * 1024, (lv_lru_free_t *) memcache_item_free, NULL);
     loader->base_loader = img_loader_create(&coverloader_impl, app->backend.executor);
     lazy_init(&loader->client, (lazy_supplier) app_gs_client_new, app);
+    lazy_init(&loader->cache_dir, (lazy_supplier) path_cache, NULL);
     loader->reqlist = NULL;
     return loader;
 }
@@ -162,6 +164,10 @@ void coverloader_unref(coverloader_t *loader) {
     GS_CLIENT client = lazy_deinit(&loader->client);
     if (client != NULL) {
         gs_destroy(client);
+    }
+    char *cache_dir = lazy_deinit(&loader->cache_dir);
+    if (cache_dir != NULL) {
+        free(cache_dir);
     }
     img_loader_destroy(loader->base_loader);
     lv_lru_del(loader->mem_cache);
@@ -193,8 +199,8 @@ void coverloader_display(coverloader_t *loader, const uuidstr_t *uuid, int id, l
     req->task = task;
 }
 
-static char *coverloader_cache_dir() {
-    return path_cache();
+static const char *coverloader_cache_dir(coverloader_t *loader) {
+    return lazy_obtain(&loader->cache_dir);
 }
 
 static GS_CLIENT coverloader_gs_client(coverloader_t *loader) {
@@ -202,11 +208,10 @@ static GS_CLIENT coverloader_gs_client(coverloader_t *loader) {
 }
 
 static void coverloader_cache_item_path(char path[4096], const coverloader_req_t *req) {
-    char *cachedir = coverloader_cache_dir();
+    const char *cachedir = coverloader_cache_dir(req->loader);
     char basename[128];
     SDL_snprintf(basename, 128, "%s_%d", (char *) &req->server_id, req->id);
     path_join_to(path, 4096, cachedir, basename);
-    free(cachedir);
 }
 
 static bool coverloader_memcache_get(coverloader_req_t *req) {
@@ -289,13 +294,16 @@ static bool coverloader_filecache_get(coverloader_req_t *req) {
     char path[4096];
     coverloader_cache_item_path(path, req);
     SDL_Surface *decoded = IMG_Load(path);
-    if (!decoded) { return false; }
+    if (!decoded) {
+        commons_log_warn("CoverLoader", "Failed to load cover from %s: %s", path, IMG_GetError());
+        return false;
+    }
     if (cover_is_placeholder(decoded)) {
         SDL_FreeSurface(decoded);
         return false;
     }
     if (decoded->format->palette != NULL) {
-        SDL_Surface* true_color = SDL_ConvertSurfaceFormat(decoded, SDL_PIXELFORMAT_RGB24, 0);
+        SDL_Surface *true_color = SDL_ConvertSurfaceFormat(decoded, SDL_PIXELFORMAT_RGB24, 0);
         SDL_FreeSurface(decoded);
         if (true_color == NULL) {
             return false;
