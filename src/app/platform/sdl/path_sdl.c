@@ -8,12 +8,13 @@ char *path_assets() {
     return SDL_GetBasePath();
 }
 
-char *path_pref() {
+char *path_pref(bool *persistent) {
     char *path = SDL_GetPrefPath("com.limelight", "moonlight-tv");
     unsigned int len = SDL_strlen(path);
     if (len && path[len - 1] == PATH_SEPARATOR) {
         path[len - 1] = '\0';
     }
+    *persistent = true;
     return path;
 }
 

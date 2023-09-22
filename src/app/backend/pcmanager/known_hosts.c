@@ -1,5 +1,6 @@
 #include "priv.h"
 #include "pclist.h"
+#include "app.h"
 
 #include <ini.h>
 
@@ -50,10 +51,9 @@ static void hostlist_node_free(known_host_t *node);
 
 void pcmanager_load_known_hosts(pcmanager_t *manager) {
     commons_log_info("PCManager", "Load unknown hosts");
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
-    free(confdir);
+    char *conf_file = path_join(manager->app->settings.conf_dir, CONF_NAME_HOSTS);
     known_host_t *hosts = NULL;
-    if (ini_parse(conffile, (ini_handler) known_hosts_parse, &hosts) != 0) {
+    if (ini_parse(conf_file, (ini_handler) known_hosts_parse, &hosts) != 0) {
         goto cleanup;
     }
 
@@ -87,14 +87,13 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
     }
     cleanup:
     hostlist_free(hosts, hostlist_node_free);
-    free(conffile);
+    free(conf_file);
 }
 
 void pcmanager_save_known_hosts(pcmanager_t *manager) {
-    char *confdir = path_pref(), *conffile = path_join(confdir, CONF_NAME_HOSTS);
-    free(confdir);
-    FILE *fp = fopen(conffile, "wb");
-    free(conffile);
+    char *conf_file = path_join(manager->app->settings.conf_dir, CONF_NAME_HOSTS);
+    FILE *fp = fopen(conf_file, "wb");
+    free(conf_file);
     if (!fp) { return; }
 
     bool selected_set = false;

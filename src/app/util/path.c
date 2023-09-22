@@ -28,11 +28,20 @@ void path_join_to(char *dest, size_t maxlen, const char *parent, const char *bas
 }
 
 int path_dir_ensure(const char *dir) {
-    if (access(dir, F_OK | W_OK) == -1) {
-        if (errno == ENOENT) {
-            return MKDIR(dir, 0755);
-        }
-        return -1;
+    if (access(dir, F_OK | W_OK) == 0) {
+        return 0;
     }
-    return 0;
+    if (errno == ENOENT) {
+        char tmp[PATH_MAX];
+        char *last_slash = strrchr(dir, PATH_SEPARATOR);
+        if (last_slash && last_slash != dir) {
+            strncpy(tmp, dir, last_slash - dir);
+            tmp[last_slash - dir] = '\0';
+            if (path_dir_ensure(tmp) == -1) {
+                return -1;
+            }
+        }
+        return MKDIR(dir, 0755);
+    }
+    return -1;
 }
