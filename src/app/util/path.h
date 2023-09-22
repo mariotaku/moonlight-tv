@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #if __WIN32
 #define PATH_SEPARATOR '\\'
@@ -14,7 +15,7 @@ void path_join_to(char *dest, size_t maxlen, const char *parent, const char *bas
 
 char *path_assets();
 
-char *path_pref();
+char *path_pref(bool *persistent);
 
 char *path_cache();
 

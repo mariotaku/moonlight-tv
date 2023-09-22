@@ -54,6 +54,7 @@ typedef struct app_settings_t {
     char *ini_path;
     char *condb_path;
     char *key_dir;
+    bool conf_persistent;
 } CONFIGURATION, *PCONFIGURATION, app_settings_t;
 
 typedef struct audio_config_entry_t {

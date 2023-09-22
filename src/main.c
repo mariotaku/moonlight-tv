@@ -36,7 +36,9 @@ int main(int argc, char *argv[]) {
 
 
 static int settings_load(app_settings_t *settings) {
-    settings_initialize(settings, path_pref());
+    bool persistent = true;
+    settings_initialize(settings, path_pref(&persistent));
+    settings->conf_persistent = persistent;
     if (!settings_read(settings)) {
         commons_log_warn("Settings", "Failed to read settings %s", settings->ini_path);
     }

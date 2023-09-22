@@ -70,6 +70,8 @@ static void pcitem_set_selected(lv_obj_t *pcitem, bool selected);
 
 static void show_decoder_error();
 
+static void show_conf_persistent_error();
+
 static void decoder_error_cb(lv_event_t *e);
 
 static void populate_selected_host(launcher_fragment_t *controller);
@@ -188,9 +190,14 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_set_style_transition(fragment->detail, &fragment->tr_detail, LV_STATE_USER_1);
     current_instance = fragment;
 
-    if (fragment->first_created && (fragment->global->ss4s.selection.video_module == NULL ||
-                                    fragment->global->ss4s.selection.audio_module == NULL)) {
-        show_decoder_error();
+    if (fragment->first_created) {
+        if (fragment->global->ss4s.selection.video_module == NULL ||
+            fragment->global->ss4s.selection.audio_module == NULL) {
+            show_decoder_error();
+        }
+        if (!app_configuration->conf_persistent) {
+            show_conf_persistent_error();
+        }
     }
     fragment->first_created = false;
 }
@@ -463,6 +470,17 @@ static void show_decoder_error() {
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
     lv_label_set_text_fmt(msgview, locstr("Streaming can't work without a valid decoder."));
+    lv_obj_center(msgbox);
+}
+
+static void show_conf_persistent_error() {
+    static const char *btn_txts[] = {translatable("OK"), ""};
+    lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Can't save settings"), "placeholder", btn_txts, false);
+    lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
+    lv_label_set_text_fmt(msgview, locstr("Can't find a writable directory to save settings. Settings and pairing "
+                                          "information will be lost when the TV is turned off.\n\n"
+                                          "(If you're using webOS 3.0 or newer, restart the TV may fix this issue.)"));
     lv_obj_center(msgbox);
 }
 
