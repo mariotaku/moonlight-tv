@@ -87,6 +87,10 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
         case VIDEO_FORMAT_H265_MAIN10:
             info.codec = SS4S_VIDEO_H265;
             break;
+        case VIDEO_FORMAT_AV1_MAIN8:
+        case VIDEO_FORMAT_AV1_MAIN10:
+            info.codec = SS4S_VIDEO_AV1;
+            break;
         default: {
             commons_log_error("Session", "Unsupported codec %s", vdec_stream_info.format);
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
