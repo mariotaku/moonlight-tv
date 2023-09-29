@@ -231,6 +231,12 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
             config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265_MAIN10;
         }
     }
+    if (app_config->av1 && video_cap.codecs & SS4S_VIDEO_AV1) {
+        config->stream.supportedVideoFormats |= VIDEO_FORMAT_AV1_MAIN8;
+        if (app_config->hdr && video_cap.hdr) {
+            config->stream.supportedVideoFormats |= VIDEO_FORMAT_AV1_MAIN10;
+        }
+    }
     config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
     config->stream.colorRange = video_cap.fullColorRange ? COLOR_RANGE_FULL : COLOR_RANGE_LIMITED;
 #if FEATURE_SURROUND_SOUND

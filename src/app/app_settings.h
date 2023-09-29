@@ -49,6 +49,7 @@ typedef struct app_settings_t {
     bool syskey_capture;
     bool hdr;
     bool hevc;
+    bool av1;
 
     char *conf_dir;
     char *ini_path;
