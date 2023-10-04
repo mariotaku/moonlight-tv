@@ -4,6 +4,8 @@
 #include "ss4s.h"
 #include "stream/session_priv.h"
 
+#define SAMPLES_PER_FRAME  240
+
 static session_t *session = NULL;
 static SS4S_Player *player = NULL;
 static OpusMSDecoder *decoder = NULL;
@@ -12,25 +14,34 @@ static int frame_size = 0, unit_size = 0;
 
 static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context,
                     int arFlags) {
+    (void) audioConfiguration;
+    (void) arFlags;
     session = context;
     player = session->player;
-    int rc;
-    decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams,
-                                              opusConfig->coupledStreams, opusConfig->mapping, &rc);
-    if (rc != 0) {
-        return rc;
+    SS4S_AudioCodec codec = SS4S_AUDIO_PCM_S16LE;
+    if (session->audio_cap.codecs & SS4S_AUDIO_OPUS) {
+        codec = SS4S_AUDIO_OPUS;
+        decoder = NULL;
+        pcmbuf = NULL;
+    } else {
+        int rc;
+        decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams,
+                                                  opusConfig->coupledStreams, opusConfig->mapping, &rc);
+        if (rc != 0) {
+            return rc;
+        }
+        frame_size = SAMPLES_PER_FRAME * 64;
+        unit_size = (int) (opusConfig->channelCount * sizeof(int16_t));
+        pcmbuf = calloc(unit_size, frame_size);
     }
     SS4S_AudioInfo info = {
             .numOfChannels = opusConfig->channelCount,
-            .codec = SS4S_AUDIO_PCM_S16LE,
+            .codec = codec,
             .appName = "Moonlight",
             .streamName = "Streaming",
             .sampleRate = opusConfig->sampleRate,
-            .samplesPerFrame = 240,
+            .samplesPerFrame = SAMPLES_PER_FRAME,
     };
-    frame_size = info.samplesPerFrame * 64;
-    unit_size = (int) (info.numOfChannels * sizeof(int16_t));
-    pcmbuf = calloc(unit_size, frame_size);
     return SS4S_PlayerAudioOpen(player, &info);
 }
 
@@ -51,9 +62,13 @@ static void aud_cleanup() {
 }
 
 static void aud_feed(char *sampleData, int sampleLength) {
-    int decode_len = opus_multistream_decode(decoder, (unsigned char *) sampleData, sampleLength, (opus_int16 *) pcmbuf,
-                                             frame_size, 0);
-    SS4S_PlayerAudioFeed(player, pcmbuf, unit_size * decode_len);
+    if (decoder != NULL) {
+        int decode_len = opus_multistream_decode(decoder, (unsigned char *) sampleData, sampleLength,
+                                                 (opus_int16 *) pcmbuf, frame_size, 0);
+        SS4S_PlayerAudioFeed(player, pcmbuf, unit_size * decode_len);
+    } else {
+        SS4S_PlayerAudioFeed(player, (unsigned char *) sampleData, sampleLength);
+    }
 }
 
 AUDIO_RENDERER_CALLBACKS ss4s_aud_callbacks = {

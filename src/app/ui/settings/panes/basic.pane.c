@@ -100,7 +100,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     }
 #endif
 
-    if (max_width > 0 && max_height) {
+    if (max_width > 0 && max_height > 0) {
         for (res_len = supported_resolutions_len; res_len > 0; res_len--) {
             if (supported_resolutions[res_len - 1].value_a <= max_width &&
                 supported_resolutions[res_len - 1].value_b <= max_height) {

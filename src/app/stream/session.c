@@ -33,6 +33,7 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     session->app = app;
     session->display_width = app->ui.width;
     session->display_height = app->ui.height;
+    session->audio_cap = app->ss4s.audio_cap;
     session->video_cap = app->ss4s.video_cap;
     session->server = serverdata_clone(server);
     // The flags seem to be the same to supportedVideoFormats, use it for now...

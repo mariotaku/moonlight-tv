@@ -68,6 +68,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->absmouse = true;
     config->virtual_mouse = false;
     config->hdr = false;
+    config->av1 = true;
     config->hevc = true;
 
     config->conf_dir = conf_dir;
@@ -118,6 +119,7 @@ bool settings_save(app_settings_t *config) {
     ini_write_string(fp, "decoder", config->decoder);
     ini_write_bool(fp, "hdr", config->hdr);
     ini_write_bool(fp, "hevc", config->hevc);
+    ini_write_bool(fp, "av1", config->av1);
 
     ini_write_section(fp, "audio");
     ini_write_string(fp, "backend", config->audio_backend);
@@ -230,6 +232,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         set_int(&config->rotate, value);
     } else if (INI_NAME_MATCH("hevc")) {
         config->hevc = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("av1")) {
+        config->av1 = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hdr")) {
         config->hdr = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("surround")) {
