@@ -124,6 +124,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
 
     lv_obj_t *conflict_hint = pref_desc_label(view, NULL, false);
+    controller->conflict_hint = conflict_hint;
 
     pref_header(view, "Video Settings");
 
@@ -151,13 +152,11 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     lv_obj_t *hdr_checkbox = pref_checkbox(view, locstr("HDR"), &app_configuration->hdr, false);
     lv_obj_t *hdr_hint = pref_desc_label(view, NULL, false);
-    if (app->ss4s.video_cap.hdr == 0) {
-        lv_obj_add_state(hdr_checkbox, LV_STATE_DISABLED);
-        lv_label_set_text_fmt(hdr_hint, locstr("%s decoder doesn't support HDR."),
-                              SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
-    } else {
-        hdr_state_update(controller);
-    }
+    controller->hdr_checkbox = hdr_checkbox;
+    controller->hdr_hint = hdr_hint;
+
+    hdr_state_update(controller);
+
     lv_obj_t *hdr_more = pref_desc_label(view, locstr("Learn more about HDR feature."), true);
     lv_obj_set_style_text_color(hdr_more, lv_theme_get_color_primary(hdr_more), 0);
     lv_obj_add_flag(hdr_more, LV_OBJ_FLAG_CLICKABLE);
@@ -173,11 +172,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_add_event_cb(vdec_dropdown, module_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(adec_dropdown, module_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(hevc_checkbox, hdr_state_update_cb, LV_EVENT_VALUE_CHANGED, controller);
+    lv_obj_add_event_cb(av1_checkbox, hdr_state_update_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(hdr_more, hdr_more_click_cb, LV_EVENT_CLICKED, NULL);
-
-    controller->conflict_hint = conflict_hint;
-    controller->hdr_checkbox = hdr_checkbox;
-    controller->hdr_hint = hdr_hint;
 
     return view;
 }
@@ -201,8 +197,11 @@ static void hdr_state_update_cb(lv_event_t *e) {
 
 static void hdr_state_update(decoder_pane_t *controller) {
     app_t *app = controller->parent->app;
-    if (app->ss4s.video_cap.hdr == 0) { return; }
-    if (!app_configuration->hevc && !app_configuration->av1) {
+    if (app->ss4s.video_cap.hdr == 0) {
+        lv_obj_add_state(controller->hdr_checkbox, LV_STATE_DISABLED);
+        lv_label_set_text_fmt(controller->hdr_hint, locstr("%s decoder doesn't support HDR."),
+                              SS4S_ModuleInfoGetName(app->ss4s.selection.video_module));
+    } else if (!app_configuration->hevc && !app_configuration->av1) {
         lv_obj_add_state(controller->hdr_checkbox, LV_STATE_DISABLED);
         lv_label_set_text(controller->hdr_hint, locstr("H265 or AV1 is required to use HDR."));
     } else {
