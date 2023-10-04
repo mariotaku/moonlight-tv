@@ -25,6 +25,7 @@ struct session_t {
     int app_id;
     bool interrupted;
     bool quitapp;
+    SS4S_AudioCapabilities audio_cap;
     SS4S_VideoCapabilities video_cap;
     SDL_cond *cond;
     SDL_mutex *mutex;

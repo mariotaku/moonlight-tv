@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-01 15:59+0900\n"
+"POT-Creation-Date: 2023-10-04 19:59+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,39 +17,40 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/app/app.c:68
+#: src/app/app.c:74
 msgid "[Localized Language]"
 msgstr ""
 
-#: src/app/app.c:239 src/app/ui/launcher/add.dialog.c:42
+#: src/app/app.c:249 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:736
 #: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr ""
 
-#: src/app/app.c:239 src/app/ui/launcher/add.dialog.c:42
+#: src/app/app.c:249 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:662
 #: src/app/ui/launcher/apps.controller.c:769
-#: src/app/ui/launcher/launcher.controller.c:461
+#: src/app/ui/launcher/launcher.controller.c:468
+#: src/app/ui/launcher/launcher.controller.c:477
 #: src/app/ui/launcher/pair.dialog.c:54
 #: src/app/ui/launcher/server.context_menu.c:129
-#: src/app/ui/streaming/streaming.controller.c:287
+#: src/app/ui/streaming/streaming.controller.c:286
 msgid "OK"
 msgstr ""
 
-#: src/app/app.c:240
+#: src/app/app.c:250
 msgid "Quit Moonlight?"
 msgstr ""
 
-#: src/app/app_settings.c:32
+#: src/app/app_settings.c:33
 msgid "Stereo"
 msgstr ""
 
-#: src/app/app_settings.c:33
+#: src/app/app_settings.c:34
 msgid "5.1 Surround"
 msgstr ""
 
-#: src/app/app_settings.c:34
+#: src/app/app_settings.c:35
 msgid "7.1 Surround"
 msgstr ""
 
@@ -191,12 +192,24 @@ msgstr ""
 msgid "Info"
 msgstr ""
 
-#: src/app/ui/launcher/launcher.controller.c:462
+#: src/app/ui/launcher/launcher.controller.c:469
 msgid "No working decoder"
 msgstr ""
 
-#: src/app/ui/launcher/launcher.controller.c:465
+#: src/app/ui/launcher/launcher.controller.c:472
 msgid "Streaming can't work without a valid decoder."
+msgstr ""
+
+#: src/app/ui/launcher/launcher.controller.c:478
+msgid "Can't save settings"
+msgstr ""
+
+#: src/app/ui/launcher/launcher.controller.c:481
+msgid ""
+"Can't find a writable directory to save settings. Settings and pairing "
+"information will be lost when the TV is turned off.\n"
+"\n"
+"(If you're using webOS 3.0 or newer, restart the TV may fix this issue.)"
 msgstr ""
 
 #. Use list button for normal container
@@ -210,7 +223,7 @@ msgid "Settings"
 msgstr ""
 
 #: src/app/ui/launcher/launcher.view.c:125
-#: src/app/ui/settings/settings.controller.c:433
+#: src/app/ui/settings/settings.controller.c:423
 msgid "Quit"
 msgstr ""
 
@@ -246,12 +259,12 @@ msgid "Version"
 msgstr ""
 
 #: src/app/ui/settings/panes/about.pane.c:60
-#: src/app/ui/settings/panes/decoder.pane.c:110
+#: src/app/ui/settings/panes/decoder.pane.c:112
 msgid "Video decoder"
 msgstr ""
 
 #: src/app/ui/settings/panes/about.pane.c:61
-#: src/app/ui/settings/panes/decoder.pane.c:117
+#: src/app/ui/settings/panes/decoder.pane.c:119
 msgid "Audio backend"
 msgstr ""
 
@@ -259,11 +272,11 @@ msgstr ""
 msgid "System"
 msgstr ""
 
-#: src/app/ui/settings/panes/about.pane.c:72
+#: src/app/ui/settings/panes/about.pane.c:71
 msgid "Screen resolution"
 msgstr ""
 
-#: src/app/ui/settings/panes/about.pane.c:77
+#: src/app/ui/settings/panes/about.pane.c:76
 msgid "Refresh rate"
 msgstr ""
 
@@ -271,88 +284,99 @@ msgstr ""
 msgid "Resolution and FPS"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:140
+#: src/app/ui/settings/panes/basic.pane.c:139
 msgid "Video bitrate"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:156
+#: src/app/ui/settings/panes/basic.pane.c:155
 msgid "Fullscreen UI"
 msgstr ""
 
+#: src/app/ui/settings/panes/basic.pane.c:166
 #: src/app/ui/settings/panes/basic.pane.c:167
-#: src/app/ui/settings/panes/basic.pane.c:168
 msgid "Language"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:198
+#: src/app/ui/settings/panes/basic.pane.c:197
 msgid ""
 "Your computer may not perform well when using this resolution and framerate."
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:213
+#: src/app/ui/settings/panes/basic.pane.c:212
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:221
+#: src/app/ui/settings/panes/basic.pane.c:220
 msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:67
-#: src/app/ui/settings/panes/decoder.pane.c:68
+#: src/app/ui/settings/panes/decoder.pane.c:69
+#: src/app/ui/settings/panes/decoder.pane.c:70
 msgid "Auto"
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:111
+#: src/app/ui/settings/panes/decoder.pane.c:113
 #, c-format
 msgid "Video decoder - using %s"
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:118
+#: src/app/ui/settings/panes/decoder.pane.c:120
 #, c-format
 msgid "Audio backend - using %s"
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:128
-msgid "Prefer H265 codec"
+#: src/app/ui/settings/panes/decoder.pane.c:130
+msgid "Use AV1 if possible"
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:132
-msgid "H265 usually has clearer graphics, and is required for using HDR."
+#: src/app/ui/settings/panes/decoder.pane.c:134
+msgid "AV1 usually has better graphics, and supports HDR."
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:136
+#: src/app/ui/settings/panes/decoder.pane.c:137
+#, c-format
+msgid "%s decoder doesn't support AV1 codec."
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:141
+msgid "Use H265 if possible"
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:145
+msgid "H265 usually has better graphics, and supports HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:148
 #, c-format
 msgid "%s decoder doesn't support H265 codec."
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:140
-msgid "HDR (experimental)"
+#: src/app/ui/settings/panes/decoder.pane.c:152
+msgid "HDR"
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:144
+#: src/app/ui/settings/panes/decoder.pane.c:156
 #, c-format
 msgid "%s decoder doesn't support HDR."
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:148
-#: src/app/ui/settings/panes/decoder.pane.c:196
-msgid "H265 is required to use HDR."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:151
-#: src/app/ui/settings/panes/decoder.pane.c:199
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:154
+#: src/app/ui/settings/panes/decoder.pane.c:161
 msgid "Learn more about HDR feature."
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:160
+#: src/app/ui/settings/panes/decoder.pane.c:167
 msgid "Sound Channels (Experimental)"
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:207
+msgid "H265 or AV1 is required to use HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/decoder.pane.c:210
+msgid ""
+"HDR is only supported on certain games and when connecting to supported "
+"monitor."
 msgstr ""
 
 #: src/app/ui/settings/panes/host.pane.c:26
@@ -429,43 +453,43 @@ msgstr ""
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:27
+#: src/app/ui/settings/settings.controller.c:21
 msgid "Basic Settings"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:28
+#: src/app/ui/settings/settings.controller.c:22
 msgid "Host Settings"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:29
+#: src/app/ui/settings/settings.controller.c:23
 msgid "Input Settings"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:30
+#: src/app/ui/settings/settings.controller.c:24
 msgid "Decoder Settings"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:31
+#: src/app/ui/settings/settings.controller.c:25
 msgid "About"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:433
+#: src/app/ui/settings/settings.controller.c:423
 msgid "Later"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:434
+#: src/app/ui/settings/settings.controller.c:424
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:138
+#: src/app/ui/streaming/streaming.controller.c:136
 msgid "Connecting..."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:158
+#: src/app/ui/streaming/streaming.controller.c:156
 msgid "Disconnecting..."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:288
+#: src/app/ui/streaming/streaming.controller.c:287
 msgid "Failed to start streaming"
 msgstr ""
 
@@ -474,22 +498,22 @@ msgstr ""
 msgid "Hint: %s"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:51
+#: src/app/ui/streaming/streaming.view.c:75
 msgid "Soft keyboard"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:59
+#: src/app/ui/streaming/streaming.view.c:84
 msgid "Virtual Mouse"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:67
+#: src/app/ui/streaming/streaming.view.c:97
 msgid "Disconnect"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:75
+#: src/app/ui/streaming/streaming.view.c:106
 msgid "Quit game"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:90
+#: src/app/ui/streaming/streaming.view.c:121
 msgid "Performance"
 msgstr ""
