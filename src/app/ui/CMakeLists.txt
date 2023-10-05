@@ -13,14 +13,7 @@ target_sources(moonlight-lib PRIVATE
         streaming/streaming.view.c
         streaming/streaming.controller.c
         streaming/hints.c
-        settings/settings.controller.c
-        settings/settings.view.c
-        settings/panes/basic.pane.c
-        settings/panes/host.pane.c
-        settings/panes/input.pane.c
-        settings/panes/decoder.pane.c
-        settings/panes/about.pane.c
-        settings/panes/pref_obj.c
         help/help.dialog.c
         common/progress_dialog.c
         )
+add_subdirectory(settings)

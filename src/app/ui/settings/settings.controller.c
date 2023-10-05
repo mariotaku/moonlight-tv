@@ -18,11 +18,12 @@ typedef struct {
 } settings_entry_t;
 
 static const settings_entry_t entries[] = {
-        {MAT_SYMBOL_TUNE,            translatable("Basic Settings"),   &settings_pane_basic_cls},
-        {MAT_SYMBOL_DESKTOP_WINDOWS, translatable("Host Settings"),    &settings_pane_host_cls},
-        {MAT_SYMBOL_SPORTS_ESPORTS,  translatable("Input Settings"),   &settings_pane_input_cls},
-        {MAT_SYMBOL_VIDEO_SETTINGS,  translatable("Decoder Settings"), &settings_pane_decoder_cls},
-        {MAT_SYMBOL_INFO,            translatable("About"),            &settings_pane_about_cls},
+        {MAT_SYMBOL_TUNE,            translatable("Basic Settings"), &settings_pane_basic_cls},
+        {MAT_SYMBOL_DESKTOP_WINDOWS, translatable("Host Settings"),  &settings_pane_host_cls},
+        {MAT_SYMBOL_SPORTS_ESPORTS,  translatable("Input Settings"), &settings_pane_input_cls},
+        {MAT_SYMBOL_VOLUME_UP,       translatable("Audio Settings"), &settings_pane_audio_cls},
+        {MAT_SYMBOL_VIDEO_SETTINGS,  translatable("Video Settings"), &settings_pane_video_cls},
+        {MAT_SYMBOL_INFO,            translatable("About"),          &settings_pane_about_cls},
 };
 static const int entries_len = sizeof(entries) / sizeof(settings_entry_t);
 

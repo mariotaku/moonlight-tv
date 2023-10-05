@@ -16,4 +16,5 @@
 #define MAT_SYMBOL_TUNE "\xee\x90\xa9"
 #define MAT_SYMBOL_TV "\xee\x8c\xb3"
 #define MAT_SYMBOL_VIDEO_SETTINGS "\xee\xa9\xb5"
+#define MAT_SYMBOL_VOLUME_UP "\xee\x81\x90"
 #define MAT_SYMBOL_WARNING "\xee\x80\x82"
