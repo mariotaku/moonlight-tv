@@ -6,6 +6,7 @@
 #include <SDL_timer.h>
 
 #include "config.h"
+#include "input/input_gamepad.h"
 
 #if FEATURE_INPUT_EVMOUSE
 
@@ -45,6 +46,12 @@ void session_input_init(stream_input_t *input, session_t *session, app_input_t *
 void session_input_deinit(stream_input_t *input);
 
 void session_input_interrupt(stream_input_t *input);
+
+void session_input_started(stream_input_t *input);
+
+void session_input_stopped(stream_input_t *input);
+
+void stream_input_send_gamepad_arrive(const stream_input_t *input, app_gamepad_state_t *gamepad);
 
 void stream_input_handle_key(stream_input_t *input, const SDL_KeyboardEvent *event);
 

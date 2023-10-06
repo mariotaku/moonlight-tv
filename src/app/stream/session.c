@@ -110,11 +110,11 @@ bool session_accepting_input(session_t *session) {
 }
 
 void session_start_input(session_t *session) {
-    session->input.started = true;
+    session_input_started(&session->input);
 }
 
 void session_stop_input(session_t *session) {
-    session->input.started = false;
+    session_input_stopped(&session->input);
 }
 
 void session_toggle_vmouse(session_t *session) {

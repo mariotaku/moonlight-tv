@@ -45,8 +45,7 @@ bool app_input_init_gamepad(app_input_t *input, int which) {
         state->haptic_effect_id = -1;
 #endif
         commons_log_info("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id,
-                         SDL_JoystickName(joystick),
-                         sdl_id, guidstr);
+                         SDL_JoystickName(joystick), sdl_id, guidstr);
         input->gamepads_count++;
         return true;
     } else {
@@ -87,7 +86,7 @@ bool absinput_gamepad_known(app_input_t *input, SDL_JoystickID sdl_id) {
 }
 
 app_gamepad_state_t *app_input_gamepad_get(app_input_t *input, SDL_JoystickID sdl_id) {
-    for (short i = 0; i < 4; i++) {
+    for (short i = 0; i < input->max_num_gamepads; i++) {
         app_gamepad_state_t *gamepad = &input->gamepads[i];
         if (!input->gamepads[i].initialized) {
             input->gamepads[i].sdl_id = sdl_id;
@@ -107,7 +106,7 @@ int app_input_gamepads(app_input_t *input) {
 }
 
 int app_input_max_gamepads(app_input_t *input) {
-    return 4;
+    return input->max_num_gamepads;
 }
 
 int app_input_gamepads_mask(app_input_t *input) {
@@ -184,8 +183,10 @@ void app_input_gamepad_set_motion_event_state(app_input_t *input, unsigned short
     if (sensor_type == SDL_SENSOR_INVALID) {
         return;
     }
-    SDL_GameControllerSetSensorEnabled(input->gamepads[controllerNumber].controller, sensor_type,
-                                       reportRateHz != 0 ? SDL_TRUE : SDL_FALSE);
+    SDL_GameController *controller = input->gamepads[controllerNumber].controller;
+    SDL_GameControllerSetSensorEnabled(controller, sensor_type, reportRateHz > 0 ? SDL_TRUE : SDL_FALSE);
+    commons_log_info("Input", "Setting motion event state for controller %d, motionType: %d, reportRateHz: %d",
+                     controllerNumber, motionType, reportRateHz);
 #endif
 }
 

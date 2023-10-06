@@ -44,3 +44,14 @@ void session_input_interrupt(stream_input_t *input) {
     session_evmouse_interrupt(&input->evmouse);
 #endif
 }
+
+void session_input_started(stream_input_t *input) {
+    input->started = true;
+    for (int i = 0, j = app_input_gamepads(input->input); i < j; ++i) {
+        stream_input_send_gamepad_arrive(input, app_input_gamepad_get(input->input, i));
+    }
+}
+
+void session_input_stopped(stream_input_t *input) {
+    input->started = false;
+}
