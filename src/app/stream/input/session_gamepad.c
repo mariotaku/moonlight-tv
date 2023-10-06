@@ -21,6 +21,8 @@ static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad)
 
 static bool gamepad_combo_check(int buttons, short combo);
 
+static bool sensor_state_needs_update(const app_gamepad_sensor_state_t *state, uint32_t timestamp,
+                                      const float data[3]);
 
 void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event) {
     int button = 0;
@@ -195,21 +197,32 @@ void stream_input_handle_csensor(stream_input_t *input, const SDL_ControllerSens
         return;
     }
     app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
-    uint8_t event_type;
     switch (event->sensor) {
         case SDL_SENSOR_ACCEL: {
-            event_type = LI_MOTION_TYPE_ACCEL;
+            if (sensor_state_needs_update(&gamepad->accelState, event->timestamp, event->data)) {
+                gamepad->accelState.lastTimestamp = event->timestamp;
+                memcpy(gamepad->accelState.data, event->data, sizeof(gamepad->accelState.data));
+                LiSendControllerMotionEvent(gamepad->id, LI_MOTION_TYPE_ACCEL, event->data[0], event->data[1],
+                                            event->data[2]);
+            }
             break;
         }
         case SDL_SENSOR_GYRO: {
-            event_type = LI_MOTION_TYPE_GYRO;
+            if (sensor_state_needs_update(&gamepad->gyroState, event->timestamp, event->data)) {
+                gamepad->gyroState.lastTimestamp = event->timestamp;
+                memcpy(gamepad->gyroState.data, event->data, sizeof(gamepad->gyroState.data));
+                // Convert rad/s to deg/s
+                LiSendControllerMotionEvent(gamepad->id, LI_MOTION_TYPE_GYRO,
+                                            event->data[0] * 57.2957795f,
+                                            event->data[1] * 57.2957795f,
+                                            event->data[2] * 57.2957795f);
+            }
             break;
         }
         default: {
             return;
         }
     }
-    LiSendControllerMotionEvent(gamepad->id, event_type, event->data[0], event->data[1], event->data[2]);
 }
 
 void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTouchpadEvent *event) {
@@ -328,4 +341,17 @@ static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad)
 
 static bool gamepad_combo_check(int buttons, short combo) {
     return (buttons & combo) == combo;
+}
+
+static bool sensor_state_needs_update(const app_gamepad_sensor_state_t *state, uint32_t timestamp,
+                                      const float data[3]) {
+    if (state->periodMs == 0 || !SDL_TICKS_PASSED(timestamp, state->lastTimestamp + state->periodMs)) {
+        return false;
+    }
+    for (int i = 0; i < 3; i++) {
+        if (state->data[i] != data[i]) {
+            return true;
+        }
+    }
+    return false;
 }

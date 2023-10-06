@@ -10,6 +10,12 @@
 
 typedef struct app_t app_t;
 
+typedef struct app_gamepad_sensor_state_t {
+    uint32_t periodMs;
+    uint32_t lastTimestamp;
+    float data[3];
+} app_gamepad_sensor_state_t;
+
 typedef struct app_gamepad_state_t {
     char leftTrigger, rightTrigger;
     short leftStickX, leftStickY;
@@ -20,6 +26,10 @@ typedef struct app_gamepad_state_t {
 #if !SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Haptic *haptic;
     int haptic_effect_id;
+#endif
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    app_gamepad_sensor_state_t accelState;
+    app_gamepad_sensor_state_t gyroState;
 #endif
     short id;
     bool initialized;
