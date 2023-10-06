@@ -44,8 +44,8 @@ bool app_input_init_gamepad(app_input_t *input, int which) {
         state->haptic = haptic;
         state->haptic_effect_id = -1;
 #endif
-        commons_log_info("Input", "Controller #%d (%s) connected, sdl_id: %d, path: %s, GUID: %s", state->id,
-                         SDL_JoystickName(joystick), sdl_id, SDL_GameControllerPath(controller), guidstr);
+        commons_log_info("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id,
+                         SDL_JoystickName(joystick), sdl_id, guidstr);
         input->gamepads_count++;
         return true;
     } else {
