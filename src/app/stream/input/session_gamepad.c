@@ -9,6 +9,7 @@
 #include "input/input_gamepad.h"
 #include "stream/session.h"
 #include "stream/input/session_virt_mouse.h"
+#include "logging.h"
 
 #define QUIT_BUTTONS (PLAY_FLAG | BACK_FLAG | LB_FLAG | RB_FLAG)
 #define GAMEPAD_COMBO_VMOUSE (LB_FLAG | RS_CLK_FLAG)
@@ -19,6 +20,7 @@ static bool vmouse_combo_pressed = false;
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad);
 
 static bool gamepad_combo_check(int buttons, short combo);
+
 
 void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event) {
     int button = 0;
@@ -244,8 +246,14 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
     if (input->view_only) {
         return;
     }
+    stream_input_send_gamepad_arrive(input, gamepad);
+}
+
+void stream_input_send_gamepad_arrive(const stream_input_t *input, app_gamepad_state_t *gamepad) {
     uint8_t type = LI_CTYPE_XBOX;
     uint16_t capabilities = LI_CCAP_ANALOG_TRIGGERS;
+    commons_log_info("Input", "Controller %d arrived. Name: %s", gamepad->id,
+                     SDL_GameControllerName(gamepad->controller));
     switch (SDL_GameControllerGetType(gamepad->controller)) {
 #if SDL_VERSION_ATLEAST(2, 24, 0)
         case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
@@ -265,6 +273,7 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
         case SDL_CONTROLLER_TYPE_PS5: {
             type = LI_CTYPE_PS;
             capabilities |= LI_CCAP_TOUCHPAD;
+            commons_log_info("Input", "  controller capability: touchpad");
             break;
         }
         default: {
@@ -274,25 +283,30 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     if (SDL_GameControllerHasRumble(gamepad->controller)) {
         capabilities |= LI_CCAP_RUMBLE;
+        commons_log_info("Input", "  controller capability: rumble");
     }
     if (SDL_GameControllerHasRumbleTriggers(gamepad->controller)) {
         capabilities |= LI_CCAP_TRIGGER_RUMBLE;
+        commons_log_info("Input", "  controller capability: trigger rumble");
     }
 #else
     capabilities |= LI_CCAP_RUMBLE;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
-    capabilities |= LI_CCAP_TRIGGER_RUMBLE;
+        capabilities |= LI_CCAP_TRIGGER_RUMBLE;
 #endif
 #endif
 #if SDL_VERSION_ATLEAST(2, 0, 14)
     if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_ACCEL)) {
         capabilities |= LI_CCAP_ACCEL;
+        commons_log_info("Input", "  controller capability: accelerometer");
     }
     if (SDL_GameControllerHasSensor(gamepad->controller, SDL_SENSOR_GYRO)) {
         capabilities |= LI_CCAP_GYRO;
+        commons_log_info("Input", "  controller capability: gyroscope");
     }
     if (SDL_GameControllerHasLED(gamepad->controller)) {
         capabilities |= LI_CCAP_RGB_LED;
+        commons_log_info("Input", "  controller capability: RGB LED");
     }
 #endif
     LiSendControllerArrivalEvent(gamepad->id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);

@@ -93,6 +93,11 @@ static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
             }
         }
         data->continue_reading = true;
+    } else if (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_CONTROLLERTOUCHPADDOWN, SDL_CONTROLLERSENSORUPDATE) > 0) {
+        if (app->session != NULL) {
+            session_handle_input_event(app->session, &e);
+        }
+        data->continue_reading = true;
     } else {
         data->continue_reading = false;
     }
