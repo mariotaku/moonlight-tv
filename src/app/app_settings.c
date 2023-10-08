@@ -68,8 +68,8 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->absmouse = true;
     config->virtual_mouse = false;
     config->hdr = false;
-    config->av1 = true;
     config->hevc = true;
+    config->av1 = false;
 
     config->conf_dir = conf_dir;
     config->ini_path = path_join(conf_dir, CONF_NAME_MOONLIGHT);
