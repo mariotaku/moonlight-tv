@@ -9,7 +9,7 @@
 
 void app_input_handle_event(app_input_t *input, const SDL_Event *event) {
     if (event->type == SDL_JOYDEVICEADDED) {
-        if (app_input_gamepads(input) >= app_input_max_gamepads(input)) {
+        if (app_input_get_gamepads_count(input) >= app_input_get_max_gamepads(input)) {
             // Ignore controllers more than supported
             commons_log_warn("Input", "Too many controllers, ignoring.");
             return;

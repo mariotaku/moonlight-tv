@@ -1,51 +1,39 @@
 #include "input_gamepad.h"
 
 #include <stdbool.h>
-
-#include <SDL_gamecontroller.h>
 #include <SDL_version.h>
 #include <Limelight.h>
+#include <assert.h>
 
 #include "logging.h"
 #include "app_input.h"
 
-bool app_input_init_gamepad(app_input_t *input, int which) {
-    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(which);
+static int new_gamepad_state_index(app_input_t *input, SDL_GameController *controller);
+
+static short next_gamepad_gs_id(app_input_t *input);
+
+static bool is_same_gamepad(const app_gamepad_state_t *state, SDL_GameController *controller);
+
+bool app_input_init_gamepad(app_input_t *input, int device_index) {
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
     char guidstr[33];
     SDL_JoystickGetGUIDString(guid, guidstr, 33);
-    const char *name = SDL_JoystickNameForIndex(which);
-    if (SDL_IsGameController(which)) {
-        SDL_GameController *controller = SDL_GameControllerOpen(which);
+    const char *name = SDL_JoystickNameForIndex(device_index);
+    if (SDL_IsGameController(device_index)) {
+        SDL_GameController *controller = SDL_GameControllerOpen(device_index);
         if (!controller) {
-            commons_log_error("Input", "Could not open gamecontroller %i. GUID: %s, error: %s", which, guidstr,
+            commons_log_error("Input", "Could not open gamecontroller %i. GUID: %s, error: %s", device_index, guidstr,
                               SDL_GetError());
             return false;
         }
 
-        SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
-        SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
-        app_gamepad_state_t *state = app_input_gamepad_get(input, sdl_id);
-
-        SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
-        unsigned int haptic_bits = SDL_HapticQuery(haptic);
-        commons_log_debug("Input", "Controller #%d has supported haptic bits: %x", state->id, haptic_bits);
-        if (haptic && (haptic_bits & SDL_HAPTIC_LEFTRIGHT) == 0) {
-            SDL_HapticClose(haptic);
-            haptic = NULL;
-        }
-
-        if (state->controller) {
-            commons_log_info("Input", "Controller #%d (%s) already connected, sdl_id: %d, GUID: %s", state->id,
-                             SDL_JoystickName(joystick), sdl_id, guidstr);
+        app_gamepad_state_t *state = app_input_gamepad_state_init(input, controller);
+        if (state == NULL) {
+            SDL_GameControllerClose(controller);
             return false;
         }
-        state->controller = controller;
-#if !SDL_VERSION_ATLEAST(2, 0, 9)
-        state->haptic = haptic;
-        state->haptic_effect_id = -1;
-#endif
-        commons_log_info("Input", "Controller #%d (%s) connected, sdl_id: %d, GUID: %s", state->id,
-                         SDL_JoystickName(joystick), sdl_id, guidstr);
+        assert(state->gs_id >= 0);
+        input->activeGamepadMask |= 1 << state->gs_id;
         input->gamepads_count++;
         return true;
     } else {
@@ -55,10 +43,11 @@ bool app_input_init_gamepad(app_input_t *input, int which) {
 }
 
 void app_input_close_gamepad(app_input_t *input, SDL_JoystickID sdl_id) {
-    app_gamepad_state_t *state = app_input_gamepad_get(input, sdl_id);
+    app_gamepad_state_t *state = app_input_gamepad_state_by_instance_id(input, sdl_id);
     if (!state) {
         return;
     }
+    assert(state->gs_id >= 0);
     if (!state->controller) {
         commons_log_warn("Input", "Could not find gamecontroller %i: %s", sdl_id, SDL_GetError());
         return;
@@ -66,60 +55,101 @@ void app_input_close_gamepad(app_input_t *input, SDL_JoystickID sdl_id) {
     // Reduce number of connected gamepads
     input->gamepads_count--;
     // Remove gamepad mask
-    input->activeGamepadMask &= ~(1 << state->id);
+    input->activeGamepadMask &= ~(1 << state->gs_id);
 #if !SDL_VERSION_ATLEAST(2, 0, 9)
     if (state->haptic) {
         SDL_HapticClose(state->haptic);
     }
 #endif
     SDL_GameControllerClose(state->controller);
-    commons_log_info("Input", "Controller #%d disconnected, sdl_id: %d", state->id, sdl_id);
-    // Release the state so it can be reused later
-    memset(state, 0, sizeof(app_gamepad_state_t));
+    commons_log_info("Input", "Controller #%d disconnected, sdl_id: %d", state->gs_id, sdl_id);
+    app_input_gamepad_state_deinit(state);
 }
 
-bool absinput_gamepad_known(app_input_t *input, SDL_JoystickID sdl_id) {
-    for (short i = 0; i < 4; i++) {
-        if (input->gamepads[i].initialized && input->gamepads[i].sdl_id == sdl_id) { return true; }
+app_gamepad_state_t *app_input_gamepad_state_init(app_input_t *input, SDL_GameController *controller) {
+    int index = new_gamepad_state_index(input, controller);
+    if (index < 0) {
+        return NULL;
     }
-    return false;
+    app_gamepad_state_t *state = &input->gamepads[index];
+    if (state->gs_id < 0) {
+        short gsId = next_gamepad_gs_id(input);
+        if (gsId < 0) {
+            return NULL;
+        }
+        state->gs_id = gsId;
+    }
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
+    SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
+
+    SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
+    unsigned int haptic_bits = SDL_HapticQuery(haptic);
+    commons_log_debug("Input", "Controller #%d has supported haptic bits: %x", state->gs_id, haptic_bits);
+    if (haptic && (haptic_bits & SDL_HAPTIC_LEFTRIGHT) == 0) {
+        SDL_HapticClose(haptic);
+        haptic = NULL;
+    }
+    state->instance_id = sdl_id;
+    state->controller = controller;
+    state->guid = SDL_JoystickGetGUID(joystick);
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    const char *serial = SDL_JoystickGetSerial(joystick);
+    state->serial_crc = serial != NULL ? SDL_crc32(0, (const void *) serial, strlen(serial)) : 0;
+#endif
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
+    state->haptic = haptic;
+    state->haptic_effect_id = -1;
+#endif
+    commons_log_info("Input", "Controller #%d (%s) connected", state->gs_id,
+                     SDL_JoystickName(joystick));
+    return state;
 }
 
-app_gamepad_state_t *app_input_gamepad_get(app_input_t *input, SDL_JoystickID sdl_id) {
-    for (short i = 0; i < input->max_num_gamepads; i++) {
+void app_input_gamepad_state_deinit(app_gamepad_state_t *state) {
+    short gsId = state->gs_id;
+    SDL_JoystickGUID guid = state->guid;
+    uint32_t serialCrc = state->serial_crc;
+    memset(state, 0, sizeof(app_gamepad_state_t));
+    // Set to invalid ID so it can be reused
+    state->instance_id = -1;
+    // Restore the ID so if the same controller is reconnected it will be assigned the same ID
+    state->gs_id = gsId;
+    state->guid = guid;
+    state->serial_crc = serialCrc;
+}
+
+app_gamepad_state_t *app_input_gamepad_state_by_index(app_input_t *input, int index) {
+    if (index < 0 || index >= input->max_num_gamepads || input->gamepads[index].instance_id == -1) {
+        return NULL;
+    }
+    return &input->gamepads[index];
+}
+
+app_gamepad_state_t *app_input_gamepad_state_by_instance_id(app_input_t *input, SDL_JoystickID instance_id) {
+    for (short i = 0; i < (short) input->max_num_gamepads; i++) {
         app_gamepad_state_t *gamepad = &input->gamepads[i];
-        if (!input->gamepads[i].initialized) {
-            input->gamepads[i].sdl_id = sdl_id;
-            input->gamepads[i].id = i;
-            input->gamepads[i].initialized = true;
-            input->activeGamepadMask |= (1 << i);
-            return gamepad;
-        } else if (gamepad->sdl_id == sdl_id) {
+        if (gamepad->instance_id == instance_id) {
             return gamepad;
         }
     }
-    return &input->gamepads[0];
+    return NULL;
 }
 
-int app_input_gamepads(app_input_t *input) {
-    return input->gamepads_count;
+int app_input_get_gamepads_count(app_input_t *input) {
+    return (int) input->gamepads_count;
 }
 
-int app_input_max_gamepads(app_input_t *input) {
-    return input->max_num_gamepads;
+short app_input_get_max_gamepads(app_input_t *input) {
+    return (short) input->max_num_gamepads;
 }
 
 int app_input_gamepads_mask(app_input_t *input) {
     return input->activeGamepadMask;
 }
 
-bool app_input_gamepad_present(app_input_t *input, int which) {
-    return (input->activeGamepadMask & (1 << which)) != 0;
-}
-
 void app_input_gamepad_rumble(app_input_t *input, unsigned short controller_id,
                               unsigned short low_freq_motor, unsigned short high_freq_motor) {
-    if (controller_id >= 4) {
+    if (controller_id >= app_input_get_max_gamepads(input)) {
         return;
     }
 
@@ -197,5 +227,47 @@ void app_input_gamepad_set_controller_led(app_input_t *input, unsigned short con
                                           uint8_t b) {
 #if SDL_VERSION_ATLEAST(2, 0, 14)
     SDL_GameControllerSetLED(input->gamepads[controllerNumber].controller, r, g, b);
+#endif
+}
+
+int new_gamepad_state_index(app_input_t *input, SDL_GameController *controller) {
+    int index = -1;
+    for (short i = 0, j = app_input_get_max_gamepads(input); i < j; i++) {
+        if (input->gamepads[i].instance_id != -1) {
+            continue;
+        }
+        if (index == -1) {
+            index = i;
+        }
+        if (is_same_gamepad(&input->gamepads[i], controller)) {
+            return i;
+        }
+    }
+    return index;
+}
+
+static short next_gamepad_gs_id(app_input_t *input) {
+    for (short i = 0, j = app_input_get_max_gamepads(input); i < j; i++) {
+        if ((input->activeGamepadMask & (1 << i)) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static bool is_same_gamepad(const app_gamepad_state_t *state, SDL_GameController *controller) {
+    SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
+    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+    if (memcmp(&state->guid, &guid, sizeof(SDL_JoystickGUID)) != 0) {
+        return false;
+    }
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    const char *serial = SDL_JoystickGetSerial(joystick);
+    if (serial == NULL) {
+        return state->serial_crc == 0;
+    }
+    return state->serial_crc == SDL_crc32(0, (const void *) serial, strlen(serial));
+#else
+    return false;
 #endif
 }
