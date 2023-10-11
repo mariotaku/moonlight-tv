@@ -25,8 +25,11 @@ static bool sensor_state_needs_update(const app_gamepad_sensor_state_t *state, u
                                       const float data[3]);
 
 void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event) {
+    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
+    if (gamepad == NULL) {
+        return;
+    }
     int button = 0;
-    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     switch (event->button) {
         case SDL_CONTROLLER_BUTTON_A:
             button = app_configuration->swap_abxy ? B_FLAG : A_FLAG;
@@ -125,13 +128,16 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
     if (input->view_only) {
         return;
     }
-    LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+    LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
                                gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX,
                                gamepad->rightStickY);
 }
 
 void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEvent *event) {
-    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
+    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
+    if (gamepad == NULL) {
+        return;
+    }
     bool vmouse_intercepted = false;
     bool vmouse = session_input_is_vmouse_active(&input->vmouse);
     switch (event->axis) {
@@ -183,26 +189,30 @@ void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEv
         vmouse_set_trigger(&input->vmouse, gamepad->leftTrigger, gamepad->rightTrigger);
     }
     if (vmouse) {
-        LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
+        LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
                                    gamepad->leftStickX, gamepad->leftStickY, 0, 0);
     } else {
-        LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+        LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons,
+                                   gamepad->leftTrigger,
                                    gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY,
                                    gamepad->rightStickX, gamepad->rightStickY);
     }
 }
 
 void stream_input_handle_csensor(stream_input_t *input, const SDL_ControllerSensorEvent *event) {
+    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
+    if (gamepad == NULL) {
+        return;
+    }
     if (input->view_only) {
         return;
     }
-    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     switch (event->sensor) {
         case SDL_SENSOR_ACCEL: {
             if (sensor_state_needs_update(&gamepad->accelState, event->timestamp, event->data)) {
                 gamepad->accelState.lastTimestamp = event->timestamp;
                 memcpy(gamepad->accelState.data, event->data, sizeof(gamepad->accelState.data));
-                LiSendControllerMotionEvent(gamepad->id, LI_MOTION_TYPE_ACCEL, event->data[0], event->data[1],
+                LiSendControllerMotionEvent(gamepad->gs_id, LI_MOTION_TYPE_ACCEL, event->data[0], event->data[1],
                                             event->data[2]);
             }
             break;
@@ -212,7 +222,7 @@ void stream_input_handle_csensor(stream_input_t *input, const SDL_ControllerSens
                 gamepad->gyroState.lastTimestamp = event->timestamp;
                 memcpy(gamepad->gyroState.data, event->data, sizeof(gamepad->gyroState.data));
                 // Convert rad/s to deg/s
-                LiSendControllerMotionEvent(gamepad->id, LI_MOTION_TYPE_GYRO,
+                LiSendControllerMotionEvent(gamepad->gs_id, LI_MOTION_TYPE_GYRO,
                                             event->data[0] * 57.2957795f,
                                             event->data[1] * 57.2957795f,
                                             event->data[2] * 57.2957795f);
@@ -226,13 +236,16 @@ void stream_input_handle_csensor(stream_input_t *input, const SDL_ControllerSens
 }
 
 void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTouchpadEvent *event) {
+    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
+    if (gamepad == NULL) {
+        return;
+    }
     if (input->view_only) {
         return;
     }
     if (event->touchpad != 0) {
         return;
     }
-    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
     uint8_t event_type;
     switch (event->type) {
         case SDL_CONTROLLERTOUCHPADUP: {
@@ -251,11 +264,14 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
             return;
         }
     }
-    LiSendControllerTouchEvent(gamepad->id, event_type, event->finger, event->x, event->y, event->pressure);
+    LiSendControllerTouchEvent(gamepad->gs_id, event_type, event->finger, event->x, event->y, event->pressure);
 }
 
 void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDeviceEvent *event) {
-    app_gamepad_state_t *gamepad = app_input_gamepad_get(input->input, event->which);
+    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
+    if (gamepad == NULL) {
+        return;
+    }
     if (input->view_only) {
         return;
     }
@@ -265,7 +281,7 @@ void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDevi
 void stream_input_send_gamepad_arrive(const stream_input_t *input, app_gamepad_state_t *gamepad) {
     uint8_t type = LI_CTYPE_XBOX;
     uint16_t capabilities = LI_CCAP_ANALOG_TRIGGERS;
-    commons_log_info("Input", "Controller %d arrived. Name: %s", gamepad->id,
+    commons_log_info("Input", "Controller %d arrived. Name: %s", gamepad->gs_id,
                      SDL_GameControllerName(gamepad->controller));
     switch (SDL_GameControllerGetType(gamepad->controller)) {
 #if SDL_VERSION_ATLEAST(2, 24, 0)
@@ -322,7 +338,7 @@ void stream_input_send_gamepad_arrive(const stream_input_t *input, app_gamepad_s
         commons_log_info("Input", "  controller capability: RGB LED");
     }
 #endif
-    LiSendControllerArrivalEvent(gamepad->id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);
+    LiSendControllerArrivalEvent(gamepad->gs_id, input->input->activeGamepadMask, type, 0xFFFFFFFF, capabilities);
 }
 
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad) {
@@ -333,7 +349,7 @@ static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad)
     gamepad->leftStickY = 0;
     gamepad->rightStickX = 0;
     gamepad->rightStickY = 0;
-    LiSendMultiControllerEvent(gamepad->id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
+    LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons, gamepad->leftTrigger,
                                gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY, gamepad->rightStickX,
                                gamepad->rightStickY);
 }

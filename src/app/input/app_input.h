@@ -17,12 +17,17 @@ typedef struct app_gamepad_sensor_state_t {
 } app_gamepad_sensor_state_t;
 
 typedef struct app_gamepad_state_t {
+    SDL_JoystickID instance_id;
+    SDL_GameController *controller;
+    SDL_JoystickGUID guid;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    uint32_t serial_crc;
+#endif
+    short gs_id;
     char leftTrigger, rightTrigger;
     short leftStickX, leftStickY;
     short rightStickX, rightStickY;
     int buttons;
-    SDL_JoystickID sdl_id;
-    SDL_GameController *controller;
 #if !SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Haptic *haptic;
     int haptic_effect_id;
@@ -31,8 +36,6 @@ typedef struct app_gamepad_state_t {
     app_gamepad_sensor_state_t accelState;
     app_gamepad_sensor_state_t gyroState;
 #endif
-    short id;
-    bool initialized;
 } app_gamepad_state_t;
 
 typedef struct app_input_t {
