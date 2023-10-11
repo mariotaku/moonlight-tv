@@ -96,6 +96,9 @@ app_gamepad_state_t *app_input_gamepad_state_init(app_input_t *input, SDL_GameCo
     const char *serial = SDL_JoystickGetSerial(joystick);
     state->serial_crc = serial != NULL ? SDL_crc32(0, (const void *) serial, strlen(serial)) : 0;
 #endif
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+    SDL_GameControllerSetPlayerIndex(controller, state->gs_id);
+#endif
 #if !SDL_VERSION_ATLEAST(2, 0, 9)
     state->haptic = haptic;
     state->haptic_effect_id = -1;
