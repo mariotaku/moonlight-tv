@@ -151,13 +151,17 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         memcpy(buffer + length, entry->data, entry->length);
         length += entry->length;
     }
-    SS4S_VideoFeedResult result = SS4S_PlayerVideoFeed(player, buffer, length, 0);
+    SS4S_VideoFeedFlags flags = SS4S_VIDEO_FEED_DATA_FRAME_START | SS4S_VIDEO_FEED_DATA_FRAME_END;
+    if (decodeUnit->frameType == FRAME_TYPE_IDR) {
+        flags |= SS4S_VIDEO_FEED_DATA_KEYFRAME;
+    }
+    SS4S_VideoFeedResult result = SS4S_PlayerVideoFeed(player, buffer, length, flags);
     if (result == SS4S_VIDEO_FEED_OK) {
         if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
             stream_info_parse_size(decodeUnit, &vdec_stream_info);
         }
-        vdec_temp_stats.totalDecodeTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
-        vdec_temp_stats.decodedFrames++;
+        vdec_temp_stats.totalSubmitTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
+        vdec_temp_stats.submittedFrames++;
         return DR_OK;
     } else if (result == SS4S_VIDEO_FEED_ERROR) {
         session_interrupt(session, false, STREAMING_INTERRUPT_DECODER);
@@ -174,7 +178,13 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     if (delta <= 0) { return; }
     dst->totalFps = (float) dst->totalFrames / ((float) delta / 1000);
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
-    dst->decodedFps = (float) dst->decodedFrames / ((float) delta / 1000);
+    dst->decodedFps = (float) dst->submittedFrames / ((float) delta / 1000);
+    int latencyUs = 0;
+    if (SS4S_PlayerGetVideoLatency(player, 0, &latencyUs)) {
+        dst->avgDecoderLatency = (float) latencyUs / 1000.0f;
+    } else {
+        dst->avgDecoderLatency = 0;
+    }
     LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
     app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);
 }
