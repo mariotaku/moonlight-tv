@@ -70,6 +70,7 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     player = session->player;
     buffer = malloc(DECODER_BUFFER_SIZE);
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
+    memset(&vdec_stream_info, 0, sizeof(vdec_stream_info));
     vdec_stream_format = videoFormat;
     vdec_stream_info.format = video_format_name(videoFormat);
     lastFrameNumber = 0;
@@ -145,6 +146,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     vdec_temp_stats.receivedFrames++;
     vdec_temp_stats.totalFrames++;
 
+    vdec_temp_stats.totalCaptureLatency += decodeUnit->frameHostProcessingLatency;
     vdec_temp_stats.totalReassemblyTime += decodeUnit->enqueueTimeMs - decodeUnit->receiveTimeMs;
     size_t length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
@@ -190,6 +192,7 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
 }
 
 void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {
+    if (decodeUnit->frameType != FRAME_TYPE_IDR) { return; }
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
         if (entry->bufferType != BUFFER_TYPE_SPS) { continue; }
         sps_dimension_t dimension;

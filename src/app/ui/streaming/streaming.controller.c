@@ -88,10 +88,12 @@ bool streaming_refresh_stats() {
         lv_label_set_text_fmt(controller->stats_items.drop_rate, "%.2f%%",
                               (float) dst->networkDroppedFrames / (float) dst->totalFrames * 100);
         float avgSubmitTime = (float) dst->totalSubmitTime / (float) dst->submittedFrames;
-        lv_label_set_text_fmt(controller->stats_items.decode_time, "%.2f ms", avgSubmitTime + dst->avgDecoderLatency);
+        float avgCapLatency = (float) dst->totalCaptureLatency / (float) dst->submittedFrames;
+        float totalLatency = avgSubmitTime + avgCapLatency + dst->avgDecoderLatency;
+        lv_label_set_text_fmt(controller->stats_items.total_latency, "%.2f ms", totalLatency);
     } else {
         lv_label_set_text(controller->stats_items.drop_rate, "-");
-        lv_label_set_text_fmt(controller->stats_items.decode_time, "-");
+        lv_label_set_text_fmt(controller->stats_items.total_latency, "-");
     }
     return true;
 }
