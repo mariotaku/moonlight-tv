@@ -84,11 +84,11 @@ bool streaming_refresh_stats() {
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 
-    if (dst->decodedFrames) {
+    if (dst->submittedFrames) {
         lv_label_set_text_fmt(controller->stats_items.drop_rate, "%.2f%%",
                               (float) dst->networkDroppedFrames / (float) dst->totalFrames * 100);
-        lv_label_set_text_fmt(controller->stats_items.decode_time, "%.2f ms",
-                              (float) dst->totalDecodeTime / (float) dst->decodedFrames);
+        float avgSubmitTime = (float) dst->totalSubmitTime / (float) dst->submittedFrames;
+        lv_label_set_text_fmt(controller->stats_items.decode_time, "%.2f ms", avgSubmitTime + dst->avgDecoderLatency);
     } else {
         lv_label_set_text(controller->stats_items.drop_rate, "-");
         lv_label_set_text_fmt(controller->stats_items.decode_time, "-");
