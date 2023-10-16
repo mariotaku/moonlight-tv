@@ -469,7 +469,7 @@ static void show_decoder_error() {
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("No working decoder"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
-    lv_label_set_text_fmt(msgview, locstr("Streaming can't work without a valid decoder."));
+    lv_label_set_text_static(msgview, locstr("Streaming can't work without a valid decoder."));
     lv_obj_center(msgbox);
 }
 
@@ -478,9 +478,9 @@ static void show_conf_persistent_error() {
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("Can't save settings"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
-    lv_label_set_text_fmt(msgview, locstr("Can't find a writable directory to save settings. Settings and pairing "
-                                          "information will be lost when the TV is turned off.\n\n"
-                                          "(If you're using webOS 3.0 or newer, restart the TV may fix this issue.)"));
+    lv_label_set_text_static(msgview, locstr("Can't find a writable directory to save settings. Settings and pairing "
+                                             "information will be lost when the TV is turned off.\n\n"
+                                             "(If you're using webOS 3.0 or newer, restart the TV may fix this issue.)"));
     lv_obj_center(msgbox);
 }
 
