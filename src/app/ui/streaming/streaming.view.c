@@ -127,7 +127,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     controller->stats_items.rtt = stat_label(stats, "Network RTT");
     controller->stats_items.net_fps = stat_label(stats, "Network framerate");
     controller->stats_items.drop_rate = stat_label(stats, "Network frame drop");
-    controller->stats_items.decode_time = stat_label(stats, "Decode time");
+    controller->stats_items.total_latency = stat_label(stats, "Video latency");
 
 
     lv_obj_add_flag(overlay, LV_OBJ_FLAG_HIDDEN);
