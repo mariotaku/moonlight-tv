@@ -44,6 +44,7 @@ typedef struct VIDEO_INFO {
     const char *format;
     int width;
     int height;
+    bool has_host_latency;
 } VIDEO_INFO;
 
 typedef struct AUDIO_STATS {
