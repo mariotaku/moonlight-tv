@@ -185,6 +185,7 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     int latencyUs = 0;
     if (SS4S_PlayerGetVideoLatency(player, 0, &latencyUs)) {
         dst->avgDecoderLatency = (float) latencyUs / 1000.0f;
+        vdec_stream_info.has_decoder_latency = true;
     } else {
         dst->avgDecoderLatency = 0;
     }
