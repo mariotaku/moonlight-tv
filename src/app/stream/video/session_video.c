@@ -148,6 +148,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
 
     vdec_temp_stats.totalCaptureLatency += decodeUnit->frameHostProcessingLatency;
     vdec_temp_stats.totalReassemblyTime += decodeUnit->enqueueTimeMs - decodeUnit->receiveTimeMs;
+    vdec_stream_info.has_host_latency |= decodeUnit->frameHostProcessingLatency > 0;
     size_t length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
         memcpy(buffer + length, entry->data, entry->length);

@@ -26,7 +26,8 @@ typedef struct {
         lv_obj_t *rtt;
         lv_obj_t *net_fps;
         lv_obj_t *drop_rate;
-        lv_obj_t *total_latency;
+        lv_obj_t *host_latency;
+        lv_obj_t *vdec_latency;
     } stats_items;
     lv_obj_t *notice, *notice_label;
     lv_style_t overlay_button_style;
