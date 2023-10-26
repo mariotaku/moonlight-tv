@@ -87,14 +87,19 @@ bool streaming_refresh_stats() {
     if (dst->submittedFrames) {
         lv_label_set_text_fmt(controller->stats_items.drop_rate, "%.2f%%",
                               (float) dst->networkDroppedFrames / (float) dst->totalFrames * 100);
-        float avgSubmitTime = (float) dst->totalSubmitTime / (float) dst->submittedFrames;
         if (vdec_stream_info.has_host_latency) {
             float avgCapLatency = (float) dst->totalCaptureLatency / (float) dst->submittedFrames / 10.0f;
             lv_label_set_text_fmt(controller->stats_items.host_latency, "avg %.2f ms", avgCapLatency);
         } else {
             lv_label_set_text_fmt(controller->stats_items.host_latency, "not available");
         }
-        lv_label_set_text_fmt(controller->stats_items.vdec_latency, "avg %.2f ms", avgSubmitTime + dst->avgDecoderLatency);
+        if (vdec_stream_info.has_decoder_latency) {
+            float avgSubmitTime = (float) dst->totalSubmitTime / (float) dst->submittedFrames;
+            lv_label_set_text_fmt(controller->stats_items.vdec_latency, "avg %.2f ms",
+                                  avgSubmitTime + dst->avgDecoderLatency);
+        } else {
+            lv_label_set_text_fmt(controller->stats_items.vdec_latency, "not available");
+        }
     } else {
         lv_label_set_text(controller->stats_items.drop_rate, "-");
         lv_label_set_text_fmt(controller->stats_items.host_latency, "-");
