@@ -15,7 +15,7 @@ int app_input_get_gamepads_count(app_input_t *input);
 
 short app_input_get_max_gamepads(app_input_t *input);
 
-int app_input_gamepads_mask(app_input_t *input);
+short app_input_gamepads_mask(app_input_t *input);
 
 void app_input_gamepad_rumble(app_input_t *input, unsigned short controllerNumber, unsigned short lowFreqMotor,
                               unsigned short highFreqMotor);

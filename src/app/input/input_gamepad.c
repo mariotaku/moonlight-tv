@@ -146,7 +146,7 @@ short app_input_get_max_gamepads(app_input_t *input) {
     return (short) input->max_num_gamepads;
 }
 
-int app_input_gamepads_mask(app_input_t *input) {
+short app_input_gamepads_mask(app_input_t *input) {
     return input->activeGamepadMask;
 }
 
