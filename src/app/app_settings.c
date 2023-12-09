@@ -70,6 +70,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->hdr = false;
     config->hevc = true;
     config->av1 = false;
+    config->stick_deadzone = 7;
 
     config->conf_dir = conf_dir;
     config->ini_path = path_join(conf_dir, CONF_NAME_MOONLIGHT);
@@ -114,6 +115,7 @@ bool settings_save(app_settings_t *config) {
     ini_write_bool(fp, "hardware_mouse", config->hardware_mouse);
 #endif
     ini_write_bool(fp, "swap_abxy", config->swap_abxy);
+    ini_write_int(fp, "stick_deadzone", config->stick_deadzone);
 
     ini_write_section(fp, "video");
     ini_write_string(fp, "decoder", config->decoder);
@@ -254,6 +256,13 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
 #if FEATURE_INPUT_EVMOUSE
         config->hardware_mouse = INI_IS_TRUE(value);
 #endif
+    } else if (INI_NAME_MATCH("stick_deadzone")) {
+        set_int(&config->stick_deadzone, value);
+        if (config->stick_deadzone < 0) {
+            config->stick_deadzone = 0;
+        } else if (config->stick_deadzone > 100) {
+            config->stick_deadzone = 100;
+        }
     } else if (INI_NAME_MATCH("swap_abxy")) {
         config->swap_abxy = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("video", "decoder")) {

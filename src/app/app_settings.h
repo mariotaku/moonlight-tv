@@ -50,6 +50,7 @@ typedef struct app_settings_t {
     bool hdr;
     bool hevc;
     bool av1;
+    int stick_deadzone;
 
     char *conf_dir;
     char *ini_path;
