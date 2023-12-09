@@ -209,6 +209,13 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     config->local_audio = app_config->localaudio;
     config->view_only = app_config->viewonly;
     config->sops = app_config->sops;
+    if (app_config->stick_deadzone < 0) {
+        config->stick_deadzone = 0;
+    } else if (app_config->stick_deadzone > 100) {
+        config->stick_deadzone = 100;
+    } else {
+        config->stick_deadzone = (uint8_t) app_config->stick_deadzone;
+    }
 
     SS4S_VideoCapabilities video_cap = app->ss4s.video_cap;
     SS4S_AudioCapabilities audio_cap = app->ss4s.audio_cap;

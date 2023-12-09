@@ -59,6 +59,7 @@ typedef struct session_config_t {
     bool local_audio;
     bool hardware_mouse;
     bool vmouse;
+    uint8_t stick_deadzone;
 } session_config_t;
 
 extern int streaming_errno;

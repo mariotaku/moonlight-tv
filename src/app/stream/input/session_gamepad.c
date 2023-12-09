@@ -24,6 +24,10 @@ static bool gamepad_combo_check(int buttons, short combo);
 static bool sensor_state_needs_update(const app_gamepad_sensor_state_t *state, uint32_t timestamp,
                                       const float data[3]);
 
+static bool vmouse_intercepted(stream_input_t *input, const app_gamepad_state_t *gamepad);
+
+static bool filter_deadzone_2axis(stream_input_t *input, short *x, short *y);
+
 void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButtonEvent *event) {
     app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
     if (gamepad == NULL) {
@@ -138,13 +142,12 @@ void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEv
     if (gamepad == NULL) {
         return;
     }
-    bool vmouse_intercepted = false;
-    bool vmouse = session_input_is_vmouse_active(&input->vmouse);
     switch (event->axis) {
-        case SDL_CONTROLLER_AXIS_LEFTX:
+        case SDL_CONTROLLER_AXIS_LEFTX: {
             gamepad->leftStickX = SDL_max(event->value, -32767);
             break;
-        case SDL_CONTROLLER_AXIS_LEFTY:
+        }
+        case SDL_CONTROLLER_AXIS_LEFTY: {
             // Signed values have one more negative value than
             // positive value, so inverting the sign on -32768
             // could actually cause the value to overflow and
@@ -152,43 +155,36 @@ void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEv
             // capping the value at 32767.
             gamepad->leftStickY = (short) -SDL_max(event->value, (short) -32767);
             break;
+        }
         case SDL_CONTROLLER_AXIS_RIGHTX: {
-            if (vmouse) {
-                vmouse_intercepted = true;
-            }
             gamepad->rightStickX = SDL_max(event->value, -32767);
             break;
         }
         case SDL_CONTROLLER_AXIS_RIGHTY: {
-            if (vmouse) {
-                vmouse_intercepted = true;
-            }
             gamepad->rightStickY = (short) -SDL_max(event->value, (short) -32767);
             break;
         }
-        case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-            if (vmouse) {
-                vmouse_intercepted = true;
-            }
+        case SDL_CONTROLLER_AXIS_TRIGGERLEFT: {
             gamepad->leftTrigger = (char) (event->value * 255UL / 32767);
             break;
-        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-            if (vmouse) {
-                vmouse_intercepted = true;
-            }
+        }
+        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT: {
             gamepad->rightTrigger = (char) (event->value * 255UL / 32767);
             break;
+        }
         default:
             return;
     }
     if (input->view_only) {
         return;
     }
-    if (vmouse_intercepted) {
+
+    filter_deadzone_2axis(input, &gamepad->leftStickX, &gamepad->leftStickY);
+    filter_deadzone_2axis(input, &gamepad->rightStickX, &gamepad->rightStickY);
+
+    if (vmouse_intercepted(input, gamepad)) {
         vmouse_set_vector(&input->vmouse, gamepad->rightStickX, gamepad->rightStickY);
         vmouse_set_trigger(&input->vmouse, gamepad->leftTrigger, gamepad->rightTrigger);
-    }
-    if (vmouse) {
         LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
                                    gamepad->leftStickX, gamepad->leftStickY, 0, 0);
     } else {
@@ -368,6 +364,25 @@ static bool sensor_state_needs_update(const app_gamepad_sensor_state_t *state, u
         if (state->data[i] != data[i]) {
             return true;
         }
+    }
+    return false;
+}
+
+static bool vmouse_intercepted(stream_input_t *input, const app_gamepad_state_t *gamepad) {
+    if (!session_input_is_vmouse_active(&input->vmouse)) {
+        return false;
+    }
+    return gamepad->rightStickX != 0 || gamepad->rightStickY != 0 || gamepad->leftTrigger != 0 ||
+           gamepad->rightTrigger != 0;
+}
+
+static bool filter_deadzone_2axis(stream_input_t *input, short *x, short *y) {
+    uint32_t magnitude_pow2 = (uint32_t) (*x) * (*x) + (uint32_t) (*y) * (*y);
+    uint32_t threshold_sqrt = 32768 * input->stick_deadzone / 100;
+    if (magnitude_pow2 < threshold_sqrt * threshold_sqrt) {
+        *x = 0;
+        *y = 0;
+        return true;
     }
     return false;
 }
