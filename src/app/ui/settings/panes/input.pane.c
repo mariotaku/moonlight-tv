@@ -10,15 +10,22 @@ typedef struct input_pane_t {
 
     lv_obj_t *absmouse_toggle;
     lv_obj_t *absmouse_hint;
+    lv_obj_t *deadzone_label;
 } input_pane_t;
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *view);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
 
+#if FEATURE_INPUT_EVMOUSE
 static void hwmouse_state_update_cb(lv_event_t *e);
 
 static void hwmouse_state_update(input_pane_t *pane);
+#endif
+
+static void update_deadzone_label(input_pane_t *pane);
+
+static void on_deadzone_changed(lv_event_t *e);
 
 const lv_fragment_class_t settings_pane_input_cls = {
         .constructor_cb = pane_ctor,
@@ -57,6 +64,13 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pref_header(view, locstr("Gamepad"));
 
+    pane->deadzone_label = pref_title_label(view, locstr("Analog stick deadzone"));
+    lv_obj_t *deadzone_slider = pref_slider(view, &app_configuration->stick_deadzone, 0, 20, 1);
+    lv_obj_set_width(deadzone_slider, LV_PCT(100));
+    lv_obj_add_event_cb(deadzone_slider, on_deadzone_changed, LV_EVENT_VALUE_CHANGED, pane);
+    pref_desc_label(view, locstr("Note: Some games can enforce a larger deadzone "
+                                 "than what Moonlight is configured to use."), false);
+
     pref_checkbox(view, locstr("Virtual mouse"), &app_configuration->virtual_mouse, false);
     pref_desc_label(view, locstr("Press LB + RT to move mouse cursor with sticks. "
                                  "LT/RT for left/right mouse buttons."), false);
@@ -68,9 +82,11 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 #if FEATURE_INPUT_EVMOUSE
     hwmouse_state_update(pane);
 #endif
+    update_deadzone_label(pane);
     return view;
 }
 
+#if FEATURE_INPUT_EVMOUSE
 static void hwmouse_state_update_cb(lv_event_t *e) {
     hwmouse_state_update((input_pane_t *) lv_event_get_user_data(e));
 }
@@ -85,4 +101,14 @@ static void hwmouse_state_update(input_pane_t *pane) {
         lv_label_set_text(pane->absmouse_hint, locstr("Better for remote desktop. "
                                                       "For some games, mouse will not work properly."));
     }
+}
+#endif
+
+static void update_deadzone_label(input_pane_t *pane) {
+    lv_label_set_text_fmt(pane->deadzone_label, locstr("Gamepad deadzone - %d%%"), app_configuration->stick_deadzone);
+}
+
+static void on_deadzone_changed(lv_event_t *e) {
+    input_pane_t *pane = (input_pane_t *) lv_event_get_user_data(e);
+    update_deadzone_label(pane);
 }
