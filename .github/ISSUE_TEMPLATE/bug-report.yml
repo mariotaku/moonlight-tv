@@ -1,10 +1,22 @@
 name: Bug Report
 description: Something is not working (video, audio, gamepad, crash, etc...)
 body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Device Information
+        Please provide information about the device you are using as a client.
+  - type: input
+    attributes:
+      label: Moonlight Version
+      description: What is the version of Moonlight you are using?
+      placeholder: "Example: 1.6.0"
+    validations:
+      required: true
   - type: dropdown
     attributes:
       label: Device Type
-      description: What kind of device are you using?
+      description: What kind of device are you running Moonlight on?
       options:
         - webOS TV
         - Raspberry Pi
@@ -26,13 +38,12 @@ body:
       placeholder: "Example: webOS 4.5.3"
     validations:
       required: true
-  - type: input
+  - type: markdown
     attributes:
-      label: Moonlight Version
-      description: What is the version of Moonlight you are using?
-      placeholder: "Example: 1.6.0"
-    validations:
-      required: true
+      value: |
+        ## Host Information
+        Please provide information about the computer you are streaming from.
+        This information is important especially when experiencing performance issues.
   - type: dropdown
     attributes:
       label: Host OS
@@ -48,6 +59,17 @@ body:
       options:
         - Sunshine
         - GeForce Experience
+  - type: textarea
+    attributes:
+      label: Host Setup
+      description: What is the hardware and software setup of your computer?
+      placeholder: "Example: Intel Core i7-8700K, NVIDIA GeForce RTX 2080 Ti, 16GB RAM with Windows 10 Home"
+  - type: markdown
+    attributes:
+      value: |
+        ## Issue Information
+        Please provide information about the issue you are experiencing.
+        This information is important to help us understand the issue.
   - type: textarea
     attributes:
       label: Bug Description
