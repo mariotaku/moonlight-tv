@@ -1,0 +1,96 @@
+name: Bug Report
+description: Something is not working (video, audio, gamepad, crash, etc...)
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Device Information
+        Please provide information about the device you are using as a client.
+  - type: input
+    attributes:
+      label: Moonlight Version
+      description: What is the version of Moonlight you are using?
+      placeholder: "Example: 1.6.0"
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Device Type
+      description: What kind of device are you running Moonlight on?
+      options:
+        - webOS TV
+        - Raspberry Pi
+        - Steam Link
+        - Other (Desktop Linux, macOS, etc...)
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Device Model
+      description: What is the model of your device?
+      placeholder: "Example: LG C9"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Device OS
+      description: What is the OS version of your device?
+      placeholder: "Example: webOS 4.5.3"
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## Host Information
+        Please provide information about the computer you are streaming from.
+        This information is important especially when experiencing performance issues.
+  - type: dropdown
+    attributes:
+      label: Host OS
+      description: What is the OS of your computer?
+      options:
+        - Windows
+        - Linux
+        - macOS
+  - type: dropdown
+    attributes:
+      label: Host Software
+      description: What streaming software are you using?
+      options:
+        - Sunshine
+        - GeForce Experience
+  - type: textarea
+    attributes:
+      label: Host Setup
+      description: What is the hardware and software setup of your computer?
+      placeholder: "Example: Intel Core i7-8700K, NVIDIA GeForce RTX 2080 Ti, 16GB RAM with Windows 10 Home"
+  - type: markdown
+    attributes:
+      value: |
+        ## Issue Information
+        Please provide information about the issue you are experiencing.
+        This information is important to help us understand the issue.
+  - type: textarea
+    attributes:
+      label: Bug Description
+      description: What kind of incorrect behavior did you see?
+      placeholder: "Example: I can't see video output when I start streaming"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      description: Can you reproduce the issue? If so, please share below as steps.
+      placeholder: |
+        Example: 
+        1. Select computer
+        2. Open "desktop" in the apps list
+        3. Wait for the connection to be established
+        4. Seeing black screen without video
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: What is the correct behavior do you think?
+      placeholder: "Seeing video output of my computer screen"
