@@ -1,5 +1,7 @@
 name: Bug Report
 description: Something is not working (video, audio, gamepad, crash, etc...)
+labels:
+  - bug
 body:
   - type: markdown
     attributes:
