@@ -1,0 +1,25 @@
+name: Bug Report
+description: Something is not working (video, audio, gamepad, crash, etc...)
+body:
+  - type: textarea
+    attributes:
+      label: Bug Description
+      description: What kind of incorrect behavior did you see?
+      placeholder: "Example: I can't see video output when I start streaming"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      description: Can you reproduce the issue? If so, please share below as steps.
+      placeholder: |
+        Example: 
+        1. Select computer
+        2. Open "desktop" in the apps list
+        3. Wait for the connection to be established
+        4. Seeing black screen without video
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: What is the correct behavior do you think?
+      placeholder: "Seeing video output of my computer screen"
