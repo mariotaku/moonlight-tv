@@ -1,6 +1,53 @@
 name: Bug Report
 description: Something is not working (video, audio, gamepad, crash, etc...)
 body:
+  - type: dropdown
+    attributes:
+      label: Device Type
+      description: What kind of device are you using?
+      options:
+        - webOS TV
+        - Raspberry Pi
+        - Steam Link
+        - Other (Desktop Linux, macOS, etc...)
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Device Model
+      description: What is the model of your device?
+      placeholder: "Example: LG C9"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Device OS
+      description: What is the OS version of your device?
+      placeholder: "Example: webOS 4.5.3"
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Moonlight Version
+      description: What is the version of Moonlight you are using?
+      placeholder: "Example: 1.6.0"
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Host OS
+      description: What is the OS of your computer?
+      options:
+        - Windows
+        - Linux
+        - macOS
+  - type: dropdown
+    attributes:
+      label: Host Software
+      description: What streaming software are you using?
+      options:
+        - Sunshine
+        - GeForce Experience
   - type: textarea
     attributes:
       label: Bug Description
