@@ -1,0 +1,22 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+body:
+  - type: textarea
+    attributes:
+      label: Description
+      description: Describe the feature you would like to see added to Moonlight.
+      placeholder: "Example: I would like to see support for custom ports."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Motivation
+      description: Why do you think this feature should be added?
+      placeholder: "Example: My host is behind a firewall and I cannot open default ports."
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Add any other context or screenshots about the feature request here.
+      placeholder: "Example: I am using Moonlight on a Raspberry Pi 4."
