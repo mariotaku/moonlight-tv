@@ -22,7 +22,7 @@ int worker_wol(worker_context_t *context) {
     int ret;
     while (!SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
         PSERVER_DATA tmpserver = serverdata_new();
-        ret = gs_get_status(gs, tmpserver, strdup(server->serverInfo.address), false);
+        ret = gs_get_status(gs, tmpserver, strdup(server->serverInfo.address), server->extPort, false);
         serverdata_free(tmpserver);
         commons_log_debug("WoL", "gs_get_status returned %d, errno=%d", (int) ret, errno);
         if (ret == 0 || errno == ECONNREFUSED) {

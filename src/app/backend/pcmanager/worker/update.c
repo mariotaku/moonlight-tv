@@ -13,10 +13,13 @@ static void notify_querying(pclist_update_context_t *args);
 
 int worker_host_update(worker_context_t *context) {
     const pclist_t *node = pcmanager_node(context->manager, &context->uuid);
-    return pcmanager_update_by_ip(context, node->server->serverInfo.address, true);
+    if (node == NULL) {
+        return GS_FAILED;
+    }
+    return pcmanager_update_by_ip(context, node->server->serverInfo.address, node->server->extPort, true);
 }
 
-int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force) {
+int pcmanager_update_by_ip(worker_context_t *context, const char *ip, uint16_t port, bool force) {
     SDL_assert_release(context != NULL);
     SDL_assert_release(context->manager != NULL);
     SDL_assert_release(ip != NULL);
@@ -44,7 +47,7 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, bool force
     }
     GS_CLIENT client = app_gs_client_new(context->app);
     PSERVER_DATA server = serverdata_new();
-    int ret = gs_get_status(client, server, ip_dup, app_configuration->unsupported);
+    int ret = gs_get_status(client, server, ip_dup, port, app_configuration->unsupported);
     ip_dup = NULL;
     gs_destroy(client);
     if (existing) {

@@ -15,9 +15,9 @@ typedef enum SERVER_STATE_ENUM {
     /** Server is online but not paired */
     SERVER_STATE_NOT_PAIRED = SERVER_STATE_ONLINE | 0x02,
     /** Can't reach server */
-    SERVER_STATE_OFFLINE = 0x30,
+    SERVER_STATE_OFFLINE = 0x40,
     /** Server returned error */
-    SERVER_STATE_ERROR = 0x40,
+    SERVER_STATE_ERROR = 0x80,
 } SERVER_STATE_ENUM;
 
 typedef union SERVER_STATE {

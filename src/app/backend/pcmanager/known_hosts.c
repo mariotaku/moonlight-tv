@@ -1,3 +1,4 @@
+#include "known_hosts.h"
 #include "priv.h"
 #include "pclist.h"
 #include "app.h"
@@ -8,27 +9,6 @@
 #include "util/ini_ext.h"
 #include "util/path.h"
 #include "app_settings.h"
-
-typedef struct known_host_t {
-    uuidstr_t uuid;
-    char *mac;
-    char *hostname;
-    char *address;
-    bool selected;
-    appid_list_t *favs;
-    appid_list_t *hidden;
-    struct known_host_t *next;
-} known_host_t;
-
-#define LINKEDLIST_IMPL
-#define LINKEDLIST_MODIFIER static
-#define LINKEDLIST_TYPE known_host_t
-#define LINKEDLIST_PREFIX hostlist
-
-#include "linked_list.h"
-
-#undef LINKEDLIST_TYPE
-#undef LINKEDLIST_PREFIX
 
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_MODIFIER static
@@ -43,19 +23,14 @@ typedef struct known_host_t {
 #undef LINKEDLIST_TYPE
 #undef LINKEDLIST_PREFIX
 
-static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value);
+static int known_hosts_handle(known_host_t **list, const char *section, const char *name, const char *value);
 
-static int hostlist_find_uuid(known_host_t *node, void *v);
-
-static void hostlist_node_free(known_host_t *node);
+static int known_hosts_find_uuid(known_host_t *node, void *v);
 
 void pcmanager_load_known_hosts(pcmanager_t *manager) {
     commons_log_info("PCManager", "Load unknown hosts");
     char *conf_file = path_join(manager->app->settings.conf_dir, CONF_NAME_HOSTS);
-    known_host_t *hosts = NULL;
-    if (ini_parse(conf_file, (ini_handler) known_hosts_parse, &hosts) != 0) {
-        goto cleanup;
-    }
+    known_host_t *hosts = known_hosts_parse(conf_file);
 
     bool selected_set = false;
     for (known_host_t *cur = hosts; cur; cur = cur->next) {
@@ -71,6 +46,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->mac = mac;
         server->hostname = hostname;
         server->serverInfo.address = address;
+        server->extPort = cur->port;
 
         pclist_t *node = pclist_insert_known(manager, &cur->uuid, server);
 
@@ -85,8 +61,7 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
             selected_set = true;
         }
     }
-    cleanup:
-    hostlist_free(hosts, hostlist_node_free);
+    known_hosts_free(hosts, known_hosts_node_free);
     free(conf_file);
 }
 
@@ -106,7 +81,11 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
 
         ini_write_string(fp, "mac", server->mac);
         ini_write_string(fp, "hostname", server->hostname);
-        ini_write_string(fp, "address", server->serverInfo.address);
+        if (server->extPort && server->extPort != 47989) {
+            ini_write_stringf(fp, "address", "%s:%d", server->serverInfo.address, server->extPort);
+        } else {
+            ini_write_string(fp, "address", server->serverInfo.address);
+        }
         if (!selected_set && cur->selected) {
             ini_write_bool(fp, "selected", true);
             selected_set = true;
@@ -127,20 +106,26 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
     fclose(fp);
 }
 
-static int known_hosts_parse(known_host_t **list, const char *section, const char *name, const char *value) {
+static int known_hosts_handle(known_host_t **list, const char *section, const char *name, const char *value) {
     if (!section) { return 1; }
-    known_host_t *host = hostlist_find_by(*list, section, (hostlist_find_fn) hostlist_find_uuid);
+    known_host_t *host = known_hosts_find_by(*list, section, (known_hosts_find_fn) known_hosts_find_uuid);
     if (!host) {
-        host = hostlist_new();
+        host = known_hosts_new();
         uuidstr_fromstr(&host->uuid, section);
-        *list = hostlist_append(*list, host);
+        *list = known_hosts_append(*list, host);
     }
     if (INI_NAME_MATCH("mac")) {
         host->mac = SDL_strdup(value);
     } else if (INI_NAME_MATCH("hostname")) {
         host->hostname = SDL_strdup(value);
     } else if (INI_NAME_MATCH("address")) {
-        host->address = SDL_strdup(value);
+        char *address = SDL_strdup(value);
+        char *port_colon = SDL_strrchr(address, ':');
+        host->address = address;
+        if (port_colon) {
+            port_colon[0] = '\0';
+            host->port = SDL_atoi(port_colon + 1);
+        }
     } else if (INI_NAME_MATCH("selected")) {
         host->selected = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("favorite")) {
@@ -155,11 +140,11 @@ static int known_hosts_parse(known_host_t **list, const char *section, const cha
     return 1;
 }
 
-static int hostlist_find_uuid(known_host_t *node, void *v) {
+static int known_hosts_find_uuid(known_host_t *node, void *v) {
     return !uuidstr_t_equals_s(&node->uuid, v);
 }
 
-static void hostlist_node_free(known_host_t *node) {
+void known_hosts_node_free(known_host_t *node) {
     if (node->favs) {
         appid_list_free(node->favs, (appid_list_nodefree_fn) free);
     }
@@ -167,4 +152,12 @@ static void hostlist_node_free(known_host_t *node) {
         appid_list_free(node->hidden, (appid_list_nodefree_fn) free);
     }
     free(node);
+}
+
+known_host_t *known_hosts_parse(const char *conf_file) {
+    known_host_t *hosts = NULL;
+    if (ini_parse(conf_file, (ini_handler) known_hosts_handle, &hosts) != 0) {
+        return NULL;
+    }
+    return hosts;
 }

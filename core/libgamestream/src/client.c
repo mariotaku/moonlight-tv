@@ -59,156 +59,16 @@
 #include "set_error.h"
 #include "conf.h"
 
-static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, const char *action,
-                          const char *fmt, ...);
+static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server);
+
+static int resolve_ports(GS_CLIENT hnd, const char *address, uint16_t port, uint16_t *https_port);
+
+static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const char *address, uint16_t port,
+                          const char *action, const char *fmt, ...);
 
 static bool append_param(char *url, size_t ulen, const char *param, const char *value_fmt, ...);
 
-static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
-    int ret;
-    char url[4096];
-    int i;
-
-    i = 0;
-    do {
-        char *pairedText = NULL;
-        char *currentGameText = NULL;
-        char *stateText = NULL;
-        char *serverCodecModeSupportText = NULL;
-
-        ret = GS_INVALID;
-
-        // Modern GFE versions don't allow serverinfo to be fetched over HTTPS if the client
-        // is not already paired. Since we can't pair without knowing the server version, we
-        // make another request over HTTP if the HTTPS request fails. We can't just use HTTP
-        // for everything because it doesn't accurately tell us if we're paired.
-        construct_url(hnd, url, sizeof(url), i == 0, server->serverInfo.address, "serverinfo", NULL);
-
-        HTTP_DATA *data = http_data_alloc();
-        if (data == NULL) {
-            ret = GS_OUT_OF_MEMORY;
-            goto cleanup;
-        }
-        if (http_request(hnd->http, url, data) != GS_OK) {
-            ret = GS_IO_ERROR;
-            goto cleanup;
-        }
-
-        if (xml_status(data->memory, data->size) == GS_ERROR) {
-            ret = GS_ERROR;
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "uniqueid", (char **) &server->uuid) != GS_OK) {
-            goto cleanup;
-        }
-        if (xml_search(data->memory, data->size, "mac", (char **) &server->mac) != GS_OK) {
-            goto cleanup;
-        }
-        if (xml_search(data->memory, data->size, "hostname", (char **) &server->hostname) != GS_OK) {
-            server->hostname = strdup(server->serverInfo.address);
-        }
-
-        if (xml_search(data->memory, data->size, "currentgame", &currentGameText) != GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "PairStatus", &pairedText) != GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "appversion", (char **) &server->serverInfo.serverInfoAppVersion) !=
-            GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "state", &stateText) != GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "ServerCodecModeSupport", &serverCodecModeSupportText) != GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "gputype", (char **) &server->gpuType) != GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "GsVersion", (char **) &server->gsVersion) != GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_search(data->memory, data->size, "GfeVersion", (char **) &server->serverInfo.serverInfoGfeVersion) !=
-            GS_OK) {
-            goto cleanup;
-        }
-
-        if (xml_modelist(data->memory, data->size, &server->modes) != GS_OK) {
-            goto cleanup;
-        }
-
-        // These fields are present on all version of GFE that this client supports
-        if (!strlen(currentGameText) || !strlen(pairedText) || !strlen(server->serverInfo.serverInfoAppVersion) ||
-            !strlen(stateText)) {
-            goto cleanup;
-        }
-
-        int serverCodecModeSupport = serverCodecModeSupportText == NULL ? 0 : atoi(serverCodecModeSupportText);
-
-        server->paired = pairedText != NULL && strcmp(pairedText, "1") == 0;
-        server->currentGame = currentGameText == NULL ? 0 : atoi(currentGameText);
-        server->supports4K = serverCodecModeSupport != 0;
-        server->supportsHdr = serverCodecModeSupport & 0x200;
-        server->serverMajorVersion = atoi(server->serverInfo.serverInfoAppVersion);
-        // Real Nvidia host software (GeForce Experience and RTX Experience) both use the 'Mjolnir'
-        // codename in the state field and no version of Sunshine does. We can use this to bypass
-        // some assumptions about Nvidia hardware that don't apply to Sunshine hosts.
-        server->isGfe = strstr(stateText, "MJOLNIR") != NULL;
-
-        if (strstr(stateText, "_SERVER_BUSY") == NULL) {
-            // After GFE 2.8, current game remains set even after streaming
-            // has ended. We emulate the old behavior by forcing it to zero
-            // if streaming is not active.
-            server->currentGame = 0;
-        }
-        ret = GS_OK;
-
-        cleanup:
-        if (data != NULL) {
-            http_data_free(data);
-        }
-
-        if (pairedText != NULL) {
-            free(pairedText);
-        }
-
-        if (currentGameText != NULL) {
-            free(currentGameText);
-        }
-
-        if (stateText != NULL) {
-            free(stateText);
-        }
-
-        if (serverCodecModeSupportText != NULL) {
-            free(serverCodecModeSupportText);
-        }
-
-        i++;
-    } while (ret != GS_OK && i < 2);
-
-    if (ret == GS_OK && !server->unsupported) {
-        if (server->serverMajorVersion > MAX_SUPPORTED_GFE_VERSION) {
-            ret = gs_set_error(GS_UNSUPPORTED_VERSION, "Ensure you're running the latest version of Moonlight "
-                                                       "or downgrade GeForce Experience and try again");
-        } else if (server->serverMajorVersion < MIN_SUPPORTED_GFE_VERSION) {
-            ret = gs_set_error(GS_UNSUPPORTED_VERSION, "Moonlight requires a newer version of GeForce Experience. "
-                                                       "Please upgrade GFE on your PC and try again.");
-        }
-    }
-
-    return ret;
-}
+static uint16_t server_port(const SERVER_DATA *server, bool secure);
 
 static void bytes_to_hex(const unsigned char *in, char *out, size_t len) {
     for (int i = 0; i < len; i++) {
@@ -245,7 +105,7 @@ int gs_unpair(GS_CLIENT hnd, PSERVER_DATA server) {
         return GS_OUT_OF_MEMORY;
     }
 
-    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "unpair", NULL);
+    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "unpair", NULL);
     ret = http_request(hnd->http, url, data);
     if (ret != GS_OK) {
         goto cleanup;
@@ -338,7 +198,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
 
     // Send the salt and get the server cert. This doesn't have a read timeout
     // because the user must enter the PIN before the server responds
-    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
+    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
                   "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, hnd->cert_hex);
     data = http_data_alloc();
 
@@ -405,7 +265,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     bytes_to_hex(encrypted_challenge, encrypted_challenge_hex, 16);
 
     // Send the encrypted challenge to the server
-    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
+    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
                   "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
@@ -467,7 +327,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     char challenge_response_hex[65];
     bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
 
-    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
+    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
                   "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
@@ -537,7 +397,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     char client_pairing_secret_hex[sizeof(client_pairing_secret) * 2 + 1];
     bytes_to_hex((unsigned char *) &client_pairing_secret, client_pairing_secret_hex, sizeof(client_pairing_secret));
 
-    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, "pair",
+    construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
                   "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
@@ -558,7 +418,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     }
 
     // Do the initial challenge (seems neccessary for us to show as paired)
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "pair",
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, server_port(server, true), "pair",
                   "devicename=roth&updateState=1&phrase=pairchallenge");
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
@@ -610,7 +470,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
         return gs_set_error(GS_OUT_OF_MEMORY, "Out of memory");
     }
 
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "applist", NULL);
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, server_port(server, true), "applist", NULL);
     if (http_request(hnd->http, url, data) != GS_OK) {
         ret = gs_set_error(GS_IO_ERROR, "Failed to get apps list");
     } else if (xml_status(data->memory, data->size) == GS_ERROR) {
@@ -687,7 +547,8 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
 
     int surround_info = SURROUNDAUDIOINFO_FROM_AUDIO_CONFIGURATION(config->audioConfiguration);
     const char *action = resume ? "launch" : "resume";
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, action, "appid=%d", appId);
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, server_port(server, true), action,
+                  "appid=%d", appId);
 
     append_param(url, sizeof(url), "mode", "%dx%dx%d", config->width, config->height, fps);
     append_param(url, sizeof(url), "additionalStates", "1");
@@ -754,7 +615,7 @@ int gs_quit_app(GS_CLIENT hnd, PSERVER_DATA server) {
         return gs_set_error(GS_OUT_OF_MEMORY, "Out of memory");
     }
 
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "cancel", NULL);
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, server_port(server, true), "cancel", NULL);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
     }
@@ -792,7 +653,7 @@ int gs_download_cover(GS_CLIENT hnd, const SERVER_DATA *server, int appid, const
         return GS_OUT_OF_MEMORY;
     }
 
-    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, "appasset",
+    construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, server_port(server, true), "appasset",
                   "appid=%d&AssetType=2&AssetIdx=0", appid);
     ret = http_request(hnd->http, url, data);
     if (ret != GS_OK) {
@@ -843,20 +704,220 @@ void gs_set_timeout(GS_CLIENT hnd, int timeout_secs) {
     http_set_timeout(hnd->http, timeout_secs);
 }
 
-int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported) {
+int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, uint16_t port, bool unsupported) {
     LiInitializeServerInformation(&server->serverInfo);
     server->serverInfo.address = address;
+    server->extPort = port;
     server->unsupported = unsupported;
     return load_server_status(hnd, server);
 }
 
-static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, const char *address, const char *action,
-                          const char *fmt, ...) {
+static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
+    int ret = GS_OK;
+    if (server->extPort != 0 && server->httpsPort == 0) {
+        ret = resolve_ports(hnd, server->serverInfo.address, server->extPort, &server->httpsPort);
+    }
+    if (ret != GS_OK) {
+        return ret;
+    }
+
+    char url[4096];
+    int i = 0;
+    do {
+        char *pairedText = NULL;
+        char *currentGameText = NULL;
+        char *stateText = NULL;
+        char *serverCodecModeSupportText = NULL;
+        char *httpsPortText = NULL;
+        char *externalPortText = NULL;
+
+        ret = GS_INVALID;
+
+        // Modern GFE versions don't allow serverinfo to be fetched over HTTPS if the client
+        // is not already paired. Since we can't pair without knowing the server version, we
+        // make another request over HTTP if the HTTPS request fails. We can't just use HTTP
+        // for everything because it doesn't accurately tell us if we're paired.
+        bool secure = i == 0;
+        construct_url(hnd, url, sizeof(url), secure, server->serverInfo.address, server_port(server, secure),
+                      "serverinfo", NULL);
+
+        HTTP_DATA *data = http_data_alloc();
+        if (data == NULL) {
+            ret = GS_OUT_OF_MEMORY;
+            goto cleanup;
+        }
+        if (http_request(hnd->http, url, data) != GS_OK) {
+            ret = GS_IO_ERROR;
+            goto cleanup;
+        }
+
+        if (xml_status(data->memory, data->size) == GS_ERROR) {
+            ret = GS_ERROR;
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "uniqueid", (char **) &server->uuid) != GS_OK) {
+            goto cleanup;
+        }
+        if (xml_search(data->memory, data->size, "mac", (char **) &server->mac) != GS_OK) {
+            goto cleanup;
+        }
+        if (xml_search(data->memory, data->size, "hostname", (char **) &server->hostname) != GS_OK) {
+            server->hostname = strdup(server->serverInfo.address);
+        }
+
+        if (xml_search(data->memory, data->size, "currentgame", &currentGameText) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "PairStatus", &pairedText) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "appversion", (char **) &server->serverInfo.serverInfoAppVersion) !=
+            GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "state", &stateText) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "ServerCodecModeSupport", &serverCodecModeSupportText) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "gputype", (char **) &server->gpuType) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "GsVersion", (char **) &server->gsVersion) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "GfeVersion", (char **) &server->serverInfo.serverInfoGfeVersion) !=
+            GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "HttpsPort", &httpsPortText) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_search(data->memory, data->size, "ExternalPort", &externalPortText) != GS_OK) {
+            goto cleanup;
+        }
+
+        if (xml_modelist(data->memory, data->size, &server->modes) != GS_OK) {
+            goto cleanup;
+        }
+
+        // These fields are present on all version of GFE that this client supports
+        if (!strlen(currentGameText) || !strlen(pairedText) || !strlen(server->serverInfo.serverInfoAppVersion) ||
+            !strlen(stateText)) {
+            goto cleanup;
+        }
+
+        int serverCodecModeSupport = serverCodecModeSupportText == NULL ? 0 :
+                                     (int) strtol(serverCodecModeSupportText, NULL, 0);
+
+        server->paired = pairedText != NULL && strcmp(pairedText, "1") == 0;
+        server->currentGame = currentGameText == NULL ? 0 : (int) strtol(currentGameText, NULL, 0);
+        server->supports4K = serverCodecModeSupport != 0;
+        server->supportsHdr = serverCodecModeSupport & 0x200;
+        server->serverMajorVersion = (int) strtol(server->serverInfo.serverInfoAppVersion, NULL, 0);
+        // Real Nvidia host software (GeForce Experience and RTX Experience) both use the 'Mjolnir'
+        // codename in the state field and no version of Sunshine does. We can use this to bypass
+        // some assumptions about Nvidia hardware that don't apply to Sunshine hosts.
+        server->isGfe = strstr(stateText, "MJOLNIR") != NULL;
+        server->httpsPort = httpsPortText == NULL ? 0 : (int) strtol(httpsPortText, NULL, 0);
+        server->extPort = externalPortText == NULL ? 0 : (int) strtol(externalPortText, NULL, 0);
+
+        if (strstr(stateText, "_SERVER_BUSY") == NULL) {
+            // After GFE 2.8, current game remains set even after streaming
+            // has ended. We emulate the old behavior by forcing it to zero
+            // if streaming is not active.
+            server->currentGame = 0;
+        }
+        ret = GS_OK;
+
+        cleanup:
+        if (data != NULL) {
+            http_data_free(data);
+        }
+
+        if (pairedText != NULL) {
+            free(pairedText);
+        }
+
+        if (currentGameText != NULL) {
+            free(currentGameText);
+        }
+
+        if (stateText != NULL) {
+            free(stateText);
+        }
+
+        if (serverCodecModeSupportText != NULL) {
+            free(serverCodecModeSupportText);
+        }
+
+        i++;
+    } while (ret != GS_OK && i < 2);
+
+    if (ret == GS_OK && !server->unsupported) {
+        if (server->serverMajorVersion > MAX_SUPPORTED_GFE_VERSION) {
+            ret = gs_set_error(GS_UNSUPPORTED_VERSION, "Ensure you're running the latest version of Moonlight "
+                                                       "or downgrade GeForce Experience and try again");
+        } else if (server->serverMajorVersion < MIN_SUPPORTED_GFE_VERSION) {
+            ret = gs_set_error(GS_UNSUPPORTED_VERSION, "Moonlight requires a newer version of GeForce Experience. "
+                                                       "Please upgrade GFE on your PC and try again.");
+        }
+    }
+
+    return ret;
+}
+
+static int resolve_ports(GS_CLIENT hnd, const char *address, uint16_t port, uint16_t *https_port) {
+    int ret = GS_OK;
+    char url[4096];
+    HTTP_DATA *data = http_data_alloc();
+    if (data == NULL) {
+        return GS_OUT_OF_MEMORY;
+    }
+
+    construct_url(hnd, url, sizeof(url), false, address, port, "serverinfo", NULL);
+    if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
+        goto cleanup;
+    }
+
+    if (xml_status(data->memory, data->size) == GS_ERROR) {
+        ret = GS_ERROR;
+        goto cleanup;
+    }
+
+    char *httpsPortText = NULL;
+    if (xml_search(data->memory, data->size, "HttpsPort", &httpsPortText) != GS_OK) {
+        ret = GS_INVALID;
+        goto cleanup;
+    }
+
+    *https_port = (uint16_t) strtol(httpsPortText, NULL, 0);
+
+    cleanup:
+    http_data_free(data);
+    return ret;
+}
+
+static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, const char *address, uint16_t port,
+                          const char *action, const char *fmt, ...) {
     uuidstr_t uuid;
     if (!uuidstr_random(&uuid)) {
         return false;
     }
-    int port = secure ? 47984 : 47989;
+    if (port == 0) {
+        port = secure ? 47984 : 47989;
+    }
     char *const proto = secure ? "https" : "http";
     if (fmt) {
         char params[4096];
@@ -864,10 +925,10 @@ static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, co
         va_start(ap, fmt);
         vsnprintf(params, 4096, fmt, ap);
         va_end(ap);
-        snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%.*s&%s", proto, address, port, action,
+        snprintf(url, ulen, "%s://%s:%u/%s?uniqueid=%s&uuid=%.*s&%s", proto, address, port, action,
                  hnd->unique_id, 36, uuid.data, params);
     } else {
-        snprintf(url, ulen, "%s://%s:%d/%s?uniqueid=%s&uuid=%.*s", proto, address, port,
+        snprintf(url, ulen, "%s://%s:%u/%s?uniqueid=%s&uuid=%.*s", proto, address, port,
                  action, hnd->unique_id, 36, uuid.data);
     }
     return true;
@@ -893,4 +954,8 @@ static bool append_param(char *url, size_t ulen, const char *param, const char *
     p = stpncpy(p, value, vlen);
     *p = '\0';
     return true;
+}
+
+static uint16_t server_port(const SERVER_DATA *server, bool secure) {
+    return secure ? server->httpsPort : server->extPort;
 }
