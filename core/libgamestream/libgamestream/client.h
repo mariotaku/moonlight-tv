@@ -33,6 +33,10 @@ typedef struct _SERVER_DATA {
     const char *mac;
     const char *hostname;
     const char *gpuType;
+    /** HttpsPort */
+    unsigned short httpsPort;
+    /** ExternalPort */
+    unsigned short extPort;
     bool paired;
     bool supports4K;
     bool supportsHdr;
@@ -55,7 +59,7 @@ void gs_destroy(GS_CLIENT hnd);
 
 void gs_set_timeout(GS_CLIENT hnd, int timeout_secs);
 
-int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, bool unsupported);
+int gs_get_status(GS_CLIENT hnd, PSERVER_DATA server, const char *address, uint16_t port, bool unsupported);
 
 int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, PSTREAM_CONFIGURATION config, int appId, bool is_gfe, bool sops,
                  bool localaudio, int gamepad_mask);

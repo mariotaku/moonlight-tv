@@ -3,6 +3,7 @@
 #include <microdns/microdns.h>
 #include "util/bus.h"
 #include "backend/pcmanager/worker/worker.h"
+#include "sockaddr.h"
 
 struct discovery_task_t {
     pcmanager_t *manager;
@@ -89,12 +90,25 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
         return;
     }
     if (task->stop) { return; }
+    struct sockaddr *addr = sockaddr_new();
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
-        if (cur->type != RR_A) { continue; }
-        worker_context_t *ctx = worker_context_new(task->manager, NULL, NULL, NULL);
-        ctx->arg1 = strdup(cur->data.A.addr_str);
-        pcmanager_worker_queue(task->manager, worker_host_discovered, ctx);
+        switch (cur->type) {
+            case RR_A: {
+                if (addr->sa_family != AF_UNSPEC) { continue; }
+                sockaddr_set_address(addr, AF_INET, &cur->data.A.addr);
+                break;
+            }
+            case RR_SRV:
+                sockaddr_set_port(addr, cur->data.SRV.port);
+                break;
+        }
     }
+    if (addr->sa_family == AF_UNSPEC) {
+        return;
+    }
+    worker_context_t *ctx = worker_context_new(task->manager, NULL, NULL, NULL);
+    ctx->arg1 = addr;
+    pcmanager_worker_queue(task->manager, worker_host_discovered, ctx);
 }
 
 static void discovery_finalize(void *arg, int result) {
