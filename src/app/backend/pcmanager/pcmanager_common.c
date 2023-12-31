@@ -22,6 +22,8 @@ PSERVER_DATA serverdata_clone(const SERVER_DATA *src) {
     server->mac = strdup_nullable(src->mac);
     server->hostname = strdup_nullable(src->hostname);
     server->gpuType = strdup_nullable(src->gpuType);
+    server->extPort = src->extPort;
+    server->httpsPort = src->httpsPort;
     server->paired = src->paired;
     server->supports4K = src->supports4K;
     server->supportsHdr = src->supportsHdr;
