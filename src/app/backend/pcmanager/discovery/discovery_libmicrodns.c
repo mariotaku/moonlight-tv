@@ -102,7 +102,7 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
                 if (addr->sa_family != AF_UNSPEC) { continue; }
                 // Ignore any link-local addresses
                 if (IN6_IS_ADDR_LINKLOCAL(&cur->data.AAAA.addr)) { continue; }
-                sockaddr_set_ip(addr, AF_INET6, &cur->data.AAAA.addr);
+//                sockaddr_set_ip(addr, AF_INET6, &cur->data.AAAA.addr);
                 break;
             }
             case RR_SRV: {
