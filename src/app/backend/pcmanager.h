@@ -6,6 +6,7 @@
 
 #include "libgamestream/client.h"
 #include "uuidstr.h"
+#include "sockaddr.h"
 
 typedef struct app_t app_t;
 typedef struct pcmanager_t pcmanager_t;
@@ -76,7 +77,7 @@ void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listene
  * @param userdata
  * @return
  */
-bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata);
+bool pcmanager_manual_add(pcmanager_t *manager, sockaddr_t *address, pcmanager_callback_t callback, void *userdata);
 
 /**
  * @brief Generates a PIN code, and start pairing process.

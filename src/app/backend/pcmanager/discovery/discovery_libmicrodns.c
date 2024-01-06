@@ -95,12 +95,18 @@ static void discovery_callback(discovery_task_t *task, int status, const struct 
         switch (cur->type) {
             case RR_A: {
                 if (addr->sa_family != AF_UNSPEC) { continue; }
-                sockaddr_set_address(addr, AF_INET, &cur->data.A.addr);
+                sockaddr_set_ip(addr, AF_INET, &cur->data.A.addr);
                 break;
             }
-            case RR_SRV:
+            case RR_AAAA: {
+                if (addr->sa_family != AF_UNSPEC) { continue; }
+                sockaddr_set_ip(addr, AF_INET6, &cur->data.AAAA.addr);
+                break;
+            }
+            case RR_SRV: {
                 sockaddr_set_port(addr, cur->data.SRV.port);
                 break;
+            }
         }
     }
     if (addr->sa_family == AF_UNSPEC) {

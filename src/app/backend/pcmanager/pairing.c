@@ -16,7 +16,7 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
         return false;
     }
     SERVER_DATA *server = node->server;
-    if (server->paired) return false;
+    if (server->paired) { return false; }
     if (server->currentGame) {
         commons_log_info("PCManager", "The server %s is in game", server->hostname);
     }
@@ -28,9 +28,12 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
     return true;
 }
 
-bool pcmanager_manual_add(pcmanager_t *manager, const char *address, pcmanager_callback_t callback, void *userdata) {
+bool pcmanager_manual_add(pcmanager_t *manager, sockaddr_t *address, pcmanager_callback_t callback, void *userdata) {
+    if (address == NULL) {
+        return false;
+    }
     worker_context_t *ctx = worker_context_new(manager, NULL, callback, userdata);
-    ctx->arg1 = strdup(address);
+    ctx->arg1 = address;
     pcmanager_worker_queue(manager, worker_add_by_ip, ctx);
     return true;
 }
