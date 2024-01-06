@@ -20,13 +20,13 @@
 
 #include "backend/types.h"
 #include "uuidstr.h"
+#include "sockaddr.h"
 
 typedef struct known_host_t {
     uuidstr_t uuid;
     char *mac;
     char *hostname;
-    char *address;
-    uint16_t port;
+    struct sockaddr *address;
     bool selected;
     appid_list_t *favs;
     appid_list_t *hidden;

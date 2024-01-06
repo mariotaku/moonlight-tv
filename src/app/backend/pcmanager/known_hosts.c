@@ -9,6 +9,7 @@
 #include "util/ini_ext.h"
 #include "util/path.h"
 #include "app_settings.h"
+#include "sockaddr.h"
 
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_MODIFIER static
@@ -34,10 +35,13 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
 
     bool selected_set = false;
     for (known_host_t *cur = hosts; cur; cur = cur->next) {
-        const char *mac = cur->mac, *hostname = cur->hostname, *address = cur->address;
+        const char *mac = cur->mac, *hostname = cur->hostname;
+        const struct sockaddr *address = cur->address;
+        char address_buf[64] = {0};
+        sockaddr_get_ip_str(address, address_buf, sizeof(address_buf));
         if (!mac || !hostname || !address) {
             commons_log_warn("PCManager", "Unknown host entry: mac=%s, hostname=%s, address=%s", mac, hostname,
-                             address);
+                             address_buf);
             continue;
         }
 
@@ -45,8 +49,8 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->uuid = uuidstr_tostr(&cur->uuid);
         server->mac = mac;
         server->hostname = hostname;
-        server->serverInfo.address = address;
-        server->extPort = cur->port;
+        server->serverInfo.address = strdup(address_buf);
+        server->extPort = sockaddr_get_port(address);
 
         pclist_t *node = pclist_insert_known(manager, &cur->uuid, server);
 
@@ -76,16 +80,24 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
         if (!cur->server || !cur->known) {
             continue;
         }
+        char address_buf[64] = {0};
         const SERVER_DATA *server = cur->server;
         ini_write_section(fp, server->uuid);
 
         ini_write_string(fp, "mac", server->mac);
         ini_write_string(fp, "hostname", server->hostname);
-        if (server->extPort && server->extPort != 47989) {
-            ini_write_stringf(fp, "address", "%s:%d", server->serverInfo.address, server->extPort);
-        } else {
-            ini_write_string(fp, "address", server->serverInfo.address);
+
+        struct sockaddr *address = sockaddr_new();
+        if (sockaddr_set_ip_str(address, strchr(server->serverInfo.address, ':') ? AF_INET6 : AF_INET,
+                            server->serverInfo.address) != 0) {
+            free(address);
+            continue;
         }
+        sockaddr_set_port(address, server->extPort);
+        sockaddr_to_string(address, address_buf, sizeof(address_buf));
+        ini_write_string(fp, "address", address_buf);
+        free(address);
+
         if (!selected_set && cur->selected) {
             ini_write_bool(fp, "selected", true);
             selected_set = true;
@@ -119,13 +131,7 @@ static int known_hosts_handle(known_host_t **list, const char *section, const ch
     } else if (INI_NAME_MATCH("hostname")) {
         host->hostname = SDL_strdup(value);
     } else if (INI_NAME_MATCH("address")) {
-        char *address = SDL_strdup(value);
-        char *port_colon = SDL_strrchr(address, ':');
-        host->address = address;
-        if (port_colon) {
-            port_colon[0] = '\0';
-            host->port = SDL_atoi(port_colon + 1);
-        }
+        host->address = sockaddr_parse(value);
     } else if (INI_NAME_MATCH("selected")) {
         host->selected = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("favorite")) {
@@ -145,6 +151,9 @@ static int known_hosts_find_uuid(known_host_t *node, void *v) {
 }
 
 void known_hosts_node_free(known_host_t *node) {
+    if (node->address) {
+        free(node->address);
+    }
     if (node->favs) {
         appid_list_free(node->favs, (appid_list_nodefree_fn) free);
     }

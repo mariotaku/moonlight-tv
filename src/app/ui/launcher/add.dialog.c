@@ -46,6 +46,7 @@ static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_set_style_pad_all(content, lv_dpx(8), 0);
     lv_obj_set_style_pad_gap(content, lv_dpx(8), 0);
     lv_obj_set_layout(content, LV_LAYOUT_GRID);
+    lv_obj_clear_flag(content, LV_OBJ_FLAG_SCROLLABLE);
     static lv_coord_t col_dsc[] = {LV_GRID_FR(1), LV_GRID_CONTENT, 1, LV_GRID_TEMPLATE_LAST};
     static const lv_coord_t row_dsc[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
     col_dsc[2] = LV_DPX(10);
@@ -58,9 +59,9 @@ static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent) {
 
     lv_obj_t *ip_input = lv_textarea_create(content);
     lv_obj_set_grid_cell(ip_input, LV_GRID_ALIGN_STRETCH, 0, 3, LV_GRID_ALIGN_STRETCH, 1, 1);
-    lv_textarea_set_placeholder_text(ip_input, locstr("IPv4 address only"));
+    lv_textarea_set_placeholder_text(ip_input, locstr("IPv4 or IPv6 address"));
     lv_textarea_set_one_line(ip_input, true);
-    lv_textarea_set_accepted_chars(ip_input, ".-_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+    lv_textarea_set_accepted_chars(ip_input, ".-_:[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
     lv_obj_add_event_cb(ip_input, input_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
     lv_obj_add_event_cb(ip_input, input_key_cb, LV_EVENT_KEY, controller);
     lv_obj_add_event_cb(ip_input, input_cancel_cb, LV_EVENT_CANCEL, controller);
@@ -74,7 +75,7 @@ static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent) {
 
     lv_obj_t *add_error = lv_label_create(content);
     lv_obj_add_flag(add_error, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_set_height(add_error, LV_SIZE_CONTENT);
+    lv_obj_set_size(add_error, LV_PCT(100), LV_SIZE_CONTENT);
     lv_obj_set_grid_cell(add_error, LV_GRID_ALIGN_START, 0, 3, LV_GRID_ALIGN_STRETCH, 2, 1);
     lv_label_set_long_mode(add_error, LV_LABEL_LONG_WRAP);
     lv_label_set_text_static(add_error, locstr("Failed to add computer."));
@@ -93,11 +94,15 @@ static lv_obj_t *create_dialog(lv_fragment_t *self, lv_obj_t *parent) {
 static void dialog_cb(lv_event_t *event) {
     add_dialog_controller_t *controller = lv_event_get_user_data(event);
     lv_obj_t *dialog = lv_event_get_current_target(event);
-    if (dialog != controller->base.obj) return;
+    if (dialog != controller->base.obj) {
+        return;
+    }
     uint16_t btn = lv_msgbox_get_active_btn(dialog);
     if (btn == 1) {
-        const char *address = lv_textarea_get_text(controller->input);
-        if (!address || !address[0])return;
+        sockaddr_t *address = sockaddr_parse(lv_textarea_get_text(controller->input));
+        if (!address) {
+            return;
+        }
         lv_obj_add_state(controller->btns, LV_STATE_DISABLED);
         lv_obj_add_state(controller->input, LV_STATE_DISABLED);
         lv_obj_clear_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
@@ -110,8 +115,8 @@ static void dialog_cb(lv_event_t *event) {
 
 static void input_changed_cb(lv_event_t *event) {
     add_dialog_controller_t *controller = lv_event_get_user_data(event);
-    const char *address = lv_textarea_get_text(controller->input);
-    if (address && address[0]) {
+    sockaddr_t *address = sockaddr_parse(lv_textarea_get_text(controller->input));
+    if (address) {
         lv_btnmatrix_clear_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
     } else {
         lv_btnmatrix_set_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);

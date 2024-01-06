@@ -919,17 +919,22 @@ static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, co
         port = secure ? 47984 : 47989;
     }
     char *const proto = secure ? "https" : "http";
+    size_t w_len = snprintf(url, ulen, "%s://", proto);
+    bool is_ipv6 = strchr(address, ':') != NULL;
+    if (is_ipv6) {
+        w_len += snprintf(url + w_len, ulen - w_len, "[%s]", address);
+    } else {
+        w_len += snprintf(url + w_len, ulen - w_len, "%s", address);
+    }
+    w_len += snprintf(url + w_len, ulen - w_len, ":%u/%s?uniqueid=%s&uuid=%.*s", port, action, hnd->unique_id, 36,
+                      uuid.data);
     if (fmt) {
         char params[4096];
         va_list ap;
         va_start(ap, fmt);
         vsnprintf(params, 4096, fmt, ap);
         va_end(ap);
-        snprintf(url, ulen, "%s://%s:%u/%s?uniqueid=%s&uuid=%.*s&%s", proto, address, port, action,
-                 hnd->unique_id, 36, uuid.data, params);
-    } else {
-        snprintf(url, ulen, "%s://%s:%u/%s?uniqueid=%s&uuid=%.*s", proto, address, port,
-                 action, hnd->unique_id, 36, uuid.data);
+        snprintf(url + w_len, ulen - w_len, "&%s", params);
     }
     return true;
 }
