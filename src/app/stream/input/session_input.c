@@ -48,8 +48,12 @@ void session_input_interrupt(stream_input_t *input) {
 
 void session_input_started(stream_input_t *input) {
     input->started = true;
-    for (int i = 0, j = app_input_get_gamepads_count(input->input); i < j; ++i) {
-        stream_input_send_gamepad_arrive(input, app_input_gamepad_state_by_index(input->input, i));
+    for (int i = 0, j = app_input_get_max_gamepads(input->input); i < j; ++i) {
+        app_gamepad_state_t *gamepad = app_input_gamepad_state_by_index(input->input, i);
+        if (gamepad == NULL) {
+            continue;
+        }
+        stream_input_send_gamepad_arrive(input, gamepad);
     }
 }
 
