@@ -63,6 +63,7 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_FREQUENCY, "60");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_CALIBRATION_DISABLE, "true");
+    SDL_SetHint(SDL_HINT_WEBOS_HIDAPI_IGNORE_BLUETOOTH_DEVICES, "0x057e/0x0000");
 #endif
     // DO not init video subsystem before NDL/LGNC initialization
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
