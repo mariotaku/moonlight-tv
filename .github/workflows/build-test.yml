@@ -123,6 +123,7 @@ jobs:
         id: pi-sysroot
         uses: mariotaku/raspbian-sysroot-action@main
         with:
+          release: bullseye
           packages: ${{github.workspace}}/scripts/raspi/sysroot-packages.list
 
       - name: Install Build Tools
