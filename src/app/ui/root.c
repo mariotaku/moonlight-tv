@@ -96,7 +96,7 @@ void app_ui_open(app_ui_t *ui, const app_launch_params_t *params) {
 
     SDL_SetAssertionHandler(app_assertion_handler_ui, ui->app);
 
-    app_set_keep_awake(ui->app, true);
+    app_set_keep_awake(ui->app, false);
 }
 
 void app_ui_close(app_ui_t *ui) {
