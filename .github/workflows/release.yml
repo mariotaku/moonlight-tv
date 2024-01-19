@@ -73,6 +73,7 @@ jobs:
         id: pi-sysroot
         uses: mariotaku/raspbian-sysroot-action@main
         with:
+          release: bullseye
           packages: ${{github.workspace}}/scripts/raspi/sysroot-packages.list
 
       - name: Install Build Tools
@@ -109,7 +110,7 @@ jobs:
           omitNameDuringUpdate: true
           omitBody: true
           omitPrereleaseDuringUpdate: true
-          artifacts: build/*.deb,build/Release
+          artifacts: build/*.deb
 
   release-steamlink:
     name: Release (Steam Link)
