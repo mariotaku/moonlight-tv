@@ -72,7 +72,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
                                  "than what Moonlight is configured to use."), false);
 
     pref_checkbox(view, locstr("Virtual mouse"), &app_configuration->virtual_mouse, false);
-    pref_desc_label(view, locstr("Press LB + RT to move mouse cursor with sticks. "
+    pref_desc_label(view, locstr("Press LB + RS to move mouse cursor with sticks. "
                                  "LT/RT for left/right mouse buttons."), false);
 
     pref_checkbox(view, locstr("Swap ABXY buttons"), &app_configuration->swap_abxy, false);
