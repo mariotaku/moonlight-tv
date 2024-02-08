@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-04 19:59+0900\n"
+"POT-Creation-Date: 2024-02-08 23:35+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,28 +17,28 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/app/app.c:74
+#: src/app/app.c:75
 msgid "[Localized Language]"
 msgstr ""
 
-#: src/app/app.c:249 src/app/ui/launcher/add.dialog.c:42
+#: src/app/app.c:250 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:736
 #: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr ""
 
-#: src/app/app.c:249 src/app/ui/launcher/add.dialog.c:42
+#: src/app/app.c:250 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:662
 #: src/app/ui/launcher/apps.controller.c:769
 #: src/app/ui/launcher/launcher.controller.c:468
 #: src/app/ui/launcher/launcher.controller.c:477
 #: src/app/ui/launcher/pair.dialog.c:54
 #: src/app/ui/launcher/server.context_menu.c:129
-#: src/app/ui/streaming/streaming.controller.c:286
+#: src/app/ui/streaming/streaming.controller.c:298
 msgid "OK"
 msgstr ""
 
-#: src/app/app.c:250
+#: src/app/app.c:251
 msgid "Quit Moonlight?"
 msgstr ""
 
@@ -82,19 +82,19 @@ msgstr ""
 msgid "Open moonlight-stream Wiki"
 msgstr ""
 
-#: src/app/ui/launcher/add.dialog.c:57
+#: src/app/ui/launcher/add.dialog.c:58
 msgid "IP address"
 msgstr ""
 
-#: src/app/ui/launcher/add.dialog.c:61
-msgid "IPv4 address only"
+#: src/app/ui/launcher/add.dialog.c:62
+msgid "IPv4 or IPv6 address"
 msgstr ""
 
-#: src/app/ui/launcher/add.dialog.c:80
+#: src/app/ui/launcher/add.dialog.c:81
 msgid "Failed to add computer."
 msgstr ""
 
-#: src/app/ui/launcher/add.dialog.c:155
+#: src/app/ui/launcher/add.dialog.c:160
 msgid "Failed to add computer"
 msgstr ""
 
@@ -223,7 +223,7 @@ msgid "Settings"
 msgstr ""
 
 #: src/app/ui/launcher/launcher.view.c:125
-#: src/app/ui/settings/settings.controller.c:423
+#: src/app/ui/settings/settings.controller.c:424
 msgid "Quit"
 msgstr ""
 
@@ -259,12 +259,12 @@ msgid "Version"
 msgstr ""
 
 #: src/app/ui/settings/panes/about.pane.c:60
-#: src/app/ui/settings/panes/decoder.pane.c:112
+#: src/app/ui/settings/panes/video.pane.c:77
 msgid "Video decoder"
 msgstr ""
 
 #: src/app/ui/settings/panes/about.pane.c:61
-#: src/app/ui/settings/panes/decoder.pane.c:119
+#: src/app/ui/settings/panes/audio.pane.c:88
 msgid "Audio backend"
 msgstr ""
 
@@ -278,6 +278,20 @@ msgstr ""
 
 #: src/app/ui/settings/panes/about.pane.c:76
 msgid "Refresh rate"
+msgstr ""
+
+#: src/app/ui/settings/panes/audio.pane.c:50
+#: src/app/ui/settings/panes/video.pane.c:54
+msgid "Auto"
+msgstr ""
+
+#: src/app/ui/settings/panes/audio.pane.c:89
+#, c-format
+msgid "Audio backend - using %s"
+msgstr ""
+
+#: src/app/ui/settings/panes/audio.pane.c:100
+msgid "Sound Channels (Experimental)"
 msgstr ""
 
 #: src/app/ui/settings/panes/basic.pane.c:89
@@ -311,74 +325,6 @@ msgstr ""
 msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr ""
 
-#: src/app/ui/settings/panes/decoder.pane.c:69
-#: src/app/ui/settings/panes/decoder.pane.c:70
-msgid "Auto"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:113
-#, c-format
-msgid "Video decoder - using %s"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:120
-#, c-format
-msgid "Audio backend - using %s"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:130
-msgid "Use AV1 if possible"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:134
-msgid "AV1 usually has better graphics, and supports HDR."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:137
-#, c-format
-msgid "%s decoder doesn't support AV1 codec."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:141
-msgid "Use H265 if possible"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:145
-msgid "H265 usually has better graphics, and supports HDR."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:148
-#, c-format
-msgid "%s decoder doesn't support H265 codec."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:152
-msgid "HDR"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:156
-#, c-format
-msgid "%s decoder doesn't support HDR."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:161
-msgid "Learn more about HDR feature."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:167
-msgid "Sound Channels (Experimental)"
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:207
-msgid "H265 or AV1 is required to use HDR."
-msgstr ""
-
-#: src/app/ui/settings/panes/decoder.pane.c:210
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
-msgstr ""
-
 #: src/app/ui/settings/panes/host.pane.c:26
 msgid "Optimize game settings for streaming"
 msgstr ""
@@ -393,64 +339,131 @@ msgstr ""
 msgid "Mute computer while streaming"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:39
+#: src/app/ui/settings/panes/input.pane.c:46
 msgid "View-only mode"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:40
+#: src/app/ui/settings/panes/input.pane.c:47
 msgid "Don't send mouse, keyboard or gamepad input to host computer."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:42
+#: src/app/ui/settings/panes/input.pane.c:49
 msgid "Mouse"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:45
+#: src/app/ui/settings/panes/input.pane.c:52
 msgid "Use mouse hardware"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:48
+#: src/app/ui/settings/panes/input.pane.c:55
 msgid ""
 "Use plugged mouse device only when streaming. This will have better "
 "performance, but absolute mouse mode will not be enabled."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:53
+#: src/app/ui/settings/panes/input.pane.c:60
 msgid "Absolute mouse mode"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:55
-#: src/app/ui/settings/panes/input.pane.c:85
+#: src/app/ui/settings/panes/input.pane.c:62
+#: src/app/ui/settings/panes/input.pane.c:101
 msgid ""
 "Better for remote desktop. For some games, mouse will not work properly."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:58
+#: src/app/ui/settings/panes/input.pane.c:65
 msgid "Gamepad"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:60
+#: src/app/ui/settings/panes/input.pane.c:67
+#: src/app/ui/settings/panes/input.pane.c:108
+msgid "Analog stick deadzone"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:71
+msgid ""
+"Note: Some games can enforce a larger deadzone than what Moonlight is "
+"configured to use."
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:74
 msgid "Virtual mouse"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:61
+#: src/app/ui/settings/panes/input.pane.c:75
 msgid ""
-"Press LB + RT to move mouse cursor with sticks. LT/RT for left/right mouse "
+"Press LB + RS to move mouse cursor with sticks. LT/RT for left/right mouse "
 "buttons."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:64
+#: src/app/ui/settings/panes/input.pane.c:78
 msgid "Swap ABXY buttons"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:65
+#: src/app/ui/settings/panes/input.pane.c:79
 msgid ""
 "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
 "layouts."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:81
+#: src/app/ui/settings/panes/input.pane.c:97
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:78
+#, c-format
+msgid "Video decoder - using %s"
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:89
+msgid "Use H265 when possible"
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:93
+msgid "H265 usually has better graphics, and supports HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:96
+#, c-format
+msgid "%s decoder doesn't support H265 codec."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:100
+msgid "Use AV1 when possible (Experimental)"
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:105
+msgid ""
+"AV1 usually has better graphics, and supports HDR. However, it might be much "
+"slower than H265 or H264."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:109
+#, c-format
+msgid "%s decoder doesn't support AV1 codec."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:113
+msgid "HDR"
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:120
+msgid "Learn more about HDR feature."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:153
+#, c-format
+msgid "%s decoder doesn't support HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:157
+msgid "H265 or AV1 is required to use HDR."
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:160
+msgid ""
+"HDR is only supported on certain games and when connecting to supported "
+"monitor."
 msgstr ""
 
 #: src/app/ui/settings/settings.controller.c:21
@@ -466,30 +479,34 @@ msgid "Input Settings"
 msgstr ""
 
 #: src/app/ui/settings/settings.controller.c:24
-msgid "Decoder Settings"
+msgid "Audio Settings"
 msgstr ""
 
 #: src/app/ui/settings/settings.controller.c:25
+msgid "Video Settings"
+msgstr ""
+
+#: src/app/ui/settings/settings.controller.c:26
 msgid "About"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:423
+#: src/app/ui/settings/settings.controller.c:424
 msgid "Later"
 msgstr ""
 
-#: src/app/ui/settings/settings.controller.c:424
+#: src/app/ui/settings/settings.controller.c:425
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:136
+#: src/app/ui/streaming/streaming.controller.c:148
 msgid "Connecting..."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:156
+#: src/app/ui/streaming/streaming.controller.c:168
 msgid "Disconnecting..."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:287
+#: src/app/ui/streaming/streaming.controller.c:299
 msgid "Failed to start streaming"
 msgstr ""
 

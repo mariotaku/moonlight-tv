@@ -105,7 +105,8 @@ static void hwmouse_state_update(input_pane_t *pane) {
 #endif
 
 static void update_deadzone_label(input_pane_t *pane) {
-    lv_label_set_text_fmt(pane->deadzone_label, locstr("Gamepad deadzone - %d%%"), app_configuration->stick_deadzone);
+    lv_label_set_text_fmt(pane->deadzone_label, "%s - %d", locstr("Analog stick deadzone"),
+                          app_configuration->stick_deadzone);
 }
 
 static void on_deadzone_changed(lv_event_t *e) {
