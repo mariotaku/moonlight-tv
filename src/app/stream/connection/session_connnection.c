@@ -6,8 +6,13 @@
 #include "input/input_gamepad.h"
 #include "app.h"
 #include "stream/session_priv.h"
+#include "util/bus.h"
 
 static session_t *current_session = NULL;
+
+static void connection_status_poor_main(void *data, app_t *app);
+
+static void connection_status_okay_main(void *data, app_t *app);
 
 static void connection_terminated(int errorCode) {
     if (errorCode == ML_ERROR_GRACEFUL_TERMINATION) {
@@ -30,11 +35,11 @@ static void connection_status_update(int status) {
     switch (status) {
         case CONN_STATUS_OKAY:
             commons_log_info("Session", "Connection is okay");
-            streaming_notice_show(NULL);
+            app_bus_post(current_session->app, connection_status_okay_main, NULL);
             break;
         case CONN_STATUS_POOR:
             commons_log_warn("Session", "Connection is poor");
-            streaming_notice_show(locstr("Unstable connection."));
+            app_bus_post(current_session->app, connection_status_poor_main, NULL);
             break;
         default:
             break;
@@ -94,4 +99,13 @@ CONNECTION_LISTENER_CALLBACKS *session_connection_callbacks_prepare(session_t *s
 
 void session_connection_callbacks_reset(session_t *session) {
     current_session = NULL;
+}
+
+
+void connection_status_poor_main(void *data, app_t *app) {
+    streaming_notice_show(locstr("Unstable connection."));
+}
+
+void connection_status_okay_main(void *data, app_t *app) {
+    streaming_notice_show(NULL);
 }

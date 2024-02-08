@@ -83,6 +83,8 @@ void session_toggle_vmouse(session_t *session);
 
 bool session_accepting_input(session_t *session);
 
+bool session_is_streaming(session_t *session);
+
 void streaming_display_size(session_t *session, short width, short height);
 
 void streaming_enter_fullscreen(session_t *session);

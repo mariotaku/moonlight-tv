@@ -85,7 +85,7 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
 }
 
 void app_deinit(app_t *app) {
-    app_bus_drain();
+    app_bus_drain(app);
     app_session_destroy(app);
     app_ui_close(&app->ui);
     app_ui_deinit(&app->ui);
@@ -178,7 +178,7 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_USEREVENT: {
             if (event->user.code == BUS_INT_EVENT_ACTION) {
                 bus_actionfunc actionfn = event->user.data1;
-                actionfn(event->user.data2);
+                actionfn(event->user.data2, app);
             } else if (event->user.code == USER_INPUT_CONTROLLERDB_UPDATED) {
                 app_input_handle_event(&app->input, event);
             } else {

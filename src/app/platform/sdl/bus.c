@@ -12,7 +12,7 @@ typedef struct bus_blocking_action_t {
     bool done;
 } bus_action_sync_t;
 
-static void invoke_action_sync(bus_action_sync_t *sync);
+static void invoke_action_sync(bus_action_sync_t *sync, app_t *app);
 
 bool bus_pushevent(int which, void *data1, void *data2) {
     SDL_Event ev;
@@ -55,20 +55,20 @@ bool app_bus_post_sync(app_t *app, bus_actionfunc action, void *data) {
     return true;
 }
 
-void app_bus_drain() {
+void app_bus_drain(app_t *app) {
     SDL_Event event;
     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_USEREVENT, SDL_USEREVENT) > 0) {
         if (event.user.code != BUS_INT_EVENT_ACTION) {
             continue;
         }
         bus_actionfunc actionfn = event.user.data1;
-        actionfn(event.user.data2);
+        actionfn(event.user.data2, app);
     }
 }
 
-static void invoke_action_sync(bus_action_sync_t *sync) {
+static void invoke_action_sync(bus_action_sync_t *sync, app_t *app) {
     SDL_LockMutex(sync->mutex);
-    sync->action(sync->data);
+    sync->action(sync->data, app);
     sync->done = true;
     SDL_CondSignal(sync->cond);
     SDL_UnlockMutex(sync->mutex);

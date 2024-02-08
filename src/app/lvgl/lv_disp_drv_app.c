@@ -7,7 +7,7 @@ static void lv_sdl_drv_fb_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, 
 
 static void lv_sdl_drv_fb_clear(lv_disp_drv_t *disp_drv, uint8_t *buf, uint32_t size);
 
-lv_disp_drv_t *lv_app_disp_drv_create(SDL_Window *window, int dpi) {
+lv_disp_drv_t *lv_app_disp_drv_create(SDL_Window *window, int dpi, void *user_data) {
     int width = 0, height = 0;
     SDL_GetWindowSize(window, &width, &height);
     LV_ASSERT(width > 0 && height > 0);
@@ -21,6 +21,7 @@ lv_disp_drv_t *lv_app_disp_drv_create(SDL_Window *window, int dpi) {
 
     lv_draw_sdl_drv_param_t *param = lv_mem_alloc(sizeof(lv_draw_sdl_drv_param_t));
     param->renderer = renderer;
+    param->user_data = user_data;
     driver->user_data = param;
     driver->draw_buf = draw_buf;
     driver->dpi = dpi;
@@ -68,10 +69,11 @@ void lv_app_display_resize(lv_disp_t *disp, int width, int height) {
 
 void lv_app_redraw_now(lv_disp_drv_t *disp_drv) {
     lv_draw_sdl_drv_param_t *param = disp_drv->user_data;
+    app_ui_t *ui = param->user_data;
     SDL_Renderer *renderer = param->renderer;
     SDL_Texture *texture = disp_drv->draw_buf->buf1;
     SDL_SetRenderTarget(renderer, NULL);
-    if (!ui_render_background()) {
+    if (!ui_render_background(ui)) {
         bool has_renderer = false;
         if (has_renderer) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);

@@ -3,7 +3,7 @@
 #include "lvgl.h"
 #include <SDL.h>
 
-lv_disp_drv_t *lv_app_disp_drv_create(SDL_Window *window, int dpi);
+lv_disp_drv_t *lv_app_disp_drv_create(SDL_Window *window, int dpi, void *user_data);
 
 void lv_app_disp_drv_deinit(lv_disp_drv_t *driver);
 

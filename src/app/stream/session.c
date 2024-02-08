@@ -109,6 +109,13 @@ bool session_accepting_input(session_t *session) {
     return session->input.started && !ui_should_block_input();
 }
 
+bool session_is_streaming(session_t *session) {
+    SDL_LockMutex(session->state_lock);
+    bool result = session->state == STREAMING_STREAMING;
+    SDL_UnlockMutex(session->state_lock);
+    return result;
+}
+
 void session_start_input(session_t *session) {
     session_input_started(&session->input);
 }

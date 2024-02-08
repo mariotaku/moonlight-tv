@@ -11,7 +11,7 @@
 #include "util/bus.h"
 #include "logging.h"
 
-static void fatal_error_popup(void *data);
+static void fatal_error_popup(void *data, app_t *app);
 
 static void fatal_error_quit(lv_event_t *ev);
 
@@ -31,7 +31,7 @@ void app_fatal_error(const char *title, const char *fmt, ...) {
 }
 
 
-static void fatal_error_popup(void *data) {
+void fatal_error_popup(void *data, app_t *app) {
     fatal_error_data_t *error_data = data;
     static const char *btn_txts[] = {"Quit", ""};
     lv_obj_t *msgbox = lv_msgbox_create(NULL, error_data->title, error_data->message, btn_txts, false);
@@ -40,6 +40,6 @@ static void fatal_error_popup(void *data) {
     lv_obj_center(msgbox);
 }
 
-static void fatal_error_quit(lv_event_t *ev) {
+void fatal_error_quit(lv_event_t *ev) {
     exit(1);
 }

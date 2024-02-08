@@ -69,7 +69,7 @@ void app_ui_open(app_ui_t *ui, const app_launch_params_t *params) {
     if (ui->window == NULL) {
         ui->window = app_ui_create_window(ui);
     }
-    lv_disp_drv_t *driver = lv_app_disp_drv_create(ui->window, ui->dpi);
+    lv_disp_drv_t *driver = lv_app_disp_drv_create(ui->window, ui->dpi, ui);
     lv_disp_t *disp = lv_disp_drv_register(driver);
     disp->bg_color = lv_color_make(0, 0, 0);
     disp->bg_opa = 0;
@@ -125,15 +125,20 @@ bool app_ui_is_opened(const app_ui_t *ui) {
     return ui->disp != NULL;
 }
 
-bool ui_has_stream_renderer() {
+bool ui_has_stream_renderer(app_ui_t *ui) {
 //    return ui_stream_render != NULL && ui_stream_render->renderDraw;
     return false;
 }
 
-bool ui_render_background() {
-//    if (streaming_status == STREAMING_STREAMING && ui_stream_render && ui_stream_render->renderDraw) {
-//        return ui_stream_render->renderDraw();
-//    }
+bool ui_render_background(app_ui_t *ui) {
+    app_t *app = ui->app;
+    if (app->session != NULL && session_is_streaming(app->session) &&
+        app->ss4s.video_cap.output != SS4S_VIDEO_OUTPUT_OPAQUE) {
+        lv_draw_sdl_drv_param_t *param = lv_disp_get_default()->driver->user_data;
+        SDL_Renderer *renderer = param->renderer;
+        SDL_RenderCopy(renderer, ui->video_texture, NULL, NULL);
+        return true;
+    }
     return false;
 }
 

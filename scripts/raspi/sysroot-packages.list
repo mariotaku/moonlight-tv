@@ -1,11 +1,13 @@
 libavcodec-dev
 libavutil-dev
+libcec-dev
 libcurl4-openssl-dev
 libexpat1-dev
 libfontconfig1-dev
 libinih-dev
 libmbedtls-dev
-libopus-dev
+libopus-devlib
+libp8-platform-dev
 libraspberrypi-dev
 libsdl2-dev
 libsdl2-image-dev

@@ -23,6 +23,7 @@ typedef struct app_launch_params_t app_launch_params_t;
 struct app_ui_t {
     app_t *app;
     SDL_Window *window;
+    SDL_Texture *video_texture;
     int width, height, dpi;
     lv_img_decoder_t *img_decoder;
     app_fonts_t fonts;
@@ -55,9 +56,9 @@ void app_ui_close(app_ui_t *ui);
 
 bool app_ui_is_opened(const app_ui_t *ui);
 
-bool ui_has_stream_renderer();
+bool ui_has_stream_renderer(app_ui_t *ui);
 
-bool ui_render_background();
+bool ui_render_background(app_ui_t *ui);
 
 bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2);
 

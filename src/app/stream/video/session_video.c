@@ -13,6 +13,8 @@
 #include "stream/connection/session_connection.h"
 #include "stream/session_priv.h"
 #include "app.h"
+#include "lvgl/lv_disp_drv_app.h"
+#include "draw/sdl/lv_draw_sdl.h"
 
 #include <SDL.h>
 #include <assert.h>
@@ -37,7 +39,15 @@ static int vdec_delegate_submit(PDECODE_UNIT decodeUnit);
 
 static void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now);
 
+static void vdec_frame_callback(SS4S_VideoOutputFrame *frame, void *userdata);
+
 static void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info);
+
+static void stream_ui_video_opened(SS4S_VideoInfo *info, app_t *app);
+
+static void stream_ui_video_closed(void *data, app_t *app);
+
+static void stream_put_frame(SS4S_VideoOutputFrame *frame, app_t *app);
 
 DECODER_RENDERER_CALLBACKS ss4s_dec_callbacks = {
         .setup = vdec_delegate_setup,
@@ -109,6 +119,8 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
         case SS4S_VIDEO_OPEN_UNSUPPORTED_CODEC:
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         default:
+            app_bus_post_sync(app, (bus_actionfunc) stream_ui_video_opened, &info);
+            SS4S_PlayerVideoSetFrameCallback(player, vdec_frame_callback, app);
             return 0;
     }
 }
@@ -117,6 +129,7 @@ void vdec_delegate_cleanup() {
     assert(player != NULL);
     free(buffer);
     SS4S_PlayerVideoClose(player);
+    app_bus_post_sync(session->app, (bus_actionfunc) stream_ui_video_closed, NULL);
     session = NULL;
 }
 
@@ -193,6 +206,11 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);
 }
 
+void vdec_frame_callback(SS4S_VideoOutputFrame *frame, void *userdata) {
+    app_t *app = userdata;
+    app_bus_post_sync(app, (bus_actionfunc) stream_put_frame, frame);
+}
+
 void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {
     if (decodeUnit->frameType != FRAME_TYPE_IDR) { return; }
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
@@ -210,4 +228,27 @@ void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {
         info->height = dimension.height;
         return;
     }
+}
+
+static void stream_ui_video_opened(SS4S_VideoInfo *info, app_t *app) {
+    lv_draw_sdl_drv_param_t *param = app->ui.disp->driver->user_data;
+    app->ui.video_texture = SDL_CreateTexture(param->renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING,
+                                              info->width, info->height);
+}
+
+static void stream_ui_video_closed(void *data, app_t *app) {
+    (void) data;
+    if (app->ui.video_texture != NULL) {
+        SDL_DestroyTexture(app->ui.video_texture);
+        app->ui.video_texture = NULL;
+    }
+}
+
+void stream_put_frame(SS4S_VideoOutputFrame *frame, app_t *app) {
+    if (app->ui.video_texture == NULL) {
+        return;
+    }
+    SDL_UpdateYUVTexture(app->ui.video_texture, NULL, frame->yuv.data[0], frame->yuv.linesize[0], frame->yuv.data[1],
+                         frame->yuv.linesize[1], frame->yuv.data[2], frame->yuv.linesize[2]);
+    lv_app_redraw_now(lv_disp_get_default()->driver);
 }
