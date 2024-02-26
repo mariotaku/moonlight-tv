@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
@@ -58,13 +58,13 @@ jobs:
         run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
       - name: Checkout Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
 
       - name: Download ares-cli-rs
-        uses: robinraju/release-downloader@v1.8
+        uses: robinraju/release-downloader@v1.9
         with:
           repository: "webosbrew/ares-cli-rs"
           latest: true
@@ -72,7 +72,7 @@ jobs:
           out-file-path: "temp"
 
       - name: Download Homebrew Toolbox
-        uses: robinraju/release-downloader@v1.8
+        uses: robinraju/release-downloader@v1.9
         with:
           repository: "webosbrew/dev-toolbox-cli"
           latest: true
@@ -95,7 +95,7 @@ jobs:
         working-directory: dist
         run: for file in *.ipk ; do mv $file ${file//_arm/-${SHORT_SHA}_arm} ; done
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: webos-snapshot-${{ env.SHORT_SHA }}
           path: dist/*.ipk
@@ -113,7 +113,7 @@ jobs:
         run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
       - name: Checkout Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
@@ -150,7 +150,7 @@ jobs:
           cmake --build . --config $BUILD_TYPE
           cpack
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: raspi-snapshot-${{ env.SHORT_SHA }}
           path: build/*.deb
@@ -165,10 +165,14 @@ jobs:
         run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
       - name: Checkout Source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
+
+      - name: Update Packages
+        shell: bash
+        run: sudo apt-get -yq update
 
       - name: Install Steam Link SDK
         uses: ./.github/actions/steamlink-sdk
@@ -207,7 +211,7 @@ jobs:
       - name: Copy Install Manual
         run: cp docs/INSTALL.steamlink.md dist/
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: steamlink-snapshot-${{ env.SHORT_SHA }}
           path: |

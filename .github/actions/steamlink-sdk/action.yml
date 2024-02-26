@@ -14,7 +14,7 @@ runs:
   steps:
     - name: Cache Steam Link SDK
       id: cache-sdk
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: ${{ runner.os }}-steamlink-sdk-${{ inputs.ref }}
         path: |
@@ -25,7 +25,7 @@ runs:
 
     - name: Get Steam Link SDK
       if: ${{ steps.cache-sdk.outputs.cache-hit != 'true' }}
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ValveSoftware/steamlink-sdk
         ref: ${{ inputs.ref }}
