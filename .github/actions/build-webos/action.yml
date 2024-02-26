@@ -14,7 +14,7 @@ runs:
       run: sudo apt-get -y -qq install cmake
 
     - name: Download webOS NDK
-      uses: robinraju/release-downloader@v1.8
+      uses: robinraju/release-downloader@v1.9
       with:
         repository: "openlgtv/buildroot-nc4"
         latest: true
