@@ -35,6 +35,9 @@ jobs:
           fileName: "webosbrew-toolbox-gen-manifest_*.deb"
           out-file-path: "temp"
 
+      - name: Update Packages
+        run: sudo apt-get -yq update
+
       - name: Install webOS CLI
         run: sudo apt-get install ./temp/*.deb
 

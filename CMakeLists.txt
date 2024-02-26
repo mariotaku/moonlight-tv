@@ -132,7 +132,7 @@ set(BUILD_SHARED_CORE_LIBS OFF)
 
 if (TARGET_WEBOS)
     set(CMAKE_INSTALL_LIBDIR lib/backports)
-    set(SDL2_BACKPORT_REVISION "c09bcf19e0839c86278b688d49b649399111f80c")
+    set(SDL2_BACKPORT_REVISION "webOS-2.30.x")
     include(ExternalSDL2BackportForWebOS)
     unset(CMAKE_INSTALL_LIBDIR)
 else ()

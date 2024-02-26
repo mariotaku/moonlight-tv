@@ -79,6 +79,9 @@ jobs:
           fileName: "webosbrew-toolbox-*.deb"
           out-file-path: "temp"
 
+      - name: Update Packages
+        run: sudo apt-get -yq update
+
       - name: Install Tools
         run: sudo apt-get install ./temp/*.deb
 
