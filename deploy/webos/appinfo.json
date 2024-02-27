@@ -10,5 +10,6 @@
     "largeIcon": "icon_large.png",
     "splashBackground": "splash.png",
     "dialAppName": "Moonlight",
-    "appDescription": "Open Source NVIDIA GameStream Client"
+    "appDescription": "Open Source NVIDIA GameStream Client",
+    "supportTouchMode": "full"
 }
