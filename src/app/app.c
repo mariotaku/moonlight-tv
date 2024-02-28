@@ -232,6 +232,15 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             }
             return 1;
         }
+        case SDL_FINGERDOWN:
+        case SDL_FINGERUP:
+        case SDL_FINGERMOTION: {
+            if (app->session != NULL) {
+                session_handle_input_event(app->session, event);
+                return 0;
+            }
+            return 1;
+        }
         default:
             if (event->type == USER_REMOTEBUTTONEVENT) {
                 return 1;
