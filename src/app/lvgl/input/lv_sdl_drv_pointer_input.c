@@ -39,7 +39,7 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
 #if HAVE_RELATIVE_MOUSE_HACK
-        if (warped) {
+        if (warped || e.motion.which == SDL_TOUCH_MOUSEID) {
             warped = false;
         } else if (app->session != NULL && session_accepting_input(app->session) && app_get_mouse_relative()) {
             int w, h;
