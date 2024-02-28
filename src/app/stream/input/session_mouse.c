@@ -9,7 +9,8 @@
 #include <SDL.h>
 
 void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event) {
-    int button = 0;
+    (void) input;
+    int button;
     switch (event->button) {
         case SDL_BUTTON_LEFT:
             button = BUTTON_LEFT;
@@ -50,10 +51,10 @@ void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEve
     if (input->view_only || input->no_sdl_mouse) {
         return;
     }
-    if (app_get_mouse_relative()) {
+    if (app_get_mouse_relative() && event->which != SDL_TOUCH_MOUSEID) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
     } else {
-        LiSendMousePositionEvent((short) event->x, (short) event->y, input->session->display_width,
-                                 input->session->display_height);
+        LiSendMousePositionEvent((short) event->x, (short) event->y, (short) input->session->display_width,
+                                 (short) input->session->display_height);
     }
 }
