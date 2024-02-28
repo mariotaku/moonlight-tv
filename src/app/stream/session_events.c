@@ -57,6 +57,12 @@ bool session_handle_input_event(session_t *session, const SDL_Event *event) {
             stream_input_handle_text(input, &event->text);
             break;
         }
+        case SDL_FINGERDOWN:
+        case SDL_FINGERUP:
+        case SDL_FINGERMOTION: {
+            stream_input_handle_touch(input, &event->tfinger);
+            break;
+        }
         default:
             return false;
     }

@@ -72,3 +72,5 @@ void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEve
 void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event);
 
 void stream_input_handle_mwheel(stream_input_t *input, const SDL_MouseWheelEvent *event);
+
+void stream_input_handle_touch(const stream_input_t *input, const SDL_TouchFingerEvent *event);
