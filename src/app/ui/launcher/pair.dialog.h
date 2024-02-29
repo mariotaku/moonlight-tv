@@ -4,6 +4,4 @@
 
 #include "lvgl.h"
 
-extern const lv_fragment_class_t pair_dialog_class;
-
 void pair_dialog_open(const uuidstr_t *uuid);

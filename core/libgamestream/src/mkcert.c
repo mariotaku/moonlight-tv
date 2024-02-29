@@ -74,6 +74,10 @@ static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert 
     char not_before[16], not_after[16];
     strftime(not_before, 16, "%Y%m%d%H%M%S", ptr_time);
     ptr_time->tm_year += NUM_YEARS;
+    if (ptr_time->tm_mon == 1 && ptr_time->tm_mday == 29) {
+        // Don't ever set the date to February 29th, to avoid leap year issues
+        ptr_time->tm_mday = 28;
+    }
     strftime(not_after, 16, "%Y%m%d%H%M%S", ptr_time);
     if ((ret = mbedtls_x509write_crt_set_validity(crt, not_before, not_after)) != 0) {
         mbedtls_strerror(ret, buf, 512);
