@@ -29,7 +29,9 @@ GS_CLIENT app_gs_client_new(app_t *app) {
     if (client == NULL) {
         const char *message = NULL;
         gs_get_error(&message);
-        app_fatal_error("Fatal error", "Failed to create GS_CLIENT: %s", message);
+        app_fatal_error("Failed to initialize client",
+                        "Please try uninstalling and reinstalling the app.\n\n"
+                        "Details: %s", message);
         app_halt(app);
     }
     SDL_UnlockMutex(app->backend.gs_client_mutex);
