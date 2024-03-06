@@ -19,11 +19,9 @@
 
 #include "http.h"
 #include "xml.h"
-#include "mkcert.h"
 #include "client.h"
 #include "errors.h"
 #include "priv.h"
-#include <errno.h>
 
 #include <Limelight.h>
 
@@ -32,15 +30,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <time.h>
-#include <mbedtls/sha1.h>
-#include <mbedtls/sha256.h>
+#include <mbedtls/md.h>
 #include <mbedtls/aes.h>
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
-#include <mbedtls/rsa.h>
 #include <mbedtls/error.h>
 
 #include "uuidstr.h"
@@ -67,6 +62,8 @@ static bool construct_url(GS_CLIENT, char *url, size_t ulen, bool secure, const 
                           const char *action, const char *fmt, ...);
 
 static bool append_param(char *url, size_t ulen, const char *param, const char *value_fmt, ...);
+
+static bool append_params_raw(char *url, size_t ulen, const char *params);
 
 static uint16_t server_port(const SERVER_DATA *server, bool secure);
 
@@ -568,6 +565,9 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
         append_param(url, sizeof(url), "remoteControllersBitmap", "%d", gamepad_mask);
         append_param(url, sizeof(url), "gcmap", "%d", gamepad_mask);
     }
+    if (!is_gfe) {
+        append_params_raw(url, sizeof(url), LiGetLaunchUrlQueryParameters());
+    }
 
     if ((ret = http_request(hnd->http, url, data)) == GS_OK) {
         server->currentGame = appId;
@@ -957,6 +957,22 @@ static bool append_param(char *url, size_t ulen, const char *param, const char *
     p = stpncpy(p, param, plen);
     *p++ = '=';
     p = stpncpy(p, value, vlen);
+    *p = '\0';
+    return true;
+}
+
+static bool append_params_raw(char *url, size_t ulen, const char *params) {
+    char *p = url + strlen(url);
+    if (params[0] == '&') {
+        params++;
+    }
+    size_t plen = strlen(params);
+    size_t append_len = plen + 2 /* "&params\0" */;
+    if ((p - url) + append_len > ulen) {
+        return false;
+    }
+    *p++ = '&';
+    p = stpncpy(p, params, plen);
     *p = '\0';
     return true;
 }
