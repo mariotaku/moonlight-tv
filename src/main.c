@@ -3,16 +3,27 @@
 #include "util/path.h"
 #include "logging.h"
 
+#if defined(TARGET_WEBOS) && !defined(DEBUG)
+
+#include <sys/resource.h>
+
+#endif
+
 static int settings_load(app_settings_t *settings);
 
 int main(int argc, char *argv[]) {
-#if TARGET_WEBOS
+#ifdef TARGET_WEBOS
     if (getenv("EGL_PLATFORM") == NULL) {
         setenv("EGL_PLATFORM", "wayland", 0);
     }
     if (getenv("XDG_RUNTIME_DIR") == NULL) {
         setenv("XDG_RUNTIME_DIR", "/tmp/xdg", 0);
     }
+#ifndef DEBUG
+    // Don't generate core dumps in release builds
+    struct rlimit rlim = {0, 0};
+    setrlimit(RLIMIT_CORE, &rlim);
+#endif
 #endif
     app_t app;
     int ret = app_init(&app, settings_load, argc, argv);
