@@ -191,8 +191,7 @@ static void launcher_view_init(lv_fragment_t *self, lv_obj_t *view) {
     current_instance = fragment;
 
     if (fragment->first_created) {
-        if (fragment->global->ss4s.selection.video_module == NULL ||
-            fragment->global->ss4s.selection.audio_module == NULL) {
+        if (!app_decoder_or_embedded_present(fragment->global)) {
             show_decoder_error();
         }
         if (!app_configuration->conf_persistent) {

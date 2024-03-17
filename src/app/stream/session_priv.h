@@ -23,8 +23,10 @@ struct session_t {
     /* SERVER_DATA and CONFIGURATION is cloned rather than referenced */
     SERVER_DATA *server;
     int app_id;
+    char *app_name;
     bool interrupted;
     bool quitapp;
+    bool embed;
     SS4S_AudioCapabilities audio_cap;
     SS4S_VideoCapabilities video_cap;
     SDL_cond *cond;
@@ -33,4 +35,6 @@ struct session_t {
     SS4S_Player *player;
 };
 
- void session_set_state(session_t *session, STREAMING_STATE state);
+void session_set_state(session_t *session, STREAMING_STATE state);
+
+bool session_use_embedded(session_t *session);

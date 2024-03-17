@@ -129,7 +129,7 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
     controller->global = arg->global;
-    app_session_begin(arg->global, &arg->uuid, arg->app.id);
+    app_session_begin(arg->global, &arg->uuid, &arg->app);
 }
 
 static void controller_dtor(lv_fragment_t *self) {
@@ -291,6 +291,7 @@ static void hide_overlay(lv_event_t *event) {
         return;
     }
     overlay_showing = false;
+    app_set_mouse_grab(&global->input, true);
     streaming_enter_fullscreen(controller->global->session);
 }
 
