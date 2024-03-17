@@ -288,7 +288,11 @@ SDL_Window *app_ui_create_window(app_ui_t *ui) {
                                                           (int) lv_sdl_img_data_logo_96.data_len), SDL_TRUE);
     SDL_SetWindowIcon(win, winicon);
     SDL_FreeSurface(winicon);
-    SDL_SetWindowMinimumSize(win, 640, 480);
+    if (app_configuration->fullscreen) {
+        SDL_SetWindowMinimumSize(win, win_width, win_height);
+    } else {
+        SDL_SetWindowMinimumSize(win, 640, 480);
+    }
     int w = 0, h = 0;
     SDL_GetWindowSize(win, &w, &h);
     SDL_assert_release(w > 0 && h > 0);
