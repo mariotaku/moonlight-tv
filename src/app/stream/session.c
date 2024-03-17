@@ -26,7 +26,7 @@ static bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps)
 static void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA *server,
                                 const CONFIGURATION *app_config);
 
-session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_DATA *server, int app_id) {
+session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_DATA *server, const APP_LIST *gs_app) {
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
     session_config_init(app, &session->config, server, config);
@@ -53,10 +53,14 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     if (session->config.stream.supportedVideoFormats & VIDEO_FORMAT_AV1_MAIN10) {
         session->server->serverInfo.serverCodecModeSupport |= SCM_AV1_MAIN10;
     }
-    session->app_id = app_id;
+    session->app_id = gs_app->id;
+    session->app_name = strdup(gs_app->name);
     session->mutex = SDL_CreateMutex();
     session->state_lock = SDL_CreateMutex();
     session->cond = SDL_CreateCond();
+    if (!app_is_decoder_valid(app)) {
+        session->embed = app_has_embedded(session->app);
+    }
     session_input_init(&session->input, session, &app->input, &session->config);
     session->thread = SDL_CreateThread((SDL_ThreadFunction) session_worker, "session", session);
     return session;
@@ -69,6 +73,8 @@ void session_destroy(session_t *session) {
     serverdata_free(session->server);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
+    SDL_DestroyMutex(session->state_lock);
+    free(session->app_name);
     free(session);
 }
 
@@ -109,12 +115,20 @@ bool session_accepting_input(session_t *session) {
     return session->input.started && !ui_should_block_input();
 }
 
-void session_start_input(session_t *session) {
+bool session_start_input(session_t *session) {
+    if (session->embed) {
+        return false;
+    }
     session_input_started(&session->input);
+    return true;
 }
 
 void session_stop_input(session_t *session) {
     session_input_stopped(&session->input);
+}
+
+bool session_has_input(session_t *session) {
+    return session->input.started;
 }
 
 void session_toggle_vmouse(session_t *session) {
@@ -128,7 +142,9 @@ void streaming_display_size(session_t *session, short width, short height) {
 }
 
 void streaming_enter_fullscreen(session_t *session) {
-    app_set_mouse_grab(&session->app->input, true);
+    if (!session->player) {
+        return;
+    }
     if ((session->video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING) == 0) {
         SS4S_PlayerVideoSetDisplayArea(session->player, NULL, NULL);
     }

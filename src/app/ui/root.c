@@ -155,7 +155,9 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                    ui_stream_render->renderSetup((PSTREAM_CONFIGURATION) data1, &ui_stream_render_host_context);
 //                }
                 }
-                session_start_input(app->session);
+                if (session_start_input(app->session)) {
+                    app_set_mouse_grab(&app->input, true);
+                }
                 app_set_keep_awake(app, true);
                 streaming_enter_fullscreen(app->session);
                 last_pts = 0;
@@ -172,8 +174,10 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
 //                    ui_stream_render->renderCleanup();
 //                }
                 app_set_keep_awake(app, false);
-                app_set_mouse_grab(&app->input, false);
-                session_stop_input(app->session);
+                if (session_has_input(app->session)) {
+                    app_set_mouse_grab(&app->input, false);
+                    session_stop_input(app->session);
+                }
 //                ui_stream_render = NULL;
 //                ui_stream_render_host_context.renderer = NULL;
                 app_ui_open(&app->ui, NULL);

@@ -69,15 +69,17 @@ typedef struct app_t app_t;
 typedef struct app_settings_t app_settings_t;
 typedef struct session_t session_t;
 
-session_t *session_create(app_t *app, const app_settings_t *config, const SERVER_DATA *server, int app_id);
+session_t *session_create(app_t *app, const app_settings_t *config, const SERVER_DATA *server, const APP_LIST *gs_app);
 
 void session_destroy(session_t *session);
 
 void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_reason_t reason);
 
-void session_start_input(session_t *session);
+bool session_start_input(session_t *session);
 
 void session_stop_input(session_t *session);
+
+bool session_has_input(session_t *session);
 
 void session_toggle_vmouse(session_t *session);
 

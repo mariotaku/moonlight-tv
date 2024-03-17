@@ -73,6 +73,10 @@ void apploader_load(apploader_t *loader) {
     if (state == EXECUTOR_TASK_STATE_PENDING || state == EXECUTOR_TASK_STATE_ACTIVE) {
         return;
     }
+    if (loader->state == APPLOADER_STATE_LOADING) {
+        commons_log_warn("AppLoader", "[loader %p] already loading", loader);
+        return;
+    }
     loader->state = APPLOADER_STATE_LOADING;
     if (loader->callback.start != NULL) {
         loader->callback.start(loader->userdata);

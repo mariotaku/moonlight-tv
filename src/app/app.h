@@ -47,6 +47,9 @@ typedef struct app_t {
         SS4S_AudioCapabilities audio_cap;
         SS4S_VideoCapabilities video_cap;
     } ss4s;
+#if FEATURE_EMBEDDED_SHELL
+    version_info_t embed_version;
+#endif
 #if FEATURE_INPUT_LIBCEC
     cec_sdl_ctx_t cec;
 #endif
@@ -69,6 +72,12 @@ bool app_is_running();
 void app_quit_confirm();
 
 bool ui_render_queue_submit(void *data, unsigned int pts);
+
+bool app_is_decoder_valid(app_t *app);
+
+bool app_has_embedded(app_t *app);
+
+bool app_decoder_or_embedded_present(app_t *app);
 
 GS_CLIENT app_gs_client_new(app_t *app);
 

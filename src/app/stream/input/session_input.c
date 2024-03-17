@@ -18,6 +18,7 @@
 
 #include "session_input.h"
 #include "stream/session.h"
+#include "stream/session_priv.h"
 #include "session_evmouse.h"
 
 void session_input_init(stream_input_t *input, session_t *session, app_input_t *app_input,

@@ -2,7 +2,7 @@
 #include "app.h"
 #include "stream/session.h"
 
-int app_session_begin(app_t *app, const uuidstr_t *uuid, int app_id) {
+int app_session_begin(app_t *app, const uuidstr_t *uuid, const APP_LIST *gs_app) {
     if (app->session != NULL) {
         return -1;
     }
@@ -10,7 +10,7 @@ int app_session_begin(app_t *app, const uuidstr_t *uuid, int app_id) {
     if (node == NULL) {
         return -1;
     }
-    app->session = session_create(app, app_configuration, node->server, app_id);
+    app->session = session_create(app, app_configuration, node->server, gs_app);
     return 0;
 }
 

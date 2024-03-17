@@ -24,6 +24,7 @@
 #include "ui/fatal_error.h"
 #include "app_error.h"
 #include "app_session.h"
+#include "stream/embed_wrapper.h"
 
 PCONFIGURATION app_configuration = NULL;
 
@@ -46,6 +47,9 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     app->main_thread_id = SDL_ThreadID();
     app->running = true;
     app->focused = false;
+#if FEATURE_EMBEDDED_SHELL
+    app->embed_version.major = -1;
+#endif
     app_configuration = &app->settings;
     if (os_info_get(&app->os_info) == 0) {
         char *info_str = os_info_str(&app->os_info);
@@ -270,6 +274,19 @@ bool app_is_running() {
     return global->running;
 }
 
+bool app_is_decoder_valid(app_t *app) {
+    return app->ss4s.selection.video_module != NULL && app->ss4s.selection.audio_module != NULL;
+}
+
+bool app_has_embedded(app_t *app) {
+    return version_info_valid(&app->embed_version);
+}
+
+bool app_decoder_or_embedded_present(app_t *app) {
+    return app_is_decoder_valid(app) || app_has_embedded(app);
+}
+
+
 static void libs_init(app_t *app, int argc, char *argv[]) {
 
     int errno;
@@ -285,6 +302,17 @@ static void libs_init(app_t *app, int argc, char *argv[]) {
                      module_preferences.video_module);
     commons_log_info("APP", "Audio module: %s (requested %s)", SS4S_ModuleInfoGetName(app->ss4s.selection.audio_module),
                      module_preferences.audio_module);
+
+#if FEATURE_EMBEDDED_SHELL
+    if (!app_is_decoder_valid(app)) {
+        // Check if moonlight-embedded is installed
+        if (embed_check_version(&app->embed_version) == 0) {
+            char *embed_version_str = version_info_str(&app->embed_version);
+            commons_log_info("APP", "Moonlight Embedded version: %s", embed_version_str);
+            free(embed_version_str);
+        }
+    }
+#endif
 
     SS4S_Config ss4s_config = {
             .audioDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module),
