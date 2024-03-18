@@ -42,6 +42,11 @@ void app_ui_input_init(app_ui_input_t *input, app_ui_t *ui) {
 }
 
 void app_ui_input_deinit(app_ui_input_t *input) {
+    lv_indev_delete(input->key.indev);
+    lv_indev_delete(input->pointer.indev);
+    lv_indev_delete(input->wheel.indev);
+    lv_indev_delete(input->button.indev);
+
     _lv_ll_clear(&input->modal_groups);
 }
 
