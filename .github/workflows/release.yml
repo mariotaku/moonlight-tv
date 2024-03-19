@@ -102,6 +102,10 @@ jobs:
         shell: bash
         run: cmake --build . --config $BUILD_TYPE
 
+      - name: Package
+        working-directory: ${{github.workspace}}/build
+        run: cpack
+
       - name: Create Release (Raspberry Pi)
         id: create_release_raspi
         uses: ncipollo/release-action@v1
