@@ -45,14 +45,11 @@ set(CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST
         )
 set(CPACK_DEBIAN_PACKAGE_SUGGESTS_LIST
         "libcec6 (>= 6.0)"
+        "moonlight-embedded"
         )
 
 if (TARGET ss4s-module-mmal)
-    list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS_LIST "libraspberrypi0")
-endif ()
-
-if (TARGET ss4s-module-ffmpeg)
-    list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS_LIST "libavcodec58 (>= 7:4.0)" "libavutil56 (>= 7:4.0)")
+    list(APPEND CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST "libraspberrypi0")
 endif ()
 
 if (TARGET ss4s-module-alsa)
@@ -61,6 +58,10 @@ endif ()
 
 if (TARGET ss4s-module-pulse)
     list(APPEND CPACK_DEBIAN_PACKAGE_RECOMMENDS_LIST "libpulse0 (>= 0.99.1)")
+endif ()
+
+if (TARGET ss4s-module-ffmpeg)
+    list(APPEND CPACK_DEBIAN_PACKAGE_DEPENDS_LIST "libavcodec58 (>= 7:4.0)" "libavutil56 (>= 7:4.0)")
 endif ()
 
 string(REPLACE ";" ", " CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS_LIST}")

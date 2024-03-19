@@ -59,8 +59,12 @@ jobs:
           artifacts: dist/*.ipk,dist/*_dbgsym.tar.gz,dist/*.manifest.json
 
   release-raspi:
-    name: Release (Raspberry Pi)
+    name: Release (Raspberry Pi ${{ matrix.arch }})
     runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        arch: [ armhf, arm64 ]
 
     steps:
       - name: Checkout Source
@@ -74,14 +78,15 @@ jobs:
 
       - name: Prepare Sysroot
         id: pi-sysroot
-        uses: mariotaku/raspbian-sysroot-action@main
+        uses: mariotaku/raspbian-sysroot-action@v1.3
         with:
           release: bullseye
           packages: ${{github.workspace}}/scripts/raspi/sysroot-packages.list
+          arch: ${{ matrix.arch }}
 
       - name: Install Build Tools
         shell: bash
-        run: sudo apt-get -y -qq install crossbuild-essential-armhf cmake gettext
+        run: sudo apt-get -y -qq install crossbuild-essential-${{ matrix.arch }} cmake gettext
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{github.workspace}}/build
@@ -96,12 +101,6 @@ jobs:
         working-directory: ${{github.workspace}}/build
         shell: bash
         run: cmake --build . --config $BUILD_TYPE
-
-      - name: Package
-        working-directory: ${{github.workspace}}/build
-        run: |
-          cpack
-          dpkg-scanpackages . > Release
 
       - name: Create Release (Raspberry Pi)
         id: create_release_raspi
