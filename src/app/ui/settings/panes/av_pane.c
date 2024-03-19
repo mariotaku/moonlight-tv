@@ -17,12 +17,20 @@
  */
 
 #include "av_pane.h"
+#include "util/i18n.h"
 
 #include <stdbool.h>
 
 static bool module_is_auto(const char *value);
 
 void update_conflict_hint(app_t *app, lv_obj_t *hint) {
+#if FEATURE_EMBEDDED_SHELL
+    if (!app_is_decoder_valid(app) && app_has_embedded(app)) {
+        lv_label_set_text(hint, locstr("Moonlight embedded will pick the suitable decoder automatically"));
+        lv_obj_clear_flag(hint, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+#endif
     SS4S_ModulePreferences preferences = {
             .video_module = app_configuration->decoder,
             .audio_module = app_configuration->audio_backend,
@@ -39,14 +47,14 @@ void update_conflict_hint(app_t *app, lv_obj_t *hint) {
     const SS4S_ModuleInfo *vdec = selection.video_module;
     const SS4S_ModuleInfo *adec = selection.audio_module;
     if (vdec != NULL && adec != NULL && SS4S_ModuleInfoConflicts(vdec, adec)) {
-        lv_label_set_text_fmt(hint, "%s is conflicting with %s", adec->name, vdec->name);
+        lv_label_set_text_fmt(hint, locstr("%s is conflicting with %s"), adec->name, vdec->name);
         lv_obj_clear_flag(hint, LV_OBJ_FLAG_HIDDEN);
     } else {
         lv_obj_add_flag(hint, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
- bool contains_decoder_group(const pref_dropdown_string_entry_t *entry, size_t len, const char *group) {
+bool contains_decoder_group(const pref_dropdown_string_entry_t *entry, size_t len, const char *group) {
     for (int i = 0; i < len; i++) {
         if (strcmp(entry[i].value, group) == 0) {
             return true;
@@ -55,7 +63,7 @@ void update_conflict_hint(app_t *app, lv_obj_t *hint) {
     return false;
 }
 
- void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *group, bool fallback) {
+void set_decoder_entry(pref_dropdown_string_entry_t *entry, const char *name, const char *group, bool fallback) {
     entry->name = name;
     entry->value = group;
     entry->fallback = fallback;

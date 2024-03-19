@@ -40,7 +40,8 @@ int session_worker_embedded(session_t *session) {
     embed_process_t *proc = embed_spawn(session->app_name, app->settings.key_dir, session->server->serverInfo.address,
                                         session->config.stream.width, session->config.stream.height,
                                         session->config.stream.fps, session->config.stream.bitrate,
-                                        session->config.local_audio, session->input.view_only);
+                                        session->config.stream.audioConfiguration, session->config.local_audio,
+                                        !session->config.sops, session->input.view_only);
     if (proc == NULL) {
         session_set_state(session, STREAMING_ERROR);
         streaming_error(session, GS_WRONG_STATE, "Failed to start embedded session: %s", strerror(errno));
