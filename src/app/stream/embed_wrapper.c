@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <sys/wait.h>
+#include <Limelight.h>
 
 struct embed_process_t {
     FILE *output;
@@ -53,7 +54,8 @@ int embed_check_version(version_info_t *version_info) {
 }
 
 embed_process_t *embed_spawn(const char *app_name, const char *key_dir, const char *server_address,
-                             int width, int height, int fps, int bitrate, bool localaudio, bool viewonly) {
+                             int width, int height, int fps, int bitrate, int surround,
+                             bool localaudio, bool nosops, bool viewonly) {
     int fds[2];
     if (pipe(fds) != 0) {
         return NULL;
@@ -89,7 +91,7 @@ embed_process_t *embed_spawn(const char *app_name, const char *key_dir, const ch
         dup2(fds[1], STDOUT_FILENO);
         dup2(fds[1], STDERR_FILENO);
 
-        char *argv[32];
+        char *argv[64];
         int argc = 0;
         argv[argc++] = "moonlight";
         argv[argc++] = "stream";
@@ -110,6 +112,21 @@ embed_process_t *embed_spawn(const char *app_name, const char *key_dir, const ch
         }
         if (viewonly) {
             argv[argc++] = "-viewonly";
+        }
+        if (nosops) {
+            argv[argc++] = "-nosops";
+        }
+        switch (surround) {
+            case AUDIO_CONFIGURATION_51_SURROUND:
+                argv[argc++] = "-surround";
+                argv[argc++] = "5.1";
+                break;
+            case AUDIO_CONFIGURATION_71_SURROUND:
+                argv[argc++] = "-surround";
+                argv[argc++] = "7.1";
+                break;
+            default:
+                break;
         }
         argv[argc++] = server_address_tmp;
         argv[argc++] = NULL;

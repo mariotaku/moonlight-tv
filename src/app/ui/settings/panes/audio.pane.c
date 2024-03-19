@@ -43,8 +43,9 @@ const lv_fragment_class_t settings_pane_audio_cls = {
 static void pane_ctor(lv_fragment_t *self, void *args) {
     audio_pane_t *pane = (audio_pane_t *) self;
     pane->parent = args;
-    SS4S_AudioCapabilities audio_cap = pane->parent->app->ss4s.audio_cap;
-    array_list_t modules = pane->parent->app->ss4s.modules;
+    app_t *app = pane->parent->app;
+    SS4S_AudioCapabilities audio_cap = app->ss4s.audio_cap;
+    array_list_t modules = app->ss4s.modules;
     pane->adec_entries = calloc(modules.size + 1, sizeof(pref_dropdown_string_entry_t));
 
     set_decoder_entry(&pane->adec_entries[pane->adec_entries_len++], locstr("Auto"), "auto", true);
@@ -59,6 +60,11 @@ static void pane_ctor(lv_fragment_t *self, void *args) {
     if (supported_ch == 0) {
         supported_ch = 2;
     }
+#if FEATURE_EMBEDDED_SHELL
+    if (!app_is_decoder_valid(app) && app_has_embedded(app)) {
+        supported_ch = 8;
+    }
+#endif
     for (int i = 0; i < audio_config_len; i++) {
         audio_config_entry_t config = audio_configs[i];
         if (supported_ch < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config.configuration)) {
@@ -91,6 +97,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *adec_dropdown = pref_dropdown_string(view, controller->adec_entries, controller->adec_entries_len,
                                                    &app_configuration->audio_backend);
     lv_obj_set_width(adec_dropdown, LV_PCT(100));
+#if FEATURE_EMBEDDED_SHELL
+    if (!app_is_decoder_valid(app) && app_has_embedded(app)) {
+        lv_obj_add_flag(audio_label, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(adec_dropdown, LV_OBJ_FLAG_HIDDEN);
+    }
+#endif
 
     lv_obj_t *conflict_hint = pref_desc_label(view, NULL, false);
     controller->conflict_hint = conflict_hint;

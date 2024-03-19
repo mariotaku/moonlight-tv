@@ -80,6 +80,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *vdec_dropdown = pref_dropdown_string(view, controller->vdec_entries, controller->vdec_entries_len,
                                                    &app_configuration->decoder);
     lv_obj_set_width(vdec_dropdown, LV_PCT(100));
+#if FEATURE_EMBEDDED_SHELL
+    if (!app_is_decoder_valid(app) && app_has_embedded(app)) {
+        lv_obj_add_flag(decoder_label, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(vdec_dropdown, LV_OBJ_FLAG_HIDDEN);
+    }
+#endif
 
     lv_obj_t *conflict_hint = pref_desc_label(view, NULL, false);
     controller->conflict_hint = conflict_hint;
