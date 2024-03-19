@@ -468,7 +468,13 @@ static void show_decoder_error() {
     lv_obj_t *msgbox = lv_msgbox_create_i18n(NULL, locstr("No working decoder"), "placeholder", btn_txts, false);
     lv_obj_add_event_cb(msgbox, decoder_error_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_t *msgview = lv_msgbox_get_text(msgbox);
+#if FEATURE_EMBEDDED_SHELL
+    lv_label_set_text_static(msgview, locstr("Streaming can't work without a valid decoder.\n"
+                                             "(If your device supports moonlight-embedded, install it "
+                                             "and Moonlight will use it automatically.)"));
+#else
     lv_label_set_text_static(msgview, locstr("Streaming can't work without a valid decoder."));
+#endif
     lv_obj_center(msgbox);
 }
 

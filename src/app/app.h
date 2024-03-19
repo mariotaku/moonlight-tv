@@ -75,9 +75,13 @@ bool ui_render_queue_submit(void *data, unsigned int pts);
 
 bool app_is_decoder_valid(app_t *app);
 
+#if FEATURE_EMBEDDED_SHELL
 bool app_has_embedded(app_t *app);
-
 bool app_decoder_or_embedded_present(app_t *app);
+#else
+#define app_decoder_or_embedded_present(app) app_is_decoder_valid(app)
+#endif
+
 
 GS_CLIENT app_gs_client_new(app_t *app);
 

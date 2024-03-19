@@ -4,7 +4,6 @@
 #include "stream/video/session_video.h"
 #include "ui/root.h"
 #include "ui/common/progress_dialog.h"
-#include "lvgl/util/lv_app_utils.h"
 #include "lvgl/lv_ext_utils.h"
 
 #include "util/user_event.h"
@@ -32,10 +31,6 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata);
 static void constructor(lv_fragment_t *self, void *args);
 
 static void controller_dtor(lv_fragment_t *self);
-
-static void session_error(streaming_controller_t *controller);
-
-static void session_error_dialog_cb(lv_event_t *event);
 
 static void overlay_key_cb(lv_event_t *e);
 
@@ -176,14 +171,8 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
                 lv_msgbox_close(controller->progress);
                 controller->progress = NULL;
             }
-            lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
-            if (streaming_errno != 0) {
-                session_error(controller);
-                break;
-            }
-            lv_fragment_del((lv_fragment_t *) controller);
-            return true;
+            lv_async_call((lv_async_cb_t) lv_fragment_del, controller);
+            break;
         }
         case USER_OPEN_OVERLAY: {
             show_overlay(controller);
@@ -293,21 +282,6 @@ static void hide_overlay(lv_event_t *event) {
     overlay_showing = false;
     app_set_mouse_grab(&global->input, true);
     streaming_enter_fullscreen(controller->global->session);
-}
-
-static void session_error(streaming_controller_t *controller) {
-    static const char *btn_texts[] = {translatable("OK"), ""};
-    lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Failed to start streaming"), streaming_errmsg,
-                                             btn_texts, false);
-    lv_obj_add_event_cb(dialog, session_error_dialog_cb, LV_EVENT_VALUE_CHANGED, controller);
-    lv_obj_center(dialog);
-}
-
-static void session_error_dialog_cb(lv_event_t *event) {
-    streaming_controller_t *controller = lv_event_get_user_data(event);
-    lv_obj_t *dialog = lv_event_get_current_target(event);
-    lv_msgbox_close_async(dialog);
-    lv_fragment_del((lv_fragment_t *) controller);
 }
 
 static void overlay_key_cb(lv_event_t *e) {

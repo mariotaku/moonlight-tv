@@ -278,6 +278,7 @@ bool app_is_decoder_valid(app_t *app) {
     return app->ss4s.selection.video_module != NULL && app->ss4s.selection.audio_module != NULL;
 }
 
+#if FEATURE_EMBEDDED_SHELL
 bool app_has_embedded(app_t *app) {
     return version_info_valid(&app->embed_version);
 }
@@ -285,7 +286,7 @@ bool app_has_embedded(app_t *app) {
 bool app_decoder_or_embedded_present(app_t *app) {
     return app_is_decoder_valid(app) || app_has_embedded(app);
 }
-
+#endif
 
 static void libs_init(app_t *app, int argc, char *argv[]) {
 

@@ -58,11 +58,19 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     session->mutex = SDL_CreateMutex();
     session->state_lock = SDL_CreateMutex();
     session->cond = SDL_CreateCond();
+#if FEATURE_EMBEDDED_SHELL
     if (!app_is_decoder_valid(app)) {
         session->embed = app_has_embedded(session->app);
     }
+#endif
     session_input_init(&session->input, session, &app->input, &session->config);
-    session->thread = SDL_CreateThread((SDL_ThreadFunction) session_worker, "session", session);
+    SDL_ThreadFunction worker_fn = (SDL_ThreadFunction) session_worker;
+#if FEATURE_EMBEDDED_SHELL
+    if (session_use_embedded(session)) {
+        worker_fn = (SDL_ThreadFunction) session_worker_embedded;
+    }
+#endif
+    session->thread = SDL_CreateThread(worker_fn, "session", session);
     return session;
 }
 
@@ -90,6 +98,11 @@ void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_rea
     session_input_interrupt(&session->input);
     session->quitapp = quitapp;
     session->interrupted = true;
+#if FEATURE_EMBEDDED_SHELL
+    if (session->embed && session->embed_process) {
+        embed_interrupt(session->embed_process);
+    }
+#endif
     if (reason >= STREAMING_INTERRUPT_ERROR) {
         switch (reason) {
             case STREAMING_INTERRUPT_WATCHDOG:
@@ -116,9 +129,11 @@ bool session_accepting_input(session_t *session) {
 }
 
 bool session_start_input(session_t *session) {
+#if FEATURE_EMBEDDED_SHELL
     if (session->embed) {
         return false;
     }
+#endif
     session_input_started(&session->input);
     return true;
 }
@@ -260,6 +275,10 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
         if (app_config->hdr && video_cap.hdr) {
             config->stream.supportedVideoFormats |= VIDEO_FORMAT_AV1_MAIN10;
         }
+    }
+    // If no video format is supported, default to H.264
+    if (config->stream.supportedVideoFormats == 0) {
+        config->stream.supportedVideoFormats = VIDEO_FORMAT_H264;
     }
     config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
     config->stream.colorRange = video_cap.fullColorRange ? COLOR_RANGE_FULL : COLOR_RANGE_LIMITED;
