@@ -157,7 +157,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: raspi-snapshot-${{ env.SHORT_SHA }}
+          name: raspi-snapshot-${{ matrix.arch }}-${{ env.SHORT_SHA }}
           path: build/*.deb
 
   build-steamlink:
