@@ -20,4 +20,15 @@
 
 #include "version_info.h"
 
+typedef struct embed_process_t embed_process_t;
+
 int embed_check_version(version_info_t *version_info);
+
+embed_process_t *embed_spawn(const char *app_name, const char *key_dir, const char *server_address,
+                             int width, int height, int fps, int bitrate, bool localaudio, bool viewonly);
+
+char *embed_read(embed_process_t *proc, char *buf, size_t size);
+
+int embed_interrupt(embed_process_t *proc);
+
+int embed_wait(embed_process_t *proc);

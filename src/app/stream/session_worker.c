@@ -12,12 +12,7 @@
 #include "app_session.h"
 #include "backend/pcmanager/worker/worker.h"
 
-static int session_worker_embedded(session_t *session);
-
 int session_worker(session_t *session) {
-    if (session_use_embedded(session)) {
-        return session_worker_embedded(session);
-    }
     app_t *app = session->app;
     session_set_state(session, STREAMING_CONNECTING);
     bus_pushevent(USER_STREAM_CONNECTING, NULL, NULL);
@@ -72,9 +67,6 @@ int session_worker(session_t *session) {
             case CALLBACKS_SESSION_ERROR_ADEC_ERROR:
                 streaming_error(session, GS_WRONG_STATE, "Failed to open audio backend.");
                 break;
-//            case ERROR_AUDIO_OPUS_INIT_FAILED:
-//                streaming_error(GS_WRONG_STATE, "Opus init failed.");
-//                break;
             default: {
                 if (!streaming_errno) {
                     streaming_error(session, GS_WRONG_STATE, "Failed to start connection: Limelight returned %d (%s)",
@@ -121,31 +113,6 @@ int session_worker(session_t *session) {
 #if FEATURE_INPUT_EVMOUSE
     session_evmouse_deinit(&session->input.evmouse);
 #endif
-    app_bus_post(app, (bus_actionfunc) app_session_destroy, app);
-    return 0;
-}
-
-int session_worker_embedded(session_t *session) {
-    app_t *app = session->app;
-    session_set_state(session, STREAMING_CONNECTING);
-    bus_pushevent(USER_STREAM_CONNECTING, NULL, NULL);
-    streaming_error(session, GS_OK, "");
-
-//    SDL_Delay(5000);
-
-    session_set_state(session, STREAMING_STREAMING);
-    bus_pushevent(USER_STREAM_OPEN, NULL, NULL);
-    SDL_LockMutex(session->mutex);
-
-    app_bus_post_sync(app, (bus_actionfunc) app_ui_close, &app->ui);
-
-//    SDL_Delay(10000);
-
-    SDL_UnlockMutex(session->mutex);
-    bus_pushevent(USER_STREAM_CLOSE, NULL, NULL);
-
-    session_set_state(session, STREAMING_DISCONNECTING);
-
     app_bus_post(app, (bus_actionfunc) app_session_destroy, app);
     return 0;
 }

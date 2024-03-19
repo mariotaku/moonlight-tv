@@ -22,6 +22,8 @@
 #include "logging_ext_lvgl.h"
 #include "fatal_error.h"
 #include "app_error.h"
+#include "util/i18n.h"
+#include "lvgl/util/lv_app_utils.h"
 
 #if FEATURE_WINDOW_FULLSCREEN_DESKTOP
 #define APP_FULLSCREEN_FLAG SDL_WINDOW_FULLSCREEN_DESKTOP
@@ -41,6 +43,10 @@ typedef struct render_frame_req_t {
 } render_frame_req_t;
 
 SDL_Window *app_ui_create_window(app_ui_t *ui);
+
+static void session_error();
+
+static void session_error_dialog_cb(lv_event_t *event);
 
 void app_ui_init(app_ui_t *ui, app_t *app) {
     ui->app = app;
@@ -183,6 +189,13 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 app_ui_open(&app->ui, NULL);
                 return true;
             }
+            case USER_STREAM_FINISHED: {
+                if (streaming_errno != 0) {
+                    session_error();
+                    break;
+                }
+                return true;
+            }
             case USER_OPEN_OVERLAY: {
                 if (app->session != NULL && !app_ui_is_opened(&app->ui)) {
                     session_interrupt(app->session, false, STREAMING_INTERRUPT_USER);
@@ -313,4 +326,17 @@ static SDL_AssertState app_assertion_handler_ui(const SDL_AssertData *data, void
     app_fatal_error("Assertion failure", "at %s\n(%s:%d): '%s'", data->function, data->filename, data->linenum,
                     data->condition);
     return SDL_ASSERTION_ALWAYS_IGNORE;
+}
+
+static void session_error() {
+    static const char *btn_texts[] = {translatable("OK"), ""};
+    lv_obj_t *dialog = lv_msgbox_create_i18n(NULL, locstr("Failed to start streaming"), streaming_errmsg,
+                                             btn_texts, false);
+    lv_obj_add_event_cb(dialog, session_error_dialog_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_center(dialog);
+}
+
+static void session_error_dialog_cb(lv_event_t *event) {
+    lv_obj_t *dialog = lv_event_get_current_target(event);
+    lv_msgbox_close_async(dialog);
 }
