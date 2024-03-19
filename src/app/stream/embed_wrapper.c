@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <sys/wait.h>
+#include <sys/unistd.h>
 #include <Limelight.h>
 
 struct embed_process_t {
