@@ -302,9 +302,9 @@ static bool coverloader_filecache_get(coverloader_req_t *req) {
         SDL_FreeSurface(decoded);
         return false;
     }
-    // With SDL 2.30.0 and above, 24 bit images are broken on webOS
-    if (decoded->format->palette != NULL || decoded->format->BitsPerPixel < 32) {
-        SDL_Surface *true_color = SDL_ConvertSurfaceFormat(decoded, SDL_PIXELFORMAT_ABGR32, 0);
+    // Indexed images needs to be converted to true color before scaling
+    if (decoded->format->palette != NULL) {
+        SDL_Surface *true_color = SDL_ConvertSurfaceFormat(decoded, SDL_PIXELFORMAT_RGBX32, 0);
         SDL_FreeSurface(decoded);
         if (true_color == NULL) {
             return false;
