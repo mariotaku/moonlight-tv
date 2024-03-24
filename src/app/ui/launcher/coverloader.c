@@ -304,6 +304,13 @@ static bool coverloader_filecache_get(coverloader_req_t *req) {
     }
     // Indexed images needs to be converted to true color before scaling
     if (decoded->format->palette != NULL) {
+#if !SDL_VERSION_ATLEAST(2, 30, 0)
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#define SDL_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_RGBX8888
+#else
+#define SDL_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_XBGR8888
+#endif
+#endif
         SDL_Surface *true_color = SDL_ConvertSurfaceFormat(decoded, SDL_PIXELFORMAT_RGBX32, 0);
         SDL_FreeSurface(decoded);
         if (true_color == NULL) {
