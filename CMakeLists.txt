@@ -253,7 +253,6 @@ if (TARGET_WEBOS)
     set(FEATURE_INPUT_EVMOUSE ON)
 
     target_compile_definitions(moonlight-lib PUBLIC TARGET_WEBOS OS_LINUX _GNU_SOURCE APPID="${WEBOS_APPINFO_ID}")
-    target_compile_definitions(moonlight-lib PUBLIC HAVE_RELATIVE_MOUSE_HACK)
     target_compile_definitions(moonlight-lib PUBLIC GAMECONTROLLERDB_PLATFORM="webOS" GAMECONTROLLERDB_PLATFORM_USE="Linux")
 
     target_include_directories(moonlight-lib SYSTEM PUBLIC ${PBNJSON_C_INCLUDE_DIRS} ${PMLOG_INCLUDE_DIRS}

@@ -31,23 +31,12 @@ static void indev_pointer_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
         indev_point_def(data);
         return;
     }
-    static bool warped = false;
     if (e.type == SDL_MOUSEMOTION) {
-        if (!warped && app->session != NULL) {
+        if (app->session != NULL) {
             session_handle_input_event(app->session, &e);
         }
         data->state = e.motion.state;
         data->point = (lv_point_t) {.x = e.motion.x, .y = e.motion.y};
-#if HAVE_RELATIVE_MOUSE_HACK
-        if (warped || e.motion.which == SDL_TOUCH_MOUSEID) {
-            warped = false;
-        } else if (app->session != NULL && session_accepting_input(app->session) && app_get_mouse_relative()) {
-            int w, h;
-            SDL_GetWindowSize(input->ui->window, &w, &h);
-            SDL_WarpMouseInWindow(input->ui->window, w / 2, h / 2);
-            warped = true;
-        }
-#endif
     } else {
         if (app->session != NULL) {
             session_handle_input_event(app->session, &e);
