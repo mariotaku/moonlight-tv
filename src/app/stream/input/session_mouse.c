@@ -60,7 +60,11 @@ void stream_input_handle_mwheel(stream_input_t *input, const SDL_MouseWheelEvent
 }
 
 void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event) {
-    if (input->view_only || input->no_sdl_mouse) {
+    if (input->view_only) {
+        return;
+    }
+    if (input->no_sdl_mouse) {
+        LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
         return;
     }
     if (event->which == SDL_TOUCH_MOUSEID && LiGetHostFeatureFlags() & LI_FF_PEN_TOUCH_EVENTS) {
