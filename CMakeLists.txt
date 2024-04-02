@@ -165,6 +165,8 @@ if (NOT INIH_FOUND)
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 endif ()
 
+include(ExternalFdkAAC)
+
 if (TARGET_WEBOS)
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
@@ -239,6 +241,9 @@ target_link_libraries(moonlight-lib PUBLIC lv_gridview lv_sdl_img)
 
 target_include_directories(moonlight-lib SYSTEM PUBLIC ${OPUS_INCLUDE_DIRS})
 target_link_libraries(moonlight-lib PUBLIC ${OPUS_LIBRARIES})
+
+target_include_directories(moonlight-lib SYSTEM PUBLIC ${FDKAAC_INCLUDE_DIRS})
+target_link_libraries(moonlight-lib PUBLIC ${FDKAAC_LIBRARIES} ss4s-ringbuf)
 
 target_include_directories(moonlight-lib SYSTEM PUBLIC ${MBEDTLS_INCLUDE_DIRS})
 target_link_libraries(moonlight-lib PUBLIC ${MBEDCRYPTO_LIBRARY} ${MBEDX509_LIBRARY})
