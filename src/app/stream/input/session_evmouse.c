@@ -64,14 +64,18 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
     switch (event->type) {
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP: {
+            commons_log_info("Session", "Mouse button %d %s", event->button.button,
+                             event->type == SDL_MOUSEBUTTONDOWN ? "down" : "up");
             stream_input_handle_mbutton(&session->input, &event->button);
             break;
         }
-        case SDL_MOUSEMOTION:
-            LiSendMouseMoveEvent((short) event->motion.xrel, (short) event->motion.yrel);
+        case SDL_MOUSEMOTION: {
+            stream_input_handle_mmotion(&session->input, &event->motion);
             break;
-        case SDL_MOUSEWHEEL:
+        }
+        case SDL_MOUSEWHEEL: {
             stream_input_handle_mwheel(&session->input, &event->wheel);
             break;
+        }
     }
 }
