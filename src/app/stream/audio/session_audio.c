@@ -20,6 +20,8 @@ static unsigned char *buffer = NULL;
 static unsigned char *buffer2 = NULL;
 static int frame_size = 0, unit_size = 0, channel_count = 0;
 
+static unsigned int aac_sample_size = 0;
+
 struct __attribute__((packed)) OpusHeader {
     __attribute__((unused)) char magic[8];
     __attribute__((unused)) uint8_t version;
@@ -67,14 +69,29 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
         aacEncoder_SetParam(aac_encoder, AACENC_SAMPLERATE, opusConfig->sampleRate);
         aacEncoder_SetParam(aac_encoder, AACENC_CHANNELMODE, opusConfig->channelCount == 6 ? MODE_1_2_2_1 : MODE_2);
         aacEncoder_SetParam(aac_encoder, AACENC_TRANSMUX, TT_MP4_ADTS);
+        if (opusConfig->channelCount > 2) {
+            aacEncoder_SetParam(aac_encoder, AACENC_CHANNELORDER, 1);
+        }
+
+        AACENC_InfoStruct info = {0};
+
+        if ((rc = aacEncEncode(aac_encoder, NULL, NULL, NULL, NULL)) != AACENC_OK) {
+            commons_log_error("Audio", "Failed to initialize AAC encoder: 0x%x", rc);
+            return rc;
+        }
+
+        if ((rc = aacEncInfo(aac_encoder, &info)) != AACENC_OK) {
+            commons_log_error("Audio", "Failed to get AAC encoder info: 0x%x", rc);
+            return rc;
+        }
 
         channel_count = opusConfig->channelCount;
         frame_size = SAMPLES_PER_FRAME * 64;
         unit_size = (int) (opusConfig->channelCount * sizeof(int16_t));
         buffer = calloc(unit_size, frame_size);
         buffer2 = calloc(unit_size, frame_size);
-        a52_ringbuf = sdlaud_ringbuf_new(unit_size * 1024 * 2);
-        samplesPerFrame = 1024;
+        aac_sample_size = info.frameLength;
+        a52_ringbuf = sdlaud_ringbuf_new(unit_size * aac_sample_size * 16);
     }
     SS4S_AudioInfo info = {
             .numOfChannels = opusConfig->channelCount,
@@ -121,36 +138,52 @@ static void aud_feed(char *sampleData, int sampleLength) {
     if (decoder != NULL) {
         int decoded_samples = opus_multistream_decode(decoder, (unsigned char *) sampleData, sampleLength,
                                                       (opus_int16 *) buffer, frame_size, 0);
-        // Encode the decoded audio to AAC
-        INT inBufId = IN_AUDIO_DATA, outBufId = OUT_BITSTREAM_DATA;
-        INT inBufSize = unit_size * decoded_samples, outBufSize = unit_size * frame_size;
-        INT outBufElSize = 1;
-        AACENC_BufDesc in_buf = {0}, out_buf = {0};
-        AACENC_InArgs in_args = {0};
-        AACENC_OutArgs out_args = {0};
-
-        in_buf.numBufs = 1;
-        in_buf.bufs = (void **) &buffer;
-        in_buf.bufferIdentifiers = &inBufId;
-        in_buf.bufSizes = &inBufSize;
-        in_buf.bufElSizes = &unit_size;
-
-        out_buf.numBufs = 1;
-        out_buf.bufs = (void **) &buffer2;
-        out_buf.bufferIdentifiers = &outBufId;
-        out_buf.bufSizes = &outBufSize;
-        out_buf.bufElSizes = &outBufElSize;
-
-        in_args.numInSamples = decoded_samples * channel_count;
-
-        AACENC_ERROR encError = aacEncEncode(aac_encoder, &in_buf, &out_buf, &in_args, &out_args);
-        if (encError != AACENC_OK) {
-            commons_log_error("Audio", "Failed to encode audio: %d", encError);
+        if (decoded_samples < 0) {
+            commons_log_error("Audio", "Failed to decode audio: %d", decoded_samples);
             return;
         }
-        if (out_args.numOutBytes > 0) {
-            SS4S_PlayerAudioFeed(player, buffer2, out_args.numOutBytes);
+
+        size_t bytes_written = sdlaud_ringbuf_write(a52_ringbuf, buffer, decoded_samples * unit_size);
+        commons_log_info("Audio", "Wrote %d samples", bytes_written / unit_size);
+
+        if (sdlaud_ringbuf_size(a52_ringbuf) >= aac_sample_size * unit_size) {
+            size_t size_read = sdlaud_ringbuf_read(a52_ringbuf, buffer, aac_sample_size * unit_size);
+            commons_log_info("Audio", "Read %d samples", size_read / unit_size);
+            // Encode the decoded audio to AAC
+            INT inBufId = IN_AUDIO_DATA, outBufId = OUT_BITSTREAM_DATA;
+            INT inBufElSize = sizeof(int16_t);
+            INT inBufSize = (INT) size_read, outBufSize = (INT) aac_sample_size * unit_size;
+            INT outBufElSize = 1;
+            AACENC_BufDesc in_buf = {0}, out_buf = {0};
+            AACENC_InArgs in_args = {0};
+            AACENC_OutArgs out_args = {0};
+
+            in_buf.numBufs = 1;
+            in_buf.bufs = (void **) &buffer;
+            in_buf.bufferIdentifiers = &inBufId;
+            in_buf.bufSizes = &inBufSize;
+            in_buf.bufElSizes = &inBufElSize;
+
+            in_args.numInSamples = (INT) aac_sample_size * channel_count;
+
+            out_buf.numBufs = 1;
+            out_buf.bufs = (void **) &buffer2;
+            out_buf.bufferIdentifiers = &outBufId;
+            out_buf.bufSizes = &outBufSize;
+            out_buf.bufElSizes = &outBufElSize;
+
+            Uint64 start = SDL_GetTicks64();
+            AACENC_ERROR encError = aacEncEncode(aac_encoder, &in_buf, &out_buf, &in_args, &out_args);
+            if (encError != AACENC_OK) {
+                commons_log_error("Audio", "Failed to encode audio: %d", encError);
+                return;
+            }
+            if (out_args.numOutBytes > 0) {
+                commons_log_info("Audio", "AAC encoded %d samples (used %llu ms)", out_args.numInSamples, SDL_GetTicks64() - start);
+                SS4S_PlayerAudioFeed(player, buffer2, out_args.numOutBytes);
+            }
         }
+
     } else {
         SS4S_PlayerAudioFeed(player, (unsigned char *) sampleData, sampleLength);
     }
@@ -180,5 +213,5 @@ AUDIO_RENDERER_CALLBACKS ss4s_aud_callbacks = {
         .init = aud_init,
         .cleanup = aud_cleanup,
         .decodeAndPlaySample = aud_feed,
-        .capabilities = CAPABILITY_DIRECT_SUBMIT,
+        .capabilities = 0,
 };
