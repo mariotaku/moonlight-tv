@@ -15,7 +15,7 @@ void app_input_init(app_input_t *input, app_t *app) {
     SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
     input->max_num_gamepads = 4;
     input->gamepads_count = 0;
-    for(int i = 0; i < input->max_num_gamepads; i++) {
+    for (int i = 0; i < input->max_num_gamepads; i++) {
         input->gamepads[i].instance_id = -1;
         input->gamepads[i].gs_id = -1;
     }
@@ -41,29 +41,12 @@ void app_input_deinit(app_input_t *input) {
 }
 
 void app_set_mouse_grab(app_input_t *input, bool grab) {
-#if HAVE_RELATIVE_MOUSE_HACK
-    if (grab && input->blank_cursor_surface->userdata != NULL) {
-        commons_log_debug("Input", "Set cursor to blank bitmap: %p", input->blank_cursor_surface->userdata);
-        SDL_SetCursor(input->blank_cursor_surface->userdata);
-    } else {
-        SDL_SetCursor(SDL_GetDefaultCursor());
-    }
-#else
-    if (app_configuration->hardware_mouse) {
-        SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
-    } else {
+    if (!app_configuration->hardware_mouse) {
         SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
-        if (!grab) {
-            SDL_ShowCursor(SDL_TRUE);
-        }
     }
-#endif
+    SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
 }
 
 bool app_get_mouse_relative() {
-#if HAVE_RELATIVE_MOUSE_HACK
-    return !app_configuration->absmouse;
-#else
     return SDL_GetRelativeMouseMode() == SDL_TRUE;
-#endif
 }
