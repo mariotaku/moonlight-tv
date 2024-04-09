@@ -512,7 +512,7 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
         return gs_set_error(GS_NOT_SUPPORTED_MODE, "Selected mode is not supported by the host");
     }
 
-    if (config->height >= 2160 && !server->supports4K) {
+    if (config->height >= 2160 && !server->serverInfo.serverCodecModeSupport) {
         return gs_set_error(GS_NOT_SUPPORTED_4K, "Host doesn't support 4K");
     }
 
@@ -728,6 +728,7 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
         char *currentGameText = NULL;
         char *stateText = NULL;
         char *serverCodecModeSupportText = NULL;
+        char *serverAudioCodecSupportText = NULL;
         char *httpsPortText = NULL;
         char *externalPortText = NULL;
 
@@ -787,6 +788,10 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
             goto cleanup;
         }
 
+        if (xml_search(data->memory, data->size, "ServerAudioCodecSupport", &serverAudioCodecSupportText) != GS_OK) {
+            goto cleanup;
+        }
+
         if (xml_search(data->memory, data->size, "gputype", (char **) &server->gpuType) != GS_OK) {
             goto cleanup;
         }
@@ -820,16 +825,18 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
 
         int serverCodecModeSupport = serverCodecModeSupportText == NULL ? 0 :
                                      (int) strtol(serverCodecModeSupportText, NULL, 0);
+        int serverAudioCodecSupport = serverAudioCodecSupportText == NULL ? 0 :
+                                      (int) strtol(serverAudioCodecSupportText, NULL, 0);
 
         server->paired = pairedText != NULL && strcmp(pairedText, "1") == 0;
         server->currentGame = currentGameText == NULL ? 0 : (int) strtol(currentGameText, NULL, 0);
-        server->supports4K = serverCodecModeSupport != 0;
-        server->supportsHdr = serverCodecModeSupport & 0x200;
+        server->serverInfo.serverCodecModeSupport = serverCodecModeSupport == 0 ? SCM_H264 : serverCodecModeSupport;
+        server->serverInfo.serverAudioCodecSupport = serverAudioCodecSupport == 0 ? SAC_OPUS : serverAudioCodecSupport;
         server->serverMajorVersion = (int) strtol(server->serverInfo.serverInfoAppVersion, NULL, 0);
         // Real Nvidia host software (GeForce Experience and RTX Experience) both use the 'Mjolnir'
         // codename in the state field and no version of Sunshine does. We can use this to bypass
         // some assumptions about Nvidia hardware that don't apply to Sunshine hosts.
-        server->isGfe = strstr(stateText, "MJOLNIR") != NULL;
+        server->isNvidiaSoftware = strstr(stateText, "MJOLNIR") != NULL;
         server->httpsPort = httpsPortText == NULL ? 0 : (int) strtol(httpsPortText, NULL, 0);
         server->extPort = externalPortText == NULL ? 0 : (int) strtol(externalPortText, NULL, 0);
 
@@ -860,6 +867,10 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
 
         if (serverCodecModeSupportText != NULL) {
             free(serverCodecModeSupportText);
+        }
+
+        if (serverAudioCodecSupportText != NULL) {
+            free(serverAudioCodecSupportText);
         }
 
         i++;

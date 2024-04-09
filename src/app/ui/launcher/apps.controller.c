@@ -21,6 +21,7 @@
 #include "util/i18n.h"
 #include "pair.dialog.h"
 #include "ui/common/progress_dialog.h"
+#include "logging.h"
 
 typedef void (*action_cb_t)(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
 
@@ -576,6 +577,7 @@ static void item_longpress_cb(lv_event_t *event) {
 
 static void launcher_launch_game(apps_fragment_t *controller, const apploader_item_t *app) {
     LV_ASSERT(app->base.id != 0);
+    commons_log_info("Apps" ,"Launching app %d", app->base.id);
     streaming_scene_arg_t args = {
             .global = controller->global,
             .uuid = controller->uuid,

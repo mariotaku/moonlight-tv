@@ -322,7 +322,7 @@ static void libs_init(app_t *app, int argc, char *argv[]) {
     };
     SS4S_Init(argc, argv, &ss4s_config);
 
-    SS4S_GetAudioCapabilities(&app->ss4s.audio_cap);
+    SS4S_GetAudioCapabilitiesByCodecs(&app->ss4s.audio_cap, SS4S_AUDIO_PCM_S16LE | SS4S_AUDIO_AC3 | SS4S_AUDIO_AAC);
     SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
 
 

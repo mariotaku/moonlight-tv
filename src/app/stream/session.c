@@ -264,15 +264,16 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     if (video_cap.codecs & SS4S_VIDEO_H264) {
         config->stream.supportedVideoFormats |= VIDEO_FORMAT_H264;
     }
-    if (app_config->hevc && video_cap.codecs & SS4S_VIDEO_H265) {
+    int scm = server->serverInfo.serverCodecModeSupport;
+    if (app_config->hevc && scm & SCM_MASK_HEVC && video_cap.codecs & SS4S_VIDEO_H265) {
         config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265;
-        if (app_config->hdr && video_cap.hdr) {
+        if (app_config->hdr && scm & SCM_HEVC_MAIN10 && video_cap.hdr) {
             config->stream.supportedVideoFormats |= VIDEO_FORMAT_H265_MAIN10;
         }
     }
-    if (app_config->av1 && video_cap.codecs & SS4S_VIDEO_AV1) {
+    if (app_config->av1 && scm & SCM_MASK_AV1 && video_cap.codecs & SS4S_VIDEO_AV1) {
         config->stream.supportedVideoFormats |= VIDEO_FORMAT_AV1_MAIN8;
-        if (app_config->hdr && video_cap.hdr) {
+        if (app_config->hdr && scm & SCM_AV1_MAIN10 && video_cap.hdr) {
             config->stream.supportedVideoFormats |= VIDEO_FORMAT_AV1_MAIN10;
         }
     }
@@ -300,6 +301,17 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
         config->stream.audioConfiguration = AUDIO_CONFIGURATION_STEREO;
     }
 #endif
-    config->stream.encryptionFlags = ENCFLG_AUDIO;
+    int sac = server->serverInfo.serverAudioCodecSupport;
+    if (sac & SAC_MASK_AC3 && audio_cap.codecs & SS4S_AUDIO_AC3) {
+        config->stream.supportedAudioFormats |= AUDIO_FORMAT_AC3;
+    }
+    if (sac & SAC_MASK_AAC && audio_cap.codecs & SS4S_AUDIO_AAC) {
+        config->stream.supportedAudioFormats |= AUDIO_FORMAT_AAC;
+    }
+    if (config->stream.supportedAudioFormats == 0) {
+        config->stream.supportedAudioFormats = AUDIO_FORMAT_OPUS;
+    }
+
+    config->stream.encryptionFlags = ENCFLG_ALL;
 }
 

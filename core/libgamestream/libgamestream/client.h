@@ -38,10 +38,8 @@ typedef struct _SERVER_DATA {
     /** ExternalPort */
     unsigned short extPort;
     bool paired;
-    bool supports4K;
-    bool supportsHdr;
     bool unsupported;
-    bool isGfe;
+    bool isNvidiaSoftware;
     int currentGame;
     int serverMajorVersion;
     const char *gsVersion;

@@ -25,8 +25,6 @@ PSERVER_DATA serverdata_clone(const SERVER_DATA *src) {
     server->extPort = src->extPort;
     server->httpsPort = src->httpsPort;
     server->paired = src->paired;
-    server->supports4K = src->supports4K;
-    server->supportsHdr = src->supportsHdr;
     server->unsupported = src->unsupported;
     server->currentGame = src->currentGame;
     server->serverMajorVersion = src->serverMajorVersion;
@@ -36,6 +34,8 @@ PSERVER_DATA serverdata_clone(const SERVER_DATA *src) {
     server->serverInfo.rtspSessionUrl = strdup_nullable(src->serverInfo.rtspSessionUrl);
     server->serverInfo.serverInfoAppVersion = strdup_nullable(src->serverInfo.serverInfoAppVersion);
     server->serverInfo.serverInfoGfeVersion = strdup_nullable(src->serverInfo.serverInfoGfeVersion);
+    server->serverInfo.serverCodecModeSupport = src->serverInfo.serverCodecModeSupport;
+    server->serverInfo.serverAudioCodecSupport = src->serverInfo.serverAudioCodecSupport;
     return server;
 }
 

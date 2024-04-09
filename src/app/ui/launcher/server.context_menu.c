@@ -120,7 +120,7 @@ static void context_menu_click_cb(lv_event_t *e) {
         open_info(node);
     } else if (target_userdata == forget_host) {
         forget_host(node);
-    }else if (target_userdata == show_hidden_apps) {
+    } else if (target_userdata == show_hidden_apps) {
         show_hidden_apps(node);
     }
 }
@@ -130,14 +130,14 @@ static void open_info(const pclist_t *node) {
     const SERVER_DATA *server = node->server;
     lv_obj_t *mbox = lv_msgbox_create_i18n(NULL, server->hostname, "placeholder", btn_txts, false);
     lv_obj_t *message = lv_msgbox_get_text(mbox);
-    lv_label_set_text_fmt(message, locstr("IP address: %s\nGPU: %s\nSupports 4K: %s\n"
-                                          "Supports HDR: %s\nHost Software Version: %s\n"
-                                          "GeForce Experience: %s"),
+    lv_label_set_text_fmt(message, locstr(
+                                  "IP address: %s\n"
+                                  "GPU: %s\n"
+                                  "Host Software Version: %s\n"
+                                  "GeForce Experience: %s"),
                           server->serverInfo.address, str_null_or_empty(server->gpuType) ? "Unknown" : server->gpuType,
-                          server->supports4K ? "YES" : "NO",
-                          server->supportsHdr ? "YES" : "NO",
                           server->serverInfo.serverInfoAppVersion,
-                          server->isGfe ? server->serverInfo.serverInfoGfeVersion : "NO");
+                          server->isNvidiaSoftware ? server->serverInfo.serverInfoGfeVersion : "NO");
     lv_obj_add_event_cb(mbox, info_action_cb, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_center(mbox);
 }

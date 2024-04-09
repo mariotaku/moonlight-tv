@@ -3,8 +3,7 @@
 #include "stream/connection/session_connection.h"
 #include "ss4s.h"
 #include "stream/session_priv.h"
-
-#define SAMPLES_PER_FRAME  240
+#include "logging.h"
 
 static session_t *session = NULL;
 static SS4S_Player *player = NULL;
@@ -12,14 +11,18 @@ static OpusMSDecoder *decoder = NULL;
 static unsigned char *pcmbuf = NULL;
 static int frame_size = 0, unit_size = 0;
 
-static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context,
-                    int arFlags) {
+static int aud_init(int audioFormat, int audioConfiguration, const OPUS_MULTISTREAM_CONFIGURATION *opusConfig,
+                    void *context, int arFlags) {
     (void) audioConfiguration;
     (void) arFlags;
     session = context;
     player = session->player;
     SS4S_AudioCodec codec = SS4S_AUDIO_PCM_S16LE;
-    if (session->audio_cap.codecs & SS4S_AUDIO_OPUS) {
+    if (audioFormat & AUDIO_FORMAT_MASK_AC3) {
+        codec = SS4S_AUDIO_AC3;
+        decoder = NULL;
+        pcmbuf = NULL;
+    } else if (session->audio_cap.codecs & SS4S_AUDIO_OPUS) {
         codec = SS4S_AUDIO_OPUS;
         decoder = NULL;
         pcmbuf = NULL;
@@ -30,8 +33,8 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
         if (rc != 0) {
             return rc;
         }
-        frame_size = SAMPLES_PER_FRAME * 64;
         unit_size = (int) (opusConfig->channelCount * sizeof(int16_t));
+        frame_size = opusConfig->samplesPerFrame;
         pcmbuf = calloc(unit_size, frame_size);
     }
     SS4S_AudioInfo info = {
@@ -40,8 +43,10 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
             .appName = "Moonlight",
             .streamName = "Streaming",
             .sampleRate = opusConfig->sampleRate,
-            .samplesPerFrame = SAMPLES_PER_FRAME,
+            .samplesPerFrame = opusConfig->samplesPerFrame,
     };
+    commons_log_info("Audio", "Audio init: codec=%s, sampleRate=%d, channelCount=%d, samplesPerFrame=%d",
+                     SS4S_AudioCodecName(codec), info.sampleRate, info.numOfChannels, info.samplesPerFrame);
     return SS4S_PlayerAudioOpen(player, &info);
 }
 
@@ -72,7 +77,7 @@ static void aud_feed(char *sampleData, int sampleLength) {
 }
 
 AUDIO_RENDERER_CALLBACKS ss4s_aud_callbacks = {
-        .init = aud_init,
+        .init2 = aud_init,
         .cleanup = aud_cleanup,
         .decodeAndPlaySample = aud_feed,
         .capabilities = CAPABILITY_DIRECT_SUBMIT,
