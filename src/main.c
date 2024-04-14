@@ -14,10 +14,10 @@ static int settings_load(app_settings_t *settings);
 
 int main(int argc, char *argv[]) {
     static char log_path[1024];
-    snprintf(log_path, sizeof(log_path), "/tmp/gst-moonlight-%d.log", getpid());
-    setenv("GST_DEBUG_FILE_OVERWRITE", "enable", 1);
-    setenv("GST_DEBUG_FILE", log_path, 1);
-    setenv("GST_DEBUG", "4,rtkalsa:6,rtkaudiobasesink:6", 1);
+    snprintf(log_path, sizeof(log_path), "/tmp/moonlight-%d.log", getpid());
+    FILE *log_file = fopen(log_path, "w");
+    dup2(fileno(log_file), STDERR_FILENO);
+    dup2(fileno(log_file), STDOUT_FILENO);
 #ifdef TARGET_WEBOS
     if (getenv("EGL_PLATFORM") == NULL) {
         setenv("EGL_PLATFORM", "wayland", 0);

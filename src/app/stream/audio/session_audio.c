@@ -18,24 +18,34 @@ static int aud_init(int audioFormat, int audioConfiguration, const OPUS_MULTISTR
     session = context;
     player = session->player;
     SS4S_AudioCodec codec = SS4S_AUDIO_PCM_S16LE;
-    if (audioFormat & AUDIO_FORMAT_MASK_AC3) {
+    if (audioFormat == AUDIO_FORMAT_EAC3) {
+        codec = SS4S_AUDIO_EAC3;
+        decoder = NULL;
+        pcmbuf = NULL;
+    } else if (audioFormat == AUDIO_FORMAT_AC3) {
         codec = SS4S_AUDIO_AC3;
         decoder = NULL;
         pcmbuf = NULL;
-    } else if (session->audio_cap.codecs & SS4S_AUDIO_OPUS) {
-        codec = SS4S_AUDIO_OPUS;
-        decoder = NULL;
-        pcmbuf = NULL;
-    } else {
-        int rc;
-        decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount, opusConfig->streams,
-                                                  opusConfig->coupledStreams, opusConfig->mapping, &rc);
-        if (rc != 0) {
-            return rc;
+    } else if (audioFormat & AUDIO_FORMAT_MASK_OPUS) {
+        if (session->audio_cap.codecs & SS4S_AUDIO_OPUS) {
+            codec = SS4S_AUDIO_OPUS;
+            decoder = NULL;
+            pcmbuf = NULL;
+        } else {
+            int rc;
+            decoder = opus_multistream_decoder_create(opusConfig->sampleRate, opusConfig->channelCount,
+                                                      opusConfig->streams,
+                                                      opusConfig->coupledStreams, opusConfig->mapping, &rc);
+            if (rc != 0) {
+                return rc;
+            }
+            unit_size = (int) (opusConfig->channelCount * sizeof(int16_t));
+            frame_size = opusConfig->samplesPerFrame;
+            pcmbuf = calloc(unit_size, frame_size);
         }
-        unit_size = (int) (opusConfig->channelCount * sizeof(int16_t));
-        frame_size = opusConfig->samplesPerFrame;
-        pcmbuf = calloc(unit_size, frame_size);
+    } else {
+        commons_log_error("Audio", "Unsupported audio format: %04x", audioFormat);
+        return SS4S_AUDIO_OPEN_UNSUPPORTED_CODEC;
     }
     SS4S_AudioInfo info = {
             .numOfChannels = opusConfig->channelCount,
@@ -45,8 +55,6 @@ static int aud_init(int audioFormat, int audioConfiguration, const OPUS_MULTISTR
             .sampleRate = opusConfig->sampleRate,
             .samplesPerFrame = opusConfig->samplesPerFrame,
     };
-    commons_log_info("Audio", "Audio init: codec=%s, sampleRate=%d, channelCount=%d, samplesPerFrame=%d",
-                     SS4S_AudioCodecName(codec), info.sampleRate, info.numOfChannels, info.samplesPerFrame);
     return SS4S_PlayerAudioOpen(player, &info);
 }
 

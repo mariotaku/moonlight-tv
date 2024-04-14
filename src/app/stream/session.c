@@ -302,11 +302,14 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     }
 #endif
     int sac = server->serverInfo.serverAudioCodecSupport;
-    if (sac & SAC_MASK_AC3 && audio_cap.codecs & SS4S_AUDIO_AC3) {
-        config->stream.supportedAudioFormats |= AUDIO_FORMAT_AC3;
-    }
-    if (sac & SAC_MASK_AAC && audio_cap.codecs & SS4S_AUDIO_AAC) {
-        config->stream.supportedAudioFormats |= AUDIO_FORMAT_AAC;
+    if (sac & SAC_MASK_AC3) {
+        commons_log_info("Session", "Server supports AC3: %d, EAC3: %d", (sac & SAC_AC3) != 0, (sac & SAC_EAC3) != 0);
+        if (audio_cap.codecs & SS4S_AUDIO_AC3) {
+            config->stream.supportedAudioFormats |= AUDIO_FORMAT_AC3;
+        }
+        if (audio_cap.codecs & SS4S_AUDIO_EAC3) {
+            config->stream.supportedAudioFormats |= AUDIO_FORMAT_EAC3;
+        }
     }
     if (config->stream.supportedAudioFormats == 0) {
         config->stream.supportedAudioFormats = AUDIO_FORMAT_OPUS;
