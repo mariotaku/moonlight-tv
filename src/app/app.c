@@ -289,7 +289,7 @@ bool app_decoder_or_embedded_present(app_t *app) {
 #endif
 
 static void libs_init(app_t *app, int argc, char *argv[]) {
-
+    SS4S_SetLoggingFunction(commons_ss4s_logf);
     int errno;
     if ((errno = SS4S_ModulesList(&app->ss4s.modules, &app->os_info)) != 0) {
         commons_log_error("SS4S", "Can't load modules list: %s", strerror(errno));
@@ -318,11 +318,10 @@ static void libs_init(app_t *app, int argc, char *argv[]) {
     SS4S_Config ss4s_config = {
             .audioDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module),
             .videoDriver = SS4S_ModuleInfoGetId(app->ss4s.selection.video_module),
-            .loggingFunction = commons_ss4s_logf,
     };
     SS4S_Init(argc, argv, &ss4s_config);
 
-    SS4S_GetAudioCapabilities(&app->ss4s.audio_cap);
+    SS4S_GetAudioCapabilitiesByCodecs(&app->ss4s.audio_cap, SS4S_AUDIO_PCM_S16LE | SS4S_AUDIO_OPUS);
     SS4S_GetVideoCapabilities(&app->ss4s.video_cap);
 
 
