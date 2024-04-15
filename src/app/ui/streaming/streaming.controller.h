@@ -10,9 +10,10 @@ typedef struct app_t app_t;
 typedef struct {
     lv_fragment_t base;
     app_t *global;
+    lv_obj_t *detached_root;
+    lv_obj_t *hint;
     lv_obj_t *overlay;
     lv_group_t *group;
-    lv_obj_t *hint;
     lv_obj_t *progress;
     lv_obj_t *video;
     lv_obj_t *actions;

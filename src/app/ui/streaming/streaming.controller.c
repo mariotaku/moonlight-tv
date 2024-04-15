@@ -26,6 +26,8 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view);
 
 static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view);
 
+static void on_obj_deleted(lv_fragment_t *self, lv_obj_t *view);
+
 static bool on_event(lv_fragment_t *self, int code, void *userdata);
 
 static void constructor(lv_fragment_t *self, void *args);
@@ -44,6 +46,7 @@ const lv_fragment_class_t streaming_controller_class = {
         .create_obj_cb = streaming_scene_create,
         .obj_created_cb = on_view_created,
         .obj_will_delete_cb = on_delete_obj,
+        .obj_deleted_cb = on_obj_deleted,
         .event_cb = on_event,
         .instance_size = sizeof(streaming_controller_t),
 };
@@ -75,7 +78,8 @@ bool streaming_refresh_stats() {
     }
     lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)",
                           SS4S_ModuleInfoGetId(app->ss4s.selection.video_module), vdec_stream_info.format);
-    lv_label_set_text_static(controller->stats_items.audio, SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module));
+    lv_label_set_text_fmt(controller->stats_items.audio, "%s (%s)",
+                          SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module), audio_stream_info.format);
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 
@@ -230,6 +234,12 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     }
     app_input_set_group(&controller->global->ui.input, NULL);
     lv_group_del(controller->group);
+}
+
+static void on_obj_deleted(lv_fragment_t *self, lv_obj_t *view) {
+    LV_UNUSED(view);
+    streaming_controller_t *controller = (streaming_controller_t *) self;
+    lv_obj_del(controller->detached_root);
 }
 
 static void exit_streaming(lv_event_t *event) {

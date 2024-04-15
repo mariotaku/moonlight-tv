@@ -21,6 +21,10 @@ int session_worker(session_t *session) {
     int appId = session->app_id;
     session->player = NULL;
 
+#if FEATURE_INPUT_EVMOUSE
+    session_evmouse_wait_ready(&session->input.evmouse);
+#endif
+
     commons_log_info("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new(app);
     gs_set_timeout(client, 30);
@@ -110,9 +114,6 @@ int session_worker(session_t *session) {
     }
     gs_destroy(client);
     bus_pushevent(USER_STREAM_FINISHED, NULL, NULL);
-#if FEATURE_INPUT_EVMOUSE
-    session_evmouse_deinit(&session->input.evmouse);
-#endif
     app_bus_post(app, (bus_actionfunc) app_session_destroy, app);
     return 0;
 }

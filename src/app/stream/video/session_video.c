@@ -182,6 +182,10 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     dst->totalFps = (float) dst->totalFrames / ((float) delta / 1000);
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
     dst->decodedFps = (float) dst->submittedFrames / ((float) delta / 1000);
+    LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
+    if (!streaming_overlay_shown()) {
+        return;
+    }
     int latencyUs = 0;
     if (SS4S_PlayerGetVideoLatency(player, 0, &latencyUs)) {
         dst->avgDecoderLatency = (float) latencyUs / 1000.0f;
@@ -189,7 +193,6 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     } else {
         dst->avgDecoderLatency = 0;
     }
-    LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
     app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);
 }
 

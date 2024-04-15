@@ -1,7 +1,9 @@
 #include "session_evmouse.h"
 #include "evmouse.h"
 #include "stream/session_priv.h"
+
 #include <errno.h>
+#include <assert.h>
 
 #include "logging.h"
 
@@ -14,6 +16,7 @@ static void set_evmouse(session_evmouse_t *mouse, evmouse_t *dev);
 void session_evmouse_init(session_evmouse_t *mouse, session_t *session) {
     mouse->session = session;
     mouse->lock = SDL_CreateMutex();
+    mouse->cond = SDL_CreateCond();
     mouse->thread = SDL_CreateThread((SDL_ThreadFunction) mouse_worker, "sessinput", mouse);
 }
 
@@ -24,13 +27,22 @@ void session_evmouse_deinit(session_evmouse_t *mouse) {
     }
     SDL_DestroyMutex(mouse->lock);
     mouse->lock = NULL;
+    SDL_DestroyCond(mouse->cond);
+    mouse->cond = NULL;
+}
+
+void session_evmouse_wait_ready(session_evmouse_t *mouse) {
+    SDL_LockMutex(mouse->lock);
+    while (mouse->dev == NULL) {
+        SDL_CondWait(mouse->cond, mouse->lock);
+    }
+    SDL_UnlockMutex(mouse->lock);
 }
 
 void session_evmouse_interrupt(session_evmouse_t *mouse) {
     SDL_LockMutex(mouse->lock);
-    if (mouse->dev != NULL) {
-        evmouse_interrupt(mouse->dev);
-    }
+    assert (mouse->dev != NULL);
+    evmouse_interrupt(mouse->dev);
     SDL_UnlockMutex(mouse->lock);
 }
 
@@ -52,6 +64,7 @@ static int mouse_worker(session_evmouse_t *mouse) {
 static void set_evmouse(session_evmouse_t *mouse, evmouse_t *dev) {
     SDL_LockMutex(mouse->lock);
     mouse->dev = dev;
+    SDL_CondSignal(mouse->cond);
     SDL_UnlockMutex(mouse->lock);
 }
 
