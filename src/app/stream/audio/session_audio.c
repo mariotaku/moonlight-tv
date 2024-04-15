@@ -16,12 +16,15 @@ static OpusMSDecoder *decoder = NULL;
 static unsigned char *buffer = NULL;
 static int frame_size = 0, unit_size = 0;
 
+AUDIO_INFO audio_stream_info;
+
 static size_t opus_head_serialize(const OPUS_MULTISTREAM_CONFIGURATION *config, unsigned char *data);
 
 static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context,
                     int arFlags) {
     (void) audioConfiguration;
     (void) arFlags;
+    memset(&audio_stream_info, 0, sizeof(audio_stream_info));
     session = context;
     player = session->player;
     SS4S_AudioCodec codec = SS4S_AUDIO_PCM_S16LE;
@@ -43,6 +46,7 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
         unit_size = (int) (opusConfig->channelCount * sizeof(int16_t));
         buffer = calloc(unit_size, frame_size);
     }
+    audio_stream_info.format = SS4S_AudioCodecName(codec);
     SS4S_AudioInfo info = {
             .numOfChannels = opusConfig->channelCount,
             .codec = codec,

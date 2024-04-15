@@ -19,6 +19,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_remove_style_all(obj);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(obj, LV_PCT(100), LV_PCT(100));
+    controller->detached_root = obj;
 
     lv_obj_t *hint = lv_label_create(obj);
     lv_obj_set_style_pad_all(hint, LV_DPX(20), 0);
@@ -143,6 +144,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
 
     streaming_overlay_resized(controller);
 
+    // We return overlay instead of obj, and will delete the obj manually
     return overlay;
 }
 

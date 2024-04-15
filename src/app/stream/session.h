@@ -48,9 +48,9 @@ typedef struct VIDEO_INFO {
     bool has_decoder_latency;
 } VIDEO_INFO;
 
-typedef struct AUDIO_STATS {
-    uint32_t avgBufferTime;
-} AUDIO_STATS;
+typedef struct AUDIO_INFO {
+    const char *format;
+} AUDIO_INFO;
 
 typedef struct session_config_t {
     STREAM_CONFIGURATION stream;
