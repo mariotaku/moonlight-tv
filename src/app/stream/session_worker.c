@@ -22,7 +22,9 @@ int session_worker(session_t *session) {
     session->player = NULL;
 
 #if FEATURE_INPUT_EVMOUSE
-    session_evmouse_wait_ready(&session->input.evmouse);
+    if (!session->config.view_only && session->config.hardware_mouse) {
+        session_evmouse_wait_ready(&session->input.evmouse);
+    }
 #endif
 
     commons_log_info("Session", "Launch app %d...", appId);
