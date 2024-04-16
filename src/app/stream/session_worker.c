@@ -30,8 +30,15 @@ int session_worker(session_t *session) {
     commons_log_info("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new(app);
     gs_set_timeout(client, 30);
+    const char *surround_params = NULL;
+#if TARGET_WEBOS
+    if (session->config.stream.audioConfiguration == AUDIO_CONFIGURATION_51_SURROUND) {
+        // 6 channels, 4 streams, 2 coupled streams, FL, FR, SL, SR, FC, LFE
+        surround_params = "642014523";
+    }
+#endif
     int ret = gs_start_app(client, server, &session->config.stream, appId, server->isGfe, session->config.sops,
-                           session->config.local_audio, app_input_gamepads_mask(&app->input));
+                           session->config.local_audio, app_input_gamepads_mask(&app->input), surround_params);
     if (ret != GS_OK) {
         session_set_state(session, STREAMING_ERROR);
         const char *gs_error = NULL;

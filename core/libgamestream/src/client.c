@@ -481,7 +481,7 @@ int gs_applist(GS_CLIENT hnd, const SERVER_DATA *server, PAPP_LIST *list) {
 }
 
 int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *config, int appId, bool is_gfe, bool sops,
-                 bool localaudio, int gamepad_mask) {
+                 bool localaudio, int gamepad_mask, const char* surround_params) {
     int ret = GS_OK;
     char *result = NULL;
     HTTP_DATA *data = NULL;
@@ -553,6 +553,9 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     append_param(url, sizeof(url), "rikey", "%s", rikey_hex);
     append_param(url, sizeof(url), "rikeyid", "%d", rikeyid);
     append_param(url, sizeof(url), "surroundAudioInfo", "%d", surround_info);
+    if (surround_params) {
+        append_param(url, sizeof(url), "surroundParams", surround_params);
+    }
     if (!resume || !is_gfe) {
         if (config->supportedVideoFormats & VIDEO_FORMAT_MASK_10BIT) {
             append_param(url, sizeof(url), "hdrMode", "1");
