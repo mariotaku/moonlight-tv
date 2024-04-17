@@ -37,13 +37,19 @@ void session_input_init(stream_input_t *input, session_t *session, app_input_t *
 
 void session_input_deinit(stream_input_t *input) {
 #if FEATURE_INPUT_EVMOUSE
-    session_evmouse_deinit(&input->evmouse);
+    const session_config_t *config = &input->session->config;
+    if (!config->view_only && config->hardware_mouse) {
+        session_evmouse_deinit(&input->evmouse);
+    }
 #endif
 }
 
 void session_input_interrupt(stream_input_t *input) {
 #if FEATURE_INPUT_EVMOUSE
-    session_evmouse_interrupt(&input->evmouse);
+    const session_config_t *config = &input->session->config;
+    if (!config->view_only && config->hardware_mouse) {
+        session_evmouse_interrupt(&input->evmouse);
+    }
 #endif
 }
 
