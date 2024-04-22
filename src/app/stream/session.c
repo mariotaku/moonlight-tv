@@ -283,7 +283,14 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     if (config->stream.supportedVideoFormats == 0) {
         config->stream.supportedVideoFormats = VIDEO_FORMAT_H264;
     }
-    config->stream.colorSpace = COLORSPACE_REC_709/* TODO: get from video capabilities */;
+    if (video_cap.colorSpace & SS4S_VIDEO_CAP_COLORSPACE_BT2020 &&
+        (config->stream.supportedVideoFormats & ~VIDEO_FORMAT_MASK_H264)) {
+        config->stream.colorSpace = COLORSPACE_REC_2020;
+    } else if (video_cap.colorSpace & SS4S_VIDEO_CAP_COLORSPACE_BT709) {
+        config->stream.colorSpace = COLORSPACE_REC_709;
+    } else {
+        config->stream.colorSpace = COLORSPACE_REC_601;
+    }
     config->stream.colorRange = video_cap.fullColorRange ? COLOR_RANGE_FULL : COLOR_RANGE_LIMITED;
 #if FEATURE_SURROUND_SOUND
     if (audio_cap.maxChannels < CHANNEL_COUNT_FROM_AUDIO_CONFIGURATION(config->stream.audioConfiguration)) {
