@@ -18,6 +18,9 @@
 #include "session_worker.h"
 #include "stream/input/session_virt_mouse.h"
 
+// Expected luminance values in SEI are in units of 0.0001 cd/m2
+#define LUMINANCE_SCALE 10000
+
 int streaming_errno = GS_OK;
 char streaming_errmsg[1024];
 
@@ -192,7 +195,7 @@ void streaming_set_hdr(session_t *session, bool hdr) {
                 },
                 .whitePointX = hdr_metadata.whitePoint.x,
                 .whitePointY = hdr_metadata.whitePoint.y,
-                .maxDisplayMasteringLuminance = hdr_metadata.maxDisplayLuminance,
+                .maxDisplayMasteringLuminance = hdr_metadata.maxDisplayLuminance * LUMINANCE_SCALE,
                 .minDisplayMasteringLuminance = hdr_metadata.minDisplayLuminance,
                 .maxContentLightLevel = hdr_metadata.maxContentLightLevel,
                 .maxPicAverageLightLevel = hdr_metadata.maxFrameAverageLightLevel,
@@ -200,11 +203,11 @@ void streaming_set_hdr(session_t *session, bool hdr) {
         SS4S_PlayerVideoSetHDRInfo(session->player, &info);
     } else {
         SS4S_VideoHDRInfo info = {
-                .displayPrimariesX = {13250, 7500, 34000},
-                .displayPrimariesY = {34500, 3000, 16000},
+                .displayPrimariesX = {34000, 13250, 7500},
+                .displayPrimariesY = {16000, 34500, 3000},
                 .whitePointX = 15635,
                 .whitePointY = 16450,
-                .maxDisplayMasteringLuminance = 1000,
+                .maxDisplayMasteringLuminance = 1000 * LUMINANCE_SCALE,
                 .minDisplayMasteringLuminance = 50,
                 .maxContentLightLevel = 1000,
                 .maxPicAverageLightLevel = 400,
