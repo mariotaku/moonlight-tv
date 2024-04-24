@@ -29,6 +29,8 @@ static bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps)
 static void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA *server,
                                 const CONFIGURATION *app_config);
 
+static void populate_hdr_info_vui(SS4S_VideoHDRInfo *info, const STREAM_CONFIGURATION *config);
+
 session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_DATA *server, const APP_LIST *gs_app) {
     session_t *session = malloc(sizeof(session_t));
     SDL_memset(session, 0, sizeof(session_t));
@@ -200,6 +202,7 @@ void streaming_set_hdr(session_t *session, bool hdr) {
                 .maxContentLightLevel = hdr_metadata.maxContentLightLevel,
                 .maxPicAverageLightLevel = hdr_metadata.maxFrameAverageLightLevel,
         };
+        populate_hdr_info_vui(&info, &session->config.stream);
         SS4S_PlayerVideoSetHDRInfo(session->player, &info);
     } else {
         SS4S_VideoHDRInfo info = {
@@ -212,6 +215,7 @@ void streaming_set_hdr(session_t *session, bool hdr) {
                 .maxContentLightLevel = 1000,
                 .maxPicAverageLightLevel = 400,
         };
+        populate_hdr_info_vui(&info, &session->config.stream);
         SS4S_PlayerVideoSetHDRInfo(session->player, &info);
     }
 }
@@ -311,5 +315,34 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     }
 #endif
     config->stream.encryptionFlags = ENCFLG_AUDIO;
+}
+
+/**
+ * Populate HDR info from stream configuration.
+ * Corresponds to @p avcodec_colorspace_from_sunshine_colorspace in video_colorspace.cpp in Sunshine.
+ *
+ * @param info Info for SS4S_PlayerVideoSetHDRInfo
+ * @param config Moonlight stream configuration
+ */
+static void populate_hdr_info_vui(SS4S_VideoHDRInfo *info, const STREAM_CONFIGURATION *config) {
+    switch (config->colorSpace) {
+        case COLORSPACE_REC_601:
+            info->colorPrimaries = 6 /* SMPTE 170M */;
+            info->transferCharacteristics = 6 /* SMPTE 170M */;
+            info->matrixCoefficients = 6 /* SMPTE 170M */;
+            break;
+        case COLORSPACE_REC_709:
+            info->colorPrimaries = 1 /* BT.709 */;
+            info->transferCharacteristics = 1 /* BT.709 */;
+            info->matrixCoefficients = 1 /* BT.709 */;
+            break;
+        case COLORSPACE_REC_2020: {
+            info->colorPrimaries = 9 /* BT.2020 */;
+            info->transferCharacteristics = 16 /* SMPTE ST 2084 */;
+            info->matrixCoefficients = 9 /* BT.2020 NCL */;
+            break;
+        }
+    }
+    info->videoFullRange = config->colorRange == COLOR_RANGE_FULL;
 }
 
