@@ -205,12 +205,13 @@ void streaming_set_hdr(session_t *session, bool hdr) {
         populate_hdr_info_vui(&info, &session->config.stream);
         SS4S_PlayerVideoSetHDRInfo(session->player, &info);
     } else {
+        // Magic numbers from Stadia
         SS4S_VideoHDRInfo info = {
                 .displayPrimariesX = {34000, 13250, 7500},
                 .displayPrimariesY = {16000, 34500, 3000},
                 .whitePointX = 15635,
                 .whitePointY = 16450,
-                .maxDisplayMasteringLuminance = 1000 * LUMINANCE_SCALE,
+                .maxDisplayMasteringLuminance = 1000,
                 .minDisplayMasteringLuminance = 50,
                 .maxContentLightLevel = 1000,
                 .maxPicAverageLightLevel = 400,

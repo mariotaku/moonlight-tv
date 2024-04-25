@@ -104,12 +104,13 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     }
 
     switch (SS4S_PlayerVideoOpen(player, &info)) {
-        case SS4S_VIDEO_OPEN_ERROR:
-            return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
+        case SS4S_VIDEO_OPEN_OK: {
+            return 0;
+        }
         case SS4S_VIDEO_OPEN_UNSUPPORTED_CODEC:
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         default:
-            return 0;
+            return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
     }
 }
 
@@ -169,8 +170,11 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     } else if (result == SS4S_VIDEO_FEED_ERROR) {
         session_interrupt(session, false, STREAMING_INTERRUPT_DECODER);
         return DR_OK;
-    } else {
+    } else if (result == SS4S_VIDEO_FEED_REQUEST_KEYFRAME) {
         return DR_NEED_IDR;
+    } else {
+        commons_log_debug("Session", "Ignoring frame %d, feed result %d", decodeUnit->frameNumber, result);
+        return DR_OK;
     }
 }
 
