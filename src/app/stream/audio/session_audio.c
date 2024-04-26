@@ -29,7 +29,14 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
     player = session->player;
     SS4S_AudioCodec codec = SS4S_AUDIO_PCM_S16LE;
     size_t codecDataLen = 0;
-    if (session->audio_cap.codecs & SS4S_AUDIO_OPUS) {
+    SS4S_AudioInfo info = {
+            .numOfChannels = opusConfig->channelCount,
+            .appName = "Moonlight",
+            .streamName = "Streaming",
+            .sampleRate = opusConfig->sampleRate,
+            .samplesPerFrame = SAMPLES_PER_FRAME,
+    };
+    if (session->audio_cap.codecs & SS4S_AUDIO_OPUS && SS4S_GetAudioPreferredCodecs(&info) & SS4S_AUDIO_OPUS) {
         codec = SS4S_AUDIO_OPUS;
         decoder = NULL;
         buffer = calloc(1024, sizeof(unsigned char));
@@ -47,16 +54,9 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
         buffer = calloc(unit_size, frame_size);
     }
     audio_stream_info.format = SS4S_AudioCodecName(codec);
-    SS4S_AudioInfo info = {
-            .numOfChannels = opusConfig->channelCount,
-            .codec = codec,
-            .appName = "Moonlight",
-            .streamName = "Streaming",
-            .sampleRate = opusConfig->sampleRate,
-            .samplesPerFrame = SAMPLES_PER_FRAME,
-            .codecData = buffer,
-            .codecDataLen = codecDataLen,
-    };
+    info.codec = codec;
+    info.codecData = buffer;
+    info.codecDataLen = codecDataLen;
     return SS4S_PlayerAudioOpen(player, &info);
 }
 
