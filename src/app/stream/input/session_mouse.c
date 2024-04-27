@@ -59,19 +59,20 @@ void stream_input_handle_mwheel(stream_input_t *input, const SDL_MouseWheelEvent
     }
 }
 
-void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event) {
+void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event, bool hw_mouse) {
     if (input->view_only) {
-        return;
-    }
-    if (input->no_sdl_mouse) {
-        LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
         return;
     }
     if (event->which == SDL_TOUCH_MOUSEID && LiGetHostFeatureFlags() & LI_FF_PEN_TOUCH_EVENTS) {
         // Don't send mouse events from touch devices if the host supports pen/touch events
         return;
     }
-    if (app_get_mouse_relative() && event->which != SDL_TOUCH_MOUSEID) {
+    if (input->no_sdl_mouse) {
+        if (!hw_mouse) {
+            return;
+        }
+        LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
+    } else if (app_get_mouse_relative() && event->which != SDL_TOUCH_MOUSEID) {
         LiSendMouseMoveEvent((short) event->xrel, (short) event->yrel);
     } else {
         LiSendMousePositionEvent((short) event->x, (short) event->y, (short) input->session->display_width,
