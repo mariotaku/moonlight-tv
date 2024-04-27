@@ -37,7 +37,7 @@ bool session_handle_input_event(session_t *session, const SDL_Event *event) {
             break;
         }
         case SDL_MOUSEMOTION: {
-            stream_input_handle_mmotion(input, &event->motion);
+            stream_input_handle_mmotion(input, &event->motion, false);
             break;
         }
         case SDL_MOUSEWHEEL: {

@@ -83,7 +83,7 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
             break;
         }
         case SDL_MOUSEMOTION: {
-            stream_input_handle_mmotion(&session->input, &event->motion);
+            stream_input_handle_mmotion(&session->input, &event->motion, true);
             break;
         }
         case SDL_MOUSEWHEEL: {

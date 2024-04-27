@@ -67,7 +67,7 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
 
 void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDeviceEvent *event);
 
-void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event);
+void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event, bool hw_mouse);
 
 void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event);
 
