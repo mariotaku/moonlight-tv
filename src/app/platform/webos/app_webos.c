@@ -1,4 +1,5 @@
 #include "app.h"
+#include "app_webos.h"
 #include "app_launch.h"
 
 #include <pbnjson.h>
@@ -79,4 +80,9 @@ app_launch_params_t *app_handle_launch(app_t *app, int argc, char *argv[]) {
     }
     jdomparser_release(&parser);
     return params;
+}
+
+void app_webos_open_ribbon() {
+    static const char *payload = "{\"id\":\"com.webos.app.home\",\"params\":{\"launchType\":\"homeKey\"}}";
+    HLunaServiceCallSync("luna://com.webos.applicationManager/launch", payload, true, NULL);
 }

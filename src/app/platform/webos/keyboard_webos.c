@@ -13,16 +13,23 @@
 #include "util/bus.h"
 #include "util/user_event.h"
 #include "logging.h"
+#include "app_webos.h"
 
 #define TV_REMOTE_TOGGLE_SOFT_INPUT 0
 
-bool webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent *event, short *keyCode) {
+bool stream_input_webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent *event, short *keyCode) {
     session_t *session = input->session;
     app_t *app = session->app;
     switch ((unsigned int) event->keysym.scancode) {
         case SDL_SCANCODE_WEBOS_EXIT: {
             if (event->state == SDL_PRESSED) {
                 bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
+            }
+            return true;
+        }
+        case SDL_SCANCODE_WEBOS_HOME: {
+            if (event->state == SDL_RELEASED) {
+                app_webos_open_ribbon();
             }
             return true;
         }
