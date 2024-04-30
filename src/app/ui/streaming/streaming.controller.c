@@ -221,6 +221,13 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 
     controller->notice = notice;
     controller->notice_label = notice_label;
+
+#if !defined(TARGET_WEBOS)
+    const app_settings_t *settings = &controller->global->settings;
+    if (settings->syskey_capture) {
+        SDL_SetWindowKeyboardGrab(controller->global->ui.window, SDL_TRUE);
+    }
+#endif
 }
 
 static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
@@ -234,6 +241,10 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     }
     app_input_set_group(&controller->global->ui.input, NULL);
     lv_group_del(controller->group);
+
+#if !defined(TARGET_WEBOS)
+    SDL_SetWindowKeyboardGrab(controller->global->ui.window, SDL_FALSE);
+#endif
 }
 
 static void on_obj_deleted(lv_fragment_t *self, lv_obj_t *view) {
