@@ -225,7 +225,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 #if !defined(TARGET_WEBOS)
     const app_settings_t *settings = &controller->global->settings;
     if (settings->syskey_capture) {
-        SDL_SetWindowKeyboardGrab(controller->global->ui.window, SDL_TRUE);
+        SDL_SetWindowGrab(controller->global->ui.window, SDL_TRUE);
     }
 #endif
 }
@@ -243,7 +243,7 @@ static void on_delete_obj(lv_fragment_t *self, lv_obj_t *view) {
     lv_group_del(controller->group);
 
 #if !defined(TARGET_WEBOS)
-    SDL_SetWindowKeyboardGrab(controller->global->ui.window, SDL_FALSE);
+    SDL_SetWindowGrab(controller->global->ui.window, SDL_FALSE);
 #endif
 }
 

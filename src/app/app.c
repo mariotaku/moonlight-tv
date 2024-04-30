@@ -72,6 +72,10 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
         SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_HOME, "true");
         SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_RIBBON, "false");
     }
+#else
+    if (app.settings.syskey_capture) {
+        SDL_SetHint(SDL_HINT_GRAB_KEYBOARD, "1");
+    }
 #endif
     // DO not init video subsystem before NDL/LGNC initialization
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
