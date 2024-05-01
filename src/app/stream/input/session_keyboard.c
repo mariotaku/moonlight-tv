@@ -66,7 +66,7 @@ static int keydown_count = 0;
 
 #if TARGET_WEBOS
 
-bool webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent *event, short *keyCode);
+bool stream_input_webos_intercept_remote_keys(stream_input_t *input, const SDL_KeyboardEvent *event, short *keyCode);
 
 #endif
 
@@ -128,7 +128,7 @@ void performPendingSpecialKeyCombo(stream_input_t *input) {
 void stream_input_handle_key(stream_input_t *input, const SDL_KeyboardEvent *event) {
     short keyCode = 0;
 #if TARGET_WEBOS
-    if (webos_intercept_remote_keys(input, event, &keyCode)) {
+    if (stream_input_webos_intercept_remote_keys(input, event, &keyCode)) {
         return;
     }
 #endif

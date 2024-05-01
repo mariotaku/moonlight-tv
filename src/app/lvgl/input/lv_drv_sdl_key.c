@@ -9,17 +9,19 @@
 #include "lv_drv_sdl_key.h"
 #include "stream/session_events.h"
 
-static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state);
-
-static bool read_keyboard(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
-
 #if TARGET_WEBOS
+
+#include "platform/webos/app_webos.h"
 
 static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
 static void webos_key_input_mode(app_ui_input_t *input, const SDL_KeyboardEvent *event);
 
 #endif
+
+static bool read_event(const SDL_Event *event, lv_drv_sdl_key_t *state);
+
+static bool read_keyboard(app_ui_input_t *input, const SDL_KeyboardEvent *event, lv_drv_sdl_key_t *state);
 
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data);
 
@@ -218,8 +220,14 @@ static bool read_webos_key(app_ui_input_t *input, const SDL_KeyboardEvent *event
             if (app->session == NULL) {
                 app_request_exit();
             }
-        }
             return false;
+        }
+        case SDL_SCANCODE_WEBOS_HOME: {
+            if (app->session == NULL) {
+                app_webos_open_ribbon();
+            }
+            return false;
+        }
         case SDL_SCANCODE_WEBOS_RED:
         case SDL_SCANCODE_WEBOS_GREEN:
         case SDL_SCANCODE_WEBOS_YELLOW:

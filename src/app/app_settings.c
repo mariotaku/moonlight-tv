@@ -116,6 +116,7 @@ bool settings_save(app_settings_t *config) {
 #endif
     ini_write_bool(fp, "swap_abxy", config->swap_abxy);
     ini_write_int(fp, "stick_deadzone", config->stick_deadzone);
+    ini_write_bool(fp, "syskey_capture", config->syskey_capture);
 
     ini_write_section(fp, "video");
     ini_write_string(fp, "decoder", config->decoder);
@@ -265,6 +266,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         }
     } else if (INI_NAME_MATCH("swap_abxy")) {
         config->swap_abxy = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("syskey_capture")) {
+        config->syskey_capture = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("video", "decoder")) {
         set_string(&config->decoder, value);
     } else if (INI_FULL_MATCH("audio", "backend")) {
