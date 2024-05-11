@@ -157,7 +157,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
         lv_obj_add_event_cb(checkbox, on_fullscreen_updated, LV_EVENT_VALUE_CHANGED, pane);
     } else {
         lv_obj_add_state(checkbox, LV_STATE_DISABLED);
-        pref_desc_label(view, "Can't use windowed UI for this decoder", false);
+        pref_desc_label(view, locstr("Can't use windowed UI for this decoder"), false);
     }
 #endif
 

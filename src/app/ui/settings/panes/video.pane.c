@@ -90,7 +90,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *conflict_hint = pref_desc_label(view, NULL, false);
     controller->conflict_hint = conflict_hint;
 
-    pref_header(view, "Video Settings");
+    pref_header(view, locstr("Video Settings"));
 
     lv_obj_t *hevc_checkbox = pref_checkbox(view, locstr("Use H265 when possible"), &app_configuration->hevc, false);
     lv_obj_t *hevc_hint = pref_desc_label(view, NULL, false);

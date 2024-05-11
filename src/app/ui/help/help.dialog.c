@@ -33,12 +33,12 @@ lv_obj_t *help_dialog_create() {
     lv_obj_set_style_pad_all(list, 0, 0);
 
 
-    lv_list_add_text(list, "Input");
+    lv_list_add_text(list, locstr("Input"));
     add_url_button(list, locstr("Gamepad hotkeys"),
                    "https://github.com/mariotaku/moonlight-tv/wiki/Input-Shortcuts#gamepad");
     add_url_button(list, locstr("Remote controller keys"),
                    "https://github.com/mariotaku/moonlight-tv/wiki/Input-Shortcuts#webos-remote-controller");
-    lv_list_add_text(list, "More help");
+    lv_list_add_text(list, locstr("More help"));
     add_url_button(list, locstr("Open moonlight-tv Wiki"),
                    "https://github.com/mariotaku/moonlight-tv/wiki");
     add_url_button(list, locstr("Open moonlight-stream Wiki"),
