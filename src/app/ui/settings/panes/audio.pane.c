@@ -107,7 +107,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_t *conflict_hint = pref_desc_label(view, NULL, false);
     controller->conflict_hint = conflict_hint;
 
-    pref_header(view, "Audio Settings");
+    pref_header(view, locstr("Audio Settings"));
 
     pref_title_label(view, locstr("Sound Channels (Experimental)"));
 
