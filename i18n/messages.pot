@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-01 00:23+0900\n"
+"POT-Creation-Date: 2024-05-13 10:49+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,17 +17,17 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/app/app.c:83
+#: src/app/app.c:87
 msgid "[Localized Language]"
 msgstr ""
 
-#: src/app/app.c:267 src/app/ui/launcher/add.dialog.c:42
+#: src/app/app.c:271 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:736
 #: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr ""
 
-#: src/app/app.c:267 src/app/ui/launcher/add.dialog.c:42
+#: src/app/app.c:271 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:662
 #: src/app/ui/launcher/apps.controller.c:769
 #: src/app/ui/launcher/launcher.controller.c:467
@@ -37,7 +37,7 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: src/app/app.c:268
+#: src/app/app.c:272
 msgid "Quit Moonlight?"
 msgstr ""
 
@@ -65,12 +65,20 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
+#: src/app/ui/help/help.dialog.c:36
+msgid "Input"
+msgstr ""
+
 #: src/app/ui/help/help.dialog.c:37
 msgid "Gamepad hotkeys"
 msgstr ""
 
 #: src/app/ui/help/help.dialog.c:39
 msgid "Remote controller keys"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:41
+msgid "More help"
 msgstr ""
 
 #: src/app/ui/help/help.dialog.c:42
@@ -300,6 +308,11 @@ msgstr ""
 msgid "Audio backend - using %s"
 msgstr ""
 
+#: src/app/ui/settings/panes/audio.pane.c:110
+#: src/app/ui/settings/settings.controller.c:24
+msgid "Audio Settings"
+msgstr ""
+
 #: src/app/ui/settings/panes/audio.pane.c:112
 msgid "Sound Channels (Experimental)"
 msgstr ""
@@ -323,6 +336,10 @@ msgstr ""
 
 #: src/app/ui/settings/panes/basic.pane.c:155
 msgid "Fullscreen UI"
+msgstr ""
+
+#: src/app/ui/settings/panes/basic.pane.c:160
+msgid "Can't use windowed UI for this decoder"
 msgstr ""
 
 #: src/app/ui/settings/panes/basic.pane.c:166
@@ -442,6 +459,11 @@ msgstr ""
 msgid "Video decoder - using %s"
 msgstr ""
 
+#: src/app/ui/settings/panes/video.pane.c:93
+#: src/app/ui/settings/settings.controller.c:25
+msgid "Video Settings"
+msgstr ""
+
 #: src/app/ui/settings/panes/video.pane.c:95
 msgid "Use H265 when possible"
 msgstr ""
@@ -503,14 +525,6 @@ msgstr ""
 
 #: src/app/ui/settings/settings.controller.c:23
 msgid "Input Settings"
-msgstr ""
-
-#: src/app/ui/settings/settings.controller.c:24
-msgid "Audio Settings"
-msgstr ""
-
-#: src/app/ui/settings/settings.controller.c:25
-msgid "Video Settings"
 msgstr ""
 
 #: src/app/ui/settings/settings.controller.c:26
