@@ -30,6 +30,7 @@ typedef struct {
         lv_obj_t *host_latency;
         lv_obj_t *vdec_latency;
     } stats_items;
+    lv_obj_t *stats_pin;
     lv_obj_t *notice, *notice_label;
     lv_style_t overlay_button_style;
     lv_style_t overlay_button_style_focused;
@@ -55,6 +56,8 @@ void streaming_styles_reset(streaming_controller_t *controller);
 void streaming_overlay_resized(streaming_controller_t *controller);
 
 bool streaming_overlay_shown();
+
+bool streaming_stats_shown();
 
 bool streaming_refresh_stats();
 

@@ -185,7 +185,7 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
     dst->decodedFps = (float) dst->submittedFrames / ((float) delta / 1000);
     LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
-    if (!streaming_overlay_shown()) {
+    if (!streaming_stats_shown()) {
         return;
     }
     int latencyUs = 0;
