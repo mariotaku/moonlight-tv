@@ -38,7 +38,7 @@ static void overlay_key_cb(lv_event_t *e);
 
 static void update_buttons_layout(streaming_controller_t *controller);
 
-bool stats_showing(streaming_controller_t *controller);
+static void pin_toggle(lv_event_t *e);
 
 const lv_fragment_class_t streaming_controller_class = {
         .constructor_cb = constructor,
@@ -51,21 +51,21 @@ const lv_fragment_class_t streaming_controller_class = {
         .instance_size = sizeof(streaming_controller_t),
 };
 
-static bool overlay_showing;
+static bool overlay_showing = false, overlay_pinned = false;
 static streaming_controller_t *current_controller = NULL;
 
 bool streaming_overlay_shown() {
     return overlay_showing;
 }
 
-bool stats_showing(streaming_controller_t *controller) {
-    return streaming_overlay_shown() || controller->stats->parent != controller->overlay;
+bool streaming_stats_shown() {
+    return overlay_showing || overlay_pinned;
 }
 
 bool streaming_refresh_stats() {
     streaming_controller_t *controller = current_controller;
     if (!controller) { return false; }
-    if (!stats_showing(controller)) {
+    if (!streaming_stats_shown()) {
         return false;
     }
     app_t *app = controller->global;
@@ -222,6 +222,8 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     controller->notice = notice;
     controller->notice_label = notice_label;
 
+    lv_obj_add_event_cb(controller->stats_pin, pin_toggle, LV_EVENT_VALUE_CHANGED, controller->stats);
+
 #if !defined(TARGET_WEBOS)
     const app_settings_t *settings = &controller->global->settings;
     if (settings->syskey_capture) {
@@ -329,4 +331,22 @@ static void update_buttons_layout(streaming_controller_t *controller) {
     lv_obj_get_coords(controller->kbd_btn, &coords);
     lv_area_center(&coords, &controller->button_points[4]);
     app_input_set_button_points(&controller->global->ui.input, controller->button_points);
+}
+
+static void pin_toggle(lv_event_t *e) {
+    lv_obj_t *toggle_view = lv_event_get_user_data(e);
+    lv_fragment_t *fragment = lv_obj_get_user_data(toggle_view);
+    bool checked = lv_obj_has_state(lv_event_get_current_target(e), LV_STATE_CHECKED);
+    bool pinned = toggle_view->parent != fragment->obj;
+    overlay_pinned = checked;
+    if (checked == pinned) {
+        return;
+    }
+    if (checked) {
+        lv_obj_set_parent(toggle_view, lv_layer_top());
+        lv_obj_add_state(toggle_view, LV_STATE_USER_1);
+    } else {
+        lv_obj_set_parent(toggle_view, fragment->obj);
+        lv_obj_clear_state(toggle_view, LV_STATE_USER_1);
+    }
 }

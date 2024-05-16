@@ -1,17 +1,15 @@
 #include "streaming.controller.h"
 
-#include "lvgl/ext/lv_child_group.h"
-
 #include "util/i18n.h"
 #include "util/font.h"
 #include "hints.h"
+
+#include "lvgl/ext/lv_child_group.h"
 #include "lvgl/theme/lv_theme_moonlight.h"
 
 static lv_obj_t *stat_label(lv_obj_t *parent, const char *title);
 
-static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title);
-
-static void pin_toggle(lv_event_t *e);
+static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title, streaming_controller_t *controller);
 
 lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     streaming_controller_t *controller = (streaming_controller_t *) self;
@@ -119,7 +117,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_align(stats, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
     lv_obj_set_user_data(stats, controller);
 
-    overlay_title(stats, locstr("Performance"));
+    overlay_title(stats, locstr("Performance"), controller);
 
     controller->stats_items.resolution = stat_label(stats, "Resolution");
     controller->stats_items.decoder = stat_label(stats, "Decoder");
@@ -192,7 +190,7 @@ static lv_obj_t *stat_label(lv_obj_t *parent, const char *title) {
     return value;
 }
 
-static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title) {
+static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title, streaming_controller_t *controller) {
     lv_obj_t *stats_title = lv_label_create(parent);
     lv_label_set_text_static(stats_title, title);
     lv_obj_set_width(stats_title, LV_PCT(100));
@@ -226,23 +224,6 @@ static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title) {
     lv_img_set_src(stat_pin_content, MAT_SYMBOL_PUSH_PIN);
 
     lv_obj_align(stats_pin, LV_ALIGN_RIGHT_MID, 0, 0);
-    lv_obj_add_event_cb(stats_pin, pin_toggle, LV_EVENT_VALUE_CHANGED, parent);
+    controller->stats_pin = stats_pin;
     return stats_title;
-}
-
-static void pin_toggle(lv_event_t *e) {
-    lv_obj_t *toggle_view = lv_event_get_user_data(e);
-    lv_fragment_t *fragment = lv_obj_get_user_data(toggle_view);
-    bool checked = lv_obj_has_state(lv_event_get_current_target(e), LV_STATE_CHECKED);
-    bool pinned = toggle_view->parent != fragment->obj;
-    if (checked == pinned) {
-        return;
-    }
-    if (checked) {
-        lv_obj_set_parent(toggle_view, lv_layer_top());
-        lv_obj_add_state(toggle_view, LV_STATE_USER_1);
-    } else {
-        lv_obj_set_parent(toggle_view, fragment->obj);
-        lv_obj_clear_state(toggle_view, LV_STATE_USER_1);
-    }
 }
