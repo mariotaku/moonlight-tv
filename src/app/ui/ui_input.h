@@ -34,6 +34,7 @@ struct app_ui_input_t {
     app_ui_input_lv_pair_t wheel;
     app_ui_input_lv_pair_t button;
     app_ui_input_mode_t mode;
+    bool text_input_active;
 };
 
 void app_ui_input_init(app_ui_input_t *input, app_ui_t *ui);
@@ -58,3 +59,7 @@ void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h);
 
 void app_stop_text_input(app_ui_input_t *input);
 
+/**
+ * @return true if state was updated
+ */
+bool app_text_input_state_update(app_ui_input_t *input);

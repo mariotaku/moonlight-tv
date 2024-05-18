@@ -67,3 +67,21 @@ void session_input_started(stream_input_t *input) {
 void session_input_stopped(stream_input_t *input) {
     input->started = false;
 }
+
+void session_input_screen_keyboard_opened(stream_input_t *input) {
+#if FEATURE_INPUT_EVMOUSE
+    const session_config_t *config = &input->session->config;
+    if (config->hardware_mouse) {
+        session_evmouse_disable(&input->evmouse);
+    }
+#endif
+}
+
+void session_input_screen_keyboard_closed(stream_input_t *input) {
+#if FEATURE_INPUT_EVMOUSE
+    const session_config_t *config = &input->session->config;
+    if (config->hardware_mouse) {
+        session_evmouse_enable(&input->evmouse);
+    }
+#endif
+}

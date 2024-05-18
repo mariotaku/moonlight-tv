@@ -17,6 +17,7 @@ void session_evmouse_init(session_evmouse_t *mouse, session_t *session) {
     mouse->session = session;
     mouse->lock = SDL_CreateMutex();
     mouse->cond = SDL_CreateCond();
+    mouse->disabled = SDL_FALSE;
     mouse->thread = SDL_CreateThread((SDL_ThreadFunction) mouse_worker, "sessinput", mouse);
 }
 
@@ -46,6 +47,24 @@ void session_evmouse_interrupt(session_evmouse_t *mouse) {
     SDL_UnlockMutex(mouse->lock);
 }
 
+void session_evmouse_disable(session_evmouse_t *mouse) {
+    SDL_LockMutex(mouse->lock);
+    if (!mouse->disabled) {
+        commons_log_info("Session", "EvMouse disable input");
+        mouse->disabled = SDL_TRUE;
+    }
+    SDL_UnlockMutex(mouse->lock);
+}
+
+void session_evmouse_enable(session_evmouse_t *mouse) {
+    SDL_LockMutex(mouse->lock);
+    if (mouse->disabled) {
+        commons_log_info("Session", "EvMouse enable input");
+        mouse->disabled = SDL_FALSE;
+    }
+    SDL_UnlockMutex(mouse->lock);
+}
+
 static int mouse_worker(session_evmouse_t *mouse) {
     evmouse_t *dev = evmouse_open_default();
     set_evmouse(mouse, dev);
@@ -70,8 +89,10 @@ static void set_evmouse(session_evmouse_t *mouse, evmouse_t *dev) {
 
 static void mouse_listener(const evmouse_event_t *event, void *userdata) {
     session_evmouse_t *mouse = userdata;
+    SDL_LockMutex(mouse->lock);
     session_t *session = mouse->session;
-    if (!session_accepting_input(session)) {
+    if (!session_accepting_input(session) || mouse->disabled) {
+        SDL_UnlockMutex(mouse->lock);
         return;
     }
     switch (event->type) {
@@ -91,4 +112,5 @@ static void mouse_listener(const evmouse_event_t *event, void *userdata) {
             break;
         }
     }
+    SDL_UnlockMutex(mouse->lock);
 }

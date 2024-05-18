@@ -87,20 +87,36 @@ void app_input_set_button_points(app_ui_input_t *input, const lv_point_t *points
 void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h) {
     if (w > 0 && h > 0) {
         SDL_Rect rect = {x, y, w, h};
+        commons_log_info("Input", "Setting text input rect to %d, %d, %d, %d", x, y, w, h);
         SDL_SetTextInputRect(&rect);
     } else {
+        commons_log_info("Input", "Clearing text input rect");
         SDL_SetTextInputRect(NULL);
     }
     lv_sdl_key_input_release_key(input->key.indev);
     if (SDL_IsTextInputActive()) {
+        commons_log_info("Input", "Text input already active");
         return;
     }
+    commons_log_info("Input", "Starting text input");
     SDL_StartTextInput();
+    input->text_input_active = true;
 }
 
 void app_stop_text_input(app_ui_input_t *input) {
-    (void) input;
+    if (SDL_IsTextInputActive()) {
+        commons_log_info("Input", "Stopping text input");
+    }
     SDL_StopTextInput();
+    input->text_input_active = false;
+}
+
+bool app_text_input_state_update(app_ui_input_t *input) {
+    if (input->text_input_active && !SDL_IsTextInputActive()) {
+        input->text_input_active = false;
+        return true;
+    }
+    return false;
 }
 
 static void app_input_populate_group(app_ui_input_t *input) {

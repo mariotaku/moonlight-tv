@@ -269,7 +269,8 @@ static void open_keyboard(lv_event_t *event) {
     streaming_controller_t *controller = lv_event_get_user_data(event);
     hide_overlay(event);
     app_t *app = controller->global;
-    app_start_text_input(&app->ui.input, 0, (app->ui.width - 10) / 2, app->ui.width, 10);
+    app_start_text_input(&app->ui.input, 0, app->ui.height / 2 - 40, app->ui.width, 40);
+    session_screen_keyboard_opened(app->session);
 }
 
 static void toggle_vmouse(lv_event_t *event) {
@@ -290,6 +291,8 @@ bool show_overlay(streaming_controller_t *controller) {
     streaming_enter_overlay(controller->global->session, coords.x1, coords.y1, lv_area_get_width(&coords),
                             lv_area_get_height(&coords));
     streaming_refresh_stats();
+
+    app_stop_text_input(&controller->global->ui.input);
 
     update_buttons_layout(controller);
     return true;
