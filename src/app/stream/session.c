@@ -156,6 +156,14 @@ void session_toggle_vmouse(session_t *session) {
     session_input_set_vmouse_active(&session->input.vmouse, value);
 }
 
+void session_screen_keyboard_opened(session_t *session) {
+    session_input_screen_keyboard_opened(&session->input);
+}
+
+void session_screen_keyboard_closed(session_t *session) {
+    session_input_screen_keyboard_closed(&session->input);
+}
+
 void streaming_display_size(session_t *session, short width, short height) {
     session->display_width = width;
     session->display_height = height;

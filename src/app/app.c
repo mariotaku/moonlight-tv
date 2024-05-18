@@ -238,6 +238,12 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
         case SDL_CONTROLLERTOUCHPADUP:
         case SDL_CONTROLLERSENSORUPDATE:
         case SDL_TEXTINPUT: {
+            if (event->type == SDL_MOUSEMOTION) {
+                bool updated = app_text_input_state_update(&app->ui.input);
+                if (updated && !app->ui.input.text_input_active && app->session != NULL) {
+                    session_screen_keyboard_closed(app->session);
+                }
+            }
             if (!app_ui_is_opened(&app->ui) && app->session != NULL) {
                 session_handle_input_event(app->session, event);
                 return 0;
