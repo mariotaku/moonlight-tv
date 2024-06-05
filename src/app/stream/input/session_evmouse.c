@@ -48,11 +48,11 @@ void session_evmouse_interrupt(session_evmouse_t *mouse) {
 
 static int mouse_worker(session_evmouse_t *mouse) {
     evmouse_t *dev = evmouse_open_default();
+    set_evmouse(mouse, dev);
     if (dev == NULL) {
         commons_log_warn("Session", "No mouse device available");
         return ENODEV;
     }
-    set_evmouse(mouse, dev);
     commons_log_info("Session", "EvMouse opened");
     evmouse_listen(dev, mouse_listener, mouse);
     set_evmouse(mouse, NULL);
