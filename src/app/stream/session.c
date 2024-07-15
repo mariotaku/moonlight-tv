@@ -272,7 +272,7 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     }
     // Cap framerate to platform request
     if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate) {
-        config->stream.bitrate = (int) video_cap.maxBitrate;
+//        config->stream.bitrate = (int) video_cap.maxBitrate;
     }
     config->sops &= streaming_sops_supported(server->modes, config->stream.width, config->stream.height,
                                              config->stream.fps);
