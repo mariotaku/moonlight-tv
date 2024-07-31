@@ -60,6 +60,8 @@ static const pref_dropdown_int_entry_t supported_fps[] = {
         {"60 FPS",  60, true},
         {"90 FPS",  90},
         {"120 FPS", 120},
+        {"144 FPS", 144},
+        {"240 FPS", 240},
 };
 static const int supported_fps_len = sizeof(supported_fps) / sizeof(pref_dropdown_int_entry_t);
 #define BITRATE_STEP 1000
