@@ -47,6 +47,11 @@ void app_ui_input_deinit(app_ui_input_t *input) {
     lv_indev_delete(input->wheel.indev);
     lv_indev_delete(input->button.indev);
 
+    input->key.indev = NULL;
+    input->pointer.indev = NULL;
+    input->wheel.indev = NULL;
+    input->button.indev = NULL;
+
     _lv_ll_clear(&input->modal_groups);
 }
 
@@ -131,7 +136,13 @@ static void app_input_populate_group(app_ui_input_t *input) {
     if (!group) {
         group = lv_group_get_default();
     }
-    lv_indev_set_group(input->key.indev, group);
-    lv_indev_set_group(input->wheel.indev, group);
-    lv_indev_set_group(input->button.indev, group);
+    if (input->key.indev) {
+        lv_indev_set_group(input->key.indev, group);
+    }
+    if (input->wheel.indev) {
+        lv_indev_set_group(input->wheel.indev, group);
+    }
+    if (input->button.indev) {
+        lv_indev_set_group(input->button.indev, group);
+    }
 }
