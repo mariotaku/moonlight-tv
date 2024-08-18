@@ -278,7 +278,7 @@ void ui_cb_destroy_fragment(lv_event_t *e) {
 }
 
 SDL_Window *app_ui_create_window(app_ui_t *ui) {
-    Uint32 win_flags = SDL_WINDOW_RESIZABLE;
+    Uint32 win_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED,
             win_width = 1920, win_height = 1080;
     if (app_configuration->fullscreen) {
