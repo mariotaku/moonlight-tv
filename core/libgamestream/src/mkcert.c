@@ -37,9 +37,6 @@ static const int NUM_YEARS = 10;
 static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert *crt, mbedtls_ctr_drbg_context *rng) {
     int ret;
 
-    mbedtls_mpi serial;
-
-    mbedtls_mpi_init(&serial);
 
     char buf[512];
 
@@ -61,8 +58,15 @@ static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert 
     mbedtls_x509write_crt_set_subject_name(crt, "CN=NVIDIA GameStream Client");
     mbedtls_x509write_crt_set_issuer_name(crt, "CN=NVIDIA GameStream Client");
 
+#if MBEDTLS_VERSION_NUMBER >= 0x03040000
+    mbedtls_x509write_crt_set_serial_raw(crt, (unsigned char *) "1", 1);
+#else
+    mbedtls_mpi serial;
+    mbedtls_mpi_init(&serial);
     mbedtls_mpi_read_string(&serial, 10, "1");
     mbedtls_x509write_crt_set_serial(crt, &serial);
+    mbedtls_mpi_free(&serial);
+#endif
 
     mbedtls_x509write_crt_set_version(crt, MBEDTLS_X509_CRT_VERSION_2);
     mbedtls_x509write_crt_set_md_alg(crt, MBEDTLS_MD_SHA256);
@@ -87,7 +91,6 @@ static int mkcert_generate_impl(mbedtls_pk_context *key, mbedtls_x509write_cert 
     }
 
     finally:
-    mbedtls_mpi_free(&serial);
     return ret;
 }
 

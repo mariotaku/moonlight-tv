@@ -942,6 +942,17 @@ static bool construct_url(GS_CLIENT hnd, char *url, size_t ulen, bool secure, co
     return true;
 }
 
+#if __WIN32__
+static char *stpncpy(char *dest, const char *src, size_t n) {
+    size_t i;
+    for (i = 0; i < n && src[i] != '\0'; i++) {
+        dest[i] = src[i];
+    }
+    dest[i] = '\0';
+    return dest + i;
+}
+#endif
+
 static bool append_param(char *url, size_t ulen, const char *param, const char *value_fmt, ...) {
     char value[256];
     va_list ap;

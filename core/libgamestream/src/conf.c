@@ -24,6 +24,7 @@
 #if __WIN32
 
 #include <windows.h>
+#include <dirent.h>
 
 #define PATH_SEPARATOR '\\'
 #define MKDIR(path) mkdir(path)

@@ -304,9 +304,9 @@ bool app_decoder_or_embedded_present(app_t *app) {
 
 static void libs_init(app_t *app, int argc, char *argv[]) {
     SS4S_SetLoggingFunction(commons_ss4s_logf);
-    int errno;
-    if ((errno = SS4S_ModulesList(&app->ss4s.modules, &app->os_info)) != 0) {
-        commons_log_error("SS4S", "Can't load modules list: %s", strerror(errno));
+    int ret;
+    if ((ret = SS4S_ModulesList(&app->ss4s.modules, &app->os_info)) != 0) {
+        commons_log_error("SS4S", "Can't load modules list: %s", strerror(ret));
     }
     SS4S_ModulePreferences module_preferences = {
             .audio_module = app_configuration->audio_backend,

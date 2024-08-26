@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef __WIN32__
 enum {
     VK_LBUTTON = 0x01,/*Left mouse button*/
     VK_RBUTTON = 0x02,/*Right mouse button*/
@@ -46,42 +47,6 @@ enum {
     VK_INSERT = 0x2D,/*INS key*/
     VK_DELETE = 0x2E,/*DEL key*/
     VK_HELP = 0x2F,/*HELP key*/
-    VK_0 = 0x30,/*0 key*/
-    VK_1 = 0x31,/*1 key*/
-    VK_2 = 0x32,/*2 key*/
-    VK_3 = 0x33,/*3 key*/
-    VK_4 = 0x34,/*4 key*/
-    VK_5 = 0x35,/*5 key*/
-    VK_6 = 0x36,/*6 key*/
-    VK_7 = 0x37,/*7 key*/
-    VK_8 = 0x38,/*8 key*/
-    VK_9 = 0x39,/*9 key*/
-    VK_A = 0x41,/*A key*/
-    VK_B = 0x42,/*B key*/
-    VK_C = 0x43,/*C key*/
-    VK_D = 0x44,/*D key*/
-    VK_E = 0x45,/*E key*/
-    VK_F = 0x46,/*F key*/
-    VK_G = 0x47,/*G key*/
-    VK_H = 0x48,/*H key*/
-    VK_I = 0x49,/*I key*/
-    VK_J = 0x4A,/*J key*/
-    VK_K = 0x4B,/*K key*/
-    VK_L = 0x4C,/*L key*/
-    VK_M = 0x4D,/*M key*/
-    VK_N = 0x4E,/*N key*/
-    VK_O = 0x4F,/*O key*/
-    VK_P = 0x50,/*P key*/
-    VK_Q = 0x51,/*Q key*/
-    VK_R = 0x52,/*R key*/
-    VK_S = 0x53,/*S key*/
-    VK_T = 0x54,/*T key*/
-    VK_U = 0x55,/*U key*/
-    VK_V = 0x56,/*V key*/
-    VK_W = 0x57,/*W key*/
-    VK_X = 0x58,/*X key*/
-    VK_Y = 0x59,/*Y key*/
-    VK_Z = 0x5A,/*Z key*/
     VK_LWIN = 0x5B,/*Left Windows key (Natural keyboard)*/
     VK_RWIN = 0x5C,/*Right Windows key (Natural keyboard)*/
     VK_APPS = 0x5D,/*Applications key (Natural keyboard)*/
@@ -176,4 +141,13 @@ enum {
     VK_NONAME = 0xFC,/*Reserved*/
     VK_PA1 = 0xFD,/*PA1 key*/
     VK_OEM_CLEAR = 0xFE,/*Clear key*/
+};
+#else
+
+#include "winuser.h"
+
+#endif
+enum {
+    VK_0 = '0',
+    VK_A = 'A',
 };

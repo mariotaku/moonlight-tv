@@ -169,8 +169,9 @@ if (TARGET_WEBOS)
     pkg_check_modules(PBNJSON_C REQUIRED pbnjson_c)
     pkg_check_modules(PMLOG REQUIRED PmLogLib)
     pkg_check_modules(WEBOSI18N REQUIRED webosi18n)
+elseif (OS_WINDOWS)
+    set(BUILD_SHARED_CORE_LIBS OFF)
 else ()
-
     set(BUILD_SHARED_CORE_LIBS ON)
 endif ()
 
