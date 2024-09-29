@@ -3,6 +3,8 @@
 #include "backend/pcmanager/pclist.h"
 #include "backend/pcmanager/listeners.h"
 
+#include <assert.h>
+
 #include "errors.h"
 #include "util/bus.h"
 #include "app.h"
@@ -20,11 +22,17 @@ int worker_host_update(worker_context_t *context) {
 }
 
 int pcmanager_update_by_ip(worker_context_t *context, const char *ip, uint16_t port, bool force) {
-    SDL_assert_release(context != NULL);
-    SDL_assert_release(context->manager != NULL);
-    SDL_assert_release(ip != NULL);
+    return 0;
+}
+
+int pcmanager_update_by_addr(worker_context_t *context, sockaddr_t *addr, bool force) {
+    assert(context != NULL);
+    assert(context->manager != NULL);
+    assert(addr != NULL);
+    int ret = 0;
     pcmanager_t *manager = context->manager;
-    char *ip_dup = strdup(ip);
+    // FIXME: Implement this
+    char *ip_dup = strdup("");
     pclist_t *existing = pclist_find_by_ip(manager, ip_dup);
     if (existing) {
         SERVER_STATE_ENUM state = existing->state.code;
@@ -47,7 +55,7 @@ int pcmanager_update_by_ip(worker_context_t *context, const char *ip, uint16_t p
     }
     GS_CLIENT client = app_gs_client_new(context->app);
     PSERVER_DATA server = serverdata_new();
-    int ret = gs_get_status(client, server, ip_dup, port, app_configuration->unsupported);
+    ret = gs_get_status(client, server, ip_dup, sockaddr_get_port(addr), app_configuration->unsupported);
     ip_dup = NULL;
     gs_destroy(client);
     if (existing) {

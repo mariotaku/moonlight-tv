@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../pcmanager.h"
+#include "discovery/discovery.h"
 #include "executor.h"
 #include "uuidstr.h"
 #include <SDL.h>
@@ -29,7 +30,7 @@ struct pcmanager_t {
     pclist_t *servers;
     SDL_mutex *lock;
     pcmanager_listener_list *listeners;
-    discovery_task_t *discovery_task;
+    discovery_t discovery;
 };
 
 void serverdata_free(PSERVER_DATA data);
@@ -45,3 +46,5 @@ void pcmanager_unlock(pcmanager_t *manager);
 void pcmanager_load_known_hosts(pcmanager_t *manager);
 
 void pcmanager_save_known_hosts(pcmanager_t *manager);
+
+void pcmanager_lan_host_discovered(const sockaddr_t *addr, pcmanager_t *manager);

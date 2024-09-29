@@ -37,6 +37,8 @@ static void remove_perform(pclist_update_context_t *context);
 
 static void pclist_ll_nodefree(pclist_t *node);
 
+static int pclist_ll_compare_ip(pclist_t *other, const void *v);
+
 static int pclist_ll_compare_address(pclist_t *other, const void *v);
 
 static int pclist_ll_compare_uuid(pclist_t *other, const void *v);
@@ -160,7 +162,15 @@ void pclist_ll_nodefree(pclist_t *node) {
 pclist_t *pclist_find_by_ip(pcmanager_t *manager, const char *ip) {
     SDL_assert_release(ip != NULL);
     pcmanager_lock(manager);
-    pclist_t *result = pclist_ll_find_by(manager->servers, ip, pclist_ll_compare_address);
+    pclist_t *result = pclist_ll_find_by(manager->servers, ip, pclist_ll_compare_ip);
+    pcmanager_unlock(manager);
+    return result;
+}
+
+pclist_t *pclist_find_by_addr(pcmanager_t *manager, const sockaddr_t *addr) {
+    SDL_assert_release(addr != NULL);
+    pcmanager_lock(manager);
+    pclist_t *result = pclist_ll_find_by(manager->servers, addr, pclist_ll_compare_address);
     pcmanager_unlock(manager);
     return result;
 }
@@ -173,12 +183,21 @@ pclist_t *pclist_find_by_uuid(pcmanager_t *manager, const uuidstr_t *uuid) {
     return result;
 }
 
-static int pclist_ll_compare_address(pclist_t *other, const void *v) {
+static int pclist_ll_compare_ip(pclist_t *other, const void *v) {
     SDL_assert_release(v);
     SDL_assert_release(other);
     SDL_assert_release(other->server);
     SDL_assert_release(other->server->serverInfo.address);
     return SDL_strcmp(other->server->serverInfo.address, (const char *) v);
+}
+
+static int pclist_ll_compare_address(pclist_t *other, const void *v) {
+    SDL_assert_release(v);
+    SDL_assert_release(other);
+    SDL_assert_release(other->server);
+    SDL_assert_release(other->server->serverInfo.address);
+    const sockaddr_t *addr = (const sockaddr_t *) v;
+    return 0;
 }
 
 static int pclist_ll_compare_uuid(pclist_t *other, const void *v) {

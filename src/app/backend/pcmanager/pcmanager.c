@@ -1,5 +1,5 @@
-
 #include "backend/pcmanager.h"
+#include "discovery/discovery.h"
 #include "priv.h"
 
 #include "pclist.h"
@@ -13,6 +13,7 @@ pcmanager_t *pcmanager_new(app_t *app, executor_t *executor) {
     manager->executor = executor;
     manager->thread_id = SDL_ThreadID();
     manager->lock = SDL_CreateMutex();
+    discovery_init(&manager->discovery, (discovery_callback) pcmanager_lan_host_discovered, manager);
     pcmanager_load_known_hosts(manager);
     return manager;
 }
@@ -21,8 +22,18 @@ void pcmanager_destroy(pcmanager_t *manager) {
     pcmanager_auto_discovery_stop(manager);
     pcmanager_save_known_hosts(manager);
     pclist_free(manager);
+    discovery_deinit(&manager->discovery);
     SDL_DestroyMutex(manager->lock);
     SDL_free(manager);
+}
+
+
+void pcmanager_auto_discovery_start(pcmanager_t *manager) {
+    discovery_start(&manager->discovery);
+}
+
+void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
+    discovery_stop(&manager->discovery);
 }
 
 void pcmanager_lock(pcmanager_t *manager) {
@@ -129,4 +140,3 @@ bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_c
 const pclist_t *pcmanager_servers(pcmanager_t *manager) {
     return manager->servers;
 }
-

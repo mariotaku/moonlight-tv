@@ -134,3 +134,5 @@ bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_c
  * @return
  */
 int pcmanager_update_by_ip(worker_context_t *context, const char *ip, uint16_t port, bool force);
+
+int pcmanager_update_by_addr(worker_context_t *context, sockaddr_t *addr, bool force);
