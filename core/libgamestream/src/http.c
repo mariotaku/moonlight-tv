@@ -76,6 +76,8 @@ HTTP *http_create(const char *keydir) {
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_fn);
     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
     curl_easy_setopt(curl, CURLOPT_SSL_SESSIONID_CACHE, 0L);
+    // Fix for https://github.com/mariotaku/moonlight-tv/issues/452
+    curl_easy_setopt(curl, CURLOPT_FORBID_REUSE, 1L);
 
     struct HTTP_T *http = malloc(sizeof(struct HTTP_T));
     assert(http != NULL);
