@@ -1,1 +1,3 @@
 add_unit_test(test_known_hosts test_known_hosts.c)
+
+add_subdirectory(discovery)

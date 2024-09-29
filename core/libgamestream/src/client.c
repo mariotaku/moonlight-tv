@@ -866,7 +866,7 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
         }
 
         i++;
-    } while (ret != GS_OK && i < 2);
+    } while (ret == GS_ERROR && i < 2);
 
     if (ret == GS_OK && !server->unsupported) {
         if (server->serverMajorVersion > MAX_SUPPORTED_GFE_VERSION) {

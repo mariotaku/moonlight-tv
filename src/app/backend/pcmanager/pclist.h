@@ -29,3 +29,5 @@ void pclist_free(pcmanager_t *manager);
 pclist_t *pclist_find_by_uuid(pcmanager_t *manager, const uuidstr_t *uuid);
 
 pclist_t *pclist_find_by_ip(pcmanager_t *manager, const char *ip);
+
+pclist_t *pclist_find_by_addr(pcmanager_t *manager, const sockaddr_t *addr);
