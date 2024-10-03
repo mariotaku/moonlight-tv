@@ -112,7 +112,7 @@ int session_worker(session_t *session) {
             .app = app,
             .manager = pcmanager,
     };
-    pcmanager_update_by_ip(&update_ctx, server->serverInfo.address, server->extPort, true);
+    pcmanager_update_by_host(&update_ctx, server->serverInfo.address, server->extPort, true);
 
     // Don't always reset status as error state should be kept
     session_set_state(session, STREAMING_NONE);

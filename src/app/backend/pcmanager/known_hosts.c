@@ -80,23 +80,20 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
         if (!cur->server || !cur->known) {
             continue;
         }
-        char address_buf[64] = {0};
         const SERVER_DATA *server = cur->server;
+        host_t *address = host_new(server->serverInfo.address, server->extPort);
+        if (address == NULL) {
+            continue;
+        }
         ini_write_section(fp, server->uuid);
 
         ini_write_string(fp, "mac", server->mac);
         ini_write_string(fp, "hostname", server->hostname);
 
-        struct sockaddr *address = sockaddr_new();
-        if (sockaddr_set_ip_str(address, strchr(server->serverInfo.address, ':') ? AF_INET6 : AF_INET,
-                            server->serverInfo.address) != 0) {
-            free(address);
-            continue;
-        }
-        sockaddr_set_port(address, server->extPort);
-        sockaddr_to_string(address, address_buf, sizeof(address_buf));
+        char address_buf[260] = {0};
+        host_to_string(address, address_buf, sizeof(address_buf));
         ini_write_string(fp, "address", address_buf);
-        free(address);
+        host_free(address);
 
         if (!selected_set && cur->selected) {
             ini_write_bool(fp, "selected", true);
