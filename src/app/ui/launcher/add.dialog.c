@@ -99,15 +99,15 @@ static void dialog_cb(lv_event_t *event) {
     }
     uint16_t btn = lv_msgbox_get_active_btn(dialog);
     if (btn == 1) {
-        sockaddr_t *address = sockaddr_parse(lv_textarea_get_text(controller->input));
-        if (!address) {
+        host_t *host = host_parse(lv_textarea_get_text(controller->input));
+        if (!host) {
             return;
         }
         lv_obj_add_state(controller->btns, LV_STATE_DISABLED);
         lv_obj_add_state(controller->input, LV_STATE_DISABLED);
         lv_obj_clear_flag(controller->progress, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(controller->error, LV_OBJ_FLAG_HIDDEN);
-        pcmanager_manual_add(pcmanager, address, add_cb, controller);
+        pcmanager_manual_add(pcmanager, host, add_cb, controller);
     } else {
         lv_msgbox_close_async(dialog);
     }
@@ -115,9 +115,10 @@ static void dialog_cb(lv_event_t *event) {
 
 static void input_changed_cb(lv_event_t *event) {
     add_dialog_controller_t *controller = lv_event_get_user_data(event);
-    sockaddr_t *address = sockaddr_parse(lv_textarea_get_text(controller->input));
-    if (address) {
+    host_t *host = host_parse(lv_textarea_get_text(controller->input));
+    if (host) {
         lv_btnmatrix_clear_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
+        host_free(host);
     } else {
         lv_btnmatrix_set_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
     }

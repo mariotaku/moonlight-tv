@@ -24,9 +24,7 @@ int worker_quit_app(worker_context_t *context);
 
 int worker_wol(worker_context_t *context);
 
-int worker_add_by_ip(worker_context_t *context);
-
-int worker_host_discovered(worker_context_t *context);
+int worker_add_by_host(worker_context_t *context);
 
 int worker_host_update(worker_context_t *context);
 

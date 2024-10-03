@@ -28,13 +28,13 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
     return true;
 }
 
-bool pcmanager_manual_add(pcmanager_t *manager, sockaddr_t *address, pcmanager_callback_t callback, void *userdata) {
-    if (address == NULL) {
+bool pcmanager_manual_add(pcmanager_t *manager, host_t *host, pcmanager_callback_t callback, void *userdata) {
+    if (host == NULL) {
         return false;
     }
     worker_context_t *ctx = worker_context_new(manager, NULL, callback, userdata);
-    ctx->arg1 = address;
-    pcmanager_worker_queue(manager, worker_add_by_ip, ctx);
+    ctx->arg1 = host;
+    pcmanager_worker_queue(manager, worker_add_by_host, ctx);
     return true;
 }
 

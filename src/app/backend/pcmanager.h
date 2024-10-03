@@ -7,6 +7,7 @@
 #include "libgamestream/client.h"
 #include "uuidstr.h"
 #include "sockaddr.h"
+#include "host.h"
 
 typedef struct app_t app_t;
 typedef struct pcmanager_t pcmanager_t;
@@ -77,7 +78,7 @@ void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listene
  * @param userdata
  * @return
  */
-bool pcmanager_manual_add(pcmanager_t *manager, sockaddr_t *address, pcmanager_callback_t callback, void *userdata);
+bool pcmanager_manual_add(pcmanager_t *manager, host_t *host, pcmanager_callback_t callback, void *userdata);
 
 /**
  * @brief Generates a PIN code, and start pairing process.
@@ -133,6 +134,5 @@ bool pcmanager_send_wol(pcmanager_t *manager, const uuidstr_t *uuid, pcmanager_c
  * @param userdata
  * @return
  */
-int pcmanager_update_by_ip(worker_context_t *context, const char *ip, uint16_t port, bool force);
+int pcmanager_update_by_host(worker_context_t *context, const char *ip, uint16_t port, bool force);
 
-int pcmanager_update_by_addr(worker_context_t *context, sockaddr_t *addr, bool force);
