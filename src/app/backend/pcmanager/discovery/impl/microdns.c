@@ -66,7 +66,7 @@ void discovery_callback(discovery_task_t *task, int status, const struct rr_entr
         return;
     }
     if (task->stop) { return; }
-    struct sockaddr *addr = sockaddr_new();
+    sockaddr_t *addr = sockaddr_new();
     for (const struct rr_entry *cur = entries; cur != NULL; cur = cur->next) {
         switch (cur->type) {
             case RR_A: {
@@ -87,10 +87,10 @@ void discovery_callback(discovery_task_t *task, int status, const struct rr_entr
             }
         }
     }
-    if (addr->sa_family == AF_UNSPEC) {
-        return;
+    if (addr->sa_family != AF_UNSPEC) {
+        discovery_discovered(task->discovery, addr);
     }
-    discovery_discovered(task->discovery, addr);
+    sockaddr_free(addr);
 }
 
 bool discovery_is_stopped(discovery_task_t *task) {

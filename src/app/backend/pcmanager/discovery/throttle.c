@@ -47,6 +47,8 @@ static int throttle_hosts_find_not_expired(discovery_throttle_host_t *node, cons
 
 static void throttle_hosts_evict(discovery_throttle_host_t **head);
 
+static void throttle_host_free(discovery_throttle_host_t *node);
+
 void discovery_throttle_init(discovery_throttle_t *throttle, discovery_callback callback, void *user_data) {
     throttle->callback = callback;
     throttle->user_data = user_data;
@@ -56,7 +58,7 @@ void discovery_throttle_init(discovery_throttle_t *throttle, discovery_callback 
 
 void discovery_throttle_deinit(discovery_throttle_t *throttle) {
     SDL_LockMutex(throttle->lock);
-    throttle_hosts_free(throttle->hosts, NULL);
+    throttle_hosts_free(throttle->hosts, throttle_host_free);
     SDL_UnlockMutex(throttle->lock);
     SDL_DestroyMutex(throttle->lock);
 }
@@ -82,7 +84,7 @@ void discovery_throttle_on_discovered(discovery_throttle_t *throttle, const sock
     throttle->hosts = throttle_hosts_sortedinsert(throttle->hosts, node, throttle_hosts_compare_time);
 
     if (throttle->callback != NULL) {
-        throttle->callback(addr, throttle->user_data);
+        throttle->callback(node->addr, throttle->user_data);
     }
     SDL_UnlockMutex(throttle->lock);
 }
@@ -111,4 +113,9 @@ void throttle_hosts_evict(discovery_throttle_host_t **head) {
 
 int throttle_hosts_find_not_expired(discovery_throttle_host_t *node, const void *now) {
     return SDL_TICKS_PASSED(*(Uint32 *) now, node->last_discovered + node->ttl);
+}
+
+void throttle_host_free(discovery_throttle_host_t *node) {
+    sockaddr_free(node->addr);
+    free(node);
 }
