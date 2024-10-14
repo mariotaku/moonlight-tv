@@ -9,7 +9,6 @@
 #include "util/ini_ext.h"
 #include "util/path.h"
 #include "app_settings.h"
-#include "sockaddr.h"
 
 #define LINKEDLIST_IMPL
 #define LINKEDLIST_MODIFIER static
@@ -36,9 +35,9 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
     bool selected_set = false;
     for (known_host_t *cur = hosts; cur; cur = cur->next) {
         const char *mac = cur->mac, *hostname = cur->hostname;
-        const struct sockaddr *address = cur->address;
-        char address_buf[64] = {0};
-        sockaddr_get_ip_str(address, address_buf, sizeof(address_buf));
+        const host_t *address = cur->address;
+        char address_buf[256] = {0};
+        host_to_string(address, address_buf, sizeof(address_buf));
         if (!mac || !hostname || !address) {
             commons_log_warn("PCManager", "Unknown host entry: mac=%s, hostname=%s, address=%s", mac, hostname,
                              address_buf);
@@ -49,8 +48,8 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->uuid = uuidstr_tostr(&cur->uuid);
         server->mac = mac;
         server->hostname = hostname;
-        server->serverInfo.address = strdup(address_buf);
-        server->extPort = sockaddr_get_port(address);
+        server->serverInfo.address = strdup(host_get_hostname(address));
+        server->extPort = host_get_port(address);
 
         pclist_t *node = pclist_insert_known(manager, &cur->uuid, server);
 
@@ -128,7 +127,7 @@ static int known_hosts_handle(known_host_t **list, const char *section, const ch
     } else if (INI_NAME_MATCH("hostname")) {
         host->hostname = SDL_strdup(value);
     } else if (INI_NAME_MATCH("address")) {
-        host->address = sockaddr_parse(value);
+        host->address = host_parse(value);
     } else if (INI_NAME_MATCH("selected")) {
         host->selected = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("favorite")) {

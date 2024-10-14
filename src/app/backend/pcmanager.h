@@ -7,7 +7,7 @@
 #include "libgamestream/client.h"
 #include "uuidstr.h"
 #include "sockaddr.h"
-#include "host.h"
+#include "hostport.h"
 
 typedef struct app_t app_t;
 typedef struct pcmanager_t pcmanager_t;
