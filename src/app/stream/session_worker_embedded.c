@@ -103,6 +103,7 @@ int session_worker_embedded(session_t *session) {
                 .app = app,
                 .manager = pcmanager,
         };
+        uuidstr_fromstr(&update_ctx.uuid, server->uuid);
         pcmanager_update_by_host(&update_ctx, server->serverInfo.address, server->extPort, true);
 
         // Don't always reset status as error state should be kept

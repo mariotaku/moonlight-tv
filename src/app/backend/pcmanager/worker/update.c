@@ -40,6 +40,10 @@ int pcmanager_update_by_host(worker_context_t *context, const char *ip, uint16_t
             context->error = strdup(error);
         }
         serverdata_free(server);
+        if (!uuidstr_is_empty(&context->uuid)) {
+            SERVER_STATE state = {.code = ret == GS_IO_ERROR ? SERVER_STATE_OFFLINE : SERVER_STATE_ERROR};
+            pclist_upsert(manager, &context->uuid, &state, NULL);
+        }
     }
     gs_destroy(client);
 
