@@ -28,7 +28,7 @@ bool pcmanager_pair(pcmanager_t *manager, const uuidstr_t *uuid, char *pin, pcma
     return true;
 }
 
-bool pcmanager_manual_add(pcmanager_t *manager, host_t *host, pcmanager_callback_t callback, void *userdata) {
+bool pcmanager_manual_add(pcmanager_t *manager, hostport_t *host, pcmanager_callback_t callback, void *userdata) {
     if (host == NULL) {
         return false;
     }

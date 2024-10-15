@@ -99,7 +99,7 @@ static void dialog_cb(lv_event_t *event) {
     }
     uint16_t btn = lv_msgbox_get_active_btn(dialog);
     if (btn == 1) {
-        host_t *host = host_parse(lv_textarea_get_text(controller->input));
+        hostport_t *host = hostport_parse(lv_textarea_get_text(controller->input));
         if (!host) {
             return;
         }
@@ -115,10 +115,10 @@ static void dialog_cb(lv_event_t *event) {
 
 static void input_changed_cb(lv_event_t *event) {
     add_dialog_controller_t *controller = lv_event_get_user_data(event);
-    host_t *host = host_parse(lv_textarea_get_text(controller->input));
+    hostport_t *host = hostport_parse(lv_textarea_get_text(controller->input));
     if (host) {
         lv_btnmatrix_clear_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
-        host_free(host);
+        hostport_free(host);
     } else {
         lv_btnmatrix_set_btn_ctrl(controller->btns, 1, LV_BTNMATRIX_CTRL_DISABLED);
     }

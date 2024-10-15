@@ -26,7 +26,7 @@ typedef struct known_host_t {
     uuidstr_t uuid;
     char *mac;
     char *hostname;
-    host_t *address;
+    hostport_t *address;
     bool selected;
     appid_list_t *favs;
     appid_list_t *hidden;
