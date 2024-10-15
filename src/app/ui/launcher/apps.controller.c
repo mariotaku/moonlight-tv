@@ -114,6 +114,12 @@ static void set_actions(apps_fragment_t *controller, const char **labels, const 
 static lv_gridview_data_change_t *apps_list_detect_change(const apploader_list_t *old_list,
                                                           const apploader_list_t *new_list, int *num_changes);
 
+static void show_progress(apps_fragment_t *fragment);
+
+static void show_ok(apps_fragment_t *fragment);
+
+static void show_error(apps_fragment_t *fragment, const char *title, const char *hint, const char *detail);
+
 static apps_fragment_t *current_instance = NULL;
 
 const static lv_gridview_adapter_t apps_adapter = {
@@ -356,18 +362,13 @@ static void update_view_state(apps_fragment_t *controller) {
     if (!controller->base.managed->obj_created || controller->base.managed->destroying_obj) { return; }
     launcher_fragment_t *parent_controller = (launcher_fragment_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
-    lv_obj_t *applist = controller->applist;
-    lv_obj_t *appload = controller->appload;
-    lv_obj_t *apperror = controller->apperror;
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
     assert(state != NULL);
     switch (state->code) {
         case SERVER_STATE_NONE:
         case SERVER_STATE_QUERYING: {
             // waiting to load server info
-            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
+            show_progress(controller);
             break;
         }
         case SERVER_STATE_AVAILABLE: {
@@ -377,92 +378,59 @@ static void update_view_state(apps_fragment_t *controller) {
                     if (controller->apploader_apps) {
                         break;
                     }
-                    lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_clear_flag(appload, LV_OBJ_FLAG_HIDDEN);
+                    show_progress(controller);
                     break;
                 }
                 case APPLOADER_STATE_ERROR: {
                     // apploader has error
-                    lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
-                    lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
+                    show_error(controller, locstr("Failed to load apps"),
+                               locstr("Press \"Retry\" to load again.\n\nRestart your computer if error persists."),
+                               controller->apploader_error);
 
-                    lv_label_set_text_static(controller->errortitle, locstr("Failed to load apps"));
-                    lv_label_set_text_static(controller->errorhint, locstr(
-                            "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
-                    lv_label_set_text_static(controller->errordetail, controller->apploader_error);
                     set_actions(controller, action_labels_error, action_callbacks_error);
-
                     lv_group_focus_obj(controller->actions);
                     lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
                     break;
                 }
                 case APPLOADER_STATE_IDLE: {
                     // has apps
-                    lv_obj_clear_flag(applist, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_add_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-                    lv_obj_add_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-
-                    if (lv_group_get_focused(lv_obj_get_group(controller->applist)) != controller->applist) {
-                        lv_group_focus_obj(controller->applist);
-                    }
+                    show_ok(controller);
                     break;
                 }
             }
             break;
         }
         case SERVER_STATE_NOT_PAIRED: {
-            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
-            lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-            lv_label_set_text_static(controller->errortitle, locstr("Not paired"));
-            lv_label_set_text_static(controller->errorhint, locstr(
-                    "Press \"Pair\", and input PIN code on your computer to pair."));
-            set_actions(controller, actions_unpaired, action_callbacks_unpaired);
+            show_error(controller, locstr("Not paired"),
+                       locstr("Press \"Pair\" to pair this host with your account."),
+                       NULL);
 
+            set_actions(controller, actions_unpaired, action_callbacks_unpaired);
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
         }
         case SERVER_STATE_ERROR: {
             // server has error
-            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_set_style_opa(controller->errordetail, LV_OPA_100, 0);
-            lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-            lv_label_set_text_static(controller->errortitle, locstr("Host error"));
-            lv_label_set_text_static(controller->errorhint, locstr(
-                    "Press \"Retry\" to load again.\n\nRestart your computer if error persists."));
-            lv_label_set_text_static(controller->errordetail, state->error.errmsg);
-            set_actions(controller, action_labels_error, action_callbacks_error);
+            show_error(controller, locstr("Host error"),
+                       locstr("Press \"Retry\" to load again.\n\nRestart your computer if error persists."),
+                       state->error.errmsg);
 
+            set_actions(controller, action_labels_error, action_callbacks_error);
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
         }
         case SERVER_STATE_OFFLINE: {
             // server has error
-            lv_obj_add_flag(appload, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(apperror, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(applist, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_set_style_opa(controller->errordetail, LV_OPA_0, 0);
-            lv_obj_clear_flag(controller->actions, LV_OBJ_FLAG_HIDDEN);
-            lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
-            lv_label_set_text_static(controller->errortitle, locstr("Offline"));
-            lv_label_set_text_static(controller->errorhint, locstr(
-                    "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, "
-                    "press \"Retry\" to connect again.\n\n"
-                    "Try restart your computer if these doesn't work."
-            ));
-            set_actions(controller, action_labels_offline, action_callbacks_offline);
+            show_error(controller, locstr("Offline"),
+                       locstr("Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, "
+                              "press \"Retry\" to connect again.\n\n"
+                              "Try restart your computer if these doesn't work."),
+                       NULL);
 
+            set_actions(controller, action_labels_offline, action_callbacks_offline);
+            lv_btnmatrix_clear_btn_ctrl(controller->actions, 0, LV_BTNMATRIX_CTRL_DISABLED);
             lv_group_focus_obj(controller->actions);
             lv_obj_add_state(controller->actions, LV_STATE_FOCUS_KEY);
             break;
@@ -474,6 +442,37 @@ static void update_view_state(apps_fragment_t *controller) {
     parent_controller->detail_changing = false;
 }
 
+static void show_progress(apps_fragment_t *fragment) {
+    lv_obj_add_flag(fragment->applist, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(fragment->apperror, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(fragment->appload, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(fragment->actions, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_state(fragment->actions, LV_STATE_DISABLED);
+}
+
+static void show_ok(apps_fragment_t *fragment) {
+    lv_obj_clear_flag(fragment->applist, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(fragment->apperror, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(fragment->appload, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(fragment->actions, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_state(fragment->actions, LV_STATE_DISABLED);
+
+    if (lv_group_get_focused(lv_obj_get_group(fragment->applist)) != fragment->applist) {
+        lv_group_focus_obj(fragment->applist);
+    }
+}
+
+static void show_error(apps_fragment_t *fragment, const char *title, const char *hint, const char *detail) {
+    lv_obj_add_flag(fragment->appload, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(fragment->apperror, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(fragment->applist, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_flag(fragment->actions, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clear_state(fragment->actions, LV_STATE_DISABLED);
+
+    lv_obj_set_style_opa(fragment->errordetail, detail ? LV_OPA_100 : LV_OPA_0, 0);
+    lv_label_set_text_static(fragment->errortitle, title);
+    lv_label_set_text_static(fragment->errorhint, hint);
+}
 
 static void appload_started(void *userdata) {
     apps_fragment_t *fragment = userdata;
