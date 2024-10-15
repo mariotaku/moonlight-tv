@@ -10,6 +10,6 @@ int worker_add_by_host(worker_context_t *context) {
 }
 
 int updated_by_host(worker_context_t *context, bool force) {
-    const host_t *host = context->arg1;
-    return pcmanager_update_by_host(context, host_get_hostname(host), host_get_port(host), force);
+    const hostport_t *host = context->arg1;
+    return pcmanager_update_by_host(context, hostport_get_hostname(host), hostport_get_port(host), force);
 }

@@ -35,9 +35,9 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
     bool selected_set = false;
     for (known_host_t *cur = hosts; cur; cur = cur->next) {
         const char *mac = cur->mac, *hostname = cur->hostname;
-        const host_t *address = cur->address;
+        const hostport_t *address = cur->address;
         char address_buf[256] = {0};
-        host_to_string(address, address_buf, sizeof(address_buf));
+        hostport_to_string(address, address_buf, sizeof(address_buf));
         if (!mac || !hostname || !address) {
             commons_log_warn("PCManager", "Unknown host entry: mac=%s, hostname=%s, address=%s", mac, hostname,
                              address_buf);
@@ -48,8 +48,8 @@ void pcmanager_load_known_hosts(pcmanager_t *manager) {
         server->uuid = uuidstr_tostr(&cur->uuid);
         server->mac = mac;
         server->hostname = hostname;
-        server->serverInfo.address = strdup(host_get_hostname(address));
-        server->extPort = host_get_port(address);
+        server->serverInfo.address = strdup(hostport_get_hostname(address));
+        server->extPort = hostport_get_port(address);
 
         pclist_t *node = pclist_insert_known(manager, &cur->uuid, server);
 
@@ -80,7 +80,7 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
             continue;
         }
         const SERVER_DATA *server = cur->server;
-        host_t *address = host_new(server->serverInfo.address, server->extPort);
+        hostport_t *address = hostport_new(server->serverInfo.address, server->extPort);
         if (address == NULL) {
             continue;
         }
@@ -90,9 +90,9 @@ void pcmanager_save_known_hosts(pcmanager_t *manager) {
         ini_write_string(fp, "hostname", server->hostname);
 
         char address_buf[260] = {0};
-        host_to_string(address, address_buf, sizeof(address_buf));
+        hostport_to_string(address, address_buf, sizeof(address_buf));
         ini_write_string(fp, "address", address_buf);
-        host_free(address);
+        hostport_free(address);
 
         if (!selected_set && cur->selected) {
             ini_write_bool(fp, "selected", true);
@@ -127,7 +127,7 @@ static int known_hosts_handle(known_host_t **list, const char *section, const ch
     } else if (INI_NAME_MATCH("hostname")) {
         host->hostname = SDL_strdup(value);
     } else if (INI_NAME_MATCH("address")) {
-        host->address = host_parse(value);
+        host->address = hostport_parse(value);
     } else if (INI_NAME_MATCH("selected")) {
         host->selected = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("favorite")) {

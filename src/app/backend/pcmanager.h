@@ -78,7 +78,7 @@ void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listene
  * @param userdata
  * @return
  */
-bool pcmanager_manual_add(pcmanager_t *manager, host_t *host, pcmanager_callback_t callback, void *userdata);
+bool pcmanager_manual_add(pcmanager_t *manager, hostport_t *host, pcmanager_callback_t callback, void *userdata);
 
 /**
  * @brief Generates a PIN code, and start pairing process.
