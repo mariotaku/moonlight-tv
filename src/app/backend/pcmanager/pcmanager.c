@@ -29,7 +29,7 @@ void pcmanager_destroy(pcmanager_t *manager) {
 
 
 void pcmanager_auto_discovery_start(pcmanager_t *manager) {
-//    discovery_start(&manager->discovery);
+    discovery_start(&manager->discovery);
 }
 
 void pcmanager_auto_discovery_stop(pcmanager_t *manager) {
