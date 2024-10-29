@@ -297,6 +297,13 @@ SDL_Window *app_ui_create_window(app_ui_t *ui) {
     }
     SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
     if (win == NULL) {
+#ifdef TARGET_WEBOS
+        // For webOS 24 (9.0), unpopulated jailer config could cause graphics driver initialization failure
+        // We don't have any way to work around this, so we try to launch a web page about this issue
+        if (ui->app->os_info.version.major >= 9) {
+            SDL_OpenURL("https://github.com/mariotaku/moonlight-tv/wiki/Known-Issues");
+        }
+#endif
         commons_log_fatal("APP", "Failed to create window: %s", SDL_GetError());
         app_halt(ui->app);
     }
