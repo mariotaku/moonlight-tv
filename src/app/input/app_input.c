@@ -20,11 +20,6 @@ void app_input_init(app_input_t *input, app_t *app) {
         input->gamepads[i].gs_id = -1;
     }
     input->activeGamepadMask = 0;
-    input->blank_cursor_surface = SDL_CreateRGBSurface(0, 16, 16, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-    input->blank_cursor_surface->userdata = SDL_CreateColorCursor(input->blank_cursor_surface, 0, 0);
-    if (input->blank_cursor_surface->userdata == NULL) {
-        commons_log_warn("Input", "Failed to create blank cursor: %s", SDL_GetError());
-    }
 #if !SDL_VERSION_ATLEAST(2, 0, 10)
     SDL_GameControllerAddMappingsFromFile(app->settings.condb_path);
 #endif
@@ -33,10 +28,6 @@ void app_input_init(app_input_t *input, app_t *app) {
 
 void app_input_deinit(app_input_t *input) {
     app_input_deinit_gamepad_mapping(input);
-    if (input->blank_cursor_surface->userdata != NULL) {
-        SDL_FreeCursor(input->blank_cursor_surface->userdata);
-    }
-    SDL_FreeSurface(input->blank_cursor_surface);
     SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 }
 
