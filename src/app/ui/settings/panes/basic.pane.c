@@ -57,6 +57,10 @@ static const int supported_resolutions_len = sizeof(supported_resolutions) / siz
 
 static const pref_dropdown_int_entry_t supported_fps[] = {
         {"30 FPS",  30},
+        {"30 FPS",  40},
+        {"30 FPS",  45},
+        {"30 FPS",  50},
+        {"30 FPS",  55},
         {"60 FPS",  60, true},
         {"90 FPS",  90},
         {"120 FPS", 120},
