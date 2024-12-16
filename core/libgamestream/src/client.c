@@ -749,8 +749,12 @@ static int load_server_status(GS_CLIENT hnd, PSERVER_DATA server) {
             ret = GS_OUT_OF_MEMORY;
             goto cleanup;
         }
-        if (http_request(hnd->http, url, data) != GS_OK) {
-            ret = GS_IO_ERROR;
+        if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
+            if (i == 0 && ret == GS_FAILED) {
+                ret = GS_ERROR;
+            } else {
+                ret = GS_IO_ERROR;
+            }
             goto cleanup;
         }
 
