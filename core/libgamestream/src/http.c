@@ -106,7 +106,12 @@ int http_request(HTTP *http, char *url, HTTP_DATA *data) {
     int ret = GS_FAILED;
     CURLcode res = curl_easy_perform(curl);
 
-    if (res != CURLE_OK) {
+    if (res == CURLE_HTTP_RETURNED_ERROR) {
+        int http_status = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_status);
+        commons_log_warn("GameStream", "Request %p error HTTP %d", data, http_status);
+        goto finish;
+    } else if (res != CURLE_OK) {
         const char *errmsg = curl_easy_strerror(res);
         ret = gs_set_error(GS_IO_ERROR, "cURL error: %s", errmsg);
         commons_log_debug("GameStream", "Request %p error %d: %s", data, ret, errmsg);
