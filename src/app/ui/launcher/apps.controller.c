@@ -92,7 +92,7 @@ static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint1
 
 static void update_grid_config(apps_fragment_t *controller);
 
-static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t *app);
+static void open_context_menu(apps_fragment_t *fragment, appitem_viewholder_t *holder);
 
 static void context_menu_cancel_cb(lv_event_t *event);
 
@@ -548,9 +548,7 @@ static void item_click_cb(lv_event_t *event) {
     int current_app = pcmanager_server_current_app(pcmanager, &controller->uuid);
     if (current_app != 0) {
         if (holder->app_id == current_app) {
-            const apploader_item_t *item = apploader_list_item_by_id(controller->apploader_apps, holder->app_id);
-            assert(item != NULL);
-            open_context_menu(controller, item);
+            open_context_menu(controller, holder);
         }
         return;
     }
@@ -567,10 +565,7 @@ static void item_longpress_cb(lv_event_t *event) {
         return;
     }
     lv_event_send(target, LV_EVENT_RELEASED, lv_event_get_indev(event));
-    appitem_viewholder_t *holder = (appitem_viewholder_t *) lv_obj_get_user_data(target);
-    const apploader_item_t *item = apploader_list_item_by_id(controller->apploader_apps, holder->app_id);
-    assert(item != NULL);
-    open_context_menu(controller, item);
+    open_context_menu(controller, (appitem_viewholder_t *) lv_obj_get_user_data(target));
 }
 
 static void launcher_launch_game(apps_fragment_t *controller, const apploader_item_t *app) {
@@ -696,9 +691,11 @@ static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint1
     pair_dialog_open(&controller->uuid);
 }
 
-static void open_context_menu(apps_fragment_t *fragment, const apploader_item_t *app) {
+static void open_context_menu(apps_fragment_t *fragment, appitem_viewholder_t *holder) {
+    const apploader_item_t *app = apploader_list_item_by_id(fragment->apploader_apps, holder->app_id);
+    assert(app != NULL);
     lv_obj_t *msgbox = lv_msgbox_create(NULL, app->base.name, NULL, NULL, false);
-    lv_obj_set_user_data(msgbox, (void *) app);
+    lv_obj_set_user_data(msgbox, (void *) holder);
     lv_obj_t *content = lv_msgbox_get_content(msgbox);
     lv_obj_add_flag(content, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_flex_flow(content, LV_FLEX_FLOW_COLUMN);
@@ -748,17 +745,20 @@ static void context_menu_click_cb(lv_event_t *e) {
     lv_obj_t *current_target = lv_event_get_current_target(e);
     if (target->parent != current_target) { return; }
     lv_obj_t *mbox = lv_event_get_current_target(e)->parent;
-    apps_fragment_t *controller = lv_event_get_user_data(e);
+    apps_fragment_t *self = lv_event_get_user_data(e);
+    appitem_viewholder_t *holder = lv_obj_get_user_data(mbox);
+    const apploader_item_t *app = apploader_list_item_by_id(self->apploader_apps, holder->app_id);
+    assert(app != NULL);
     if (lv_obj_get_user_data(target) == launcher_quit_game) {
-        launcher_quit_game(controller);
+        launcher_quit_game(self);
     } else if (lv_obj_get_user_data(target) == launcher_launch_game) {
-        launcher_launch_game(controller, lv_obj_get_user_data(mbox));
+        launcher_launch_game(self, app);
     } else if (lv_obj_get_user_data(target) == launcher_toggle_fav) {
-        launcher_toggle_fav(controller, lv_obj_get_user_data(mbox));
+        launcher_toggle_fav(self, app);
     } else if (lv_obj_get_user_data(target) == launcher_toggle_hidden) {
-        launcher_toggle_hidden(controller, lv_obj_get_user_data(mbox));
+        launcher_toggle_hidden(self, app);
     } else if (lv_obj_get_user_data(target) == app_detail_dialog) {
-        app_detail_dialog(controller, lv_obj_get_user_data(mbox));
+        app_detail_dialog(self, app);
     }
     lv_msgbox_close_async(mbox);
 }
