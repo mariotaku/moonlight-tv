@@ -6,6 +6,7 @@
 #include "lvgl/lv_sdl_drv_input.h"
 
 void app_input_init(app_input_t *input, app_t *app) {
+    input->app = app;
     if (app->settings.condb_path != NULL) {
         app_input_copy_initial_gamepad_mapping(&app->settings);
 #if SDL_VERSION_ATLEAST(2, 0, 10)
@@ -44,6 +45,12 @@ void app_set_mouse_grab(app_input_t *input, bool grab) {
     if (!app_configuration->hardware_mouse) {
         SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
     }
+#ifdef TARGET_WEBOS
+    // Temporary workaround for webOS 9: https://github.com/mariotaku/moonlight-tv/issues/466
+    if (input->app->os_info.version.major >= 9) {
+        return;
+    }
+#endif
     SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
 }
 

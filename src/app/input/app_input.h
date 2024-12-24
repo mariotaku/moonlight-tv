@@ -39,6 +39,7 @@ typedef struct app_gamepad_state_t {
 } app_gamepad_state_t;
 
 typedef struct app_input_t {
+    struct app_t *app;
     commons_gcdb_updater_t gcdb_updater;
     SDL_Surface *blank_cursor_surface;
     size_t max_num_gamepads;
