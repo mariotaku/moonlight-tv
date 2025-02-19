@@ -141,7 +141,7 @@ void http_destroy(HTTP *http) {
 void http_set_timeout(HTTP *http, int timeout) {
     assert(http != NULL);
     pthread_mutex_lock(&http->mutex);
-    curl_easy_setopt(http->curl, CURLOPT_TIMEOUT, timeout);
+    curl_easy_setopt(http->curl, CURLOPT_CONNECTTIMEOUT, timeout);
     pthread_mutex_unlock(&http->mutex);
 }
 
