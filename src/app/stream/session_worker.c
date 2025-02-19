@@ -29,7 +29,6 @@ int session_worker(session_t *session) {
 
     commons_log_info("Session", "Launch app %d...", appId);
     GS_CLIENT client = app_gs_client_new(app);
-    gs_set_timeout(client, 30);
     const char *surround_params = NULL;
 #if TARGET_WEBOS
     if (session->config.stream.audioConfiguration == AUDIO_CONFIGURATION_51_SURROUND) {
