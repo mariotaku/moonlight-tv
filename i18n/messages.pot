@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-13 10:49+0900\n"
+"POT-Creation-Date: 2025-02-25 18:45+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,23 +21,23 @@ msgstr ""
 msgid "[Localized Language]"
 msgstr ""
 
-#: src/app/app.c:271 src/app/ui/launcher/add.dialog.c:42
-#: src/app/ui/launcher/apps.controller.c:736
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:732
 #: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr ""
 
-#: src/app/app.c:271 src/app/ui/launcher/add.dialog.c:42
-#: src/app/ui/launcher/apps.controller.c:662
-#: src/app/ui/launcher/apps.controller.c:769
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:656
+#: src/app/ui/launcher/apps.controller.c:768
 #: src/app/ui/launcher/launcher.controller.c:467
 #: src/app/ui/launcher/launcher.controller.c:482
 #: src/app/ui/launcher/pair.dialog.c:54
-#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:332
+#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:339
 msgid "OK"
 msgstr ""
 
-#: src/app/app.c:272
+#: src/app/app.c:278
 msgid "Quit Moonlight?"
 msgstr ""
 
@@ -101,52 +101,55 @@ msgstr ""
 msgid "Failed to add computer."
 msgstr ""
 
-#: src/app/ui/launcher/add.dialog.c:160
+#: src/app/ui/launcher/add.dialog.c:161
 msgid "Failed to add computer"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:140
+#: src/app/ui/launcher/apps.controller.c:146
 msgid "Wake"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:140
-#: src/app/ui/launcher/apps.controller.c:142
+#: src/app/ui/launcher/apps.controller.c:146
+#: src/app/ui/launcher/apps.controller.c:148
 msgid "Retry"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:144
+#: src/app/ui/launcher/apps.controller.c:150
 msgid "Pair"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:393
+#. apploader has error
+#: src/app/ui/launcher/apps.controller.c:386
 msgid "Failed to load apps"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:395
-#: src/app/ui/launcher/apps.controller.c:442
+#: src/app/ui/launcher/apps.controller.c:387
+#: src/app/ui/launcher/apps.controller.c:416
 msgid ""
 "Press \"Retry\" to load again.\n"
 "\n"
 "Restart your computer if error persists."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:424
+#: src/app/ui/launcher/apps.controller.c:404
 msgid "Not paired"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:426
-msgid "Press \"Pair\", and input PIN code on your computer to pair."
+#: src/app/ui/launcher/apps.controller.c:405
+msgid "Press \"Pair\" to pair this host with your account."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:440
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:415
 msgid "Host error"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:458
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:426
 msgid "Offline"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:460
+#: src/app/ui/launcher/apps.controller.c:427
 msgid ""
 "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it "
 "supports this feature, press \"Retry\" to connect again.\n"
@@ -154,47 +157,47 @@ msgid ""
 "Try restart your computer if these doesn't work."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:602
+#: src/app/ui/launcher/apps.controller.c:596
 msgid "Quitting game..."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:663
+#: src/app/ui/launcher/apps.controller.c:657
 msgid "Unable to quit game"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:664
+#: src/app/ui/launcher/apps.controller.c:658
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:713
+#: src/app/ui/launcher/apps.controller.c:709
 msgid "Resume streaming"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:714
+#: src/app/ui/launcher/apps.controller.c:710
 msgid "Start streaming"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:720
+#: src/app/ui/launcher/apps.controller.c:716
 msgid "Stop streaming"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:724
+#: src/app/ui/launcher/apps.controller.c:720
 msgid "Unstar"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:724
+#: src/app/ui/launcher/apps.controller.c:720
 msgid "Star"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/apps.controller.c:724
 msgid "Unhide"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/apps.controller.c:724
 msgid "Hide"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:732
+#: src/app/ui/launcher/apps.controller.c:728
 #: src/app/ui/launcher/server.context_menu.c:75
 msgid "Info"
 msgstr ""
@@ -268,7 +271,7 @@ msgid ""
 "GeForce Experience: %s"
 msgstr ""
 
-#: src/app/ui/root.c:333
+#: src/app/ui/root.c:340
 msgid "Failed to start streaming"
 msgstr ""
 
@@ -326,38 +329,38 @@ msgstr ""
 msgid "%s is conflicting with %s"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:89
+#: src/app/ui/settings/panes/basic.pane.c:95
 msgid "Resolution and FPS"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:139
+#: src/app/ui/settings/panes/basic.pane.c:145
 msgid "Video bitrate"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:155
+#: src/app/ui/settings/panes/basic.pane.c:161
 msgid "Fullscreen UI"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:160
+#: src/app/ui/settings/panes/basic.pane.c:166
 msgid "Can't use windowed UI for this decoder"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:166
-#: src/app/ui/settings/panes/basic.pane.c:167
+#: src/app/ui/settings/panes/basic.pane.c:172
+#: src/app/ui/settings/panes/basic.pane.c:173
 msgid "Language"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:197
+#: src/app/ui/settings/panes/basic.pane.c:205
 msgid ""
 "Your computer may not perform well when using this resolution and framerate."
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:212
+#: src/app/ui/settings/panes/basic.pane.c:220
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:220
+#: src/app/ui/settings/panes/basic.pane.c:228
 msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr ""
 
@@ -539,6 +542,30 @@ msgstr ""
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
+#: src/app/ui/streaming/hints.c:9
+msgid ""
+"Long press BACK (or press EXIT for traditional TV remote) while streaming, "
+"to open status overlay."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:10
+msgid ""
+"Frequent lagging on 5GHz Wi-Fi? Try changing to another channel, check Help "
+"for details."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:11
+msgid ""
+"Xbox One/Series controller can't be directly connected via cable or official "
+"adapter."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:13
+msgid ""
+"If you have ultra-wide monitor, you may need to change its resolution to fit "
+"16:9 for streaming."
+msgstr ""
+
 #: src/app/ui/streaming/streaming.controller.c:147
 msgid "Connecting..."
 msgstr ""
@@ -547,27 +574,27 @@ msgstr ""
 msgid "Disconnecting..."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:27
+#: src/app/ui/streaming/streaming.view.c:25
 #, c-format
 msgid "Hint: %s"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:76
+#: src/app/ui/streaming/streaming.view.c:74
 msgid "Soft keyboard"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:85
+#: src/app/ui/streaming/streaming.view.c:83
 msgid "Virtual Mouse"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:98
+#: src/app/ui/streaming/streaming.view.c:96
 msgid "Disconnect"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:107
+#: src/app/ui/streaming/streaming.view.c:105
 msgid "Quit game"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:122
+#: src/app/ui/streaming/streaming.view.c:120
 msgid "Performance"
 msgstr ""
