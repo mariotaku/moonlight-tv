@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-01 00:23+0900\n"
-"PO-Revision-Date: 2024-05-02 14:20\n"
+"POT-Creation-Date: 2025-02-25 18:45+0900\n"
+"PO-Revision-Date: 2025-03-08 09:18\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -17,27 +17,27 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: src/app/app.c:83
+#: src/app/app.c:87
 msgid "[Localized Language]"
 msgstr "Français"
 
-#: src/app/app.c:267 src/app/ui/launcher/add.dialog.c:42
-#: src/app/ui/launcher/apps.controller.c:736
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:732
 #: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/app/app.c:267 src/app/ui/launcher/add.dialog.c:42
-#: src/app/ui/launcher/apps.controller.c:662
-#: src/app/ui/launcher/apps.controller.c:769
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:656
+#: src/app/ui/launcher/apps.controller.c:768
 #: src/app/ui/launcher/launcher.controller.c:467
 #: src/app/ui/launcher/launcher.controller.c:482
 #: src/app/ui/launcher/pair.dialog.c:54
-#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:332
+#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:339
 msgid "OK"
 msgstr "OK"
 
-#: src/app/app.c:268
+#: src/app/app.c:278
 msgid "Quit Moonlight?"
 msgstr "Quitter Moonlight ?"
 
@@ -65,6 +65,10 @@ msgstr "Connexion instable."
 msgid "Help"
 msgstr "Aide"
 
+#: src/app/ui/help/help.dialog.c:36
+msgid "Input"
+msgstr "Entrées"
+
 #: src/app/ui/help/help.dialog.c:37
 msgid "Gamepad hotkeys"
 msgstr "Raccourcis manette"
@@ -72,6 +76,10 @@ msgstr "Raccourcis manette"
 #: src/app/ui/help/help.dialog.c:39
 msgid "Remote controller keys"
 msgstr "Raccourcis de la télécommande"
+
+#: src/app/ui/help/help.dialog.c:41
+msgid "More help"
+msgstr "Plus d'aide"
 
 #: src/app/ui/help/help.dialog.c:42
 msgid "Open moonlight-tv Wiki"
@@ -93,97 +101,100 @@ msgstr "Adresse IPv4 ou IPv6"
 msgid "Failed to add computer."
 msgstr "Impossible d'ajouter l'ordinateur."
 
-#: src/app/ui/launcher/add.dialog.c:160
+#: src/app/ui/launcher/add.dialog.c:161
 msgid "Failed to add computer"
 msgstr "Impossible d'ajouter l'ordinateur"
 
-#: src/app/ui/launcher/apps.controller.c:140
+#: src/app/ui/launcher/apps.controller.c:146
 msgid "Wake"
 msgstr "Réveiller"
 
-#: src/app/ui/launcher/apps.controller.c:140
-#: src/app/ui/launcher/apps.controller.c:142
+#: src/app/ui/launcher/apps.controller.c:146
+#: src/app/ui/launcher/apps.controller.c:148
 msgid "Retry"
 msgstr "Réessayer"
 
-#: src/app/ui/launcher/apps.controller.c:144
+#: src/app/ui/launcher/apps.controller.c:150
 msgid "Pair"
 msgstr "Appairer"
 
-#: src/app/ui/launcher/apps.controller.c:393
+#. apploader has error
+#: src/app/ui/launcher/apps.controller.c:386
 msgid "Failed to load apps"
 msgstr "Impossible de charger les applications"
 
-#: src/app/ui/launcher/apps.controller.c:395
-#: src/app/ui/launcher/apps.controller.c:442
+#: src/app/ui/launcher/apps.controller.c:387
+#: src/app/ui/launcher/apps.controller.c:416
 msgid "Press \"Retry\" to load again.\n\n"
 "Restart your computer if error persists."
 msgstr "Appuyez sur \"Réessayer\" pour recharger.\n\n"
 "Redémarrez votre ordinateur si l'erreur persiste."
 
-#: src/app/ui/launcher/apps.controller.c:424
+#: src/app/ui/launcher/apps.controller.c:404
 msgid "Not paired"
 msgstr "Non appairé"
 
-#: src/app/ui/launcher/apps.controller.c:426
-msgid "Press \"Pair\", and input PIN code on your computer to pair."
-msgstr "Appuyez sur « Appairer » et saisissez le code PIN sur votre ordinateur pour appairer."
+#: src/app/ui/launcher/apps.controller.c:405
+msgid "Press \"Pair\" to pair this host with your account."
+msgstr "Appuyez sur \"Appairer\" pour associer cet hôte à votre compte."
 
-#: src/app/ui/launcher/apps.controller.c:440
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:415
 msgid "Host error"
 msgstr "Erreur d'hôte"
 
-#: src/app/ui/launcher/apps.controller.c:458
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:426
 msgid "Offline"
 msgstr "Hors-ligne"
 
-#: src/app/ui/launcher/apps.controller.c:460
+#: src/app/ui/launcher/apps.controller.c:427
 msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
 "Try restart your computer if these doesn't work."
 msgstr "Appuyez sur \"Réveiller\" pour envoyer un paquet Wake-on-LAN pour allumer l'ordinateur s'il prend en charge cette fonctionnalité, appuyez sur \"Réessayer\" pour vous connecter à nouveau.\n\n"
 "Essayez de redémarrer votre ordinateur si ceux-ci ne fonctionnent pas."
 
-#: src/app/ui/launcher/apps.controller.c:602
+#: src/app/ui/launcher/apps.controller.c:596
 msgid "Quitting game..."
 msgstr "Fermeture du jeu..."
 
-#: src/app/ui/launcher/apps.controller.c:663
+#: src/app/ui/launcher/apps.controller.c:657
 msgid "Unable to quit game"
 msgstr "Impossible de fermer le jeu"
 
-#: src/app/ui/launcher/apps.controller.c:664
+#: src/app/ui/launcher/apps.controller.c:658
 msgid "Please make sure you are quitting with the same client."
 msgstr "Veuillez fermer l'application avec le même client."
 
-#: src/app/ui/launcher/apps.controller.c:713
+#: src/app/ui/launcher/apps.controller.c:709
 msgid "Resume streaming"
 msgstr "Reprendre le streaming"
 
-#: src/app/ui/launcher/apps.controller.c:714
+#: src/app/ui/launcher/apps.controller.c:710
 msgid "Start streaming"
 msgstr "Démarrer le streaming"
 
-#: src/app/ui/launcher/apps.controller.c:720
+#: src/app/ui/launcher/apps.controller.c:716
 msgid "Stop streaming"
 msgstr "Arrêter le streaming"
 
-#: src/app/ui/launcher/apps.controller.c:724
+#: src/app/ui/launcher/apps.controller.c:720
 msgid "Unstar"
 msgstr "Retirer des favoris"
 
-#: src/app/ui/launcher/apps.controller.c:724
+#: src/app/ui/launcher/apps.controller.c:720
 msgid "Star"
 msgstr "Ajouter aux favoris"
 
-#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/apps.controller.c:724
 msgid "Unhide"
 msgstr "Afficher"
 
-#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/apps.controller.c:724
 msgid "Hide"
 msgstr "Masquer"
 
-#: src/app/ui/launcher/apps.controller.c:732
+#: src/app/ui/launcher/apps.controller.c:728
 #: src/app/ui/launcher/server.context_menu.c:75
 msgid "Info"
 msgstr "Info"
@@ -257,7 +268,7 @@ msgstr "Adresse IP : %s\n"
 "Version du logiciel hôte : %s\n"
 "GeForce Experience : %s"
 
-#: src/app/ui/root.c:333
+#: src/app/ui/root.c:340
 msgid "Failed to start streaming"
 msgstr "Impossible de démarrer le streaming"
 
@@ -297,6 +308,11 @@ msgstr "Automatique"
 msgid "Audio backend - using %s"
 msgstr "Back-end audio - %s utilisé"
 
+#: src/app/ui/settings/panes/audio.pane.c:110
+#: src/app/ui/settings/settings.controller.c:24
+msgid "Audio Settings"
+msgstr "Paramètres audio"
+
 #: src/app/ui/settings/panes/audio.pane.c:112
 msgid "Sound Channels (Experimental)"
 msgstr "Canaux sonores (expérimental)"
@@ -310,33 +326,37 @@ msgstr "Moonlight embedded sélectionnera automatiquement le décodeur appropri�
 msgid "%s is conflicting with %s"
 msgstr "%s est en conflit avec %s"
 
-#: src/app/ui/settings/panes/basic.pane.c:89
+#: src/app/ui/settings/panes/basic.pane.c:95
 msgid "Resolution and FPS"
 msgstr "Résolution et FPS"
 
-#: src/app/ui/settings/panes/basic.pane.c:139
+#: src/app/ui/settings/panes/basic.pane.c:145
 msgid "Video bitrate"
 msgstr "Bitrate vidéo"
 
-#: src/app/ui/settings/panes/basic.pane.c:155
+#: src/app/ui/settings/panes/basic.pane.c:161
 msgid "Fullscreen UI"
 msgstr "Interface plein écran"
 
 #: src/app/ui/settings/panes/basic.pane.c:166
-#: src/app/ui/settings/panes/basic.pane.c:167
+msgid "Can't use windowed UI for this decoder"
+msgstr "Impossible d'utiliser le mode fenêtré avec ce décodeur"
+
+#: src/app/ui/settings/panes/basic.pane.c:172
+#: src/app/ui/settings/panes/basic.pane.c:173
 msgid "Language"
 msgstr "Langue"
 
-#: src/app/ui/settings/panes/basic.pane.c:197
+#: src/app/ui/settings/panes/basic.pane.c:205
 msgid "Your computer may not perform well when using this resolution and framerate."
 msgstr "Votre hôte ne pourra peut-être pas streamer correctement avec cette résolution et fréquence d'image."
 
-#: src/app/ui/settings/panes/basic.pane.c:212
+#: src/app/ui/settings/panes/basic.pane.c:220
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "Bitrate vidéo - %d kbps"
 
-#: src/app/ui/settings/panes/basic.pane.c:220
+#: src/app/ui/settings/panes/basic.pane.c:228
 msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr "Un bitrate plus élevé peut causer des problèmes de performance, à essayer avec prudence."
 
@@ -346,7 +366,7 @@ msgstr "Optimiser les paramètres du jeu pour le streaming"
 
 #: src/app/ui/settings/panes/host.pane.c:27
 msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
-msgstr "Optimise les paramètres du jeu pour le streaming. La résolution sera limitée à 720p, 1080p ou 4K. La fréquence d'images sera également limitée à 30/60 FPS."
+msgstr "Optimiser les paramètres du jeu pour le streaming. La résolution sera limitée au 720p, 1080p ou à la 4K. La fréquence d'images sera également limitée à 30/60 FPS."
 
 #: src/app/ui/settings/panes/host.pane.c:30
 msgid "Mute computer while streaming"
@@ -400,7 +420,7 @@ msgstr "Zone morte du stick analogique"
 
 #: src/app/ui/settings/panes/input.pane.c:74
 msgid "Note: Some games can enforce a larger deadzone than what Moonlight is configured to use."
-msgstr "Note : Certains jeux peuvent imposer une zone morte plus grande que celle que Moonlight est configuré pour utiliser."
+msgstr "Note : Certains jeux peuvent imposer une zone morte plus grande que celle que Moonlight est configuré pour utiliser."
 
 #: src/app/ui/settings/panes/input.pane.c:77
 msgid "Virtual mouse"
@@ -426,6 +446,11 @@ msgstr "Le mode absolu de la souris ne peut pas être utilisé lorsque \"Utilise
 #, c-format
 msgid "Video decoder - using %s"
 msgstr "Décodeur vidéo - %s utilisé"
+
+#: src/app/ui/settings/panes/video.pane.c:93
+#: src/app/ui/settings/settings.controller.c:25
+msgid "Video Settings"
+msgstr "Paramètres vidéo"
 
 #: src/app/ui/settings/panes/video.pane.c:95
 msgid "Use H265 when possible"
@@ -486,14 +511,6 @@ msgstr "Paramètres de l'hôte"
 msgid "Input Settings"
 msgstr "Paramètres des entrées"
 
-#: src/app/ui/settings/settings.controller.c:24
-msgid "Audio Settings"
-msgstr "Paramètres audio"
-
-#: src/app/ui/settings/settings.controller.c:25
-msgid "Video Settings"
-msgstr "Paramètres vidéo"
-
 #: src/app/ui/settings/settings.controller.c:26
 msgid "About"
 msgstr "À propos"
@@ -506,6 +523,22 @@ msgstr "Plus tard"
 msgid "Some settings require a restart to take effect."
 msgstr "Certains paramètres requièrent de redémarrer l'application."
 
+#: src/app/ui/streaming/hints.c:9
+msgid "Long press BACK (or press EXIT for traditional TV remote) while streaming, to open status overlay."
+msgstr "Appuyez longuement sur RETOUR (ou appuyez sur SORTIR pour la télécommande TV traditionnelle) pendant la diffusion, pour ouvrir la superposition de statut."
+
+#: src/app/ui/streaming/hints.c:10
+msgid "Frequent lagging on 5GHz Wi-Fi? Try changing to another channel, check Help for details."
+msgstr "Des retards fréquents même en Wi-Fi 5 GHz ? Essayez de le passer à un autre canal, consultez l'aide pour plus de détails."
+
+#: src/app/ui/streaming/hints.c:11
+msgid "Xbox One/Series controller can't be directly connected via cable or official adapter."
+msgstr "Les manettes Xbox One/Series ne peut pas être connectée directement via un câble ou un adaptateur officiel."
+
+#: src/app/ui/streaming/hints.c:13
+msgid "If you have ultra-wide monitor, you may need to change its resolution to fit 16:9 for streaming."
+msgstr "Si vous avez un écran ultra-large, vous devrez peut-être modifier sa résolution pour s'adapter au 16:9 pour le streaming."
+
 #: src/app/ui/streaming/streaming.controller.c:147
 msgid "Connecting..."
 msgstr "Connexion..."
@@ -514,27 +547,28 @@ msgstr "Connexion..."
 msgid "Disconnecting..."
 msgstr "Déconnexion..."
 
-#: src/app/ui/streaming/streaming.view.c:27
+#: src/app/ui/streaming/streaming.view.c:25
 #, c-format
 msgid "Hint: %s"
 msgstr "Astuce : %s"
 
-#: src/app/ui/streaming/streaming.view.c:76
+#: src/app/ui/streaming/streaming.view.c:74
 msgid "Soft keyboard"
 msgstr "Clavier virtuel"
 
-#: src/app/ui/streaming/streaming.view.c:85
+#: src/app/ui/streaming/streaming.view.c:83
 msgid "Virtual Mouse"
 msgstr "Souris virtuelle"
 
-#: src/app/ui/streaming/streaming.view.c:98
+#: src/app/ui/streaming/streaming.view.c:96
 msgid "Disconnect"
 msgstr "Déconnexion"
 
-#: src/app/ui/streaming/streaming.view.c:107
+#: src/app/ui/streaming/streaming.view.c:105
 msgid "Quit game"
 msgstr "Quitter le jeu"
 
-#: src/app/ui/streaming/streaming.view.c:122
+#: src/app/ui/streaming/streaming.view.c:120
 msgid "Performance"
 msgstr "Performance"
+
