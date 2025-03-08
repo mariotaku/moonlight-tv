@@ -12,7 +12,7 @@ install(FILES "${CMAKE_BINARY_DIR}/appinfo.json" DESTINATION .)
 foreach (I18N_LOCALE ${I18N_LOCALES})
     string(REPLACE "-" "/" I18N_JSON_DIR "resources/${I18N_LOCALE}")
     install(CODE "file(MAKE_DIRECTORY \"\${CMAKE_INSTALL_PREFIX}/${I18N_JSON_DIR}\")"
-            CODE "execute_process(COMMAND ${AWK} -f scripts/webos/po2json.awk i18n/${I18N_LOCALE}/messages.po
+            CODE "execute_process(COMMAND ${AWK} -f scripts/webos/po2json.awk src/i18n/${I18N_LOCALE}/messages.po
                 OUTPUT_FILE \"\${CMAKE_INSTALL_PREFIX}/${I18N_JSON_DIR}/cstrings.json\"
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} COMMAND_ERROR_IS_FATAL ANY)")
 endforeach ()
