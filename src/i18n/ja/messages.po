@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: moonlight-tv\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-21 09:37+0900\n"
-"PO-Revision-Date: 2023-08-01 07:04\n"
+"POT-Creation-Date: 2025-02-25 18:45+0900\n"
+"PO-Revision-Date: 2025-03-08 09:18\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -17,27 +17,27 @@ msgstr ""
 "X-Crowdin-File: messages.pot\n"
 "X-Crowdin-File-ID: 22613\n"
 
-#: src/app/app.c:79
+#: src/app/app.c:87
 msgid "[Localized Language]"
 msgstr "日本語"
 
-#: src/app/app.c:263 src/app/ui/launcher/add.dialog.c:42
-#: src/app/ui/launcher/apps.controller.c:736
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:732
 #: src/app/ui/launcher/server.context_menu.c:89
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: src/app/app.c:263 src/app/ui/launcher/add.dialog.c:42
-#: src/app/ui/launcher/apps.controller.c:662
-#: src/app/ui/launcher/apps.controller.c:769
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:656
+#: src/app/ui/launcher/apps.controller.c:768
 #: src/app/ui/launcher/launcher.controller.c:467
 #: src/app/ui/launcher/launcher.controller.c:482
 #: src/app/ui/launcher/pair.dialog.c:54
-#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:332
+#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:339
 msgid "OK"
 msgstr "OK"
 
-#: src/app/app.c:264
+#: src/app/app.c:278
 msgid "Quit Moonlight?"
 msgstr "Moonlight を終了しますか？"
 
@@ -65,12 +65,20 @@ msgstr "接続が不安定です。"
 msgid "Help"
 msgstr "ヘルプ"
 
+#: src/app/ui/help/help.dialog.c:36
+msgid "Input"
+msgstr ""
+
 #: src/app/ui/help/help.dialog.c:37
 msgid "Gamepad hotkeys"
 msgstr ""
 
 #: src/app/ui/help/help.dialog.c:39
 msgid "Remote controller keys"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:41
+msgid "More help"
 msgstr ""
 
 #: src/app/ui/help/help.dialog.c:42
@@ -86,113 +94,106 @@ msgid "IP address"
 msgstr "IPアドレス"
 
 #: src/app/ui/launcher/add.dialog.c:62
-#, fuzzy
 msgid "IPv4 or IPv6 address"
-msgstr "IPアドレス"
+msgstr ""
 
 #: src/app/ui/launcher/add.dialog.c:81
 msgid "Failed to add computer."
 msgstr ""
 
-#: src/app/ui/launcher/add.dialog.c:160
+#: src/app/ui/launcher/add.dialog.c:161
 msgid "Failed to add computer"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:140
+#: src/app/ui/launcher/apps.controller.c:146
 msgid "Wake"
 msgstr "起動"
 
-#: src/app/ui/launcher/apps.controller.c:140
-#: src/app/ui/launcher/apps.controller.c:142
+#: src/app/ui/launcher/apps.controller.c:146
+#: src/app/ui/launcher/apps.controller.c:148
 msgid "Retry"
 msgstr "再試行"
 
-#: src/app/ui/launcher/apps.controller.c:144
+#: src/app/ui/launcher/apps.controller.c:150
 msgid "Pair"
 msgstr "接続"
 
-#: src/app/ui/launcher/apps.controller.c:393
+#. apploader has error
+#: src/app/ui/launcher/apps.controller.c:386
 msgid "Failed to load apps"
 msgstr "アプリ情報読み込めませんでした"
 
-#: src/app/ui/launcher/apps.controller.c:395
-#: src/app/ui/launcher/apps.controller.c:442
-msgid ""
-"Press \"Retry\" to load again.\n"
-"\n"
+#: src/app/ui/launcher/apps.controller.c:387
+#: src/app/ui/launcher/apps.controller.c:416
+msgid "Press \"Retry\" to load again.\n\n"
 "Restart your computer if error persists."
-msgstr ""
-"「再試行」を押すともう一度読み込めます。\n"
-"\n"
+msgstr "「再試行」を押すともう一度読み込めます。\n\n"
 "エラーが解決しない場合、パソコンを再起動してください。"
 
-#: src/app/ui/launcher/apps.controller.c:424
+#: src/app/ui/launcher/apps.controller.c:404
 msgid "Not paired"
 msgstr "ペアリングされていません"
 
-#: src/app/ui/launcher/apps.controller.c:426
-msgid "Press \"Pair\", and input PIN code on your computer to pair."
+#: src/app/ui/launcher/apps.controller.c:405
+msgid "Press \"Pair\" to pair this host with your account."
 msgstr ""
-"「接続」を押すと、PINコードが表示されます。パソコンにPINコードを入力してくだ"
-"さい。"
 
-#: src/app/ui/launcher/apps.controller.c:440
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:415
 msgid "Host error"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:458
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:426
 msgid "Offline"
 msgstr "オフライン"
 
-#: src/app/ui/launcher/apps.controller.c:460
-msgid ""
-"Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it "
-"supports this feature, press \"Retry\" to connect again.\n"
-"\n"
+#: src/app/ui/launcher/apps.controller.c:427
+msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
 "Try restart your computer if these doesn't work."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:602
+#: src/app/ui/launcher/apps.controller.c:596
 msgid "Quitting game..."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:663
+#: src/app/ui/launcher/apps.controller.c:657
 msgid "Unable to quit game"
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:664
+#: src/app/ui/launcher/apps.controller.c:658
 msgid "Please make sure you are quitting with the same client."
 msgstr ""
 
-#: src/app/ui/launcher/apps.controller.c:713
+#: src/app/ui/launcher/apps.controller.c:709
 msgid "Resume streaming"
 msgstr "ストリーミングを再開"
 
-#: src/app/ui/launcher/apps.controller.c:714
+#: src/app/ui/launcher/apps.controller.c:710
 msgid "Start streaming"
 msgstr "ストリーミングを開始"
 
-#: src/app/ui/launcher/apps.controller.c:720
+#: src/app/ui/launcher/apps.controller.c:716
 msgid "Stop streaming"
 msgstr "ストリーミングを停止"
 
-#: src/app/ui/launcher/apps.controller.c:724
+#: src/app/ui/launcher/apps.controller.c:720
 msgid "Unstar"
 msgstr "スターを外す"
 
-#: src/app/ui/launcher/apps.controller.c:724
+#: src/app/ui/launcher/apps.controller.c:720
 msgid "Star"
 msgstr "スター"
 
-#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/apps.controller.c:724
 msgid "Unhide"
 msgstr "リストに表示"
 
-#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/apps.controller.c:724
 msgid "Hide"
 msgstr "リストに非表示"
 
-#: src/app/ui/launcher/apps.controller.c:732
+#: src/app/ui/launcher/apps.controller.c:728
 #: src/app/ui/launcher/server.context_menu.c:75
 msgid "Info"
 msgstr "情報"
@@ -202,10 +203,8 @@ msgid "No working decoder"
 msgstr ""
 
 #: src/app/ui/launcher/launcher.controller.c:472
-msgid ""
-"Streaming can't work without a valid decoder.\n"
-"(If your device supports moonlight-embedded, install it and Moonlight will "
-"use it automatically.)"
+msgid "Streaming can't work without a valid decoder.\n"
+"(If your device supports moonlight-embedded, install it and Moonlight will use it automatically.)"
 msgstr ""
 
 #: src/app/ui/launcher/launcher.controller.c:476
@@ -213,15 +212,11 @@ msgid "Streaming can't work without a valid decoder."
 msgstr ""
 
 #: src/app/ui/launcher/launcher.controller.c:483
-#, fuzzy
 msgid "Can't save settings"
-msgstr "基本設定"
+msgstr ""
 
 #: src/app/ui/launcher/launcher.controller.c:486
-msgid ""
-"Can't find a writable directory to save settings. Settings and pairing "
-"information will be lost when the TV is turned off.\n"
-"\n"
+msgid "Can't find a writable directory to save settings. Settings and pairing information will be lost when the TV is turned off.\n\n"
 "(If you're using webOS 3.0 or newer, restart the TV may fix this issue.)"
 msgstr ""
 
@@ -258,8 +253,7 @@ msgstr ""
 
 #: src/app/ui/launcher/server.context_menu.c:133
 #, c-format
-msgid ""
-"IP address: %s\n"
+msgid "IP address: %s\n"
 "GPU: %s\n"
 "Supports 4K: %s\n"
 "Supports HDR: %s\n"
@@ -267,7 +261,7 @@ msgid ""
 "GeForce Experience: %s"
 msgstr ""
 
-#: src/app/ui/root.c:333
+#: src/app/ui/root.c:340
 msgid "Failed to start streaming"
 msgstr "ストリーミングを開始できませんでした"
 
@@ -307,6 +301,11 @@ msgstr "自動"
 msgid "Audio backend - using %s"
 msgstr ""
 
+#: src/app/ui/settings/panes/audio.pane.c:110
+#: src/app/ui/settings/settings.controller.c:24
+msgid "Audio Settings"
+msgstr ""
+
 #: src/app/ui/settings/panes/audio.pane.c:112
 msgid "Sound Channels (Experimental)"
 msgstr ""
@@ -320,34 +319,37 @@ msgstr ""
 msgid "%s is conflicting with %s"
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:89
+#: src/app/ui/settings/panes/basic.pane.c:95
 msgid "Resolution and FPS"
 msgstr "解像度とリフレッシュレート"
 
-#: src/app/ui/settings/panes/basic.pane.c:139
+#: src/app/ui/settings/panes/basic.pane.c:145
 msgid "Video bitrate"
 msgstr "ビデオビットレート"
 
-#: src/app/ui/settings/panes/basic.pane.c:155
+#: src/app/ui/settings/panes/basic.pane.c:161
 msgid "Fullscreen UI"
 msgstr "全画面表示"
 
 #: src/app/ui/settings/panes/basic.pane.c:166
-#: src/app/ui/settings/panes/basic.pane.c:167
+msgid "Can't use windowed UI for this decoder"
+msgstr ""
+
+#: src/app/ui/settings/panes/basic.pane.c:172
+#: src/app/ui/settings/panes/basic.pane.c:173
 msgid "Language"
 msgstr "言語"
 
-#: src/app/ui/settings/panes/basic.pane.c:197
-msgid ""
-"Your computer may not perform well when using this resolution and framerate."
+#: src/app/ui/settings/panes/basic.pane.c:205
+msgid "Your computer may not perform well when using this resolution and framerate."
 msgstr ""
 
-#: src/app/ui/settings/panes/basic.pane.c:212
+#: src/app/ui/settings/panes/basic.pane.c:220
 #, c-format
 msgid "Video bitrate - %d kbps"
 msgstr "ビデオビットレート - %d kbps"
 
-#: src/app/ui/settings/panes/basic.pane.c:220
+#: src/app/ui/settings/panes/basic.pane.c:228
 msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr ""
 
@@ -356,9 +358,7 @@ msgid "Optimize game settings for streaming"
 msgstr ""
 
 #: src/app/ui/settings/panes/host.pane.c:27
-msgid ""
-"Change in-game settings to optimize for streaming. Resolution will be "
-"limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
 msgstr ""
 
 #: src/app/ui/settings/panes/host.pane.c:30
@@ -374,73 +374,75 @@ msgid "Don't send mouse, keyboard or gamepad input to host computer."
 msgstr ""
 
 #: src/app/ui/settings/panes/input.pane.c:49
+msgid "Capture system keys"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:50
+msgid "Capture and send system keys (e.g. Meta/Win key) to host computer."
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:52
 msgid "Mouse"
 msgstr "マウス"
 
-#: src/app/ui/settings/panes/input.pane.c:52
+#: src/app/ui/settings/panes/input.pane.c:55
 msgid "Use mouse hardware"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:55
-msgid ""
-"Use plugged mouse device only when streaming. This will have better "
-"performance, but absolute mouse mode will not be enabled."
+#: src/app/ui/settings/panes/input.pane.c:58
+msgid "Use plugged mouse device only when streaming. This will have better performance, but absolute mouse mode will not be enabled."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:60
+#: src/app/ui/settings/panes/input.pane.c:63
 msgid "Absolute mouse mode"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:62
-#: src/app/ui/settings/panes/input.pane.c:101
-msgid ""
-"Better for remote desktop. For some games, mouse will not work properly."
+#: src/app/ui/settings/panes/input.pane.c:65
+#: src/app/ui/settings/panes/input.pane.c:104
+msgid "Better for remote desktop. For some games, mouse will not work properly."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:65
+#: src/app/ui/settings/panes/input.pane.c:68
 msgid "Gamepad"
 msgstr "コントローラー"
 
-#: src/app/ui/settings/panes/input.pane.c:67
-#: src/app/ui/settings/panes/input.pane.c:108
+#: src/app/ui/settings/panes/input.pane.c:70
+#: src/app/ui/settings/panes/input.pane.c:111
 msgid "Analog stick deadzone"
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:71
-msgid ""
-"Note: Some games can enforce a larger deadzone than what Moonlight is "
-"configured to use."
+#: src/app/ui/settings/panes/input.pane.c:74
+msgid "Note: Some games can enforce a larger deadzone than what Moonlight is configured to use."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:74
+#: src/app/ui/settings/panes/input.pane.c:77
 msgid "Virtual mouse"
 msgstr "仮想マウス"
 
-#: src/app/ui/settings/panes/input.pane.c:75
-msgid ""
-"Press LB + RS to move mouse cursor with sticks. LT/RT for left/right mouse "
-"buttons."
+#: src/app/ui/settings/panes/input.pane.c:78
+msgid "Press LB + RS to move mouse cursor with sticks. LT/RT for left/right mouse buttons."
 msgstr ""
 
-#: src/app/ui/settings/panes/input.pane.c:78
+#: src/app/ui/settings/panes/input.pane.c:81
 msgid "Swap ABXY buttons"
 msgstr "ABXYボタンを入れ替える"
 
-#: src/app/ui/settings/panes/input.pane.c:79
-msgid ""
-"Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like "
-"layouts."
-msgstr ""
-"A/BとX/Yのコントローラボタンを入れ替えます。任天堂のようなレイアウトを好む場"
-"合に便利です。"
+#: src/app/ui/settings/panes/input.pane.c:82
+msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
+msgstr "A/BとX/Yのコントローラボタンを入れ替えます。任天堂のようなレイアウトを好む場合に便利です。"
 
-#: src/app/ui/settings/panes/input.pane.c:97
+#: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr ""
 
 #: src/app/ui/settings/panes/video.pane.c:78
 #, c-format
 msgid "Video decoder - using %s"
+msgstr ""
+
+#: src/app/ui/settings/panes/video.pane.c:93
+#: src/app/ui/settings/settings.controller.c:25
+msgid "Video Settings"
 msgstr ""
 
 #: src/app/ui/settings/panes/video.pane.c:95
@@ -461,15 +463,13 @@ msgid "Use AV1 when possible (Experimental)"
 msgstr ""
 
 #: src/app/ui/settings/panes/video.pane.c:111
-msgid ""
-"AV1 usually has better graphics, and supports HDR. However, it might be much "
-"slower than H265 or H264."
+msgid "AV1 usually has better graphics, and supports HDR. However, it might be much slower than H265 or H264."
 msgstr ""
 
 #: src/app/ui/settings/panes/video.pane.c:115
-#, fuzzy, c-format
+#, c-format
 msgid "%s decoder doesn't support AV1 codec."
-msgstr "デコーダー「%s」はHDRに対応していません。"
+msgstr ""
 
 #: src/app/ui/settings/panes/video.pane.c:119
 msgid "HDR"
@@ -485,14 +485,11 @@ msgid "%s decoder doesn't support HDR."
 msgstr "デコーダー「%s」はHDRに対応していません。"
 
 #: src/app/ui/settings/panes/video.pane.c:163
-#, fuzzy
 msgid "H265 or AV1 is required to use HDR."
-msgstr "HDRの使用にはH265が必要です。"
+msgstr ""
 
 #: src/app/ui/settings/panes/video.pane.c:166
-msgid ""
-"HDR is only supported on certain games and when connecting to supported "
-"monitor."
+msgid "HDR is only supported on certain games and when connecting to supported monitor."
 msgstr ""
 
 #: src/app/ui/settings/settings.controller.c:21
@@ -507,16 +504,6 @@ msgstr "PC設定"
 msgid "Input Settings"
 msgstr "入力設定"
 
-#: src/app/ui/settings/settings.controller.c:24
-#, fuzzy
-msgid "Audio Settings"
-msgstr "PC設定"
-
-#: src/app/ui/settings/settings.controller.c:25
-#, fuzzy
-msgid "Video Settings"
-msgstr "PC設定"
-
 #: src/app/ui/settings/settings.controller.c:26
 msgid "About"
 msgstr "アプリ情報"
@@ -529,47 +516,52 @@ msgstr "後で"
 msgid "Some settings require a restart to take effect."
 msgstr ""
 
-#: src/app/ui/streaming/streaming.controller.c:143
+#: src/app/ui/streaming/hints.c:9
+msgid "Long press BACK (or press EXIT for traditional TV remote) while streaming, to open status overlay."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:10
+msgid "Frequent lagging on 5GHz Wi-Fi? Try changing to another channel, check Help for details."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:11
+msgid "Xbox One/Series controller can't be directly connected via cable or official adapter."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:13
+msgid "If you have ultra-wide monitor, you may need to change its resolution to fit 16:9 for streaming."
+msgstr ""
+
+#: src/app/ui/streaming/streaming.controller.c:147
 msgid "Connecting..."
 msgstr "接続中..."
 
-#: src/app/ui/streaming/streaming.controller.c:163
+#: src/app/ui/streaming/streaming.controller.c:167
 msgid "Disconnecting..."
 msgstr "切断中..."
 
-#: src/app/ui/streaming/streaming.view.c:26
+#: src/app/ui/streaming/streaming.view.c:25
 #, c-format
 msgid "Hint: %s"
 msgstr ""
 
-#: src/app/ui/streaming/streaming.view.c:75
+#: src/app/ui/streaming/streaming.view.c:74
 msgid "Soft keyboard"
 msgstr "キーボードを表示"
 
-#: src/app/ui/streaming/streaming.view.c:84
+#: src/app/ui/streaming/streaming.view.c:83
 msgid "Virtual Mouse"
 msgstr "仮想マウス"
 
-#: src/app/ui/streaming/streaming.view.c:97
+#: src/app/ui/streaming/streaming.view.c:96
 msgid "Disconnect"
 msgstr "切断"
 
-#: src/app/ui/streaming/streaming.view.c:106
+#: src/app/ui/streaming/streaming.view.c:105
 msgid "Quit game"
 msgstr "ゲームを終了"
 
-#: src/app/ui/streaming/streaming.view.c:121
+#: src/app/ui/streaming/streaming.view.c:120
 msgid "Performance"
 msgstr "パフォーマンス"
 
-#~ msgid "IPv4 address only"
-#~ msgstr "IPv4アドレスのみ"
-
-#~ msgid "Prefer H265 codec"
-#~ msgstr "H265 コーデックを優先"
-
-#~ msgid "HDR (experimental)"
-#~ msgstr "HDR (実験的)"
-
-#~ msgid "Decoder Settings"
-#~ msgstr "デコーダー設定"

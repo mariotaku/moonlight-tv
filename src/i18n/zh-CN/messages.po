@@ -1,0 +1,575 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: moonlight-tv\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-25 18:45+0900\n"
+"PO-Revision-Date: 2025-03-08 09:18\n"
+"Last-Translator: \n"
+"Language-Team: Chinese Simplified\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: moonlight-tv\n"
+"X-Crowdin-Project-ID: 484733\n"
+"X-Crowdin-Language: zh-CN\n"
+"X-Crowdin-File: messages.pot\n"
+"X-Crowdin-File-ID: 22613\n"
+
+#: src/app/app.c:87
+msgid "[Localized Language]"
+msgstr "简体中文"
+
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:732
+#: src/app/ui/launcher/server.context_menu.c:89
+msgid "Cancel"
+msgstr "取消"
+
+#: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
+#: src/app/ui/launcher/apps.controller.c:656
+#: src/app/ui/launcher/apps.controller.c:768
+#: src/app/ui/launcher/launcher.controller.c:467
+#: src/app/ui/launcher/launcher.controller.c:482
+#: src/app/ui/launcher/pair.dialog.c:54
+#: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:339
+msgid "OK"
+msgstr "确定"
+
+#: src/app/app.c:278
+msgid "Quit Moonlight?"
+msgstr "退出Moonlight？"
+
+#: src/app/app_settings.c:33
+msgid "Stereo"
+msgstr "立体声"
+
+#: src/app/app_settings.c:34
+msgid "5.1 Surround"
+msgstr "5.1 声道"
+
+#: src/app/app_settings.c:35
+msgid "7.1 Surround"
+msgstr "7.1 声道"
+
+#: src/app/platform/common/i18n_common.c:6
+msgid "System Language"
+msgstr "系统语言"
+
+#: src/app/stream/connection/session_connnection.c:37
+msgid "Unstable connection."
+msgstr "连接不稳定"
+
+#: src/app/ui/help/help.dialog.c:15 src/app/ui/launcher/launcher.view.c:113
+msgid "Help"
+msgstr "帮助"
+
+#: src/app/ui/help/help.dialog.c:36
+msgid "Input"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:37
+msgid "Gamepad hotkeys"
+msgstr "游戏手柄快捷键"
+
+#: src/app/ui/help/help.dialog.c:39
+msgid "Remote controller keys"
+msgstr "遥控器按键"
+
+#: src/app/ui/help/help.dialog.c:41
+msgid "More help"
+msgstr ""
+
+#: src/app/ui/help/help.dialog.c:42
+msgid "Open moonlight-tv Wiki"
+msgstr "打开 moonlight-tv 文档"
+
+#: src/app/ui/help/help.dialog.c:44
+msgid "Open moonlight-stream Wiki"
+msgstr "打开 moonlight-stream 文档"
+
+#: src/app/ui/launcher/add.dialog.c:58
+msgid "IP address"
+msgstr "IP地址"
+
+#: src/app/ui/launcher/add.dialog.c:62
+msgid "IPv4 or IPv6 address"
+msgstr "IPv4或IPv6地址"
+
+#: src/app/ui/launcher/add.dialog.c:81
+msgid "Failed to add computer."
+msgstr "添加电脑失败"
+
+#: src/app/ui/launcher/add.dialog.c:161
+msgid "Failed to add computer"
+msgstr "添加电脑失败"
+
+#: src/app/ui/launcher/apps.controller.c:146
+msgid "Wake"
+msgstr "唤醒"
+
+#: src/app/ui/launcher/apps.controller.c:146
+#: src/app/ui/launcher/apps.controller.c:148
+msgid "Retry"
+msgstr "重试"
+
+#: src/app/ui/launcher/apps.controller.c:150
+msgid "Pair"
+msgstr "匹配"
+
+#. apploader has error
+#: src/app/ui/launcher/apps.controller.c:386
+msgid "Failed to load apps"
+msgstr "加载应用失败"
+
+#: src/app/ui/launcher/apps.controller.c:387
+#: src/app/ui/launcher/apps.controller.c:416
+msgid "Press \"Retry\" to load again.\n\n"
+"Restart your computer if error persists."
+msgstr "按“重试”按钮重新加载。\n\n"
+"如果持续出错，请尝试重启电脑。"
+
+#: src/app/ui/launcher/apps.controller.c:404
+msgid "Not paired"
+msgstr "未配对"
+
+#: src/app/ui/launcher/apps.controller.c:405
+msgid "Press \"Pair\" to pair this host with your account."
+msgstr ""
+
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:415
+msgid "Host error"
+msgstr "主机错误"
+
+#. server has error
+#: src/app/ui/launcher/apps.controller.c:426
+msgid "Offline"
+msgstr "离线"
+
+#: src/app/ui/launcher/apps.controller.c:427
+msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
+"Try restart your computer if these doesn't work."
+msgstr "按“唤醒”发送Wake-on-LAN请求来尝试唤醒电脑，按“重试”刷新连接状态。\n\n"
+"如果不起作用，请尝试重启电脑。"
+
+#: src/app/ui/launcher/apps.controller.c:596
+msgid "Quitting game..."
+msgstr "正在退出游戏…"
+
+#: src/app/ui/launcher/apps.controller.c:657
+msgid "Unable to quit game"
+msgstr "无法退出游戏"
+
+#: src/app/ui/launcher/apps.controller.c:658
+msgid "Please make sure you are quitting with the same client."
+msgstr "请使用启动游戏的同一客户端退出游戏。"
+
+#: src/app/ui/launcher/apps.controller.c:709
+msgid "Resume streaming"
+msgstr "继续串流"
+
+#: src/app/ui/launcher/apps.controller.c:710
+msgid "Start streaming"
+msgstr "开始串流"
+
+#: src/app/ui/launcher/apps.controller.c:716
+msgid "Stop streaming"
+msgstr "停止串流"
+
+#: src/app/ui/launcher/apps.controller.c:720
+msgid "Unstar"
+msgstr "取消收藏"
+
+#: src/app/ui/launcher/apps.controller.c:720
+msgid "Star"
+msgstr "收藏"
+
+#: src/app/ui/launcher/apps.controller.c:724
+msgid "Unhide"
+msgstr "取消隐藏"
+
+#: src/app/ui/launcher/apps.controller.c:724
+msgid "Hide"
+msgstr "隐藏"
+
+#: src/app/ui/launcher/apps.controller.c:728
+#: src/app/ui/launcher/server.context_menu.c:75
+msgid "Info"
+msgstr "详情"
+
+#: src/app/ui/launcher/launcher.controller.c:468
+msgid "No working decoder"
+msgstr "没有可用的解码器"
+
+#: src/app/ui/launcher/launcher.controller.c:472
+msgid "Streaming can't work without a valid decoder.\n"
+"(If your device supports moonlight-embedded, install it and Moonlight will use it automatically.)"
+msgstr "因为没有可用的解码器，无法进行串流。\n"
+"（如果你的设备支持moonlight-embedded，请先安装它。Moonlight会自动使用它来串流）"
+
+#: src/app/ui/launcher/launcher.controller.c:476
+msgid "Streaming can't work without a valid decoder."
+msgstr "如果没有可用的解码器，串流就无法使用。"
+
+#: src/app/ui/launcher/launcher.controller.c:483
+msgid "Can't save settings"
+msgstr "无法保存设置"
+
+#: src/app/ui/launcher/launcher.controller.c:486
+msgid "Can't find a writable directory to save settings. Settings and pairing information will be lost when the TV is turned off.\n\n"
+"(If you're using webOS 3.0 or newer, restart the TV may fix this issue.)"
+msgstr "无法找到能保存设置的目录。当电视关闭时，设置和配对信息将丢失。\n\n"
+"(如果您正在使用 webOS 3.0 或更高版本，重启电视可能解决这个问题。)"
+
+#. Use list button for normal container
+#: src/app/ui/launcher/launcher.view.c:107
+msgid "Add computer"
+msgstr "添加电脑"
+
+#: src/app/ui/launcher/launcher.view.c:119
+#: src/app/ui/settings/settings.view.c:31
+msgid "Settings"
+msgstr "设置"
+
+#: src/app/ui/launcher/launcher.view.c:125
+#: src/app/ui/settings/settings.controller.c:424
+msgid "Quit"
+msgstr "退出"
+
+#: src/app/ui/launcher/pair.dialog.c:55
+msgid "Pairing"
+msgstr "配对"
+
+#: src/app/ui/launcher/pair.dialog.c:72
+msgid "Enter PIN code on your computer."
+msgstr "在您的电脑上输入PIN码"
+
+#: src/app/ui/launcher/server.context_menu.c:79
+msgid "Show hidden apps"
+msgstr "显示被隐藏的应用"
+
+#: src/app/ui/launcher/server.context_menu.c:84
+msgid "Forget"
+msgstr "忘记"
+
+#: src/app/ui/launcher/server.context_menu.c:133
+#, c-format
+msgid "IP address: %s\n"
+"GPU: %s\n"
+"Supports 4K: %s\n"
+"Supports HDR: %s\n"
+"Host Software Version: %s\n"
+"GeForce Experience: %s"
+msgstr "IP地址: %s\n"
+"GPU: %s\n"
+"支持4K: %s\n"
+"支持HDR: %s\n"
+"软件版本: %s\n"
+"GeForce Experience: %s"
+
+#: src/app/ui/root.c:340
+msgid "Failed to start streaming"
+msgstr "无法开始串流"
+
+#: src/app/ui/settings/panes/about.pane.c:59
+msgid "Version"
+msgstr "版本"
+
+#: src/app/ui/settings/panes/about.pane.c:60
+#: src/app/ui/settings/panes/video.pane.c:77
+msgid "Video decoder"
+msgstr "视频解码器"
+
+#: src/app/ui/settings/panes/about.pane.c:61
+#: src/app/ui/settings/panes/audio.pane.c:94
+msgid "Audio backend"
+msgstr "音频后端"
+
+#: src/app/ui/settings/panes/about.pane.c:64
+msgid "System"
+msgstr "系统"
+
+#: src/app/ui/settings/panes/about.pane.c:71
+msgid "Screen resolution"
+msgstr "屏幕分辨率"
+
+#: src/app/ui/settings/panes/about.pane.c:76
+msgid "Refresh rate"
+msgstr "刷新率"
+
+#: src/app/ui/settings/panes/audio.pane.c:51
+#: src/app/ui/settings/panes/video.pane.c:54
+msgid "Auto"
+msgstr "自动"
+
+#: src/app/ui/settings/panes/audio.pane.c:95
+#, c-format
+msgid "Audio backend - using %s"
+msgstr "音频后端 - 使用 %s"
+
+#: src/app/ui/settings/panes/audio.pane.c:110
+#: src/app/ui/settings/settings.controller.c:24
+msgid "Audio Settings"
+msgstr "音频设置"
+
+#: src/app/ui/settings/panes/audio.pane.c:112
+msgid "Sound Channels (Experimental)"
+msgstr "多声道（实验功能）"
+
+#: src/app/ui/settings/panes/av_pane.c:29
+msgid "Moonlight embedded will pick the suitable decoder automatically"
+msgstr "Moonlight embedded会自动选择合适的解码器"
+
+#: src/app/ui/settings/panes/av_pane.c:50
+#, c-format
+msgid "%s is conflicting with %s"
+msgstr "%s 与 %s 冲突"
+
+#: src/app/ui/settings/panes/basic.pane.c:95
+msgid "Resolution and FPS"
+msgstr "分辨率和帧率"
+
+#: src/app/ui/settings/panes/basic.pane.c:145
+msgid "Video bitrate"
+msgstr "视频比特率"
+
+#: src/app/ui/settings/panes/basic.pane.c:161
+msgid "Fullscreen UI"
+msgstr "全屏"
+
+#: src/app/ui/settings/panes/basic.pane.c:166
+msgid "Can't use windowed UI for this decoder"
+msgstr ""
+
+#: src/app/ui/settings/panes/basic.pane.c:172
+#: src/app/ui/settings/panes/basic.pane.c:173
+msgid "Language"
+msgstr "语言"
+
+#: src/app/ui/settings/panes/basic.pane.c:205
+msgid "Your computer may not perform well when using this resolution and framerate."
+msgstr "你的电脑性能可能不足以使用这个分辨率和帧率。"
+
+#: src/app/ui/settings/panes/basic.pane.c:220
+#, c-format
+msgid "Video bitrate - %d kbps"
+msgstr "视频比特率 - %d kbps"
+
+#: src/app/ui/settings/panes/basic.pane.c:228
+msgid "Higher bitrate may cause performance issue, try with caution."
+msgstr "过高的比特率可能会导致性能问题，请谨慎尝试。"
+
+#: src/app/ui/settings/panes/host.pane.c:26
+msgid "Optimize game settings for streaming"
+msgstr "为串流优化游戏设置"
+
+#: src/app/ui/settings/panes/host.pane.c:27
+msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
+msgstr "更改游戏设置以优化串流。分辨率会被限制在720p、1080p和4K，帧率也会被限制在30/60帧。"
+
+#: src/app/ui/settings/panes/host.pane.c:30
+msgid "Mute computer while streaming"
+msgstr "串流时在电脑上静音"
+
+#: src/app/ui/settings/panes/input.pane.c:46
+msgid "View-only mode"
+msgstr "仅查看模式"
+
+#: src/app/ui/settings/panes/input.pane.c:47
+msgid "Don't send mouse, keyboard or gamepad input to host computer."
+msgstr "不把鼠标、键盘和游戏手柄的输入发送到电脑上。"
+
+#: src/app/ui/settings/panes/input.pane.c:49
+msgid "Capture system keys"
+msgstr "捕捉系统按键"
+
+#: src/app/ui/settings/panes/input.pane.c:50
+msgid "Capture and send system keys (e.g. Meta/Win key) to host computer."
+msgstr "串流时捕捉并发送系统按键（比如Windows徽标键）"
+
+#: src/app/ui/settings/panes/input.pane.c:52
+msgid "Mouse"
+msgstr "鼠标"
+
+#: src/app/ui/settings/panes/input.pane.c:55
+msgid "Use mouse hardware"
+msgstr "使用鼠标硬件"
+
+#: src/app/ui/settings/panes/input.pane.c:58
+msgid "Use plugged mouse device only when streaming. This will have better performance, but absolute mouse mode will not be enabled."
+msgstr "在串流时使用插入的鼠标硬件。这会带来性能提升，但是绝对指针模式将不可用。"
+
+#: src/app/ui/settings/panes/input.pane.c:63
+msgid "Absolute mouse mode"
+msgstr "绝对指针模式"
+
+#: src/app/ui/settings/panes/input.pane.c:65
+#: src/app/ui/settings/panes/input.pane.c:104
+msgid "Better for remote desktop. For some games, mouse will not work properly."
+msgstr "对远程桌面更适用。开启后，在一些游戏中鼠标可能表现不正常。"
+
+#: src/app/ui/settings/panes/input.pane.c:68
+msgid "Gamepad"
+msgstr "游戏控制器"
+
+#: src/app/ui/settings/panes/input.pane.c:70
+#: src/app/ui/settings/panes/input.pane.c:111
+msgid "Analog stick deadzone"
+msgstr "摇杆死区"
+
+#: src/app/ui/settings/panes/input.pane.c:74
+msgid "Note: Some games can enforce a larger deadzone than what Moonlight is configured to use."
+msgstr "注意：一些游戏会使用比Moonlight的设置更大的死区"
+
+#: src/app/ui/settings/panes/input.pane.c:77
+msgid "Virtual mouse"
+msgstr "虚拟鼠标"
+
+#: src/app/ui/settings/panes/input.pane.c:78
+msgid "Press LB + RS to move mouse cursor with sticks. LT/RT for left/right mouse buttons."
+msgstr "按LB + RS来切换使用摇杆控制鼠标指针。LT=鼠标左键，RT=鼠标右键。"
+
+#: src/app/ui/settings/panes/input.pane.c:81
+msgid "Swap ABXY buttons"
+msgstr "交换ABXY键位"
+
+#: src/app/ui/settings/panes/input.pane.c:82
+msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
+msgstr "交换手柄的A/B和X/Y键。如果你习惯使用类似任天堂的按键布局会有用。"
+
+#: src/app/ui/settings/panes/input.pane.c:100
+msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
+msgstr "启用“使用鼠标硬件”后，绝对指针模式无法使用。"
+
+#: src/app/ui/settings/panes/video.pane.c:78
+#, c-format
+msgid "Video decoder - using %s"
+msgstr "视频解码器 - 使用 %s"
+
+#: src/app/ui/settings/panes/video.pane.c:93
+#: src/app/ui/settings/settings.controller.c:25
+msgid "Video Settings"
+msgstr "视频设置"
+
+#: src/app/ui/settings/panes/video.pane.c:95
+msgid "Use H265 when possible"
+msgstr "优先使用 H265"
+
+#: src/app/ui/settings/panes/video.pane.c:99
+msgid "H265 usually has better graphics, and supports HDR."
+msgstr "H265 的画质通常更好，并且支持 HDR。"
+
+#: src/app/ui/settings/panes/video.pane.c:102
+#, c-format
+msgid "%s decoder doesn't support H265 codec."
+msgstr "解码器 %s 不支持 H265 编码。"
+
+#: src/app/ui/settings/panes/video.pane.c:106
+msgid "Use AV1 when possible (Experimental)"
+msgstr "优先使用 AV1 （实验性功能）"
+
+#: src/app/ui/settings/panes/video.pane.c:111
+msgid "AV1 usually has better graphics, and supports HDR. However, it might be much slower than H265 or H264."
+msgstr "AV1 的画质通常更好，并且支持 HDR。"
+
+#: src/app/ui/settings/panes/video.pane.c:115
+#, c-format
+msgid "%s decoder doesn't support AV1 codec."
+msgstr "解码器 %s 不支持 AV1 编码。"
+
+#: src/app/ui/settings/panes/video.pane.c:119
+msgid "HDR"
+msgstr "HDR"
+
+#: src/app/ui/settings/panes/video.pane.c:126
+msgid "Learn more about HDR feature."
+msgstr "了解更多关于HDR功能的信息。"
+
+#: src/app/ui/settings/panes/video.pane.c:159
+#, c-format
+msgid "%s decoder doesn't support HDR."
+msgstr "解码器 %s 不支持 HDR。"
+
+#: src/app/ui/settings/panes/video.pane.c:163
+msgid "H265 or AV1 is required to use HDR."
+msgstr "使用 HDR 必须启用 H265 或 AV1。"
+
+#: src/app/ui/settings/panes/video.pane.c:166
+msgid "HDR is only supported on certain games and when connecting to supported monitor."
+msgstr "请注意HDR仅在部分游戏中支持，通常您还需要连接支持的显示器。"
+
+#: src/app/ui/settings/settings.controller.c:21
+msgid "Basic Settings"
+msgstr "基本设置"
+
+#: src/app/ui/settings/settings.controller.c:22
+msgid "Host Settings"
+msgstr "主机设置"
+
+#: src/app/ui/settings/settings.controller.c:23
+msgid "Input Settings"
+msgstr "输入设置"
+
+#: src/app/ui/settings/settings.controller.c:26
+msgid "About"
+msgstr "关于"
+
+#: src/app/ui/settings/settings.controller.c:424
+msgid "Later"
+msgstr "稍后"
+
+#: src/app/ui/settings/settings.controller.c:425
+msgid "Some settings require a restart to take effect."
+msgstr "一些设置可能需要重启后才能生效。"
+
+#: src/app/ui/streaming/hints.c:9
+msgid "Long press BACK (or press EXIT for traditional TV remote) while streaming, to open status overlay."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:10
+msgid "Frequent lagging on 5GHz Wi-Fi? Try changing to another channel, check Help for details."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:11
+msgid "Xbox One/Series controller can't be directly connected via cable or official adapter."
+msgstr ""
+
+#: src/app/ui/streaming/hints.c:13
+msgid "If you have ultra-wide monitor, you may need to change its resolution to fit 16:9 for streaming."
+msgstr ""
+
+#: src/app/ui/streaming/streaming.controller.c:147
+msgid "Connecting..."
+msgstr "正在连接…"
+
+#: src/app/ui/streaming/streaming.controller.c:167
+msgid "Disconnecting..."
+msgstr "正在断开连接…"
+
+#: src/app/ui/streaming/streaming.view.c:25
+#, c-format
+msgid "Hint: %s"
+msgstr "提示：%s"
+
+#: src/app/ui/streaming/streaming.view.c:74
+msgid "Soft keyboard"
+msgstr "显示软键盘"
+
+#: src/app/ui/streaming/streaming.view.c:83
+msgid "Virtual Mouse"
+msgstr "虚拟鼠标"
+
+#: src/app/ui/streaming/streaming.view.c:96
+msgid "Disconnect"
+msgstr "断开连接"
+
+#: src/app/ui/streaming/streaming.view.c:105
+msgid "Quit game"
+msgstr "退出游戏"
+
+#: src/app/ui/streaming/streaming.view.c:120
+msgid "Performance"
+msgstr "性能"
+
