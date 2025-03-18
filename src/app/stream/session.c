@@ -274,8 +274,6 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate) {
         config->stream.bitrate = (int) video_cap.maxBitrate;
     }
-    config->sops &= streaming_sops_supported(server->modes, config->stream.width, config->stream.height,
-                                             config->stream.fps);
     if (video_cap.codecs & SS4S_VIDEO_H264) {
         config->stream.supportedVideoFormats |= VIDEO_FORMAT_H264;
     }
