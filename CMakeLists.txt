@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 execute_process(COMMAND git describe --tags --abbrev=0 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         OUTPUT_VARIABLE MOONLIGHT_VERSION ERROR_QUIET)
