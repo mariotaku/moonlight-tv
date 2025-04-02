@@ -1,4 +1,6 @@
 [*]
+indent_style = space
+indent_size = 4
 cpp_indent_braces=false
 cpp_indent_multi_line_relative_to=innermost_parenthesis
 cpp_indent_within_parentheses=indent
