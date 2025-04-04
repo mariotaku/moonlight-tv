@@ -167,6 +167,7 @@ int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, 
         case RES_1440P:
             kbps = 20000;
             break;
+        case RES_1800P:
         case RES_4K:
             kbps = 25000;
             break;
