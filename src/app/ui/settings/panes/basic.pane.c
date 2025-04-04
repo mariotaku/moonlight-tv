@@ -49,6 +49,7 @@ static const pref_dropdown_int_pair_entry_t supported_resolutions[] = {
         {"1280 * 720",  1280, 720, true},
         {"1920 * 1080", 1920, 1080},
         {"2560 * 1440", 2560, 1440},
+        {"3200 * 1800", 3200, 1800},
         {"3840 * 2160", 3840, 2160},
 //        {"Automatic", 0,    0, true},
 };

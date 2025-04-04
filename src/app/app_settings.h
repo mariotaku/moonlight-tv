@@ -76,6 +76,7 @@ extern const size_t audio_config_len;
 #define RES_720P RES_MERGE(1280, 720)
 #define RES_1080P RES_MERGE(1920, 1080)
 #define RES_1440P RES_MERGE(2560, 1440)
+#define RES_1800P RES_MERGE(3200, 1800)
 #define RES_4K RES_MERGE(3840, 2160)
 
 void settings_initialize(app_settings_t *config, char *conf_dir);
