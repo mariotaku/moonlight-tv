@@ -130,7 +130,7 @@ jobs:
         id: pi-sysroot
         uses: mariotaku/raspbian-sysroot-action@v1.3
         with:
-          release: bullseye
+          release: bookworm
           packages: ${{github.workspace}}/scripts/raspi/sysroot-packages.list
           arch: ${{ matrix.arch }}
 
