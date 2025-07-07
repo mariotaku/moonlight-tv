@@ -105,7 +105,7 @@ jobs:
 
   build-raspi:
     name: Build (Raspberry Pi ${{ matrix.arch }})
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -130,7 +130,7 @@ jobs:
         id: pi-sysroot
         uses: mariotaku/raspbian-sysroot-action@v1.3
         with:
-          release: bullseye
+          release: bookworm
           packages: ${{github.workspace}}/scripts/raspi/sysroot-packages.list
           arch: ${{ matrix.arch }}
 
