@@ -16,17 +16,16 @@ runs:
     - name: Download webOS NDK
       uses: robinraju/release-downloader@v1.9
       with:
-        repository: "openlgtv/buildroot-nc4"
-        latest: true
-        fileName: "arm-webos-linux-gnueabi_sdk-buildroot.tar.gz"
-        out-file-path: "/tmp"
+        repository: openlgtv/buildroot-nc4
+        tag: webos-b17b4cc
+        fileName: arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
+        out-file-path: /tmp
+        extract: true
 
-    - name: Extract webOS NDK
+    - name: Relocate webOS NDK
       shell: bash
       working-directory: /tmp
-      run: |
-        tar xzf arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
-        ./arm-webos-linux-gnueabi_sdk-buildroot/relocate-sdk.sh
+      run: ./arm-webos-linux-gnueabi_sdk-buildroot/relocate-sdk.sh
 
     - name: Run easy_build
       shell: bash
