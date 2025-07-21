@@ -280,7 +280,7 @@ void ui_cb_destroy_fragment(lv_event_t *e) {
 SDL_Window *app_ui_create_window(app_ui_t *ui) {
     Uint32 win_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     int win_x = SDL_WINDOWPOS_UNDEFINED, win_y = SDL_WINDOWPOS_UNDEFINED,
-            win_width = 1920, win_height = 1080;
+        win_width = 1920, win_height = 1080;
     if (app_configuration->fullscreen) {
         win_flags |= APP_FULLSCREEN_FLAG;
         SDL_DisplayMode mode;
@@ -295,6 +295,14 @@ SDL_Window *app_ui_create_window(app_ui_t *ui) {
         win_width = app_configuration->window_state.w;
         win_height = app_configuration->window_state.h;
     }
+#ifdef TARGET_WEBOS
+    // Since webOS 25 (10.0), exported window will not work unless the window is created with OpenGL flag.
+    // If NDL_DirectMediaInit() is called, exported window will be created, but it will not be able to render video
+    // properly. Applying this workaround before patching SDL2.
+    if (ui->app->os_info.version.major >= 10) {
+        win_flags |= SDL_WINDOW_OPENGL;
+    }
+#endif
     SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
     if (win == NULL) {
 #ifdef TARGET_WEBOS
