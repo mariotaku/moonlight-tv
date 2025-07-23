@@ -296,10 +296,10 @@ SDL_Window *app_ui_create_window(app_ui_t *ui) {
         win_height = app_configuration->window_state.h;
     }
 #ifdef TARGET_WEBOS
-    // Since webOS 25 (10.0), exported window will not work unless the window is created with OpenGL flag.
+    // Since webOS 5, exported window will not work unless the window is created with OpenGL flag.
     // If NDL_DirectMediaInit() is called, exported window will be created, but it will not be able to render video
     // properly. Applying this workaround before patching SDL2.
-    if (ui->app->os_info.version.major >= 10) {
+    if (ui->app->os_info.version.major >= 5) {
         win_flags |= SDL_WINDOW_OPENGL;
     }
 #endif
