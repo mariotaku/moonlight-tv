@@ -54,6 +54,9 @@ bool stream_input_webos_intercept_remote_keys(stream_input_t *input, const SDL_K
                 *keyCode = VK_MENU;
                 return false;
             }
+        case SDL_SCANCODE_WEBOS_RED:
+            bus_pushevent(USER_OPEN_OVERLAY, NULL, NULL);
+            return true;
 #if TV_REMOTE_TOGGLE_SOFT_INPUT
             case SDL_SCANCODE_WEBOS_BLUE:
                 if (absinput_no_control) return true;
