@@ -295,14 +295,6 @@ SDL_Window *app_ui_create_window(app_ui_t *ui) {
         win_width = app_configuration->window_state.w;
         win_height = app_configuration->window_state.h;
     }
-#ifdef TARGET_WEBOS
-    // Since webOS 5, exported window will not work unless the window is created with OpenGL flag.
-    // If NDL_DirectMediaInit() is called, exported window will be created, but it will not be able to render video
-    // properly. Applying this workaround before patching SDL2.
-    if (ui->app->os_info.version.major >= 5) {
-        win_flags |= SDL_WINDOW_OPENGL;
-    }
-#endif
     SDL_Window *win = SDL_CreateWindow("Moonlight", win_x, win_y, win_width, win_height, win_flags);
     if (win == NULL) {
 #ifdef TARGET_WEBOS
