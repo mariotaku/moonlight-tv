@@ -28,8 +28,6 @@ void test_basic() {
     fakeKeyPress(SDLK_RETURN); // Press "OK" to confirm the selection
 
     UNITY_TEST_ASSERT_EQUAL_INT32(35, fps, __LINE__, "FPS value did not match expected value after interaction");
-
-    app_request_exit();
 }
 
 void initSettings(app_settings_t *settings) {

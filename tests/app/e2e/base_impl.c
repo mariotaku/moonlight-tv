@@ -51,10 +51,7 @@ void setUp(void) {
 }
 
 void tearDown(void) {
-    while (app.running) {
-        app_run_loop(&app);
-    }
-    app.running = false;
+    app_request_exit();
     app_deinit(&app);
 }
 
