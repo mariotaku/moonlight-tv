@@ -52,7 +52,7 @@ lv_obj_t *pref_dropdown_fps(lv_obj_t *parent, const int *options, int max, int *
         entries[i].value = options[i];
     }
     // Custom FPS option
-    entries[num_entries - 1].name = locstr("Custom FPS");
+    entries[num_entries - 1].name = strdup(locstr("Custom FPS"));
     entries[num_entries - 1].value = 0;
     entries[num_entries - 1].fallback = true;
 
