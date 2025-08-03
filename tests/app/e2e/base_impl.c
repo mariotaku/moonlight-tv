@@ -57,7 +57,7 @@ void tearDown(void) {
 
 void waitFor(int ms) {
     int start = (int) SDL_GetTicks();
-    while ((SDL_GetTicks() - start) < ms) {
+    while (app.running && (SDL_GetTicks() - start) < ms) {
         app_run_loop(&app);
     }
 }

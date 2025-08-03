@@ -3,6 +3,7 @@
 
 #include "pref_obj.h"
 #include "pref_fps.h"
+#include "pref_res.h"
 #include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
@@ -10,10 +11,6 @@
 typedef struct {
     lv_fragment_t base;
     settings_controller_t *parent;
-
-    pref_dropdown_int_entry_t *fps_options;
-    int fps_options_len;
-    char custom_fps_label[32];
 
     lv_obj_t *res_warning;
     lv_obj_t *bitrate_label;
@@ -50,33 +47,11 @@ const lv_fragment_class_t settings_pane_basic_cls = {
     .create_obj_cb = create_obj,
     .instance_size = sizeof(basic_pane_t),
 };
-static const pref_dropdown_int_pair_entry_t supported_resolutions[] = {
-    {"1280 * 720",  1280, 720, true},
-    {"1920 * 1080", 1920, 1080},
-    {"2560 * 1440", 2560, 1440},
-    {"3200 * 1800", 3200, 1800},
-    {"3840 * 2160", 3840, 2160},
-//        {"Automatic", 0,    0, true},
-};
-
-static const int supported_resolutions_len = sizeof(supported_resolutions) / sizeof(pref_dropdown_int_pair_entry_t);
-
-static const pref_dropdown_int_entry_t builtin_fps[] = {
-    {"30 FPS",  30},
-    {"60 FPS",  60, true},
-    {"90 FPS",  90},
-    {"120 FPS", 120},
-    {"144 FPS", 144},
-    {"240 FPS", 240},
-};
-static const int builtin_fps_len = sizeof(builtin_fps) / sizeof(pref_dropdown_int_entry_t);
 #define BITRATE_STEP 1000
 
 static void pane_ctor(lv_fragment_t *self, void *args) {
     basic_pane_t *pane = (basic_pane_t *) self;
     pane->parent = args;
-    pane->fps_options = lv_mem_alloc((builtin_fps_len + 1) * sizeof(pref_dropdown_int_entry_t));
-    pane->fps_options_len = 0;
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
     init_locale_entries(pane);
 #endif
@@ -87,7 +62,6 @@ static void pane_dtor(lv_fragment_t *self) {
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
     lv_mem_free(pane->lang_entries);
 #endif
-    lv_mem_free(pane->fps_options);
 }
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
@@ -100,8 +74,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_title_label(view, locstr("Resolution and FPS"));
 
 
-    int res_len = supported_resolutions_len;
-    unsigned int max_width = app->ss4s.video_cap.maxWidth, max_height = app->ss4s.video_cap.maxHeight;
+    int max_width = (int) app->ss4s.video_cap.maxWidth, max_height = (int) app->ss4s.video_cap.maxHeight;
 
 #if TARGET_WEBOS
     if (parent->panel_width > 0 && parent->panel_height > 0 &&
@@ -111,18 +84,9 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     }
 #endif
 
-    if (max_width > 0 && max_height > 0) {
-        for (res_len = supported_resolutions_len; res_len > 0; res_len--) {
-            if (supported_resolutions[res_len - 1].value_a <= max_width &&
-                supported_resolutions[res_len - 1].value_b <= max_height) {
-                break;
-            }
-        }
-    }
-
-    lv_obj_t *resolution_dropdown = pref_dropdown_int_pair(view, supported_resolutions, res_len,
-                                                           &app_configuration->stream.width,
-                                                           &app_configuration->stream.height);
+    lv_obj_t *resolution_dropdown = pref_dropdown_res(view, max_width, max_height, 0, 0,
+                                                      &app_configuration->stream.width,
+                                                      &app_configuration->stream.height);
     lv_obj_set_width(resolution_dropdown, LV_PCT(60));
     lv_obj_add_event_cb(resolution_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
