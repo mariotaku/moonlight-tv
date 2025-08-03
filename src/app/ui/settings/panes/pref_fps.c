@@ -4,13 +4,19 @@
 
 #include "util/i18n.h"
 
-static void on_fps_selected(lv_event_t *e);
+static bool is_valid_fps(int fps) {
+    return fps > 0;
+}
+
+static void dropdown_fps_select_cb(lv_event_t *e);
+
+static void dropdown_delete_cb(lv_event_t *e);
 
 static void cus_fps_dialog_cb(lv_event_t *e);
 
-static bool is_valid_fps(int fps);
+static void cus_slider_change_cb(lv_event_t *e);
 
-static void cus_fps_slider_cb(lv_event_t *e);
+static void cus_slider_key_cb(lv_event_t *e);
 
 typedef struct pref_dropdown_fps_ctx {
     lv_obj_t *dropdown;
@@ -65,11 +71,13 @@ lv_obj_t *pref_dropdown_fps(lv_obj_t *parent, const int *options, int max, int *
         lv_dropdown_set_text(fps_dropdown, ctx->custom_fps_text);
     }
 
-    lv_obj_add_event_cb(fps_dropdown, on_fps_selected, LV_EVENT_VALUE_CHANGED, ctx);
+    lv_obj_add_event_cb(fps_dropdown, dropdown_fps_select_cb, LV_EVENT_VALUE_CHANGED, ctx);
+    lv_obj_add_event_cb(fps_dropdown, dropdown_delete_cb, LV_EVENT_DELETE, ctx);
     return fps_dropdown;
 }
 
-void on_fps_selected(lv_event_t *e) {
+
+void dropdown_fps_select_cb(lv_event_t *e) {
     pref_dropdown_fps_ctx_t *ctx = (pref_dropdown_fps_ctx_t *) lv_event_get_user_data(e);
     uint16_t index = lv_dropdown_get_selected(lv_event_get_current_target(e));
     if (ctx->cus_value_set) {
@@ -78,6 +86,7 @@ void on_fps_selected(lv_event_t *e) {
         ctx->cus_value_set = false;
         return;
     }
+    lv_dropdown_set_text(ctx->dropdown, NULL);
     if (index != ctx->num_entries - 1) {
         // Set the value directly if it's not the custom FPS option
         return;
@@ -112,6 +121,7 @@ void on_fps_selected(lv_event_t *e) {
     lv_obj_set_user_data(slider, ctx);
     lv_obj_set_width(slider, LV_PCT(100));
     lv_obj_set_flex_grow(slider, 1);
+    lv_obj_add_event_cb(slider, cus_slider_key_cb, LV_EVENT_KEY, ctx);
 
     lv_obj_t *max_label = lv_label_create(row);
     lv_label_set_text_fmt(max_label, "%d", max_fps);
@@ -123,11 +133,20 @@ void on_fps_selected(lv_event_t *e) {
     lv_obj_set_style_text_align(fps_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_user_data(fps_label, ctx);
 
-    lv_obj_add_event_cb(slider, cus_fps_slider_cb, LV_EVENT_VALUE_CHANGED, fps_label);
+    lv_obj_add_event_cb(slider, cus_slider_change_cb, LV_EVENT_VALUE_CHANGED, fps_label);
 
     lv_obj_add_event_cb(msgbox, cus_fps_dialog_cb, LV_EVENT_VALUE_CHANGED, slider);
 
     lv_obj_center(msgbox);
+}
+
+void dropdown_delete_cb(lv_event_t *e) {
+    pref_dropdown_fps_ctx_t *ctx = (pref_dropdown_fps_ctx_t *) lv_event_get_user_data(e);
+    for (int i = 0; i < ctx->num_entries; i++) {
+        free((void *) ctx->entries[i].name);
+    }
+    lv_mem_free(ctx->entries);
+    lv_mem_free(ctx);
 }
 
 static void cus_fps_dialog_cb(lv_event_t *e) {
@@ -145,13 +164,17 @@ static void cus_fps_dialog_cb(lv_event_t *e) {
     lv_msgbox_close_async(mbox);
 }
 
-static void cus_fps_slider_cb(lv_event_t *e) {
+static void cus_slider_change_cb(lv_event_t *e) {
     lv_obj_t *slider = lv_event_get_current_target(e);
     pref_dropdown_fps_ctx_t *ctx = (pref_dropdown_fps_ctx_t *) lv_obj_get_user_data(slider);
     lv_obj_t *fps_label = lv_event_get_user_data(e);
     lv_label_set_text_fmt(fps_label, locstr("%d FPS"), ctx->cus_slider_value);
 }
 
-bool is_valid_fps(int fps) {
-    return fps > 0;
+static void cus_slider_key_cb(lv_event_t *e) {
+    if (lv_event_get_key(e) != LV_KEY_DOWN) {
+        return;
+    }
+    lv_group_t *group = lv_obj_get_group(lv_event_get_target(e));
+    lv_group_focus_next(group);
 }
