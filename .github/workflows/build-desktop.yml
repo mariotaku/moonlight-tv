@@ -1,0 +1,49 @@
+name: Build (Desktop)
+
+on:
+  push:
+    # Don't run for tags
+    tags-ignore:
+      - 'v*.*.*'
+    branches:
+      - '**'
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Update packages
+        run: sudo apt-get -yq update
+
+      - name: Install Dependencies
+        run: sudo apt-get -y -qq install libsdl2-dev libsdl2-image-dev libopus-dev libcurl4-openssl-dev uuid-dev
+          libavcodec-dev libavutil-dev libexpat1-dev libmbedtls-dev libfontconfig1-dev gettext xvfb
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTARGET_DESKTOP=ON
+
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: cmake --build . --config $BUILD_TYPE
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: xvfb-run ctest -C $BUILD_TYPE

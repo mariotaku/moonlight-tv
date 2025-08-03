@@ -1,0 +1,68 @@
+name: Build (webOS)
+
+on:
+  push:
+    # Don't run for tags
+    tags-ignore:
+      - 'v*.*.*'
+    branches:
+      - '**'
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Short Commit ID
+        shell: bash
+        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Download ares-cli-rs
+        uses: robinraju/release-downloader@v1.9
+        with:
+          repository: "webosbrew/ares-cli-rs"
+          latest: true
+          fileName: "ares-package_*.deb"
+          out-file-path: "temp"
+
+      - name: Download Homebrew Toolbox
+        uses: robinraju/release-downloader@v1.9
+        with:
+          repository: "webosbrew/dev-toolbox-cli"
+          latest: true
+          fileName: "webosbrew-toolbox-*.deb"
+          out-file-path: "temp"
+
+      - name: Update Packages
+        run: sudo apt-get -yq update
+
+      - name: Install Tools
+        run: sudo apt-get install ./temp/*.deb
+
+      - name: webOS Build
+        uses: ./.github/actions/build-webos
+        with:
+          build-type: ${{ env.BUILD_TYPE }}
+
+      - name: Add Commit Hash Suffix
+        shell: bash
+        working-directory: dist
+        run: for file in *.ipk ; do mv $file ${file//_arm/-${SHORT_SHA}_arm} ; done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: webos-snapshot-${{ env.SHORT_SHA }}
+          path: dist/*.ipk
+
+      - name: Compatibility Check
+        run: webosbrew-ipk-verify -f markdown -d -o $GITHUB_STEP_SUMMARY dist/*.ipk
