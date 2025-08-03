@@ -49,7 +49,7 @@ void app_ui_init(app_ui_t *ui, app_t *app);
 
 void app_ui_deinit(app_ui_t *ui);
 
-void app_ui_open(app_ui_t *ui, const app_launch_params_t *params);
+void app_ui_open(app_ui_t *ui, bool open_launcher, const app_launch_params_t *params);
 
 void app_ui_close(app_ui_t *ui);
 
