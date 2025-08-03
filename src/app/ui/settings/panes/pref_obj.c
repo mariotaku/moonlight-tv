@@ -13,10 +13,14 @@ typedef union pref_attrs_t {
         int *ref;
         int step;
     } slider;
+
     struct {
         int *ref;
         const pref_dropdown_int_entry_t *entries;
+
+        bool (*write_predicate)(int);
     } dropdown_int;
+
     struct {
         int *ref_a, *ref_b;
         const pref_dropdown_int_pair_entry_t *entries;
@@ -28,9 +32,9 @@ typedef union pref_attrs_t {
 } pref_attrs_t;
 
 static const lv_obj_class_t pref_label_cls = {
-        .base_class = &lv_label_class,
-        .group_def = LV_OBJ_CLASS_GROUP_DEF_TRUE,
-        .instance_size = sizeof(lv_label_t),
+    .base_class = &lv_label_class,
+    .group_def = LV_OBJ_CLASS_GROUP_DEF_TRUE,
+    .instance_size = sizeof(lv_label_t),
 };
 
 static void pref_attrs_free(lv_event_t *event);
@@ -89,7 +93,7 @@ lv_obj_t *pref_checkbox(lv_obj_t *parent, const char *title, bool *value, bool r
 }
 
 lv_obj_t *pref_dropdown_int(lv_obj_t *parent, const pref_dropdown_int_entry_t *entries, size_t num_entries,
-                            int *value) {
+                            int *value, bool(*write_predicate)(int)) {
     lv_obj_t *dropdown = lv_dropdown_create(parent);
     lv_dropdown_clear_options(dropdown);
     int match_index = -1, fallback_index = -1;
@@ -114,6 +118,7 @@ lv_obj_t *pref_dropdown_int(lv_obj_t *parent, const pref_dropdown_int_entry_t *e
     pref_attrs_t *attrs = lv_mem_alloc(sizeof(pref_attrs_t));
     attrs->dropdown_int.ref = value;
     attrs->dropdown_int.entries = entries;
+    attrs->dropdown_int.write_predicate = write_predicate;
     lv_obj_add_event_cb(dropdown, pref_dropdown_int_change_cb, LV_EVENT_VALUE_CHANGED, attrs);
     lv_obj_add_event_cb(dropdown, pref_attrs_free, LV_EVENT_DELETE, attrs);
     pref_dropdown_key_hack(dropdown);
@@ -271,7 +276,11 @@ static void pref_checkable_dpad_check_restore(lv_event_t *event) {
 static void pref_dropdown_int_change_cb(lv_event_t *event) {
     pref_attrs_t *attrs = lv_event_get_user_data(event);
     int index = lv_dropdown_get_selected(lv_event_get_current_target(event));
-    *attrs->dropdown_int.ref = attrs->dropdown_int.entries[index].value;
+    int new_value = attrs->dropdown_int.entries[index].value;
+    if (attrs->dropdown_int.write_predicate && !attrs->dropdown_int.write_predicate(new_value)) {
+        return;
+    }
+    *attrs->dropdown_int.ref = new_value;
 }
 
 static void pref_dropdown_int_pair_change_cb(lv_event_t *event) {

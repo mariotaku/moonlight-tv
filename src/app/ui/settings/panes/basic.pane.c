@@ -2,6 +2,7 @@
 #include "config.h"
 
 #include "pref_obj.h"
+#include "pref_fps.h"
 #include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
@@ -9,6 +10,10 @@
 typedef struct {
     lv_fragment_t base;
     settings_controller_t *parent;
+
+    pref_dropdown_int_entry_t *fps_options;
+    int fps_options_len;
+    char custom_fps_label[32];
 
     lv_obj_t *res_warning;
     lv_obj_t *bitrate_label;
@@ -40,40 +45,38 @@ static void pref_mark_restart_cb(lv_event_t *e);
 static void update_bitrate_hint(basic_pane_t *pane);
 
 const lv_fragment_class_t settings_pane_basic_cls = {
-        .constructor_cb = pane_ctor,
-        .destructor_cb = pane_dtor,
-        .create_obj_cb = create_obj,
-        .instance_size = sizeof(basic_pane_t),
+    .constructor_cb = pane_ctor,
+    .destructor_cb = pane_dtor,
+    .create_obj_cb = create_obj,
+    .instance_size = sizeof(basic_pane_t),
 };
 static const pref_dropdown_int_pair_entry_t supported_resolutions[] = {
-        {"1280 * 720",  1280, 720, true},
-        {"1920 * 1080", 1920, 1080},
-        {"2560 * 1440", 2560, 1440},
-        {"3200 * 1800", 3200, 1800},
-        {"3840 * 2160", 3840, 2160},
+    {"1280 * 720",  1280, 720, true},
+    {"1920 * 1080", 1920, 1080},
+    {"2560 * 1440", 2560, 1440},
+    {"3200 * 1800", 3200, 1800},
+    {"3840 * 2160", 3840, 2160},
 //        {"Automatic", 0,    0, true},
 };
 
 static const int supported_resolutions_len = sizeof(supported_resolutions) / sizeof(pref_dropdown_int_pair_entry_t);
 
-static const pref_dropdown_int_entry_t supported_fps[] = {
-        {"30 FPS",  30},
-        {"40 FPS",  40},
-        {"45 FPS",  45},
-        {"50 FPS",  50},
-        {"55 FPS",  55},
-        {"60 FPS",  60, true},
-        {"90 FPS",  90},
-        {"120 FPS", 120},
-        {"144 FPS", 144},
-        {"240 FPS", 240},
+static const pref_dropdown_int_entry_t builtin_fps[] = {
+    {"30 FPS",  30},
+    {"60 FPS",  60, true},
+    {"90 FPS",  90},
+    {"120 FPS", 120},
+    {"144 FPS", 144},
+    {"240 FPS", 240},
 };
-static const int supported_fps_len = sizeof(supported_fps) / sizeof(pref_dropdown_int_entry_t);
+static const int builtin_fps_len = sizeof(builtin_fps) / sizeof(pref_dropdown_int_entry_t);
 #define BITRATE_STEP 1000
 
 static void pane_ctor(lv_fragment_t *self, void *args) {
     basic_pane_t *pane = (basic_pane_t *) self;
     pane->parent = args;
+    pane->fps_options = lv_mem_alloc((builtin_fps_len + 1) * sizeof(pref_dropdown_int_entry_t));
+    pane->fps_options_len = 0;
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
     init_locale_entries(pane);
 #endif
@@ -84,6 +87,7 @@ static void pane_dtor(lv_fragment_t *self) {
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
     lv_mem_free(pane->lang_entries);
 #endif
+    lv_mem_free(pane->fps_options);
 }
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
@@ -128,11 +132,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
         max_fps = parent->panel_fps;
     }
 #endif
-    int fps_len;
-    for (fps_len = supported_fps_len; fps_len > 0; fps_len--) {
-        if (max_fps == 0 || supported_fps[fps_len - 1].value <= max_fps) { break; }
-    }
-    lv_obj_t *fps_dropdown = pref_dropdown_int(view, supported_fps, fps_len, &app_configuration->stream.fps);
+    const static int fps_options[] = {30, 60, 90, 120, 144, 240, 0};
+    lv_obj_t *fps_dropdown = pref_dropdown_fps(view, fps_options, (int) max_fps, &app_configuration->stream.fps);
     lv_obj_set_flex_grow(fps_dropdown, 1);
     lv_obj_add_event_cb(fps_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 

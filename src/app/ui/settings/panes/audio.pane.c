@@ -33,11 +33,11 @@ static void pane_dtor(lv_fragment_t *self);
 static void module_changed_cb(lv_event_t *e);
 
 const lv_fragment_class_t settings_pane_audio_cls = {
-        .constructor_cb = pane_ctor,
-        .destructor_cb = pane_dtor,
-        .create_obj_cb = create_obj,
-        .obj_created_cb = obj_created,
-        .instance_size = sizeof(audio_pane_t),
+    .constructor_cb = pane_ctor,
+    .destructor_cb = pane_dtor,
+    .create_obj_cb = create_obj,
+    .obj_created_cb = obj_created,
+    .instance_size = sizeof(audio_pane_t),
 };
 
 static void pane_ctor(lv_fragment_t *self, void *args) {
@@ -112,7 +112,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_title_label(view, locstr("Sound Channels (Experimental)"));
 
     lv_obj_t *ch_dropdown = pref_dropdown_int(view, controller->surround_entries, controller->surround_entries_len,
-                                              &app_configuration->stream.audioConfiguration);
+                                              &app_configuration->stream.audioConfiguration, NULL);
     lv_obj_set_width(ch_dropdown, LV_PCT(100));
 
     lv_obj_add_event_cb(adec_dropdown, module_changed_cb, LV_EVENT_VALUE_CHANGED, controller);
