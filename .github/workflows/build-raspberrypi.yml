@@ -1,0 +1,70 @@
+name: Build (Raspberry Pi)
+
+on:
+  push:
+    # Don't run for tags
+    tags-ignore:
+      - 'v*.*.*'
+    branches:
+      - '**'
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: Build (${{ matrix.arch }})
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        arch: [ armhf, arm64 ]
+
+    steps:
+      - name: Set Short Commit ID
+        shell: bash
+        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+
+      - name: Checkout Source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Update Packages
+        shell: bash
+        run: sudo apt-get -yq update
+
+      - name: Prepare Sysroot
+        id: pi-sysroot
+        uses: mariotaku/raspbian-sysroot-action@v1.3
+        with:
+          release: bookworm
+          packages: ${{github.workspace}}/scripts/raspi/sysroot-packages.list
+          arch: ${{ matrix.arch }}
+
+      - name: Install Build Tools
+        shell: bash
+        run: sudo apt-get -y -qq install crossbuild-essential-${{ matrix.arch }} cmake gettext
+
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{github.workspace}}/build
+        run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        env:
+          CMAKE_TOOLCHAIN_FILE: ${{steps.pi-sysroot.outputs.cmake-toolchain}}
+
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: |
+          cmake --build . --config $BUILD_TYPE
+          cpack
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: raspi-snapshot-${{ matrix.arch }}-${{ env.SHORT_SHA }}
+          path: build/*.deb
