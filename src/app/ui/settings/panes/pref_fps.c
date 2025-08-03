@@ -30,6 +30,9 @@ typedef struct pref_dropdown_fps_ctx {
 } pref_dropdown_fps_ctx_t;
 
 lv_obj_t *pref_dropdown_fps(lv_obj_t *parent, const int *options, int max, int *value) {
+    if (max <= 0) {
+        max = 60; // Default max FPS if not specified
+    }
     bool has_custom_fps = true;
     int num_entries;
     for (num_entries = 0; options[num_entries]; num_entries++) {
