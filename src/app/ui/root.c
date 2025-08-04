@@ -64,6 +64,7 @@ void app_ui_deinit(app_ui_t *ui) {
         SDL_GetWindowPosition(ui->window, &app_configuration->window_state.x, &app_configuration->window_state.y);
         SDL_GetWindowSize(ui->window, &app_configuration->window_state.w, &app_configuration->window_state.h);
     }
+    lv_theme_moonlight_deinit(&ui->theme);
     app_font_deinit(&ui->fonts);
     lv_img_decoder_delete(ui->img_decoder);
 }

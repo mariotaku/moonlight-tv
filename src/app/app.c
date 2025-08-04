@@ -123,6 +123,8 @@ void app_deinit(app_t *app) {
     _lv_draw_mask_cleanup();
 
     SDL_Quit();
+
+    commons_logging_deinit();
 }
 
 void app_run_loop(app_t *app) {
