@@ -144,6 +144,7 @@ static void dropdown_value_changed_cb(lv_event_t *e) {
     lv_dropdown_set_text(ctx->dropdown, NULL);
     if (index != ctx->num_entries - 1) {
         // Set the value directly if it's not the custom FPS option
+        ctx->selected_index = index;
         return;
     }
     // Prevent the event from propagating further
@@ -172,7 +173,7 @@ static void dropdown_value_changed_cb(lv_event_t *e) {
     lv_obj_t *input_w = lv_textarea_create(row);
     lv_obj_set_style_text_font(input_w, lv_theme_get_font_small(input_w), 0);
     lv_textarea_set_one_line(input_w, true);
-//    lv_textarea_set_accepted_chars(input_w, "0123456789");
+    lv_textarea_set_accepted_chars(input_w, "0123456789");
     lv_textarea_set_max_length(input_w, 4);
     snprintf(ctx->placeholder_w, sizeof(ctx->placeholder_w), "%d", ctx->editing_w);
     lv_textarea_set_placeholder_text(input_w, ctx->placeholder_w);
@@ -187,7 +188,7 @@ static void dropdown_value_changed_cb(lv_event_t *e) {
     lv_obj_t *input_h = lv_textarea_create(row);
     lv_obj_set_style_text_font(input_h, lv_theme_get_font_small(input_h), 0);
     lv_textarea_set_one_line(input_h, true);
-//    lv_textarea_set_accepted_chars(input_h, "0123456789");
+    lv_textarea_set_accepted_chars(input_h, "0123456789");
     lv_textarea_set_max_length(input_h, 4);
     snprintf(ctx->placeholder_h, sizeof(ctx->placeholder_h), "%d", ctx->editing_h);
     lv_textarea_set_placeholder_text(input_h, ctx->placeholder_h);
