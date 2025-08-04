@@ -106,8 +106,7 @@ void dropdown_fps_select_cb(lv_event_t *e) {
 
     lv_obj_t *row = lv_obj_create(content);
     lv_obj_remove_style_all(row);
-    lv_obj_set_width(row, LV_PCT(100));
-    lv_obj_set_height(row, LV_SIZE_CONTENT);
+    lv_obj_set_size(row, LV_PCT(100), LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
     lv_obj_set_style_pad_ver(row, LV_DPX(10), 0);
 
