@@ -75,20 +75,20 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
 
     int max_width = (int) app->ss4s.video_cap.maxWidth, max_height = (int) app->ss4s.video_cap.maxHeight;
+    int native_width = 0, native_height = 0;
 
 #if TARGET_WEBOS
     if (parent->panel_width > 0 && parent->panel_height > 0 &&
         (max_width == 0 || max_height == 0 || parent->panel_width < max_width || parent->panel_height < max_height)) {
-        max_width = parent->panel_width;
-        max_height = parent->panel_height;
+        native_width = max_width = parent->panel_width;
+        native_height = max_height = parent->panel_height;
     }
 #endif
 
-    lv_obj_t *resolution_dropdown = pref_dropdown_res(view, max_width, max_height, 0, 0,
-                                                      &app_configuration->stream.width,
-                                                      &app_configuration->stream.height);
-    lv_obj_set_width(resolution_dropdown, LV_PCT(60));
-    lv_obj_add_event_cb(resolution_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
+    lv_obj_t *res_dropdown = pref_dropdown_res(view, max_width, max_height, native_width, native_height,
+                                               &app_configuration->stream.width, &app_configuration->stream.height);
+    lv_obj_set_width(res_dropdown, LV_PCT(60));
+    lv_obj_add_event_cb(res_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
 
     unsigned int max_fps = app->ss4s.video_cap.maxFps;
 #if TARGET_WEBOS
