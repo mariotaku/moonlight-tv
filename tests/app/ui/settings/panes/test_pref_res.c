@@ -82,11 +82,39 @@ void test_custom_invalid() {
     UNITY_TEST_ASSERT_EQUAL_INT32(2160, h, __LINE__, "Height should be set to 2160");
 }
 
+void test_custom_key_input() {
+    static int w = 3840, h = 2160;
+    lv_obj_t *dropdown = pref_dropdown_res(app.ui.container, 3840, 2160, 3840, 2160, &w, &h);
+    lv_obj_set_width(dropdown, LV_PCT(100));
+
+    fakeKeyPress(SDLK_RETURN); // Simulate pressing Enter to open the dropdown
+
+    fakeKeyPress(SDLK_DOWN); // Navigate to the custom resolution option
+
+    fakeKeyPress(SDLK_RETURN); // Select the custom resolution option
+
+    fakeInput("960"); // Input width
+
+    fakeKeyPress(SDLK_RIGHT);
+    fakeKeyPress(SDLK_RIGHT);
+
+    fakeInput("540"); // Input height
+
+    fakeKeyPress(SDLK_DOWN);
+    fakeKeyPress(SDLK_RIGHT); // Navigate to the OK button
+
+    fakeKeyPress(SDLK_RETURN); // Press Enter to confirm
+
+    UNITY_TEST_ASSERT_EQUAL_INT32(960, w, __LINE__, "Width should be set to 960");
+    UNITY_TEST_ASSERT_EQUAL_INT32(540, h, __LINE__, "Height should be set to 540");
+}
+
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_select_720p);
     RUN_TEST(test_widescreen_native);
     RUN_TEST(test_widescreen_custom);
     RUN_TEST(test_custom_invalid);
+    RUN_TEST(test_custom_key_input);
     return UNITY_END();
 }

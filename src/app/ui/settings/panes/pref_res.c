@@ -215,6 +215,8 @@ static void dropdown_value_changed_cb(lv_event_t *e) {
 
     lv_obj_add_event_cb(msgbox, cus_res_dialog_cb, LV_EVENT_VALUE_CHANGED, ctx);
 
+    lv_group_focus_obj(input_w);
+
     lv_obj_center(msgbox);
 
     populate_dialog_btn(ctx);
@@ -276,7 +278,8 @@ static void res_input_key_cb(lv_event_t *e) {
                 ctx->input_reached_end = false;
                 return;
             }
-            if (!ctx->input_reached_start) {
+            size_t input_len = strlen(lv_textarea_get_text(input));
+            if (!ctx->input_reached_start && input_len > 0) {
                 ctx->input_reached_start = true;
                 return;
             }
@@ -289,12 +292,13 @@ static void res_input_key_cb(lv_event_t *e) {
             break;
         }
         case LV_KEY_RIGHT: {
-            if (lv_textarea_get_cursor_pos(input) < strlen(lv_textarea_get_text(input))) {
+            size_t input_len = strlen(lv_textarea_get_text(input));
+            if (lv_textarea_get_cursor_pos(input) < input_len) {
                 ctx->input_reached_start = false;
                 ctx->input_reached_end = false;
                 return;
             }
-            if (!ctx->input_reached_end) {
+            if (!ctx->input_reached_end && input_len > 0) {
                 ctx->input_reached_end = true;
                 return;
             }
@@ -328,7 +332,7 @@ static void cus_res_dialog_cb(lv_event_t *e) {
 
 static void populate_dialog_btn(pref_resolution_ctx_t *ctx) {
     bool res_valid = true;
-    if (ctx->editing_w <= 0 || ctx->editing_h <= 0 || ctx->editing_w % 8 != 0 || ctx->editing_h % 8 != 0) {
+    if (ctx->editing_w <= 0 || ctx->editing_h <= 0 || ctx->editing_w % 2 != 0 || ctx->editing_h % 2 != 0) {
         // width or height is not valid
         res_valid = false;
     } else if (ctx->editing_w > ctx->max_w || ctx->editing_h > ctx->max_h) {
