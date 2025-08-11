@@ -12,3 +12,5 @@ void waitFor(int ms);
 void fakeTap(int x, int y);
 
 void fakeKeyPress(SDL_Keycode key);
+
+void fakeInput(const char *text);

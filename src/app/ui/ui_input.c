@@ -2,18 +2,18 @@
 #include "ui_input.h"
 #include "lvgl/input/lv_drv_sdl_key.h"
 #include "lvgl/lv_sdl_drv_input.h"
-#include "input/app_input.h"
 #include "logging.h"
 
 static void app_input_populate_group(app_ui_input_t *input);
 
+static void app_input_apply_text_input_mode(app_ui_input_t *input);
 
 static const lv_point_t button_points_empty[5] = {
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
-        {.x= 0, .y = 0},
+    {.x= 0, .y = 0},
+    {.x= 0, .y = 0},
+    {.x= 0, .y = 0},
+    {.x= 0, .y = 0},
+    {.x= 0, .y = 0},
 };
 
 
@@ -88,7 +88,6 @@ void app_input_set_button_points(app_ui_input_t *input, const lv_point_t *points
     lv_indev_set_button_points(input->button.indev, points ? points : button_points_empty);
 }
 
-
 void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h) {
     if (w > 0 && h > 0) {
         SDL_Rect rect = {x, y, w, h};
@@ -99,21 +98,15 @@ void app_start_text_input(app_ui_input_t *input, int x, int y, int w, int h) {
         SDL_SetTextInputRect(NULL);
     }
     lv_sdl_key_input_release_key(input->key.indev);
-    if (SDL_IsTextInputActive()) {
-        commons_log_info("Input", "Text input already active");
-        return;
-    }
-    commons_log_info("Input", "Starting text input");
-    SDL_StartTextInput();
     input->text_input_active = true;
+    lv_async_call_cancel((lv_async_cb_t) app_input_apply_text_input_mode, input);
+    lv_async_call((lv_async_cb_t) app_input_apply_text_input_mode, input);
 }
 
 void app_stop_text_input(app_ui_input_t *input) {
-    if (SDL_IsTextInputActive()) {
-        commons_log_info("Input", "Stopping text input");
-    }
-    SDL_StopTextInput();
     input->text_input_active = false;
+    lv_async_call_cancel((lv_async_cb_t) app_input_apply_text_input_mode, input);
+    lv_async_call((lv_async_cb_t) app_input_apply_text_input_mode, input);
 }
 
 bool app_text_input_state_update(app_ui_input_t *input) {
@@ -144,5 +137,18 @@ static void app_input_populate_group(app_ui_input_t *input) {
     }
     if (input->button.indev) {
         lv_indev_set_group(input->button.indev, group);
+    }
+}
+
+static void app_input_apply_text_input_mode(app_ui_input_t *input) {
+    if (input->text_input_active == SDL_IsTextInputActive()) {
+        return;
+    }
+    if (input->text_input_active) {
+        commons_log_info("Input", "Starting text input");
+        SDL_StartTextInput();
+    } else {
+        commons_log_info("Input", "Stopping text input");
+        SDL_StopTextInput();
     }
 }

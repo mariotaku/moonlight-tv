@@ -31,6 +31,11 @@ void lv_theme_moonlight_init(lv_theme_t *theme, const app_fonts_t *fonts, app_t 
     lv_style_set_shadow_opa(&knob_shadow, LV_OPA_50);
 }
 
+void lv_theme_moonlight_deinit(lv_theme_t *theme) {
+    (void) theme;
+    lv_style_reset(&knob_shadow);
+}
+
 const lv_font_t *lv_theme_moonlight_get_iconfont_large(lv_obj_t *obj) {
     lv_theme_t *th = lv_theme_get_from_obj(obj);
     return ((app_t *) th->user_data)->ui.fonts.icons.large;
@@ -106,7 +111,8 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_set_style_text_font(obj, lv_theme_moonlight_get_iconfont_large(obj), LV_PART_INDICATOR);
         lv_dropdown_set_symbol(obj, MAT_SYMBOL_ARROW_DROP_DOWN);
     } else if (lv_obj_check_type(obj, &lv_checkbox_class)) {
-        lv_obj_set_style_text_font(obj, lv_theme_moonlight_get_iconfont_large(obj), LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_text_font(obj, lv_theme_moonlight_get_iconfont_large(obj),
+                                   LV_PART_INDICATOR | LV_STATE_CHECKED);
     } else if (lv_obj_check_type(obj, &lv_slider_class)) {
         lv_obj_add_style(obj, &knob_shadow, LV_PART_KNOB);
     }
@@ -117,13 +123,15 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
 
 static void lv_start_text_input(lv_event_t *event) {
     lv_obj_t *target = lv_event_get_target(event);
-    if (!target->h_layout || !target->w_layout) {
-        return;
-    }
     lv_theme_t *theme = lv_event_get_user_data(event);
     app_t *app = theme->user_data;
     lv_area_t *coords = &target->coords;
-    app_start_text_input(&app->ui.input, coords->x1, coords->y1, lv_area_get_width(coords), lv_area_get_height(coords));
+    lv_coord_t w = lv_area_get_width(coords), h = lv_area_get_height(coords);
+    if (w <= 0 || h <= 0) {
+        // No size, no text input
+        return;
+    }
+    app_start_text_input(&app->ui.input, coords->x1, coords->y1, w, h);
 }
 
 static void lv_stop_text_input(lv_event_t *event) {

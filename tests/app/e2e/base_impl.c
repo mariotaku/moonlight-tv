@@ -45,19 +45,26 @@ void setUp(void) {
     lv_obj_set_style_text_color(cursor_label, lv_color_white(), 0);
     lv_obj_set_style_bg_color(cursor_label, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(cursor_label, LV_OPA_50, 0);
+    lv_obj_set_style_pad_all(cursor_label, LV_DPX(2), 0);
     lv_obj_add_event_cb(cursor, cursor_style_cb, LV_EVENT_STYLE_CHANGED, cursor_label);
 
     lv_indev_set_cursor(app.ui.input.pointer.indev, cursor);
 }
 
 void tearDown(void) {
-    app_request_exit();
+    if (SDL_GetHintBoolean("TEST_E2E_WAIT_FOR_EXIT", SDL_FALSE)) {
+        while (app.running) {
+            app_run_loop(&app);
+        }
+    } else {
+        app_request_exit();
+    }
     app_deinit(&app);
 }
 
 void waitFor(int ms) {
     int start = (int) SDL_GetTicks();
-    while ((SDL_GetTicks() - start) < ms) {
+    while (app.running && (SDL_GetTicks() - start) < ms) {
         app_run_loop(&app);
     }
 }
@@ -111,6 +118,18 @@ void fakeKeyPress(SDL_Keycode key) {
     waitFor(20);
 
     event.key.type = SDL_KEYUP;
+    SDL_PushEvent(&event);
+    waitFor(20);
+}
+
+void fakeInput(const char *text) {
+    SDL_Event event = {
+        .text = {
+            .type = SDL_TEXTINPUT,
+            .timestamp = SDL_GetTicks(),
+        },
+    };
+    strncpy(event.text.text, text, SDL_TEXTINPUTEVENT_TEXT_SIZE - 1);
     SDL_PushEvent(&event);
     waitFor(20);
 }
