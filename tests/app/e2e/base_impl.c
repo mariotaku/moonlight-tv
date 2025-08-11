@@ -52,7 +52,13 @@ void setUp(void) {
 }
 
 void tearDown(void) {
-    app_request_exit();
+    if (SDL_GetHintBoolean("TEST_E2E_WAIT_FOR_EXIT", SDL_FALSE)) {
+        while (app.running) {
+            app_run_loop(&app);
+        }
+    } else {
+        app_request_exit();
+    }
     app_deinit(&app);
 }
 
