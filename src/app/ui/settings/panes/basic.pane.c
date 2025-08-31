@@ -41,6 +41,9 @@ static void pref_mark_restart_cb(lv_event_t *e);
 
 static void update_bitrate_hint(basic_pane_t *pane);
 
+static void calculate_max_resolution(int ui_width, int ui_height, int* max_width, int* max_height, int* native_width,
+    int* native_height);
+
 const lv_fragment_class_t settings_pane_basic_cls = {
     .constructor_cb = pane_ctor,
     .destructor_cb = pane_dtor,
@@ -78,11 +81,11 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     int native_width = 0, native_height = 0;
 
 #if TARGET_WEBOS
-    if (parent->panel_width > 0 && parent->panel_height > 0 &&
-        (max_width == 0 || max_height == 0 || parent->panel_width < max_width || parent->panel_height < max_height)) {
-        native_width = max_width = parent->panel_width;
-        native_height = max_height = parent->panel_height;
-    }
+    native_width = parent->panel_width;
+    native_height = parent->panel_height;
+    calculate_max_resolution(app->ui.width, app->ui.height, &max_width, &max_height, &native_width, &native_height);
+#else
+    calculate_max_resolution(0, 0, &max_width, &max_height, &native_width, &native_height);
 #endif
 
     lv_obj_t *res_dropdown = pref_dropdown_res(view, max_width, max_height, native_width, native_height,
@@ -226,4 +229,19 @@ static void pref_mark_restart_cb(lv_event_t *e) {
     basic_pane_t *pane = (basic_pane_t *) lv_event_get_user_data(e);
     settings_controller_t *parent = pane->parent;
     parent->needs_restart |= strcasecmp(i18n_locale(), app_configuration->language) != 0;
+}
+
+static void calculate_max_resolution(int ui_width, int ui_height, int* max_width, int* max_height, int* native_width,
+    int* native_height) {
+    if (*native_width * ui_height != *native_height * ui_width && *native_width > ui_width || *native_height > ui_height) {
+        *native_width = ui_width * 2;
+        *native_height = ui_height * 2;
+    } else if (*native_width > 0 && *native_height > 0 && (ui_width > *native_width || ui_height > *native_height)) {
+        *native_width = ui_width;
+        *native_height = ui_height;
+    }
+    if (*max_width == 0 || *max_height == 0) {
+        *max_width = *native_width;
+        *max_height = *native_height;
+    }
 }
