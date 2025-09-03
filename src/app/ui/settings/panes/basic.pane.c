@@ -95,7 +95,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     calculate_max_resolution(0, 0, &max_width, &max_height, &native_width, &native_height);
 #endif
 
-    lv_obj_t *res_dropdown = pref_dropdown_res(view, max_width, max_height, native_width, native_height,
+    lv_obj_t *res_dropdown = pref_dropdown_res(view, native_width, native_height, max_width, max_height,
                                                &app_configuration->stream.width, &app_configuration->stream.height);
     lv_obj_set_width(res_dropdown, LV_PCT(60));
     lv_obj_add_event_cb(res_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);
