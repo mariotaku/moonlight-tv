@@ -81,8 +81,8 @@ static void settings_controller_ctor(lv_fragment_t *self, void *args) {
     os_info_get(&fragment->os_info);
 #if TARGET_WEBOS
     if (!SDL_webOSGetPanelResolution(&fragment->panel_width, &fragment->panel_height)) {
-        fragment->panel_width = 0;
-        fragment->panel_height = 0;
+        fragment->panel_width = 1920;
+        fragment->panel_height = 1080;
     }
     if (!SDL_webOSGetRefreshRate(&fragment->panel_fps)) {
         fragment->panel_fps = 60;
