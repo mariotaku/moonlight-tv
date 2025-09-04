@@ -33,26 +33,39 @@ lv_obj_t *pref_dropdown_fps(lv_obj_t *parent, const int *options, int max, int *
     if (max <= 0) {
         max = 60; // Default max FPS if not specified
     }
-    bool has_custom_fps = true;
-    int num_entries;
-    for (num_entries = 0; options[num_entries]; num_entries++) {
-        if (options[num_entries] == *value) {
+    bool has_max_fps = true, has_custom_fps = true;
+    int num_options, num_entries;
+    for (num_options = 0; options[num_options]; num_options++) {
+        if (options[num_options] == *value) {
             // If the current value is in the options, then it's not a custom FPS
             has_custom_fps = false;
         }
-        if (options[num_entries] > max) {
+        if (options[num_options] == max) {
+            has_max_fps = false;
+        }
+        if (options[num_options] > max) {
             break;
         }
+    }
+    num_entries = num_options;
+    if (has_max_fps) {
+        // The max option is included if it's not already in the list
+        num_entries++;
     }
     // Include an extra entry for the custom FPS option
     num_entries++;
 
     pref_dropdown_int_entry_t *entries = lv_mem_alloc(sizeof(pref_dropdown_int_entry_t) * num_entries);
     char buf[32];
-    for (int i = 0; i < num_entries; i++) {
+    for (int i = 0; i < num_options; i++) {
         snprintf(buf, sizeof(buf), locstr("%d FPS"), options[i]);
         entries[i].name = strndup(buf, sizeof(buf));
         entries[i].value = options[i];
+    }
+    if (has_max_fps) {
+        snprintf(buf, sizeof(buf), locstr("%d FPS"), max);
+        entries[num_options].name = strndup(buf, sizeof(buf));
+        entries[num_options].value = max;
     }
     // Custom FPS option
     entries[num_entries - 1].name = strdup(locstr("Custom FPS"));
