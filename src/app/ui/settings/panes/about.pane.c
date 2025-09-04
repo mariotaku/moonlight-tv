@@ -69,8 +69,6 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
         char resolution_text[16];
         SDL_snprintf(resolution_text, sizeof(resolution_text), "%5d * %5d", parent->panel_width, parent->panel_height);
         about_line(view, locstr("Screen resolution"), resolution_text, rowcount++, 1);
-    } else {
-        about_line(view, locstr("Screen resolution"), "Unknown", rowcount++, 1);
     }
     if (parent->panel_fps > 0) {
         char fps_text[16];
