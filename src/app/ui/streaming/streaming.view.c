@@ -35,9 +35,14 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_clear_flag(overlay, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_size(overlay, LV_PCT(100), LV_PCT(100));
 
+    int stats_w = LV_DPX(384);
+    lv_disp_t *disp = lv_disp_get_default();
+    int video_w = lv_disp_get_hor_res(disp) - LV_DPX(20) * 2 - LV_DPX(30) - stats_w;
+    int video_h_pct = video_w * 100 / lv_disp_get_hor_res(disp);
+
     lv_obj_t *video = lv_obj_create(overlay);
     lv_obj_remove_style_all(video);
-    lv_obj_set_size(video, LV_PCT(50), LV_PCT(50));
+    lv_obj_set_size(video, video_w, LV_PCT(video_h_pct));
     lv_obj_align(video, LV_ALIGN_TOP_LEFT, LV_DPX(20), LV_DPX(20));
     lv_obj_clear_flag(video, LV_OBJ_FLAG_CLICKABLE);
 
@@ -112,7 +117,7 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_set_style_bg_opa(stats, LV_OPA_40, 0);
     lv_obj_set_style_bg_opa(stats, LV_OPA_30, LV_STATE_USER_1);
     lv_obj_set_style_pad_bottom(stats, LV_DPX(10), 0);
-    lv_obj_set_size(stats, LV_PCT(40), LV_SIZE_CONTENT);
+    lv_obj_set_size(stats, stats_w, LV_SIZE_CONTENT);
     lv_obj_set_flex_flow(stats, LV_FLEX_FLOW_ROW_WRAP);
     lv_obj_align(stats, LV_ALIGN_TOP_RIGHT, -LV_DPX(20), LV_DPX(20));
     lv_obj_set_user_data(stats, controller);

@@ -7,6 +7,7 @@
 #include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
+#include "logging.h"
 
 typedef struct {
     lv_fragment_t base;
@@ -75,17 +76,23 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
 
     int max_width = (int) app->ss4s.video_cap.maxWidth, max_height = (int) app->ss4s.video_cap.maxHeight;
-    int native_width = 0, native_height = 0;
+    int native_width = app->ui.width, native_height = app->ui.height;
 
 #if TARGET_WEBOS
-    if (parent->panel_width > 0 && parent->panel_height > 0 &&
-        (max_width == 0 || max_height == 0 || parent->panel_width < max_width || parent->panel_height < max_height)) {
-        native_width = max_width = parent->panel_width;
-        native_height = max_height = parent->panel_height;
+    if (parent->panel_width > 0 && parent->panel_height > 0) {
+        native_width = parent->panel_width;
+        native_height = parent->panel_height;
     }
-#endif
 
-    lv_obj_t *res_dropdown = pref_dropdown_res(view, max_width, max_height, native_width, native_height,
+    commons_log_info("Settings", "Panel native resolution: %d x %d, maximum video resolution: %d x %d",
+                     native_width, native_height, max_width, max_height);
+#endif
+    if (max_width == 0 || max_height == 0) {
+        max_width = native_width;
+        max_height = native_height;
+    }
+
+    lv_obj_t *res_dropdown = pref_dropdown_res(view, native_width, native_height, max_width, max_height,
                                                &app_configuration->stream.width, &app_configuration->stream.height);
     lv_obj_set_width(res_dropdown, LV_PCT(60));
     lv_obj_add_event_cb(res_dropdown, on_res_fps_updated, LV_EVENT_VALUE_CHANGED, self);

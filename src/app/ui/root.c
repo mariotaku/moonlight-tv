@@ -221,7 +221,12 @@ void ui_display_size(app_ui_t *ui, int width, int height) {
     ui->width = width;
     ui->height = height;
     if (ui->dpi <= 0) {
-        ui->dpi = width / 6;
+        // For wide-screen (wider than 16:9), we use height instead of width to calculate DPI
+        if (width * 9 > height * 16) {
+            ui->dpi = height / 3;
+        } else {
+            ui->dpi = width / 6;
+        }
     }
     commons_log_info("UI", "Display size changed to %d x %d", width, height);
 }

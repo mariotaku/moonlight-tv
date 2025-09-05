@@ -73,8 +73,9 @@ bool streaming_refresh_stats() {
     const struct VIDEO_INFO *info = &vdec_stream_info;
     if (info->width > 0 && info->height > 0) {
         lv_label_set_text_fmt(controller->stats_items.resolution, "%d * %d", info->width, info->height);
+        lv_obj_clear_flag(lv_obj_get_parent(controller->stats_items.resolution), LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_label_set_text(controller->stats_items.resolution, "N/A");
+        lv_obj_add_flag(lv_obj_get_parent(controller->stats_items.resolution), LV_OBJ_FLAG_HIDDEN);
     }
     lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)",
                           SS4S_ModuleInfoGetId(app->ss4s.selection.video_module), vdec_stream_info.format);

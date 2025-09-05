@@ -30,6 +30,40 @@ void test_basic() {
     UNITY_TEST_ASSERT_EQUAL_INT32(35, fps, __LINE__, "FPS value did not match expected value after interaction");
 }
 
+void test_120fps() {
+    const static int options[] = {30, 60, 90, 120, 144, 240, 0};
+    lv_obj_t *dropdown = pref_dropdown_fps(app.ui.container, options, 120, &fps);
+
+    lv_obj_set_width(dropdown, LV_PCT(100));
+
+    fakeTap(100, 48); // Simulate a tap on the dropdown
+
+    waitFor(100);
+
+    fakeTap(175, 400); // Click on "120 FPS" option
+
+    waitFor(100);
+
+    UNITY_TEST_ASSERT_EQUAL_INT32(120, fps, __LINE__, "FPS value did not match expected value after interaction");
+}
+
+void test_100fps() {
+    const static int options[] = {30, 60, 90, 120, 144, 240, 0};
+    lv_obj_t *dropdown = pref_dropdown_fps(app.ui.container, options, 100, &fps);
+
+    lv_obj_set_width(dropdown, LV_PCT(100));
+
+    fakeTap(100, 48); // Simulate a tap on the dropdown
+
+    waitFor(100);
+
+    fakeTap(175, 400); // Click on "100 FPS" option
+
+    waitFor(100);
+
+    UNITY_TEST_ASSERT_EQUAL_INT32(100, fps, __LINE__, "FPS value did not match expected value after interaction");
+}
+
 void initSettings(app_settings_t *settings) {
     settings->fullscreen = false;
     settings->window_state = (window_state_t) {
@@ -41,5 +75,7 @@ void initSettings(app_settings_t *settings) {
 int main() {
     UNITY_BEGIN();
     RUN_TEST(test_basic);
+    RUN_TEST(test_120fps);
+    RUN_TEST(test_100fps);
     return UNITY_END();
 }
