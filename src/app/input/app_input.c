@@ -132,10 +132,6 @@ void app_set_mouse_grab(app_input_t *input, bool grab) {
         SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
     }
 
-#ifdef TARGET_WEBOS
-    // Evita cortar aquí para poder ocultar cursor SDL también
-    // if (input->app->os_info.version.major >= 9) { return; }
-#endif
     SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
 }
 bool app_get_mouse_relative() {

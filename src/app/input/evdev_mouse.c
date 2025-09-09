@@ -30,7 +30,6 @@ static int is_mouse_like_device(int fd) {
     memset(ev,0,sizeof(ev)); memset(rel,0,sizeof(rel)); memset(key,0,sizeof(key));
     if (ioctl(fd, EVIOCGBIT(0, sizeof(ev)), ev) < 0) return 0;
 
-    // Necesitamos eventos relativos y teclas de mouse
     if (!(ev[EV_REL/BITS_PER_LONG] & (1UL << (EV_REL % BITS_PER_LONG)))) return 0;
     if (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(rel)), rel) < 0) return 0;
     int has_xy = (rel[REL_X/BITS_PER_LONG] & (1UL << (REL_X % BITS_PER_LONG))) &&
@@ -88,7 +87,7 @@ static void push_motion(int dx, int dy) {
     e.motion.state = 0;
     e.motion.xrel = dx;
     e.motion.yrel = dy;
-    // x/y (absolutos) los dejamos como 0: SDL los acumula en relativo si está en modo relativo
+
     SDL_PushEvent(&e);
 }
 
@@ -132,7 +131,7 @@ static void* thread_fn(void *_) {
     while (s_running) {
         if (s_fd_count == 0) {
             if (open_and_grab_mice() <= 0) {
-                // No hay ratones, espera un poco
+                // no active mouse wait a bit
                 SDL_Delay(250);
                 continue;
             }
@@ -170,7 +169,6 @@ static void* thread_fn(void *_) {
                 }
             }
             if (rd < 0 && errno != EAGAIN && errno != EINTR) {
-                // Dispositivo desconectado? Reabrir en la próxima vuelta
                 release_all();
                 break;
             }
@@ -197,6 +195,5 @@ void evdev_mouse_stop(void) {
     if (!s_running) return;
     s_running = false;
     pthread_join(s_thread, NULL);
-    // release_all() ya se llama al salir del hilo
 }
 
