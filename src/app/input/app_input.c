@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <errno.h>
+#include "evdev_mouse.h"
 #include <string.h>
 #include "lvgl/lv_sdl_drv_input.h"
 
@@ -114,25 +115,29 @@ void app_input_deinit(app_input_t *input) {
     }
     SDL_FreeSurface(input->blank_cursor_surface);
     SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
-    webos_grab_mice(0);
+    evdev_mouse_stop();
+
 }
 
+
 void app_set_mouse_grab(app_input_t *input, bool grab) {
+#ifdef TARGET_WEBOS
+    if (grab) evdev_mouse_start();
+    else      evdev_mouse_stop();
+#endif
+
+    SDL_CaptureMouse(grab ? SDL_TRUE : SDL_FALSE);
+
     if (!app_configuration->hardware_mouse) {
         SDL_SetRelativeMouseMode(grab && !app_configuration->absmouse ? SDL_TRUE : SDL_FALSE);
     }
 
 #ifdef TARGET_WEBOS
-    webos_grab_mice(grab ? 1 : 0);
-    // Temporary workaround for webOS 9: https://github.com/mariotaku/moonlight-tv/issues/466
-    if (input->app->os_info.version.major >= 9) {
-        return;
-    }
+    // Evita cortar aquí para poder ocultar cursor SDL también
+    // if (input->app->os_info.version.major >= 9) { return; }
 #endif
-
     SDL_ShowCursor(grab ? SDL_FALSE : SDL_TRUE);
 }
-
 bool app_get_mouse_relative() {
     return SDL_GetRelativeMouseMode() == SDL_TRUE;
 }
