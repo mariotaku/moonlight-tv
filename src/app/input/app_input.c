@@ -124,7 +124,6 @@ void app_set_mouse_grab(app_input_t *input, bool grab) {
 
 #ifdef TARGET_WEBOS
     webos_grab_mice(grab ? 1 : 0);
-
     // Temporary workaround for webOS 9: https://github.com/mariotaku/moonlight-tv/issues/466
     if (input->app->os_info.version.major >= 9) {
         return;
