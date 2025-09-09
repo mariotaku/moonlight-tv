@@ -16,7 +16,7 @@
 
 #define MAX_MICE 8
 
-+#define BITS_PER_LONG (sizeof(unsigned long) * 8)
+#define BITS_PER_LONG (sizeof(unsigned long) * 8)
 
 static int s_fds[MAX_MICE];
 static int s_fd_count = 0;
