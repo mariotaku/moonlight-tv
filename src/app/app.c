@@ -141,10 +141,12 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
             if (app_ui_is_opened(&app->ui) && app->session != NULL) {
                 session_interrupt(app->session, false, STREAMING_INTERRUPT_BACKGROUND);
             }
+            app_set_mouse_grab(&app->input, false);
             break;
         }
         case SDL_APP_DIDENTERFOREGROUND: {
             lv_obj_invalidate(lv_scr_act());
+            app_set_mouse_grab(&app->input, true);
             break;
         }
         case SDL_WINDOWEVENT: {
