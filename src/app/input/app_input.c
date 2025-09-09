@@ -123,14 +123,10 @@ void app_set_mouse_grab(app_input_t *input, bool grab) {
     }
 
 #ifdef TARGET_WEBOS
-    // NEW: Captura/Libera dispositivos de ratón a nivel evdev para evitar que webOS pinte su cursor
-    // Hazlo ANTES de retornar por el workaround.
     webos_grab_mice(grab ? 1 : 0);
 
     // Temporary workaround for webOS 9: https://github.com/mariotaku/moonlight-tv/issues/466
     if (input->app->os_info.version.major >= 9) {
-        // En builds recientes esto devolvía antes, impidiendo SDL_ShowCursor().
-        // Dejamos el return para respetar el comportamiento original.
         return;
     }
 #endif
