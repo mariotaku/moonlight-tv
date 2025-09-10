@@ -1,0 +1,1 @@
+target_sources(moonlight-lib PRIVATE diag.view.c diag.fragment.c)

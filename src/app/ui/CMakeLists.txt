@@ -17,3 +17,4 @@ target_sources(moonlight-lib PRIVATE
         common/progress_dialog.c
         )
 add_subdirectory(settings)
+add_subdirectory(diagnostics)

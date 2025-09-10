@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lvgl.h"
+#include "util/font.h"
 
 typedef struct app_t app_t;
 

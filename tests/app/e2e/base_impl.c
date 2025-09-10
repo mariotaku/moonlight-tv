@@ -17,8 +17,10 @@ static int settingsLoader(app_settings_t *settings) {
     uuidstr_random(&uuid);
     snprintf(path, 128, "/tmp/moonlight-test-%s", (char *) &uuid);
     settings_initialize(settings, path);
-    app.ui.dpi = 320;
     initSettings(settings);
+    if (app.ui.dpi == 0) {
+        app.ui.dpi = 320;
+    }
     return 0;
 }
 

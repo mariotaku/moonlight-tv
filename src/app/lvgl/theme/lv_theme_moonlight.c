@@ -5,7 +5,7 @@
 #include "util/font.h"
 #include "lvgl/ext/lv_child_group.h"
 
-static lv_style_t knob_shadow;
+static lv_style_t knob_shadow, label_style;
 
 static void apply_cb(lv_theme_t *, lv_obj_t *);
 
@@ -29,10 +29,14 @@ void lv_theme_moonlight_init(lv_theme_t *theme, const app_fonts_t *fonts, app_t 
     lv_style_set_shadow_color(&knob_shadow, lv_color_black());
     lv_style_set_shadow_width(&knob_shadow, LV_DPX(5));
     lv_style_set_shadow_opa(&knob_shadow, LV_OPA_50);
+
+    lv_style_init(&label_style);
+    lv_style_set_text_font(&label_style, theme->font_normal);
 }
 
 void lv_theme_moonlight_deinit(lv_theme_t *theme) {
     (void) theme;
+    lv_style_reset(&label_style);
     lv_style_reset(&knob_shadow);
 }
 
@@ -117,7 +121,7 @@ static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
         lv_obj_add_style(obj, &knob_shadow, LV_PART_KNOB);
     }
     if (set_font) {
-        lv_obj_set_style_text_font(obj, theme->font_normal, 0);
+        lv_obj_add_style(obj, &label_style, 0);
     }
 }
 
