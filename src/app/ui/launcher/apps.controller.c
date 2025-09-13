@@ -197,8 +197,12 @@ static lv_obj_t *apps_view(lv_fragment_t *self, lv_obj_t *container) {
 
     lv_gridview_set_adapter(applist, &apps_adapter);
     lv_obj_t *appload = controller->appload = lv_spinner_create(view, 1000, 60);
+    launcher_fragment_t *parent_controller = (launcher_fragment_t *) lv_fragment_get_parent(&controller->base);
+    lv_group_add_obj(parent_controller->detail_group, appload);
+    lv_obj_add_flag(appload, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_size(appload, lv_dpx(60), lv_dpx(60));
     lv_obj_center(appload);
+
     lv_obj_t *apperror = controller->apperror = lv_obj_create(view);
     lv_obj_add_flag(apperror, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_size(apperror, LV_PCT(80), LV_PCT(60));
@@ -448,6 +452,9 @@ static void show_progress(apps_fragment_t *fragment) {
     lv_obj_clear_flag(fragment->appload, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(fragment->actions, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_state(fragment->actions, LV_STATE_DISABLED);
+
+    lv_group_focus_obj(fragment->appload);
+    lv_obj_add_state(fragment->appload, LV_STATE_FOCUS_KEY);
 }
 
 static void show_ok(apps_fragment_t *fragment) {
