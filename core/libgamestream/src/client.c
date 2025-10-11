@@ -556,6 +556,7 @@ int gs_start_app(GS_CLIENT hnd, PSERVER_DATA server, STREAM_CONFIGURATION *confi
     if (surround_params) {
         append_param(url, sizeof(url), "surroundParams", surround_params);
     }
+    append_param(url, sizeof(url), "continuousAudio", "1");
     if (!resume || !is_gfe) {
         if (config->supportedVideoFormats & VIDEO_FORMAT_MASK_10BIT) {
             append_param(url, sizeof(url), "hdrMode", "1");
