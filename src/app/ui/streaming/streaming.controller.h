@@ -21,7 +21,6 @@ typedef struct {
     lv_obj_t *suspend_btn, *quit_btn;
     lv_obj_t *stats;
     struct {
-        lv_obj_t *resolution;
         lv_obj_t *decoder;
         lv_obj_t *audio;
         lv_obj_t *rtt;

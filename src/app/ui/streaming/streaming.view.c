@@ -124,9 +124,8 @@ lv_obj_t *streaming_scene_create(lv_fragment_t *self, lv_obj_t *parent) {
 
     overlay_title(stats, locstr("Performance"), controller);
 
-    controller->stats_items.resolution = stat_label(stats, "Resolution");
-    controller->stats_items.decoder = stat_label(stats, "Decoder");
-    controller->stats_items.audio = stat_label(stats, "Audio backend");
+    controller->stats_items.decoder = stat_label(stats, "Video");
+    controller->stats_items.audio = stat_label(stats, "Audio");
 
     controller->stats_items.rtt = stat_label(stats, "Network RTT");
     controller->stats_items.net_fps = stat_label(stats, "Network framerate");

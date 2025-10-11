@@ -54,6 +54,20 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
         buffer = calloc(unit_size, frame_size);
     }
     audio_stream_info.format = SS4S_AudioCodecName(codec);
+    switch (audioConfiguration) {
+        case AUDIO_CONFIGURATION_STEREO:
+            audio_stream_info.channels = "Stereo";
+            break;
+        case AUDIO_CONFIGURATION_51_SURROUND:
+            audio_stream_info.channels = "5.1ch";
+            break;
+        case AUDIO_CONFIGURATION_71_SURROUND:
+            audio_stream_info.channels = "7.1ch";
+            break;
+        default:
+            audio_stream_info.channels = "Unknown";
+            break;
+    }
     info.codec = codec;
     info.codecData = buffer;
     info.codecDataLen = codecDataLen;

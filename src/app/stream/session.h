@@ -50,6 +50,7 @@ typedef struct VIDEO_INFO {
 
 typedef struct AUDIO_INFO {
     const char *format;
+    const char* channels;
 } AUDIO_INFO;
 
 typedef struct session_config_t {

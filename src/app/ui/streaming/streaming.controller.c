@@ -72,15 +72,14 @@ bool streaming_refresh_stats() {
     const struct VIDEO_STATS *dst = &vdec_summary_stats;
     const struct VIDEO_INFO *info = &vdec_stream_info;
     if (info->width > 0 && info->height > 0) {
-        lv_label_set_text_fmt(controller->stats_items.resolution, "%d * %d", info->width, info->height);
-        lv_obj_clear_flag(lv_obj_get_parent(controller->stats_items.resolution), LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text_fmt(controller->stats_items.decoder, "%s, %d\u00d7%d (%s)", vdec_stream_info.format, info->width,
+                              info->height, SS4S_ModuleInfoGetId(app->ss4s.selection.video_module));
     } else {
-        lv_obj_add_flag(lv_obj_get_parent(controller->stats_items.resolution), LV_OBJ_FLAG_HIDDEN);
+        lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)", vdec_stream_info.format,
+                              SS4S_ModuleInfoGetId(app->ss4s.selection.video_module));
     }
-    lv_label_set_text_fmt(controller->stats_items.decoder, "%s (%s)",
-                          SS4S_ModuleInfoGetId(app->ss4s.selection.video_module), vdec_stream_info.format);
-    lv_label_set_text_fmt(controller->stats_items.audio, "%s (%s)",
-                          SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module), audio_stream_info.format);
+    lv_label_set_text_fmt(controller->stats_items.audio, "%s, %s (%s)", audio_stream_info.format,
+                          audio_stream_info.channels, SS4S_ModuleInfoGetId(app->ss4s.selection.audio_module));
     lv_label_set_text_fmt(controller->stats_items.rtt, "%d ms (var. %d ms)", dst->rtt, dst->rttVariance);
     lv_label_set_text_fmt(controller->stats_items.net_fps, "%.2f FPS", dst->receivedFps);
 
