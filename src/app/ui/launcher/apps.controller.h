@@ -21,7 +21,6 @@ typedef struct {
     lv_fragment_t base;
     app_t *global;
     uuidstr_t uuid;
-    const pclist_t *node;
 
     int def_app;
     bool def_app_launched;
