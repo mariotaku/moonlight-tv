@@ -255,7 +255,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     lv_obj_set_user_data(controller->applist, controller);
 
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
-    if (state->code != SERVER_STATE_QUERYING) {
+    if (state != NULL && state->code != SERVER_STATE_QUERYING) {
         pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
         if (state->code == SERVER_STATE_AVAILABLE) {
             apploader_load(controller->apploader);
@@ -328,7 +328,7 @@ static void on_host_updated(const uuidstr_t *uuid, void *userdata) {
     if (controller != current_instance) { return; }
     if (!uuidstr_t_equals_t(&controller->uuid, uuid)) { return; }
     const SERVER_STATE *state = pcmanager_state(pcmanager, uuid);
-    assert(state != NULL);
+    if (state == NULL) { return; }
     if (state->code == SERVER_STATE_AVAILABLE) {
         apploader_load(controller->apploader);
     }
@@ -354,7 +354,7 @@ static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, vo
     if (!controller->base.managed->obj_created) { return; }
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
-    assert(state != NULL);
+    if (state == NULL) { return; }
     if (state->code & SERVER_STATE_ONLINE || result != GS_OK) { return; }
     pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
 }
@@ -365,7 +365,10 @@ static void update_view_state(apps_fragment_t *controller) {
     launcher_fragment_t *parent_controller = (launcher_fragment_t *) lv_fragment_get_parent(&controller->base);
     parent_controller->detail_changing = true;
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
-    assert(state != NULL);
+    if (state == NULL) {
+        parent_controller->detail_changing = false;
+        return;
+    }
     switch (state->code) {
         case SERVER_STATE_NONE:
         case SERVER_STATE_QUERYING: {
