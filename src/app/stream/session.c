@@ -126,7 +126,6 @@ void session_interrupt(session_t *session, bool quitapp, streaming_interrupt_rea
     }
     SDL_CondSignal(session->cond);
     SDL_UnlockMutex(session->mutex);
-    SDL_UnlockMutex(session->state_lock);
 }
 
 bool session_accepting_input(session_t *session) {
