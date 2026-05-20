@@ -229,7 +229,10 @@ static void remove_perform(pclist_update_context_t *context) {
     pcmanager_t *manager = context->manager;
     pcmanager_lock(manager);
     pclist_t *node = pclist_ll_find_by(manager->servers, &context->uuid, pclist_ll_compare_uuid);
-    if (!node) { return; }
+    if (!node) {
+        pcmanager_unlock(manager);
+        return;
+    }
     manager->servers = pclist_ll_remove(manager->servers, node);
     pcmanager_unlock(manager);
     pcmanager_listeners_notify(manager, &context->uuid, PCMANAGER_NOTIFY_REMOVED);
