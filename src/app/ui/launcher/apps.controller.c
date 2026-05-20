@@ -256,7 +256,7 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
 
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
     if (state != NULL && state->code != SERVER_STATE_QUERYING) {
-        pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
+        pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, NULL);
         if (state->code == SERVER_STATE_AVAILABLE) {
             apploader_load(controller->apploader);
         }
@@ -342,21 +342,25 @@ static void on_host_removed(const uuidstr_t *uuid, void *userdata) {
 }
 
 static void host_info_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
-    apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (controller != current_instance) { return; }
+    LV_UNUSED(userdata);
+    apps_fragment_t *controller = current_instance;
+    if (controller == NULL) { return; }
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) { return; }
     if (!controller->base.managed->obj_created) { return; }
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
 }
 
 static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
-    apps_fragment_t *controller = (apps_fragment_t *) userdata;
-    if (controller != current_instance) { return; }
+    LV_UNUSED(userdata);
+    apps_fragment_t *controller = current_instance;
+    if (controller == NULL) { return; }
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) { return; }
     if (!controller->base.managed->obj_created) { return; }
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
     if (state == NULL) { return; }
     if (state->code & SERVER_STATE_ONLINE || result != GS_OK) { return; }
-    pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
+    pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, NULL);
 }
 
 static void update_view_state(apps_fragment_t *controller) {
@@ -601,7 +605,7 @@ static void launcher_toggle_hidden(apps_fragment_t *controller, const apploader_
 
 static void launcher_quit_game(apps_fragment_t *controller) {
     controller->quit_progress = progress_dialog_create(locstr("Quitting game..."));
-    pcmanager_quitapp(pcmanager, &controller->uuid, quitgame_cb, controller);
+    pcmanager_quitapp(pcmanager, &controller->uuid, quitgame_cb, NULL);
 }
 
 static int adapter_item_count(lv_obj_t *grid, void *data) {
@@ -651,7 +655,10 @@ static void applist_focus_leave(lv_event_t *event) {
 }
 
 static void quitgame_cb(int result, const char *error, const uuidstr_t *uuid, void *userdata) {
-    apps_fragment_t *controller = userdata;
+    LV_UNUSED(userdata);
+    apps_fragment_t *controller = current_instance;
+    if (controller == NULL) { return; }
+    if (!uuidstr_t_equals_t(&controller->uuid, uuid)) { return; }
     if (controller->quit_progress) {
         lv_msgbox_close(controller->quit_progress);
         controller->quit_progress = NULL;
@@ -683,13 +690,13 @@ static void actions_click_cb(lv_event_t *event) {
 static void action_cb_wol(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
     LV_UNUSED(index);
     lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
-    pcmanager_send_wol(pcmanager, &controller->uuid, send_wol_cb, controller);
+    pcmanager_send_wol(pcmanager, &controller->uuid, send_wol_cb, NULL);
 }
 
 static void action_cb_host_reload(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
     LV_UNUSED(index);
     lv_btnmatrix_set_btn_ctrl_all(buttons, LV_BTNMATRIX_CTRL_DISABLED);
-    pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, controller);
+    pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, NULL);
 }
 
 static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
