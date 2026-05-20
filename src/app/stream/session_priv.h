@@ -16,7 +16,6 @@ struct session_t {
 
     app_t *app;
 
-    SDL_mutex *state_lock;
     STREAMING_STATE state;
     int display_width, display_height;
 

@@ -61,7 +61,6 @@ session_t *session_create(app_t *app, const CONFIGURATION *config, const SERVER_
     session->app_id = gs_app->id;
     session->app_name = strdup(gs_app->name);
     session->mutex = SDL_CreateMutex();
-    session->state_lock = SDL_CreateMutex();
     session->cond = SDL_CreateCond();
 #if FEATURE_EMBEDDED_SHELL
     if (!app_is_decoder_valid(app)) {
@@ -86,7 +85,6 @@ void session_destroy(session_t *session) {
     serverdata_free(session->server);
     SDL_DestroyCond(session->cond);
     SDL_DestroyMutex(session->mutex);
-    SDL_DestroyMutex(session->state_lock);
     free(session->app_name);
     free(session);
 }
@@ -228,13 +226,13 @@ void streaming_set_hdr(session_t *session, bool hdr) {
 }
 
 void streaming_error(session_t *session, int code, const char *fmt, ...) {
-    SDL_LockMutex(session->state_lock);
+    SDL_LockMutex(session->mutex);
     streaming_errno = code;
     va_list arglist;
     va_start(arglist, fmt);
     vsnprintf(streaming_errmsg, sizeof(streaming_errmsg) / sizeof(char), fmt, arglist);
     va_end(arglist);
-    SDL_UnlockMutex(session->state_lock);
+    SDL_UnlockMutex(session->mutex);
 }
 
 bool streaming_sops_supported(PDISPLAY_MODE modes, int w, int h, int fps) {
