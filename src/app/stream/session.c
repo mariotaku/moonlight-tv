@@ -187,7 +187,19 @@ void streaming_set_hdr(session_t *session, bool hdr) {
     commons_log_info("Session", "HDR is %s", hdr ? "enabled" : "disabled");
     SS_HDR_METADATA hdr_metadata;
     if (!hdr) {
-        SS4S_PlayerVideoSetHDRInfo(session->player, NULL);
+        // If the stream was opened as MAIN10, the NDL pipeline is already in HDR
+        // mode. Passing NULL to SS4S_PlayerVideoSetHDRInfo triggers a full
+        // NDL_DirectMediaUnload + NDL_DirectMediaLoad cycle (see
+        // third_party/ss4s/modules/webos/ndl/webos5/ndl_video.c:SetHDRInfo),
+        // which races with the active stream and crashes the decoder. Since the
+        // server is still sending a 10-bit bitstream, leave the HDR display
+        // pipeline active and ignore the disable request.
+        bool is_main10 = session->config.stream.supportedVideoFormats &
+                         (VIDEO_FORMAT_H265_MAIN10 | VIDEO_FORMAT_AV1_MAIN10);
+        if (!is_main10) {
+            SS4S_PlayerVideoSetHDRInfo(session->player, NULL);
+        }
+        return;
     } else if (LiGetHdrMetadata(&hdr_metadata)) {
         SS4S_VideoHDRInfo info = {
                 .displayPrimariesX = {
