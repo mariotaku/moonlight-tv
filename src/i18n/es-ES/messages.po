@@ -19,7 +19,7 @@ msgstr ""
 
 #: src/app/app.c:87
 msgid "[Localized Language]"
-msgstr "[Idioma localizado]"
+msgstr "Español (España)"
 
 #: src/app/app.c:277 src/app/ui/launcher/add.dialog.c:42
 #: src/app/ui/launcher/apps.controller.c:732
@@ -35,7 +35,7 @@ msgstr "Cancelar"
 #: src/app/ui/launcher/pair.dialog.c:54
 #: src/app/ui/launcher/server.context_menu.c:129 src/app/ui/root.c:339
 msgid "OK"
-msgstr "OK"
+msgstr "Aceptar"
 
 #: src/app/app.c:278
 msgid "Quit Moonlight?"
@@ -71,11 +71,11 @@ msgstr "Entrada"
 
 #: src/app/ui/help/help.dialog.c:37
 msgid "Gamepad hotkeys"
-msgstr "Accesos directos del gamepad"
+msgstr "Atajos del gamepad"
 
 #: src/app/ui/help/help.dialog.c:39
 msgid "Remote controller keys"
-msgstr "Teclas del control remoto"
+msgstr "Teclas del mando a distancia"
 
 #: src/app/ui/help/help.dialog.c:41
 msgid "More help"
@@ -99,11 +99,11 @@ msgstr "Dirección IPv4 o IPv6"
 
 #: src/app/ui/launcher/add.dialog.c:81
 msgid "Failed to add computer."
-msgstr "Error al añadir el equipo."
+msgstr "Error al añadir el ordenador."
 
 #: src/app/ui/launcher/add.dialog.c:161
 msgid "Failed to add computer"
-msgstr "Error al añadir el equipo"
+msgstr "Error al añadir el ordenador"
 
 #: src/app/ui/launcher/apps.controller.c:146
 msgid "Wake"
@@ -121,7 +121,7 @@ msgstr "Emparejar"
 #. apploader has error
 #: src/app/ui/launcher/apps.controller.c:386
 msgid "Failed to load apps"
-msgstr "Error al cargar aplicaciones"
+msgstr "Error al cargar las aplicaciones"
 
 #: src/app/ui/launcher/apps.controller.c:387
 #: src/app/ui/launcher/apps.controller.c:416
@@ -141,12 +141,12 @@ msgstr "Pulse \"Emparejar\" para emparejar este host con su cuenta."
 #. server has error
 #: src/app/ui/launcher/apps.controller.c:415
 msgid "Host error"
-msgstr "Error de host"
+msgstr "Error del host"
 
 #. server has error
 #: src/app/ui/launcher/apps.controller.c:426
 msgid "Offline"
-msgstr "Desconectado"
+msgstr "Sin conexión"
 
 #: src/app/ui/launcher/apps.controller.c:427
 msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
@@ -160,11 +160,11 @@ msgstr "Cerrando el juego..."
 
 #: src/app/ui/launcher/apps.controller.c:657
 msgid "Unable to quit game"
-msgstr "No se puede salir del juego"
+msgstr "No se puede cerrar el juego"
 
 #: src/app/ui/launcher/apps.controller.c:658
 msgid "Please make sure you are quitting with the same client."
-msgstr "Por favor, asegúrese de que está saliendo con el mismo cliente."
+msgstr "Asegúrese de cerrarlo desde el mismo cliente."
 
 #: src/app/ui/launcher/apps.controller.c:709
 msgid "Resume streaming"
@@ -176,15 +176,15 @@ msgstr "Iniciar transmisión"
 
 #: src/app/ui/launcher/apps.controller.c:716
 msgid "Stop streaming"
-msgstr "Dejar de transmitir"
+msgstr "Detener transmisión"
 
 #: src/app/ui/launcher/apps.controller.c:720
 msgid "Unstar"
-msgstr "Quitar destacado"
+msgstr "Quitar de favoritos"
 
 #: src/app/ui/launcher/apps.controller.c:720
 msgid "Star"
-msgstr "Destacar"
+msgstr "Añadir a favoritos"
 
 #: src/app/ui/launcher/apps.controller.c:724
 msgid "Unhide"
@@ -363,15 +363,15 @@ msgstr "Un mayor bitrate puede causar problemas de rendimiento, pruebe con preca
 
 #: src/app/ui/settings/panes/host.pane.c:26
 msgid "Optimize game settings for streaming"
-msgstr "Optimizar la configuración del juego para la retransmisión"
+msgstr "Optimizar los ajustes del juego para la transmisión"
 
 #: src/app/ui/settings/panes/host.pane.c:27
 msgid "Change in-game settings to optimize for streaming. Resolution will be limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."
-msgstr "Cambie la configuración del juego para optimizar el transmisión. La resolución se limitará a 720p, 1080p o 4K. Los FPS también estarán limitados a 30/60 FPS."
+msgstr "Cambie los ajustes del juego para optimizar la transmisión. La resolución se limitará a 720p, 1080p o 4K. Los FPS también se limitarán a 30/60 FPS."
 
 #: src/app/ui/settings/panes/host.pane.c:30
 msgid "Mute computer while streaming"
-msgstr "Silenciar ordenador mientras se transmite"
+msgstr "Silenciar el ordenador durante la transmisión"
 
 #: src/app/ui/settings/panes/input.pane.c:46
 msgid "View-only mode"
@@ -490,7 +490,7 @@ msgstr "Más información sobre la función HDR."
 #: src/app/ui/settings/panes/video.pane.c:159
 #, c-format
 msgid "%s decoder doesn't support HDR."
-msgstr "%s decodificador no soporta HDR."
+msgstr "El decodificador %s no soporta HDR."
 
 #: src/app/ui/settings/panes/video.pane.c:163
 msgid "H265 or AV1 is required to use HDR."
@@ -498,7 +498,7 @@ msgstr "Se necesita H265 o AV1 para usar HDR."
 
 #: src/app/ui/settings/panes/video.pane.c:166
 msgid "HDR is only supported on certain games and when connecting to supported monitor."
-msgstr "El modo HDR solo es compatible con ciertos juegos y cuando se conecta a un monitor compatible."
+msgstr "El modo HDR solo funciona en ciertos juegos y al conectarse a un monitor compatible."
 
 #: src/app/ui/settings/settings.controller.c:21
 msgid "Basic Settings"
@@ -506,7 +506,7 @@ msgstr "Ajustes básicos"
 
 #: src/app/ui/settings/settings.controller.c:22
 msgid "Host Settings"
-msgstr "Configuración del Host"
+msgstr "Ajustes del host"
 
 #: src/app/ui/settings/settings.controller.c:23
 msgid "Input Settings"
@@ -555,7 +555,7 @@ msgstr "Consejo: %s"
 
 #: src/app/ui/streaming/streaming.view.c:74
 msgid "Soft keyboard"
-msgstr "Mostrar teclado"
+msgstr "Teclado en pantalla"
 
 #: src/app/ui/streaming/streaming.view.c:83
 msgid "Virtual Mouse"
@@ -567,7 +567,7 @@ msgstr "Desconectar"
 
 #: src/app/ui/streaming/streaming.view.c:105
 msgid "Quit game"
-msgstr "Salir del juego"
+msgstr "Cerrar el juego"
 
 #: src/app/ui/streaming/streaming.view.c:120
 msgid "Performance"
