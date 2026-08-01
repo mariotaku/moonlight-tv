@@ -17,8 +17,8 @@ runs:
       uses: robinraju/release-downloader@v1.12
       with:
         repository: openlgtv/buildroot-nc4
-        tag: webos-b17b4cc
-        fileName: arm-webos-linux-gnueabi_sdk-buildroot.tar.gz
+        tag: webos-a38c582
+        fileName: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
         out-file-path: /tmp
         extract: true
 
