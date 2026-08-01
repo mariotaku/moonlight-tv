@@ -93,7 +93,7 @@ bool streaming_refresh_stats() {
             lv_label_set_text_fmt(controller->stats_items.host_latency, "not available");
         }
         if (vdec_stream_info.has_decoder_latency) {
-            float avgSubmitTime = (float) dst->totalSubmitTime / (float) dst->submittedFrames;
+            float avgSubmitTime = (float) dst->totalSubmitTimeUs / (float) dst->submittedFrames / 1000.0f;
             lv_label_set_text_fmt(controller->stats_items.vdec_latency, "avg %.2f ms",
                                   avgSubmitTime + dst->avgDecoderLatency);
         } else {

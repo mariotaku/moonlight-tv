@@ -173,7 +173,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     vdec_temp_stats.totalFrames++;
 
     vdec_temp_stats.totalCaptureLatency += decodeUnit->frameHostProcessingLatency;
-    vdec_temp_stats.totalReassemblyTime += decodeUnit->enqueueTimeMs - decodeUnit->receiveTimeMs;
+    vdec_temp_stats.totalReassemblyTimeUs += (uint32_t) (decodeUnit->enqueueTimeUs - decodeUnit->receiveTimeUs);
     vdec_stream_info.has_host_latency |= decodeUnit->frameHostProcessingLatency > 0;
     size_t length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
@@ -189,7 +189,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
             stream_info_parse_size(decodeUnit, &vdec_stream_info);
         }
-        vdec_temp_stats.totalSubmitTime += LiGetMillis() - decodeUnit->enqueueTimeMs;
+        vdec_temp_stats.totalSubmitTimeUs += (uint32_t) (LiGetMicroseconds() - decodeUnit->enqueueTimeUs);
         vdec_temp_stats.submittedFrames++;
         return DR_OK;
     } else if (result == SS4S_VIDEO_FEED_REQUEST_KEYFRAME) {
