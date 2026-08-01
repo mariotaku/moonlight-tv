@@ -189,6 +189,9 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
             stream_info_parse_size(decodeUnit, &vdec_stream_info);
         }
+        // Both sides come from PltGetMicroseconds(), so they share an epoch. Limelight.h documents
+        // neither that fact nor a supported way to age enqueueTimeUs, so re-check this subtraction
+        // whenever moonlight-common-c is bumped: a different clock underflows it silently.
         vdec_temp_stats.totalSubmitTimeUs += (uint32_t) (LiGetMicroseconds() - decodeUnit->enqueueTimeUs);
         vdec_temp_stats.submittedFrames++;
         return DR_OK;
