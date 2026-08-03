@@ -7,6 +7,14 @@ on:
       - 'v*.*.*'
     branches:
       - '**'
+  pull_request:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
@@ -15,6 +23,9 @@ jobs:
   build:
     name: Build (${{ matrix.arch }})
     runs-on: ubuntu-22.04
+    # Branches of this repository are already built by the push trigger,
+    # so only build pull requests opened from forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
     strategy:
       matrix:
@@ -23,7 +34,9 @@ jobs:
     steps:
       - name: Set Short Commit ID
         shell: bash
-        run: echo SHORT_SHA="${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+        run: echo SHORT_SHA="${HEAD_SHA:0:8}" >> $GITHUB_ENV
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Checkout Source
         uses: actions/checkout@v4

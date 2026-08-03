@@ -7,6 +7,14 @@ on:
       - 'v*.*.*'
     branches:
       - '**'
+  pull_request:
+    branches:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
@@ -15,6 +23,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    # Branches of this repository are already built by the push trigger,
+    # so only build pull requests opened from forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
     steps:
       - name: Checkout Source
