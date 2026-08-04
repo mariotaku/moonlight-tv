@@ -24,16 +24,4 @@ if (BUILD_SHARED_LIBS)
     install(TARGETS gamestream LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
-if (H264BITSTREAM_FOUND)
-    add_library(gamestream-sps SHARED src/sps.c)
-
-    target_include_directories(gamestream-sps PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libgamestream>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-    )
-
-    target_link_libraries(gamestream-sps PRIVATE h264bitstream moonlight-common-c)
-    install(TARGETS gamestream-sps LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif()
-
 add_subdirectory(tests)
