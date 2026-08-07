@@ -29,6 +29,12 @@ static SS4S_Player *player = NULL;
 static unsigned char *buffer = NULL;
 static size_t buffer_size = 0;
 static int lastFrameNumber;
+// Set when SS4S_PlayerVideoFeed returns NOT_READY (decoder is in an
+// exclusive op like HDR toggle or resolution change). Consumed on the
+// next successful Feed: we ask Limelight for one IDR so the decoder
+// can resync from a known-good keyframe instead of decoding the next
+// P-frame against a discontinuity.
+static bool need_idr_on_resume = false;
 static struct VIDEO_STATS vdec_temp_stats;
 static int vdec_stream_format = 0;
 VIDEO_STATS vdec_summary_stats;
@@ -80,6 +86,7 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     vdec_stream_format = videoFormat;
     vdec_stream_info.format = video_format_name(videoFormat);
     lastFrameNumber = 0;
+    need_idr_on_resume = false;
     SS4S_VideoInfo info = {
             .width = width,
             .height = height,
@@ -194,9 +201,27 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         // whenever moonlight-common-c is bumped: a different clock underflows it silently.
         vdec_temp_stats.totalSubmitTimeUs += (uint32_t) (LiGetMicroseconds() - decodeUnit->enqueueTimeUs);
         vdec_temp_stats.submittedFrames++;
+        if (need_idr_on_resume) {
+            // We dropped at least one frame while the decoder was in a
+            // brief exclusive op (HDR toggle, SizeChanged). Ask for one
+            // IDR so the next frame the decoder sees is a known-good
+            // keyframe instead of a P-frame referencing missing data.
+            need_idr_on_resume = false;
+            return DR_NEED_IDR;
+        }
         return DR_OK;
     } else if (result == SS4S_VIDEO_FEED_REQUEST_KEYFRAME) {
         return DR_NEED_IDR;
+    } else if (result == SS4S_VIDEO_FEED_NOT_READY) {
+        // Transient: the ss4s FeedGuard is in an exclusive op
+        // (SetHDRInfo / SizeChanged on a driver that does Unload+Load
+        // internally). Drop the frame silently; set the flag so the
+        // next successful Feed requests an IDR. This avoids tearing
+        // down the stream on a routine HDR toggle, and avoids spamming
+        // NEED_IDR on every dropped frame for the duration of the
+        // toggle.
+        need_idr_on_resume = true;
+        return DR_OK;
     } else {
         commons_log_error("Session", "Video feed error %d", result);
         session_interrupt(session, false, STREAMING_INTERRUPT_DECODER);
