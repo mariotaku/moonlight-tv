@@ -23,14 +23,6 @@
 #include <stdbool.h>
 #include "ss4s/video.h"
 
-// One step past the last selectable value on the bitrate slider. It means "apply no client-side
-// cap", leaving the link, the encoder and the decoder as the only limits.
-#define BITRATE_UNLIMITED 101000
-// Bitrate actually requested from the host for BITRATE_UNLIMITED. The protocol has no way to
-// express "no limit" -- the host always needs a number, and it holds that number for the whole
-// session -- so this is simply high enough to stop being the binding constraint.
-#define BITRATE_UNLIMITED_KBPS 300000
-
 typedef struct window_state_t {
     int x, y, w, h;
 } window_state_t;
@@ -58,6 +50,9 @@ typedef struct app_settings_t {
     bool hdr;
     bool hevc;
     bool av1;
+    // When set, stream.bitrate is ignored and BITRATE_UNLIMITED_KBPS is requested instead. Kept as
+    // its own flag so stream.bitrate never carries a value the slider can't display.
+    bool bitrate_unlimited;
     int stick_deadzone;
 
     char *conf_dir;
@@ -87,6 +82,17 @@ extern const size_t audio_config_len;
 #define RES_1800P RES_MERGE(3200, 1800)
 #define RES_4K RES_MERGE(3840, 2160)
 
+// Bounds of the bitrate slider, in kbps. Keep these together: pref_slider derives its range as
+// min/step .. max/step, so a step that doesn't divide the bounds silently moves the last detent.
+#define BITRATE_MIN 5000
+#define BITRATE_MAX 100000
+#define BITRATE_STEP 1000
+// Bitrate requested from the host when app_settings_t.bitrate_unlimited is set. The protocol has
+// no way to express "no limit": the host needs a number and holds it for the whole session, since
+// moonlight-common-c sends minimumBitrateKbps == maximumBitrateKbps to disable host-side scaling.
+// Sunshine reads this from x-ml-video.configuredBitrateKbps; GFE hosts cap it at 100 Mbps.
+#define BITRATE_UNLIMITED_KBPS 300000
+
 void settings_initialize(app_settings_t *config, char *conf_dir);
 
 bool settings_read(app_settings_t *config);
@@ -96,5 +102,12 @@ bool settings_save(app_settings_t *config);
 void settings_clear(app_settings_t *config);
 
 int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, int h, int fps);
+
+/**
+ * Resolve the three ways a bitrate can be configured -- unlimited, automatic (a negative
+ * stream.bitrate) and an explicit value -- into the number that will be requested from the host.
+ * Single decode site for those modes, shared by the settings pane and by session startup.
+ */
+int settings_effective_bitrate(const app_settings_t *config, const SS4S_VideoCapabilities *capabilities);
 
 bool audio_config_valid(int config);

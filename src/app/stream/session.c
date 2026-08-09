@@ -263,14 +263,13 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     SS4S_VideoCapabilities video_cap = app->ss4s.video_cap;
     SS4S_AudioCapabilities audio_cap = app->ss4s.audio_cap;
 
-    if (config->stream.bitrate < 0) {
-        config->stream.bitrate = settings_optimal_bitrate(&video_cap, config->stream.width, config->stream.height,
-                                                          config->stream.fps);
-    } else if (config->stream.bitrate >= BITRATE_UNLIMITED) {
-        config->stream.bitrate = BITRATE_UNLIMITED_KBPS;
-    }
-    // video_cap.maxBitrate is what the decoder claims it can sustain, not a hard limit. It drives
+    // video_cap.maxBitrate is what the decoder claims it can sustain, not a hard limit: it drives
     // the warning in the settings pane instead of silently clamping the value chosen there.
+    config->stream.bitrate = settings_effective_bitrate(app_config, &video_cap);
+    if (app_config->bitrate_unlimited) {
+        commons_log_info("Session", "Bitrate is unlimited, requesting %d kbps (decoder reports %u kbps)",
+                         config->stream.bitrate, video_cap.maxBitrate);
+    }
     if (video_cap.codecs & SS4S_VIDEO_H264) {
         config->stream.supportedVideoFormats |= VIDEO_FORMAT_H264;
     }

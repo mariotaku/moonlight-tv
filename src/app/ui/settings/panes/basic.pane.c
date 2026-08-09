@@ -9,6 +9,12 @@
 #include "util/i18n.h"
 #include "logging.h"
 
+typedef enum {
+    BITRATE_WARN_NONE,
+    BITRATE_WARN_SUGGESTED,
+    BITRATE_WARN_MAX,
+} bitrate_warn_t;
+
 typedef struct {
     lv_fragment_t base;
     settings_controller_t *parent;
@@ -17,6 +23,10 @@ typedef struct {
     lv_obj_t *bitrate_label;
     lv_obj_t *bitrate_slider;
     lv_obj_t *bitrate_warning;
+    // The slider spans one step past BITRATE_MAX, which selects "unlimited". It writes here rather
+    // than straight into the config so that stream.bitrate never holds that extra step.
+    int bitrate_slider_value;
+    bitrate_warn_t bitrate_warn;
 
     pref_dropdown_string_entry_t *lang_entries;
     int lang_entries_len;
@@ -48,7 +58,9 @@ const lv_fragment_class_t settings_pane_basic_cls = {
     .create_obj_cb = create_obj,
     .instance_size = sizeof(basic_pane_t),
 };
-#define BITRATE_STEP 1000
+
+// One step past the last real value; selecting it means "unlimited".
+#define BITRATE_SLIDER_MAX (BITRATE_MAX + BITRATE_STEP)
 
 static void pane_ctor(lv_fragment_t *self, void *args) {
     basic_pane_t *pane = (basic_pane_t *) self;
@@ -117,9 +129,11 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pane->bitrate_label = pref_title_label(view, locstr("Video bitrate"));
 
-    // Every model gets the same slider: the per-decoder maxBitrate feeds update_bitrate_hint
-    // rather than shortening the range. The last step selects BITRATE_UNLIMITED.
-    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, BITRATE_UNLIMITED,
+    // Every model gets the same slider; the per-decoder maxBitrate feeds update_bitrate_hint
+    // rather than shortening the range.
+    pane->bitrate_slider_value = app_configuration->bitrate_unlimited ? BITRATE_SLIDER_MAX
+                                                                     : app_configuration->stream.bitrate;
+    lv_obj_t *bitrate_slider = pref_slider(view, &pane->bitrate_slider_value, BITRATE_MIN, BITRATE_SLIDER_MAX,
                                            BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
@@ -129,8 +143,8 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_add_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_width(pane->bitrate_warning, LV_PCT(100));
     lv_obj_set_style_text_font(pane->bitrate_warning, lv_theme_get_font_small(view), 0);
-    lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
+    pane->bitrate_warn = BITRATE_WARN_NONE;
 
 #if !FEATURE_FORCE_FULLSCREEN
     lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
@@ -162,6 +176,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
 static void on_bitrate_changed(lv_event_t *e) {
     basic_pane_t *pane = lv_event_get_user_data(e);
+    app_configuration->bitrate_unlimited = pane->bitrate_slider_value > BITRATE_MAX;
+    if (!app_configuration->bitrate_unlimited) {
+        app_configuration->stream.bitrate = pane->bitrate_slider_value;
+    }
     update_bitrate_label(pane);
     update_bitrate_hint(pane);
 }
@@ -170,9 +188,15 @@ static void on_res_fps_updated(lv_event_t *e) {
     basic_pane_t *pane = lv_event_get_user_data(e);
     int bitrate = settings_optimal_bitrate(&pane->parent->app->ss4s.video_cap, app_configuration->stream.width,
                                            app_configuration->stream.height, app_configuration->stream.fps);
-    if (bitrate > app_configuration->stream.bitrate) {
+    // Without capabilities to cap it this can exceed the slider, and letting it reach the last step
+    // would select "unlimited" for a user who only changed the resolution.
+    if (bitrate > BITRATE_MAX) {
+        bitrate = BITRATE_MAX;
+    }
+    if (!app_configuration->bitrate_unlimited && bitrate > app_configuration->stream.bitrate) {
+        app_configuration->stream.bitrate = bitrate;
+        pane->bitrate_slider_value = bitrate;
         lv_slider_set_value(pane->bitrate_slider, bitrate / BITRATE_STEP, LV_ANIM_OFF);
-        app_configuration->stream.bitrate = lv_slider_get_value(pane->bitrate_slider) * BITRATE_STEP;
     }
     if (app_configuration->stream.width > 1920 && app_configuration->stream.height > 1080 &&
         app_configuration->stream.fps > 60) {
@@ -192,8 +216,8 @@ static void on_fullscreen_updated(lv_event_t *e) {
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {
-    if (app_configuration->stream.bitrate >= BITRATE_UNLIMITED) {
-        lv_label_set_text_static(pane->bitrate_label, locstr("Video bitrate - Unlimited"));
+    if (app_configuration->bitrate_unlimited) {
+        lv_label_set_text(pane->bitrate_label, locstr("Video bitrate - Unlimited"));
     } else {
         lv_label_set_text_fmt(pane->bitrate_label, locstr("Video bitrate - %d kbps"),
                               app_configuration->stream.bitrate);
@@ -201,25 +225,46 @@ static void update_bitrate_label(basic_pane_t *pane) {
 }
 
 static void update_bitrate_hint(basic_pane_t *pane) {
-    app_t *app = pane->parent->app;
-    // Signed throughout: a negative bitrate means "auto", and comparing it as unsigned would make
-    // it look enormous.
-    int max = (int) app->ss4s.video_cap.maxBitrate, suggested = (int) app->ss4s.video_cap.suggestedBitrate;
-    int bitrate = app_configuration->stream.bitrate;
-    // Decoders that don't declare a maxBitrate get no strong warning, same as before this slider
-    // stopped being clamped to it.
-    if (max > 0 && (bitrate >= BITRATE_UNLIMITED || bitrate > max)) {
-        lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_RED), 0);
-        lv_label_set_text_fmt(pane->bitrate_warning, locstr("Above the %d kbps this decoder reports it can handle. "
-                                                            "The stream may stutter or fail to start."), max);
+    const SS4S_VideoCapabilities *cap = &pane->parent->app->ss4s.video_cap;
+    int max = (int) cap->maxBitrate, suggested = (int) cap->suggestedBitrate;
+    int bitrate = settings_effective_bitrate(app_configuration, cap);
+    // A decoder that declares no ceiling gives us no figure to compare against, but "unlimited"
+    // still deserves the strong warning -- it is the state the old slider range made unreachable.
+    bitrate_warn_t warn = BITRATE_WARN_NONE;
+    if (max > 0 ? bitrate > max : app_configuration->bitrate_unlimited) {
+        warn = BITRATE_WARN_MAX;
     } else if (suggested > 0 && bitrate > suggested) {
-        lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
-        lv_label_set_text_static(pane->bitrate_warning, locstr("Higher bitrate may cause performance issue, "
-                                                               "try with caution."));
-    } else {
-        lv_obj_add_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+        warn = BITRATE_WARN_SUGGESTED;
+    }
+    // The branch changes at most twice across a slider sweep, so don't re-style and re-wrap the
+    // label on every step of the D-pad.
+    if (warn == pane->bitrate_warn) {
+        return;
+    }
+    pane->bitrate_warn = warn;
+    switch (warn) {
+        case BITRATE_WARN_MAX: {
+            const char *text = locstr("May exceed what this decoder can handle. The stream may stutter or fail "
+                                      "to start.");
+            lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_RED), 0);
+            // Keep the format string a literal so a mistranslated conversion can't reach vsnprintf.
+            if (max > 0) {
+                lv_label_set_text_fmt(pane->bitrate_warning, "%s (%d kbps)", text, max);
+            } else {
+                lv_label_set_text(pane->bitrate_warning, text);
+            }
+            lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+            break;
+        }
+        case BITRATE_WARN_SUGGESTED:
+            lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
+            lv_label_set_text(pane->bitrate_warning, locstr("Higher bitrate may cause performance issue, "
+                                                            "try with caution."));
+            lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+            break;
+        default:
+            lv_obj_add_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+            break;
     }
 }
 

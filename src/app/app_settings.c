@@ -70,6 +70,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->hdr = false;
     config->hevc = true;
     config->av1 = false;
+    config->bitrate_unlimited = false;
     config->stick_deadzone = 7;
 
     config->conf_dir = conf_dir;
@@ -99,6 +100,7 @@ bool settings_save(app_settings_t *config) {
     ini_write_int(fp, "height", config->stream.height);
     ini_write_int(fp, "net_fps", config->stream.fps);
     ini_write_int(fp, "bitrate", config->stream.bitrate);
+    ini_write_bool(fp, "bitrate_unlimited", config->bitrate_unlimited);
     ini_write_int(fp, "packetsize", config->stream.packetSize);
     ini_write_int(fp, "rotate", config->rotate);
 
@@ -172,6 +174,8 @@ int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, 
             kbps = 25000;
             break;
     }
+    // The automatic bitrate deliberately still respects the decoder's declared ceiling, unlike an
+    // explicit choice: picking a value the decoder can't sustain should take a deliberate act.
     unsigned int suggested_max = 0;
     if (capabilities != NULL) {
         suggested_max = capabilities->suggestedBitrate;
@@ -184,6 +188,17 @@ int settings_optimal_bitrate(const SS4S_VideoCapabilities *capabilities, int w, 
         return calculated;
     }
     return (int) (calculated < suggested_max ? calculated : suggested_max);
+}
+
+int settings_effective_bitrate(const app_settings_t *config, const SS4S_VideoCapabilities *capabilities) {
+    if (config->bitrate_unlimited) {
+        return BITRATE_UNLIMITED_KBPS;
+    }
+    if (config->stream.bitrate < 0) {
+        return settings_optimal_bitrate(capabilities, config->stream.width, config->stream.height,
+                                        config->stream.fps);
+    }
+    return config->stream.bitrate;
 }
 
 
@@ -230,6 +245,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         set_int(&config->stream.fps, value);
     } else if (INI_FULL_MATCH("streaming", "bitrate")) {
         set_int(&config->stream.bitrate, value);
+    } else if (INI_FULL_MATCH("streaming", "bitrate_unlimited")) {
+        config->bitrate_unlimited = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("streaming", "packetsize")) {
         set_int(&config->stream.packetSize, value);
     } else if (INI_FULL_MATCH("streaming", "rotate")) {
