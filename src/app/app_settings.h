@@ -23,6 +23,14 @@
 #include <stdbool.h>
 #include "ss4s/video.h"
 
+// One step past the last selectable value on the bitrate slider. It means "apply no client-side
+// cap", leaving the link, the encoder and the decoder as the only limits.
+#define BITRATE_UNLIMITED 101000
+// Bitrate actually requested from the host for BITRATE_UNLIMITED. The protocol has no way to
+// express "no limit" -- the host always needs a number, and it holds that number for the whole
+// session -- so this is simply high enough to stop being the binding constraint.
+#define BITRATE_UNLIMITED_KBPS 300000
+
 typedef struct window_state_t {
     int x, y, w, h;
 } window_state_t;

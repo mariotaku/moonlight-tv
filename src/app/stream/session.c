@@ -266,11 +266,11 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
     if (config->stream.bitrate < 0) {
         config->stream.bitrate = settings_optimal_bitrate(&video_cap, config->stream.width, config->stream.height,
                                                           config->stream.fps);
+    } else if (config->stream.bitrate >= BITRATE_UNLIMITED) {
+        config->stream.bitrate = BITRATE_UNLIMITED_KBPS;
     }
-    // Cap framerate to platform request
-    if (video_cap.maxBitrate && config->stream.bitrate > video_cap.maxBitrate) {
-        config->stream.bitrate = (int) video_cap.maxBitrate;
-    }
+    // video_cap.maxBitrate is what the decoder claims it can sustain, not a hard limit. It drives
+    // the warning in the settings pane instead of silently clamping the value chosen there.
     if (video_cap.codecs & SS4S_VIDEO_H264) {
         config->stream.supportedVideoFormats |= VIDEO_FORMAT_H264;
     }

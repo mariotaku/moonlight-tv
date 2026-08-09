@@ -117,8 +117,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
 
     pane->bitrate_label = pref_title_label(view, locstr("Video bitrate"));
 
-    unsigned int max = app->ss4s.video_cap.maxBitrate ? app->ss4s.video_cap.maxBitrate : 100000;
-    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, (int) max, BITRATE_STEP);
+    // Every model gets the same slider: the per-decoder maxBitrate feeds update_bitrate_hint
+    // rather than shortening the range. The last step selects BITRATE_UNLIMITED.
+    lv_obj_t *bitrate_slider = pref_slider(view, &app_configuration->stream.bitrate, 5000, BITRATE_UNLIMITED,
+                                           BITRATE_STEP);
     lv_obj_set_width(bitrate_slider, LV_PCT(100));
     lv_obj_add_event_cb(bitrate_slider, on_bitrate_changed, LV_EVENT_VALUE_CHANGED, self);
     pane->bitrate_slider = bitrate_slider;
@@ -190,14 +192,30 @@ static void on_fullscreen_updated(lv_event_t *e) {
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {
-    lv_label_set_text_fmt(pane->bitrate_label, locstr("Video bitrate - %d kbps"), app_configuration->stream.bitrate);
+    if (app_configuration->stream.bitrate >= BITRATE_UNLIMITED) {
+        lv_label_set_text_static(pane->bitrate_label, locstr("Video bitrate - Unlimited"));
+    } else {
+        lv_label_set_text_fmt(pane->bitrate_label, locstr("Video bitrate - %d kbps"),
+                              app_configuration->stream.bitrate);
+    }
 }
 
 static void update_bitrate_hint(basic_pane_t *pane) {
     app_t *app = pane->parent->app;
-    if (app->ss4s.video_cap.suggestedBitrate > 0 &&
-        app_configuration->stream.bitrate > app->ss4s.video_cap.suggestedBitrate) {
+    // Signed throughout: a negative bitrate means "auto", and comparing it as unsigned would make
+    // it look enormous.
+    int max = (int) app->ss4s.video_cap.maxBitrate, suggested = (int) app->ss4s.video_cap.suggestedBitrate;
+    int bitrate = app_configuration->stream.bitrate;
+    // Decoders that don't declare a maxBitrate get no strong warning, same as before this slider
+    // stopped being clamped to it.
+    if (max > 0 && (bitrate >= BITRATE_UNLIMITED || bitrate > max)) {
         lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_RED), 0);
+        lv_label_set_text_fmt(pane->bitrate_warning, locstr("Above the %d kbps this decoder reports it can handle. "
+                                                            "The stream may stutter or fail to start."), max);
+    } else if (suggested > 0 && bitrate > suggested) {
+        lv_obj_clear_flag(pane->bitrate_warning, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
         lv_label_set_text_static(pane->bitrate_warning, locstr("Higher bitrate may cause performance issue, "
                                                                "try with caution."));
     } else {
