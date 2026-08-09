@@ -20,6 +20,8 @@ AUDIO_INFO audio_stream_info;
 
 static size_t opus_head_serialize(const OPUS_MULTISTREAM_CONFIGURATION *config, unsigned char *data);
 
+static void aud_buffers_free();
+
 static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATION opusConfig, void *context,
                     int arFlags) {
     (void) audioConfiguration;
@@ -57,8 +59,7 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
         buffer = calloc(unit_size, frame_size);
         if (buffer == NULL) {
             commons_log_error("Session", "Audio init: failed to allocate decode buffer");
-            opus_multistream_decoder_destroy(decoder);
-            decoder = NULL;
+            aud_buffers_free();
             return -1;
         }
     }
@@ -80,7 +81,13 @@ static int aud_init(int audioConfiguration, const POPUS_MULTISTREAM_CONFIGURATIO
     info.codec = codec;
     info.codecData = buffer;
     info.codecDataLen = codecDataLen;
-    return SS4S_PlayerAudioOpen(player, &info);
+    // aud_cleanup only runs once the audio stream has started, so a failed init has to release
+    // what it allocated itself.
+    SS4S_AudioOpenResult result = SS4S_PlayerAudioOpen(player, &info);
+    if (result != SS4S_AUDIO_OPEN_OK) {
+        aud_buffers_free();
+    }
+    return result;
 }
 
 static void aud_cleanup() {
@@ -88,15 +95,17 @@ static void aud_cleanup() {
         SS4S_PlayerAudioClose(player);
         player = NULL;
     }
+    aud_buffers_free();
+    session = NULL;
+}
+
+static void aud_buffers_free() {
     if (decoder != NULL) {
         opus_multistream_decoder_destroy(decoder);
         decoder = NULL;
     }
-    if (buffer != NULL) {
-        free(buffer);
-        buffer = NULL;
-    }
-    session = NULL;
+    free(buffer);
+    buffer = NULL;
 }
 
 static void aud_feed(char *sampleData, int sampleLength) {
