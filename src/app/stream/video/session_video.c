@@ -75,16 +75,6 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     (void) drFlags;
     session = context;
     player = session->player;
-    buffer = malloc(DECODER_BUFFER_INITIAL_SIZE);
-    if (buffer == NULL) {
-        // Never leave buffer NULL while buffer_size advertises capacity: vdec_delegate_submit would
-        // skip the grow path and memcpy every frame into a NULL pointer.
-        commons_log_error("Session", "Failed to allocate %zu byte decode buffer",
-                          (size_t) DECODER_BUFFER_INITIAL_SIZE);
-        buffer_size = 0;
-        return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
-    }
-    buffer_size = DECODER_BUFFER_INITIAL_SIZE;
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
     memset(&vdec_stream_info, 0, sizeof(vdec_stream_info));
     vdec_stream_format = videoFormat;
@@ -110,12 +100,19 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
             break;
         default: {
             commons_log_error("Session", "Unsupported codec %s", vdec_stream_info.format);
-            // vdec_delegate_cleanup only runs once the video stream has started, so every error
-            // return from here on must release the buffer itself.
-            vdec_buffer_free();
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         }
     }
+
+    // Leaving buffer NULL while buffer_size advertises capacity would make vdec_delegate_submit
+    // skip the grow path and memcpy every frame into a NULL pointer, so fail the stream instead.
+    buffer = malloc(DECODER_BUFFER_INITIAL_SIZE);
+    if (buffer == NULL) {
+        commons_log_error("Session", "Failed to allocate %zu byte decode buffer",
+                          (size_t) DECODER_BUFFER_INITIAL_SIZE);
+        return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
+    }
+    buffer_size = DECODER_BUFFER_INITIAL_SIZE;
 
     app_t *app = session->app;
     if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
@@ -127,6 +124,8 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
             return 0;
         }
         case SS4S_VIDEO_OPEN_UNSUPPORTED_CODEC:
+            // vdec_delegate_cleanup only runs once the video stream has started, so a failed
+            // setup has to release the buffer itself.
             vdec_buffer_free();
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         default:
@@ -149,7 +148,6 @@ void vdec_buffer_free() {
 }
 
 int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
-    // Guaranteed by vdec_delegate_setup: the stream never starts without a buffer.
     assert(buffer != NULL);
     if ((size_t) decodeUnit->fullLength > buffer_size) {
         if ((size_t) decodeUnit->fullLength > DECODER_BUFFER_MAX_SIZE) {
