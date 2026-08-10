@@ -44,6 +44,8 @@ static void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now);
 
 static void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info);
 
+static void vdec_buffer_free();
+
 DECODER_RENDERER_CALLBACKS ss4s_dec_callbacks = {
         .setup = vdec_delegate_setup,
         .cleanup = vdec_delegate_cleanup,
@@ -73,8 +75,6 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     (void) drFlags;
     session = context;
     player = session->player;
-    buffer_size = DECODER_BUFFER_INITIAL_SIZE;
-    buffer = malloc(buffer_size);
     memset(&vdec_temp_stats, 0, sizeof(vdec_temp_stats));
     memset(&vdec_stream_info, 0, sizeof(vdec_stream_info));
     vdec_stream_format = videoFormat;
@@ -104,6 +104,16 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
         }
     }
 
+    // Leaving buffer NULL while buffer_size advertises capacity would make vdec_delegate_submit
+    // skip the grow path and memcpy every frame into a NULL pointer, so fail the stream instead.
+    buffer = malloc(DECODER_BUFFER_INITIAL_SIZE);
+    if (buffer == NULL) {
+        commons_log_error("Session", "Failed to allocate %zu byte decode buffer",
+                          (size_t) DECODER_BUFFER_INITIAL_SIZE);
+        return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
+    }
+    buffer_size = DECODER_BUFFER_INITIAL_SIZE;
+
     app_t *app = session->app;
     if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_EXCLUSIVE) {
         app_bus_post_sync(app, (bus_actionfunc) app_ui_close, &app->ui);
@@ -114,22 +124,31 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
             return 0;
         }
         case SS4S_VIDEO_OPEN_UNSUPPORTED_CODEC:
+            // vdec_delegate_cleanup only runs once the video stream has started, so a failed
+            // setup has to release the buffer itself.
+            vdec_buffer_free();
             return CALLBACKS_SESSION_ERROR_VDEC_UNSUPPORTED;
         default:
+            vdec_buffer_free();
             return CALLBACKS_SESSION_ERROR_VDEC_ERROR;
     }
 }
 
 void vdec_delegate_cleanup() {
     assert(player != NULL);
-    free(buffer);
-    buffer = NULL;
-    buffer_size = 0;
+    vdec_buffer_free();
     SS4S_PlayerVideoClose(player);
     session = NULL;
 }
 
+void vdec_buffer_free() {
+    free(buffer);
+    buffer = NULL;
+    buffer_size = 0;
+}
+
 int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
+    assert(buffer != NULL);
     if ((size_t) decodeUnit->fullLength > buffer_size) {
         if ((size_t) decodeUnit->fullLength > DECODER_BUFFER_MAX_SIZE) {
             commons_log_error("Session", "Decode unit %d bytes exceeds %zu byte cap, dropping",
