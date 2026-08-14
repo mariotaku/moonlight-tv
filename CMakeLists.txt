@@ -134,8 +134,20 @@ set(BUILD_SHARED_CORE_LIBS OFF)
 
 if (TARGET_WEBOS)
     set(CMAKE_INSTALL_LIBDIR lib/backports)
-    set(SDL2_BACKPORT_RELEASE "release-2.30.12-webos.5")
+    set(SDL2_BACKPORT_REVISION "9f30a1f01e4d36aa5d3e4e04df5921b7a9d093ee")
     include(ExternalSDL2BackportForWebOS)
+    find_package(Git REQUIRED)
+    ExternalProject_Add_Step(ext_sdl2_backport controller_reconnect_patch
+            COMMAND ${CMAKE_COMMAND}
+                    -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+                    -DSOURCE_DIR=<SOURCE_DIR>
+                    -DPATCH_FILE=${CMAKE_SOURCE_DIR}/cmake/patches/SDL-webOS-controller-reconnect.patch
+                    -P ${CMAKE_SOURCE_DIR}/cmake/ApplyGitPatch.cmake
+            WORKING_DIRECTORY <SOURCE_DIR>
+            DEPENDEES patch
+            DEPENDERS configure
+            COMMENT "Applying SDL-webOS controller reconnect patch"
+    )
     unset(CMAKE_INSTALL_LIBDIR)
 else ()
     pkg_check_modules(SDL2 REQUIRED sdl2>=2.0.4)

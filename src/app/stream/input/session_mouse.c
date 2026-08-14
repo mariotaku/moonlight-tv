@@ -8,8 +8,23 @@
 #include <Limelight.h>
 #include <SDL.h>
 
-void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event) {
+static bool stream_input_touch_mouse_suppressed(const stream_input_t *input, uint32_t which,
+                                                uint32_t timestamp) {
+#if TARGET_WEBOS
+    return which == SDL_TOUCH_MOUSEID &&
+           stream_input_controller_touchpad_compat_mouse_active(input, timestamp);
+#else
     (void) input;
+    (void) which;
+    (void) timestamp;
+    return false;
+#endif
+}
+
+void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEvent *event) {
+    if (stream_input_touch_mouse_suppressed(input, event->which, event->timestamp)) {
+        return;
+    }
     int button;
     switch (event->button) {
         case SDL_BUTTON_LEFT:
@@ -46,7 +61,9 @@ void stream_input_handle_mbutton(stream_input_t *input, const SDL_MouseButtonEve
 }
 
 void stream_input_handle_mwheel(stream_input_t *input, const SDL_MouseWheelEvent *event) {
-    (void) input;
+    if (stream_input_touch_mouse_suppressed(input, event->which, event->timestamp)) {
+        return;
+    }
     if (event->which == SDL_TOUCH_MOUSEID && LiGetHostFeatureFlags() & LI_FF_PEN_TOUCH_EVENTS) {
         // Don't send mouse events from touch devices if the host supports pen/touch events
         return;
@@ -61,6 +78,10 @@ void stream_input_handle_mwheel(stream_input_t *input, const SDL_MouseWheelEvent
 
 void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event, bool hw_mouse) {
     if (input->view_only) {
+        return;
+    }
+    if (!hw_mouse &&
+        stream_input_touch_mouse_suppressed(input, event->which, event->timestamp)) {
         return;
     }
     if (event->which == SDL_TOUCH_MOUSEID && LiGetHostFeatureFlags() & LI_FF_PEN_TOUCH_EVENTS) {

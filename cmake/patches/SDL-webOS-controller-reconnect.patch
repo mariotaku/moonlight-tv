@@ -1,0 +1,73 @@
+diff --git a/src/joystick/linux/SDL_sysjoystick.c b/src/joystick/linux/SDL_sysjoystick.c
+--- a/src/joystick/linux/SDL_sysjoystick.c
++++ b/src/joystick/linux/SDL_sysjoystick.c
+@@ -936,13 +936,18 @@ static void LINUX_FallbackJoystickDetect(void)
+-        if (presence_flags != last_input_presence_flags) {
+-            char path[PATH_MAX];
+-            for (int i = 0; i < 32; i++) {
+-                if (SDL_webOSIsDeviceIndexPresent(presence_flags, i)) {
+-                    if (check == SDL_WEBOS_DEVICE_PRESENCE_CHECK_EVDEV) {
+-                        SDL_snprintf(path, SDL_arraysize(path), "/dev/input/event%d", i);
+-                    } else if (check == SDL_WEBOS_DEVICE_PRESENCE_CHECK_JS) {
+-                        SDL_snprintf(path, SDL_arraysize(path), "/dev/input/js%d", i);
+-                    } else {
+-                        break;
+-                    }
+-                    MaybeAddDevice(path);
+-                }
++        char path[PATH_MAX];
++        for (int i = 0; i < 32; i++) {
++            SDL_bool present = SDL_webOSIsDeviceIndexPresent(presence_flags, i);
++            SDL_bool was_present = SDL_webOSIsDeviceIndexPresent(last_input_presence_flags, i);
++            if (!present && !was_present) {
++                continue;
++            }
++            if (check == SDL_WEBOS_DEVICE_PRESENCE_CHECK_EVDEV) {
++                SDL_snprintf(path, SDL_arraysize(path), "/dev/input/event%d", i);
++            } else if (check == SDL_WEBOS_DEVICE_PRESENCE_CHECK_JS) {
++                SDL_snprintf(path, SDL_arraysize(path), "/dev/input/js%d", i);
++            } else {
++                break;
++            }
++            if (present) {
++                MaybeAddDevice(path);
++            } else {
++                MaybeRemoveDevice(path);
+@@ -950 +954,0 @@ static void LINUX_FallbackJoystickDetect(void)
+-            last_input_presence_flags = presence_flags;
+@@ -951,0 +956 @@ static void LINUX_FallbackJoystickDetect(void)
++        last_input_presence_flags = presence_flags;
+@@ -968,0 +974,6 @@ static void LINUX_JoystickDetect(void)
++#ifdef __WEBOS__
++    /* Drop stale devices before polling so the same devnode can be re-added. */
++    if (enumeration_method == ENUMERATION_POLLING) {
++        HandlePendingRemovals();
++    }
++#endif
+@@ -982,0 +994,5 @@ static void LINUX_JoystickDetect(void)
++#ifdef __WEBOS__
++    if (enumeration_method != ENUMERATION_POLLING) {
++        HandlePendingRemovals();
++    }
++#else
+@@ -983,0 +1000 @@ static void LINUX_JoystickDetect(void)
++#endif
+diff --git a/src/hidapi/SDL_hidapi.c b/src/hidapi/SDL_hidapi.c
+--- a/src/hidapi/SDL_hidapi.c
++++ b/src/hidapi/SDL_hidapi.c
+@@ -424,10 +424,11 @@ static void HIDAPI_UpdateDiscovery(void)
+         if (!SDL_HIDAPI_discovery.m_unLastDetect || SDL_TICKS_PASSED(now, next_detect)) {
+             // Loop through /dev/hidraw*
+             Uint32 flags = SDL_webOSGetDevicePresenceFlags(SDL_WEBOS_DEVICE_PRESENCE_CHECK_HIDRAW);
+-            if (flags != SDL_HIDAPI_discovery.m_unPresenceFlags) {
+-                ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+-                SDL_HIDAPI_discovery.m_unPresenceFlags = flags;
+-            }
++            /* A controller can disappear and return on the same hidraw index
++             * between polls, leaving the presence mask unchanged. Force the
++             * HIDAPI device list to be reconciled on each polling interval. */
++            SDL_HIDAPI_discovery.m_unPresenceFlags = flags;
++            ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+             SDL_HIDAPI_discovery.m_unLastDetect = now;
+         }
+     } else

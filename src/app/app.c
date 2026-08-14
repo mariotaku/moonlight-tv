@@ -62,6 +62,10 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     backend_init(&app->backend, app);
 
 #if TARGET_WEBOS
+    /* Force SDL to use its webOS polling joystick discovery backend.
+     * Some webOS environments are misdetected as non-jailed and select udev,
+     * which can deliver removal without a matching add after Bluetooth reconnect. */
+    SDL_setenv("SDL_WEBOS_FORCE_JAILED", "1", 1);
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_BACK, "true");
     SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_EXIT, "true");
     SDL_SetHint(SDL_HINT_WEBOS_CURSOR_SLEEP_TIME, "5000");
@@ -273,6 +277,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
 void app_process_events(app_t *app) {
     SDL_PumpEvents();
     SDL_FilterEvents(app_event_filter, app);
+    if (app->session != NULL) {
+        session_flush_input_events(app->session);
+    }
 }
 
 void app_quit_confirm() {

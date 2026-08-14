@@ -82,6 +82,7 @@ app_gamepad_state_t *app_input_gamepad_state_init(app_input_t *input, SDL_GameCo
     SDL_Joystick *joystick = SDL_GameControllerGetJoystick(controller);
     SDL_JoystickID sdl_id = SDL_JoystickInstanceID(joystick);
 
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Haptic *haptic = SDL_HapticOpenFromJoystick(joystick);
     unsigned int haptic_bits = SDL_HapticQuery(haptic);
     commons_log_debug("Input", "Controller #%d has supported haptic bits: %x", state->gs_id, haptic_bits);
@@ -89,6 +90,7 @@ app_gamepad_state_t *app_input_gamepad_state_init(app_input_t *input, SDL_GameCo
         SDL_HapticClose(haptic);
         haptic = NULL;
     }
+#endif
     state->instance_id = sdl_id;
     state->controller = controller;
     state->guid = SDL_JoystickGetGUID(joystick);

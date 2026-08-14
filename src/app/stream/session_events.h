@@ -6,3 +6,5 @@
 typedef struct session_t session_t;
 
 bool session_handle_input_event(session_t *session, const SDL_Event *event);
+
+void session_flush_input_events(session_t *session);

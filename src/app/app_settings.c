@@ -22,12 +22,21 @@ static const char *serialize_audio_config(int config);
 
 static int parse_audio_config(const char *value);
 
+static const char *indexed_setting_serialize(const char *const values[], size_t count, int value, int fallback);
+
+static int indexed_setting_parse(const char *value, const char *const values[], size_t count, int fallback);
+
 static int settings_parse(app_settings_t *config, const char *section, const char *name, const char *value);
 
 static void set_string(char **field, const char *value);
 
 static void set_int(int *field, const char *value);
 
+
+#define SETTINGS_COUNT(values) (sizeof(values) / sizeof((values)[0]))
+
+static const char *const controller_touchpad_mode_values[] = {"off", "mouse", "native"};
+static const char *const controller_touchpad_press_values[] = {"off", "left", "right", "middle"};
 
 const audio_config_entry_t audio_configs[] = {
         {AUDIO_CONFIGURATION_STEREO,      "stereo", translatable("Stereo")},
@@ -67,6 +76,13 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->rotate = 0;
     config->absmouse = true;
     config->virtual_mouse = false;
+    config->controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_MOUSE;
+    config->controller_touchpad_sensitivity = CONTROLLER_TOUCHPAD_SENSITIVITY_DEFAULT;
+    config->controller_touchpad_press = CONTROLLER_TOUCHPAD_PRESS_LEFT;
+    config->controller_touchpad_secondary_click = CONTROLLER_TOUCHPAD_PRESS_RIGHT;
+    config->controller_touchpad_tap_to_click = true;
+    config->controller_touchpad_two_finger_scroll = true;
+    config->controller_touchpad_invert_two_finger_scroll = true;
     config->hdr = false;
     config->hevc = true;
     config->av1 = false;
@@ -111,6 +127,28 @@ bool settings_save(app_settings_t *config) {
     ini_write_section(fp, "input");
     ini_write_bool(fp, "absmouse", config->absmouse);
     ini_write_bool(fp, "virtual_mouse", config->virtual_mouse);
+    ini_write_string(fp, "controller_touchpad",
+                     indexed_setting_serialize(controller_touchpad_mode_values,
+                                               SETTINGS_COUNT(controller_touchpad_mode_values),
+                                               config->controller_touchpad_mode, CONTROLLER_TOUCHPAD_MODE_MOUSE));
+#if TARGET_WEBOS
+    ini_write_bool(fp, "controller_touchpad_webos_touchscreen",
+                   config->controller_touchpad_webos_touchscreen);
+#endif
+    ini_write_int(fp, "controller_touchpad_sensitivity", config->controller_touchpad_sensitivity);
+    ini_write_string(fp, "controller_touchpad_press",
+                     indexed_setting_serialize(controller_touchpad_press_values,
+                                               SETTINGS_COUNT(controller_touchpad_press_values),
+                                               config->controller_touchpad_press, CONTROLLER_TOUCHPAD_PRESS_LEFT));
+    ini_write_string(fp, "controller_touchpad_secondary_click",
+                     indexed_setting_serialize(controller_touchpad_press_values,
+                                               SETTINGS_COUNT(controller_touchpad_press_values),
+                                               config->controller_touchpad_secondary_click, CONTROLLER_TOUCHPAD_PRESS_RIGHT));
+    ini_write_bool(fp, "controller_touchpad_tap_to_click", config->controller_touchpad_tap_to_click);
+    ini_write_bool(fp, "controller_touchpad_two_finger_scroll",
+                   config->controller_touchpad_two_finger_scroll);
+    ini_write_bool(fp, "controller_touchpad_invert_two_finger_scroll",
+                   config->controller_touchpad_invert_two_finger_scroll);
 #if FEATURE_INPUT_EVMOUSE
     ini_write_bool(fp, "hardware_mouse", config->hardware_mouse);
 #endif
@@ -221,6 +259,26 @@ int find_ch_idx_by_value(const char *value) {
     return -1;
 }
 
+static const char *indexed_setting_serialize(const char *const values[], size_t count,
+                                             int value, int fallback) {
+    if ((unsigned int) value >= count) {
+        value = fallback;
+    }
+    return values[value];
+}
+
+static int indexed_setting_parse(const char *value, const char *const values[],
+                                 size_t count, int fallback) {
+    if (value != NULL) {
+        for (size_t i = 0; i < count; ++i) {
+            if (strcmp(value, values[i]) == 0) {
+                return (int) i;
+            }
+        }
+    }
+    return fallback;
+}
+
 static int settings_parse(app_settings_t *config, const char *section, const char *name, const char *value) {
     if (INI_FULL_MATCH("streaming", "width")) {
         set_int(&config->stream.width, value);
@@ -254,6 +312,38 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         config->absmouse = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("virtual_mouse")) {
         config->virtual_mouse = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("controller_touchpad")) {
+        config->controller_touchpad_mode = indexed_setting_parse(
+                value, controller_touchpad_mode_values,
+                SETTINGS_COUNT(controller_touchpad_mode_values),
+                CONTROLLER_TOUCHPAD_MODE_MOUSE);
+#if TARGET_WEBOS
+    } else if (INI_NAME_MATCH("controller_touchpad_webos_touchscreen")) {
+        config->controller_touchpad_webos_touchscreen = INI_IS_TRUE(value);
+#endif
+    } else if (INI_NAME_MATCH("controller_touchpad_sensitivity")) {
+        set_int(&config->controller_touchpad_sensitivity, value);
+        if (config->controller_touchpad_sensitivity < CONTROLLER_TOUCHPAD_SENSITIVITY_MIN) {
+            config->controller_touchpad_sensitivity = CONTROLLER_TOUCHPAD_SENSITIVITY_MIN;
+        } else if (config->controller_touchpad_sensitivity > CONTROLLER_TOUCHPAD_SENSITIVITY_MAX) {
+            config->controller_touchpad_sensitivity = CONTROLLER_TOUCHPAD_SENSITIVITY_MAX;
+        }
+    } else if (INI_NAME_MATCH("controller_touchpad_press")) {
+        config->controller_touchpad_press = indexed_setting_parse(
+                value, controller_touchpad_press_values,
+                SETTINGS_COUNT(controller_touchpad_press_values),
+                CONTROLLER_TOUCHPAD_PRESS_LEFT);
+    } else if (INI_NAME_MATCH("controller_touchpad_secondary_click")) {
+        config->controller_touchpad_secondary_click = indexed_setting_parse(
+                value, controller_touchpad_press_values,
+                SETTINGS_COUNT(controller_touchpad_press_values),
+                CONTROLLER_TOUCHPAD_PRESS_RIGHT);
+    } else if (INI_NAME_MATCH("controller_touchpad_tap_to_click")) {
+        config->controller_touchpad_tap_to_click = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("controller_touchpad_two_finger_scroll")) {
+        config->controller_touchpad_two_finger_scroll = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("controller_touchpad_invert_two_finger_scroll")) {
+        config->controller_touchpad_invert_two_finger_scroll = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hardware_mouse")) {
 #if FEATURE_INPUT_EVMOUSE
         config->hardware_mouse = INI_IS_TRUE(value);

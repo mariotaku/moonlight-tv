@@ -14,7 +14,7 @@ void app_input_init(app_input_t *input, app_t *app) {
 #endif
     }
     SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
-    input->max_num_gamepads = 4;
+    input->max_num_gamepads = sizeof(input->gamepads) / sizeof(input->gamepads[0]);
     input->gamepads_count = 0;
     for (int i = 0; i < input->max_num_gamepads; i++) {
         input->gamepads[i].instance_id = -1;
