@@ -273,6 +273,9 @@ static int app_event_filter(void *userdata, SDL_Event *event) {
 void app_process_events(app_t *app) {
     SDL_PumpEvents();
     SDL_FilterEvents(app_event_filter, app);
+    if (app->session != NULL) {
+        session_update_controller_touchpad_tap_hold(app->session);
+    }
 }
 
 void app_quit_confirm() {
