@@ -21,6 +21,15 @@
 #include "stream/session_priv.h"
 #include "session_evmouse.h"
 
+#define CONTROLLER_TOUCHPAD_MOUSE_SCALE_X_PERCENT 16.0f
+#define CONTROLLER_TOUCHPAD_MOUSE_SCALE_Y_PERCENT 9.0f
+#define CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE 600.0f
+
+static uint8_t controller_touchpad_mouse_button(int press) {
+    static const uint8_t buttons[] = {0, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_MIDDLE};
+    return (unsigned int) press < sizeof(buttons) / sizeof(buttons[0]) ? buttons[press] : 0;
+}
+
 void session_input_init(stream_input_t *input, session_t *session, app_input_t *app_input,
                         const session_config_t *config) {
     input->session = session;
@@ -28,6 +37,22 @@ void session_input_init(stream_input_t *input, session_t *session, app_input_t *
     input->view_only = config->view_only;
     input->stick_deadzone = config->stick_deadzone;
     input->no_sdl_mouse = config->hardware_mouse;
+    input->controller_touchpad_mode = (uint8_t) config->controller_touchpad_mode;
+    input->controller_touchpad_press_button =
+            controller_touchpad_mouse_button(config->controller_touchpad_press);
+    input->controller_touchpad_secondary_button =
+            controller_touchpad_mouse_button(config->controller_touchpad_secondary_click);
+    input->controller_touchpad_tap_to_click = config->controller_touchpad_tap_to_click;
+    input->controller_touchpad_two_finger_scroll = config->controller_touchpad_two_finger_scroll;
+    input->controller_touchpad_mouse_scale_x = CONTROLLER_TOUCHPAD_MOUSE_SCALE_X_PERCENT *
+                                               (float) config->controller_touchpad_sensitivity;
+    input->controller_touchpad_mouse_scale_y = CONTROLLER_TOUCHPAD_MOUSE_SCALE_Y_PERCENT *
+                                               (float) config->controller_touchpad_sensitivity;
+    input->controller_touchpad_scroll_scale = config->controller_touchpad_invert_two_finger_scroll
+                                              ? CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE
+                                              : -CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE;
+    input->controller_touchpads = NULL;
+    input->controller_touchpad_count = 0;
 #if FEATURE_INPUT_EVMOUSE
     if (!config->view_only && config->hardware_mouse) {
         session_evmouse_init(&input->evmouse, session);
@@ -36,6 +61,7 @@ void session_input_init(stream_input_t *input, session_t *session, app_input_t *
 }
 
 void session_input_deinit(stream_input_t *input) {
+    stream_input_controller_touchpad_mouse_deinit(input);
 #if FEATURE_INPUT_EVMOUSE
     const session_config_t *config = &input->session->config;
     if (!config->view_only && config->hardware_mouse) {
@@ -55,6 +81,9 @@ void session_input_interrupt(stream_input_t *input) {
 
 void session_input_started(stream_input_t *input) {
     input->started = true;
+    if (!input->view_only) {
+        stream_input_controller_touchpad_mouse_init(input);
+    }
     for (int i = 0, j = app_input_get_max_gamepads(input->input); i < j; ++i) {
         app_gamepad_state_t *gamepad = app_input_gamepad_state_by_index(input->input, i);
         if (gamepad == NULL) {
@@ -66,6 +95,7 @@ void session_input_started(stream_input_t *input) {
 
 void session_input_stopped(stream_input_t *input) {
     input->started = false;
+    stream_input_controller_touchpad_mouse_deinit(input);
 }
 
 void session_input_screen_keyboard_opened(stream_input_t *input) {
