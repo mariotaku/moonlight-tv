@@ -248,6 +248,13 @@ void session_config_init(app_t *app, session_config_t *config, const SERVER_DATA
                          const CONFIGURATION *app_config) {
     config->stream = app_config->stream;
     config->vmouse = app_config->virtual_mouse;
+    config->controller_touchpad_mode = app_config->controller_touchpad_mode;
+    config->controller_touchpad_sensitivity = app_config->controller_touchpad_sensitivity;
+    config->controller_touchpad_press = app_config->controller_touchpad_press;
+    config->controller_touchpad_secondary_click = app_config->controller_touchpad_secondary_click;
+    config->controller_touchpad_tap_to_click = app_config->controller_touchpad_tap_to_click;
+    config->controller_touchpad_two_finger_scroll = app_config->controller_touchpad_two_finger_scroll;
+    config->controller_touchpad_invert_two_finger_scroll = app_config->controller_touchpad_invert_two_finger_scroll;
     config->hardware_mouse = app_config->hardware_mouse;
     config->local_audio = app_config->localaudio;
     config->view_only = app_config->viewonly;
