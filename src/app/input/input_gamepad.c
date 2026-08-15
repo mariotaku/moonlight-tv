@@ -7,6 +7,9 @@
 
 #include "logging.h"
 #include "app_input.h"
+#if FEATURE_GAMEPAD_TOUCHPAD_GRAB
+#include "gamepad_touchpad.h"
+#endif
 
 static int new_gamepad_state_index(app_input_t *input, SDL_GameController *controller);
 
@@ -33,6 +36,12 @@ bool app_input_init_gamepad(app_input_t *input, int device_index) {
             return false;
         }
         assert(state->gs_id >= 0);
+#if FEATURE_GAMEPAD_TOUCHPAD_GRAB
+        // Keep the platform's input stack away from the controller touchpad, so it
+        // can't consume swipes as system gestures. SDL's own touchpad events are
+        // unaffected.
+        state->touchpad = gamepad_touchpad_grab(controller);
+#endif
         input->activeGamepadMask |= 1 << state->gs_id;
         input->gamepads_count++;
         return true;
@@ -60,6 +69,10 @@ void app_input_close_gamepad(app_input_t *input, SDL_JoystickID sdl_id) {
     if (state->haptic) {
         SDL_HapticClose(state->haptic);
     }
+#endif
+#if FEATURE_GAMEPAD_TOUCHPAD_GRAB
+    gamepad_touchpad_release(state->touchpad);
+    state->touchpad = NULL;
 #endif
     SDL_GameControllerClose(state->controller);
     commons_log_info("Input", "Controller #%d disconnected, sdl_id: %d", state->gs_id, sdl_id);

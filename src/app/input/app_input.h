@@ -3,6 +3,7 @@
 #include <SDL_haptic.h>
 #include <SDL_joystick.h>
 #include <SDL_version.h>
+#include "config.h"
 #include "gamecontrollerdb_updater.h"
 
 #include "lvgl.h"
@@ -19,6 +20,9 @@ typedef struct app_gamepad_sensor_state_t {
 typedef struct app_gamepad_state_t {
     SDL_JoystickID instance_id;
     SDL_GameController *controller;
+#if FEATURE_GAMEPAD_TOUCHPAD_GRAB
+    struct gamepad_touchpad_t *touchpad;
+#endif // FEATURE_GAMEPAD_TOUCHPAD_GRAB
     SDL_JoystickGUID guid;
 #if SDL_VERSION_ATLEAST(2, 0, 14)
     uint32_t serial_crc;

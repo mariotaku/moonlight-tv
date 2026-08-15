@@ -80,6 +80,16 @@ set(FEATURE_I18N_LANGUAGE_SETTINGS OFF)
 set(FEATURE_SURROUND_SOUND ON)
 set(FEATURE_CHECK_MODULE_OS_VERSION OFF)
 set(FEATURE_INPUT_EVMOUSE OFF)
+# webOS routes controller touchpads into the touchscreen pipeline, where the
+# compositor consumes edge swipes as navigation gestures. Off elsewhere until
+# another platform is known to need it.
+if (TARGET_WEBOS)
+    set(GAMEPAD_TOUCHPAD_GRAB_DEFAULT ON)
+else ()
+    set(GAMEPAD_TOUCHPAD_GRAB_DEFAULT OFF)
+endif ()
+option(FEATURE_GAMEPAD_TOUCHPAD_GRAB "Take exclusive access of controller touchpad devices"
+        ${GAMEPAD_TOUCHPAD_GRAB_DEFAULT})
 set(FEATURE_INPUT_LIBCEC ON)
 set(FEATURE_EMBEDDED_SHELL OFF)
 set(FEATURE_WINDOW_FULLSCREEN_DESKTOP ON)
@@ -318,6 +328,12 @@ if (FEATURE_INPUT_EVMOUSE AND TARGET commons-evmouse)
     target_link_libraries(moonlight-lib PUBLIC commons-evmouse)
 else ()
     set(FEATURE_INPUT_EVMOUSE OFF)
+endif ()
+
+if (FEATURE_GAMEPAD_TOUCHPAD_GRAB AND TARGET commons-gamepad-touchpad)
+    target_link_libraries(moonlight-lib PUBLIC commons-gamepad-touchpad)
+else ()
+    set(FEATURE_GAMEPAD_TOUCHPAD_GRAB OFF)
 endif ()
 
 target_link_libraries(moonlight-lib PUBLIC commons-ss4s-modules-list commons-sps-parser)
