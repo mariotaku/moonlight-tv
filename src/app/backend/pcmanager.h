@@ -62,6 +62,16 @@ bool pcmanager_select(pcmanager_t *manager, const uuidstr_t *uuid);
 
 bool pcmanager_forget(pcmanager_t *manager, const uuidstr_t *uuid);
 
+/**
+ * Whether a host is allowed to be removed from the known hosts list. This is the case when the host can't be
+ * reached, or when another known host has taken over its identity (same address and port, or same MAC). The
+ * latter happens when the host software is reinstalled, as that assigns the server a brand new UUID.
+ * @param manager
+ * @param uuid
+ * @return true if the host can be forgotten
+ */
+bool pcmanager_can_forget(pcmanager_t *manager, const uuidstr_t *uuid);
+
 void pcmanager_register_listener(pcmanager_t *manager, const pcmanager_listener_t *listener, void *userdata);
 
 void pcmanager_unregister_listener(pcmanager_t *manager, const pcmanager_listener_t *listener);
