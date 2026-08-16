@@ -80,7 +80,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_add_flag(show_hidden_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
     lv_obj_set_user_data(show_hidden_btn, show_hidden_apps);
 
-    if (node->state.code == SERVER_STATE_OFFLINE || node->state.code == SERVER_STATE_ERROR) {
+    if (pcmanager_can_forget(pcmanager, &controller->uuid)) {
         lv_obj_t *forget_btn = lv_list_add_btn(content, NULL, locstr("Forget"));
         lv_obj_add_flag(forget_btn, LV_OBJ_FLAG_EVENT_BUBBLE);
         lv_obj_set_user_data(forget_btn, forget_host);

@@ -6,6 +6,23 @@
 #include "app.h"
 #include "backend/pcmanager/worker/worker.h"
 #include "logging.h"
+#include "util/nullable.h"
+
+#include <strings.h>
+
+/**
+ * Whether two servers describe the same physical host. A reinstall of the host software keeps the address and
+ * the MAC, but assigns a new UUID, so neither can be compared against the UUID.
+ */
+static bool server_identity_equals(const SERVER_DATA *a, const SERVER_DATA *b) {
+    if (!str_null_or_empty(a->mac) && !str_null_or_empty(b->mac) && strcasecmp(a->mac, b->mac) == 0) {
+        return true;
+    }
+    if (str_null_or_empty(a->serverInfo.address) || str_null_or_empty(b->serverInfo.address)) {
+        return false;
+    }
+    return a->extPort == b->extPort && strcmp(a->serverInfo.address, b->serverInfo.address) == 0;
+}
 
 pcmanager_t *pcmanager_new(app_t *app, executor_t *executor) {
     pcmanager_t *manager = SDL_calloc(1, sizeof(pcmanager_t));
@@ -103,6 +120,42 @@ bool pcmanager_forget(pcmanager_t *manager, const uuidstr_t *uuid) {
     }
     pclist_remove(manager, uuid);
     return true;
+}
+
+bool pcmanager_can_forget(pcmanager_t *manager, const uuidstr_t *uuid) {
+    bool result = false;
+    pcmanager_lock(manager);
+    const pclist_t *node = pclist_find_by_uuid(manager, uuid);
+    if (node == NULL) {
+        goto unlock;
+    }
+    switch (node->state.code) {
+        case SERVER_STATE_NONE:
+        case SERVER_STATE_OFFLINE:
+        case SERVER_STATE_ERROR:
+            /* Never reached, or not reachable anymore */
+            result = true;
+            goto unlock;
+        default:
+            break;
+    }
+    if (node->server == NULL) {
+        result = true;
+        goto unlock;
+    }
+    for (const pclist_t *cur = manager->servers; cur != NULL; cur = cur->next) {
+        if (cur == node || cur->server == NULL) {
+            continue;
+        }
+        if (server_identity_equals(node->server, cur->server)) {
+            /* Another server, most likely a reinstall of the same host, uses this identity now */
+            result = true;
+            break;
+        }
+    }
+    unlock:
+    pcmanager_unlock(manager);
+    return result;
 }
 
 const pclist_t *pcmanager_node(pcmanager_t *manager, const uuidstr_t *uuid) {
