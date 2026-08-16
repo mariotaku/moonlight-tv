@@ -37,6 +37,10 @@ typedef struct app_settings_t {
     bool sops;
     bool localaudio;
     bool fullscreen;
+    // Pin the performance stats over the stream from the moment it starts, so they can be read
+    // without the button combo that opens the overlay. Kept in sync with the overlay's own pin
+    // toggle, which writes back here.
+    bool stats_overlay;
     window_state_t window_state;
     int rotate;
     bool unsupported;
