@@ -7,7 +7,9 @@ static const i18n_entry_t i18n_locales[] = {
         {"en-US", "English"},
         {"cs", "Čeština"},
         {"de", "Deutsch"},
-        {"es", "Español"},
+        // Must match the src/i18n directory name: the dropdown stores this code and
+        // i18n_setlocale() turns it into the resources/<lang>/<region> lookup path.
+        {"es-ES", "Español"},
         {"fr", "Français"},
         {"it", "Italiano"},
 #if DEBUG
@@ -19,6 +21,7 @@ static const i18n_entry_t i18n_locales[] = {
         {"pt-BR", "Português (Brasil)"},
         {"ro", "Română"},
         {"ru", "Русский"},
+        {"tr", "Türkçe"},
         {"zh-CN", "简体中文",
 #if OS_WINDOWS
                 .font =        "Microsoft YaHei"
