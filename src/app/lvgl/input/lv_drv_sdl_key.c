@@ -41,11 +41,33 @@ void lv_sdl_key_input_release_key(lv_indev_t *indev) {
     state->state = LV_INDEV_STATE_RELEASED;
 }
 
+/* A gap between two reads longer than this means the main loop stalled rather
+ * than the user holding a key. Well above a normal frame, well below LVGL's
+ * 400ms long_press_time, so a genuine hold is never mistaken for a stall. */
+#define KEY_STALL_THRESHOLD_MS 100
+
 static void sdl_input_read(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     app_ui_input_t *input = drv->user_data;
     app_t *app = input->ui->app;
     lv_drv_sdl_key_t *state = (lv_drv_sdl_key_t *) drv;
     SDL_Event e;
+
+    /* A key held across a main-loop stall must not turn into a repeat. LVGL derives
+     * long press purely from wall-clock time, so a stall longer than long_press_time
+     * makes a tap indistinguishable from a hold. This must run before the stalled
+     * read is processed: indev_keypad_proc() evaluates long press immediately after
+     * this callback returns, within the same lv_timer_handler pass.
+     *
+     * Parking the press with lv_indev_wait_release() rather than merely discounting
+     * the stalled time is deliberate: the UI is frozen and unresponsive during the
+     * stall, so users keep holding, and any duration-based compensation eventually
+     * loses to a long enough hold. LVGL clears the flag and resets its press state
+     * on release, so the next deliberate press behaves normally. */
+    if (state->last_read_tick != 0 && state->state == LV_INDEV_STATE_PRESSED &&
+        input->key.indev != NULL && lv_tick_elaps(state->last_read_tick) >= KEY_STALL_THRESHOLD_MS) {
+        lv_indev_wait_release(input->key.indev);
+    }
+    state->last_read_tick = lv_tick_get();
     if (state->text_remain > 0) {
         if (state->state == LV_INDEV_STATE_PRESSED) {
             state->state = LV_INDEV_STATE_RELEASED;
