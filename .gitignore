@@ -120,3 +120,5 @@ Temporary Items
 .apdisk
 
 .virtualenv
+# Machine-local MCP server config
+.mcp.json
