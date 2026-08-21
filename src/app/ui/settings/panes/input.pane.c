@@ -51,9 +51,9 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(view, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
     pane->touchpad_mode_entries[0] = (pref_dropdown_int_entry_t) {
-            locstr("Send as mouse"), TOUCHPAD_MODE_MOUSE, false};
-    pane->touchpad_mode_entries[1] = (pref_dropdown_int_entry_t) {
             locstr("Send as touchpad"), TOUCHPAD_MODE_NATIVE, true};
+    pane->touchpad_mode_entries[1] = (pref_dropdown_int_entry_t) {
+            locstr("Send as mouse"), TOUCHPAD_MODE_MOUSE, false};
 
     pref_checkbox(view, locstr("View-only mode"), &app_configuration->viewonly, false);
     pref_desc_label(view, locstr("Don't send mouse, keyboard or gamepad input to host computer."), false);
@@ -94,7 +94,7 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_desc_label(view, locstr("Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."),
                     false);
 
-    pref_header(view, locstr("Controller touchpad"));
+    pref_header(view, locstr("Gamepad touchpad"));
 
     pref_title_label(view, locstr("Mode"));
     lv_obj_t *mode_dropdown = pref_dropdown_int(view, pane->touchpad_mode_entries,
@@ -102,9 +102,9 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
                                                         sizeof(*pane->touchpad_mode_entries),
                                                 &app_configuration->touchpad_mode, NULL);
     lv_obj_set_width(mode_dropdown, LV_PCT(100));
-    pref_desc_label(view, locstr("Send as mouse uses the touchpad as a trackpad. "
-                                 "Send as touchpad forwards touches to the host, for games "
-                                 "with built-in touchpad support."), false);
+    pref_desc_label(view, locstr("Send as touchpad forwards touches to the host, for games "
+                                 "with built-in touchpad support. Send as mouse uses the "
+                                 "touchpad as a trackpad instead."), false);
 
     pane->touchpad_speed_label = pref_title_label(view, NULL);
     lv_obj_t *sensitivity_slider = pref_slider(view, &app_configuration->touchpad_speed,
