@@ -18,7 +18,7 @@ typedef struct app_input_t app_input_t;
 typedef struct session_config_t session_config_t;
 typedef struct session_t session_t;
 
-typedef struct session_input_controller_touchpad_t session_input_controller_touchpad_t;
+typedef struct session_input_touchpad_t session_input_touchpad_t;
 
 typedef struct session_input_vmouse_t {
     struct {
@@ -36,13 +36,13 @@ typedef struct stream_input_t {
     bool started;
     bool view_only, no_sdl_mouse;
     uint8_t stick_deadzone;
-    uint8_t controller_touchpad_mode;
-    bool controller_touchpad_multitouch;
-    short controller_touchpad_count;
-    float controller_touchpad_mouse_gain;
-    float controller_touchpad_scroll_scale;
+    uint8_t touchpad_mode;
+    bool touchpad_multitouch;
+    short touchpad_count;
+    float touchpad_mouse_gain;
+    float touchpad_scroll_scale;
     session_input_vmouse_t vmouse;
-    session_input_controller_touchpad_t *controller_touchpads;
+    session_input_touchpad_t *touchpads;
 #if FEATURE_INPUT_EVMOUSE
     session_evmouse_t evmouse;
 #endif
@@ -59,9 +59,9 @@ void session_input_started(stream_input_t *input);
 
 void session_input_stopped(stream_input_t *input);
 
-void stream_input_controller_touchpad_mouse_init(stream_input_t *input);
+void stream_input_touchpad_mouse_init(stream_input_t *input);
 
-void stream_input_controller_touchpad_mouse_deinit(stream_input_t *input);
+void stream_input_touchpad_mouse_deinit(stream_input_t *input);
 
 void session_input_screen_keyboard_opened(stream_input_t *input);
 
@@ -83,7 +83,7 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
 
 void stream_input_handle_cdevice(stream_input_t *input, const SDL_ControllerDeviceEvent *event);
 
-void stream_input_update_controller_touchpad_tap_hold(stream_input_t *input);
+void stream_input_update_touchpad_tap_hold(stream_input_t *input);
 
 void stream_input_handle_mmotion(stream_input_t *input, const SDL_MouseMotionEvent *event, bool hw_mouse);
 
