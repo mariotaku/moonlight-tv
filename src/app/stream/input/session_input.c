@@ -25,11 +25,6 @@
 #define CONTROLLER_TOUCHPAD_MOUSE_SCALE_Y_PERCENT 9.0f
 #define CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE 600.0f
 
-static uint8_t controller_touchpad_mouse_button(int press) {
-    static const uint8_t buttons[] = {0, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_MIDDLE};
-    return (unsigned int) press < sizeof(buttons) / sizeof(buttons[0]) ? buttons[press] : 0;
-}
-
 void session_input_init(stream_input_t *input, session_t *session, app_input_t *app_input,
                         const session_config_t *config) {
     input->session = session;
@@ -38,17 +33,12 @@ void session_input_init(stream_input_t *input, session_t *session, app_input_t *
     input->stick_deadzone = config->stick_deadzone;
     input->no_sdl_mouse = config->hardware_mouse;
     input->controller_touchpad_mode = (uint8_t) config->controller_touchpad_mode;
-    input->controller_touchpad_press_button =
-            controller_touchpad_mouse_button(config->controller_touchpad_press);
-    input->controller_touchpad_secondary_button =
-            controller_touchpad_mouse_button(config->controller_touchpad_secondary_click);
-    input->controller_touchpad_tap_to_click = config->controller_touchpad_tap_to_click;
-    input->controller_touchpad_two_finger_scroll = config->controller_touchpad_two_finger_scroll;
+    input->controller_touchpad_multitouch = config->controller_touchpad_multitouch;
     input->controller_touchpad_mouse_scale_x = CONTROLLER_TOUCHPAD_MOUSE_SCALE_X_PERCENT *
                                                (float) config->controller_touchpad_sensitivity;
     input->controller_touchpad_mouse_scale_y = CONTROLLER_TOUCHPAD_MOUSE_SCALE_Y_PERCENT *
                                                (float) config->controller_touchpad_sensitivity;
-    input->controller_touchpad_scroll_scale = config->controller_touchpad_invert_two_finger_scroll
+    input->controller_touchpad_scroll_scale = config->controller_touchpad_natural_scroll
                                               ? CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE
                                               : -CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE;
     input->controller_touchpads = NULL;
