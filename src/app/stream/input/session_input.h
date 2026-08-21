@@ -39,8 +39,7 @@ typedef struct stream_input_t {
     uint8_t controller_touchpad_mode;
     bool controller_touchpad_multitouch;
     short controller_touchpad_count;
-    float controller_touchpad_mouse_scale_x;
-    float controller_touchpad_mouse_scale_y;
+    float controller_touchpad_mouse_gain;
     float controller_touchpad_scroll_scale;
     session_input_vmouse_t vmouse;
     session_input_controller_touchpad_t *controller_touchpads;

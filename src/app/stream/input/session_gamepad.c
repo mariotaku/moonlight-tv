@@ -72,6 +72,10 @@ static void controller_touchpad_reset_state(session_input_controller_touchpad_t 
 
 static bool controller_has_touchpad(const app_gamepad_state_t *gamepad);
 
+static bool controller_touchpad_multitouch(const stream_input_t *input, const app_gamepad_state_t *gamepad);
+
+static float controller_touchpad_aspect(const app_gamepad_state_t *gamepad);
+
 static int controller_touchpad_primary_finger(const session_input_controller_touchpad_t *state);
 
 static bool controller_touchpad_lower_right_press(const session_input_controller_touchpad_t *state);
@@ -351,8 +355,9 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
         return;
     }
 
-    // Ignoring every contact past the first disables two-finger gestures wholesale.
-    if (event->finger != 0 && !input->controller_touchpad_multitouch) {
+    // Ignoring every contact past the first disables two-finger gestures wholesale,
+    // whether the user turned them off or the pad only tracks one finger.
+    if (event->finger != 0 && !controller_touchpad_multitouch(input, gamepad)) {
         return;
     }
 
@@ -525,8 +530,9 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
         return;
     }
 
-    state->motion_remainder_x += finger_dx * input->controller_touchpad_mouse_scale_x;
-    state->motion_remainder_y += finger_dy * input->controller_touchpad_mouse_scale_y;
+    float gain = input->controller_touchpad_mouse_gain;
+    state->motion_remainder_x += finger_dx * gain;
+    state->motion_remainder_y += finger_dy * gain * controller_touchpad_aspect(gamepad);
 
     short dx = controller_touchpad_take_delta(&state->motion_remainder_x);
     short dy = controller_touchpad_take_delta(&state->motion_remainder_y);
@@ -604,10 +610,9 @@ void stream_input_send_gamepad_arrive(const stream_input_t *input, app_gamepad_s
             break;
         }
     }
-    bool advertise_touchpad =
-            input->controller_touchpad_mode == CONTROLLER_TOUCHPAD_MODE_NATIVE &&
-            controller_has_touchpad(gamepad);
-    if (advertise_touchpad) {
+    // Reported from the hardware rather than the active mode: the pad exists either
+    // way, we simply keep its events to ourselves while it is acting as a mouse.
+    if (controller_has_touchpad(gamepad)) {
         capabilities |= LI_CCAP_TOUCHPAD;
         commons_log_info("Input", "  controller capability: touchpad");
     }
@@ -640,12 +645,8 @@ void stream_input_send_gamepad_arrive(const stream_input_t *input, app_gamepad_s
         commons_log_info("Input", "  controller capability: RGB LED");
     }
 #endif
-    uint32_t supported_buttons = 0xFFFFFFFFu;
-    if (!advertise_touchpad) {
-        supported_buttons &= ~(uint32_t) TOUCHPAD_FLAG;
-    }
     LiSendControllerArrivalEvent(gamepad->gs_id, input->input->activeGamepadMask, type,
-                                 supported_buttons, capabilities);
+                                 0xFFFFFFFF, capabilities);
 }
 
 static int controller_touchpad_primary_finger(const session_input_controller_touchpad_t *state) {
@@ -726,6 +727,43 @@ static bool controller_has_touchpad(const app_gamepad_state_t *gamepad) {
 #else
     return false;
 #endif
+}
+
+static bool controller_touchpad_multitouch(const stream_input_t *input, const app_gamepad_state_t *gamepad) {
+    if (!input->controller_touchpad_multitouch || gamepad->controller == NULL) {
+        return false;
+    }
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    return SDL_GameControllerGetNumTouchpadFingers(gamepad->controller, 0) >= 2;
+#else
+    return false;
+#endif
+}
+
+/* Vertical travel per unit of normalised movement, relative to horizontal.
+ *
+ * SDL normalises touchpad coordinates to 0..1 by dividing out each pad's own
+ * extents, which discards the aspect ratio, so scaling both axes equally makes
+ * vertical movement run fast on any pad that isn't 16:9. The ratios below are
+ * the divisors SDL itself uses -- see TOUCHPAD_SCALEX/TOUCHPAD_SCALEY in
+ * SDL_hidapi_ps4.c, SDL_hidapi_ps5.c and SDL_hidapi_shield.c, which are the only
+ * drivers that report a touchpad at all. */
+static float controller_touchpad_aspect(const app_gamepad_state_t *gamepad) {
+    if (gamepad->controller != NULL) {
+        switch (SDL_GameControllerGetType(gamepad->controller)) {
+            case SDL_CONTROLLER_TYPE_PS4:
+                return 920.0f / 1920.0f;
+            case SDL_CONTROLLER_TYPE_PS5:
+                return 1070.0f / 1920.0f;
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+            case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD:
+                return 21.0f / 80.0f;
+#endif
+            default:
+                break;
+        }
+    }
+    return 9.0f / 16.0f;
 }
 
 static void release_buttons(stream_input_t *input, app_gamepad_state_t *gamepad) {
