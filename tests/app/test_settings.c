@@ -30,21 +30,15 @@ void testReadINI() {
     settings.ini_path = ini_backup;
     TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_MODE_MOUSE, settings.controller_touchpad_mode);
     TEST_ASSERT_EQUAL_INT(125, settings.controller_touchpad_sensitivity);
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_PRESS_RIGHT, settings.controller_touchpad_press);
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_PRESS_MIDDLE, settings.controller_touchpad_secondary_click);
-    TEST_ASSERT_FALSE(settings.controller_touchpad_tap_to_click);
-    TEST_ASSERT_TRUE(settings.controller_touchpad_two_finger_scroll);
-    TEST_ASSERT_FALSE(settings.controller_touchpad_invert_two_finger_scroll);
+    TEST_ASSERT_FALSE(settings.controller_touchpad_multitouch);
+    TEST_ASSERT_FALSE(settings.controller_touchpad_natural_scroll);
 }
 
 void testWriteINI() {
-    settings.controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_NATIVE;
+    settings.controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_MOUSE;
     settings.controller_touchpad_sensitivity = 175;
-    settings.controller_touchpad_press = CONTROLLER_TOUCHPAD_PRESS_MIDDLE;
-    settings.controller_touchpad_secondary_click = CONTROLLER_TOUCHPAD_PRESS_LEFT;
-    settings.controller_touchpad_tap_to_click = false;
-    settings.controller_touchpad_two_finger_scroll = true;
-    settings.controller_touchpad_invert_two_finger_scroll = false;
+    settings.controller_touchpad_multitouch = false;
+    settings.controller_touchpad_natural_scroll = false;
 
     char *ini_backup = settings.ini_path;
     settings.ini_path = "settings_write_tmp.ini";
@@ -58,26 +52,42 @@ void testWriteINI() {
     TEST_ASSERT_TRUE(settings_read(&loaded));
     loaded.ini_path = loaded_ini_backup;
 
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_MODE_NATIVE, loaded.controller_touchpad_mode);
+    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_MODE_MOUSE, loaded.controller_touchpad_mode);
     TEST_ASSERT_EQUAL_INT(175, loaded.controller_touchpad_sensitivity);
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_PRESS_MIDDLE, loaded.controller_touchpad_press);
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_PRESS_LEFT, loaded.controller_touchpad_secondary_click);
-    TEST_ASSERT_FALSE(loaded.controller_touchpad_tap_to_click);
-    TEST_ASSERT_TRUE(loaded.controller_touchpad_two_finger_scroll);
-    TEST_ASSERT_FALSE(loaded.controller_touchpad_invert_two_finger_scroll);
+    TEST_ASSERT_FALSE(loaded.controller_touchpad_multitouch);
+    TEST_ASSERT_FALSE(loaded.controller_touchpad_natural_scroll);
 
     settings_clear(&loaded);
     remove("settings_write_tmp.ini");
 }
 
 void testControllerTouchpadDefaults() {
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_MODE_MOUSE, settings.controller_touchpad_mode);
+    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_MODE_NATIVE, settings.controller_touchpad_mode);
     TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_SENSITIVITY_DEFAULT, settings.controller_touchpad_sensitivity);
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_PRESS_LEFT, settings.controller_touchpad_press);
-    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_PRESS_RIGHT, settings.controller_touchpad_secondary_click);
-    TEST_ASSERT_TRUE(settings.controller_touchpad_tap_to_click);
-    TEST_ASSERT_TRUE(settings.controller_touchpad_two_finger_scroll);
-    TEST_ASSERT_TRUE(settings.controller_touchpad_invert_two_finger_scroll);
+    TEST_ASSERT_TRUE(settings.controller_touchpad_multitouch);
+    TEST_ASSERT_TRUE(settings.controller_touchpad_natural_scroll);
+}
+
+void testControllerTouchpadLegacyOffMode() {
+    // "off" was a third mode in early revisions of this feature. It never shipped,
+    // but branch testers have it in their config, so it must land somewhere sane.
+    FILE *fp = fopen("settings_legacy_tmp.ini", "w");
+    TEST_ASSERT_NOT_NULL(fp);
+    fputs("[input]\ncontroller_touchpad = off\n", fp);
+    fclose(fp);
+
+    app_settings_t legacy;
+    settings_initialize(&legacy, settings.conf_dir);
+    legacy.controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_MOUSE;
+    char *legacy_ini_backup = legacy.ini_path;
+    legacy.ini_path = "settings_legacy_tmp.ini";
+    TEST_ASSERT_TRUE(settings_read(&legacy));
+    legacy.ini_path = legacy_ini_backup;
+
+    TEST_ASSERT_EQUAL_INT(CONTROLLER_TOUCHPAD_MODE_NATIVE, legacy.controller_touchpad_mode);
+
+    settings_clear(&legacy);
+    remove("settings_legacy_tmp.ini");
 }
 
 int main() {
@@ -85,5 +95,6 @@ int main() {
     RUN_TEST(testReadINI);
     RUN_TEST(testWriteINI);
     RUN_TEST(testControllerTouchpadDefaults);
+    RUN_TEST(testControllerTouchpadLegacyOffMode);
     return UNITY_END();
 }

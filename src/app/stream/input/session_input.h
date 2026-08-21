@@ -37,10 +37,7 @@ typedef struct stream_input_t {
     bool view_only, no_sdl_mouse;
     uint8_t stick_deadzone;
     uint8_t controller_touchpad_mode;
-    uint8_t controller_touchpad_press_button;
-    uint8_t controller_touchpad_secondary_button;
-    bool controller_touchpad_tap_to_click;
-    bool controller_touchpad_two_finger_scroll;
+    bool controller_touchpad_multitouch;
     short controller_touchpad_count;
     float controller_touchpad_mouse_scale_x;
     float controller_touchpad_mouse_scale_y;

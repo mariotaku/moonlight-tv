@@ -28,16 +28,8 @@ typedef struct window_state_t {
 } window_state_t;
 
 enum {
-    CONTROLLER_TOUCHPAD_MODE_DISABLED = 0,
-    CONTROLLER_TOUCHPAD_MODE_MOUSE = 1,
-    CONTROLLER_TOUCHPAD_MODE_NATIVE = 2,
-};
-
-enum {
-    CONTROLLER_TOUCHPAD_PRESS_DISABLED = 0,
-    CONTROLLER_TOUCHPAD_PRESS_LEFT = 1,
-    CONTROLLER_TOUCHPAD_PRESS_RIGHT = 2,
-    CONTROLLER_TOUCHPAD_PRESS_MIDDLE = 3,
+    CONTROLLER_TOUCHPAD_MODE_MOUSE = 0,
+    CONTROLLER_TOUCHPAD_MODE_NATIVE = 1,
 };
 
 #define CONTROLLER_TOUCHPAD_SENSITIVITY_MIN 25
@@ -64,11 +56,8 @@ typedef struct app_settings_t {
     bool virtual_mouse;
     int controller_touchpad_mode;
     int controller_touchpad_sensitivity;
-    int controller_touchpad_press;
-    int controller_touchpad_secondary_click;
-    bool controller_touchpad_tap_to_click;
-    bool controller_touchpad_two_finger_scroll;
-    bool controller_touchpad_invert_two_finger_scroll;
+    bool controller_touchpad_multitouch;
+    bool controller_touchpad_natural_scroll;
     bool swap_abxy;
     bool syskey_capture;
     bool hdr;

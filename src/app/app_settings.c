@@ -35,8 +35,7 @@ static void set_int(int *field, const char *value);
 
 #define SETTINGS_COUNT(values) (sizeof(values) / sizeof((values)[0]))
 
-static const char *const controller_touchpad_mode_values[] = {"off", "mouse", "native"};
-static const char *const controller_touchpad_press_values[] = {"off", "left", "right", "middle"};
+static const char *const controller_touchpad_mode_values[] = {"mouse", "native"};
 
 const audio_config_entry_t audio_configs[] = {
         {AUDIO_CONFIGURATION_STEREO,      "stereo", translatable("Stereo")},
@@ -76,13 +75,10 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->rotate = 0;
     config->absmouse = true;
     config->virtual_mouse = false;
-    config->controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_MOUSE;
+    config->controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_NATIVE;
     config->controller_touchpad_sensitivity = CONTROLLER_TOUCHPAD_SENSITIVITY_DEFAULT;
-    config->controller_touchpad_press = CONTROLLER_TOUCHPAD_PRESS_LEFT;
-    config->controller_touchpad_secondary_click = CONTROLLER_TOUCHPAD_PRESS_RIGHT;
-    config->controller_touchpad_tap_to_click = true;
-    config->controller_touchpad_two_finger_scroll = true;
-    config->controller_touchpad_invert_two_finger_scroll = true;
+    config->controller_touchpad_multitouch = true;
+    config->controller_touchpad_natural_scroll = true;
     config->hdr = false;
     config->hevc = true;
     config->av1 = false;
@@ -130,21 +126,10 @@ bool settings_save(app_settings_t *config) {
     ini_write_string(fp, "controller_touchpad",
                      indexed_setting_serialize(controller_touchpad_mode_values,
                                                SETTINGS_COUNT(controller_touchpad_mode_values),
-                                               config->controller_touchpad_mode, CONTROLLER_TOUCHPAD_MODE_MOUSE));
+                                               config->controller_touchpad_mode, CONTROLLER_TOUCHPAD_MODE_NATIVE));
     ini_write_int(fp, "controller_touchpad_sensitivity", config->controller_touchpad_sensitivity);
-    ini_write_string(fp, "controller_touchpad_press",
-                     indexed_setting_serialize(controller_touchpad_press_values,
-                                               SETTINGS_COUNT(controller_touchpad_press_values),
-                                               config->controller_touchpad_press, CONTROLLER_TOUCHPAD_PRESS_LEFT));
-    ini_write_string(fp, "controller_touchpad_secondary_click",
-                     indexed_setting_serialize(controller_touchpad_press_values,
-                                               SETTINGS_COUNT(controller_touchpad_press_values),
-                                               config->controller_touchpad_secondary_click, CONTROLLER_TOUCHPAD_PRESS_RIGHT));
-    ini_write_bool(fp, "controller_touchpad_tap_to_click", config->controller_touchpad_tap_to_click);
-    ini_write_bool(fp, "controller_touchpad_two_finger_scroll",
-                   config->controller_touchpad_two_finger_scroll);
-    ini_write_bool(fp, "controller_touchpad_invert_two_finger_scroll",
-                   config->controller_touchpad_invert_two_finger_scroll);
+    ini_write_bool(fp, "controller_touchpad_multitouch", config->controller_touchpad_multitouch);
+    ini_write_bool(fp, "controller_touchpad_natural_scroll", config->controller_touchpad_natural_scroll);
 #if FEATURE_INPUT_EVMOUSE
     ini_write_bool(fp, "hardware_mouse", config->hardware_mouse);
 #endif
@@ -309,10 +294,16 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
     } else if (INI_NAME_MATCH("virtual_mouse")) {
         config->virtual_mouse = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("controller_touchpad")) {
-        config->controller_touchpad_mode = indexed_setting_parse(
-                value, controller_touchpad_mode_values,
-                SETTINGS_COUNT(controller_touchpad_mode_values),
-                CONTROLLER_TOUCHPAD_MODE_MOUSE);
+        /* "off" was a third mode in early revisions of this feature; it never shipped,
+         * but map it rather than silently falling back to a different default. */
+        if (value != NULL && strcmp(value, "off") == 0) {
+            config->controller_touchpad_mode = CONTROLLER_TOUCHPAD_MODE_NATIVE;
+        } else {
+            config->controller_touchpad_mode = indexed_setting_parse(
+                    value, controller_touchpad_mode_values,
+                    SETTINGS_COUNT(controller_touchpad_mode_values),
+                    CONTROLLER_TOUCHPAD_MODE_NATIVE);
+        }
     } else if (INI_NAME_MATCH("controller_touchpad_sensitivity")) {
         set_int(&config->controller_touchpad_sensitivity, value);
         if (config->controller_touchpad_sensitivity < CONTROLLER_TOUCHPAD_SENSITIVITY_MIN) {
@@ -320,22 +311,10 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         } else if (config->controller_touchpad_sensitivity > CONTROLLER_TOUCHPAD_SENSITIVITY_MAX) {
             config->controller_touchpad_sensitivity = CONTROLLER_TOUCHPAD_SENSITIVITY_MAX;
         }
-    } else if (INI_NAME_MATCH("controller_touchpad_press")) {
-        config->controller_touchpad_press = indexed_setting_parse(
-                value, controller_touchpad_press_values,
-                SETTINGS_COUNT(controller_touchpad_press_values),
-                CONTROLLER_TOUCHPAD_PRESS_LEFT);
-    } else if (INI_NAME_MATCH("controller_touchpad_secondary_click")) {
-        config->controller_touchpad_secondary_click = indexed_setting_parse(
-                value, controller_touchpad_press_values,
-                SETTINGS_COUNT(controller_touchpad_press_values),
-                CONTROLLER_TOUCHPAD_PRESS_RIGHT);
-    } else if (INI_NAME_MATCH("controller_touchpad_tap_to_click")) {
-        config->controller_touchpad_tap_to_click = INI_IS_TRUE(value);
-    } else if (INI_NAME_MATCH("controller_touchpad_two_finger_scroll")) {
-        config->controller_touchpad_two_finger_scroll = INI_IS_TRUE(value);
-    } else if (INI_NAME_MATCH("controller_touchpad_invert_two_finger_scroll")) {
-        config->controller_touchpad_invert_two_finger_scroll = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("controller_touchpad_multitouch")) {
+        config->controller_touchpad_multitouch = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("controller_touchpad_natural_scroll")) {
+        config->controller_touchpad_natural_scroll = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("hardware_mouse")) {
 #if FEATURE_INPUT_EVMOUSE
         config->hardware_mouse = INI_IS_TRUE(value);

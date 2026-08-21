@@ -62,11 +62,8 @@ typedef struct session_config_t {
     bool vmouse;
     int controller_touchpad_mode;
     int controller_touchpad_sensitivity;
-    int controller_touchpad_press;
-    int controller_touchpad_secondary_click;
-    bool controller_touchpad_tap_to_click;
-    bool controller_touchpad_two_finger_scroll;
-    bool controller_touchpad_invert_two_finger_scroll;
+    bool controller_touchpad_multitouch;
+    bool controller_touchpad_natural_scroll;
     uint8_t stick_deadzone;
 } session_config_t;
 

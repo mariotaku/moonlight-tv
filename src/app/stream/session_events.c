@@ -75,7 +75,7 @@ void session_update_controller_touchpad_tap_hold(session_t *session) {
     }
 
     stream_input_t *input = &session->input;
-    if (input->controller_touchpads != NULL && input->controller_touchpad_tap_to_click) {
+    if (input->controller_touchpads != NULL) {
         stream_input_update_controller_touchpad_tap_hold(input);
     }
 }

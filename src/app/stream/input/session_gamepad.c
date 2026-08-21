@@ -167,51 +167,32 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
             button = RB_FLAG;
             break;
         case SDL_CONTROLLER_BUTTON_TOUCHPAD:
-            switch (input->controller_touchpad_mode) {
-                case CONTROLLER_TOUCHPAD_MODE_DISABLED:
-                    return;
-                case CONTROLLER_TOUCHPAD_MODE_MOUSE: {
-                    if (input->view_only) {
-                        return;
-                    }
-
-                    session_input_controller_touchpad_t *state =
-                            controller_touchpad_state(input, gamepad);
-                    int mouse_button = 0;
-                    if (event->type == SDL_CONTROLLERBUTTONDOWN) {
-                        if (state != NULL) {
-                            // A physical click always wins over a tap gesture or drag.
-                            controller_touchpad_end_tap(state);
-                        }
-
-                        mouse_button = input->controller_touchpad_press_button;
-                        if (state != NULL && controller_touchpad_lower_right_press(state)) {
-                            mouse_button = input->controller_touchpad_secondary_button;
-                        }
-                        if (state != NULL) {
-                            // 0 means not pressed; -1 means physically pressed with no mapping.
-                            state->physical_mouse_button = (int8_t) (mouse_button != 0 ? mouse_button : -1);
-                        }
-                    } else if (state != NULL) {
-                        mouse_button = state->physical_mouse_button > 0 ? state->physical_mouse_button : 0;
-                        state->physical_mouse_button = 0;
-                    } else {
-                        mouse_button = input->controller_touchpad_press_button;
-                    }
-
-                    if (mouse_button != 0) {
-                        LiSendMouseButtonEvent(event->type == SDL_CONTROLLERBUTTONDOWN ?
-                                               BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE,
-                                               mouse_button);
-                    }
+            if (input->controller_touchpad_mode == CONTROLLER_TOUCHPAD_MODE_MOUSE) {
+                if (input->view_only) {
                     return;
                 }
-                case CONTROLLER_TOUCHPAD_MODE_NATIVE:
-                    button = TOUCHPAD_FLAG;
-                    break;
-                default:
-                    return;
+
+                session_input_controller_touchpad_t *state = controller_touchpad_state(input, gamepad);
+                int mouse_button = BUTTON_LEFT;
+                if (event->type == SDL_CONTROLLERBUTTONDOWN) {
+                    if (state != NULL) {
+                        // A physical click always wins over a tap gesture or drag.
+                        controller_touchpad_end_tap(state);
+                        if (controller_touchpad_lower_right_press(state)) {
+                            mouse_button = BUTTON_RIGHT;
+                        }
+                        state->physical_mouse_button = (int8_t) mouse_button;
+                    }
+                } else if (state != NULL) {
+                    mouse_button = state->physical_mouse_button > 0 ? state->physical_mouse_button : BUTTON_LEFT;
+                    state->physical_mouse_button = 0;
+                }
+
+                LiSendMouseButtonEvent(event->type == SDL_CONTROLLERBUTTONDOWN ?
+                                       BUTTON_ACTION_PRESS : BUTTON_ACTION_RELEASE, mouse_button);
+                return;
             }
+            button = TOUCHPAD_FLAG;
             break;
         case SDL_CONTROLLER_BUTTON_MISC1:
             button = MISC_FLAG;
@@ -365,12 +346,13 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
         return;
     }
 
-    if (input->controller_touchpad_mode == CONTROLLER_TOUCHPAD_MODE_DISABLED) {
+    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
+    if (gamepad == NULL) {
         return;
     }
 
-    app_gamepad_state_t *gamepad = app_input_gamepad_state_by_instance_id(input->input, event->which);
-    if (gamepad == NULL) {
+    // Ignoring every contact past the first disables two-finger gestures wholesale.
+    if (event->finger != 0 && !input->controller_touchpad_multitouch) {
         return;
     }
 
@@ -443,9 +425,7 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
         if (two_fingers) {
             controller_touchpad_end_tap(state);
 
-            // Don't delay scrolling/pointer motion for a two-finger tap when
-            // the configured secondary action cannot produce a click.
-            if (input->controller_touchpad_secondary_button != 0) {
+            {
                 uint32_t t0 = state->fingers[0].down_timestamp;
                 uint32_t t1 = state->fingers[1].down_timestamp;
                 uint32_t chord_delta = t0 >= t1 ? t0 - t1 : t1 - t0;
@@ -458,8 +438,7 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
                     state->tap_state = CONTROLLER_TOUCHPAD_TAP_TWO_PENDING;
                 }
             }
-        } else if (state->active_fingers != 0 && input->controller_touchpad_tap_to_click &&
-                   finger != NULL && state->physical_mouse_button == 0) {
+        } else if (state->active_fingers != 0 && finger != NULL && state->physical_mouse_button == 0) {
             state->tap_state = CONTROLLER_TOUCHPAD_TAP_SINGLE_PENDING;
         }
     } else if (event->type == SDL_CONTROLLERTOUCHPADUP) {
@@ -477,7 +456,7 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
                                  ? state->fingers[0].down_timestamp
                                  : state->fingers[1].down_timestamp;
             if (event->timestamp - tap_start <= CONTROLLER_TOUCHPAD_TAP_THRESHOLD_MS) {
-                controller_touchpad_send_mouse_click(input->controller_touchpad_secondary_button);
+                controller_touchpad_send_mouse_click(BUTTON_RIGHT);
             }
             controller_touchpad_end_tap(state);
         }
@@ -490,7 +469,7 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
         return;
     }
 
-    if (input->controller_touchpad_two_finger_scroll && two_fingers) {
+    if (two_fingers) {
         if (state->motion_state != CONTROLLER_TOUCHPAD_MOTION_SCROLL ||
             event->type != SDL_CONTROLLERTOUCHPADMOTION) {
             state->motion_state = CONTROLLER_TOUCHPAD_MOTION_SCROLL;
