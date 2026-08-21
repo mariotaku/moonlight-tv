@@ -28,13 +28,13 @@ typedef struct window_state_t {
 } window_state_t;
 
 enum {
-    CONTROLLER_TOUCHPAD_MODE_MOUSE = 0,
-    CONTROLLER_TOUCHPAD_MODE_NATIVE = 1,
+    TOUCHPAD_MODE_MOUSE = 0,
+    TOUCHPAD_MODE_NATIVE = 1,
 };
 
-#define CONTROLLER_TOUCHPAD_SENSITIVITY_MIN 25
-#define CONTROLLER_TOUCHPAD_SENSITIVITY_MAX 200
-#define CONTROLLER_TOUCHPAD_SENSITIVITY_DEFAULT 100
+#define TOUCHPAD_SPEED_MIN 25
+#define TOUCHPAD_SPEED_MAX 200
+#define TOUCHPAD_SPEED_DEFAULT 100
 
 typedef struct app_settings_t {
     STREAM_CONFIGURATION stream;
@@ -54,10 +54,10 @@ typedef struct app_settings_t {
     bool absmouse;
     bool hardware_mouse;
     bool virtual_mouse;
-    int controller_touchpad_mode;
-    int controller_touchpad_sensitivity;
-    bool controller_touchpad_multitouch;
-    bool controller_touchpad_natural_scroll;
+    int touchpad_mode;
+    int touchpad_speed;
+    bool touchpad_multitouch;
+    bool touchpad_natural_scroll;
     bool swap_abxy;
     bool syskey_capture;
     bool hdr;

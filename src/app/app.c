@@ -274,7 +274,7 @@ void app_process_events(app_t *app) {
     SDL_PumpEvents();
     SDL_FilterEvents(app_event_filter, app);
     if (app->session != NULL) {
-        session_update_controller_touchpad_tap_hold(app->session);
+        session_update_touchpad_tap_hold(app->session);
     }
 }
 

@@ -12,17 +12,17 @@ typedef struct input_pane_t {
     lv_obj_t *absmouse_hint;
     lv_obj_t *deadzone_label;
 
-    pref_dropdown_int_entry_t controller_touchpad_mode_entries[2];
-    lv_obj_t *controller_touchpad_sensitivity_label;
+    pref_dropdown_int_entry_t touchpad_mode_entries[2];
+    lv_obj_t *touchpad_speed_label;
 } input_pane_t;
 
 static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *view);
 
 static void pane_ctor(lv_fragment_t *self, void *args);
 
-static void on_controller_touchpad_sensitivity_changed(lv_event_t *e);
+static void on_touchpad_speed_changed(lv_event_t *e);
 
-static void update_controller_touchpad_sensitivity_label(input_pane_t *pane);
+static void update_touchpad_speed_label(input_pane_t *pane);
 
 #if FEATURE_INPUT_EVMOUSE
 static void hwmouse_state_update_cb(lv_event_t *e);
@@ -50,10 +50,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_layout(view, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(view, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(view, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    pane->controller_touchpad_mode_entries[0] = (pref_dropdown_int_entry_t) {
-            locstr("Send as mouse"), CONTROLLER_TOUCHPAD_MODE_MOUSE, false};
-    pane->controller_touchpad_mode_entries[1] = (pref_dropdown_int_entry_t) {
-            locstr("Send as touchpad"), CONTROLLER_TOUCHPAD_MODE_NATIVE, true};
+    pane->touchpad_mode_entries[0] = (pref_dropdown_int_entry_t) {
+            locstr("Send as mouse"), TOUCHPAD_MODE_MOUSE, false};
+    pane->touchpad_mode_entries[1] = (pref_dropdown_int_entry_t) {
+            locstr("Send as touchpad"), TOUCHPAD_MODE_NATIVE, true};
 
     pref_checkbox(view, locstr("View-only mode"), &app_configuration->viewonly, false);
     pref_desc_label(view, locstr("Don't send mouse, keyboard or gamepad input to host computer."), false);
@@ -97,34 +97,34 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_header(view, locstr("Controller touchpad"));
 
     pref_title_label(view, locstr("Mode"));
-    lv_obj_t *mode_dropdown = pref_dropdown_int(view, pane->controller_touchpad_mode_entries,
-                                                sizeof(pane->controller_touchpad_mode_entries) /
-                                                        sizeof(*pane->controller_touchpad_mode_entries),
-                                                &app_configuration->controller_touchpad_mode, NULL);
+    lv_obj_t *mode_dropdown = pref_dropdown_int(view, pane->touchpad_mode_entries,
+                                                sizeof(pane->touchpad_mode_entries) /
+                                                        sizeof(*pane->touchpad_mode_entries),
+                                                &app_configuration->touchpad_mode, NULL);
     lv_obj_set_width(mode_dropdown, LV_PCT(100));
     pref_desc_label(view, locstr("Send as mouse uses the touchpad as a trackpad. "
                                  "Send as touchpad forwards touches to the host, for games "
                                  "with built-in touchpad support."), false);
 
-    pane->controller_touchpad_sensitivity_label = pref_title_label(view, NULL);
-    lv_obj_t *sensitivity_slider = pref_slider(view, &app_configuration->controller_touchpad_sensitivity,
-                                               CONTROLLER_TOUCHPAD_SENSITIVITY_MIN,
-                                               CONTROLLER_TOUCHPAD_SENSITIVITY_MAX, 5);
+    pane->touchpad_speed_label = pref_title_label(view, NULL);
+    lv_obj_t *sensitivity_slider = pref_slider(view, &app_configuration->touchpad_speed,
+                                               TOUCHPAD_SPEED_MIN,
+                                               TOUCHPAD_SPEED_MAX, 5);
     lv_obj_set_width(sensitivity_slider, LV_PCT(100));
-    lv_obj_add_event_cb(sensitivity_slider, on_controller_touchpad_sensitivity_changed,
+    lv_obj_add_event_cb(sensitivity_slider, on_touchpad_speed_changed,
                         LV_EVENT_VALUE_CHANGED, pane);
     pref_desc_label(view, locstr("Adjust pointer speed when the touchpad is used as a mouse."), false);
 
     pref_checkbox(view, locstr("Multi-touch gestures"),
-                  &app_configuration->controller_touchpad_multitouch, false);
+                  &app_configuration->touchpad_multitouch, false);
     pref_desc_label(view, locstr("Use two fingers to scroll and to right click. "
                                  "Turn off if you trigger them by accident."), false);
 
     pref_checkbox(view, locstr("Natural scrolling"),
-                  &app_configuration->controller_touchpad_natural_scroll, false);
+                  &app_configuration->touchpad_natural_scroll, false);
     pref_desc_label(view, locstr("Scrolling follows your fingers, like on a phone."), false);
 
-    update_controller_touchpad_sensitivity_label(pane);
+    update_touchpad_speed_label(pane);
 
 #if FEATURE_INPUT_EVMOUSE
     hwmouse_state_update(pane);
@@ -133,14 +133,14 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     return view;
 }
 
-static void on_controller_touchpad_sensitivity_changed(lv_event_t *e) {
+static void on_touchpad_speed_changed(lv_event_t *e) {
     input_pane_t *pane = lv_event_get_user_data(e);
-    update_controller_touchpad_sensitivity_label(pane);
+    update_touchpad_speed_label(pane);
 }
 
-static void update_controller_touchpad_sensitivity_label(input_pane_t *pane) {
-    lv_label_set_text_fmt(pane->controller_touchpad_sensitivity_label, "%s - %d%%",
-                          locstr("Pointer speed"), app_configuration->controller_touchpad_sensitivity);
+static void update_touchpad_speed_label(input_pane_t *pane) {
+    lv_label_set_text_fmt(pane->touchpad_speed_label, "%s - %d%%",
+                          locstr("Pointer speed"), app_configuration->touchpad_speed);
 }
 
 #if FEATURE_INPUT_EVMOUSE

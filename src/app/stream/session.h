@@ -60,10 +60,10 @@ typedef struct session_config_t {
     bool local_audio;
     bool hardware_mouse;
     bool vmouse;
-    int controller_touchpad_mode;
-    int controller_touchpad_sensitivity;
-    bool controller_touchpad_multitouch;
-    bool controller_touchpad_natural_scroll;
+    int touchpad_mode;
+    int touchpad_speed;
+    bool touchpad_multitouch;
+    bool touchpad_natural_scroll;
     uint8_t stick_deadzone;
 } session_config_t;
 
