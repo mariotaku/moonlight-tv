@@ -21,8 +21,11 @@
 #include "stream/session_priv.h"
 #include "session_evmouse.h"
 
-#define CONTROLLER_TOUCHPAD_MOUSE_SCALE_X_PERCENT 16.0f
-#define CONTROLLER_TOUCHPAD_MOUSE_SCALE_Y_PERCENT 9.0f
+/* Pointer travel, in host pixels, for a finger swept across the full width of the
+ * touchpad at 100% sensitivity. Vertical travel is derived from each pad's own
+ * aspect ratio at motion time, so a given physical movement feels the same on
+ * both axes regardless of which controller it came from. */
+#define CONTROLLER_TOUCHPAD_MOUSE_BASE_SPEED 16.0f
 #define CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE 600.0f
 
 void session_input_init(stream_input_t *input, session_t *session, app_input_t *app_input,
@@ -34,10 +37,8 @@ void session_input_init(stream_input_t *input, session_t *session, app_input_t *
     input->no_sdl_mouse = config->hardware_mouse;
     input->controller_touchpad_mode = (uint8_t) config->controller_touchpad_mode;
     input->controller_touchpad_multitouch = config->controller_touchpad_multitouch;
-    input->controller_touchpad_mouse_scale_x = CONTROLLER_TOUCHPAD_MOUSE_SCALE_X_PERCENT *
-                                               (float) config->controller_touchpad_sensitivity;
-    input->controller_touchpad_mouse_scale_y = CONTROLLER_TOUCHPAD_MOUSE_SCALE_Y_PERCENT *
-                                               (float) config->controller_touchpad_sensitivity;
+    input->controller_touchpad_mouse_gain = CONTROLLER_TOUCHPAD_MOUSE_BASE_SPEED *
+                                            (float) config->controller_touchpad_sensitivity;
     input->controller_touchpad_scroll_scale = config->controller_touchpad_natural_scroll
                                               ? CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE
                                               : -CONTROLLER_TOUCHPAD_SCROLL_FINGER_SCALE;
