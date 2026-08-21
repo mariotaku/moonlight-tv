@@ -32,6 +32,7 @@ enum {
 enum {
     TOUCHPAD_MOTION_NONE = 0,
     TOUCHPAD_MOTION_SCROLL,
+    TOUCHPAD_MOTION_SETTLING,
     TOUCHPAD_MOTION_POINTER_0,
     TOUCHPAD_MOTION_POINTER_1,
 };
@@ -84,6 +85,10 @@ static bool touchpad_finger_exceeded_tap_slop(
         const touchpad_finger_t *finger, float threshold_squared);
 
 static void touchpad_end_tap(session_input_touchpad_t *state);
+
+static void touchpad_begin_settling(session_input_touchpad_t *state);
+
+static bool touchpad_settled(const session_input_touchpad_t *state);
 
 static void touchpad_send_mouse_click(int mouse_button);
 
@@ -182,7 +187,11 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
                     if (state != NULL) {
                         // A physical click always wins over a tap gesture or drag.
                         touchpad_end_tap(state);
-                        if (touchpad_lower_right_press(state)) {
+                        // Two fingers down, or one down in the lower-right corner,
+                        // both mean secondary click -- the two ways a trackpad
+                        // offers a right button without having one.
+                        bool two_finger_press = state->active_fingers == 0x3u;
+                        if (two_finger_press || touchpad_lower_right_press(state)) {
                             mouse_button = BUTTON_RIGHT;
                         }
                         state->physical_mouse_button = (int8_t) mouse_button;
@@ -190,6 +199,13 @@ void stream_input_handle_cbutton(stream_input_t *input, const SDL_ControllerButt
                 } else if (state != NULL) {
                     mouse_button = state->physical_mouse_button > 0 ? state->physical_mouse_button : BUTTON_LEFT;
                     state->physical_mouse_button = 0;
+                }
+                if (state != NULL) {
+                    // Clicking the pad rocks the contacts, and releasing rocks them
+                    // back. Neither is a gesture, so make both settle before any
+                    // movement counts again -- otherwise a click part way through a
+                    // scroll scrolls, and one at rest nudges the cursor.
+                    touchpad_begin_settling(state);
                 }
 
                 LiSendMouseButtonEvent(event->type == SDL_CONTROLLERBUTTONDOWN ?
@@ -467,11 +483,32 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
         }
     }
 
-    // Keep pointer/scroll motion quiet until a two-finger tap either completes
-    // or exceeds its movement threshold.
-    if (state->tap_state == TOUCHPAD_TAP_TWO_PENDING && state->active_fingers != 0) {
+    // A tap is not a movement. Hold the pointer still until the gesture either
+    // completes as a tap or travels far enough to stop being one -- a finger
+    // always rolls a little while pressing, and at any usable speed that is
+    // enough to slide the cursor off whatever the user was aiming at before the
+    // click lands. Movement made while the gesture was still a candidate is
+    // dropped rather than replayed, so the pointer never jumps to catch up.
+    if ((state->tap_state == TOUCHPAD_TAP_SINGLE_PENDING ||
+         state->tap_state == TOUCHPAD_TAP_TWO_PENDING) && state->active_fingers != 0) {
         state->motion_state = TOUCHPAD_MOTION_NONE;
         return;
+    }
+
+    // Anything that disturbs the contacts without being a movement -- pressing the
+    // pad, releasing it, lifting one finger out of a scroll -- parks motion here
+    // until some finger travels far enough to be deliberate. Whatever gesture is
+    // appropriate then resumes on its own, so a press mid-scroll neither scrolls
+    // nor jumps the cursor, and press-and-drag still works.
+    if (state->motion_state == TOUCHPAD_MOTION_SETTLING) {
+        if (state->active_fingers == 0) {
+            state->motion_state = TOUCHPAD_MOTION_NONE;
+            return;
+        }
+        if (!touchpad_settled(state)) {
+            return;
+        }
+        state->motion_state = TOUCHPAD_MOTION_NONE;
     }
 
     if (two_fingers) {
@@ -501,14 +538,16 @@ void stream_input_handle_ctouchpad(stream_input_t *input, const SDL_ControllerTo
     }
 
     if (state->motion_state == TOUCHPAD_MOTION_SCROLL) {
-        // Keep the pointer frozen until every finger from the scroll gesture is up.
-        if (state->active_fingers != 0) {
+        if (state->active_fingers == 0) {
+            state->motion_state = TOUCHPAD_MOTION_NONE;
+            state->motion_remainder_x = 0.0f;
+            state->motion_remainder_y = 0.0f;
             return;
         }
-
-        state->motion_state = TOUCHPAD_MOTION_NONE;
-        state->motion_remainder_x = 0.0f;
-        state->motion_remainder_y = 0.0f;
+        // A finger of the scroll is still down. Hand the pointer back to it, but
+        // only once it moves with intent: fingers come off a scroll one at a time
+        // and the trailing one always slides a little on its way up.
+        touchpad_begin_settling(state);
         return;
     }
 
@@ -676,6 +715,28 @@ static void touchpad_end_tap(session_input_touchpad_t *state) {
         LiSendMouseButtonEvent(BUTTON_ACTION_RELEASE, BUTTON_LEFT);
     }
     state->tap_state = TOUCHPAD_TAP_NONE;
+}
+
+static void touchpad_begin_settling(session_input_touchpad_t *state) {
+    for (int i = 0; i < TOUCHPAD_TRACKED_FINGERS; ++i) {
+        if (state->active_fingers & (1u << i)) {
+            state->fingers[i].down_x = state->fingers[i].x;
+            state->fingers[i].down_y = state->fingers[i].y;
+        }
+    }
+    state->motion_state = TOUCHPAD_MOTION_SETTLING;
+    state->motion_remainder_x = 0.0f;
+    state->motion_remainder_y = 0.0f;
+}
+
+static bool touchpad_settled(const session_input_touchpad_t *state) {
+    for (int i = 0; i < TOUCHPAD_TRACKED_FINGERS; ++i) {
+        if ((state->active_fingers & (1u << i)) &&
+            touchpad_finger_exceeded_tap_slop(&state->fingers[i], TOUCHPAD_SINGLE_TAP_SLOP_SQ)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static void touchpad_send_mouse_click(int mouse_button) {
