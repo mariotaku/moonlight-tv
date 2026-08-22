@@ -71,7 +71,7 @@ if (BUILD_TESTS)
     enable_testing()
 endif ()
 
-set(I18N_LOCALES "cs" "de" "fr" "it" "nl" "pl" "pt-BR" "ro" "ru" "ja" "zh-CN")
+set(I18N_LOCALES "cs" "de" "es-ES" "fr" "it" "nl" "pl" "pt-BR" "ro" "ru" "ja" "tr" "zh-CN")
 list(LENGTH I18N_LOCALES I18N_LOCALES_LEN)
 
 set(FEATURE_FORCE_FULLSCREEN OFF)
