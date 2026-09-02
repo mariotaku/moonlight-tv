@@ -90,6 +90,14 @@ static void action_cb_host_reload(apps_fragment_t *controller, lv_obj_t *buttons
 
 static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
 
+static void action_cb_wake_cancel(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index);
+
+static void wake_retry_start(apps_fragment_t *controller);
+
+static void wake_retry_stop(apps_fragment_t *controller);
+
+static void wake_retry_tick(lv_timer_t *timer);
+
 static void update_grid_config(apps_fragment_t *controller);
 
 static void open_context_menu(apps_fragment_t *fragment, appitem_viewholder_t *holder);
@@ -143,6 +151,11 @@ const lv_fragment_class_t apps_controller_class = {
         .instance_size = sizeof(apps_fragment_t),
 };
 
+// Wake-on-LAN only starts the machine; the streaming service takes a while longer to listen.
+// Poll for up to two minutes so a cold boot completes without the user pressing Retry.
+#define WAKE_RETRY_INTERVAL_MS 3000
+#define WAKE_RETRY_TIMEOUT_MS 120000
+
 static const char *action_labels_offline[] = {translatable("Wake"), translatable("Retry"), ""};
 static const action_cb_t action_callbacks_offline[] = {action_cb_wol, action_cb_host_reload};
 static const char *action_labels_error[] = {translatable("Retry"), ""};
@@ -150,6 +163,8 @@ static const action_cb_t action_callbacks_error[] = {action_cb_host_reload};
 static const char *actions_unpaired[] = {translatable("Pair"), ""};
 static const action_cb_t action_callbacks_unpaired[] = {action_cb_pair};
 static const char *actions_apps_none[] = {""};
+static const char *action_labels_waking[] = {translatable("Cancel"), ""};
+static const action_cb_t action_callbacks_waking[] = {action_cb_wake_cancel};
 
 static void apps_controller_ctor(lv_fragment_t *self, void *args) {
     apps_fragment_t *controller = (apps_fragment_t *) self;
@@ -167,6 +182,8 @@ static void apps_controller_ctor(lv_fragment_t *self, void *args) {
 
 static void apps_controller_dtor(lv_fragment_t *self) {
     apps_fragment_t *fragment = (apps_fragment_t *) self;
+    // The timer outlives the object tree, so it has to go before the fragment memory does.
+    wake_retry_stop(fragment);
     appitem_style_deinit(&fragment->appitem_style);
     apploader_destroy(fragment->apploader);
     if (fragment->apploader_apps != NULL) {
@@ -359,7 +376,15 @@ static void send_wol_cb(int result, const char *error, const uuidstr_t *uuid, vo
     lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
     const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
     if (state == NULL) { return; }
-    if (state->code & SERVER_STATE_ONLINE || result != GS_OK) { return; }
+    if (state->code & SERVER_STATE_ONLINE) { return; }
+    if (app_configuration->wol_keep_retrying) {
+        // The result is deliberately ignored here. worker_wol reports its last failed probe, which
+        // after a cold boot is usually just its own short window expiring, and ECONNREFUSED means
+        // the machine is up but the streaming service is not listening yet. Both mean keep waiting.
+        wake_retry_start(controller);
+        return;
+    }
+    if (result != GS_OK) { return; }
     pcmanager_request_update(pcmanager, &controller->uuid, host_info_cb, NULL);
 }
 
@@ -431,6 +456,18 @@ static void update_view_state(apps_fragment_t *controller) {
             break;
         }
         case SERVER_STATE_OFFLINE: {
+            if (controller->wake_retry_timer != NULL) {
+                show_error(controller, locstr("Waking computer"),
+                           locstr("Waiting for the computer to finish starting up. This can take a minute."),
+                           NULL);
+                set_actions(controller, action_labels_waking, action_callbacks_waking);
+                // _all rather than index 0: lv_btnmatrix_set_map only zeroes the control bits when the
+                // button count changes, so a same-map re-render must not inherit a stale DISABLED.
+                lv_btnmatrix_clear_btn_ctrl_all(controller->actions, LV_BTNMATRIX_CTRL_DISABLED);
+                // Deliberately no focus grab here: on_host_updated() re-renders this view after every
+                // poll, and stealing focus every few seconds would fight the user for two minutes.
+                break;
+            }
             // server has error
             show_error(controller, locstr("Offline"),
                        locstr("Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, "
@@ -703,6 +740,52 @@ static void action_cb_pair(apps_fragment_t *controller, lv_obj_t *buttons, uint1
     LV_UNUSED(buttons);
     LV_UNUSED(index);
     pair_dialog_open(&controller->uuid);
+}
+
+static void action_cb_wake_cancel(apps_fragment_t *controller, lv_obj_t *buttons, uint16_t index) {
+    LV_UNUSED(buttons);
+    LV_UNUSED(index);
+    wake_retry_stop(controller);
+    update_view_state(controller);
+}
+
+static void wake_retry_start(apps_fragment_t *controller) {
+    if (controller->wake_retry_timer != NULL) {
+        return;
+    }
+    controller->wake_retry_deadline = SDL_GetTicks() + WAKE_RETRY_TIMEOUT_MS;
+    controller->wake_retry_timer = lv_timer_create(wake_retry_tick, WAKE_RETRY_INTERVAL_MS, controller);
+    update_view_state(controller);
+}
+
+static void wake_retry_stop(apps_fragment_t *controller) {
+    if (controller->wake_retry_timer == NULL) {
+        return;
+    }
+    lv_timer_del(controller->wake_retry_timer);
+    controller->wake_retry_timer = NULL;
+    controller->wake_retry_deadline = 0;
+}
+
+static void wake_retry_tick(lv_timer_t *timer) {
+    apps_fragment_t *controller = timer->user_data;
+    // The fragment may have been swapped out without its destructor running yet.
+    if (controller != current_instance || !controller->base.managed->obj_created) {
+        wake_retry_stop(controller);
+        return;
+    }
+    const SERVER_STATE *state = pcmanager_state(pcmanager, &controller->uuid);
+    if (state != NULL && (state->code & SERVER_STATE_ONLINE)) {
+        // on_host_updated() takes it from here and loads the app list.
+        wake_retry_stop(controller);
+        return;
+    }
+    if (SDL_TICKS_PASSED(SDL_GetTicks(), controller->wake_retry_deadline)) {
+        wake_retry_stop(controller);
+        update_view_state(controller);
+        return;
+    }
+    pcmanager_request_update(pcmanager, &controller->uuid, NULL, NULL);
 }
 
 static void open_context_menu(apps_fragment_t *fragment, appitem_viewholder_t *holder) {
