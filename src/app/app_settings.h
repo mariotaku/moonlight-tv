@@ -44,6 +44,9 @@ typedef struct app_settings_t {
     char *audio_device;
     char *language;
     bool sops;
+    // After a Wake-on-LAN packet, keep polling the host until it answers instead of leaving the
+    // user to press Retry. See WAKE_RETRY_TIMEOUT_MS in apps.controller.c for how long.
+    bool wol_keep_retrying;
     bool localaudio;
     bool fullscreen;
     window_state_t window_state;
