@@ -92,6 +92,8 @@ void session_screen_keyboard_opened(session_t *session);
 
 void session_screen_keyboard_closed(session_t *session);
 
+void session_set_mouse_grab(session_t *session, bool grab);
+
 bool session_accepting_input(session_t *session);
 
 void streaming_display_size(session_t *session, short width, short height);

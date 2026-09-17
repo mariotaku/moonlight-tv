@@ -307,6 +307,7 @@ static void hide_overlay(lv_event_t *event) {
     }
     overlay_showing = false;
     app_set_mouse_grab(&global->input, true);
+    session_set_mouse_grab(controller->global->session, true);
     streaming_enter_fullscreen(controller->global->session);
 }
 

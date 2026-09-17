@@ -65,6 +65,14 @@ void session_evmouse_enable(session_evmouse_t *mouse) {
     SDL_UnlockMutex(mouse->lock);
 }
 
+void session_evmouse_set_grab(session_evmouse_t *mouse, SDL_bool grab) {
+    SDL_LockMutex(mouse->lock);
+    if (mouse->dev != NULL) {
+        evmouse_set_grab(mouse->dev, grab);
+    }
+    SDL_UnlockMutex(mouse->lock);
+}
+
 static int mouse_worker(session_evmouse_t *mouse) {
     evmouse_t *dev = evmouse_open_default();
     set_evmouse(mouse, dev);
