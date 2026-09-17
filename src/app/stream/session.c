@@ -161,6 +161,10 @@ void session_screen_keyboard_closed(session_t *session) {
     session_input_screen_keyboard_closed(&session->input);
 }
 
+void session_set_mouse_grab(session_t *session, bool grab) {
+    session_input_set_mouse_grab(&session->input, grab);
+}
+
 void streaming_display_size(session_t *session, short width, short height) {
     session->display_width = width;
     session->display_height = height;
@@ -177,6 +181,7 @@ void streaming_enter_fullscreen(session_t *session) {
 
 void streaming_enter_overlay(session_t *session, int x, int y, int w, int h) {
     app_set_mouse_grab(&session->app->input, false);
+    session_set_mouse_grab(session, false);
     SS4S_VideoRect dst = {x, y, w, h};
     if ((session->video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_UI_COMPOSITING) == 0) {
         SS4S_PlayerVideoSetDisplayArea(session->player, NULL, &dst);

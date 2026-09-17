@@ -166,6 +166,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 }
                 if (session_start_input(app->session)) {
                     app_set_mouse_grab(&app->input, true);
+                    session_set_mouse_grab(app->session, true);
                 }
                 app_set_keep_awake(app, true);
                 streaming_enter_fullscreen(app->session);
@@ -185,6 +186,7 @@ bool ui_dispatch_userevent(app_t *app, int which, void *data1, void *data2) {
                 app_set_keep_awake(app, false);
                 if (session_has_input(app->session)) {
                     app_set_mouse_grab(&app->input, false);
+                    session_set_mouse_grab(app->session, false);
                     session_stop_input(app->session);
                 }
 //                ui_stream_render = NULL;
