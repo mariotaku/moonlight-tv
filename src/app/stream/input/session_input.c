@@ -106,3 +106,15 @@ void session_input_screen_keyboard_closed(stream_input_t *input) {
     }
 #endif
 }
+
+void session_input_set_mouse_grab(stream_input_t *input, bool grab) {
+#if FEATURE_INPUT_EVMOUSE
+    const session_config_t *config = &input->session->config;
+    if (!config->view_only && config->hardware_mouse) {
+        session_evmouse_set_grab(&input->evmouse, grab ? SDL_TRUE : SDL_FALSE);
+    }
+#else
+    (void) input;
+    (void) grab;
+#endif
+}
