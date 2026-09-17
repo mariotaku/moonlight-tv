@@ -24,3 +24,5 @@ void session_evmouse_interrupt(session_evmouse_t *mouse);
 void session_evmouse_disable(session_evmouse_t *mouse);
 
 void session_evmouse_enable(session_evmouse_t *mouse);
+
+void session_evmouse_set_grab(session_evmouse_t *mouse, SDL_bool grab);
