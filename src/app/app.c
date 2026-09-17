@@ -70,6 +70,9 @@ int app_init(app_t *app, app_settings_loader *settings_loader, int argc, char *a
     SDL_SetHint(SDL_HINT_WEBOS_HIDAPI_IGNORE_BLUETOOTH_DEVICES, "0x057e/0x0000");
     if (app->settings.syskey_capture) {
         SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_HOME, "true");
+        // webOS 8 and later gate the keyboard super key behind its own policy, see
+        // https://github.com/webosbrew/SDL-webOS/blob/release-2.30.12-webos.6/include/SDL_hints.h#L2733-L2737
+        SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_KEYS_META, "true");
         SDL_SetHint(SDL_HINT_WEBOS_ACCESS_POLICY_RIBBON, "false");
     }
 #else
