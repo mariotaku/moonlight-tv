@@ -128,6 +128,9 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
     controller->global = arg->global;
+    // Seed from the setting every session. Without this reset, a pin left over from the previous
+    // stream would keep streaming_stats_shown() true while the new panel sits hidden in the overlay.
+    overlay_pinned = controller->global->settings.stats_overlay;
     app_session_begin(arg->global, &arg->uuid, &arg->app);
 }
 
@@ -161,6 +164,14 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
             }
             lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
+            if (controller->global->settings.stats_overlay) {
+                // Only once the stream is live. Doing this at view creation would lift the panel
+                // out of the hidden overlay while "Connecting..." is still up, showing an empty
+                // stats box for the whole handshake. Drive the existing pin rather than
+                // reparenting here, so the floating layout stays defined in pin_toggle alone.
+                lv_obj_add_state(controller->stats_pin, LV_STATE_CHECKED);
+                lv_event_send(controller->stats_pin, LV_EVENT_VALUE_CHANGED, NULL);
+            }
             break;
         }
         case USER_STREAM_CLOSE: {
@@ -342,6 +353,9 @@ static void pin_toggle(lv_event_t *e) {
     bool checked = lv_obj_has_state(lv_event_get_current_target(e), LV_STATE_CHECKED);
     bool pinned = toggle_view->parent != fragment->obj;
     overlay_pinned = checked;
+    // Same concept as the settings checkbox, so pinning or unpinning mid-stream is what the next
+    // session starts with. Persisted on exit like every other setting.
+    ((streaming_controller_t *) fragment)->global->settings.stats_overlay = checked;
     if (checked == pinned) {
         return;
     }
