@@ -27,6 +27,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_desc_label(view, locstr("Change in-game settings to optimize for streaming. Resolution will be "
                                  "limited to 720p, 1080p or 4K. Framerate will be also limited to 30/60 FPS."),
                     false);
+    pref_checkbox(view, locstr("Keep trying to connect after Wake-on-LAN"), &app_configuration->wol_keep_retrying,
+                  false);
+    pref_desc_label(view, locstr("After sending the wake packet, keep retrying until the computer answers, "
+                                 "for up to two minutes."), false);
     pref_checkbox(view, locstr("Mute computer while streaming"), &app_configuration->localaudio, true);
     return view;
 }

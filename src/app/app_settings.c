@@ -62,6 +62,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     set_string(&config->decoder, "auto");
     config->audio_device = NULL;
     config->sops = true;
+    config->wol_keep_retrying = false;
     config->localaudio = false;
     config->fullscreen = true;
     if (!config->fullscreen) {
@@ -116,6 +117,7 @@ bool settings_save(app_settings_t *config) {
 
     ini_write_section(fp, "host");
     ini_write_bool(fp, "sops", config->sops);
+    ini_write_bool(fp, "wol_keep_retrying", config->wol_keep_retrying);
     ini_write_bool(fp, "localaudio", config->localaudio);
     ini_write_bool(fp, "quitappafter", config->quitappafter);
     ini_write_bool(fp, "viewonly", config->viewonly);
@@ -283,6 +285,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         config->stream.audioConfiguration = parse_audio_config(value);
     } else if (INI_NAME_MATCH("sops")) {
         config->sops = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("wol_keep_retrying")) {
+        config->wol_keep_retrying = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("localaudio")) {
         config->localaudio = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("quitappafter")) {

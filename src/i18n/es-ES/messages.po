@@ -148,6 +148,14 @@ msgstr "Error del host"
 msgid "Offline"
 msgstr "Sin conexión"
 
+#: src/app/ui/launcher/apps.controller.c:435
+msgid "Waking computer"
+msgstr "Encendiendo el ordenador"
+
+#: src/app/ui/launcher/apps.controller.c:436
+msgid "Waiting for the computer to finish starting up. This can take a minute."
+msgstr "Esperando a que el ordenador termine de arrancar. Puede tardar un minuto."
+
 #: src/app/ui/launcher/apps.controller.c:427
 msgid "Press \"Wake\" to send Wake-on-LAN packet to turn the computer on if it supports this feature, press \"Retry\" to connect again.\n\n"
 "Try restart your computer if these doesn't work."
@@ -372,6 +380,14 @@ msgstr "Cambie los ajustes del juego para optimizar la transmisión. La resoluci
 #: src/app/ui/settings/panes/host.pane.c:30
 msgid "Mute computer while streaming"
 msgstr "Silenciar el ordenador durante la transmisión"
+
+#: src/app/ui/settings/panes/host.pane.c:30
+msgid "Keep trying to connect after Wake-on-LAN"
+msgstr "Seguir intentando conectar tras Wake-on-LAN"
+
+#: src/app/ui/settings/panes/host.pane.c:32
+msgid "After sending the wake packet, keep retrying until the computer answers, for up to two minutes."
+msgstr "Tras enviar el paquete de encendido, seguir reintentando hasta que el ordenador responda, durante un máximo de dos minutos."
 
 #: src/app/ui/settings/panes/input.pane.c:46
 msgid "View-only mode"
