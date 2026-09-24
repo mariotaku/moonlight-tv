@@ -7,6 +7,7 @@
 #include "ui/settings/settings.controller.h"
 
 #include "util/i18n.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
 #include "logging.h"
 
 typedef struct {
@@ -33,6 +34,8 @@ static void on_bitrate_changed(lv_event_t *e);
 static void on_res_fps_updated(lv_event_t *e);
 
 static void on_fullscreen_updated(lv_event_t *e);
+
+static void on_oled_theme_updated(lv_event_t *e);
 
 static void update_bitrate_label(basic_pane_t *pane);
 
@@ -130,6 +133,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     lv_obj_set_style_text_color(pane->bitrate_warning, lv_palette_main(LV_PALETTE_AMBER), 0);
     lv_label_set_long_mode(pane->bitrate_warning, LV_LABEL_LONG_WRAP);
 
+    lv_obj_t *oled_checkbox = pref_checkbox(view, locstr("Pure black background (OLED)"),
+                                            &app_configuration->oled_theme, false);
+    lv_obj_add_event_cb(oled_checkbox, on_oled_theme_updated, LV_EVENT_VALUE_CHANGED, pane);
+    pref_desc_label(view, locstr("Use black instead of dark grey behind menus. Saves power and reduces "
+                                 "burn-in on OLED screens."), false);
+
 #if !FEATURE_FORCE_FULLSCREEN
     lv_obj_t *checkbox = pref_checkbox(view, locstr("Fullscreen UI"), &app_configuration->fullscreen, false);
     if (app->ss4s.video_cap.transform & SS4S_VIDEO_CAP_TRANSFORM_AREA_DEST) {
@@ -187,6 +196,11 @@ static void on_res_fps_updated(lv_event_t *e) {
 static void on_fullscreen_updated(lv_event_t *e) {
     basic_pane_t *pane = lv_event_get_user_data(e);
     app_set_fullscreen(pane->parent->app, app_configuration->fullscreen);
+}
+
+static void on_oled_theme_updated(lv_event_t *e) {
+    basic_pane_t *pane = lv_event_get_user_data(e);
+    pane->parent->needs_restart |= app_configuration->oled_theme != lv_theme_moonlight_is_oled();
 }
 
 static void update_bitrate_label(basic_pane_t *pane) {

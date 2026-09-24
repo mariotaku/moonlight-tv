@@ -335,6 +335,14 @@ msgstr "Resolución y FPS"
 msgid "Video bitrate"
 msgstr "Bitrate de vídeo"
 
+#: src/app/ui/settings/panes/basic.pane.c:136
+msgid "Pure black background (OLED)"
+msgstr "Fondo negro puro (OLED)"
+
+#: src/app/ui/settings/panes/basic.pane.c:139
+msgid "Use black instead of dark grey behind menus. Saves power and reduces burn-in on OLED screens."
+msgstr "Usar negro en lugar de gris oscuro detrás de los menús. Ahorra energía y reduce el riesgo de quemado en pantallas OLED."
+
 #: src/app/ui/settings/panes/basic.pane.c:161
 msgid "Fullscreen UI"
 msgstr "Interfaz a pantalla completa"
