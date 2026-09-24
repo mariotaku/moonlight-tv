@@ -361,6 +361,40 @@ msgstr "Bitrate de vídeo - %d kbps"
 msgid "Higher bitrate may cause performance issue, try with caution."
 msgstr "Un mayor bitrate puede causar problemas de rendimiento, pruebe con precaución."
 
+#: src/app/ui/settings/panes/pref_fps.c:61
+#: src/app/ui/settings/panes/pref_fps.c:66
+#: src/app/ui/settings/panes/pref_fps.c:147
+#: src/app/ui/settings/panes/pref_fps.c:186
+#, c-format
+msgid "%d FPS"
+msgstr "%d FPS"
+
+#: src/app/ui/settings/panes/pref_fps.c:71
+#: src/app/ui/settings/panes/pref_fps.c:114
+msgid "Custom FPS"
+msgstr "FPS personalizados"
+
+#: src/app/ui/settings/panes/pref_fps.c:86
+#: src/app/ui/settings/panes/pref_fps.c:100
+#, c-format
+msgid "%d FPS (Custom)"
+msgstr "%d FPS (personalizados)"
+
+#: src/app/ui/settings/panes/pref_res.c:114
+#: src/app/ui/settings/panes/pref_res.c:170
+msgid "Custom Resolution"
+msgstr "Resolución personalizada"
+
+#: src/app/ui/settings/panes/pref_res.c:138
+#: src/app/ui/settings/panes/pref_res.c:152
+#, c-format
+msgid "%d * %d (Custom)"
+msgstr "%d * %d (personalizada)"
+
+#: src/app/ui/settings/panes/pref_res.c:178
+msgid "Enter a custom resolution:"
+msgstr "Introduzca una resolución personalizada:"
+
 #: src/app/ui/settings/panes/host.pane.c:26
 msgid "Optimize game settings for streaming"
 msgstr "Optimizar los ajustes del juego para la transmisión"
@@ -442,6 +476,50 @@ msgstr "Intercambiar botones A/B y X/Y del gamepad. Útil si se prefieren asigna
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr "No se puede usar el modo absoluto del ratón con \"Usar el ratón físico\" activado."
+
+#: src/app/ui/settings/panes/input.pane.c:97
+msgid "Gamepad touchpad"
+msgstr "Panel táctil del gamepad"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "Mode"
+msgstr "Modo"
+
+#: src/app/ui/settings/panes/input.pane.c:54
+msgid "Send as touchpad"
+msgstr "Enviar como panel táctil"
+
+#: src/app/ui/settings/panes/input.pane.c:56
+msgid "Send as mouse"
+msgstr "Enviar como ratón"
+
+#: src/app/ui/settings/panes/input.pane.c:105
+msgid "Send as touchpad forwards touches to the host, for games with built-in touchpad support. Send as mouse uses the touchpad as a trackpad instead."
+msgstr "\"Enviar como panel táctil\" reenvía los toques al ordenador anfitrión, para los juegos compatibles con el panel táctil. \"Enviar como ratón\" lo usa como el panel táctil de un portátil."
+
+#: src/app/ui/settings/panes/input.pane.c:143
+msgid "Pointer speed"
+msgstr "Velocidad del puntero"
+
+#: src/app/ui/settings/panes/input.pane.c:116
+msgid "Adjust pointer speed when the touchpad is used as a mouse."
+msgstr "Ajustar la velocidad del puntero cuando el panel táctil se usa como ratón."
+
+#: src/app/ui/settings/panes/input.pane.c:118
+msgid "Multi-touch gestures"
+msgstr "Gestos multitáctiles"
+
+#: src/app/ui/settings/panes/input.pane.c:120
+msgid "Use two fingers to scroll and to right click. Turn off if you trigger them by accident."
+msgstr "Use dos dedos para desplazarse y para hacer clic derecho. Desactive la opción si los activa sin querer."
+
+#: src/app/ui/settings/panes/input.pane.c:123
+msgid "Natural scrolling"
+msgstr "Desplazamiento natural"
+
+#: src/app/ui/settings/panes/input.pane.c:125
+msgid "Scrolling follows your fingers, like on a phone."
+msgstr "El desplazamiento sigue a sus dedos, como en un móvil."
 
 #: src/app/ui/settings/panes/video.pane.c:78
 #, c-format
