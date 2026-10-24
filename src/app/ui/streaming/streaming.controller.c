@@ -40,6 +40,8 @@ static void update_buttons_layout(streaming_controller_t *controller);
 
 static void pin_toggle(lv_event_t *e);
 
+static void pin_clicked(lv_event_t *e);
+
 const lv_fragment_class_t streaming_controller_class = {
         .constructor_cb = constructor,
         .destructor_cb = controller_dtor,
@@ -128,6 +130,9 @@ static void constructor(lv_fragment_t *self, void *args) {
 
     const streaming_scene_arg_t *arg = (streaming_scene_arg_t *) args;
     controller->global = arg->global;
+    // Seed from the setting every session. Without this reset, a pin left over from the previous
+    // stream would keep streaming_stats_shown() true while the new panel sits hidden in the overlay.
+    overlay_pinned = controller->global->settings.stats_overlay;
     app_session_begin(arg->global, &arg->uuid, &arg->app);
 }
 
@@ -161,6 +166,14 @@ static bool on_event(lv_fragment_t *self, int code, void *userdata) {
             }
             lv_obj_add_flag(controller->overlay, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(controller->hint, LV_OBJ_FLAG_HIDDEN);
+            if (controller->global->settings.stats_overlay) {
+                // Only once the stream is live. Doing this at view creation would lift the panel
+                // out of the hidden overlay while "Connecting..." is still up, showing an empty
+                // stats box for the whole handshake. Drive the existing pin rather than
+                // reparenting here, so the floating layout stays defined in pin_toggle alone.
+                lv_obj_add_state(controller->stats_pin, LV_STATE_CHECKED);
+                lv_event_send(controller->stats_pin, LV_EVENT_VALUE_CHANGED, NULL);
+            }
             break;
         }
         case USER_STREAM_CLOSE: {
@@ -223,6 +236,8 @@ static void on_view_created(lv_fragment_t *self, lv_obj_t *view) {
     controller->notice_label = notice_label;
 
     lv_obj_add_event_cb(controller->stats_pin, pin_toggle, LV_EVENT_VALUE_CHANGED, controller->stats);
+    lv_obj_add_event_cb(controller->stats_pin, pin_clicked, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(controller->stats_pin, overlay_key_cb, LV_EVENT_KEY, controller);
 
 #if !defined(TARGET_WEBOS)
     const app_settings_t *settings = &controller->global->settings;
@@ -313,12 +328,23 @@ static void hide_overlay(lv_event_t *event) {
 static void overlay_key_cb(lv_event_t *e) {
     streaming_controller_t *controller = lv_event_get_user_data(e);
     lv_group_t *group = controller->group;
+    bool on_pin = lv_group_get_focused(group) == controller->stats_pin;
     switch (lv_event_get_key(e)) {
         case LV_KEY_LEFT:
             lv_group_focus_prev(group);
             break;
         case LV_KEY_RIGHT:
             lv_group_focus_next(group);
+            break;
+        case LV_KEY_UP:
+            if (!on_pin) {
+                lv_group_focus_obj(controller->stats_pin);
+            }
+            break;
+        case LV_KEY_DOWN:
+            if (on_pin) {
+                lv_group_focus_obj(controller->quit_btn);
+            }
             break;
         default:
             break;
@@ -342,6 +368,9 @@ static void pin_toggle(lv_event_t *e) {
     bool checked = lv_obj_has_state(lv_event_get_current_target(e), LV_STATE_CHECKED);
     bool pinned = toggle_view->parent != fragment->obj;
     overlay_pinned = checked;
+    // Same concept as the settings checkbox, so pinning or unpinning mid-stream is what the next
+    // session starts with. Persisted on exit like every other setting.
+    ((streaming_controller_t *) fragment)->global->settings.stats_overlay = checked;
     if (checked == pinned) {
         return;
     }
@@ -352,4 +381,15 @@ static void pin_toggle(lv_event_t *e) {
         lv_obj_set_parent(toggle_view, fragment->obj);
         lv_obj_clear_state(toggle_view, LV_STATE_USER_1);
     }
+}
+
+// Not LV_OBJ_FLAG_CHECKABLE: that also flips it on the arrow keys used to move focus away.
+static void pin_clicked(lv_event_t *e) {
+    lv_obj_t *pin = lv_event_get_current_target(e);
+    if (lv_obj_has_state(pin, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(pin, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(pin, LV_STATE_CHECKED);
+    }
+    lv_event_send(pin, LV_EVENT_VALUE_CHANGED, NULL);
 }

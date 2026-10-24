@@ -64,6 +64,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->sops = true;
     config->localaudio = false;
     config->fullscreen = true;
+    config->stats_overlay = false;
     if (!config->fullscreen) {
         config->window_state.w = 1280;
         config->window_state.h = 720;
@@ -104,6 +105,7 @@ bool settings_save(app_settings_t *config) {
     }
     ini_write_string(fp, "language", config->language);
     ini_write_bool(fp, "fullscreen", config->fullscreen);
+    ini_write_bool(fp, "stats_overlay", config->stats_overlay);
     ini_write_int(fp, "debug_level", config->debug_level);
 
     ini_write_section(fp, "streaming");
@@ -337,6 +339,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
 #else
         config->fullscreen = INI_IS_TRUE(value);
 #endif
+    } else if (INI_NAME_MATCH("stats_overlay")) {
+        config->stats_overlay = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("debug_level")) {
         set_int(&config->debug_level, value);
     } else if (INI_FULL_MATCH("window", "x")) {

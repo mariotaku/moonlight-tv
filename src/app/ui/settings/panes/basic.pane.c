@@ -140,6 +140,10 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     }
 #endif
 
+    pref_checkbox(view, locstr("Show performance stats while streaming"), &app_configuration->stats_overlay, false);
+    pref_desc_label(view, locstr("Keep latency, FPS and decoder stats pinned over the stream, without opening the "
+                                 "overlay first."), false);
+
 #ifdef FEATURE_I18N_LANGUAGE_SETTINGS
     lv_obj_t *lang_label = pref_title_label(view, "Language");
     if (strcmp(locstr("Language"), "Language") != 0) {
