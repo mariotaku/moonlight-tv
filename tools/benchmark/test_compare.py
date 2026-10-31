@@ -26,6 +26,14 @@ class BenchmarkTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_line(sample().replace(" submit_us=112000", ""))
 
+    def test_reject_duplicate_and_garbage_fields(self):
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            parse_line(sample().strip() + " received=999")
+        with self.assertRaisesRegex(ValueError, "invalid"):
+            parse_line(sample().strip() + " garbage")
+        with self.assertRaisesRegex(ValueError, "invalid"):
+            parse_line(sample().strip() + " received=1oops")
+
     def test_malformed_sample_is_not_ignored(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "bad.log"
@@ -66,6 +74,8 @@ class BenchmarkTests(unittest.TestCase):
         text = report_markdown("4K60 HEVC", "aa", "bb", compare(base, pr), 1)
         self.assertIn("-8.3%", text)
         self.assertIn("not displayed FPS", text)
+        self.assertIn("Profile: `4K60 HEVC`", text)
+        self.assertIn("Base: `aa` · Candidate: `bb`", text)
 
 
 if __name__ == "__main__":

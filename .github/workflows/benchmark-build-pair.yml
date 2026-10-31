@@ -10,7 +10,7 @@ on:
         default: main
         type: string
       candidate_ref:
-        description: 'Candidate SHA or refs/pull/NUMBER/head for cross-fork PRs'
+        description: 'Candidate SHA or refs/pull/NUMBER/head in this repository'
         required: true
         type: string
 

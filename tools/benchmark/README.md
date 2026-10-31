@@ -18,10 +18,15 @@ your platform's normal app log facility. Keep one log per independent run.
 The existing webOS CI already packages PR builds as downloadable .ipk files.
 Once this workflow has landed on main, the optional **Prepare matched webOS
 benchmark builds** GitHub Actions workflow can create baseline/candidate IPKs
-with identical build options and commit provenance. For a PR from a fork, pass
-`refs/pull/NUMBER/head` as the candidate ref. Both revisions must already
-include the optional telemetry feature. It builds on public hosted runners;
-it never controls, connects to, or installs anything on a TV.
+with identical build options and commit provenance. For a PR targeting this
+repository, pass `refs/pull/NUMBER/head` as the candidate ref. This only
+resolves pull refs in the repository running the workflow; arbitrary fork
+branches and PRs targeting another repository are not accessible by that
+shorthand. Both revisions must already include the optional telemetry
+feature. Check out the *exact* tested commits for reproducibility. Only
+dispatch this trusted-code build after reviewing the candidate changes.
+It builds on public hosted runners; it never controls, connects to, or
+installs anything on a TV.
 
 Do not confuse a successful install or launch with a successful video
 benchmark.
@@ -63,6 +68,8 @@ the raw logs and record the redaction.
   duration, not the total end-to-end latency.
 
 The output reports medians of per-run aggregates, not confidence bounds.
+This is primarily a Moonlight TV integration benchmark; changes in ss4s or
+moonlight-common-c should have their own focused regression/performance tests.
 Do not claim a speedup based on short smoke runs or unmatched workloads.
 A reference TV and explicit operator permission are required for physical
 runs; upstream CI must never take over a shared display automatically.

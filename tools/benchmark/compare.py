@@ -30,7 +30,14 @@ METRICS = (
 def parse_line(line):
     if MARKER not in line:
         return None
-    values = dict(VALUES.findall(line.split(MARKER, 1)[1]))
+    # Parse complete tokens so unknown, malformed, or duplicate counters do
+    # not silently alter the outcome of an A/B comparison.
+    values = {}
+    for token in line.split(MARKER, 1)[1].split():
+        match = VALUES.fullmatch(token)
+        if match is None or match.group(1) in values:
+            raise ValueError("invalid or duplicate benchmark field")
+        values[match.group(1)] = match.group(2)
     if set(values) != set(FIELDS):
         raise ValueError("bad benchmark sample fields")
     row = {key: int(value) for key, value in values.items()}
@@ -91,8 +98,8 @@ def compare(base, candidate):
 def report_markdown(profile, base_sha, candidate_sha, results, count):
     lines = [
         "# Moonlight TV matched streaming comparison", "",
-        f"Profile: \`{profile}\`  ",
-        f"Base: \`{base_sha}\` · Candidate: \`{candidate_sha}\`  ",
+        f"Profile: `{profile}`  ",
+        f"Base: `{base_sha}` · Candidate: `{candidate_sha}`  ",
         f"Independent runs per build: **{count}**", "",
         "| Measurement | Base median | PR median | Difference |",
         "|---|---:|---:|---:|",
