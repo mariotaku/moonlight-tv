@@ -11,7 +11,8 @@ CMake build type and package dependencies. The setting defaults to OFF.
 
 The client writes one `ML_BENCH_V1` log line per completed ~1-second
 stats window, even while the stats overlay is closed. It records raw
-frame counts and latency sums; no per-frame logging, network listener,
+frame counts, client-side frame-copy time, SS4S Feed call duration, and
+latency sums; there is no per-frame logging, network listener,
 input automation, or background data upload is added. Capture logs using
 your platform's normal app log facility. Keep one log per independent run.
 
@@ -63,6 +64,10 @@ the raw logs and record the redaction.
   It does NOT mean frames reached the TV display.
 - **Frame drops:** gaps in the host's numbered frame sequence as observed
   by the client; not a measurement of presentation drops.
+- **Frame-copy time:** CPU time spent copying a decode unit into the Moonlight
+  TV staging buffer; does not include transport reassembly.
+- **SS4S Feed duration:** wall-clock duration of the synchronous submission
+  call. It may include backend blocking and is **not** hardware decode time.
 - **Decoder latency:** SS4S' existing estimated latency, if available.
 - **Host processing latency:** Moonlight's host-reported frame processing
   duration, not the total end-to-end latency.

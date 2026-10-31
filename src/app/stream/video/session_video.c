@@ -35,6 +35,9 @@ static int lastFrameNumber;
 // can resync from a known-good keyframe instead of decoding the next
 // P-frame against a discontinuity.
 static bool need_idr_on_resume = false;
+#ifdef MOONLIGHT_BENCH_STATS
+static uint64_t benchmarkCounterFrequency;
+#endif
 static struct VIDEO_STATS vdec_temp_stats;
 static int vdec_stream_format = 0;
 VIDEO_STATS vdec_summary_stats;
@@ -87,6 +90,9 @@ int vdec_delegate_setup(int videoFormat, int width, int height, int redrawRate, 
     vdec_stream_info.format = video_format_name(videoFormat);
     lastFrameNumber = 0;
     need_idr_on_resume = false;
+#ifdef MOONLIGHT_BENCH_STATS
+    benchmarkCounterFrequency = SDL_GetPerformanceFrequency();
+#endif
     SS4S_VideoInfo info = {
             .width = width,
             .height = height,
@@ -201,16 +207,31 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     vdec_temp_stats.totalCaptureLatency += decodeUnit->frameHostProcessingLatency;
     vdec_temp_stats.totalReassemblyTimeUs += (uint32_t) (decodeUnit->enqueueTimeUs - decodeUnit->receiveTimeUs);
     vdec_stream_info.has_host_latency |= decodeUnit->frameHostProcessingLatency > 0;
+#ifdef MOONLIGHT_BENCH_STATS
+    uint64_t copyStartTicks = SDL_GetPerformanceCounter();
+#endif
     size_t length = 0;
     for (PLENTRY entry = decodeUnit->bufferList; entry != NULL; entry = entry->next) {
         memcpy(buffer + length, entry->data, entry->length);
         length += entry->length;
     }
+#ifdef MOONLIGHT_BENCH_STATS
+    uint64_t copyEndTicks = SDL_GetPerformanceCounter();
+#endif
     SS4S_VideoFeedFlags flags = SS4S_VIDEO_FEED_DATA_FRAME_START | SS4S_VIDEO_FEED_DATA_FRAME_END;
     if (decodeUnit->frameType == FRAME_TYPE_IDR) {
         flags |= SS4S_VIDEO_FEED_DATA_KEYFRAME;
     }
     SS4S_VideoFeedResult result = SS4S_PlayerVideoFeed(player, buffer, length, flags);
+#ifdef MOONLIGHT_BENCH_STATS
+    uint64_t feedEndTicks = SDL_GetPerformanceCounter();
+    if (benchmarkCounterFrequency != 0) {
+        vdec_temp_stats.totalCopyTimeUs += (uint32_t)
+            ((copyEndTicks - copyStartTicks) * 1000000 / benchmarkCounterFrequency);
+        vdec_temp_stats.totalFeedCallTimeUs += (uint32_t)
+            ((feedEndTicks - copyEndTicks) * 1000000 / benchmarkCounterFrequency);
+    }
+#endif
     if (result == SS4S_VIDEO_FEED_OK) {
         if (vdec_stream_info.width == 0 || vdec_stream_info.height == 0) {
             stream_info_parse_size(decodeUnit, &vdec_stream_info);
@@ -275,10 +296,12 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     // Only one line per ~second; absent decoder latency is represented as -1.
     commons_log_info("Benchmark",
                      "ML_BENCH_V1 duration_ms=%lu total=%u received=%u submitted=%u dropped=%u "
-                     "host_01ms=%u submit_us=%u decoder_us=%d rtt_ms=%u rtt_var_ms=%u",
+                     "host_01ms=%u submit_us=%u decoder_us=%d rtt_ms=%u rtt_var_ms=%u "
+                     "tv_copy_us=%u tv_feed_us=%u",
                      delta, dst->totalFrames, dst->receivedFrames, dst->submittedFrames,
                      dst->networkDroppedFrames, dst->totalCaptureLatency,
-                     dst->totalSubmitTimeUs, latencyUs, dst->rtt, dst->rttVariance);
+                     dst->totalSubmitTimeUs, latencyUs, dst->rtt, dst->rttVariance,
+                     dst->totalCopyTimeUs, dst->totalFeedCallTimeUs);
 #endif
     if (stats_visible) {
         app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);

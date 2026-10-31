@@ -14,6 +14,7 @@ MARKER = "ML_BENCH_V1 "
 FIELDS = (
     "duration_ms", "total", "received", "submitted", "dropped",
     "host_01ms", "submit_us", "decoder_us", "rtt_ms", "rtt_var_ms",
+    "tv_copy_us", "tv_feed_us",
 )
 VALUES = re.compile(r"([a-z_][a-z_0-9]*)=(-?[0-9]+)")
 METRICS = (
@@ -22,6 +23,8 @@ METRICS = (
     ("drop_pct", "Network frame drops (%)"),
     ("host_ms", "Host processing (ms)"),
     ("submit_ms", "Submit delay (ms)"),
+    ("tv_copy_ms", "TV frame copy CPU time (ms)"),
+    ("tv_feed_ms", "TV→SS4S Feed call duration (ms)"),
     ("decoder_ms", "Estimated NDL decoder latency (ms)"),
     ("rtt_ms", "RTT (ms)"),
 )
@@ -75,6 +78,8 @@ def summarize_run(path, min_samples=20):
         "drop_pct": total("dropped") * 100 / expected if expected else None,
         "host_ms": total("host_01ms") / recv / 10 if recv else None,
         "submit_ms": total("submit_us") / submit / 1000 if submit else None,
+        "tv_copy_ms": total("tv_copy_us") / recv / 1000 if recv else None,
+        "tv_feed_ms": total("tv_feed_us") / recv / 1000 if recv else None,
         "decoder_ms": (sum(row["decoder_us"] * row["submitted"] for row in lat) /
                        sum(row["submitted"] for row in lat) / 1000) if lat else None,
         "rtt_ms": sum(row["rtt_ms"] * row["duration_ms"] for row in rows) / ms,

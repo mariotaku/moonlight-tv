@@ -8,7 +8,8 @@ from compare import compare, parse_line, report_markdown, summarize_run
 def sample(**overrides):
     metrics = dict(duration_ms=1000, total=60, received=58, submitted=56,
                    dropped=2, host_01ms=580, submit_us=112000,
-                   decoder_us=4000, rtt_ms=8, rtt_var_ms=1)
+                   decoder_us=4000, rtt_ms=8, rtt_var_ms=1,
+                   tv_copy_us=58000, tv_feed_us=174000)
     metrics.update(overrides)
     return "app-log-prefix [Benchmark] ML_BENCH_V1 " + " ".join(
         f"{k}={v}" for k, v in metrics.items()) + "\n"
@@ -52,6 +53,8 @@ class BenchmarkTests(unittest.TestCase):
             self.assertAlmostEqual(report["host_ms"], 1)
             self.assertAlmostEqual(report["submit_ms"], 2)
             self.assertAlmostEqual(report["decoder_ms"], 4)
+            self.assertAlmostEqual(report["tv_copy_ms"], 1)
+            self.assertAlmostEqual(report["tv_feed_ms"], 3)
             self.assertEqual(report["windows"], 22)
 
     def test_no_data_rejected(self):
@@ -69,7 +72,8 @@ class BenchmarkTests(unittest.TestCase):
 
     def test_report_does_not_claim_displayed_fps(self):
         base = [{"received_fps": 60, "submitted_fps": 59, "drop_pct": 0,
-                 "host_ms": 2, "submit_ms": 3, "decoder_ms": 4, "rtt_ms": 5}]
+                 "host_ms": 2, "submit_ms": 3, "tv_copy_ms": 1, "tv_feed_ms": 2,
+                 "decoder_ms": 4, "rtt_ms": 5}]
         pr = [{**base[0], "received_fps": 55}]
         text = report_markdown("4K60 HEVC", "aa", "bb", compare(base, pr), 1)
         self.assertIn("-8.3%", text)
