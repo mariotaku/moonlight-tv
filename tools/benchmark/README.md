@@ -20,14 +20,15 @@ The existing webOS CI already packages PR builds as downloadable .ipk files.
 Once this workflow has landed on main, the optional **Prepare matched webOS
 benchmark builds** GitHub Actions workflow can create baseline/candidate IPKs
 with identical build options and commit provenance. For a PR targeting this
-repository, pass `refs/pull/NUMBER/head` as the candidate ref. This only
-resolves pull refs in the repository running the workflow; arbitrary fork
-branches and PRs targeting another repository are not accessible by that
-shorthand. Both revisions must already include the optional telemetry
-feature. Check out the *exact* tested commits for reproducibility. Only
-dispatch this trusted-code build after reviewing the candidate changes.
-It builds on public hosted runners; it never controls, connects to, or
-installs anything on a TV.
+repository, `refs/pull/NUMBER/head` is an available candidate ref.
+For a PR from a fork, specify its `owner/moonlight-tv` as
+`candidate_repository` and the fork's exact commit SHA as
+`candidate_ref`. Both revisions must already include the optional
+telemetry feature. Check out *exact* commits for reproducibility.
+Only manually dispatch this build after reviewing the candidate code;
+compiling a fork executes untrusted build scripts. The workflow has read-only
+GitHub permissions and never controls, connects to, or installs anything
+on a TV.
 
 Do not confuse a successful install or launch with a successful video
 benchmark.

@@ -10,8 +10,13 @@ on:
         default: main
         type: string
       candidate_ref:
-        description: 'Candidate SHA or refs/pull/NUMBER/head in this repository'
+        description: 'Candidate SHA, branch, or refs/pull/NUMBER/head in its repository'
         required: true
+        type: string
+      candidate_repository:
+        description: 'Candidate owner/repo (blank = this repository; use fork for unmerged PR)'
+        required: false
+        default: ''
         type: string
 
 permissions:
@@ -29,6 +34,7 @@ jobs:
       - name: Checkout revision with submodules
         uses: actions/checkout@v4
         with:
+          repository: ${{ matrix.revision == 'candidate' && inputs.candidate_repository || github.repository }}
           ref: ${{ matrix.revision == 'baseline' && inputs.baseline_ref || inputs.candidate_ref }}
           submodules: recursive
           fetch-depth: 0
@@ -70,6 +76,7 @@ jobs:
         run: |
           {
             echo "revision=${{ matrix.revision }}"
+            echo "repository=${{ matrix.revision == 'candidate' && inputs.candidate_repository || github.repository }}"
             echo "git_sha=$FULL_SHA"
             echo "build_type=RelWithDebInfo"
             echo "MOONLIGHT_BENCH_STATS=ON"
