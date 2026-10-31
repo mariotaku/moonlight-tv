@@ -5,6 +5,10 @@ inputs:
     description: 'CMake build type'
     default: 'Debug'
     required: false
+  benchmark-stats:
+    description: 'Enable opt-in parseable streaming benchmark telemetry'
+    default: 'false'
+    required: false
 
 runs:
   using: "composite"
@@ -29,6 +33,12 @@ runs:
 
     - name: Run easy_build
       shell: bash
-      run: ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }}
+      run: |
+        options=()
+        if [[ "$BENCHMARK_STATS" == "true" ]]; then
+          options+=("-DMOONLIGHT_BENCH_STATS=ON")
+        fi
+        ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} "${options[@]}"
       env:
+        BENCHMARK_STATS: ${{ inputs.benchmark-stats }}
         TOOLCHAIN_FILE: /tmp/arm-webos-linux-gnueabi_sdk-buildroot/share/buildroot/toolchainfile.cmake

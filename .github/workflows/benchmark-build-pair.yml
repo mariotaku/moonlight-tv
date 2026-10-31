@@ -1,0 +1,90 @@
+name: Prepare matched webOS benchmark builds
+
+# Builds only. Never contacts or controls a physical television.
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_ref:
+        description: 'Baseline commit SHA (or main after benchmark support is merged)'
+        required: true
+        default: main
+        type: string
+      candidate_ref:
+        description: 'Candidate PR HEAD commit SHA (not a moving branch if possible)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.revision }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [baseline, candidate]
+    steps:
+      - name: Checkout revision with submodules
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.revision == 'baseline' && inputs.baseline_ref || inputs.candidate_ref }}
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Confirm both revisions support benchmark telemetry
+        run: |
+          grep -q 'option(MOONLIGHT_BENCH_STATS' CMakeLists.txt
+          echo "FULL_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "SHORT_SHA=$(git rev-parse --short=8 HEAD)" >> "$GITHUB_ENV"
+
+      - name: Download ares-cli-rs
+        uses: robinraju/release-downloader@v1.9
+        with:
+          repository: webosbrew/ares-cli-rs
+          latest: true
+          fileName: "ares-package_*_amd64.deb"
+          out-file-path: temp
+
+      - name: Download Homebrew Toolbox
+        uses: robinraju/release-downloader@v1.9
+        with:
+          repository: webosbrew/dev-toolbox-cli
+          latest: true
+          fileName: "webosbrew-toolbox-*_amd64.deb"
+          out-file-path: temp
+
+      - name: Install build prerequisites
+        run: |
+          sudo apt-get -yq update
+          sudo apt-get install ./temp/*.deb
+
+      - name: Build benchmark-enabled webOS package
+        uses: ./.github/actions/build-webos
+        with:
+          build-type: RelWithDebInfo
+          benchmark-stats: 'true'
+
+      - name: Record exact source and build configuration
+        run: |
+          {
+            echo "revision=${{ matrix.revision }}"
+            echo "git_sha=$FULL_SHA"
+            echo "build_type=RelWithDebInfo"
+            echo "MOONLIGHT_BENCH_STATS=ON"
+            echo "moonlight_common_c=$(git rev-parse HEAD:core/moonlight-common-c)"
+            echo "ss4s=$(git rev-parse HEAD:third_party/ss4s)"
+          } > dist/build-provenance.txt
+
+      - name: Verify webOS package
+        run: webosbrew-ipk-verify -f markdown -d -o "$GITHUB_STEP_SUMMARY" dist/*.ipk
+
+      - name: Upload benchmark build
+        uses: actions/upload-artifact@v4
+        with:
+          name: webos-benchmark-${{ matrix.revision }}-${{ github.run_id }}
+          path: |
+            dist/*.ipk
+            dist/build-provenance.txt
+          if-no-files-found: error
