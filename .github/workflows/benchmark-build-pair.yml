@@ -10,7 +10,7 @@ on:
         default: main
         type: string
       candidate_ref:
-        description: 'Candidate PR HEAD commit SHA (not a moving branch if possible)'
+        description: 'Candidate SHA or refs/pull/NUMBER/head for cross-fork PRs'
         required: true
         type: string
 

@@ -16,10 +16,15 @@ input automation, or background data upload is added. Capture logs using
 your platform's normal app log facility. Keep one log per independent run.
 
 The existing webOS CI already packages PR builds as downloadable .ipk files.
-Use the identical webOS build action for the baseline and candidate, with the
-benchmark option enabled. Build provenance must include the exact source SHAs
-and submodule pins. Do not confuse a successful install or launch with a
-successful video benchmark.
+Once this workflow has landed on main, the optional **Prepare matched webOS
+benchmark builds** GitHub Actions workflow can create baseline/candidate IPKs
+with identical build options and commit provenance. For a PR from a fork, pass
+`refs/pull/NUMBER/head` as the candidate ref. Both revisions must already
+include the optional telemetry feature. It builds on public hosted runners;
+it never controls, connects to, or installs anything on a TV.
+
+Do not confuse a successful install or launch with a successful video
+benchmark.
 
 ## Run and compare
 
@@ -40,8 +45,11 @@ python3 tools/benchmark/compare.py \
   --output summary.md --json-output summary.json
 ```
 
-Attach `summary.md`, `summary.json`, and the untouched raw logs
-to the PR (or to an artifact store linked from the PR).
+Attach `summary.md`, `summary.json`, and the raw logs
+to the PR (or to an artifact store linked from the PR). Before public sharing,
+review logs for private hostnames, IP addresses, device identifiers, pairing
+tokens, usernames, and other sensitive information; redact only a *copy* of
+the raw logs and record the redaction.
 
 ## What the numbers mean
 
