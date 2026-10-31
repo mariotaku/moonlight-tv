@@ -222,6 +222,9 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
     if (decodeUnit->frameType == FRAME_TYPE_IDR) {
         flags |= SS4S_VIDEO_FEED_DATA_KEYFRAME;
     }
+#ifdef MOONLIGHT_BENCH_STATS
+    uint64_t feedStartTicks = SDL_GetPerformanceCounter();
+#endif
     SS4S_VideoFeedResult result = SS4S_PlayerVideoFeed(player, buffer, length, flags);
 #ifdef MOONLIGHT_BENCH_STATS
     uint64_t feedEndTicks = SDL_GetPerformanceCounter();
@@ -229,7 +232,7 @@ int vdec_delegate_submit(PDECODE_UNIT decodeUnit) {
         vdec_temp_stats.totalCopyTimeUs += (uint32_t)
             ((copyEndTicks - copyStartTicks) * 1000000 / benchmarkCounterFrequency);
         vdec_temp_stats.totalFeedCallTimeUs += (uint32_t)
-            ((feedEndTicks - copyEndTicks) * 1000000 / benchmarkCounterFrequency);
+            ((feedEndTicks - feedStartTicks) * 1000000 / benchmarkCounterFrequency);
     }
 #endif
     if (result == SS4S_VIDEO_FEED_OK) {

@@ -33,11 +33,10 @@ typedef struct VIDEO_STATS {
     uint32_t totalSubmitTimeUs;
     unsigned long measurementStartTimestamp;
     uint32_t totalCaptureLatency;
-#ifdef MOONLIGHT_BENCH_STATS
-    // CPU-side Moonlight TV work, independently of the SS4S decoder.
+    // Always use the same public struct layout across executable and library
+    // objects; these sums are populated only by benchmark-enabled builds.
     uint32_t totalCopyTimeUs;
     uint32_t totalFeedCallTimeUs;
-#endif
     float totalFps;
     float receivedFps;
     float decodedFps;
