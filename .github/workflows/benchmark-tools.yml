@@ -1,0 +1,19 @@
+name: Benchmark tool tests
+on:
+  push:
+    paths:
+      - "tools/benchmark/**"
+      - ".github/workflows/benchmark-tools.yml"
+  pull_request:
+    paths:
+      - "tools/benchmark/**"
+      - ".github/workflows/benchmark-tools.yml"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate benchmark parser and report generator
+        run: python3 -m unittest discover -s tools/benchmark -p 'test_*.py'

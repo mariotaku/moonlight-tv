@@ -257,17 +257,32 @@ void vdec_stat_submit(const struct VIDEO_STATS *src, unsigned long now) {
     dst->receivedFps = (float) dst->receivedFrames / ((float) delta / 1000);
     dst->decodedFps = (float) dst->submittedFrames / ((float) delta / 1000);
     LiGetEstimatedRttInfo(&dst->rtt, &dst->rttVariance);
-    if (!streaming_stats_shown()) {
+    bool stats_visible = streaming_stats_shown();
+#ifndef MOONLIGHT_BENCH_STATS
+    if (!stats_visible) {
         return;
     }
-    int latencyUs = 0;
+#endif
+    int latencyUs = -1;
     if (SS4S_PlayerGetVideoLatency(player, 0, &latencyUs)) {
         dst->avgDecoderLatency = (float) latencyUs / 1000.0f;
         vdec_stream_info.has_decoder_latency = true;
     } else {
         dst->avgDecoderLatency = 0;
     }
-    app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);
+#ifdef MOONLIGHT_BENCH_STATS
+    // Capture raw counters for accurate offline aggregation, not overlay-rounded FPS.
+    // Only one line per ~second; absent decoder latency is represented as -1.
+    commons_log_info("Benchmark",
+                     "ML_BENCH_V1 duration_ms=%lu total=%u received=%u submitted=%u dropped=%u "
+                     "host_01ms=%u submit_us=%u decoder_us=%d rtt_ms=%u rtt_var_ms=%u",
+                     delta, dst->totalFrames, dst->receivedFrames, dst->submittedFrames,
+                     dst->networkDroppedFrames, dst->totalCaptureLatency,
+                     dst->totalSubmitTimeUs, latencyUs, dst->rtt, dst->rttVariance);
+#endif
+    if (stats_visible) {
+        app_bus_post(session->app, (bus_actionfunc) streaming_refresh_stats, NULL);
+    }
 }
 
 void stream_info_parse_size(PDECODE_UNIT decodeUnit, struct VIDEO_INFO *info) {
