@@ -22,7 +22,7 @@ env:
 jobs:
   build:
     name: Build (${{ matrix.arch }})
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # Branches of this repository are already built by the push trigger,
     # so only build pull requests opened from forks.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
