@@ -46,7 +46,11 @@ jobs:
 
       - name: Update Packages
         shell: bash
-        run: sudo apt-get -yq update
+        run: |
+          sudo apt-get -yq update
+          # ubuntu-24.04 runners lack binfmt-support, which the sysroot
+          # action needs to register qemu-arm for package installation.
+          sudo apt-get -yq install binfmt-support
 
       - name: Prepare Sysroot
         id: pi-sysroot
