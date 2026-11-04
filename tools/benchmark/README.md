@@ -5,7 +5,7 @@ main-vs-PR evidence without granting CI control of anyone's TV.
 
 ## Instrumented build
 
-Compile **both** the baseline (usually main) and candidate with
+Compile **both** the baseline and candidate at full immutable commit SHAs with
 `-DMOONLIGHT_BENCH_STATS=ON` using the same compiler, toolchain,
 CMake build type and package dependencies. The setting defaults to OFF.
 
@@ -65,8 +65,10 @@ the raw logs and record the redaction.
   It does NOT mean frames reached the TV display.
 - **Frame drops:** gaps in the host's numbered frame sequence as observed
   by the client; not a measurement of presentation drops.
-- **Frame-copy time:** CPU time spent copying a decode unit into the Moonlight
-  TV staging buffer; does not include transport reassembly.
+- **Frame-copy duration:** elapsed time measured with
+  `SDL_GetPerformanceCounter()` while copying a decode unit into the Moonlight
+  TV staging buffer. It can include time when the thread is descheduled, so it
+  is not CPU time. It does not include transport reassembly.
 - **SS4S Feed duration:** wall-clock duration of the synchronous submission
   call. It may include backend blocking and is **not** hardware decode time.
 - **Decoder latency:** SS4S' existing estimated latency, if available.

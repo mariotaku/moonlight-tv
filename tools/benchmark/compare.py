@@ -23,7 +23,7 @@ METRICS = (
     ("drop_pct", "Network frame drops (%)"),
     ("host_ms", "Host processing (ms)"),
     ("submit_ms", "Submit delay (ms)"),
-    ("tv_copy_ms", "TV frame copy CPU time (ms)"),
+    ("tv_copy_ms", "TV frame copy duration (ms)"),
     ("tv_feed_ms", "TV→SS4S Feed call duration (ms)"),
     ("decoder_ms", "Estimated NDL decoder latency (ms)"),
     ("rtt_ms", "RTT (ms)"),
