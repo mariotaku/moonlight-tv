@@ -238,6 +238,11 @@ target_include_directories(lv_sdl_img SYSTEM PRIVATE ${SDL2_INCLUDE_DIRS} ${SDL2
 
 add_executable(moonlight src/main.c)
 add_library(moonlight-lib STATIC)
+
+option(MOONLIGHT_BENCH_STATS "Emit parseable 1 Hz stream metrics for A/B benchmarks" OFF)
+if (MOONLIGHT_BENCH_STATS)
+    target_compile_definitions(moonlight-lib PRIVATE MOONLIGHT_BENCH_STATS)
+endif ()
 target_link_libraries(moonlight PRIVATE moonlight-lib)
 
 target_compile_lint(moonlight-lib)

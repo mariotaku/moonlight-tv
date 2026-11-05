@@ -33,6 +33,10 @@ typedef struct VIDEO_STATS {
     uint32_t totalSubmitTimeUs;
     unsigned long measurementStartTimestamp;
     uint32_t totalCaptureLatency;
+    // Always use the same public struct layout across executable and library
+    // objects; these sums are populated only by benchmark-enabled builds.
+    uint32_t totalCopyTimeUs;
+    uint32_t totalFeedCallTimeUs;
     float totalFps;
     float receivedFps;
     float decodedFps;
