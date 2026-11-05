@@ -102,12 +102,17 @@ jobs:
           curl --fail --location --retry 3 \
             https://github.com/webosbrew/dev-toolbox-cli/releases/download/v20261017-2d5a7b6/webosbrew-toolbox-ipk-verify_0.10.0-1_amd64.deb \
             --output "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb"
+          curl --fail --location --retry 3 \
+            https://github.com/webosbrew/dev-toolbox-cli/releases/download/v20261017-2d5a7b6/webosbrew-toolbox-fw-symbols_0.10.0-1_amd64.deb \
+            --output "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb"
           echo 'ff23939b5e4165c4ac7eb37b07662e4ff56af46075a7b239527883266cde8e11  '"$RUNNER_TEMP/benchmark-tools/ares-package.deb" | sha256sum --check
           echo 'eb0faf0f4bf616b14ffb6bdec811a474bb551eff345251aa594066883a8987cf  '"$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb" | sha256sum --check
+          echo '25fee8952f02ea570009cfb3aeaa101759036f24245fc6069d9d454e81a605b9  '"$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb" | sha256sum --check
           test "$(dpkg-deb -f "$RUNNER_TEMP/benchmark-tools/ares-package.deb" Version)" = "0.7.0-1"
           test "$(dpkg-deb -f "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb" Version)" = "0.10.0-1"
+          test "$(dpkg-deb -f "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb" Version)" = "0.10.0-1"
           sudo apt-get update
-          sudo apt-get install -y "$RUNNER_TEMP/benchmark-tools/ares-package.deb" "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb"
+          sudo apt-get install -y "$RUNNER_TEMP/benchmark-tools/ares-package.deb" "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb" "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb"
 
       - name: Build benchmark-enabled webOS package
         uses: ./trusted-tooling/.github/actions/build-webos
