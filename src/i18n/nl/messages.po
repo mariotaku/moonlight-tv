@@ -437,6 +437,14 @@ msgstr "AB en XY knoppen omwisselen"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "Wissel A/B en X/Y gamepad knoppen. Handig als je de Nintendo-achtige layouts prefereert."
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr "Systeemsneltoetsen van gamepad blokkeren"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr "Voorkomt tijdens het streamen dat webOS reageert op gamepadknoppen (bijv. Weergave/Menu die de LG Gaming Portal openen)."
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr "Absolute muismodus kan niet worden gebruikt wanneer \"Gebruik aangesloten muis\" is ingeschakeld."

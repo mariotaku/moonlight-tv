@@ -438,6 +438,14 @@ msgstr "Prohodit tlačítka ABXY"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "Prohodit tlačítka A/B a X/Y. Užitečné pokud dáváte přednost rozložení Nintendo ovladačů."
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr "Blokovat systémové zkratky ovladače"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr "Během streamování zabrání systému webOS reagovat na tlačítka ovladače (např. View/Menu otevírající LG Gaming Portal)."
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr "Absolutní režim myši nelze použit, když je povolen \"Použít HW myš\"."

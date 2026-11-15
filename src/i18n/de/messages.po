@@ -432,6 +432,14 @@ msgstr "Tausche ABXY Knöpfe"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "Tausche A/B und X/Y Gamepad Knöpfe. Falls du z.B. Nintendo ähnliches Layout bevorzugst."
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr "System-Gamepad-Kürzel blockieren"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr "Verhindert während des Streamings, dass webOS auf Gamepad-Tasten reagiert (z. B. Ansicht/Menü öffnet das LG Gaming Portal)."
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr ""

@@ -439,6 +439,14 @@ msgstr "交换ABXY键位"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "交换手柄的A/B和X/Y键。如果你习惯使用类似任天堂的按键布局会有用。"
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr "屏蔽系统手柄快捷键"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr "串流时，阻止 webOS 响应手柄按键（例如“视图/菜单”键打开 LG 游戏门户）。"
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr "启用“使用鼠标硬件”后，绝对指针模式无法使用。"

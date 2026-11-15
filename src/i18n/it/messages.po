@@ -430,6 +430,14 @@ msgstr "Inverti di pulsanti ABXY"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "Inverte i pulsanti A/B e X/Y del gamepad. Utile se si preferisce il layout Nintendo."
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr "Blocca le scorciatoie di sistema del controller"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr "Durante lo streaming, impedisce a webOS di reagire ai pulsanti del controller (es. Visualizza/Menu che aprono LG Gaming Portal)."
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr ""
