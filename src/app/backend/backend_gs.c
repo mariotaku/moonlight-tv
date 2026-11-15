@@ -37,3 +37,18 @@ GS_CLIENT app_gs_client_new(app_t *app) {
     SDL_UnlockMutex(app->backend.gs_client_mutex);
     return client;
 }
+
+const char *app_gs_device_name(app_t *app) {
+    static char device_name[128];
+    static bool device_name_loaded = false;
+    SDL_LockMutex(app->backend.gs_client_mutex);
+    if (!device_name_loaded) {
+        if (!app_load_device_name(device_name, sizeof(device_name))) {
+            device_name[0] = '\0';
+        }
+        device_name_loaded = true;
+        commons_log_info("APP", "Device name for pairing: %s", device_name[0] ? device_name : "(default)");
+    }
+    SDL_UnlockMutex(app->backend.gs_client_mutex);
+    return device_name[0] ? device_name : NULL;
+}

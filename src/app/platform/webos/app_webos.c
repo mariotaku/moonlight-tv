@@ -86,3 +86,50 @@ void app_webos_open_ribbon() {
     static const char *payload = "{\"id\":\"com.webos.app.home\",\"params\":{\"launchType\":\"homeKey\"}}";
     HLunaServiceCallSync("luna://com.webos.applicationManager/launch", payload, true, NULL);
 }
+
+/**
+ * Call a luna method and copy a string value from its reply.
+ * @param object_key Key of the object holding the value, or NULL if it's in the reply root
+ */
+static bool luna_get_string(const char *uri, const char *payload, const char *object_key, const char *key,
+                            char *buf, size_t size) {
+    char *reply = NULL;
+    if (!HLunaServiceCallSync(uri, payload, true, &reply) || reply == NULL) {
+        return false;
+    }
+    bool found = false;
+    JSchemaInfo schema_info;
+    jschema_info_init(&schema_info, jschema_all(), NULL, NULL);
+    jdomparser_ref parser = jdomparser_create(&schema_info, 0);
+    if (jdomparser_feed(parser, reply, (int) strlen(reply)) && jdomparser_end(parser)) {
+        jvalue_ref value = jdomparser_get_result(parser);
+        if (object_key != NULL) {
+            value = jobject_get(value, j_cstr_to_buffer(object_key));
+        }
+        value = jobject_get(value, j_cstr_to_buffer(key));
+        if (jis_string(value)) {
+            raw_buffer str = jstring_get_fast(value);
+            if (str.m_len > 0) {
+                size_t len = (size_t) str.m_len < size - 1 ? (size_t) str.m_len : size - 1;
+                memcpy(buf, str.m_str, len);
+                buf[len] = '\0';
+                found = true;
+            }
+        }
+    }
+    jdomparser_release(&parser);
+    free(reply);
+    return found;
+}
+
+bool app_load_device_name(char *buf, size_t size) {
+    // The TV name in Settings -> General -> Devices. The settings service lets apps on the public bus read this key on
+    // newer firmware; on older ones it's refused, and the model name is the next best thing.
+    if (luna_get_string("luna://com.webos.settingsservice/getSystemSettings",
+                        "{\"category\":\"network\",\"keys\":[\"deviceName\"]}", "settings", "deviceName", buf, size)) {
+        return true;
+    }
+    commons_log_info("APP", "TV name unavailable, using model name for pairing");
+    return luna_get_string("luna://com.webos.service.tv.systemproperty/getSystemInfo", "{\"keys\":[\"modelName\"]}",
+                           NULL, "modelName", buf, size);
+}
