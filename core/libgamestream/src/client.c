@@ -325,7 +325,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
-                  "devicename=rothupdateState=1&serverchallengeresp=%s", challenge_response_hex);
+                  "devicename=roth&updateState=1&serverchallengeresp=%s", challenge_response_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
     }
