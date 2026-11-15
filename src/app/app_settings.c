@@ -83,6 +83,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
     config->hevc = true;
     config->av1 = false;
     config->stick_deadzone = 7;
+    config->gamepad_grab = true;
 
     config->conf_dir = conf_dir;
     config->ini_path = path_join(conf_dir, CONF_NAME_MOONLIGHT);
@@ -136,6 +137,7 @@ bool settings_save(app_settings_t *config) {
     ini_write_bool(fp, "swap_abxy", config->swap_abxy);
     ini_write_int(fp, "stick_deadzone", config->stick_deadzone);
     ini_write_bool(fp, "syskey_capture", config->syskey_capture);
+    ini_write_bool(fp, "gamepad_grab", config->gamepad_grab);
 
     ini_write_section(fp, "video");
     ini_write_string(fp, "decoder", config->decoder);
@@ -323,6 +325,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         config->swap_abxy = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("syskey_capture")) {
         config->syskey_capture = INI_IS_TRUE(value);
+    } else if (INI_NAME_MATCH("gamepad_grab")) {
+        config->gamepad_grab = INI_IS_TRUE(value);
     } else if (INI_FULL_MATCH("video", "decoder")) {
         set_string(&config->decoder, value);
     } else if (INI_FULL_MATCH("audio", "backend")) {

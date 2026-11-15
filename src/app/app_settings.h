@@ -60,6 +60,7 @@ typedef struct app_settings_t {
     bool touchpad_natural_scroll;
     bool swap_abxy;
     bool syskey_capture;
+    bool gamepad_grab;
     bool hdr;
     bool hevc;
     bool av1;

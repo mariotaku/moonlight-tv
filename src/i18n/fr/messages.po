@@ -438,6 +438,14 @@ msgstr "Échanger les boutons ABXY"
 msgid "Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."
 msgstr "Échanger les boutons A/B et X/Y. Utile pour des dispositions à la Nintendo."
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr "Bloquer les raccourcis manette du système"
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr "Pendant le stream, empêche webOS de réagir aux boutons de la manette (ex. Vue/Menu qui ouvrent le portail de jeu LG)."
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr "Le mode absolu de la souris ne peut pas être utilisé lorsque \"Utiliser le matériel de la souris\" est activé."

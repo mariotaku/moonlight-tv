@@ -453,6 +453,14 @@ msgid ""
 "layouts."
 msgstr ""
 
+#: src/app/ui/settings/panes/input.pane.c:98
+msgid "Block system gamepad shortcuts"
+msgstr ""
+
+#: src/app/ui/settings/panes/input.pane.c:99
+msgid "While streaming, prevent webOS from reacting to gamepad buttons (e.g. View/Menu opening the LG Gaming Portal)."
+msgstr ""
+
 #: src/app/ui/settings/panes/input.pane.c:100
 msgid "Absolute mouse mode can't be used when \"Use mouse hardware\" enabled."
 msgstr ""

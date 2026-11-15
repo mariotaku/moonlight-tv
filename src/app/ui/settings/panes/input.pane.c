@@ -94,6 +94,12 @@ static lv_obj_t *create_obj(lv_fragment_t *self, lv_obj_t *container) {
     pref_desc_label(view, locstr("Swap A/B and X/Y gamepad buttons. Useful when you prefer Nintendo-like layouts."),
                     false);
 
+#if TARGET_WEBOS
+    pref_checkbox(view, locstr("Block system gamepad shortcuts"), &app_configuration->gamepad_grab, false);
+    pref_desc_label(view, locstr("While streaming, prevent webOS from reacting to gamepad buttons "
+                                 "(e.g. View/Menu opening the LG Gaming Portal)."), false);
+#endif
+
     pref_header(view, locstr("Gamepad touchpad"));
 
     pref_title_label(view, locstr("Mode"));
