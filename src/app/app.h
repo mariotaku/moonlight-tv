@@ -85,6 +85,18 @@ bool app_decoder_or_embedded_present(app_t *app);
 
 GS_CLIENT app_gs_client_new(app_t *app);
 
+/**
+ * Name the host shows for this device while pairing. Looked up once, on first use; call it from a worker thread.
+ * @return Device name, or NULL to use the libgamestream default
+ */
+const char *app_gs_device_name(app_t *app);
+
+/**
+ * Platform specific lookup of the user-visible device name.
+ * @return true if a non-empty name was written to buf
+ */
+bool app_load_device_name(char *buf, size_t size);
+
 void app_set_mouse_grab(app_input_t *input, bool grab);
 
 bool app_get_mouse_relative();

@@ -6,6 +6,13 @@
 #include "util/i18n.h"
 #include "app_launch.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#if !OS_WINDOWS
+#include <unistd.h>
+#endif
+
 #define USE_OPENURL SDL_VERSION_ATLEAST(2, 0, 14)
 
 #if !USE_OPENURL
@@ -42,4 +49,21 @@ void app_init_locale() {
 app_launch_params_t *app_handle_launch(app_t *app, int argc, char *argv[]) {
     // Do nothing
     return NULL;
+}
+
+bool app_load_device_name(char *buf, size_t size) {
+#if OS_WINDOWS
+    const char *name = getenv("COMPUTERNAME");
+    if (name == NULL || name[0] == '\0') {
+        return false;
+    }
+    strncpy(buf, name, size - 1);
+    buf[size - 1] = '\0';
+#else
+    if (gethostname(buf, size) != 0) {
+        return false;
+    }
+    buf[size - 1] = '\0';
+#endif
+    return buf[0] != '\0';
 }

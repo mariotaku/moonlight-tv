@@ -16,6 +16,7 @@ int worker_pairing(worker_context_t *context) {
     GS_CLIENT client = app_gs_client_new(context->app);
     PSERVER_DATA server = serverdata_clone(node->server);
     gs_set_timeout(client, 60);
+    gs_set_device_name(client, app_gs_device_name(context->app));
     int ret = gs_pair(client, server, context->arg1);
     gs_destroy(client);
     if (ret != GS_OK) {
