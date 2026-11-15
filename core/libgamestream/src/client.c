@@ -37,6 +37,7 @@
 #include <mbedtls/pk.h>
 #include <mbedtls/x509_crt.h>
 #include <mbedtls/error.h>
+#include <curl/curl.h>
 
 #include "uuidstr.h"
 
@@ -196,7 +197,8 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     // Send the salt and get the server cert. This doesn't have a read timeout
     // because the user must enter the PIN before the server responds
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
-                  "devicename=roth&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", salt_hex, hnd->cert_hex);
+                  "devicename=%s&updateState=1&phrase=getservercert&salt=%s&clientcert=%s", hnd->device_name, salt_hex,
+                  hnd->cert_hex);
     data = http_data_alloc();
 
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
@@ -263,7 +265,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
 
     // Send the encrypted challenge to the server
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
-                  "devicename=roth&updateState=1&clientchallenge=%s", encrypted_challenge_hex);
+                  "devicename=%s&updateState=1&clientchallenge=%s", hnd->device_name, encrypted_challenge_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
     }
@@ -325,7 +327,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     bytes_to_hex(challenge_response_encrypted, challenge_response_hex, 32);
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
-                  "devicename=roth&updateState=1&serverchallengeresp=%s", challenge_response_hex);
+                  "devicename=%s&updateState=1&serverchallengeresp=%s", hnd->device_name, challenge_response_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
     }
@@ -395,7 +397,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
     bytes_to_hex((unsigned char *) &client_pairing_secret, client_pairing_secret_hex, sizeof(client_pairing_secret));
 
     construct_url(hnd, url, sizeof(url), false, server->serverInfo.address, server_port(server, false), "pair",
-                  "devicename=roth&updateState=1&clientpairingsecret=%s", client_pairing_secret_hex);
+                  "devicename=%s&updateState=1&clientpairingsecret=%s", hnd->device_name, client_pairing_secret_hex);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
     }
@@ -416,7 +418,7 @@ int gs_pair(GS_CLIENT hnd, PSERVER_DATA server, const char *pin) {
 
     // Do the initial challenge (seems neccessary for us to show as paired)
     construct_url(hnd, url, sizeof(url), true, server->serverInfo.address, server_port(server, true), "pair",
-                  "devicename=roth&updateState=1&phrase=pairchallenge");
+                  "devicename=%s&updateState=1&phrase=pairchallenge", hnd->device_name);
     if ((ret = http_request(hnd->http, url, data)) != GS_OK) {
         goto cleanup;
     }
@@ -694,6 +696,7 @@ GS_CLIENT gs_new(const char *keydir) {
     }
     hnd->http = http;
     gs_set_timeout(hnd, 5);
+    gs_set_device_name(hnd, NULL);
     return hnd;
 }
 
@@ -702,6 +705,32 @@ void gs_destroy(GS_CLIENT hnd) {
     mbedtls_x509_crt_free(&hnd->cert);
     http_destroy(hnd->http);
     free((void *) hnd);
+}
+
+void gs_set_device_name(GS_CLIENT hnd, const char *name) {
+    if (name == NULL || name[0] == '\0') {
+        name = DEVICE_NAME_DEFAULT;
+    }
+    size_t len = strlen(name);
+    if (len > DEVICE_NAME_MAX_BYTES) {
+        // Cut on a UTF-8 character boundary
+        len = DEVICE_NAME_MAX_BYTES;
+        while (len > 0 && (name[len] & 0xC0) == 0x80) {
+            len--;
+        }
+        if (len == 0) {
+            name = DEVICE_NAME_DEFAULT;
+            len = strlen(name);
+        }
+    }
+    char *escaped = curl_easy_escape(NULL, name, (int) len);
+    if (escaped == NULL) {
+        strncpy(hnd->device_name, DEVICE_NAME_DEFAULT, sizeof(hnd->device_name) - 1);
+        return;
+    }
+    strncpy(hnd->device_name, escaped, sizeof(hnd->device_name) - 1);
+    hnd->device_name[sizeof(hnd->device_name) - 1] = '\0';
+    curl_free(escaped);
 }
 
 void gs_set_timeout(GS_CLIENT hnd, int timeout_secs) {
