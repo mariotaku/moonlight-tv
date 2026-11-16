@@ -205,7 +205,8 @@ static lv_obj_t *overlay_title(lv_obj_t *parent, const char *title, streaming_co
     lv_obj_set_style_pad_ver(stats_title, LV_DPX(10), 0);
     lv_obj_t *stats_pin = lv_btn_create(stats_title);
     lv_group_remove_obj(stats_pin);
-    lv_obj_add_flag(stats_pin, LV_OBJ_FLAG_CHECKABLE);
+    lv_group_add_obj(controller->group, stats_pin);
+    lv_obj_add_style(stats_pin, &controller->overlay_button_style_focused, LV_STATE_FOCUS_KEY);
     lv_obj_set_style_bg_color(stats_pin, lv_color_black(), 0);
     lv_obj_set_style_bg_opa(stats_pin, LV_OPA_20, 0);
     lv_obj_set_style_pad_all(stats_pin, 0, 0);

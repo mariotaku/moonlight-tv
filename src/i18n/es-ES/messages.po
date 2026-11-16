@@ -343,6 +343,14 @@ msgstr "Interfaz a pantalla completa"
 msgid "Can't use windowed UI for this decoder"
 msgstr "No se puede usar la interfaz en ventana con este decodificador"
 
+#: src/app/ui/settings/panes/basic.pane.c:143
+msgid "Show performance stats while streaming"
+msgstr "Mostrar estadísticas de rendimiento durante la transmisión"
+
+#: src/app/ui/settings/panes/basic.pane.c:144
+msgid "Keep latency, FPS and decoder stats pinned over the stream, without opening the overlay first."
+msgstr "Mantener fijadas sobre la transmisión la latencia, los FPS y las estadísticas del decodificador, sin tener que abrir antes el menú superpuesto."
+
 #: src/app/ui/settings/panes/basic.pane.c:172
 #: src/app/ui/settings/panes/basic.pane.c:173
 msgid "Language"
