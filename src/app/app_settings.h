@@ -43,6 +43,7 @@ typedef struct app_settings_t {
     char *audio_backend;
     char *audio_device;
     char *language;
+    bool oled_theme;
     bool sops;
     bool localaudio;
     bool fullscreen;

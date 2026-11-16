@@ -5,7 +5,16 @@
 #include "util/font.h"
 #include "lvgl/ext/lv_child_group.h"
 
+// WCAG AA: white text on it at 5.3:1, and 3.5:1 against the sidebar.
+#define OLED_ACCENT lv_color_hex(0x166bc7)
+
 static lv_style_t knob_shadow;
+static lv_style_t oled_surface;
+static lv_style_t oled_transparent;
+static lv_style_t oled_accent;
+static lv_style_t oled_focus;
+static lv_style_t oled_highlight;
+static bool oled;
 
 static void apply_cb(lv_theme_t *, lv_obj_t *);
 
@@ -29,11 +38,32 @@ void lv_theme_moonlight_init(lv_theme_t *theme, const app_fonts_t *fonts, app_t 
     lv_style_set_shadow_color(&knob_shadow, lv_color_black());
     lv_style_set_shadow_width(&knob_shadow, LV_DPX(5));
     lv_style_set_shadow_opa(&knob_shadow, LV_OPA_50);
+
+    oled = app->settings.oled_theme;
+    lv_style_init(&oled_surface);
+    lv_style_set_bg_color(&oled_surface, lv_color_black());
+    lv_style_init(&oled_transparent);
+    lv_style_set_bg_opa(&oled_transparent, LV_OPA_TRANSP);
+    lv_style_init(&oled_accent);
+    lv_style_set_bg_color(&oled_accent, OLED_ACCENT);
+    lv_style_init(&oled_focus);
+    lv_style_set_outline_color(&oled_focus, OLED_ACCENT);
+    lv_style_set_outline_opa(&oled_focus, LV_OPA_COVER);
+    lv_style_init(&oled_highlight);
+    lv_style_set_bg_color(&oled_highlight, OLED_ACCENT);
+    lv_style_set_bg_opa(&oled_highlight, LV_OPA_COVER);
+    // The dialog button focus style it overrides has primary-coloured text.
+    lv_style_set_text_color(&oled_highlight, lv_color_white());
 }
 
 void lv_theme_moonlight_deinit(lv_theme_t *theme) {
     (void) theme;
     lv_style_reset(&knob_shadow);
+    lv_style_reset(&oled_surface);
+    lv_style_reset(&oled_transparent);
+    lv_style_reset(&oled_accent);
+    lv_style_reset(&oled_focus);
+    lv_style_reset(&oled_highlight);
 }
 
 const lv_font_t *lv_theme_moonlight_get_iconfont_large(lv_obj_t *obj) {
@@ -51,9 +81,82 @@ const lv_font_t *lv_theme_moonlight_get_iconfont_small(lv_obj_t *obj) {
     return ((app_t *) th->user_data)->ui.fonts.icons.small;
 }
 
+bool lv_theme_moonlight_is_oled(void) {
+    return oled;
+}
+
+lv_color_t lv_theme_moonlight_panel_color(void) {
+    return oled ? lv_color_black() : lv_color_lighten(lv_color_black(), 30);
+}
+
+lv_color_t lv_theme_moonlight_sidebar_color(void) {
+    // 0x282b30 is the default dark theme's card colour.
+    return oled ? lv_color_hex(0x121212) : lv_color_hex(0x282b30);
+}
+
+lv_color_t lv_theme_moonlight_header_color(void) {
+    return oled ? lv_color_hex(0x1c1c1e) : lv_color_darken(lv_color_hex(0x2f3237), 4);
+}
+
+lv_color_t lv_theme_moonlight_focus_color(lv_obj_t *obj) {
+    return oled ? OLED_ACCENT : lv_theme_get_color_primary(obj);
+}
+
+lv_opa_t lv_theme_moonlight_focus_opa(void) {
+    return oled ? LV_OPA_COVER : LV_OPA_50;
+}
+
+static bool is_card_surface(const lv_obj_t *obj) {
+    return lv_obj_check_type(obj, &lv_obj_class) || lv_obj_check_type(obj, &lv_list_class) ||
+           lv_obj_check_type(obj, &lv_msgbox_class) || lv_obj_check_type(obj, &lv_dropdown_class) ||
+           lv_obj_check_type(obj, &lv_dropdownlist_class) || lv_obj_check_type(obj, &lv_btnmatrix_class) ||
+           lv_obj_check_type(obj, &lv_textarea_class);
+}
+
+static bool has_focus_outline(const lv_obj_t *obj) {
+    return lv_obj_check_type(obj, &lv_btnmatrix_class) || lv_obj_check_type(obj, &lv_slider_class) ||
+           lv_obj_check_type(obj, &lv_checkbox_class) || lv_obj_check_type(obj, &lv_dropdown_class) ||
+           lv_obj_check_type(obj, &lv_textarea_class);
+}
+
+static void apply_oled(lv_obj_t *obj) {
+    if (is_card_surface(obj)) {
+        lv_obj_add_style(obj, &oled_surface, 0);
+    }
+    if (has_focus_outline(obj)) {
+        lv_obj_add_style(obj, &oled_focus, LV_STATE_FOCUS_KEY);
+    }
+    if (lv_obj_check_type(obj, &lv_list_btn_class)) {
+        // They paint their own fill; let the sidebar show through.
+        lv_obj_add_style(obj, &oled_transparent, 0);
+        lv_obj_add_style(obj, &oled_highlight, LV_STATE_FOCUS_KEY);
+    } else if (lv_obj_check_type(obj, &lv_list_text_class)) {
+        lv_obj_add_style(obj, &oled_transparent, 0);
+        lv_obj_set_style_text_color(obj, lv_theme_get_color_primary(obj), 0);
+    } else if (lv_obj_check_type(obj, &lv_dropdownlist_class)) {
+        lv_obj_add_style(obj, &oled_surface, LV_PART_SELECTED);
+        lv_obj_add_style(obj, &oled_highlight, LV_PART_SELECTED | LV_STATE_CHECKED);
+    } else if (lv_obj_check_type(obj, &lv_btnmatrix_class)) {
+        lv_obj_add_style(obj, &oled_highlight, LV_PART_ITEMS | LV_STATE_CHECKED);
+        lv_obj_add_style(obj, &oled_highlight, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+        lv_obj_add_style(obj, &oled_focus, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+    } else if (lv_obj_check_type(obj, &lv_checkbox_class)) {
+        lv_obj_add_style(obj, &oled_surface, LV_PART_INDICATOR);
+        lv_obj_add_style(obj, &oled_accent, LV_PART_INDICATOR | LV_STATE_CHECKED);
+        lv_obj_set_style_border_color(obj, OLED_ACCENT, LV_PART_INDICATOR);
+    } else if (lv_obj_check_type(obj, &lv_slider_class)) {
+        lv_obj_add_style(obj, &oled_accent, 0);
+        lv_obj_add_style(obj, &oled_accent, LV_PART_INDICATOR);
+        lv_obj_add_style(obj, &oled_accent, LV_PART_KNOB);
+    }
+}
+
 static void apply_cb(lv_theme_t *theme, lv_obj_t *obj) {
     app_t *app = theme->user_data;
     bool set_font = true;
+    if (oled && lv_obj_get_parent(obj) != NULL) {
+        apply_oled(obj);
+    }
     if (lv_obj_has_class(obj, &lv_btn_class)) {
         lv_obj_set_style_flex_cross_place(obj, LV_FLEX_ALIGN_CENTER, 0);
     }

@@ -20,7 +20,7 @@ lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_set_style_pad_gap(header, 0, 0);
     lv_obj_set_style_pad_left(header, 0, 0);
     lv_obj_set_style_pad_right(header, lv_dpx(20), 0);
-    lv_obj_set_style_bg_color(header, lv_color_darken(lv_color_hex(0x2f3237), 4), 0);
+    lv_obj_set_style_bg_color(header, lv_theme_moonlight_header_color(), 0);
 
     lv_obj_t *icon = lv_img_create(header);
     lv_obj_set_size(icon, LV_DPX(NAV_WIDTH_COLLAPSED), LV_DPX(50));
@@ -44,7 +44,7 @@ lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent) {
     lv_obj_t *content = lv_win_get_content(win);
     lv_obj_set_style_pad_all(content, 0, 0);
     lv_obj_set_style_pad_gap(content, LV_DPX(2), 0);
-    lv_obj_set_style_bg_color(content, lv_color_lighten(lv_color_black(), 30), 0);
+    lv_obj_set_style_bg_color(content, lv_theme_moonlight_panel_color(), 0);
     if (controller->pending_mini) {
         controller->nav = lv_obj_create(content);
         lv_obj_remove_style_all(controller->nav);
@@ -58,6 +58,7 @@ lv_obj_t *settings_win_create(lv_fragment_t *self, lv_obj_t *parent) {
         lv_obj_set_style_clip_corner(nav, false, 0);
         lv_obj_set_style_radius(nav, 0, 0);
         lv_obj_set_style_border_width(nav, 0, 0);
+        lv_obj_set_style_bg_color(nav, lv_theme_moonlight_sidebar_color(), 0);
         controller->nav = nav;
         lv_obj_set_grid_cell(nav, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 

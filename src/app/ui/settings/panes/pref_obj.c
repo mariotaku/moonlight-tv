@@ -4,6 +4,9 @@
 
 #include "pref_obj.h"
 
+#include "util/font.h"
+#include "lvgl/theme/lv_theme_moonlight.h"
+
 typedef union pref_attrs_t {
     struct {
         bool *ref;
@@ -227,8 +230,8 @@ lv_obj_t *pref_desc_label(lv_obj_t *parent, const char *title, bool focusable) {
     lv_obj_add_flag(label, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_set_style_pad_left(label, LV_DPX(30), 0);
     lv_obj_set_style_text_font(label, lv_theme_get_font_small(parent), 0);
-    lv_obj_set_style_outline_opa(label, LV_OPA_50, LV_STATE_FOCUS_KEY);
-    lv_obj_set_style_outline_color(label, lv_theme_get_color_primary(label), LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_outline_opa(label, lv_theme_moonlight_focus_opa(), LV_STATE_FOCUS_KEY);
+    lv_obj_set_style_outline_color(label, lv_theme_moonlight_focus_color(label), LV_STATE_FOCUS_KEY);
     lv_obj_set_style_outline_width(label, LV_DPX(3), LV_STATE_FOCUS_KEY);
     lv_obj_set_style_outline_pad(label, LV_DPX(3), LV_STATE_FOCUS_KEY);
     lv_obj_set_style_radius(label, LV_DPX(4), 0);

@@ -58,6 +58,7 @@ void settings_initialize(app_settings_t *config, char *conf_dir) {
 
     config->debug_level = 0;
     set_string(&config->language, "auto");
+    config->oled_theme = false;
     set_string(&config->audio_backend, "auto");
     set_string(&config->decoder, "auto");
     config->audio_device = NULL;
@@ -103,6 +104,7 @@ bool settings_save(app_settings_t *config) {
         return false;
     }
     ini_write_string(fp, "language", config->language);
+    ini_write_bool(fp, "oled_theme", config->oled_theme);
     ini_write_bool(fp, "fullscreen", config->fullscreen);
     ini_write_int(fp, "debug_level", config->debug_level);
 
@@ -331,6 +333,8 @@ static int settings_parse(app_settings_t *config, const char *section, const cha
         set_string(&config->audio_device, value);
     } else if (INI_NAME_MATCH("language")) {
         set_string(&config->language, value);
+    } else if (INI_NAME_MATCH("oled_theme")) {
+        config->oled_theme = INI_IS_TRUE(value);
     } else if (INI_NAME_MATCH("fullscreen")) {
 #if FEATURE_FORCE_FULLSCREEN
         config->fullscreen = true;
