@@ -40,6 +40,11 @@ typedef struct {
 
     lv_obj_t *quit_progress;
 
+    // Set while auto-retrying after Wake-on-LAN: the timer polls the host until it answers or
+    // wake_retry_deadline passes. Both are cleared together by wake_retry_stop().
+    lv_timer_t *wake_retry_timer;
+    uint32_t wake_retry_deadline;
+
     appitem_styles_t appitem_style;
     int col_count;
     lv_coord_t col_width, col_height;
