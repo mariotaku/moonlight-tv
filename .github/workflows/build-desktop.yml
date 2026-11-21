@@ -57,4 +57,4 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         shell: bash
-        run: xvfb-run ctest -C $BUILD_TYPE
+        run: xvfb-run ctest -C $BUILD_TYPE --output-on-failure

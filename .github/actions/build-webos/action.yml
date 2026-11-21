@@ -5,6 +5,10 @@ inputs:
     description: 'CMake build type'
     default: 'Debug'
     required: false
+  benchmark-stats:
+    description: 'Enable opt-in parseable streaming benchmark telemetry'
+    default: 'false'
+    required: false
 
 runs:
   using: "composite"
@@ -13,14 +17,15 @@ runs:
       shell: bash
       run: sudo apt-get -y -qq install cmake
 
-    - name: Download webOS NDK
-      uses: robinraju/release-downloader@v1.12
-      with:
-        repository: openlgtv/buildroot-nc4
-        tag: webos-a38c582
-        fileName: arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz
-        out-file-path: /tmp
-        extract: true
+    - name: Download pinned webOS NDK
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl --fail --location --retry 3 \
+          https://github.com/openlgtv/buildroot-nc4/releases/download/webos-a38c582/arm-webos-linux-gnueabi_sdk-buildroot-x86_64.tar.gz \
+          --output /tmp/webos-sdk.tar.gz
+        echo '04ad3311b48b4557a7002aef56ae2e167478e8e129f37daac04649bddf813616  /tmp/webos-sdk.tar.gz' | sha256sum --check
+        tar -xzf /tmp/webos-sdk.tar.gz -C /tmp
 
     - name: Relocate webOS NDK
       shell: bash
@@ -29,6 +34,12 @@ runs:
 
     - name: Run easy_build
       shell: bash
-      run: ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }}
+      run: |
+        options=()
+        if [[ "$BENCHMARK_STATS" == "true" ]]; then
+          options+=("-DMOONLIGHT_BENCH_STATS=ON")
+        fi
+        ./scripts/webos/easy_build.sh -DCMAKE_BUILD_TYPE=${{ inputs.build-type }} "${options[@]}"
       env:
+        BENCHMARK_STATS: ${{ inputs.benchmark-stats }}
         TOOLCHAIN_FILE: /tmp/arm-webos-linux-gnueabi_sdk-buildroot/share/buildroot/toolchainfile.cmake

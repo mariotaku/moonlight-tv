@@ -1,0 +1,178 @@
+name: Prepare matched webOS benchmark builds
+
+# Builds only. Never contacts or controls a physical television.
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_ref:
+        description: 'Full 40-character baseline commit SHA'
+        required: true
+        type: string
+      candidate_ref:
+        description: 'Full 40-character candidate commit SHA'
+        required: true
+        type: string
+      candidate_repository:
+        description: 'Candidate repository: this repository or mariotaku/moonlight-tv'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.revision }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [baseline, candidate]
+    steps:
+      - name: Validate trusted workflow branch and immutable inputs
+        env:
+          BASELINE_REF: ${{ inputs.baseline_ref }}
+          CANDIDATE_REF: ${{ inputs.candidate_ref }}
+          CANDIDATE_REPOSITORY: ${{ inputs.candidate_repository }}
+          WORKFLOW_REPOSITORY: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == "refs/heads/$DEFAULT_BRANCH" ]]
+          [[ "$BASELINE_REF" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CANDIDATE_REF" =~ ^[0-9a-f]{40}$ ]]
+          if [[ -n "$CANDIDATE_REPOSITORY" ]]; then
+            if [[ "$CANDIDATE_REPOSITORY" != "$WORKFLOW_REPOSITORY" &&
+                  "$CANDIDATE_REPOSITORY" != "mariotaku/moonlight-tv" ]]; then
+              echo "candidate repository is not allowlisted" >&2
+              exit 1
+            fi
+          fi
+
+      - name: Checkout exact revision with submodules
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ matrix.revision == 'candidate' && inputs.candidate_repository || github.repository }}
+          ref: ${{ matrix.revision == 'baseline' && inputs.baseline_ref || inputs.candidate_ref }}
+          submodules: recursive
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Keep candidate source out of trusted tooling path
+        run: test ! -e trusted-tooling && test ! -L trusted-tooling
+
+      - name: Checkout trusted build tooling at workflow SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.workflow_sha }}
+          path: trusted-tooling
+          persist-credentials: false
+
+      - name: Confirm exact SHA and telemetry support
+        env:
+          REQUESTED_SHA: ${{ matrix.revision == 'baseline' && inputs.baseline_ref || inputs.candidate_ref }}
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          test "$actual_sha" = "$REQUESTED_SHA"
+          grep -q 'option(MOONLIGHT_BENCH_STATS' CMakeLists.txt
+          echo "FULL_SHA=$actual_sha" >> "$GITHUB_ENV"
+
+      - name: Install pinned CMake
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/benchmark-tools" "$RUNNER_TEMP/cmake"
+          curl --fail --location --retry 3 \
+            https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz \
+            --output "$RUNNER_TEMP/benchmark-tools/cmake.tar.gz"
+          echo '5a1133ff103c71eb5120e2cc3de922733e7d8a26a98ae716397e8676adb367bf  '"$RUNNER_TEMP/benchmark-tools/cmake.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/benchmark-tools/cmake.tar.gz" --strip-components=1 -C "$RUNNER_TEMP/cmake"
+          echo "$RUNNER_TEMP/cmake/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/cmake/bin/cmake" --version
+
+      - name: Download pinned webOS build tools
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/benchmark-tools"
+          curl --fail --location --retry 3 \
+            https://github.com/webosbrew/ares-cli-rs/releases/download/v0.7.0/ares-package_0.7.0-1_amd64.deb \
+            --output "$RUNNER_TEMP/benchmark-tools/ares-package.deb"
+          curl --fail --location --retry 3 \
+            https://github.com/webosbrew/dev-toolbox-cli/releases/download/v20261017-2d5a7b6/webosbrew-toolbox-ipk-verify_0.10.0-1_amd64.deb \
+            --output "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb"
+          curl --fail --location --retry 3 \
+            https://github.com/webosbrew/dev-toolbox-cli/releases/download/v20261017-2d5a7b6/webosbrew-toolbox-fw-symbols_0.10.0-1_amd64.deb \
+            --output "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb"
+          echo 'ff23939b5e4165c4ac7eb37b07662e4ff56af46075a7b239527883266cde8e11  '"$RUNNER_TEMP/benchmark-tools/ares-package.deb" | sha256sum --check
+          echo 'eb0faf0f4bf616b14ffb6bdec811a474bb551eff345251aa594066883a8987cf  '"$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb" | sha256sum --check
+          echo '25fee8952f02ea570009cfb3aeaa101759036f24245fc6069d9d454e81a605b9  '"$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb" | sha256sum --check
+          test "$(dpkg-deb -f "$RUNNER_TEMP/benchmark-tools/ares-package.deb" Version)" = "0.7.0-1"
+          test "$(dpkg-deb -f "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb" Version)" = "0.10.0-1"
+          test "$(dpkg-deb -f "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb" Version)" = "0.10.0-1"
+          sudo apt-get update
+          sudo apt-get install -y "$RUNNER_TEMP/benchmark-tools/ares-package.deb" "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-ipk-verify.deb" "$RUNNER_TEMP/benchmark-tools/webosbrew-toolbox-fw-symbols.deb"
+
+      - name: Build benchmark-enabled webOS package
+        uses: ./trusted-tooling/.github/actions/build-webos
+        with:
+          build-type: RelWithDebInfo
+          benchmark-stats: 'true'
+
+      - name: Record exact source, toolchain, dependencies, and artifact hash
+        env:
+          REVISION: ${{ matrix.revision }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          packages=(dist/*.ipk)
+          test "${#packages[@]}" -eq 1
+          mkdir -p dist
+          {
+            echo "revision=$REVISION"
+            echo "repository=$(git config --get remote.origin.url)"
+            echo "git_sha=$FULL_SHA"
+            echo "tooling_repository=${{ github.repository }}"
+            echo "tooling_sha=${{ github.workflow_sha }}"
+            echo "build_type=RelWithDebInfo"
+            echo "MOONLIGHT_BENCH_STATS=ON"
+            echo "runner_image=${ImageOS:-unknown}/${ImageVersion:-unknown}"
+            uname -a
+            echo "cmake_version=3.31.6"
+            echo "cmake_sha256=5a1133ff103c71eb5120e2cc3de922733e7d8a26a98ae716397e8676adb367bf"
+            cmake --version | head -1
+            echo "moonlight_common_c=$(git rev-parse HEAD:core/moonlight-common-c)"
+            echo "ss4s=$(git rev-parse HEAD:third_party/ss4s)"
+            echo "ares_package_version=0.7.0-1"
+            echo "ares_package_sha256=ff23939b5e4165c4ac7eb37b07662e4ff56af46075a7b239527883266cde8e11"
+            echo "ipk_verify_version=0.10.0-1"
+            echo "ipk_verify_sha256=eb0faf0f4bf616b14ffb6bdec811a474bb551eff345251aa594066883a8987cf"
+            echo "webos_ndk_sha256=04ad3311b48b4557a7002aef56ae2e167478e8e129f37daac04649bddf813616"
+            compiler=/tmp/arm-webos-linux-gnueabi_sdk-buildroot/bin/arm-webos-linux-gnueabi-gcc
+            test -x "$compiler"
+            compiler_version=$("$compiler" --version | head -1)
+            test -n "$compiler_version"
+            echo "compiler_version=$compiler_version"
+            echo "ipk_sha256=$(sha256sum "${packages[0]}" | cut -d ' ' -f 1)"
+          } > dist/build-provenance.txt
+          git submodule status --recursive > dist/submodules.txt
+          dpkg-query -W -f='${binary:Package}=${Version}\n' | sort > dist/dpkg-packages.txt
+          sha256sum "${packages[0]}" > dist/package.sha256
+          sha256sum dist/dpkg-packages.txt > dist/dpkg-packages.sha256
+
+      - name: Verify webOS package
+        run: webosbrew-ipk-verify -f markdown -d -o "$GITHUB_STEP_SUMMARY" dist/*.ipk
+
+      - name: Upload benchmark build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: webos-benchmark-${{ matrix.revision }}-${{ github.run_id }}
+          path: |
+            dist/*.ipk
+            dist/build-provenance.txt
+            dist/submodules.txt
+            dist/package.sha256
+            dist/dpkg-packages.txt
+            dist/dpkg-packages.sha256
+          if-no-files-found: error
