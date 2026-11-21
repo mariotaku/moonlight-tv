@@ -318,6 +318,13 @@ void stream_input_handle_caxis(stream_input_t *input, const SDL_ControllerAxisEv
         LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons, 0, 0,
                                    gamepad->leftStickX, gamepad->leftStickY, 0, 0);
     } else {
+        if (session_input_is_vmouse_active(&input->vmouse)) {
+            // The right stick (or a trigger) can jump straight from deflected to rest in a single report,
+            // which is common over Bluetooth. Without this, the virtual mouse keeps its last non-zero
+            // vector and the cursor drifts on its own, or a trigger click stays pressed.
+            vmouse_set_vector(&input->vmouse, 0, 0);
+            vmouse_set_trigger(&input->vmouse, 0, 0);
+        }
         LiSendMultiControllerEvent(gamepad->gs_id, input->input->activeGamepadMask, gamepad->buttons,
                                    gamepad->leftTrigger,
                                    gamepad->rightTrigger, gamepad->leftStickX, gamepad->leftStickY,
